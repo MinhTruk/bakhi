@@ -1,6 +1,6 @@
-# 📚 Ngân Hàng Tài Liệu & Ôn Tập Trắc Nghiệm - MinhTruk/bakhi
+# 📚 Ngân Hàng Tài Liệu & Ôn Tập Trắc Nghiệm
 
-Chào mừng bạn đến với repository **bakhi** của **MinhTruk**! Đây là nơi lưu trữ, tổng hợp đề ôn tập, câu hỏi trắc nghiệm tương tác và bài tập tự luận cho các môn học từ **Giữa Học Kỳ 1 (GK1)** đến **Cuối Học Kỳ 2 (CK2)**.
+Chào mừng bạn đến với repository **bakhi**! Đây là nơi lưu trữ, tổng hợp đề ôn tập, câu hỏi trắc nghiệm tương tác và bài tập tự luận cho các môn học từ **Giữa Học Kỳ 1 (GK1)** đến **Cuối Học Kỳ 2 (CK2)**.
 
 ---
 
