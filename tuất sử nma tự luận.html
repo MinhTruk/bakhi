@@ -1,0 +1,420 @@
+ch<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tự Luận Lịch Sử - AI Kiểm Tra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-indigo-600 rounded-lg text-white">
+                    <i class="fa-solid fa-pen-nib text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">Lịch Sử: Cách Mạng Tư Sản</h1>
+                    <p class="text-xs text-slate-400">Chế độ Tự Luận • AI Chấm Điểm</p>
+                </div>
+            </div>
+            <div id="quiz-progress-badge" class="hidden bg-slate-700/70 border border-slate-600 px-3 py-1.5 rounded-full text-xs font-medium text-slate-300">
+                Câu <span id="current-question-num" class="text-indigo-400 font-bold">1</span>/<span id="total-questions-num">14</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-3xl w-full mx-auto p-4 md:p-6 flex-grow flex items-center justify-center">
+
+        <!-- START SCREEN -->
+        <div id="start-screen" class="w-full bg-slate-800 border border-slate-700/80 rounded-2xl p-6 md:p-10 shadow-2xl text-center">
+            <div class="w-20 h-20 bg-indigo-600/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-indigo-500/30">
+                <i class="fa-solid fa-robot text-4xl"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold mb-3 text-white">Thử Thách Tự Luận Lịch Sử</h2>
+            <p class="text-slate-300 text-sm md:text-base max-w-xl mx-auto mb-8 leading-relaxed">
+                Nhập câu trả lời bằng văn bản cho từng câu hỏi. Hệ thống AI sẽ tự động phân tích ngữ nghĩa, từ khóa chính và đánh giá xem câu trả lời của bạn có chính xác hay không!
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-lg mx-auto mb-8 text-left">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/50">
+                    <div class="text-slate-400 text-xs mb-1"><i class="fa-solid fa-list-check mr-1 text-indigo-400"></i> Số câu hỏi</div>
+                    <div class="font-bold text-slate-100 text-lg">14 Câu</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/50">
+                    <div class="text-slate-400 text-xs mb-1"><i class="fa-solid fa-shuffle mr-1 text-indigo-400"></i> Thứ tự</div>
+                    <div class="font-bold text-slate-100 text-lg">Xáo trộn</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/50">
+                    <div class="text-slate-400 text-xs mb-1"><i class="fa-solid fa-wand-magic-sparkles mr-1 text-indigo-400"></i> Chấm điểm</div>
+                    <div class="font-bold text-slate-100 text-lg">AI So sánh</div>
+                </div>
+            </div>
+            <button id="start-btn" type="button" class="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition duration-200 text-base inline-flex items-center justify-center space-x-2 cursor-pointer">
+                <span>Bắt Đầu Làm Bài</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- QUIZ SCREEN -->
+        <div id="quiz-screen" class="hidden w-full space-y-6">
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
+                <div id="progress-bar" class="bg-indigo-500 h-full w-0 transition-all duration-300 ease-out"></div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-slate-800 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl relative overflow-hidden">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="px-3 py-1 bg-indigo-950/80 text-indigo-300 border border-indigo-800/50 text-xs font-semibold rounded-full uppercase tracking-wider">
+                        Câu Hỏi Tự Luận
+                    </span>
+                </div>
+
+                <!-- Question Text -->
+                <h2 id="question-text" class="text-lg md:text-xl font-medium text-slate-100 leading-snug mb-6">
+                    Đang tải câu hỏi...
+                </h2>
+
+                <!-- Input Answer Form -->
+                <div class="space-y-4">
+                    <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider">Nhập câu trả lời của bạn:</label>
+                    <textarea id="user-input" rows="3" class="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl p-4 text-slate-100 placeholder-slate-500 text-sm md:text-base resize-none outline-none transition" placeholder="Gõ câu trả lời tại đây..."></textarea>
+                    
+                    <button id="submit-btn" type="button" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition duration-200 flex items-center justify-center space-x-2 cursor-pointer">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>AI Kiểm Tra Đáp Án</span>
+                    </button>
+                </div>
+
+                <!-- Feedback Message -->
+                <div id="feedback" class="hidden mt-6 p-4 rounded-xl border text-sm transition-all space-y-2">
+                    <!-- Feedback content via JS -->
+                </div>
+
+                <!-- Next Button -->
+                <div class="mt-6 flex justify-end">
+                    <button id="next-btn" type="button" class="hidden px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition duration-200 inline-flex items-center space-x-2 cursor-pointer">
+                        <span>Câu tiếp theo</span>
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULT SCREEN -->
+        <div id="result-screen" class="hidden w-full bg-slate-800 border border-slate-700/80 rounded-2xl p-6 md:p-10 shadow-2xl text-center">
+            <div id="result-icon-container" class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 border">
+                <i id="result-icon" class="text-5xl"></i>
+            </div>
+            
+            <h2 id="result-title" class="text-2xl md:text-3xl font-bold mb-2">Hoàn Thành Bài Tự Luận!</h2>
+            <p id="result-subtitle" class="text-slate-400 text-sm mb-6">Kết quả chấm điểm tự động từ hệ thống AI</p>
+
+            <div class="bg-slate-900/80 border border-slate-700/60 rounded-2xl p-6 max-w-md mx-auto mb-8">
+                <div class="text-4xl font-extrabold mb-2" id="score-text">0 / 14</div>
+                <div class="text-slate-400 text-sm mb-4">Độ chính xác: <span id="percentage-text" class="text-indigo-400 font-bold">0%</span></div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div id="result-bar" class="h-full transition-all duration-1000"></div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+                <button id="restart-btn" type="button" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg transition duration-200 inline-flex items-center justify-center space-x-2 cursor-pointer">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Làm Lại (Random mới)</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-4 text-center text-slate-500 text-xs border-t border-slate-800">
+        Tự Luận Lịch Sử • AI Kiểm tra & Đánh giá câu trả lời
+    </footer>
+
+    <script>
+        const rawData = [
+            {
+                q: "Cách mạng tư sản bùng nổ trong khoảng thời gian nào?",
+                correct: "Giữa XVI đến đầu XX",
+                keywords: ["xvi", "xx", "16", "20", "giua xvi", "dau xx"]
+            },
+            {
+                q: "Tiền đề kinh tế chung của các cuộc cách mạng tư sản là gì?",
+                correct: "Kinh tế tư bản chủ nghĩa ra đời nhưng bị chế độ phong kiến hoặc chính sách cai trị của chính quốc kìm hãm",
+                keywords: ["tu ban", "phong kien", "kim ham", "cai tri"]
+            },
+            {
+                q: "Trước năm 1640, sản lượng khai thác than ở Anh chiếm bao nhiêu tổng sản lượng châu Âu?",
+                correct: "4/5",
+                keywords: ["4/5", "bon phan nam", "4 phan 5"]
+            },
+            {
+                q: "Hệ tư tưởng nào được giai cấp tư sản Anh và Hà Lan mượn làm 'ngọn cờ' tập hợp quần chúng?",
+                correct: "Đạo Tin lành ở Hà Lan, Thanh giáo ở Anh",
+                keywords: ["tin lanh", "thanh giao"]
+            },
+            {
+                q: "Nền tảng tư tưởng của Cách mạng tư sản Pháp là gì?",
+                correct: "Triết học Ánh sáng",
+                keywords: ["triet hoc anh sang", "anh sang"]
+            },
+            {
+                q: "Kể tên 3 đại diện tiêu biểu của Triết học Ánh sáng Pháp.",
+                correct: "Mông-te-xki-ơ, Vôn-te, Rút-xô",
+                keywords: ["mong", "voltaire", "rousseau", "vonte", "rutxo", "xkio"]
+            },
+            {
+                q: "Hai nhiệm vụ cơ bản của một cuộc cách mạng tư sản là gì?",
+                correct: "Dân tộc và dân chủ",
+                keywords: ["dan toc", "dan chu"]
+            },
+            {
+                q: "Nhiệm vụ dân tộc nhằm mục tiêu gì?",
+                correct: "Xóa bỏ tình trạng phong kiến, giải phóng dân tộc",
+                keywords: ["giai phong dan toc", "xoa bo phong kien", "chia cat"]
+            },
+            {
+                q: "Nhiệm vụ dân chủ nhằm mục tiêu gì?",
+                correct: "Xóa bỏ phong kiến chuyên chế, xác lập dân chủ tư sản",
+                keywords: ["dan chu tu san", "phong kien chuyen che", "xac lap dan chu"]
+            },
+            {
+                q: "Lực lượng nào lãnh đạo Cách mạng tư sản Anh?",
+                correct: "Liên minh tư sản và quý tộc mới",
+                keywords: ["tu san", "quy toc moi"]
+            },
+            {
+                q: "Lực lượng nào lãnh đạo Chiến tranh giành độc lập ở 13 thuộc địa Bắc Mỹ?",
+                correct: "Liên minh tư sản và chủ nô",
+                keywords: ["tu san", "chu no"]
+            },
+            {
+                q: "Lực lượng nào giữ vai trò là động lực quyết định thắng lợi của các cuộc cách mạng tư sản?",
+                correct: "Quần chúng nhân dân",
+                keywords: ["quan chung nhan dan", "nhan dan"]
+            },
+            {
+                q: "Cách mạng tư sản Anh đã thiết lập thể chế chính trị nào?",
+                correct: "Chế độ quân chủ lập hiến",
+                keywords: ["quan chu lap hien", "lap hien"]
+            },
+            {
+                q: "Cuộc cách mạng tư sản nào được đánh giá là cuộc cách mạng vĩ đại nhất?",
+                correct: "Cách mạng Pháp",
+                keywords: ["phap", "cach mang phap"]
+            }
+        ];
+
+        let quizData = [];
+        let currentIndex = 0;
+        let score = 0;
+
+        function shuffle(array) {
+            let cur = array.length, randomIdx;
+            let arr = [...array];
+            while (cur !== 0) {
+                randomIdx = Math.floor(Math.random() * cur);
+                cur--;
+                [arr[cur], arr[randomIdx]] = [arr[randomIdx], arr[cur]];
+            }
+            return arr;
+        }
+
+        function normalizeText(str) {
+            if (!str) return "";
+            return str.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        function checkAnswerWithAI(userInput, item) {
+            const cleanInput = normalizeText(userInput);
+            if (!cleanInput) return { isCorrect: false };
+
+            const cleanCorrect = normalizeText(item.correct);
+            
+            if (cleanInput === cleanCorrect || cleanCorrect.includes(cleanInput) || cleanInput.includes(cleanCorrect)) {
+                return { isCorrect: true };
+            }
+
+            let matchedKeywords = 0;
+            const keywords = item.keywords || [];
+            
+            keywords.forEach(kw => {
+                if (cleanInput.includes(normalizeText(kw))) {
+                    matchedKeywords++;
+                }
+            });
+
+            if (keywords.length > 0 && (matchedKeywords / keywords.length) >= 0.5) {
+                return { isCorrect: true };
+            }
+
+            return { isCorrect: false };
+        }
+
+        // Elements
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const progressBadge = document.getElementById('quiz-progress-badge');
+
+        const startBtn = document.getElementById('start-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+
+        const currentQuestionNumEl = document.getElementById('current-question-num');
+        const progressBarEl = document.getElementById('progress-bar');
+        const questionTextEl = document.getElementById('question-text');
+        const userInputEl = document.getElementById('user-input');
+        const feedbackEl = document.getElementById('feedback');
+
+        function initQuiz() {
+            quizData = shuffle(rawData);
+            currentIndex = 0;
+            score = 0;
+
+            startScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            progressBadge.classList.remove('hidden');
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            userInputEl.value = '';
+            userInputEl.disabled = false;
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            nextBtn.classList.add('hidden');
+            feedbackEl.classList.add('hidden');
+
+            const currentQ = quizData[currentIndex];
+            currentQuestionNumEl.textContent = currentIndex + 1;
+
+            const progressPercent = (currentIndex / quizData.length) * 100;
+            progressBarEl.style.width = `${progressPercent}%`;
+
+            questionTextEl.textContent = currentQ.q;
+        }
+
+        // Bind events safely
+        if (startBtn) startBtn.onclick = initQuiz;
+        if (restartBtn) restartBtn.onclick = initQuiz;
+
+        if (submitBtn) {
+            submitBtn.onclick = () => {
+                const text = userInputEl.value.trim();
+                if (!text) {
+                    alert("Vui lòng nhập câu trả lời của bạn trước khi kiểm tra!");
+                    return;
+                }
+
+                const currentQ = quizData[currentIndex];
+                const result = checkAnswerWithAI(text, currentQ);
+
+                userInputEl.disabled = true;
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+                feedbackEl.classList.remove('hidden');
+
+                if (result.isCorrect) {
+                    score++;
+                    feedbackEl.className = "mt-6 p-4 rounded-xl border bg-emerald-950/60 border-emerald-800/60 text-emerald-300 text-sm space-y-2";
+                    feedbackEl.innerHTML = `
+                        <div class="flex items-center space-x-2 font-bold text-emerald-400">
+                            <i class="fa-solid fa-circle-check text-lg"></i>
+                            <span>AI Đánh Giá: CHÍNH XÁC!</span>
+                        </div>
+                        <div><strong>Đáp án chuẩn:</strong> ${currentQ.correct}</div>
+                    `;
+                } else {
+                    feedbackEl.className = "mt-6 p-4 rounded-xl border bg-rose-950/60 border-rose-800/60 text-rose-300 text-sm space-y-2";
+                    feedbackEl.innerHTML = `
+                        <div class="flex items-center space-x-2 font-bold text-rose-400">
+                            <i class="fa-solid fa-circle-xmark text-lg"></i>
+                            <span>AI Đánh Giá: CHƯA ĐỦ Ý / CHƯA CHÍNH XÁC</span>
+                        </div>
+                        <div><strong>Đáp án chuẩn:</strong> ${currentQ.correct}</div>
+                    `;
+                }
+
+                if (currentIndex < quizData.length - 1) {
+                    nextBtn.classList.remove('hidden');
+                } else {
+                    nextBtn.innerHTML = `<span>Xem Kết Quả</span><i class="fa-solid fa-flag-checkered text-xs"></i>`;
+                    nextBtn.classList.remove('hidden');
+                }
+            };
+        }
+
+        if (nextBtn) {
+            nextBtn.onclick = () => {
+                if (currentIndex < quizData.length - 1) {
+                    currentIndex++;
+                    loadQuestion();
+                } else {
+                    showResults();
+                }
+            };
+        }
+
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            progressBadge.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+
+            const total = quizData.length;
+            const percentage = Math.round((score / total) * 100);
+
+            document.getElementById('score-text').textContent = `${score} / ${total}`;
+            document.getElementById('percentage-text').textContent = `${percentage}%`;
+
+            const resultBar = document.getElementById('result-bar');
+            resultBar.style.width = `${percentage}%`;
+
+            const iconContainer = document.getElementById('result-icon-container');
+            const icon = document.getElementById('result-icon');
+            const title = document.getElementById('result-title');
+            const subtitle = document.getElementById('result-subtitle');
+
+            if (percentage >= 80) {
+                iconContainer.className = "w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 bg-emerald-950/80 border-emerald-500 text-emerald-400";
+                icon.className = "fa-solid fa-trophy text-5xl";
+                resultBar.className = "h-full bg-emerald-500 transition-all duration-1000";
+                title.textContent = "Xuất Sắc!";
+                subtitle.textContent = "Bạn đã thuộc lòng và hiểu rất kĩ kiến thức Lịch Sử!";
+            } else if (percentage >= 50) {
+                iconContainer.className = "w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 bg-amber-950/80 border-amber-500 text-amber-400";
+                icon.className = "fa-solid fa-medal text-5xl";
+                resultBar.className = "h-full bg-amber-500 transition-all duration-1000";
+                title.textContent = "Khá Tốt!";
+                subtitle.textContent = "Bạn ghi nhớ được nhiều ý chính, hãy tiếp tục phát huy nhé!";
+            } else {
+                iconContainer.className = "w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 bg-rose-950/80 border-rose-500 text-rose-400";
+                icon.className = "fa-solid fa-book-open text-5xl";
+                resultBar.className = "h-full bg-rose-500 transition-all duration-1000";
+                title.textContent = "Cần Cố Gắng Hơn!";
+                subtitle.textContent = "Hãy làm lại bài thi để luyện gõ lại đúng các từ khóa lịch sử quan trọng.";
+            }
+        }
+    </script>
+</body>
+</html>
