@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -31,7 +32,7 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-bold leading-tight">Tin Học 11</h1>
-                    <p class="text-xs text-slate-400">Trắc Nghiệm Ôn Tập 15 Phút</p>
+                    <p class="text-xs text-slate-400">Trắc Nghiệm Ôn Tập 15 Phút (Đã Revamp)</p>
                 </div>
             </div>
             <div id="quiz-progress-badge" class="hidden bg-slate-700/70 border border-slate-600 px-3 py-1.5 rounded-full text-xs font-medium text-slate-300">
@@ -50,7 +51,7 @@
             </div>
             <h2 class="text-2xl md:text-3xl font-bold mb-3 text-white">Ôn Tập Trắc Nghiệm Tin Học 11</h2>
             <p class="text-slate-300 text-sm md:text-base max-w-xl mx-auto mb-8 leading-relaxed">
-                Bộ câu hỏi ôn tập kiến thức về Hệ điều hành, Phần mềm nguồn mở/thương mại, Kiến trúc máy tính và Các phép toán Lôgic.
+                Bộ câu hỏi chuẩn đã được hiệu chỉnh: CPU gồm 2 thành phần chính, Phân loại chuyển giao gồm 3 loại phần mềm cùng các nội dung Lôgic & Kiến trúc máy tính.
             </p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-lg mx-auto mb-8 text-left">
                 <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/50">
@@ -66,7 +67,7 @@
                     <div class="font-bold text-slate-100 text-lg">Tức thì</div>
                 </div>
             </div>
-            <button id="start-btn" class="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition duration-200 text-base inline-flex items-center justify-center space-x-2">
+            <button id="start-btn" type="button" class="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition duration-200 text-base inline-flex items-center justify-center space-x-2 cursor-pointer">
                 <span>Bắt Đầu Làm Bài</span>
                 <i class="fa-solid fa-arrow-right"></i>
             </button>
@@ -105,7 +106,7 @@
 
                 <!-- Next Button -->
                 <div class="mt-6 flex justify-end">
-                    <button id="next-btn" class="hidden px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition duration-200 inline-flex items-center space-x-2">
+                    <button id="next-btn" type="button" class="hidden px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition duration-200 inline-flex items-center space-x-2 cursor-pointer">
                         <span>Câu tiếp theo</span>
                         <i class="fa-solid fa-chevron-right text-xs"></i>
                     </button>
@@ -131,7 +132,7 @@
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
-                <button id="restart-btn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg transition duration-200 inline-flex items-center justify-center space-x-2">
+                <button id="restart-btn" type="button" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg transition duration-200 inline-flex items-center justify-center space-x-2 cursor-pointer">
                     <i class="fa-solid fa-rotate-right"></i>
                     <span>Làm Lại Bài Thi (Random mới)</span>
                 </button>
@@ -168,7 +169,7 @@
                 o: ["Android", "Windows", "Unix", "Linux"]
             },
             {
-                q: "Hệ điều hành có mấy chức năng chính? ",
+                q: "Hệ điều hành có mấy chức năng chính?",
                 a: "5",
                 o: ["5", "4", "3", "2"]
             },
@@ -200,9 +201,9 @@
             {
                 q: "Theo cách chuyển giao sử dụng, phần mềm được phân ra mấy loại?",
                 a: "3",
-                o: ["2", "3", "4", "5"]
+                o: ["3", "2", "4", "5"]
             },
-            {7
+            {
                 q: "Đặc điểm nào dưới đây là của phần mềm thương mại?",
                 a: "Dùng để bán, hầu hết là nguồn đóng",
                 o: [
@@ -295,7 +296,7 @@
             {
                 q: "Bộ xử lí trung tâm (CPU) được cấu tạo từ mấy bộ phận chính?",
                 a: "2",
-                o: ["3", "2", "4", "5"]
+                o: ["2", "3", "4", "5"]
             },
             {
                 q: "Bộ phận nào KHÔNG thuộc thành phần của CPU?",
@@ -308,7 +309,7 @@
                 o: ["Bộ điều khiển", "Bộ nhớ đệm", "Bộ số học và lôgic", "Bộ nhớ RAM"]
             },
             {
-                q: "Vùng nhớ đặc biệt được dùng để lưu trữ tạm thời các lệnh và dữ liệu đang được xử lí là thành phần nào?",
+                q: "Vùng nhớ đặc biệt trong CPU dùng để lưu trữ tạm thời các lệnh và dữ liệu đang được xử lí là thành phần nào?",
                 a: "Thanh ghi",
                 o: ["Thanh ghi", "Bộ số học và lôgic", "Bộ điều khiển", "Bộ nhớ ROM"]
             },
@@ -359,7 +360,6 @@
         let score = 0;
         let answered = false;
 
-        // Shuffle Array Helper
         function shuffle(array) {
             let cur = array.length, randomIdx;
             let arr = [...array];
@@ -371,7 +371,6 @@
             return arr;
         }
 
-        // Elements
         const startScreen = document.getElementById('start-screen');
         const quizScreen = document.getElementById('quiz-screen');
         const resultScreen = document.getElementById('result-screen');
@@ -389,13 +388,10 @@
         const optionsContainerEl = document.getElementById('options-container');
         const feedbackEl = document.getElementById('feedback');
 
-        // Total count setup
         totalQuestionsNumEl.textContent = rawData.length;
         totalQuestionsCard.textContent = `${rawData.length} Câu`;
 
-        // Init Quiz
         function initQuiz() {
-            // Randomly shuffle questions AND randomly shuffle options for each question
             quizData = shuffle(rawData).map(item => ({
                 ...item,
                 o: shuffle(item.o)
@@ -420,7 +416,6 @@
             const currentQ = quizData[currentIndex];
             currentQuestionNumEl.textContent = currentIndex + 1;
             
-            // Progress Bar
             const progressPercent = ((currentIndex) / quizData.length) * 100;
             progressBarEl.style.width = `${progressPercent}%`;
 
@@ -431,7 +426,8 @@
 
             currentQ.o.forEach((opt, idx) => {
                 const btn = document.createElement('button');
-                btn.className = `option-btn w-full p-4 text-left rounded-xl border bg-slate-800/80 border-slate-700 hover:border-slate-500 text-slate-200 font-normal flex items-start space-x-3.5`;
+                btn.type = 'button';
+                btn.className = `option-btn w-full p-4 text-left rounded-xl border bg-slate-800/80 border-slate-700 hover:border-slate-500 text-slate-200 font-normal flex items-start space-x-3.5 cursor-pointer`;
                 btn.onclick = () => selectOption(opt, currentQ.a, btn);
 
                 btn.innerHTML = `
@@ -464,7 +460,6 @@
                 selectedBtn.classList.remove('bg-slate-800/80', 'border-slate-700');
                 selectedBtn.classList.add('bg-rose-950/80', 'border-rose-500', 'text-rose-200');
 
-                // Highlight Correct Option
                 allButtons.forEach(btn => {
                     if (btn.innerText.includes(correct)) {
                         btn.classList.remove('bg-slate-800/80', 'border-slate-700');
@@ -486,14 +481,19 @@
             }
         }
 
-        nextBtn.addEventListener('click', () => {
-            if (currentIndex < quizData.length - 1) {
-                currentIndex++;
-                loadQuestion();
-            } else {
-                showResults();
-            }
-        });
+        if (startBtn) startBtn.onclick = initQuiz;
+        if (restartBtn) restartBtn.onclick = initQuiz;
+
+        if (nextBtn) {
+            nextBtn.onclick = () => {
+                if (currentIndex < quizData.length - 1) {
+                    currentIndex++;
+                    loadQuestion();
+                } else {
+                    showResults();
+                }
+            };
+        }
 
         function showResults() {
             quizScreen.classList.add('hidden');
@@ -534,9 +534,7 @@
                 subtitle.textContent = "Hãy làm lại bài ôn tập để ghi nhớ kĩ các khái niệm nhé.";
             }
         }
-
-        startBtn.addEventListener('click', initQuiz);
-        restartBtn.addEventListener('click', initQuiz);
     </script>
 </body>
 </html>
+    
