@@ -258,12 +258,12 @@
             container.innerHTML = shuffledMcq.map((item, idx) => `
                 <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
                     <div class="font-medium text-slate-100 text-sm md:text-base">
-                        <span class="text-emerald-400 font-bold">Câu ${idx + 1}:</span> ${item.q}
+                        <span class="text-purple-400 font-bold">Câu ${idx + 1}:</span> ${item.q}
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="options-group-${item.id}">
                         ${item.o.map((opt, oIdx) => `
-                            <label class="p-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-lg flex items-center space-x-3 cursor-pointer text-xs md:text-sm transition">
-                                <input type="radio" name="mcq-${item.id}" value="${opt}" class="accent-emerald-500">
+                            <label id="label-opt-${item.id}-${oIdx}" class="p-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-lg flex items-center space-x-3 cursor-pointer text-xs md:text-sm transition">
+                                <input type="radio" name="mcq-${item.id}" value="${opt}" class="accent-purple-500">
                                 <span>${['A', 'B', 'C', 'D'][oIdx]}.${opt}</span>
                             </label>
                         `).join('')}
@@ -314,9 +314,9 @@
             container.innerHTML = essayData.map((item, idx) => `
                 <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
                     <div class="font-medium text-amber-300 text-sm md:text-base">Câu ${idx + 1}: ${item.q.split(': ')[1]}</div>
-                    <textarea id="essay-input-${item.id}" rows="3" class="w-full p-3 bg-slate-800 border border-slate-700 focus:border-amber-500 rounded-xl text-slate-100 text-xs md:text-sm outline-none" placeholder="Nhập phần tính toán của bạn..."></textarea>
+                    <textarea id="essay-input-${item.id}" rows="3" class="w-full p-3 bg-slate-800 border border-slate-700 focus:border-amber-500 rounded-xl text-slate-100 text-xs md:text-sm outline-none" placeholder="Nhập câu trả lời của bạn..."></textarea>
                     <div id="essay-key-${item.id}" class="hidden p-3 bg-slate-800/90 border border-amber-500/40 rounded-xl text-xs text-amber-200 whitespace-pre-line">
-                        <b>Lời giải chi tiết:</b>\n${item.key}
+                        <b>Đáp án gợi ý & Giải thích:</b>\n${item.key}
                     </div>
                 </div>
             `).join('');
@@ -325,22 +325,42 @@
         function checkAllAnswers() {
             let correctMCQ = 0;
             shuffledMcq.forEach(item => {
-                const checked = document.querySelector(`input[name="mcq-${item.id}"]:checked`);
+                const checkedInput = document.querySelector(`input[name="mcq-${item.id}"]:checked`);
                 const feedbackEl = document.getElementById(`mcq-feedback-${item.id}`);
                 feedbackEl.classList.remove('hidden');
 
-                if (checked) {
-                    if (checked.value === item.a) {
+                // Lặp qua các lựa chọn của câu này để tô màu trực tiếp vào nhãn
+                item.o.forEach((opt, oIdx) => {
+                    const labelEl = document.getElementById(`label-opt-${item.id}-${oIdx}`);
+                    const radioInput = labelEl.querySelector('input');
+
+                    // Reset style cũ
+                    labelEl.className = "p-3 border rounded-lg flex items-center space-x-3 text-xs md:text-sm transition ";
+
+                    if (opt === item.a) {
+                        // Đáp án Đúng -> Tô màu xanh lá
+                        labelEl.className += "bg-emerald-950/80 border-emerald-600 text-emerald-200 font-semibold";
+                    } else if (radioInput.checked && radioInput.value !== item.a) {
+                        // Người dùng chọn sai -> Tô màu đỏ
+                        labelEl.className += "bg-rose-950/80 border-rose-600 text-rose-200";
+                    } else {
+                        // Các lựa chọn còn lại giữ nguyên tối giản
+                        labelEl.className += "bg-slate-800/50 border-slate-700 text-slate-300 opacity-70";
+                    }
+                });
+
+                if (checkedInput) {
+                    if (checkedInput.value === item.a) {
                         correctMCQ++;
                         feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-emerald-950/60 border-emerald-800 text-emerald-300";
-                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <b>Chính xác!</b> Đáp án: ${item.a}. <br><em>Giải thích:</em> ${item.exp}`;
+                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <b>Chính xác!</b> <em>Giải thích:</em> ${item.exp}`;
                     } else {
                         feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-rose-950/60 border-rose-800 text-rose-300";
-                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> <b>Chưa đúng.</b> Đáp án đúng là: <u>${item.a}</u>. <br><em>Giải thích:</em> ${item.exp}`;
+                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> <b>Chưa đúng.</b> <em>Giải thích:</em> ${item.exp}`;
                     }
                 } else {
                     feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-amber-950/60 border-amber-800 text-amber-300";
-                    feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Chưa chọn đáp án!</b> Đáp án đúng: <u>${item.a}</u>. <br><em>Giải thích:</em> ${item.exp}`;
+                    feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Bạn chưa chọn đáp án!</b> <em>Giải thích:</em> ${item.exp}`;
                 }
             });
 
@@ -357,7 +377,10 @@
                     if (userVal === item.correct) {
                         correctTF++;
                         feedbackTfEl.className = "text-xs font-medium p-2 rounded bg-emerald-950/60 border border-emerald-800 text-emerald-300";
-                        feedbackTfEl.innerHTML = `✓ <b>Chính xác!</b> Phát biểu này là <b>${correctStr}</b>. <em>Giải thích:</em> ${item.exp}`;
+                        feedbackTfEl.innerHTML = `✓ <b>Chính xác!</b> Đáp án: <b>${correctStr}</b>. <em>Giải thích:</em> ${item.exp}`;
+                    } else if (userVal === undefined) {
+                        feedbackTfEl.className = "text-xs font-medium p-2 rounded bg-amber-950/60 border border-amber-800 text-amber-300";
+                        feedbackTfEl.innerHTML = `⚠ <b>Chưa chọn!</b> Đáp án đúng là: <b>${correctStr}</b>. <em>Giải thích:</em> ${item.exp}`;
                     } else {
                         feedbackTfEl.className = "text-xs font-medium p-2 rounded bg-rose-950/60 border border-rose-800 text-rose-300";
                         feedbackTfEl.innerHTML = `✗ <b>Chưa chính xác.</b> Đáp án đúng là: <b>${correctStr}</b>. <em>Giải thích:</em> ${item.exp}`;
@@ -372,9 +395,9 @@
             const resultEl = document.getElementById('total-result');
             resultEl.classList.remove('hidden');
             resultEl.innerHTML = `
-                <div>Trắc nghiệm công thức: <span class="text-emerald-400">${correctMCQ}/50</span> câu đúng</div>
+                <div>Trắc nghiệm: <span class="text-purple-400">${correctMCQ}/50</span> câu đúng</div>
                 <div>Đúng / Sai: <span class="text-blue-400">${correctTF}/${totalTF}</span> ý đúng</div>
-                <div class="text-xs font-normal text-slate-400 mt-1">* Xem phần giải thích chi tiết ngay bên dưới từng câu!</div>
+                <div class="text-xs font-normal text-slate-400 mt-1">* Các đáp án đúng đã được đánh dấu màu xanh, đáp án sai màu đỏ ngay trong danh sách chọn!</div>
             `;
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
