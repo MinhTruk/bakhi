@@ -22,7 +22,7 @@
                 </a>
                 <div>
                     <h1 class="text-lg font-bold leading-tight">Bài 1: Lý Thuyết Dao Động Điều Hoà</h1>
-                    <p class="text-xs text-slate-400">30 Trắc nghiệm • 4 Đúng/Sai • 3 Tự luận</p>
+                    <p class="text-xs text-slate-400">50 Trắc nghiệm • 6 Đúng/Sai • 5 Tự luận</p>
                 </div>
             </div>
             <a href="../../../index.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
@@ -35,7 +35,7 @@
     <!-- Main Content Container -->
     <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow space-y-8">
 
-        <!-- PART 1: 30 CÂU TRẮC NGHIỆM 4 LỰA CHỌN -->
+        <!-- PART 1: 50 CÂU TRẮC NGHIỆM -->
         <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
             <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
                 <div class="flex items-center space-x-3">
@@ -43,16 +43,15 @@
                         <i class="fa-solid fa-list-check text-lg"></i>
                     </span>
                     <div>
-                        <h2 class="text-xl font-bold text-white">Phần 1: Trắc Nghiệm 4 Lựa Chọn (30 Câu)</h2>
-                        <p class="text-xs text-slate-400">Chọn 1 đáp án đúng nhất cho mỗi câu hỏi</p>
+                        <h2 class="text-xl font-bold text-white">Phần 1: Trắc Nghiệm Khách Quan (50 Câu)</h2>
+                        <p class="text-xs text-slate-400">Nhận biết, thông hiểu và vận dụng lý thuyết dao động cơ</p>
                     </div>
                 </div>
             </div>
-
             <div id="mcq-container" class="space-y-6"></div>
         </section>
 
-        <!-- PART 2: 4 CÂU TRẮC NGHIỆM ĐÚNG / SAI -->
+        <!-- PART 2: 6 CÂU ĐÚNG / SAI -->
         <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
             <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
                 <div class="flex items-center space-x-3">
@@ -60,16 +59,15 @@
                         <i class="fa-solid fa-toggle-on text-lg"></i>
                     </span>
                     <div>
-                        <h2 class="text-xl font-bold text-white">Phần 2: Trắc Nghiệm Đúng / Sai (4 Câu)</h2>
-                        <p class="text-xs text-slate-400">Click chọn Đúng hoặc Sai cho mỗi ý a, b, c, d</p>
+                        <h2 class="text-xl font-bold text-white">Phần 2: Câu Hỏi Đúng / Sai (6 Câu)</h2>
+                        <p class="text-xs text-slate-400">Đánh giá tính chính xác các phát biểu vật lý (ý a, b, c, d)</p>
                     </div>
                 </div>
             </div>
-
             <div id="tf-container" class="space-y-6"></div>
         </section>
 
-        <!-- PART 3: 3 CÂU TỰ LUẬN -->
+        <!-- PART 3: 5 CÂU TỰ LUẬN -->
         <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
             <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
                 <div class="flex items-center space-x-3">
@@ -77,18 +75,17 @@
                         <i class="fa-solid fa-pen-nib text-lg"></i>
                     </span>
                     <div>
-                        <h2 class="text-xl font-bold text-white">Phần 3: Câu Hỏi Tự Luận (3 Câu)</h2>
-                        <p class="text-xs text-slate-400">Gõ câu trả lời bằng văn bản và đối chiếu kết quả</p>
+                        <h2 class="text-xl font-bold text-white">Phần 3: Câu Hỏi Tự Luận (5 Câu)</h2>
+                        <p class="text-xs text-slate-400">Phân tích sâu bản chất hiện tượng và đối chiếu đáp án</p>
                     </div>
                 </div>
             </div>
-
             <div id="essay-container" class="space-y-6"></div>
         </section>
 
-        <!-- SUBMIT / CHECK ALL -->
+        <!-- SUBMIT -->
         <div class="p-6 bg-slate-800 border border-slate-700 rounded-2xl text-center space-y-4 shadow-2xl">
-            <button type="button" id="submit-all-btn" onclick="checkAllAnswers()" class="px-8 py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
+            <button type="button" onclick="checkAllAnswers()" class="px-8 py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                 <span>Nộp Bài & Kiểm Tra Kết Quả</span>
             </button>
@@ -97,109 +94,169 @@
 
     </main>
 
-    <!-- Footer -->
     <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
-        Bài 1: Dao Động Điều Hoà • Ôn Tập Lý Thuyết
+        Bài 1: Dao Động Điều Hoà • Ôn Tập Lý Thuyết Nâng Cao
     </footer>
 
     <script>
-        const mcqData = [
-            { id: 1, q: "Chuyển động qua lại quanh một vị trí cân bằng xác định gọi là gì?", a: "Dao động cơ", o: ["Dao động cơ", "Chuyển động tròn đều", "Chuyển động biến đổi đều", "Dao động điều hoà"] },
-            { id: 2, q: "Dao động cơ của một vật có thể thuộc loại nào dưới đây?", a: "Tuần hoàn hoặc không tuần hoàn", o: ["Tuần hoàn hoặc không tuần hoàn", "Chỉ có thể là tuần hoàn", "Chỉ có thể là không tuần hoàn", "Luôn luôn là dao động điều hoà"] },
-            { id: 3, q: "Dao động nào sau đây là ví dụ về dao động tuần hoàn?", a: "Dao động của con lắc đồng hồ", o: ["Dao động của con lắc đồng hồ", "Dao động của cành cây khi gió thổi", "Chuyển động của xe máy trên đường", "Thả rơi tự do hòn đá"] },
-            { id: 4, q: "Dao động của cành cây đu đưa khi gió thổi là ví dụ của loại dao động nào?", a: "Dao động không tuần hoàn", o: ["Dao động không tuần hoàn", "Dao động tuần hoàn", "Dao động điều hoà", "Dao động cưỡng bức"] },
+        const rawMcqData = [
+            { id: 1, q: "Chuyển động qua lại quanh một vị trí cân bằng xác định gọi là:", a: "Dao động cơ", o: ["Dao động cơ", "Chuyển động tròn đều", "Chuyển động thẳng biến đổi đều", "Dao động điều hoà"] },
+            { id: 2, q: "Dao động cơ của một vật có thể phân loại thành:", a: "Tuần hoàn hoặc không tuần hoàn", o: ["Tuần hoàn hoặc không tuần hoàn", "Chỉ tuần hoàn", "Chỉ không tuần hoàn", "Luôn là dao động tắt dần"] },
+            { id: 3, q: "Hiện tượng nào sau đây là ví dụ về dao động tuần hoàn?", a: "Dao động của con lắc đồng hồ chạy đúng", o: ["Dao động của con lắc đồng hồ chạy đúng", "Dao động của cành cây khi gió thổi mạnh", "Chuyển động của chiếc lá rơi xuống đất", "Dao động của vỏ trống khi bị gõ ngẫu nhiên"] },
+            { id: 4, q: "Dao động của cành cây đu đưa khi gió thổi là dao động gì?", a: "Dao động không tuần hoàn", o: ["Dao động không tuần hoàn", "Dao động tuần hoàn", "Dao động điều hoà", "Dao động cưỡng bức"] },
             { id: 5, q: "Dao động tuần hoàn đơn giản nhất là loại dao động nào?", a: "Dao động điều hoà", o: ["Dao động điều hoà", "Dao động tắt dần", "Dao động cưỡng bức", "Dao động duy trì"] },
-            { id: 6, q: "Hình dạng đồ thị biểu diễn li độ theo thời gian t của dao động điều hoà là đường gì?", a: "Đường hình sin", o: ["Đường hình sin", "Đường parabol", "Đường thẳng", "Đường tròn"] },
-            { id: 7, q: "Một vật dao động điều hoà có phương trình x = A.cos(ωt + φ). Đại lượng x được gọi là gì?", a: "Li độ dao động", o: ["Li độ dao động", "Biên độ dao động", "Pha dao động", "Pha ban đầu"] },
-            { id: 8, q: "Trong phương trình x = A.cos(ωt + φ), đại lượng A đại diện cho điều gì?", a: "Biên độ dao động", o: ["Biên độ dao động", "Li độ tức thời", "Tần số góc", "Pha ban đầu"] },
-            { id: 9, q: "Đại lượng (ωt + φ) trong phương trình x = A.cos(ωt + φ) gọi là gì?", a: "Pha của dao động ở thời điểm t", o: ["Pha của dao động ở thời điểm t", "Pha ban đầu", "Tần số góc", "Chu kỳ dao động"] },
-            { id: 10, q: "Góc φ trong phương trình x = A.cos(ωt + φ) xác định đại lượng nào?", a: "Pha ban đầu tại thời điểm t = 0", o: ["Pha ban đầu tại thời điểm t = 0", "Li độ tại thời điểm t", "Tần số góc", "Biên độ cực đại"] },
-            { id: 11, q: "Khoảng thời gian ngắn nhất để vật thực hiện hết 1 dao động toàn phần gọi là gì?", a: "Chu kỳ dao động (T)", o: ["Chu kỳ dao động (T)", "Tần số dao động (f)", "Tần số góc (ω)", "Pha ban đầu (φ)"] },
-            { id: 12, q: "Số dao động toàn phần mà vật thực hiện được trong 1 giây gọi là gì?", a: "Tần số dao động (f)", o: ["Tần số dao động (f)", "Chu kỳ dao động (T)", "Biên độ (A)", "Pha dao động (ωt + φ)"] },
-            { id: 13, q: "Đơn vị đo của tần số f trong hệ SI là gì?", a: "Héc (Hz)", o: ["Héc (Hz)", "Giây (s)", "Radian (rad)", "Met (m)"] },
-            { id: 14, q: "Mối liên hệ giữa chu kỳ T và tần số f là gì?", a: "T = 1 / f", o: ["T = 1 / f", "T = f", "T = 2π.f", "T = 1 / (2f)"] },
-            { id: 15, q: "Vật nặng của con lắc đang dao động điều hoà được gọi là gì?", a: "Vật dao động điều hoà", o: ["Vật dao động điều hoà", "Vật rơi tự do", "Chất điểm tự do", "Hệ dao động cơ"] },
-            { id: 16, q: "Vị trí mà vật nặng dừng lại khi không dao động gọi là vị trí nào?", a: "Vị trí cân bằng (x = 0)", o: ["Vị trí cân bằng (x = 0)", "Vị trí biên dương (+A)", "Vị trí biên âm (-A)", "Vị trí ngẫu nhiên"] },
-            { id: 17, q: "Độ dịch chuyển lớn nhất của vật khỏi vị trí cân bằng chính là đại lượng nào?", a: "Biên độ dao động (A)", o: ["Biên độ dao động (A)", "Li độ (x)", "Pha ban đầu (φ)", "Chu kỳ (T)"] },
-            { id: 18, q: "Biên độ dao động A luôn mang giá trị như thế nào?", a: "A > 0", o: ["A > 0", "A < 0", "A ≤ 0", "A = 0"] },
-            { id: 19, q: "Giá trị li độ x của vật dao động điều hoà biến thiên trong khoảng nào?", a: "-A ≤ x ≤ +A", o: ["-A ≤ x ≤ +A", "0 ≤ x ≤ +A", "-∞ < x < +∞", "x > 0"] },
-            { id: 20, q: "Đơn vị của pha dao động (ωt + φ) và pha ban đầu φ trong hệ SI là gì?", a: "Radian (rad)", o: ["Radian (rad)", "Héc (Hz)", "Giây (s)", "Độ (°)"] },
-            { id: 21, q: "Đại lượng cho biết trạng thái dao động của vật ở thời điểm t là gì?", a: "Pha của dao động (ωt + φ)", o: ["Pha của dao động (ωt + φ)", "Biên độ A", "Chu kỳ T", "Tần số f"] },
-            { id: 22, q: "Khi vật đi qua vị trí cân bằng thì độ lớn li độ |x| bằng bao nhiêu?", a: "|x| = 0", o: ["|x| = 0", "|x| = A", "|x| = -A", "|x| = 2A"] },
-            { id: 23, q: "Khi vật ở vị trí biên thì độ lớn li độ |x| đạt giá trị nào?", a: "|x| = A", o: ["|x| = A", "|x| = 0", "|x| = A/2", "|x| = 2A"] },
-            { id: 24, q: "Chuyển động nào sau đây KHÔNG phải là dao động cơ?", a: "Chuyển động của Trái Đất quanh Mặt Trời", o: ["Chuyển động của Trái Đất quanh Mặt Trời", "Dao động của con lắc đơn", "Dao động của dây đàn guitar khi gảy", "Chuyển động của màng loa khi phát âm"] },
-            { id: 25, q: "Hàm cosin trong phương trình dao động điều hoà là loại hàm nào?", a: "Hàm tuần hoàn", o: ["Hàm tuần hoàn", "Hàm bậc nhất", "Hàm hằng", "Hàm không tuần hoàn"] },
-            { id: 26, q: "Đồ thị li độ - thời gian dạng hình sin giúp xác định trực tiếp đại lượng nào?", a: "Biên độ A và chu kỳ T", o: ["Biên độ A và chu kỳ T", "Khối lượng m của vật", "Gia tốc trọng trường g", "Động năng Wđ của vật"] },
-            { id: 27, q: "Số dao động vật thực hiện trong khoảng thời gian Δt là N. Chu kỳ T được tính như thế nào?", a: "T = Δt / N", o: ["T = Δt / N", "T = N / Δt", "T = N . Δt", "T = 1 / (N . Δt)"] },
-            { id: 28, q: "Đại lượng nào xác định trạng thái và vị trí ban đầu của vật lúc t = 0?", a: "Pha ban đầu φ", o: ["Pha ban đầu φ", "Chu kỳ T", "Tần số góc ω", "Biên độ A"] },
-            { id: 29, q: "Li độ x của vật dao động điều hoà có đặc điểm gì?", a: "Biến thiên điều hoà theo thời gian t", o: ["Biến thiên điều hoà theo thời gian t", "Không thay đổi theo thời gian t", "Tăng đều theo thời gian t", "Giảm đều theo thời gian t"] },
-            { id: 30, q: "Khi vật thực hiện trọn vẹn 1 dao động toàn phần thì quãng đường s vật đi được bằng bao nhiêu?", a: "s = 4A", o: ["s = 4A", "s = 2A", "s = A", "s = 3A"] }
+            { id: 6, q: "Đồ thị biểu diễn sự phụ thuộc của li độ x theo thời gian t của dao động điều hoà có dạng:", a: "Đường hình sin", o: ["Đường hình sin", "Đường parabol", "Đường thẳng dốc lên", "Đường hyperbol"] },
+            { id: 7, q: "Trong phương trình x = A.cos(ωt + φ), đại lượng x biểu diễn cho:", a: "Li độ dao động", o: ["Li độ dao động", "Biên độ dao động", "Pha dao động", "Pha ban đầu"] },
+            { id: 8, q: "Trong phương trình x = A.cos(ωt + φ), đại lượng A biểu diễn cho:", a: "Biên độ dao động", o: ["Biên độ dao động", "Li độ tức thời", "Tần số góc", "Pha ban đầu"] },
+            { id: 9, q: "Trong phương trình x = A.cos(ωt + φ), biểu thức (ωt + φ) gọi là:", a: "Pha của dao động tại thời điểm t", o: ["Pha của dao động tại thời điểm t", "Pha ban đầu", "Tần số góc", "Chu kỳ dao động"] },
+            { id: 10, q: "Đại lượng φ trong phương trình x = A.cos(ωt + φ) gọi là gì?", a: "Pha ban đầu", o: ["Pha ban đầu", "Pha dao động", "Biên độ", "Tần số góc"] },
+            { id: 11, q: "Khoảng thời gian ngắn nhất để vật thực hiện được 1 dao động toàn phần gọi là:", a: "Chu kỳ dao động (T)", o: ["Chu kỳ dao động (T)", "Tần số dao động (f)", "Tần số góc (ω)", "Pha ban đầu (φ)"] },
+            { id: 12, q: "Số dao động toàn phần mà vật thực hiện được trong 1 giây gọi là:", a: "Tần số dao động (f)", o: ["Tần số dao động (f)", "Chu kỳ dao động (T)", "Biên độ (A)", "Pha ban đầu (φ)"] },
+            { id: 13, q: "Đơn vị đo chuẩn của tần số f trong hệ SI là:", a: "Héc (Hz)", o: ["Héc (Hz)", "Giây (s)", "Radian (rad)", "Mét trên giây (m/s)"] },
+            { id: 14, q: "Mối liên hệ chính xác giữa chu kỳ T và tần số f là:", a: "T = 1 / f", o: ["T = 1 / f", "T = f", "T = 2π.f", "T = 1 / (2f)"] },
+            { id: 15, q: "Vật nặng của con lắc đang dao động điều hoà còn được gọi là gì?", a: "Vật dao động điều hoà", o: ["Vật dao động điều hoà", "Vật rơi tự do", "Chất điểm tự do", "Hệ dao động cưỡng bức"] },
+            { id: 16, q: "Vị trí mà vật nặng đứng yên khi không dao động gọi là:", a: "Vị trí cân bằng", o: ["Vị trí cân bằng", "Vị trí biên dương", "Vị trí biên âm", "Vị trí khởi đầu"] },
+            { id: 17, q: "Độ dịch chuyển cực đại của vật tính từ vị trí cân bằng chính là:", a: "Biên độ dao động (A)", o: ["Biên độ dao động (A)", "Li độ (x)", "Pha ban đầu (φ)", "Chu kỳ (T)"] },
+            { id: 18, q: "Biên độ dao động A trong phương trình luôn thoả mãn điều kiện:", a: "A > 0", o: ["A > 0", "A < 0", "A = 0", "A có thể âm hoặc dương"] },
+            { id: 19, q: "Li độ x của vật dao động điều hoà luôn biến thiên trong giới hạn:", a: "-A ≤ x ≤ +A", o: ["-A ≤ x ≤ +A", "0 ≤ x ≤ +A", "-∞ < x < +∞", "x > 0"] },
+            { id: 20, q: "Đơn vị đo của pha dao động (ωt + φ) trong hệ SI là:", a: "Radian (rad)", o: ["Radian (rad)", "Héc (Hz)", "Giây (s)", "Độ (°C)"] },
+            { id: 21, q: "Đại lượng quyết định trạng thái dao động (vị trí và chiều chuyển động) ở thời điểm t là:", a: "Pha của dao động (ωt + φ)", o: ["Pha của dao động (ωt + φ)", "Biên độ A", "Chu kỳ T", "Tần số f"] },
+            { id: 22, q: "Khi vật đi qua vị trí cân bằng, độ lớn li độ |x| có giá trị:", a: "|x| = 0", o: ["|x| = 0", "|x| = A", "|x| = -A", "|x| = 2A"] },
+            { id: 23, q: "Khi vật ở vị trí biên, độ lớn li độ |x| đạt giá trị:", a: "|x| = A", o: ["|x| = A", "|x| = 0", "|x| = A/2", "|x| = 2A"] },
+            { id: 24, q: "Chuyển động nào sau đây KHÔNG phải là dao động cơ học?", a: "Chuyển động của Trái Đất quanh Mặt Trời", o: ["Chuyển động của Trái Đất quanh Mặt Trời", "Dao động của con lắc đơn trong phòng", "Dao động của dây đàn guitar", "Dao động của màng loa điện thoại"] },
+            { id: 25, q: "Hàm toán học mô tả li độ dao động điều hoà theo thời gian t là:", a: "Hàm cosin hoặc hàm sin", o: ["Hàm cosin hoặc hàm sin", "Hàm bậc hai", "Hàm số mũ", "Hàm logarit"] },
+            { id: 26, q: "Từ đồ thị li độ - thời gian (x - t) dạng hình sin, ta KHÔNG thể xác định trực tiếp đại lượng nào?", a: "Khối lượng m của vật", o: ["Khối lượng m của vật", "Biên độ A", "Chu kỳ T", "Li độ x tại thời điểm t"] },
+            { id: 27, q: "Nếu thực hiện N dao động trong khoảng thời gian Δt, công thức tính chu kỳ T là:", a: "T = Δt / N", o: ["T = Δt / N", "T = N / Δt", "T = N . Δt", "T = 1 / (N . Δt)"] },
+            { id: 28, q: "Đại lượng đặc trưng cho thời điểm ban đầu t = 0 vật xuất phát từ đâu là:", a: "Pha ban đầu φ", o: ["Pha ban đầu φ", "Tần số góc ω", "Chu kỳ T", "Biên độ A"] },
+            { id: 29, q: "Li độ x của vật dao động điều hoà có tính chất nào sau đây?", a: "Biến thiên tuần hoàn theo hàm điều hoà của thời gian", o: ["Biến thiên tuần hoàn theo hàm điều hoà của thời gian", "Không thay đổi theo thời gian", "Tăng đều đặn theo thời gian", "Giảm đều đặn theo thời gian"] },
+            { id: 30, q: "Khi vật thực hiện trọn vẹn 1 dao động toàn phần, quãng đường s vật đi được bằng:", a: "s = 4A", o: ["s = 4A", "s = 2A", "s = A", "s = 3A"] },
+            { id: 31, q: "Phát biểu nào sau đây đúng khi nói về dao động điều hoà?", a: "Gia tốc của vật luôn hướng về vị trí cân bằng", o: ["Gia tốc của vật luôn hướng về vị trí cân bằng", "Vận tốc của vật đạt cực tiểu khi qua vị trí cân bằng", "Lực kéo về đạt giá trị lớn nhất khi vật ở vị trí cân bằng", "Biên độ dao động giảm dần theo thời gian"] },
+            { id: 32, q: "Trong dao động điều hoà, khoảng thời gian để vật đi từ biên này sang biên kia là:", a: "T / 2", o: ["T / 2", "T", "T / 4", "2T"] },
+            { id: 33, q: "Khoảng thời gian để vật đi từ vị trí cân bằng ra vị trí biên là:", a: "T / 4", o: ["T / 4", "T / 2", "T", "2T"] },
+            { id: 34, q: "Trong phương trình x = A.cos(ωt + φ), chiều dài quỹ đạo chuyển động L của vật là:", a: "L = 2A", o: ["L = 2A", "L = A", "L = 4A", "L = A / 2"] },
+            { id: 35, q: "Pha ban đầu φ phụ thuộc vào yếu tố nào trong quá trình chọn hệ quy chiếu?", a: "Gốc thời gian t = 0 và chiều dương", o: ["Gốc thời gian t = 0 và chiều dương", "Biên độ dao động A", "Tần số góc ω", "Khối lượng vật nặng"] },
+            { id: 36, q: "Nếu chọn gốc thời gian t = 0 lúc vật ở vị trí biên dương (+A), thì pha ban đầu φ bằng:", a: "φ = 0", o: ["φ = 0", "φ = π / 2", "φ = π", "φ = -π / 2"] },
+            { id: 37, q: "Nếu chọn gốc thời gian t = 0 lúc vật ở vị trí biên âm (-A), thì pha ban đầu φ bằng:", a: "φ = π rad", o: ["φ = π rad", "φ = 0", "φ = π / 2", "φ = -π / 2"] },
+            { id: 38, q: "Pha ban đầu φ = π/2 rad thể hiện tại thời điểm t = 0 vật đang ở đâu, theo chiều nào?", a: "Ở VTCB theo chiều âm", o: ["Ở VTCB theo chiều âm", "Ở VTCB theo chiều dương", "Ở biên dương", "Ở biên âm"] },
+            { id: 39, q: "Pha ban đầu φ = -π/2 rad thể hiện tại thời điểm t = 0 vật đang ở đâu, theo chiều nào?", a: "Ở VTCB theo chiều dương", o: ["Ở VTCB theo chiều dương", "Ở VTCB theo chiều âm", "Ở biên dương", "Ở biên âm"] },
+            { id: 40, q: "Đại lượng nào sau đây không thay đổi trong suốt quá trình dao động điều hoà?", a: "Biên độ A và tần số f", o: ["Biên độ A và tần số f", "Li độ x", "Vận tốc v", "Pha dao động (ωt + φ)"] },
+            { id: 41, q: "Trong một chu kỳ, thời gian vật có li độ dương (x > 0) là:", a: "T / 2", o: ["T / 2", "T / 4", "T", "T / 3"] },
+            { id: 42, q: "Khi một chất điểm dao động điều hoà thực hiện 50 dao động toàn phần trong 10 giây, tần số f là:", a: "f = 5 Hz", o: ["f = 5 Hz", "f = 10 Hz", "f = 50 Hz", "f = 0,2 Hz"] },
+            { id: 43, q: "Một con lắc dao động có tần số f = 2 Hz, chu kỳ T của con lắc là:", a: "T = 0,5 s", o: ["T = 0,5 s", "T = 2 s", "T = 1 s", "T = 0,2 s"] },
+            { id: 44, q: "Phương trình x = 5.cos(10πt) (cm) có tần số góc ω bằng:", a: "ω = 10π rad/s", o: ["ω = 10π rad/s", "ω = 5 rad/s", "ω = 2π rad/s", "ω = 10 rad/s"] },
+            { id: 45, q: "Biên độ của dao động có phương trình x = -4.cos(5t + π/3) (cm) được quy ước là:", a: "A = 4 cm", o: ["A = 4 cm", "A = -4 cm", "A = 5 cm", "A = 3 cm"] },
+            { id: 46, q: "Quãng đường vật đi được trong nửa chu kỳ (T/2) luôn bằng:", a: "2A", o: ["2A", "4A", "A", "A / 2"] },
+            { id: 47, q: "Quãng đường vật đi được trong một phần tư chu kỳ (T/4) xuất phát từ VTCB là:", a: "A", o: ["A", "2A", "4A", "A / 2"] },
+            { id: 48, q: "Đồ thị li độ theo thời gian của dao động điều hoà cắt trục thời gian t tại các điểm có li độ:", a: "x = 0", o: ["x = 0", "x = +A", "x = -A", "x = 2A"] },
+            { id: 49, q: "Đại lượng nào sau đây đặc trưng cho tính tuần hoàn theo thời gian của dao động điều hoà?", a: "Chu kỳ T", o: ["Chu kỳ T", "Biên độ A", "Li độ x", "Pha ban đầu φ"] },
+            { id: 50, q: "Trong dao động điều hoà, vận tốc của vật có giá trị bằng 0 khi vật ở:", a: "Vị trí biên", o: ["Vị trí biên", "Vị trí cân bằng", "Bất kỳ vị trí nào", "Vị trí có x = A / 2"] }
         ];
 
         const tfData = [
             {
                 id: 1,
-                title: "Câu 1: Về định nghĩa Dao động cơ và Dao động tuần hoàn",
+                title: "Câu 1: Về khái niệm dao động cơ và dao động tuần hoàn",
                 items: [
                     { id: "1a", text: "Dao động cơ là chuyển động qua lại quanh vị trí cân bằng.", correct: true },
                     { id: "1b", text: "Mọi dao động cơ đều là dao động tuần hoàn.", correct: false },
-                    { id: "1c", text: "Dao động của chiếc lá thu rơi trong gió là dao động không tuần hoàn.", correct: true },
-                    { id: "1d", text: "Dao động của con lắc lò xo là dao động không tuần hoàn.", correct: false }
+                    { id: "1c", text: "Dao động của con lắc lò xo lý tưởng là dao động tuần hoàn.", correct: true },
+                    { id: "1d", text: "Chuyển động của chiếc lá rơi lững lờ trong gió là dao động tuần hoàn.", correct: false }
                 ]
             },
             {
                 id: 2,
-                title: "Câu 2: Về đồ thị và khái niệm Dao động điều hoà",
+                title: "Câu 2: Về đặc điểm của dao động điều hoà",
                 items: [
                     { id: "2a", text: "Dao động điều hoà là dao động tuần hoàn đơn giản nhất.", correct: true },
-                    { id: "2b", text: "Đồ thị x theo t của dao động điều hoà là một đường parabol.", correct: false },
-                    { id: "2c", text: "Có thể mô tả dao động điều hoà bằng hàm sin hoặc cosin.", correct: true },
-                    { id: "2d", text: "Độ lệch cực đại của vật khỏi vị trí cân bằng được gọi là li độ x.", correct: false }
+                    { id: "2b", text: "Li độ x biến thiên theo quy luật hàm sin hoặc cosin của thời gian t.", correct: true },
+                    { id: "2c", text: "Đồ thị x theo t của dao động điều hoà có dạng một đường thẳng dốc.", correct: false },
+                    { id: "2d", text: "Biên độ A là một hằng số dương không đổi trong suốt quá trình dao động.", correct: true }
                 ]
             },
             {
                 id: 3,
-                title: "Câu 3: Về các đại lượng trong phương trình x = A.cos(ωt + φ)",
+                title: "Câu 3: Xét phương trình dao động x = 4.cos(10πt - π/3) (cm)",
                 items: [
-                    { id: "3a", text: "A là biên độ dao động và luôn thoả mãn A > 0.", correct: true },
-                    { id: "3b", text: "x là li độ dao động và luôn thoả mãn x > 0.", correct: false },
-                    { id: "3c", text: "(ωt + φ) xác định trạng thái dao động ở thời điểm t.", correct: true },
-                    { id: "3d", text: "φ là pha ban đầu xác định trạng thái dao động ở thời điểm t = 0.", correct: true }
+                    { id: "3a", text: "Biên độ dao động của vật là A = 4 cm.", correct: true },
+                    { id: "3b", text: "Tần số góc của dao động là ω = 10π rad/s.", correct: true },
+                    { id: "3c", text: "Pha ban đầu của dao động là φ = -π/3 rad.", correct: true },
+                    { id: "3d", text: "Tại thời điểm t = 0 s, vật đang ở vị trí biên dương (+A).", correct: false }
                 ]
             },
             {
                 id: 4,
-                title: "Câu 4: Về biên độ A và vị trí cân bằng",
+                title: "Câu 4: Về các đại lượng đặc trưng chu kỳ T, tần số f, quỹ đạo L",
                 items: [
-                    { id: "4a", text: "Khi vật qua vị trí cân bằng thì li độ x = 0.", correct: true },
-                    { id: "4b", text: "Chiều dài quỹ đạo chuyển động của vật dao động điều hoá là L = 2A.", correct: true },
-                    { id: "4c", text: "Li độ x có thể nhận giá trị âm (x < 0).", correct: true },
-                    { id: "4d", text: "Biên độ A bị giảm dần theo thời gian trong dao động điều hoà lý tưởng.", correct: false }
+                    { id: "4a", text: "Chu kỳ T và tần số f liên hệ với nhau qua biểu thức T = 1 / f.", correct: true },
+                    { id: "4b", text: "Chiều dài quỹ đạo chuyển động của vật dao động là L = 2A.", correct: true },
+                    { id: "4c", text: "Trong 1 chu kỳ T, vật đi được quãng đường tổng cộng bằng 2A.", correct: false },
+                    { id: "4d", text: "Tần số góc liên hệ với tần số qua công thức ω = 2πf.", correct: true }
+                ]
+            },
+            {
+                id: 5,
+                title: "Câu 5: Về trạng thái dao động và pha dao động (ωt + φ)",
+                items: [
+                    { id: "5a", text: "Pha dao động (ωt + φ) có đơn vị đo là radian (rad).", correct: true },
+                    { id: "5b", text: "Pha dao động là một hằng số không đổi theo thời gian t.", correct: false },
+                    { id: "5c", text: "Khi vật qua vị trí cân bằng, độ lớn li độ đạt giá trị cực đại bằng A.", correct: false },
+                    { id: "5d", text: "Khi vật ở vị trí biên, li độ x đạt giá trị cực đại hoặc cực tiểu (+A hoặc -A).", correct: true }
+                ]
+            },
+            {
+                id: 6,
+                title: "Câu 6: Về sự chuyển hoá và tính chất năng lượng / hình học trong dao động",
+                items: [
+                    { id: "6a", text: "Quãng đường vật đi được trong khoảng thời gian nửa chu kỳ T/2 luôn bằng 2A.", correct: true },
+                    { id: "6b", text: "Đồ thị li độ - thời gian cắt trục hoành tại những thời điểm vật qua vị trí cân bằng.", correct: true },
+                    { id: "6c", text: "Biên độ A có thể nhận giá trị âm nếu vật chuyển động theo chiều âm.", correct: false },
+                    { id: "6d", text: "Số dao động toàn phần thực hiện trong 1 giây chính là tần số f của dao động.", correct: true }
                 ]
             }
         ];
 
         const essayData = [
-            {
-                id: 1,
-                q: "Câu 1: Dao động cơ là gì? Nêu sự khác nhau giữa dao động tuần hoàn và dao động không tuần hoàn kèm ví dụ minh hoạ.",
-                key: "Dao động cơ là chuyển động qua lại quanh vị trí cân bằng. Dao động tuần hoàn sau những khoảng thời gian bằng nhau T, vật trở lại vị trí cũ theo hướng cũ (Ví dụ: con lắc đồng hồ). Dao động không tuần hoàn không có tính chất lặp lại này (Ví dụ: cành cây đu đưa khi gió thổi)."
-            },
-            {
-                id: 2,
-                q: "Câu 2: Viết phương trình tổng quát của dao động điều hoà và giải thích rõ ý nghĩa ký hiệu các đại lượng x, A, (ωt + φ), φ.",
-                key: "Phương trình: x = A.cos(ωt + φ).\n- x: Li độ dao động (độ lệch khỏi VTCB).\n- A: Biên độ dao động (li độ cực đại, A > 0).\n- (ωt + φ): Pha của dao động ở thời điểm t (đơn vị: rad).\n- φ: Pha ban đầu ở thời điểm t = 0 (đơn vị: rad)."
-            },
-            {
-                id: 3,
-                q: "Câu 3: Trình bày đặc điểm đồ thị biểu diễn li độ x theo thời gian t của con lắc lò xo trong SGK.",
-                key: "Đồ thị x theo t có dạng đường cong hình sin biến thiên tuần hoàn theo thời gian, giới hạn giữa hai giá trị cực đại +A và cực tiểu -A."
-            }
+            { id: 1, q: "Câu 1: Nêu định nghĩa dao động cơ. Phân biệt sự khác nhau cơ bản giữa dao động tuần hoàn và dao động không tuần hoàn kèm ví dụ.", key: "Dao động cơ là chuyển động qua lại quanh vị trí cân bằng. Dao động tuần hoàn là sau những khoảng thời gian bằng nhau T, vật trở lại vị trí cũ theo hướng cũ (VD: con lắc đồng hồ). Dao động không tuần hoàn không có tính lặp lại theo chu kỳ (VD: cành cây gãy rơi, lá cây rơi)." },
+            { id: 2, q: "Câu 2: Viết phương trình tổng quát của dao động điều hoà. Giải thích rõ ý nghĩa và đơn vị của các đại lượng x, A, ω, (ωt + φ), φ.", key: "Phương trình: x = A.cos(ωt + φ).\n- x: Li độ (cm hoặc m).\n- A: Biên độ dao động, li độ cực đại (A > 0).\n- ω: Tần số góc (rad/s).\n- (ωt + φ): Pha dao động tại thời điểm t (rad).\n- φ: Pha ban đầu lúc t = 0 (rad)." },
+            { id: 3, q: "Câu 3: Trình bày chi tiết cách xác định biên độ A và chu kỳ T thông qua đồ thị li độ - thời gian (x - t).", key: "Biên độ A được xác định bằng giá trị cực đại trên trục tung của đồ thị (khoảng cách từ trục hoành tới đỉnh sóng). Chu kỳ T là khoảng thời gian tương ứng với một bước sóng trọn vẹn (khoảng thời gian ngắn nhất để đồ thị lặp lại trạng thái cũ)." },
+            { id: 4, q: "Câu 4: Chứng minh mối liên hệ hình học giữa chiều dài quỹ đạo L của vật dao động điều hoà và biên độ A. Tính quãng đường vật đi trong 1 chu kỳ.", key: "Quỹ đạo chuyển động của vật là đoạn thẳng nằm giữa hai vị trí biên (-A và +A). Do đó chiều dài quỹ đạo L = A - (-A) = 2A. Trong 1 chu kỳ T, vật đi từ biên dương về biên âm rồi lại từ biên âm về biên dương, quãng đường s = A + 2A + A = 4A." },
+            { id: 5, q: "Câu 5: Giải thích ý nghĩa vật lý của pha ban đầu φ. Tại sao cùng một con lắc nhưng chọn mốc thời gian khác nhau thì phương trình dao động có φ khác nhau?", key: "Pha ban đầu φ quyết định trạng thái ban đầu của hệ (vị trí vật ở đâu và đang chuyển động theo chiều nào) tại thời điểm t = 0. Khi chọn mốc t = 0 ở các thời điểm khác nhau, vị trí xuất phát của vật thay đổi, dẫn đến góc pha ban đầu φ phải thay đổi theo để phương trình phản ánh đúng thực tế chuyển động." }
         ];
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        let shuffledMcq = [];
+        let userTFAnswers = {};
+
+        function initQuiz() {
+            userTFAnswers = {};
+            // Xáo trộn 50 câu trắc nghiệm và xáo trộn cả 4 đáp án A, B, C, D của từng câu
+            shuffledMcq = shuffleArray(rawMcqData).map(item => {
+                const correctVal = item.a;
+                const shuffledOpts = shuffleArray(item.o);
+                return {
+                    ...item,
+                    o: shuffledOpts,
+                    a: correctVal
+                };
+            });
+
+            renderMCQ();
+            renderTF();
+            renderEssay();
+            document.getElementById('total-result').classList.add('hidden');
+        }
 
         function renderMCQ() {
             const container = document.getElementById('mcq-container');
-            container.innerHTML = mcqData.map((item, idx) => `
+            container.innerHTML = shuffledMcq.map((item, idx) => `
                 <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
                     <div class="font-medium text-slate-100 text-sm md:text-base">
                         <span class="text-purple-400 font-bold">Câu ${idx + 1}:</span> ${item.q}
@@ -218,20 +275,16 @@
 
         function renderTF() {
             const container = document.getElementById('tf-container');
-            container.innerHTML = tfData.map((qGroup) => `
+            container.innerHTML = tfData.map((qGroup, gIdx) => `
                 <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
-                    <h3 class="font-bold text-blue-300 text-sm">${qGroup.title}</h3>
+                    <h3 class="font-bold text-blue-300 text-sm">Câu ${gIdx + 1}: ${qGroup.title}</h3>
                     <div class="space-y-2">
                         ${qGroup.items.map(item => `
                             <div class="p-3 bg-slate-800/80 border border-slate-700 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                                 <span class="text-xs md:text-sm text-slate-200"><b>${item.id}.</b>${item.text}</span>
                                 <div class="flex items-center space-x-2 flex-shrink-0">
-                                    <button type="button" id="btn-true-${item.id}" onclick="setTF('${item.id}', true)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-emerald-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">
-                                        Đúng
-                                    </button>
-                                    <button type="button" id="btn-false-${item.id}" onclick="setTF('${item.id}', false)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-rose-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">
-                                        Sai
-                                    </button>
+                                    <button type="button" id="btn-true-${item.id}" onclick="setTF('${item.id}', true)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-emerald-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">Đúng</button>
+                                    <button type="button" id="btn-false-${item.id}" onclick="setTF('${item.id}', false)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-rose-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">Sai</button>
                                 </div>
                             </div>
                         `).join('')}
@@ -240,12 +293,10 @@
             `).join('');
         }
 
-        const userTFAnswers = {};
         function setTF(itemId, val) {
             userTFAnswers[itemId] = val;
             const btnTrue = document.getElementById(`btn-true-${itemId}`);
             const btnFalse = document.getElementById(`btn-false-${itemId}`);
-
             if (val === true) {
                 btnTrue.className = "px-3 py-1 bg-emerald-600 text-white rounded-md text-xs font-semibold shadow";
                 btnFalse.className = "px-3 py-1 bg-slate-700 text-slate-300 rounded-md text-xs font-semibold opacity-50";
@@ -257,9 +308,9 @@
 
         function renderEssay() {
             const container = document.getElementById('essay-container');
-            container.innerHTML = essayData.map((item) => `
+            container.innerHTML = essayData.map((item, idx) => `
                 <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
-                    <div class="font-medium text-amber-300 text-sm md:text-base">${item.q}</div>
+                    <div class="font-medium text-amber-300 text-sm md:text-base">Câu ${idx + 1}: ${item.q.split(': ')[1]}</div>
                     <textarea id="essay-input-${item.id}" rows="3" class="w-full p-3 bg-slate-800 border border-slate-700 focus:border-amber-500 rounded-xl text-slate-100 text-xs md:text-sm outline-none" placeholder="Nhập câu trả lời của bạn..."></textarea>
                     <div id="essay-key-${item.id}" class="hidden p-3 bg-slate-800/90 border border-amber-500/40 rounded-xl text-xs text-amber-200 whitespace-pre-line">
                         <b>Đáp án gợi ý:</b>\n${item.key}
@@ -270,7 +321,7 @@
 
         function checkAllAnswers() {
             let correctMCQ = 0;
-            mcqData.forEach(item => {
+            shuffledMcq.forEach(item => {
                 const checked = document.querySelector(`input[name="mcq-${item.id}"]:checked`);
                 if (checked && checked.value === item.a) correctMCQ++;
             });
@@ -291,17 +342,14 @@
             const resultEl = document.getElementById('total-result');
             resultEl.classList.remove('hidden');
             resultEl.innerHTML = `
-                <div>Trắc nghiệm: <span class="text-purple-400">${correctMCQ}/30</span> đúng</div>
+                <div>Trắc nghiệm: <span class="text-purple-400">${correctMCQ}/50</span> câu đúng</div>
                 <div>Đúng / Sai: <span class="text-blue-400">${correctTF}/${totalTF}</span> ý đúng</div>
-                <div class="text-xs font-normal text-slate-400 mt-1">* Vui lòng đối chiếu câu trả lời tự luận ở ngay bên dưới mỗi câu!</div>
+                <div class="text-xs font-normal text-slate-400 mt-1">* Gợi ý tự luận chi tiết đã hiển thị bên dưới từng câu!</div>
             `;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
-        window.onload = () => {
-            renderMCQ();
-            renderTF();
-            renderEssay();
-        };
+        window.onload = initQuiz;
     </script>
 </body>
 </html>
