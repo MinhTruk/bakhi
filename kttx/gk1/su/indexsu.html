@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ Môn Lịch Sử - MinhTruk/bakhi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-amber-600 rounded-xl text-white shadow-lg shadow-amber-600/30">
+                    <i class="fa-solid fa-landmark text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">Môn Lịch Sử</h1>
+                    <p class="text-xs text-slate-400">Trang chủ môn học • Ôn tập & Kiểm tra</p>
+                </div>
+            </div>
+            
+            <!-- Nút Về Homepage Index Chính -->
+            <a href="../../index.html" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl text-xs font-medium text-slate-200 transition flex items-center space-x-2 shadow-md cursor-pointer">
+                <i class="fa-solid fa-house text-amber-400"></i>
+                <span>Về Trang Chủ (Index)</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl w-full mx-auto p-4 md:p-8 flex-grow space-y-8">
+
+        <!-- Banner -->
+        <section class="bg-gradient-to-r from-amber-900/60 via-slate-800 to-slate-800 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+                <span class="px-3 py-1 bg-amber-950/80 text-amber-300 border border-amber-800/50 text-xs font-semibold rounded-full uppercase tracking-wider mb-3 inline-block">
+                    History Hub
+                </span>
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">Trung Tâm Ôn Tập Lịch Sử</h2>
+                <p class="text-slate-300 text-sm max-w-2xl leading-relaxed">
+                    Hệ thống các chuyên đề ôn tập Lý thuyết, Sự kiện quan trọng và bài thi Trắc nghiệm/Tự luận kiểm tra kiến thức Lịch Sử.
+                </p>
+            </div>
+        </section>
+
+        <!-- Danh mục bài học -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- LÝ THUYẾT (3 BÀI) -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-4 hover:border-amber-500/40 transition">
+                <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                    <span class="p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl">
+                        <i class="fa-solid fa-book-open text-lg"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Lý Thuyết Trọng Tâm</h3>
+                        <p class="text-xs text-slate-400">3 bài củng cố kiến thức</p>
+                    </div>
+                </div>
+
+                <ul class="space-y-3">
+                    <li>
+                        <a href="./su_ly_thuyet_1.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-amber-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-amber-500/20 text-amber-400 rounded-lg text-xs font-bold flex items-center justify-center">1</span>
+                                <span class="text-sm font-medium">Cách mạng tư sản thời cận đại</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./su_ly_thuyet_2.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-amber-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-amber-500/20 text-amber-400 rounded-lg text-xs font-bold flex items-center justify-center">2</span>
+                                <span class="text-sm font-medium">Nhiệm vụ & Mục tiêu cách mạng</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./su_ly_thuyet_3.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-amber-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-amber-500/20 text-amber-400 rounded-lg text-xs font-bold flex items-center justify-center">3</span>
+                                <span class="text-sm font-medium">Thể chế chính trị & Triết học Ánh sáng</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- SỰ KIỆN & TỪ KHÓA (3 BÀI) -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-4 hover:border-amber-500/40 transition">
+                <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                    <span class="p-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl">
+                        <i class="fa-solid fa-scroll text-lg"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Mốc Lịch Sử & Từ Khóa</h3>
+                        <p class="text-xs text-slate-400">3 bài tổng hợp nhớ nhanh</p>
+                    </div>
+                </div>
+
+                <ul class="space-y-3">
+                    <li>
+                        <a href="./su_su_kien_1.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-blue-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-blue-500/20 text-blue-400 rounded-lg text-xs font-bold flex items-center justify-center">1</span>
+                                <span class="text-sm font-medium">Các mốc thời gian quan trọng</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./su_su_kien_2.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-blue-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-blue-500/20 text-blue-400 rounded-lg text-xs font-bold flex items-center justify-center">2</span>
+                                <span class="text-sm font-medium">Nhân vật & Tư tưởng lịch sử</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./su_su_kien_3.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-blue-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-blue-500/20 text-blue-400 rounded-lg text-xs font-bold flex items-center justify-center">3</span>
+                                <span class="text-sm font-medium">Lực lượng lãnh đạo & Động lực</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- BÀI THI KHI LÀM -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-4 hover:border-amber-500/40 transition">
+                <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                    <span class="p-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl">
+                        <i class="fa-solid fa-file-signature text-lg"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Bài Thi Trắc Nghiệm / Tự Luận</h3>
+                        <p class="text-xs text-slate-400">Chế độ làm bài kiểm tra</p>
+                    </div>
+                </div>
+
+                <ul class="space-y-3">
+                    <li>
+                        <a href="./su_trac_nghiem.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-emerald-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-list-check text-emerald-400"></i>
+                                <span class="text-sm font-medium">Trắc Nghiệm (Random 100%)</span>
+                            </span>
+                            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-medium">Auto Random</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./su_tu_luan_ai.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-amber-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                                <span class="text-sm font-medium">Tự Luận (AI Chấm Điểm)</span>
+                            </span>
+                            <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-medium">AI Check</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="p-6 bg-slate-800/40 border border-slate-700/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-circle-info text-amber-400 text-xl"></i>
+                <p class="text-xs text-slate-400">Nút bên dưới hỗ trợ điều hướng thẳng về lại trang chủ danh mục chung.</p>
+            </div>
+            <a href="../../index.html" class="w-full sm:w-auto px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-amber-600/30 transition text-center whitespace-nowrap">
+                Về Trang Chủ (Index)
+            </a>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        Môn Lịch Sử Hub • Repository: MinhTruk/bakhi
+    </footer>
+
+</body>
+</html>
