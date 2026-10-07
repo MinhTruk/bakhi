@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ Môn Tin Học - MinhTruk/bakhi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-sky-600 rounded-xl text-white shadow-lg shadow-sky-600/30">
+                    <i class="fa-solid fa-laptop-code text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">Môn Tin Học 11</h1>
+                    <p class="text-xs text-slate-400">Trang chủ môn học • MinhTruk/bakhi</p>
+                </div>
+            </div>
+            
+            <a href="./index.html" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl text-xs font-medium text-slate-200 transition flex items-center space-x-2 shadow-md cursor-pointer">
+                <i class="fa-solid fa-house text-sky-400"></i>
+                <span>Về Trang Chủ (Index)</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl w-full mx-auto p-4 md:p-8 flex-grow space-y-8">
+
+        <!-- Banner -->
+        <section class="bg-gradient-to-r from-sky-900/60 via-slate-800 to-slate-800 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+                <span class="px-3 py-1 bg-sky-950/80 text-sky-300 border border-sky-800/50 text-xs font-semibold rounded-full uppercase tracking-wider mb-3 inline-block">
+                    Informatics Hub
+                </span>
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">Trung Tâm Ôn Tập Tin Học 11</h2>
+                <p class="text-slate-300 text-sm max-w-2xl leading-relaxed">
+                    Hệ thống bài học Hệ điều hành, Nguồn mở/Thương mại (3 loại chuyển giao), Kiến trúc máy tính (CPU 2 thành phần) & Các phép toán Lôgic.
+                </p>
+            </div>
+        </section>
+
+        <!-- Danh mục bài học -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- LÝ THUYẾT (3 BÀI) -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-4 hover:border-sky-500/40 transition">
+                <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                    <span class="p-2.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded-xl">
+                        <i class="fa-solid fa-book-open text-lg"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Lý Thuyết Trọng Tâm</h3>
+                        <p class="text-xs text-slate-400">3 bài củng cố lý thuyết</p>
+                    </div>
+                </div>
+
+                <ul class="space-y-3">
+                    <li>
+                        <a href="./tin_ly_thuyet_1.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-sky-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-sky-500/20 text-sky-400 rounded-lg text-xs font-bold flex items-center justify-center">1</span>
+                                <span class="text-sm font-medium">Hệ điều hành & Thiết bị di động</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./tin_ly_thuyet_2.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-sky-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-sky-500/20 text-sky-400 rounded-lg text-xs font-bold flex items-center justify-center">2</span>
+                                <span class="text-sm font-medium">Phần mềm nguồn mở & Thương mại (3 loại)</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./tin_ly_thuyet_3.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-sky-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-sky-500/20 text-sky-400 rounded-lg text-xs font-bold flex items-center justify-center">3</span>
+                                <span class="text-sm font-medium">Kiến trúc máy tính (CPU 2 bộ phận chính)</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- CÔNG THỨC & LÔGIC (3 BÀI) -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-4 hover:border-sky-500/40 transition">
+                <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                    <span class="p-2.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl">
+                        <i class="fa-solid fa-microchip text-lg"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Khái Niệm & Phép Lôgic</h3>
+                        <p class="text-xs text-slate-400">3 bài phân tích sâu</p>
+                    </div>
+                </div>
+
+                <ul class="space-y-3">
+                    <li>
+                        <a href="./tin_logic_1.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-indigo-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-indigo-500/20 text-indigo-400 rounded-lg text-xs font-bold flex items-center justify-center">1</span>
+                                <span class="text-sm font-medium">Phép toán Lôgic: AND, OR, NOT, XOR</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./tin_logic_2.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-indigo-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-indigo-500/20 text-indigo-400 rounded-lg text-xs font-bold flex items-center justify-center">2</span>
+                                <span class="text-sm font-medium">Phân biệt RAM và ROM</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./tin_logic_3.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-indigo-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-indigo-500/20 text-indigo-400 rounded-lg text-xs font-bold flex items-center justify-center">3</span>
+                                <span class="text-sm font-medium">Giấy phép phần mềm GNU GPL</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- BÀI THI KHI LÀM -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-4 hover:border-sky-500/40 transition">
+                <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                    <span class="p-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl">
+                        <i class="fa-solid fa-pen-to-square text-lg"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Bài Thi & Kiểm Tra</h3>
+                        <p class="text-xs text-slate-400">Làm bài tập tổng hợp tính điểm</p>
+                    </div>
+                </div>
+
+                <ul class="space-y-3">
+                    <li>
+                        <a href="./tin_11_quiz.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-emerald-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-circle-play text-emerald-400"></i>
+                                <span class="text-sm font-medium">Trắc Nghiệm Tin 11 (30 câu)</span>
+                            </span>
+                            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-medium">Revamped</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="p-6 bg-slate-800/40 border border-slate-700/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-circle-info text-sky-400 text-xl"></i>
+                <p class="text-xs text-slate-400">Quay về trang chủ index chính để chuyển sang các môn học khác.</p>
+            </div>
+            <a href="./index.html" class="w-full sm:w-auto px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-sky-600/30 transition text-center whitespace-nowrap">
+                Về Trang Chủ (Index)
+            </a>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        Môn Tin Học Hub • Repository: MinhTruk/bakhi
+    </footer>
+
+</body>
+</html>
