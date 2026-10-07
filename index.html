@@ -13,16 +13,18 @@
         .folder-content {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+            transition: max-height 0.35s ease-out, opacity 0.25s ease-out;
             opacity: 0;
         }
         .folder-content.open {
-            max-height: 1200px;
+            max-height: 1500px;
             opacity: 1;
             transition: max-height 0.5s ease-in, opacity 0.3s ease-in;
         }
         .folder-icon { transition: transform 0.2s ease; }
         .folder-header.active .folder-icon { transform: rotate(90deg); }
+        
+        /* Style cho Modal README */
         .markdown-body h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; color: #f8fafc; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
         .markdown-body h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; color: #cbd5e1; }
         .markdown-body p { margin-bottom: 0.75rem; font-size: 0.9rem; color: #94a3b8; line-height: 1.6; }
@@ -43,7 +45,7 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-bold leading-tight">Cây Tài Liệu Ôn Tập</h1>
-                    <p class="text-xs text-slate-400">Repository: MinhTruk/bakhi</p>
+                    <p class="text-xs text-slate-400">https://minhtruk.github.io/bakhi/</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
@@ -67,11 +69,11 @@
             <div>
                 <div class="flex items-center space-x-2 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-2">
                     <i class="fa-solid fa-cubes"></i>
-                    <span>Hệ Thống Phân Loại Chi Tiết</span>
+                    <span>Cấu Trúc Thư Mục Chuẩn Phân Cấp</span>
                 </div>
                 <h2 class="text-2xl md:text-3xl font-bold mb-2 text-white">Thư Mục Tài Liệu & Ôn Tập Hàng Kỳ</h2>
                 <p class="text-slate-300 text-sm max-w-2xl leading-relaxed">
-                    Chọn các đợt kiểm tra <b>KTTX (Thường xuyên)</b> hoặc <b>KTGK / KTCK (Định kỳ)</b> để tới trang chủ môn học tương ứng.
+                    Chọn các đợt kiểm tra <b>KTTX (Thường xuyên)</b> hoặc <b>KTGK / KTCK (Định kỳ)</b> để mở thư mục các môn. Bấm vào từng môn để truy cập trang chủ môn học (như <code>indexly.html</code>, <code>indexsu.html</code>, <code>indextin.html</code>).
                 </p>
             </div>
         </section>
@@ -79,7 +81,7 @@
         <!-- Categories Tree -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-            <!-- KTTX -->
+            <!-- KHU VỰC 1: KIỂM TRA THƯỜNG XUYÊN (KTTX) -->
             <div class="space-y-4">
                 <div class="flex items-center space-x-3 pb-2 border-b border-indigo-500/40">
                     <span class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">
@@ -87,10 +89,11 @@
                     </span>
                     <div>
                         <h3 class="text-xl font-bold text-white">Kiểm Tra Thường Xuyên (KTTX)</h3>
-                        <p class="text-xs text-slate-400">Các bài kiểm tra ngắn 15 phút, 1 tiết</p>
+                        <p class="text-xs text-slate-400">Cấu trúc: kttx/[kỳ]/[môn]/index[môn].html</p>
                     </div>
                 </div>
 
+                <!-- Thư mục KTTX GK1 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-gk1', this)">
                         <span class="flex items-center space-x-3">
@@ -101,10 +104,11 @@
                         <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                     </button>
                     <div id="kttx-gk1" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="./kttx/gk1"></div>
+                        <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk1"></div>
                     </div>
                 </div>
 
+                <!-- Thư mục KTTX HK1 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-hk1', this)">
                         <span class="flex items-center space-x-3">
@@ -115,10 +119,11 @@
                         <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                     </button>
                     <div id="kttx-hk1" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="./kttx/hk1"></div>
+                        <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk1"></div>
                     </div>
                 </div>
 
+                <!-- Thư mục KTTX GK2 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-gk2', this)">
                         <span class="flex items-center space-x-3">
@@ -129,10 +134,11 @@
                         <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                     </button>
                     <div id="kttx-gk2" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="./kttx/gk2"></div>
+                        <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk2"></div>
                     </div>
                 </div>
 
+                <!-- Thư mục KTTX HK2 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-hk2', this)">
                         <span class="flex items-center space-x-3">
@@ -143,12 +149,12 @@
                         <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                     </button>
                     <div id="kttx-hk2" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="./kttx/hk2"></div>
+                        <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk2"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Định Kỳ -->
+            <!-- KHU VỰC 2: KIỂM TRA ĐỊNH KỲ (KTGK & KTCK) -->
             <div class="space-y-4">
                 <div class="flex items-center space-x-3 pb-2 border-b border-emerald-500/40">
                     <span class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20">
@@ -156,10 +162,11 @@
                     </span>
                     <div>
                         <h3 class="text-xl font-bold text-white">Kiểm Tra Định Kỳ (GK & CK)</h3>
-                        <p class="text-xs text-slate-400">Bài kiểm tra Giữa Kỳ và Cuối Kỳ tập trung</p>
+                        <p class="text-xs text-slate-400">Cấu trúc: [đợt]/[môn]/index[môn].html</p>
                     </div>
                 </div>
 
+                <!-- Thư mục KTGK 1 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktgk-1', this)">
                         <span class="flex items-center space-x-3">
@@ -170,10 +177,11 @@
                         <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                     </button>
                     <div id="ktgk-1" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="./ktgk1"></div>
+                        <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk1"></div>
                     </div>
                 </div>
 
+                <!-- Thư mục KTCK 1 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktck-1', this)">
                         <span class="flex items-center space-x-3">
@@ -184,10 +192,11 @@
                         <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                     </button>
                     <div id="ktck-1" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="./ktck1"></div>
+                        <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck1"></div>
                     </div>
                 </div>
 
+                <!-- Thư mục KTGK 2 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktgk-2', this)">
                         <span class="flex items-center space-x-3">
@@ -198,10 +207,11 @@
                         <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                     </button>
                     <div id="ktgk-2" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="./ktgk2"></div>
+                        <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk2"></div>
                     </div>
                 </div>
 
+                <!-- Thư mục KTCK 2 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktck-2', this)">
                         <span class="flex items-center space-x-3">
@@ -212,7 +222,7 @@
                         <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                     </button>
                     <div id="ktck-2" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="./ktck2"></div>
+                        <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck2"></div>
                     </div>
                 </div>
 
@@ -246,27 +256,29 @@
 
     <!-- Footer -->
     <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
-        Repository: MinhTruk/bakhi • Homepage System
+        https://minhtruk.github.io/bakhi/ • GitHub System Index
     </footer>
 
     <script>
+        // Cấu hình 10 môn học kèm tên file index của từng môn
         const subjects = [
-            { id: 'tin', name: 'Tin Học', icon: 'fa-laptop-code', color: 'text-sky-400' },
-            { id: 'su', name: 'Lịch Sử', icon: 'fa-landmark', color: 'text-amber-400' },
-            { id: 'toan', name: 'Toán Học', icon: 'fa-calculator', color: 'text-blue-400' },
-            { id: 'anh', name: 'Tiếng Anh', icon: 'fa-language', color: 'text-indigo-400' },
-            { id: 'van', name: 'Ngữ Văn', icon: 'fa-book-open', color: 'text-rose-400' },
-            { id: 'ly', name: 'Vật Lý', icon: 'fa-atom', color: 'text-purple-400' },
-            { id: 'hoa', name: 'Hóa Học', icon: 'fa-flask', color: 'text-emerald-400' },
-            { id: 'sinh', name: 'Sinh Học', icon: 'fa-dna', color: 'text-teal-400' },
-            { id: 'gdqp', name: 'GDQP', icon: 'fa-shield-halved', color: 'text-green-400' },
-            { id: 'gddp', name: 'GDĐP', icon: 'fa-map-location-dot', color: 'text-orange-400' }
+            { id: 'ly', indexFile: 'indexly.html', name: 'Vật Lý', icon: 'fa-atom', color: 'text-purple-400' },
+            { id: 'su', indexFile: 'indexsu.html', name: 'Lịch Sử', icon: 'fa-landmark', color: 'text-amber-400' },
+            { id: 'tin', indexFile: 'indextin.html', name: 'Tin Học', icon: 'fa-laptop-code', color: 'text-sky-400' },
+            { id: 'toan', indexFile: 'indextoan.html', name: 'Toán Học', icon: 'fa-calculator', color: 'text-blue-400' },
+            { id: 'anh', indexFile: 'indexanh.html', name: 'Tiếng Anh', icon: 'fa-language', color: 'text-indigo-400' },
+            { id: 'van', indexFile: 'indexvan.html', name: 'Ngữ Văn', icon: 'fa-book-open', color: 'text-rose-400' },
+            { id: 'hoa', indexFile: 'indexhoa.html', name: 'Hóa Học', icon: 'fa-flask', color: 'text-emerald-400' },
+            { id: 'sinh', indexFile: 'indexsinh.html', name: 'Sinh Học', icon: 'fa-dna', color: 'text-teal-400' },
+            { id: 'gdqp', indexFile: 'indexgdqp.html', name: 'GDQP', icon: 'fa-shield-halved', color: 'text-green-400' },
+            { id: 'gddp', indexFile: 'indexgddp.html', name: 'GDĐP', icon: 'fa-map-location-dot', color: 'text-orange-400' }
         ];
 
+        // Tự động tạo link dạng: [danh-mục]/[môn]/index[môn].html
         document.querySelectorAll('[data-path]').forEach(container => {
             const basePath = container.getAttribute('data-path');
             container.innerHTML = subjects.map(sub => `
-                <a href="${basePath}/${sub.id}.html" class="p-2.5 bg-slate-800/80 hover:bg-slate-700/90 border border-slate-700/60 hover:border-indigo-500/50 rounded-lg flex items-center space-x-2.5 text-xs text-slate-200 transition group">
+                <a href="${basePath}/${sub.id}/${sub.indexFile}" class="p-2.5 bg-slate-800/80 hover:bg-slate-700/90 border border-slate-700/60 hover:border-indigo-500/50 rounded-lg flex items-center space-x-2.5 text-xs text-slate-200 transition group">
                     <i class="fa-solid ${sub.icon} ${sub.color} text-sm group-hover:scale-110 transition"></i>
                     <span class="truncate font-medium">${sub.name}</span>
                 </a>
@@ -300,7 +312,7 @@
                 contentEl.innerHTML = `
                     <div class="p-4 bg-rose-950/60 border border-rose-800 text-rose-300 rounded-xl text-sm">
                         <i class="fa-solid fa-circle-exclamation mr-1"></i>
-                        Không thể đọc file <strong>README.md</strong>.
+                        Không thể đọc tệp <strong>README.md</strong>.
                     </div>
                 `;
             }
