@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc Nghiệm Bài 1: Dao Động Điều Hoà - Vật Lý 11</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+        .option-btn { transition: all 0.2s ease-in-out; }
+        .option-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-purple-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="./indexly.html" class="p-2 bg-purple-600 rounded-lg text-white hover:bg-purple-500 transition">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </a>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">Bài 1: Dao Động Điều Hoà</h1>
+                    <p class="text-xs text-slate-400">Trắc nghiệm & Đúng/Sai • Vật Lý 11</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <a href="../../../index.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
+                    <i class="fa-solid fa-house text-purple-400"></i>
+                    <span>Index</span>
+                </a>
+                <div id="quiz-progress-badge" class="hidden bg-slate-700/70 border border-slate-600 px-3 py-1.5 rounded-full text-xs font-medium text-slate-300">
+                    Câu <span id="current-question-num" class="text-purple-400 font-bold">1</span>/<span id="total-questions-num">8</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-3xl w-full mx-auto p-4 md:p-6 flex-grow flex items-center justify-center">
+
+        <!-- START SCREEN -->
+        <div id="start-screen" class="w-full bg-slate-800 border border-slate-700/80 rounded-2xl p-6 md:p-10 shadow-2xl text-center">
+            <div class="w-20 h-20 bg-purple-600/20 text-purple-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-500/30">
+                <i class="fa-solid fa-atom text-4xl"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold mb-3 text-white">Luyện Tập Bài 1: Dao Động Điều Hoà</h2>
+            <p class="text-slate-300 text-sm md:text-base max-w-xl mx-auto mb-8 leading-relaxed">
+                Bộ câu hỏi tổng hợp kiến thức từ SGK Vật Lý 11 bao gồm cả dạng câu hỏi <b>Trắc nghiệm 4 lựa chọn</b> và <b>Trắc nghiệm Đúng/Sai</b>.
+            </p>
+            <button id="start-btn" type="button" class="w-full sm:w-auto px-8 py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-purple-600/30 transition duration-200 text-base inline-flex items-center justify-center space-x-2 cursor-pointer">
+                <span>Bắt Đầu Làm Bài</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- QUIZ SCREEN -->
+        <div id="quiz-screen" class="hidden w-full space-y-6">
+            <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
+                <div id="progress-bar" class="bg-purple-500 h-full w-0 transition-all duration-300 ease-out"></div>
+            </div>
+
+            <div class="bg-slate-800 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl relative overflow-hidden">
+                <div class="flex justify-between items-start mb-4">
+                    <span id="question-tag" class="px-3 py-1 bg-purple-950/80 text-purple-300 border border-purple-800/50 text-xs font-semibold rounded-full uppercase tracking-wider">
+                        Trắc Nghiệm
+                    </span>
+                </div>
+                
+                <h2 id="question-text" class="text-lg md:text-xl font-medium text-slate-100 leading-snug mb-6">Đang tải câu hỏi...</h2>
+                
+                <div id="options-container" class="grid grid-cols-1 gap-3.5"></div>
+                
+                <div id="feedback" class="hidden mt-6 p-4 rounded-xl border text-sm font-medium transition-all"></div>
+                
+                <div class="mt-6 flex justify-end">
+                    <button id="next-btn" type="button" class="hidden px-6 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-xl transition duration-200 inline-flex items-center space-x-2 cursor-pointer">
+                        <span>Câu tiếp theo</span>
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULT SCREEN -->
+        <div id="result-screen" class="hidden w-full bg-slate-800 border border-slate-700/80 rounded-2xl p-6 md:p-10 shadow-2xl text-center">
+            <div id="result-icon-container" class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500 bg-emerald-950/80 text-emerald-400">
+                <i class="fa-solid fa-trophy text-5xl"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold mb-2">Hoàn Thành Bài Tập!</h2>
+            <p class="text-slate-400 text-sm mb-6">Kết quả kiểm tra kiến thức Dao Động Điều Hoà</p>
+
+            <div class="bg-slate-900/80 border border-slate-700/60 rounded-2xl p-6 max-w-md mx-auto mb-8">
+                <div class="text-4xl font-extrabold mb-2" id="score-text">0 / 0</div>
+                <div class="text-slate-400 text-sm mb-4">Tỷ lệ chính xác: <span id="percentage-text" class="text-purple-400 font-bold">0%</span></div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div id="result-bar" class="h-full bg-purple-500 transition-all duration-1000"></div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+                <button id="restart-btn" type="button" class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl shadow-lg transition duration-200 inline-flex items-center justify-center space-x-2 cursor-pointer">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Làm Lại Bài Thi</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-4 text-center text-slate-500 text-xs border-t border-slate-800">
+        Vật Lý 11 • Bài 1: Dao Động Điều Hoà
+    </footer>
+
+    <script>
+        const rawData = [
+            // DẠNG TRẮC NGHIỆM LỰA CHỌN (4 CÂU)
+            {
+                type: "mcq",
+                tag: "Trắc Nghiệm 4 Lựa Chọn",
+                q: "Chuyển động qua lại quanh một vị trí cân bằng xác định được gọi là gì?",
+                a: "Dao động cơ",
+                o: ["Dao động cơ", "Chuyển động tròn đều", "Chuyển động thẳng biến đổi đều", "Dao động điều hoà"]
+            },
+            {
+                type: "mcq",
+                tag: "Trắc Nghiệm 4 Lựa Chọn",
+                q: "Dao động tuần hoàn đơn giản nhất là loại dao động nào?",
+                a: "Dao động điều hoà",
+                o: ["Dao động điều hoà", "Dao động tắt dần", "Dao động cưỡng bức", "Dao động duy trì"]
+            },
+            {
+                type: "mcq",
+                tag: "Trắc Nghiệm 4 Lựa Chọn",
+                q: "Đường cong đồ thị biểu diễn vị trí của quả cầu con lắc lò xo theo thời gian có dạng gì?",
+                a: "Hình sin",
+                o: ["Hình sin", "Đường parabol", "Đường thẳng", "Đường tròn"]
+            },
+            {
+                type: "mcq",
+                tag: "Trắc Nghiệm 4 Lựa Chọn",
+                q: "Một vật dao động điều hoà có phương trình x = 2*cos(4*pi*t + pi/2) (cm). Biên độ A của dao động là bao nhiêu?",
+                a: "2 cm",
+                o: ["2 cm", "4 cm", "4*pi cm", "pi/2 cm"]
+            },
+
+            // DẠNG TRẮC NGHIỆM ĐÚNG / SAI (4 CÂU)
+            {
+                type: "tf",
+                tag: "Câu Hỏi Đúng / Sai",
+                q: "Phát biểu sau ĐÚNG hay SAI: 'Sau những khoảng thời gian bằng nhau, vật trở lại vị trí cũ theo hướng cũ thì dao động đó là dao động tuần hoàn.'",
+                a: "Đúng",
+                o: ["Đúng", "Sai"]
+            },
+            {
+                type: "tf",
+                tag: "Câu Hỏi Đúng / Sai",
+                q: "Phát biểu sau ĐÚNG hay SAI: 'Dao động của cành cây đu đưa khi gió thổi là một ví dụ về dao động tuần hoàn.'",
+                a: "Sai",
+                o: ["Đúng", "Sai"]
+            },
+            {
+                type: "tf",
+                tag: "Câu Hỏi Đúng / Sai",
+                q: "Trong phương trình dao động điều hoà x = A*cos(omega*t + phi), đại lượng (omega*t + phi) đại diện cho pha ban đầu tại thời điểm t = 0.",
+                a: "Sai",
+                o: ["Đúng", "Sai"]
+            },
+            {
+                type: "tf",
+                tag: "Câu Hỏi Đúng / Sai",
+                q: "Mô tả: 'Vật nặng của con lắc đang dao động điều hoà được gọi là vật dao động điều hoà.'",
+                a: "Đúng",
+                o: ["Đúng", "Sai"]
+            }
+        ];
+
+        let quizData = [];
+        let currentIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function shuffle(array) {
+            let cur = array.length, randomIdx;
+            let arr = [...array];
+            while (cur !== 0) {
+                randomIdx = Math.floor(Math.random() * cur);
+                cur--;
+                [arr[cur], arr[randomIdx]] = [arr[randomIdx], arr[cur]];
+            }
+            return arr;
+        }
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const progressBadge = document.getElementById('quiz-progress-badge');
+
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+
+        const currentQuestionNumEl = document.getElementById('current-question-num');
+        const totalQuestionsNumEl = document.getElementById('total-questions-num');
+        const progressBarEl = document.getElementById('progress-bar');
+        const questionTextEl = document.getElementById('question-text');
+        const questionTagEl = document.getElementById('question-tag');
+        const optionsContainerEl = document.getElementById('options-container');
+        const feedbackEl = document.getElementById('feedback');
+
+        totalQuestionsNumEl.textContent = rawData.length;
+
+        function initQuiz() {
+            quizData = rawData.map(item => ({
+                ...item,
+                o: item.type === "mcq" ? shuffle(item.o) : item.o
+            }));
+            currentIndex = 0;
+            score = 0;
+            
+            startScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            progressBadge.classList.remove('hidden');
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            answered = false;
+            nextBtn.classList.add('hidden');
+            feedbackEl.classList.add('hidden');
+            
+            const currentQ = quizData[currentIndex];
+            currentQuestionNumEl.textContent = currentIndex + 1;
+            
+            const progressPercent = ((currentIndex) / quizData.length) * 100;
+            progressBarEl.style.width = `${progressPercent}%`;
+
+            questionTagEl.textContent = currentQ.tag;
+            questionTextEl.textContent = currentQ.q;
+            optionsContainerEl.innerHTML = '';
+
+            const optionLetters = ['A', 'B', 'C', 'D'];
+
+            currentQ.o.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `option-btn w-full p-4 text-left rounded-xl border bg-slate-800/80 border-slate-700 hover:border-slate-500 text-slate-200 font-normal flex items-start space-x-3.5 cursor-pointer`;
+                btn.onclick = () => selectOption(opt, currentQ.a, btn);
+
+                const letter = currentQ.type === "mcq" ? optionLetters[idx] : (opt === "Đúng" ? "✓" : "✗");
+                btn.innerHTML = `
+                    <span class="w-7 h-7 rounded-lg bg-slate-700/60 border border-slate-600 text-slate-300 font-semibold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">${letter}</span>
+                    <span class="text-sm md:text-base leading-snug flex-grow">${opt}</span>
+                `;
+                optionsContainerEl.appendChild(btn);
+            });
+        }
+
+        function selectOption(selected, correct, selectedBtn) {
+            if (answered) return;
+            answered = true;
+
+            const allButtons = optionsContainerEl.querySelectorAll('button');
+            allButtons.forEach(btn => btn.disabled = true);
+
+            const isCorrect = selected === correct;
+
+            if (isCorrect) {
+                score++;
+                selectedBtn.classList.remove('bg-slate-800/80', 'border-slate-700');
+                selectedBtn.classList.add('bg-emerald-950/80', 'border-emerald-500', 'text-emerald-200');
+                feedbackEl.className = "mt-6 p-4 rounded-xl border bg-emerald-950/60 border-emerald-800/60 text-emerald-300 text-sm flex items-center space-x-3";
+                feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i><div><strong>Chính xác!</strong> Đáp án là: ${correct}</div>`;
+            } else {
+                selectedBtn.classList.remove('bg-slate-800/80', 'border-slate-700');
+                selectedBtn.classList.add('bg-rose-950/80', 'border-rose-500', 'text-rose-200');
+
+                allButtons.forEach(btn => {
+                    if (btn.innerText.includes(correct)) {
+                        btn.classList.remove('bg-slate-800/80', 'border-slate-700');
+                        btn.classList.add('bg-emerald-950/40', 'border-emerald-600/80', 'text-emerald-300');
+                    }
+                });
+
+                feedbackEl.className = "mt-6 p-4 rounded-xl border bg-rose-950/60 border-rose-800/60 text-rose-300 text-sm flex items-center space-x-3";
+                feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-400 text-xl"></i><div><strong>Chưa chính xác!</strong> Đáp án đúng là: <u>${correct}</u></div>`;
+            }
+
+            feedbackEl.classList.remove('hidden');
+
+            if (currentIndex < quizData.length - 1) {
+                nextBtn.classList.remove('hidden');
+            } else {
+                nextBtn.innerHTML = `<span>Xem Kết Quả</span><i class="fa-solid fa-flag-checkered text-xs"></i>`;
+                nextBtn.classList.remove('hidden');
+            }
+        }
+
+        if (startBtn) startBtn.onclick = initQuiz;
+        if (restartBtn) restartBtn.onclick = initQuiz;
+
+        if (nextBtn) {
+            nextBtn.onclick = () => {
+                if (currentIndex < quizData.length - 1) {
+                    currentIndex++;
+                    loadQuestion();
+                } else {
+                    showResults();
+                }
+            };
+        }
+
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            progressBadge.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+
+            const total = quizData.length;
+            const percentage = Math.round((score / total) * 100);
+
+            document.getElementById('score-text').textContent = `${score} / ${total}`;
+            document.getElementById('percentage-text').textContent = `${percentage}%`;
+            
+            const resultBar = document.getElementById('result-bar');
+            resultBar.style.width = `${percentage}%`;
+        }
+    </script>
+</body>
+</html>
