@@ -26,7 +26,7 @@
                 </div>
             </div>
             
-            <!-- Nút Về Trang Chủ Hệ Thống -->
+            <!-- Nút Về Trang Chủ Chính -->
             <a href="../../../index.html" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl text-xs font-medium text-slate-200 transition flex items-center space-x-2 shadow-md cursor-pointer">
                 <i class="fa-solid fa-house text-amber-400"></i>
                 <span>Trang Chủ Chính</span>
@@ -53,7 +53,7 @@
             </div>
         </section>
 
-        <!-- Danh Mục Bài Thi Duy Nhất: Tự Luận AI -->
+        <!-- Danh Mục Bài Thi Tự Luận AI -->
         <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
             <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
                 <div class="flex items-center space-x-3">
@@ -75,20 +75,21 @@
                     Bài thi bao gồm câu hỏi tự luận về chủ đề <b>Các cuộc cách mạng tư sản</b>. Hệ thống AI sẽ phân tích từ khóa và đánh giá mức độ chính xác câu trả lời của bạn.
                 </p>
 
-                <a href="./su.html" class="w-full p-4 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl shadow-lg shadow-amber-600/30 transition flex items-center justify-between text-base group cursor-pointer">
+                <!-- Nút bấm mở thông báo xác nhận -->
+                <button type="button" onclick="openStatusModal()" class="w-full p-4 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl shadow-lg shadow-amber-600/30 transition flex items-center justify-between text-base group cursor-pointer">
                     <span class="flex items-center space-x-3">
                         <i class="fa-solid fa-circle-play text-xl group-hover:scale-110 transition"></i>
                         <span>Vào Làm Bài Thi Tự Luận (su.html)</span>
                     </span>
                     <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition"></i>
-                </a>
+                </button>
             </div>
         </div>
 
     </main>
 
-    <!-- Modal Thông Báo Đã Hoàn Thành -->
-    <div id="status-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <!-- Modal Thông Báo XÁC NHẬN (Mặc định ẩn) -->
+    <div id="status-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl space-y-5">
             <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto border border-emerald-500/30">
                 <i class="fa-solid fa-circle-check text-3xl"></i>
@@ -102,7 +103,7 @@
             </div>
 
             <div class="grid grid-cols-2 gap-3 pt-2">
-                <button onclick="closeModal()" class="py-2.5 px-4 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium rounded-xl border border-slate-600 transition text-sm cursor-pointer">
+                <button type="button" onclick="closeStatusModal()" class="py-2.5 px-4 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium rounded-xl border border-slate-600 transition text-sm cursor-pointer">
                     Không
                 </button>
                 <a href="./su.html" class="py-2.5 px-4 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl shadow-md transition text-sm flex items-center justify-center cursor-pointer">
@@ -118,7 +119,13 @@
     </footer>
 
     <script>
-        function closeModal() {
+        // Mở bảng thông báo khi ấn vào nút làm bài
+        function openStatusModal() {
+            document.getElementById('status-modal').classList.remove('hidden');
+        }
+
+        // Đóng bảng thông báo khi ấn nút "Không"
+        function closeStatusModal() {
             document.getElementById('status-modal').classList.add('hidden');
         }
     </script>
