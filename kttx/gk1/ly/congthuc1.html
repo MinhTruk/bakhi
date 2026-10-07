@@ -11,120 +11,306 @@
         body { font-family: 'Lexend', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-purple-500 selection:text-white">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
 
     <!-- Header -->
     <header class="w-full bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
         <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <a href="./indexly.html" class="p-2 bg-purple-600 rounded-lg text-white hover:bg-purple-500 transition">
+                <a href="./indexly.html" class="p-2 bg-emerald-600 rounded-lg text-white hover:bg-emerald-500 transition">
                     <i class="fa-solid fa-arrow-left text-lg"></i>
                 </a>
                 <div>
-                    <h1 class="text-lg font-bold leading-tight">Bài 1: Dao Động Điều Hoà</h1>
-                    <p class="text-xs text-slate-400">Tóm tắt công thức & Lý thuyết trọng tâm</p>
+                    <h1 class="text-lg font-bold leading-tight">Bài 1: Công Thức Dao Động Điều Hoà</h1>
+                    <p class="text-xs text-slate-400">30 Trắc nghiệm • 4 Đúng/Sai • 3 Tự luận tính toán</p>
                 </div>
             </div>
-            
-            <a href="../../../index.html" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl text-xs font-medium text-slate-200 transition flex items-center space-x-2 shadow-md">
-                <i class="fa-solid fa-house text-purple-400"></i>
+            <a href="../../../index.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
+                <i class="fa-solid fa-house text-emerald-400"></i>
                 <span>Index</span>
             </a>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-4xl w-full mx-auto p-4 md:p-8 flex-grow space-y-6">
+    <!-- Main Content Container -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow space-y-8">
 
-        <!-- Banner -->
-        <section class="bg-gradient-to-r from-purple-900/60 via-slate-800 to-slate-800 border border-slate-700/80 rounded-2xl p-6 shadow-2xl flex items-center justify-between">
-            <div>
-                <span class="px-3 py-1 bg-purple-950/80 text-purple-300 border border-purple-800/50 text-xs font-semibold rounded-full uppercase tracking-wider mb-2 inline-block">
-                    Vật Lý 11 - Chương 1
-                </span>
-                <h2 class="text-2xl font-bold text-white mb-1">Công Thức & Định Nghĩa Trọng Tâm</h2>
-                <p class="text-slate-300 text-sm">Nắm vững các đại lượng trong phương trình dao động điều hoà</p>
+        <!-- PART 1: 30 CÂU TRẮC NGHIỆM CÔNG THỨC -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                    <span class="p-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl">
+                        <i class="fa-solid fa-square-root-variable text-lg"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Phần 1: Trắc Nghiệm Công Thức (30 Câu)</h2>
+                        <p class="text-xs text-slate-400">Áp dụng các công thức phương trình li độ, chu kỳ, tần số</p>
+                    </div>
+                </div>
             </div>
-            <div class="text-purple-400 text-4xl hidden sm:block">
-                <i class="fa-solid fa-square-root-variable"></i>
+
+            <div id="mcq-container" class="space-y-6">
+                <!-- Javascript render 30 câu trắc nghiệm -->
             </div>
         </section>
 
-        <!-- Khái niệm 1: Dao động cơ -->
-        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-3">
-            <h3 class="text-lg font-bold text-purple-300 flex items-center space-x-2">
-                <i class="fa-solid fa-bookmark text-sm"></i>
-                <span>1. Dao động cơ & Dao động tuần hoàn</span>
-            </h3>
-            <ul class="space-y-2 text-sm text-slate-300 list-disc list-inside leading-relaxed">
-                <li><b>Dao động cơ:</b> Là chuyển động qua lại của vật quanh một vị trí cân bằng xác định.</li>
-                <li><b>Dao động tuần hoàn:</b> Là dao động mà sau những khoảng thời gian bằng nhau, vật trở lại vị trí cũ theo hướng cũ. *(Ví dụ: Dao động của con lắc đồng hồ)*.</li>
-                <li><b>Dao động điều hoà:</b> Là dao động tuần hoàn đơn giản nhất, được mô tả bằng hàm sin hoặc cosin theo thời gian.</li>
-            </ul>
-        </div>
-
-        <!-- Khái niệm 2: Phương trình dao động điều hoà -->
-        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-4">
-            <h3 class="text-lg font-bold text-purple-300 flex items-center space-x-2">
-                <i class="fa-solid fa-square-root-variable text-sm"></i>
-                <span>2. Phương trình Dao động điều hoà</span>
-            </h3>
-
-            <!-- Công thức chính -->
-            <div class="bg-slate-900/90 border border-purple-500/40 rounded-xl p-5 text-center shadow-inner">
-                <div class="text-xl md:text-2xl font-extrabold text-purple-200 tracking-wider font-mono">
-                    x = A . cos(ωt + φ)
+        <!-- PART 2: 4 CÂU ĐÚNG / SAI CÔNG THỨC -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                    <span class="p-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl">
+                        <i class="fa-solid fa-toggle-on text-lg"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Phần 2: Trắc Nghiệm Đúng / Sai (4 Câu)</h2>
+                        <p class="text-xs text-slate-400">Chọn Đúng/Sai cho từng biến đổi công thức</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Giải thích đại lượng -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                <div class="p-3 bg-slate-900/50 border border-slate-700/60 rounded-xl">
-                    <span class="font-bold text-purple-400 font-mono">x</span>: Li độ dao động (Độ lệch của vật khỏi vị trí cân bằng)
-                </div>
-                <div class="p-3 bg-slate-900/50 border border-slate-700/60 rounded-xl">
-                    <span class="font-bold text-purple-400 font-mono">A</span>: Biên độ dao động (Li độ cực đại, $A > 0$)
-                </div>
-                <div class="p-3 bg-slate-900/50 border border-slate-700/60 rounded-xl">
-                    <span class="font-bold text-purple-400 font-mono">(ωt + φ)</span>: Pha của dao động ở thời điểm t (đơn vị: rad)
-                </div>
-                <div class="p-3 bg-slate-900/50 border border-slate-700/60 rounded-xl">
-                    <span class="font-bold text-purple-400 font-mono">φ</span>: Pha ban đầu tại thời điểm t = 0 (đơn vị: rad)
+            <div id="tf-container" class="space-y-6">
+                <!-- Javascript render 4 câu đúng sai -->
+            </div>
+        </section>
+
+        <!-- PART 3: 3 CÂU TỰ LUẬN TÍNH TOÁN -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                    <span class="p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl">
+                        <i class="fa-solid fa-calculator text-lg"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Phần 3: Tự Luận Tính Toán (3 Câu)</h2>
+                        <p class="text-xs text-slate-400">Tính toán bài tập mẫu SGK có lời giải chi tiết</p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Ví dụ minh hoạ -->
-        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-3">
-            <h3 class="text-lg font-bold text-emerald-400 flex items-center space-x-2">
-                <i class="fa-solid fa-lightbulb text-sm"></i>
-                <span>Ví dụ áp dụng trong sách giáo khoa</span>
-            </h3>
-            <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl text-sm space-y-2">
-                <p class="text-slate-200">Cho phương trình dao động: <code class="text-amber-300 font-bold font-mono">x = 2.cos(4πt + π/2) (cm)</code></p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300 pt-1">
-                    <div>• Biên độ $A = 2 \text{ cm}$</div>
-                    <div>• Tần số góc $\omega = 4\pi \text{ rad/s}$</div>
-                    <div>• Pha ban đầu $\varphi = \pi/2 \text{ rad}$</div>
-                    <div>• Pha tại thời điểm $t = 2\text{s}$ là $(4\pi \cdot 2 + \pi/2) = 8.5\pi \text{ rad}$</div>
-                </div>
+            <div id="essay-container" class="space-y-6">
+                <!-- Javascript render 3 câu tự luận -->
             </div>
-        </div>
+        </section>
 
-        <!-- Nút sang làm bài tập -->
-        <div class="pt-2 flex justify-end">
-            <a href="./tracnghiem1.html" class="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl shadow-lg transition flex items-center space-x-2 cursor-pointer">
-                <span>Luyện tập bài tập (tracnghiem1.html)</span>
-                <i class="fa-solid fa-arrow-right text-xs"></i>
-            </a>
+        <!-- SUBMIT ALL -->
+        <div class="p-6 bg-slate-800 border border-slate-700 rounded-2xl text-center space-y-4 shadow-2xl">
+            <button type="button" onclick="checkAllAnswers()" class="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Nộp Bài & Kiểm Tra Kết Quả</span>
+            </button>
+            <div id="total-result" class="hidden p-4 rounded-xl bg-slate-900 border border-emerald-500/50 text-slate-200 font-bold text-lg"></div>
         </div>
 
     </main>
 
     <!-- Footer -->
     <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
-        Công thức Vật Lý 11 • Bài 1: Dao Động Điều Hoà
+        Bài 1: Dao Động Điều Hoà • Tóm Tắt Công Thức & Bài Tập
     </footer>
 
+    <script>
+        // DATA 30 CÂU TRẮC NGHIỆM CÔNG THỨC
+        const mcqData = [
+            { id: 1, q: "Công thức tổng quát của phương trình li độ dao động điều hoà là gì?", a: "x = A*cos(omega*t + phi)", o: ["x = A*cos(omega*t + phi)", "x = A*tan(omega*t + phi)", "x = A*omega*t + phi", "x = A + cos(omega*t)"] },
+            { id: 2, q: "Cho phương trình x = 5*cos(2*pi*t + pi/3) (cm). Biên độ A bằng bao nhiêu?", a: "5 cm", o: ["5 cm", "2*pi cm", "pi/3 cm", "10 cm"] },
+            { id: 3, q: "Cho phương trình x = 4*cos(10*pi*t - pi/6) (cm). Tần số góc omega bằng bao nhiêu?", a: "10*pi rad/s", o: ["10*pi rad/s", "4 rad/s", "-pi/6 rad/s", "5*pi rad/s"] },
+            { id: 4, q: "Cho phương trình x = 6*cos(4*pi*t + pi/2) (cm). Pha ban đầu phi bằng bao nhiêu?", a: "pi/2 rad", o: ["pi/2 rad", "6 rad", "4*pi rad", "0 rad"] },
+            { id: 5, q: "Công thức liên hệ giữa chu kỳ T và tần số f là gì?", a: "T = 1 / f", o: ["T = 1 / f", "T = f", "T = 2*pi / f", "T = f / 2*pi"] },
+            { id: 6, q: "Công thức liên hệ giữa tần số góc omega và tần số f là gì?", a: "omega = 2*pi*f", o: ["omega = 2*pi*f", "omega = f / 2*pi", "omega = pi*f", "omega = 1 / f"] },
+            { id: 7, q: "Công thức liên hệ giữa tần số góc omega và chu kỳ T là gì?", a: "omega = 2*pi / T", o: ["omega = 2*pi / T", "omega = T / 2*pi", "omega = 2*pi*T", "omega = 1 / T"] },
+            { id: 8, q: "Một vật dao động có tần số f = 5 Hz. Chu kỳ T của vật là bao nhiêu?", a: "0,2 s", o: ["0,2 s", "5 s", "2 s", "0,5 s"] },
+            { id: 9, q: "Một vật dao động có chu kỳ T = 0,5 s. Tần số f của vật là bao nhiêu?", a: "2 Hz", o: ["2 Hz", "0,5 Hz", "5 Hz", "1 Hz"] },
+            { id: 10, q: "Một vật dao động có tần số f = 2 Hz. Tần số góc omega bằng bao nhiêu?", a: "4*pi rad/s", o: ["4*pi rad/s", "2*pi rad/s", "2 rad/s", "8*pi rad/s"] },
+            { id: 11, q: "Vật thực hiện 20 dao động toàn phần trong 10 giây. Chu kỳ T bằng bao nhiêu?", a: "0,5 s", o: ["0,5 s", "2 s", "20 s", "10 s"] },
+            { id: 12, q: "Vật thực hiện 30 dao động toàn phần trong 10 giây. Tần số f bằng bao nhiêu?", a: "3 Hz", o: ["3 Hz", "0,33 Hz", "30 Hz", "10 Hz"] },
+            { id: 13, q: "Một vật dao động với phương trình x = 2*cos(4*pi*t + pi/2) (cm). Tại t = 0, li độ x bằng bao nhiêu?", a: "0 cm", o: ["0 cm", "2 cm", "-2 cm", "1 cm"] },
+            { id: 14, q: "Cho x = 10*cos(pi*t) (cm). Li độ của vật tại t = 1 s bằng bao nhiêu?", a: "-10 cm", o: ["-10 cm", "10 cm", "0 cm", "5 cm"] },
+            { id: 15, q: "Cho x = 8*cos(2*pi*t) (cm). Li độ của vật tại t = 0,5 s bằng bao nhiêu?", a: "-8 cm", o: ["-8 cm", "8 cm", "0 cm", "4 cm"] },
+            { id: 16, q: "Pha của dao động tại thời điểm t = 2 s của x = 3*cos(2*pi*t + pi/4) là bao nhiêu?", a: "4,25*pi rad", o: ["4,25*pi rad", "pi/4 rad", "4*pi rad", "2*pi rad"] },
+            { id: 17, q: "Chiều dài quỹ đạo L của vật dao động điều hoá liên hệ với biên độ A như thế nào?", a: "L = 2A", o: ["L = 2A", "L = A", "L = 4A", "L = A / 2"] },
+            { id: 18, q: "Một vật dao động điều hoá trên đoạn thẳng dài 12 cm. Biên độ A bằng bao nhiêu?", a: "6 cm", o: ["6 cm", "12 cm", "24 cm", "3 cm"] },
+            { id: 19, q: "Nếu biên độ A = 5 cm thì chiều dài quỹ đạo L bằng bao nhiêu?", a: "10 cm", o: ["10 cm", "5 cm", "20 cm", "15 cm"] },
+            { id: 20, q: "Trong một chu kỳ T, vật đi được quãng đường S bằng bao nhiêu?", a: "4A", o: ["4A", "2A", "A", "3A"] },
+            { id: 21, q: "Trong nửa chu kỳ T/2, vật đi được quãng đường S bằng bao nhiêu?", a: "2A", o: ["2A", "4A", "A", "3A"] },
+            { id: 22, q: "Giá trị x_max (li độ cực đại) bằng đại lượng nào?", a: "+A", o: ["+A", "0", "-A", "2A"] },
+            { id: 23, q: "Giá trị x_min (li độ cực tiểu) bằng đại lượng nào?", a: "-A", o: ["-A", "0", "+A", "-2A"] },
+            { id: 24, q: "Công thức pha ban đầu phi = 0 nghĩa là tại t = 0 vật ở vị trí nào?", a: "Biên dương (+A)", o: ["Biên dương (+A)", "Vị trí cân bằng (0)", "Biên âm (-A)", "Bất kỳ"] },
+            { id: 25, q: "Công thức pha ban đầu phi = pi nghĩa là tại t = 0 vật ở vị trí nào?", a: "Biên âm (-A)", o: ["Biên âm (-A)", "Biên dương (+A)", "Vị trí cân bằng (0)", "Bất kỳ"] },
+            { id: 26, q: "Công thức pha ban đầu phi = pi/2 nghĩa là tại t = 0 vật đi qua VTCB theo chiều nào?", a: "Chiều âm", o: ["Chiều âm", "Chiều dương", "Đứng yên", "Không xác định"] },
+            { id: 27, q: "Công thức pha ban đầu phi = -pi/2 nghĩa là tại t = 0 vật đi qua VTCB theo chiều nào?", a: "Chiều dương", o: ["Chiều dương", "Chiều âm", "Đứng yên", "Không xác định"] },
+            { id: 28, q: "Cho x = 5*cos(10*t) (cm). Li độ x tại thời điểm t = 0 là bao nhiêu?", a: "5 cm", o: ["5 cm", "0 cm", "-5 cm", "10 cm"] },
+            { id: 29, q: "Tần số góc omega có đơn vị đo là gì?", a: "rad/s", o: ["rad/s", "Hz", "s", "m/s"] },
+            { id: 30, q: "Một vật dao động có T = 0,1 s. Số dao động toàn phần vật thực hiện trong 1 phút (60s) là bao nhiêu?", a: "600 dao động", o: ["600 dao động", "60 dao động", "6 dao động", "6000 dao động"] }
+        ];
+
+        // DATA 4 CÂU ĐÚNG / SAI CÔNG THỨC
+        const tfData = [
+            {
+                id: 1,
+                title: "Câu 1: Cho phương trình x = 2*cos(4*pi*t + pi/2) (cm)",
+                items: [
+                    { id: "1a", text: "Biên độ A = 2 cm.", correct: true },
+                    { id: "1b", text: "Tần số góc omega = 4*pi rad/s.", correct: true },
+                    { id: "1c", text: "Pha ban đầu phi = 4*pi rad.", correct: false },
+                    { id: "1d", text: "Li độ của vật tại t = 0 s là x = 2 cm.", correct: false }
+                ]
+            },
+            {
+                id: 2,
+                title: "Câu 2: Về công thức liên hệ T, f, omega và quãng đường",
+                items: [
+                    { id: "2a", text: "Chu kỳ T = 1 / f.", correct: true },
+                    { id: "2b", text: "Tần số góc omega = pi * f.", correct: false },
+                    { id: "2c", text: "Chiều dài quỹ đạo L = 2A.", correct: true },
+                    { id: "2d", text: "Quãng đường vật đi được trong 1 chu kỳ luôn bằng 4A.", correct: true }
+                ]
+            },
+            {
+                id: 3,
+                title: "Câu 3: Xét vật thực hiện 120 dao động trong 1 phút (60s)",
+                items: [
+                    { id: "3a", text: "Tần số f = 2 Hz.", correct: true },
+                    { id: "3b", text: "Chu kỳ T = 0,5 s.", correct: true },
+                    { id: "3c", text: "Tần số góc omega = 4*pi rad/s.", correct: true },
+                    { id: "3d", text: "Tần số f = 0,5 Hz.", correct: false }
+                ]
+            },
+            {
+                id: 4,
+                title: "Câu 4: Về li độ và pha của phương trình x = A*cos(omega*t + phi)",
+                items: [
+                    { id: "4a", text: "Khi (omega*t + phi) = 0 thì li độ x = A.", correct: true },
+                    { id: "4b", text: "Khi (omega*t + phi) = pi thì li độ x = -A.", correct: true },
+                    { id: "4c", text: "Khi (omega*t + phi) = pi/2 thì li độ x = 0.", correct: true },
+                    { id: "4d", text: "Li độ x nhận giá trị lớn nhất bằng 2A.", correct: false }
+                ]
+            }
+        ];
+
+        // DATA 3 CÂU TỰ LUẬN TÍNH TOÁN
+        const essayData = [
+            {
+                id: 1,
+                q: "Câu 1 (SGK): Một vật dao động điều hoà có phương trình x = 2*cos(4*pi*t + pi/2) (cm). Hãy xác định: a) Biên độ A và pha ban đầu phi. b) Pha của dao động và li độ x khi t = 2 s.",
+                key: "a) Biên độ A = 2 cm; Pha ban đầu phi = pi/2 rad.\nb) Khi t = 2 s: Pha của dao động = 4*pi*(2) + pi/2 = 8,5*pi rad; Li độ x = 2*cos(8,5*pi) = 0 cm."
+            },
+            {
+                id: 2,
+                q: "Câu 2: Một con lắc lò xo dao động trên quỹ đạo dài L = 10 cm. Biết vật thực hiện 20 dao động toàn phần trong 10 giây. Tính: a) Biên độ A. b) Chu kỳ T, tần số f và tần số góc omega.",
+                key: "a) Biên độ A = L / 2 = 10 / 2 = 5 cm.\nb) Chu kỳ T = 10 / 20 = 0,5 s; Tần số f = 1 / T = 2 Hz; Tần số góc omega = 2*pi*f = 4*pi rad/s."
+            },
+            {
+                id: 3,
+                q: "Câu 3: Cho phương trình dao động x = 4*cos(2*pi*t - pi/3) (cm). Tính li độ của vật tại các thời điểm: a) t = 0 s. b) t = 0,25 s.",
+                key: "a) Tại t = 0 s: x = 4*cos(-pi/3) = 4 * 0,5 = 2 cm.\nb) Tại t = 0,25 s: x = 4*cos(2*pi*0,25 - pi/3) = 4*cos(pi/6) = 4 * (sqrt(3)/2) = 2*sqrt(3) cm (khoảng 3,46 cm)."
+            }
+        ];
+
+        function renderMCQ() {
+            const container = document.getElementById('mcq-container');
+            container.innerHTML = mcqData.map((item, idx) => `
+                <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                    <div class="font-medium text-slate-100 text-sm md:text-base">
+                        <span class="text-emerald-400 font-bold">Câu ${idx + 1}:</span> ${item.q}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        ${item.o.map((opt, oIdx) => `
+                            <label class="p-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-lg flex items-center space-x-3 cursor-pointer text-xs md:text-sm transition">
+                                <input type="radio" name="mcq-${item.id}" value="${opt}" class="accent-emerald-500">
+                                <span>${['A', 'B', 'C', 'D'][oIdx]}.${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTF() {
+            const container = document.getElementById('tf-container');
+            container.innerHTML = tfData.map((qGroup) => `
+                <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                    <h3 class="font-bold text-blue-300 text-sm">${qGroup.title}</h3>
+                    <div class="space-y-2">
+                        ${qGroup.items.map(item => `
+                            <div class="p-3 bg-slate-800/80 border border-slate-700 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                                <span class="text-xs md:text-sm text-slate-200"><b>${item.id}.</b>${item.text}</span>
+                                <div class="flex items-center space-x-2 flex-shrink-0">
+                                    <button type="button" id="btn-true-${item.id}" onclick="setTF('${item.id}', true)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-emerald-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">
+                                        Đúng
+                                    </button>
+                                    <button type="button" id="btn-false-${item.id}" onclick="setTF('${item.id}', false)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-rose-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">
+                                        Sai
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        const userTFAnswers = {};
+        function setTF(itemId, val) {
+            userTFAnswers[itemId] = val;
+            const btnTrue = document.getElementById(`btn-true-${itemId}`);
+            const btnFalse = document.getElementById(`btn-false-${itemId}`);
+
+            if (val === true) {
+                btnTrue.className = "px-3 py-1 bg-emerald-600 text-white rounded-md text-xs font-semibold shadow";
+                btnFalse.className = "px-3 py-1 bg-slate-700 text-slate-300 rounded-md text-xs font-semibold opacity-50";
+            } else {
+                btnFalse.className = "px-3 py-1 bg-rose-600 text-white rounded-md text-xs font-semibold shadow";
+                btnTrue.className = "px-3 py-1 bg-slate-700 text-slate-300 rounded-md text-xs font-semibold opacity-50";
+            }
+        }
+
+        function renderEssay() {
+            const container = document.getElementById('essay-container');
+            container.innerHTML = essayData.map((item) => `
+                <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                    <div class="font-medium text-amber-300 text-sm md:text-base">${item.q}</div>
+                    <textarea id="essay-input-${item.id}" rows="3" class="w-full p-3 bg-slate-800 border border-slate-700 focus:border-amber-500 rounded-xl text-slate-100 text-xs md:text-sm outline-none" placeholder="Nhập phần tính toán của bạn..."></textarea>
+                    <div id="essay-key-${item.id}" class="hidden p-3 bg-slate-800/90 border border-amber-500/40 rounded-xl text-xs text-amber-200 whitespace-pre-line">
+                        <b>Lời giải chi tiết:</b>\n${item.key}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function checkAllAnswers() {
+            let correctMCQ = 0;
+            mcqData.forEach(item => {
+                const checked = document.querySelector(`input[name="mcq-${item.id}"]:checked`);
+                if (checked && checked.value === item.a) correctMCQ++;
+            });
+
+            let correctTF = 0;
+            let totalTF = 0;
+            tfData.forEach(qGroup => {
+                qGroup.items.forEach(item => {
+                    totalTF++;
+                    if (userTFAnswers[item.id] === item.correct) correctTF++;
+                });
+            });
+
+            essayData.forEach(item => {
+                document.getElementById(`essay-key-${item.id}`).classList.remove('hidden');
+            });
+
+            const resultEl = document.getElementById('total-result');
+            resultEl.classList.remove('hidden');
+            resultEl.innerHTML = `
+                <div>Trắc nghiệm công thức: <span class="text-emerald-400">${correctMCQ}/30</span> câu đúng</div>
+                <div>Đúng / Sai: <span class="text-blue-400">${correctTF}/${totalTF}</span> ý đúng</div>
+                <div class="text-xs font-normal text-slate-400 mt-1">* Lời giải chi tiết câu tự luận đã hiển thị ở bên dưới!</div>
+            `;
+        }
+
+        window.onload = () => {
+            renderMCQ();
+            renderTF();
+            renderEssay();
+        };
+    </script>
 </body>
 </html>
