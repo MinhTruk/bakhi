@@ -22,7 +22,7 @@
                 </a>
                 <div>
                     <h1 class="text-lg font-bold leading-tight">Bài 1: Công Thức Dao Động Điều Hoà</h1>
-                    <p class="text-xs text-slate-400">30 Trắc nghiệm • 4 Đúng/Sai • 3 Tự luận tính toán</p>
+                    <p class="text-xs text-slate-400">50 Trắc nghiệm • 6 Đúng/Sai • 5 Tự luận tính toán (Có giải thích)</p>
                 </div>
             </div>
             <a href="../../../index.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
@@ -35,7 +35,7 @@
     <!-- Main Content Container -->
     <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow space-y-8">
 
-        <!-- PART 1: 30 CÂU TRẮC NGHIỆM CÔNG THỨC -->
+        <!-- PART 1: 50 CÂU TRẮC NGHIỆM CÔNG THỨC -->
         <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
             <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
                 <div class="flex items-center space-x-3">
@@ -43,16 +43,15 @@
                         <i class="fa-solid fa-square-root-variable text-lg"></i>
                     </span>
                     <div>
-                        <h2 class="text-xl font-bold text-white">Phần 1: Trắc Nghiệm Công Thức (30 Câu)</h2>
-                        <p class="text-xs text-slate-400">Áp dụng công thức li độ x, chu kỳ T, tần số f và tần số góc ω</p>
+                        <h2 class="text-xl font-bold text-white">Phần 1: Trắc Nghiệm Công Thức (50 Câu)</h2>
+                        <p class="text-xs text-slate-400">Tính toán nhanh li độ, chu kỳ, tần số</p>
                     </div>
                 </div>
             </div>
-
             <div id="mcq-container" class="space-y-6"></div>
         </section>
 
-        <!-- PART 2: 4 CÂU ĐÚNG / SAI CÔNG THỨC -->
+        <!-- PART 2: 6 CÂU ĐÚNG / SAI CÔNG THỨC -->
         <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
             <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
                 <div class="flex items-center space-x-3">
@@ -60,16 +59,15 @@
                         <i class="fa-solid fa-toggle-on text-lg"></i>
                     </span>
                     <div>
-                        <h2 class="text-xl font-bold text-white">Phần 2: Trắc Nghiệm Đúng / Sai (4 Câu)</h2>
-                        <p class="text-xs text-slate-400">Chọn Đúng/Sai cho từng biến đổi công thức</p>
+                        <h2 class="text-xl font-bold text-white">Phần 2: Câu Hỏi Đúng / Sai (6 Câu)</h2>
+                        <p class="text-xs text-slate-400">Kiểm tra tính đúng sai của biểu thức toán lý</p>
                     </div>
                 </div>
             </div>
-
             <div id="tf-container" class="space-y-6"></div>
         </section>
 
-        <!-- PART 3: 3 CÂU TỰ LUẬN TÍNH TOÁN -->
+        <!-- PART 3: 5 CÂU TỰ LUẬN TÍNH TOÁN -->
         <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
             <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
                 <div class="flex items-center space-x-3">
@@ -77,16 +75,15 @@
                         <i class="fa-solid fa-calculator text-lg"></i>
                     </span>
                     <div>
-                        <h2 class="text-xl font-bold text-white">Phần 3: Tự Luận Tính Toán (3 Câu)</h2>
-                        <p class="text-xs text-slate-400">Tính toán bài tập mẫu SGK có lời giải chi tiết</p>
+                        <h2 class="text-xl font-bold text-white">Phần 3: Bài Tập Tự Luận Tính Toán (5 Câu)</h2>
+                        <p class="text-xs text-slate-400">Giải các bài toán mẫu SGK</p>
                     </div>
                 </div>
             </div>
-
             <div id="essay-container" class="space-y-6"></div>
         </section>
 
-        <!-- SUBMIT ALL -->
+        <!-- SUBMIT -->
         <div class="p-6 bg-slate-800 border border-slate-700 rounded-2xl text-center space-y-4 shadow-2xl">
             <button type="button" onclick="checkAllAnswers()" class="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
@@ -97,109 +94,168 @@
 
     </main>
 
-    <!-- Footer -->
     <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
-        Bài 1: Dao Động Điều Hoà • Tóm Tắt Công Thức & Bài Tập
+        Bài 1: Dao Động Điều Hoà • Tóm Tắt Công Thức & Bài Tập Nâng Cao
     </footer>
 
     <script>
-        const mcqData = [
-            { id: 1, q: "Công thức tổng quát của phương trình li độ dao động điều hoá là gì?", a: "x = A.cos(ωt + φ)", o: ["x = A.cos(ωt + φ)", "x = A.tan(ωt + φ)", "x = A.ωt + φ", "x = A + cos(ωt)"] },
-            { id: 2, q: "Cho phương trình x = 5.cos(2πt + π/3) (cm). Biên độ A bằng bao nhiêu?", a: "A = 5 cm", o: ["A = 5 cm", "A = 2π cm", "A = π/3 cm", "A = 10 cm"] },
-            { id: 3, q: "Cho phương trình x = 4.cos(10πt - π/6) (cm). Tần số góc ω bằng bao nhiêu?", a: "ω = 10π rad/s", o: ["ω = 10π rad/s", "ω = 4 rad/s", "ω = -π/6 rad/s", "ω = 5π rad/s"] },
-            { id: 4, q: "Cho phương trình x = 6.cos(4πt + π/2) (cm). Pha ban đầu φ bằng bao nhiêu?", a: "φ = π/2 rad", o: ["φ = π/2 rad", "φ = 6 rad", "φ = 4π rad", "φ = 0 rad"] },
-            { id: 5, q: "Công thức liên hệ giữa chu kỳ T và tần số f là gì?", a: "T = 1 / f", o: ["T = 1 / f", "T = f", "T = 2π / f", "T = f / (2π)"] },
-            { id: 6, q: "Công thức liên hệ giữa tần số góc ω và tần số f là gì?", a: "ω = 2πf", o: ["ω = 2πf", "ω = f / (2π)", "ω = πf", "ω = 1 / f"] },
-            { id: 7, q: "Công thức liên hệ giữa tần số góc ω và chu kỳ T là gì?", a: "ω = 2π / T", o: ["ω = 2π / T", "ω = T / (2π)", "ω = 2πT", "ω = 1 / T"] },
-            { id: 8, q: "Một vật dao động có tần số f = 5 Hz. Chu kỳ T của vật là bao nhiêu?", a: "T = 0,2 s", o: ["T = 0,2 s", "T = 5 s", "T = 2 s", "T = 0,5 s"] },
-            { id: 9, q: "Một vật dao động có chu kỳ T = 0,5 s. Tần số f của vật là bao nhiêu?", a: "f = 2 Hz", o: ["f = 2 Hz", "f = 0,5 Hz", "f = 5 Hz", "f = 1 Hz"] },
-            { id: 10, q: "Một vật dao động có tần số f = 2 Hz. Tần số góc ω bằng bao nhiêu?", a: "ω = 4π rad/s", o: ["ω = 4π rad/s", "ω = 2π rad/s", "ω = 2 rad/s", "ω = 8π rad/s"] },
-            { id: 11, q: "Vật thực hiện 20 dao động toàn phần trong thời gian Δt = 10 s. Chu kỳ T bằng bao nhiêu?", a: "T = 0,5 s", o: ["T = 0,5 s", "T = 2 s", "T = 20 s", "T = 10 s"] },
-            { id: 12, q: "Vật thực hiện 30 dao động toàn phần trong thời gian Δt = 10 s. Tần số f bằng bao nhiêu?", a: "f = 3 Hz", o: ["f = 3 Hz", "f = 0,33 Hz", "f = 30 Hz", "f = 10 Hz"] },
-            { id: 13, q: "Phương trình x = 2.cos(4πt + π/2) (cm). Tại t = 0, li độ x bằng bao nhiêu?", a: "x = 0 cm", o: ["x = 0 cm", "x = 2 cm", "x = -2 cm", "x = 1 cm"] },
-            { id: 14, q: "Cho phương trình x = 10.cos(πt) (cm). Li độ x tại thời điểm t = 1 s bằng bao nhiêu?", a: "x = -10 cm", o: ["x = -10 cm", "x = 10 cm", "x = 0 cm", "x = 5 cm"] },
-            { id: 15, q: "Cho phương trình x = 8.cos(2πt) (cm). Li độ x tại thời điểm t = 0,5 s bằng bao nhiêu?", a: "x = -8 cm", o: ["x = -8 cm", "x = 8 cm", "x = 0 cm", "x = 4 cm"] },
-            { id: 16, q: "Pha của dao động (ωt + φ) tại thời điểm t = 2 s của x = 3.cos(2πt + π/4) là bao nhiêu?", a: "4,25π rad", o: ["4,25π rad", "π/4 rad", "4π rad", "2π rad"] },
-            { id: 17, q: "Chiều dài quỹ đạo L của vật dao động điều hoá liên hệ với biên độ A như thế nào?", a: "L = 2A", o: ["L = 2A", "L = A", "L = 4A", "L = A / 2"] },
-            { id: 18, q: "Một vật dao động điều hoá trên đoạn thẳng có chiều dài L = 12 cm. Biên độ A bằng bao nhiêu?", a: "A = 6 cm", o: ["A = 6 cm", "A = 12 cm", "A = 24 cm", "A = 3 cm"] },
-            { id: 19, q: "Nếu biên độ A = 5 cm thì chiều dài quỹ đạo L bằng bao nhiêu?", a: "L = 10 cm", o: ["L = 10 cm", "L = 5 cm", "L = 20 cm", "L = 15 cm"] },
-            { id: 20, q: "Trong thời gian 1 chu kỳ T, quãng đường s vật đi được bằng bao nhiêu?", a: "s = 4A", o: ["s = 4A", "s = 2A", "s = A", "s = 3A"] },
-            { id: 21, q: "Trong thời gian nửa chu kỳ T/2, quãng đường s vật đi được bằng bao nhiêu?", a: "s = 2A", o: ["s = 2A", "s = 4A", "s = A", "s = 3A"] },
-            { id: 22, q: "Li độ cực đại x_max bằng đại lượng nào?", a: "x_max = +A", o: ["x_max = +A", "x_max = 0", "x_max = -A", "x_max = 2A"] },
-            { id: 23, q: "Li độ cực tiểu x_min bằng đại lượng nào?", a: "x_min = -A", o: ["x_min = -A", "x_min = 0", "x_min = +A", "x_min = -2A"] },
-            { id: 24, q: "Pha ban đầu φ = 0 nghĩa là tại thời điểm t = 0 vật ở vị trí nào?", a: "Biên dương (x = +A)", o: ["Biên dương (x = +A)", "Vị trí cân bằng (x = 0)", "Biên âm (x = -A)", "Bất kỳ"] },
-            { id: 25, q: "Pha ban đầu φ = π rad nghĩa là tại thời điểm t = 0 vật ở vị trí nào?", a: "Biên âm (x = -A)", o: ["Biên âm (x = -A)", "Biên dương (x = +A)", "Vị trí cân bằng (x = 0)", "Bất kỳ"] },
-            { id: 26, q: "Pha ban đầu φ = π/2 rad nghĩa là tại t = 0 vật đi qua VTCB theo chiều nào?", a: "Chiều âm (v < 0)", o: ["Chiều âm (v < 0)", "Chiều dương (v > 0)", "Đứng yên (v = 0)", "Không xác định"] },
-            { id: 27, q: "Pha ban đầu φ = -π/2 rad nghĩa là tại t = 0 vật đi qua VTCB theo chiều nào?", a: "Chiều dương (v > 0)", o: ["Chiều dương (v > 0)", "Chiều âm (v < 0)", "Đứng yên (v = 0)", "Không xác định"] },
-            { id: 28, q: "Cho phương trình x = 5.cos(10t) (cm). Li độ x tại thời điểm t = 0 s là bao nhiêu?", a: "x = 5 cm", o: ["x = 5 cm", "x = 0 cm", "x = -5 cm", "x = 10 cm"] },
-            { id: 29, q: "Tần số góc ω có đơn vị đo chuẩn trong hệ SI là gì?", a: "rad/s", o: ["rad/s", "Hz", "s", "m/s"] },
-            { id: 30, q: "Vật dao động có chu kỳ T = 0,1 s. Số dao động N vật thực hiện trong 1 phút (60 s) là bao nhiêu?", a: "N = 600 dao động", o: ["N = 600 dao động", "N = 60 dao động", "N = 6 dao động", "N = 6000 dao động"] }
+        const rawMcqData = [
+            { id: 1, q: "Phương trình tổng quát biểu diễn li độ của dao động điều hoà là:", a: "x = A.cos(ωt + φ)", o: ["x = A.cos(ωt + φ)", "x = A.tan(ωt + φ)", "x = A.ωt + φ", "x = A + cos(ωt)"], exp: "Phương trình chuẩn trong SGK: x = A.cos(ωt + φ)." },
+            { id: 2, q: "Cho phương trình x = 5.cos(2πt + π/3) (cm). Biên độ dao động A là:", a: "5 cm", o: ["5 cm", "2π cm", "π/3 cm", "10 cm"], exp: "Hệ số đứng trước hàm cosin là biên độ A = 5 cm." },
+            { id: 3, q: "Cho phương trình x = 4.cos(10πt - π/6) (cm). Tần số góc ω là:", a: "10π rad/s", o: ["10π rad/s", "4 rad/s", "-π/6 rad/s", "5π rad/s"], exp: "Hệ số nhân với t trong ngoặc là ω = 10π rad/s." },
+            { id: 4, q: "Cho phương trình x = 6.cos(4πt + π/2) (cm). Pha ban đầu φ là:", a: "π/2 rad", o: ["π/2 rad", "6 rad", "4π rad", "0 rad"], exp: "Hằng số cộng trong ngoặc là pha ban đầu φ = π/2 rad." },
+            { id: 5, q: "Hệ thức liên hệ chính xác giữa chu kỳ T và tần số f là:", a: "T = 1 / f", o: ["T = 1 / f", "T = f", "T = 2π / f", "T = f / (2π)"], exp: "Chu kỳ và tần số nghịch đảo nhau: T = 1 / f." },
+            { id: 6, q: "Hệ thức liên hệ giữa tần số góc ω và tần số f là:", a: "ω = 2πf", o: ["ω = 2πf", "ω = f / (2π)", "ω = πf", "ω = 1 / f"], exp: "Công thức chuẩn: ω = 2πf." },
+            { id: 7, q: "Hệ thức liên hệ giữa tần số góc ω và chu kỳ T là:", a: "ω = 2π / T", o: ["ω = 2π / T", "ω = T / (2π)", "ω = 2πT", "ω = 1 / T"], exp: "Công thức chuẩn: ω = 2π / T." },
+            { id: 8, q: "Một vật dao động có tần số f = 5 Hz. Chu kỳ T của vật là:", a: "0,2 s", o: ["0,2 s", "5 s", "2 s", "0,5 s"], exp: "T = 1 / f = 1 / 5 = 0,2 s." },
+            { id: 9, q: "Một vật dao động có chu kỳ T = 0,5 s. Tần số f của vật là:", a: "2 Hz", o: ["2 Hz", "0,5 Hz", "5 Hz", "1 Hz"], exp: "f = 1 / T = 1 / 0,5 = 2 Hz." },
+            { id: 10, q: "Một vật dao động với tần số f = 2 Hz. Tần số góc ω bằng:", a: "4π rad/s", o: ["4π rad/s", "2π rad/s", "2 rad/s", "8π rad/s"], exp: "ω = 2πf = 2π.2 = 4π rad/s." },
+            { id: 11, q: "Vật thực hiện 20 dao động toàn phần trong 10 s. Chu kỳ T bằng:", a: "0,5 s", o: ["0,5 s", "2 s", "20 s", "10 s"], exp: "T = Δt / N = 10 / 20 = 0,5 s." },
+            { id: 12, q: "Vật thực hiện 30 dao động toàn phần trong 10 s. Tần số f bằng:", a: "3 Hz", o: ["3 Hz", "0,33 Hz", "30 Hz", "10 Hz"], exp: "f = N / Δt = 30 / 10 = 3 Hz." },
+            { id: 13, q: "Phương trình x = 2.cos(4πt + π/2) (cm). Tại t = 0 s, li độ x bằng:", a: "0 cm", o: ["0 cm", "2 cm", "-2 cm", "1 cm"], exp: "x = 2.cos(π/2) = 0 cm." },
+            { id: 14, q: "Cho phương trình x = 10.cos(πt) (cm). Li độ x tại thời điểm t = 1 s bằng:", a: "-10 cm", o: ["-10 cm", "10 cm", "0 cm", "5 cm"], exp: "x = 10.cos(π.1) = 10.(-1) = -10 cm." },
+            { id: 15, q: "Cho phương trình x = 8.cos(2πt) (cm). Li độ x tại thời điểm t = 0,5 s bằng:", a: "-8 cm", o: ["-8 cm", "8 cm", "0 cm", "4 cm"], exp: "x = 8.cos(2π.0,5) = 8.cos(π) = -8 cm." },
+            { id: 16, q: "Pha dao động tại t = 2 s của x = 3.cos(2πt + π/4) là:", a: "4,25π rad", o: ["4,25π rad", "π/4 rad", "4π rad", "2π rad"], exp: "Pha = 2π.2 + π/4 = 4,25π rad." },
+            { id: 17, q: "Chiều dài quỹ đạo L liên hệ với biên độ A theo biểu thức:", a: "L = 2A", o: ["L = 2A", "L = A", "L = 4A", "L = A / 2"], exp: "Quỹ đạo kéo dài từ -A đến +A nên L = 2A." },
+            { id: 18, q: "Vật dao động trên đoạn thẳng dài 12 cm. Biên độ A bằng:", a: "6 cm", o: ["6 cm", "12 cm", "24 cm", "3 cm"], exp: "A = L / 2 = 12 / 2 = 6 cm." },
+            { id: 19, q: "Nếu biên độ A = 5 cm thì chiều dài quỹ đạo L bằng:", a: "10 cm", o: ["10 cm", "5 cm", "20 cm", "15 cm"], exp: "L = 2A = 2.5 = 10 cm." },
+            { id: 20, q: "Trong 1 chu kỳ T, quãng đường s vật đi được bằng:", a: "4A", o: ["4A", "2A", "A", "3A"], exp: "Quãng đường trong 1 chu kỳ luôn bằng 4A." },
+            { id: 21, q: "Trong nửa chu kỳ T/2, quãng đường s vật đi được bằng:", a: "2A", o: ["2A", "4A", "A", "3A"], exp: "Quãng đường trong T/2 luôn bằng 2A." },
+            { id: 22, q: "Giá trị li độ cực đại x_max bằng:", a: "+A", o: ["+A", "0", "-A", "2A"], exp: "Li độ cực đại là x_max = +A." },
+            { id: 23, q: "Giá trị li độ cực tiểu x_min bằng:", a: "-A", o: ["-A", "0", "+A", "-2A"], exp: "Li độ cực tiểu là x_min = -A." },
+            { id: 24, q: "Pha ban đầu φ = 0 nghĩa là tại t = 0 s vật ở vị trí:", a: "Biên dương (+A)", o: ["Biên dương (+A)", "Vị trí cân bằng (0)", "Biên âm (-A)", "Bất kỳ"], exp: "x = A.cos(0) = +A (biên dương)." },
+            { id: 25, q: "Pha ban đầu φ = π rad nghĩa là tại t = 0 s vật ở vị trí:", a: "Biên âm (-A)", o: ["Biên âm (-A)", "Biên dương (+A)", "Vị trí cân bằng (0)", "Bất kỳ"], exp: "x = A.cos(π) = -A (biên âm)." },
+            { id: 26, q: "Pha ban đầu φ = π/2 rad nghĩa là tại t = 0 s vật qua VTCB theo:", a: "Chiều âm", o: ["Chiều âm", "Chiều dương", "Đứng yên", "Không xác định"], exp: "x = 0 và vận tốc v < 0 (chiều âm)." },
+            { id: 27, q: "Pha ban đầu φ = -π/2 rad nghĩa là tại t = 0 s vật qua VTCB theo:", a: "Chiều dương", o: ["Chiều dương", "Chiều âm", "Đứng yên", "Không xác định"], exp: "x = 0 và vận tốc v > 0 (chiều dương)." },
+            { id: 28, q: "Cho phương trình x = 5.cos(10t) (cm). Li độ tại t = 0 s là:", a: "5 cm", o: ["5 cm", "0 cm", "-5 cm", "10 cm"], exp: "x = 5.cos(0) = 5 cm." },
+            { id: 29, q: "Đơn vị chuẩn của tần số góc ω là:", a: "rad/s", o: ["rad/s", "Hz", "s", "m/s"], exp: "Đơn vị ω là rad/s." },
+            { id: 30, q: "Vật có chu kỳ T = 0,1 s. Số dao động N thực hiện trong 1 phút là:", a: "600 dao động", o: ["600 dao động", "60 dao động", "6 dao động", "6000 dao động"], exp: "N = t / T = 60 / 0,1 = 600 dao động." },
+            { id: 31, q: "Một chất điểm dao động với tần số f = 10 Hz. Chu kỳ dao động của chất điểm là:", a: "0,1 s", o: ["0,1 s", "10 s", "1 s", "0,01 s"], exp: "T = 1 / 10 = 0,1 s." },
+            { id: 32, q: "Phương trình x = 8.cos(20πt - π/2) (cm). Tần số dao động f bằng:", a: "10 Hz", o: ["10 Hz", "20 Hz", "5 Hz", "40 Hz"], exp: "ω = 20π ⇒ f = ω / 2π = 10 Hz." },
+            { id: 33, q: "Một vật dao động điều hoà có biên độ A = 6 cm, tần số f = 5 Hz. Quãng đường vật đi được trong 1 giây là:", a: "120 cm", o: ["120 cm", "60 cm", "240 cm", "30 cm"], exp: "Trong 1s vật thực hiện 5 chu kỳ. Quãng đường = 5 . (4A) = 20 . 6 = 120 cm." },
+            { id: 34, q: "Cho x = 4.cos(5πt + π/3) (cm). Li độ của vật tại thời điểm t = 0,1 s là:", a: "-2 cm", o: ["-2 cm", "2 cm", "4 cm", "0 cm"], exp: "x = 4.cos(5π.0,1 + π/3) = 4.cos(5π/6 + π/3) = 4.cos(7π/6) = -2 cm." },
+            { id: 35, q: "Một con lắc lò xo thực hiện 100 dao động trong 20 s. Tần số f của con lắc là:", a: "5 Hz", o: ["5 Hz", "0,2 Hz", "10 Hz", "50 Hz"], exp: "f = N / Δt = 100 / 20 = 5 Hz." },
+            { id: 36, q: "Biết phương trình dao động x = 5.cos(4πt) (cm). Vị trí ban đầu của vật lúc t = 0 s là:", a: "x = 5 cm", o: ["x = 5 cm", "x = 0 cm", "x = -5 cm", "x = 2,5 cm"], exp: "x = 5.cos(0) = 5 cm." },
+            { id: 37, q: "Nếu tần số góc tăng lên 2 lần và biên độ giữ nguyên thì chiều dài quỹ đạo L sẽ:", a: "Không đổi", o: ["Không đổi", "Tăng 2 lần", "Giảm 2 lần", "Tăng 4 lần"], exp: "L = 2A, biên độ không đổi nên quỹ đạo không đổi." },
+            { id: 38, q: "Quãng đường vật đi được trong khoảng thời gian T/4 khi xuất phát từ VTCB là:", a: "A", o: ["A", "2A", "4A", "A / 2"], exp: "Từ VTCB ra biên trong T/4 đi được đoạn đường đúng bằng A." },
+            { id: 39, q: "Một vật dao động có phương trình x = 10.cos(2πt - π/2) (cm). Tại t = 0,25 s, li độ x bằng:", a: "0 cm", o: ["0 cm", "10 cm", "-10 cm", "5 cm"], exp: "x = 10.cos(2π.0,25 - π/2) = 10.cos(0) = 10 cm. (Lưu ý: 2π.0,25 - π/2 = 0)." },
+            { id: 40, q: "Tần số góc ω được tính qua chu kỳ T theo công thức:", a: "ω = 2π / T", o: ["ω = 2π / T", "ω = T / 2π", "ω = 2πT", "ω = 1 / T"], exp: "Công thức chuẩn: ω = 2π / T." },
+            { id: 41, q: "Vật dao động với phương trình x = 3.cos(πt + π) (cm). Tại t = 1 s, li độ x là:", a: "3 cm", o: ["3 cm", "-3 cm", "0 cm", "1,5 cm"], exp: "x = 3.cos(π.1 + π) = 3.cos(2π) = 3 cm." },
+            { id: 42, q: "Nếu chu kỳ tăng 2 lần thì tần số f sẽ:", a: "Giảm 2 lần", o: ["Giảm 2 lần", "Tăng 2 lần", "Không đổi", "Tăng 4 lần"], exp: "f = 1 / T nên T tăng 2 lần thì f giảm 2 lần." },
+            { id: 43, q: "Cho phương trình x = 7.cos(6πt) (cm). Li độ x sau khi vật đi được 1/4 chu kỳ (tính từ t = 0) là:", a: "0 cm", o: ["0 cm", "7 cm", "-7 cm", "3,5 cm"], exp: "Sau T/4 từ biên (+A), vật về VTCB nên li độ x = 0." },
+            { id: 44, q: "Vật dao động điều hoà có chiều dài quỹ đạo L = 16 cm, tần số f = 2 Hz. Phương trình dao động của vật (chọn pha ban đầu φ = 0) là:", a: "x = 8.cos(4πt) (cm)", o: ["x = 8.cos(4πt) (cm)", "x = 16.cos(4πt) (cm)", "x = 8.cos(2πt) (cm)", "x = 4.cos(4πt) (cm)"], exp: "A = 16/2 = 8 cm; ω = 2πf = 4π rad/s." },
+            { id: 45, q: "Trong khoảng thời gian Δt = 3T/4, quãng đường lớn nhất mà vật có thể đi được là:", a: "(2 + √2)A", o: ["(2 + √2)A", "3A", "4A", "2A"], exp: "Theo công thức tính quãng đường cực đại trong 3T/4 là (2 + √2)A." },
+            { id: 46, q: "Một vật thực hiện dao động điều hoà với phương trình x = 5.cos(ωt + π/3) (cm). Tại t = 0 s, li độ x của vật là:", a: "2,5 cm", o: ["2,5 cm", "5 cm", "-2,5 cm", "0 cm"], exp: "x = 5.cos(π/3) = 5 . 0,5 = 2,5 cm." },
+            { id: 47, q: "Đại lượng nào sau đây tỉ lệ thuận với tần số f?", a: "Tần số góc ω", o: ["Tần số góc ω", "Chu kỳ T", "Độ dài quỹ đạo L", "Biên độ A"], exp: "ω = 2πf nên ω tỉ lệ thuận với f." },
+            { id: 48, q: "Biết phương trình x = A.cos(ωt). Pha ban đầu của dao động nhận giá trị:", a: "0 rad", o: ["0 rad", "π / 2 rad", "π rad", "-π / 2 rad"], exp: "Hằng số cộng bằng 0 nên φ = 0." },
+            { id: 49, q: "Tính quãng đường vật đi được trong 2,5 chu kỳ nếu biên độ là A = 4 cm:", a: "40 cm", o: ["40 cm", "20 cm", "10 cm", "16 cm"], exp: "s = 2,5 . (4A) = 10A = 10 . 4 = 40 cm." },
+            { id: 50, q: "Một chất điểm dao động điều hoà với phương trình x = 12.cos(10t) (cm). Giá trị biên độ A là:", a: "12 cm", o: ["12 cm", "10 cm", "120 cm", "6 cm"], exp: "Hệ số A = 12 cm." }
         ];
 
         const tfData = [
             {
                 id: 1,
-                title: "Câu 1: Xét phương trình dao động x = 2.cos(4πt + π/2) (cm)",
+                title: "Câu 1: Xét phương trình x = 2.cos(4πt + π/2) (cm)",
                 items: [
-                    { id: "1a", text: "Biên độ A = 2 cm.", correct: true },
-                    { id: "1b", text: "Tần số góc ω = 4π rad/s.", correct: true },
-                    { id: "1c", text: "Pha ban đầu φ = 4π rad.", correct: false },
-                    { id: "1d", text: "Li độ của vật tại thời điểm t = 0 s là x = 2 cm.", correct: false }
+                    { id: "1a", text: "Biên độ dao động A = 2 cm.", correct: true, exp: "Đúng, A = 2 cm." },
+                    { id: "1b", text: "Tần số góc ω = 4π rad/s.", correct: true, exp: "Đúng, ω = 4π rad/s." },
+                    { id: "1c", text: "Pha ban đầu φ = 4π rad.", correct: false, exp: "Sai, pha ban đầu là φ = π/2 rad." },
+                    { id: "1d", text: "Li độ tại thời điểm t = 0 s là x = 2 cm.", correct: false, exp: "Sai, tại t = 0 thì x = 2.cos(π/2) = 0 cm." }
                 ]
             },
             {
                 id: 2,
-                title: "Câu 2: Về các công thức biến đổi giữa T, f, ω và quãng đường s",
+                title: "Câu 2: Về hệ thức liên hệ giữa các đại lượng T, f, ω và L",
                 items: [
-                    { id: "2a", text: "Chu kỳ T = 1 / f.", correct: true },
-                    { id: "2b", text: "Tần số góc ω = πf.", correct: false },
-                    { id: "2c", text: "Chiều dài quỹ đạo L = 2A.", correct: true },
-                    { id: "2d", text: "Quãng đường vật đi được trong 1 chu kỳ T luôn bằng 4A.", correct: true }
+                    { id: "2a", text: "Chu kỳ T = 1 / f.", correct: true, exp: "Đúng theo công thức chuẩn." },
+                    { id: "2b", text: "Tần số góc ω = 2πf.", correct: true, exp: "Đúng theo công thức chuẩn." },
+                    { id: "2c", text: "Chiều dài quỹ đạo L = 2A.", correct: true, exp: "Đúng, L = 2A." },
+                    { id: "2d", text: "Tần số góc ω = 2π / T.", correct: true, exp: "Đúng theo định nghĩa." }
                 ]
             },
             {
                 id: 3,
-                title: "Câu 3: Xét vật thực hiện N = 120 dao động trong thời gian Δt = 60 s",
+                title: "Câu 3: Xét vật thực hiện 120 dao động trong thời gian Δt = 60 s",
                 items: [
-                    { id: "3a", text: "Tần số f = 2 Hz.", correct: true },
-                    { id: "3b", text: "Chu kỳ T = 0,5 s.", correct: true },
-                    { id: "3c", text: "Tần số góc ω = 4π rad/s.", correct: true },
-                    { id: "3d", text: "Tần số f = 0,5 Hz.", correct: false }
+                    { id: "3a", text: "Tần số dao động f = 2 Hz.", correct: true, exp: "Đúng, f = 120/60 = 2 Hz." },
+                    { id: "3b", text: "Chu kỳ dao động T = 0,5 s.", correct: true, exp: "Đúng, T = 1/2 = 0,5 s." },
+                    { id: "3c", text: "Tần số góc ω = 4π rad/s.", correct: true, exp: "Đúng, ω = 2π.2 = 4π." },
+                    { id: "3d", text: "Tần số f = 0,5 Hz.", correct: false, exp: "Sai, f = 2 Hz." }
                 ]
             },
             {
                 id: 4,
-                title: "Câu 4: Về giá trị li độ x và pha (ωt + φ) trong x = A.cos(ωt + φ)",
+                title: "Câu 4: Về giá trị li độ x theo các góc pha đặc biệt",
                 items: [
-                    { id: "4a", text: "Khi (ωt + φ) = 0 rad thì li độ x = +A.", correct: true },
-                    { id: "4b", text: "Khi (ωt + φ) = π rad thì li độ x = -A.", correct: true },
-                    { id: "4c", text: "Khi (ωt + φ) = π/2 rad thì li độ x = 0 cm.", correct: true },
-                    { id: "4d", text: "Li độ x có thể đạt giá trị cực đại lớn nhất bằng 2A.", correct: false }
+                    { id: "4a", text: "Khi pha (ωt + φ) = 0 rad thì li độ x = +A.", correct: true, exp: "Đúng, cos(0) = 1." },
+                    { id: "4b", text: "Khi pha (ωt + φ) = π rad thì li độ x = -A.", correct: true, exp: "Đúng, cos(π) = -1." },
+                    { id: "4c", text: "Khi pha (ωt + φ) = π/2 rad thì li độ x = 0 cm.", correct: true, exp: "Đúng, cos(π/2) = 0." },
+                    { id: "4d", text: "Li độ cực đại x_max có thể đạt giá trị 2A.", correct: false, exp: "Sai, x_max chỉ đạt đến +A." }
+                ]
+            },
+            {
+                id: 5,
+                title: "Câu 5: Xét con lắc lò xo dao động với phương trình x = 5.cos(20t - π/3) (cm)",
+                items: [
+                    { id: "5a", text: "Biên độ A = 5 cm.", correct: true, exp: "Đúng, A = 5 cm." },
+                    { id: "5b", text: "Tần số góc ω = 20 rad/s.", correct: true, exp: "Đúng, ω = 20 rad/s." },
+                    { id: "5c", text: "Pha ban đầu φ = -π/3 rad.", correct: true, exp: "Đúng, φ = -π/3 rad." },
+                    { id: "5d", text: "Quãng đường vật đi được trong 1 chu kỳ T là 10 cm.", correct: false, exp: "Sai, trong 1 chu kỳ quãng đường là 4A = 20 cm." }
+                ]
+            },
+            {
+                id: 6,
+                title: "Câu 6: Về tính toán quãng đường trong dao động điều hoà",
+                items: [
+                    { id: "6a", text: "Quãng đường vật đi trong 1 chu kỳ T luôn bằng 4A.", correct: true, exp: "Đúng định nghĩa." },
+                    { id: "6b", text: "Quãng đường vật đi trong nửa chu kỳ T/2 luôn bằng 2A bất kể xuất phát từ đâu.", correct: true, exp: "Đúng tính chất đối xứng." },
+                    { id: "6c", text: "Quãng đường vật đi trong 1/4 chu kỳ T/4 xuất phát từ biên luôn bằng A.", correct: true, exp: "Đúng, từ biên về VTCB đi được A." },
+                    { id: "6d", text: "Quãng đường vật đi trong 1/4 chu kỳ T/4 xuất phát từ VTCB luôn bằng 2A.", correct: false, exp: "Sai, xuất phát từ VTCB đi T/4 chỉ được A." }
                 ]
             }
         ];
 
         const essayData = [
-            {
-                id: 1,
-                q: "Câu 1 (SGK): Một vật dao động điều hoá có phương trình x = 2.cos(4πt + π/2) (cm). Hãy tính: a) Biên độ A và pha ban đầu φ. b) Pha của dao động và li độ x khi t = 2 s.",
-                key: "a) Biên độ A = 2 cm; Pha ban đầu φ = π/2 rad.\nb) Khi t = 2 s:\n- Pha của dao động: (ωt + φ) = 4π.2 + π/2 = 8,5π rad.\n- Li độ: x = 2.cos(8,5π) = 0 cm."
-            },
-            {
-                id: 2,
-                q: "Câu 2: Một con lắc lò xo dao động trên quỹ đạo dài L = 10 cm. Vật thực hiện N = 20 dao động trong Δt = 10 s. Tính: a) Biên độ A. b) Chu kỳ T, tần số f và tần số góc ω.",
-                key: "a) Biên độ: A = L / 2 = 10 / 2 = 5 cm.\nb) Các đại lượng:\n- Chu kỳ: T = Δt / N = 10 / 20 = 0,5 s.\n- Tần số: f = 1 / T = 1 / 0,5 = 2 Hz.\n- Tần số góc: ω = 2πf = 2π.2 = 4π rad/s."
-            },
-            {
-                id: 3,
-                q: "Câu 3: Cho phương trình dao động x = 4.cos(2πt - π/3) (cm). Tính li độ x tại thời điểm: a) t = 0 s. b) t = 0,25 s.",
-                key: "a) Tại t = 0 s:\nx = 4.cos(-π/3) = 4 . 0,5 = 2 cm.\n\nb) Tại t = 0,25 s:\nx = 4.cos(2π.0,25 - π/3) = 4.cos(π/2 - π/3) = 4.cos(π/6) = 4 . (√3 / 2) = 2√3 cm (≈ 3,46 cm)."
-            }
+            { id: 1, q: "Câu 1 (SGK): Một vật dao động điều hoà có phương trình x = 2.cos(4πt + π/2) (cm). Tính: a) Biên độ A và pha ban đầu φ. b) Pha dao động và li độ x khi t = 2 s.", key: "a) A = 2 cm; φ = π/2 rad.\nb) Khi t = 2 s:\n- Pha dao động: 4π.2 + π/2 = 8,5π rad.\n- Li độ: x = 2.cos(8,5π) = 0 cm." },
+            { id: 2, q: "Câu 2: Một con lắc lò xo dao động trên quỹ đạo dài L = 10 cm. Biết vật thực hiện N = 20 dao động trong Δt = 10 s. Tính: a) Biên độ A. b) Chu kỳ T, tần số f và tần số góc ω.", key: "a) A = L / 2 = 10 / 2 = 5 cm.\nb) Các đại lượng:\n- T = 10 / 20 = 0,5 s.\n- f = 1 / 0,5 = 2 Hz.\n- ω = 2πf = 4π rad/s." },
+            { id: 3, q: "Câu 3: Cho phương trình x = 4.cos(2πt - π/3) (cm). Tính li độ x tại: a) t = 0 s. b) t = 0,25 s.", key: "a) Tại t = 0 s: x = 4.cos(-π/3) = 2 cm.\nb) Tại t = 0,25 s: x = 4.cos(2π.0,25 - π/3) = 4.cos(π/6) = 2√3 cm ≈ 3,46 cm." },
+            { id: 4, q: "Câu 4: Một vật dao động điều hoà có tần số f = 5 Hz, biên độ A = 4 cm. Tính quãng đường vật đi được sau khoảng thời gian Δt = 1,5 s.", key: "- Chu kỳ T = 1 / f = 0,2 s.\n- Số chu kỳ trong 1,5 s là: n = 1,5 / 0,2 = 7,5 chu kỳ (tức 7 chu kỳ + T/2).\n- Quãng đường: s = 7.(4A) + 2A = 28.A + 2A = 30A = 30 . 4 = 120 cm." },
+            { id: 5, q: "Câu 5: Cho phương trình x = 10.cos(10πt + π/6) (cm). Xác định thời điểm vật đi qua vị trí cân bằng lần đầu tiên kể từ t = 0 s.", key: "- Tại t = 0 s, vật ở li độ x_0 = 10.cos(π/6) = 5√3 cm.\n- Vật qua VTCB khi x = 0, ứng với góc pha (10πt + π/6) = π/2 + kπ (k = 0, 1, 2...).\n- Lần đầu tiên (k = 0): 10πt + π/6 = π/2 ⇒ 10πt = π/3 ⇒ t = 1/30 s (≈ 0,033 s)." }
         ];
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        let shuffledMcq = [];
+        let userTFAnswers = {};
+
+        function initQuiz() {
+            userTFAnswers = {};
+            shuffledMcq = shuffleArray(rawMcqData).map(item => {
+                const correctVal = item.a;
+                const shuffledOpts = shuffleArray(item.o);
+                return {
+                    ...item,
+                    o: shuffledOpts,
+                    a: correctVal
+                };
+            });
+
+            renderMCQ();
+            renderTF();
+            renderEssay();
+            document.getElementById('total-result').classList.add('hidden');
+        }
 
         function renderMCQ() {
             const container = document.getElementById('mcq-container');
-            container.innerHTML = mcqData.map((item, idx) => `
+            container.innerHTML = shuffledMcq.map((item, idx) => `
                 <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
                     <div class="font-medium text-slate-100 text-sm md:text-base">
                         <span class="text-emerald-400 font-bold">Câu ${idx + 1}:</span> ${item.q}
@@ -212,27 +268,27 @@
                             </label>
                         `).join('')}
                     </div>
+                    <div id="mcq-feedback-${item.id}" class="hidden mt-2 p-3 rounded-lg text-xs font-medium border"></div>
                 </div>
             `).join('');
         }
 
         function renderTF() {
             const container = document.getElementById('tf-container');
-            container.innerHTML = tfData.map((qGroup) => `
+            container.innerHTML = tfData.map((qGroup, gIdx) => `
                 <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
-                    <h3 class="font-bold text-blue-300 text-sm">${qGroup.title}</h3>
-                    <div class="space-y-2">
+                    <h3 class="font-bold text-blue-300 text-sm">Câu ${gIdx + 1}: ${qGroup.title}</h3>
+                    <div class="space-y-3">
                         ${qGroup.items.map(item => `
-                            <div class="p-3 bg-slate-800/80 border border-slate-700 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                                <span class="text-xs md:text-sm text-slate-200"><b>${item.id}.</b>${item.text}</span>
-                                <div class="flex items-center space-x-2 flex-shrink-0">
-                                    <button type="button" id="btn-true-${item.id}" onclick="setTF('${item.id}', true)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-emerald-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">
-                                        Đúng
-                                    </button>
-                                    <button type="button" id="btn-false-${item.id}" onclick="setTF('${item.id}', false)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-rose-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">
-                                        Sai
-                                    </button>
+                            <div class="p-3 bg-slate-800/80 border border-slate-700 rounded-lg space-y-2">
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                                    <span class="text-xs md:text-sm text-slate-200"><b>${item.id}.</b>${item.text}</span>
+                                    <div class="flex items-center space-x-2 flex-shrink-0">
+                                        <button type="button" id="btn-true-${item.id}" onclick="setTF('${item.id}', true)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-emerald-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">Đúng</button>
+                                        <button type="button" id="btn-false-${item.id}" onclick="setTF('${item.id}', false)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-rose-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">Sai</button>
+                                    </div>
                                 </div>
+                                <div id="tf-feedback-${item.id}" class="hidden text-xs font-medium p-2 rounded bg-slate-900/80 border border-slate-700"></div>
                             </div>
                         `).join('')}
                     </div>
@@ -240,12 +296,10 @@
             `).join('');
         }
 
-        const userTFAnswers = {};
         function setTF(itemId, val) {
             userTFAnswers[itemId] = val;
             const btnTrue = document.getElementById(`btn-true-${itemId}`);
             const btnFalse = document.getElementById(`btn-false-${itemId}`);
-
             if (val === true) {
                 btnTrue.className = "px-3 py-1 bg-emerald-600 text-white rounded-md text-xs font-semibold shadow";
                 btnFalse.className = "px-3 py-1 bg-slate-700 text-slate-300 rounded-md text-xs font-semibold opacity-50";
@@ -257,9 +311,9 @@
 
         function renderEssay() {
             const container = document.getElementById('essay-container');
-            container.innerHTML = essayData.map((item) => `
+            container.innerHTML = essayData.map((item, idx) => `
                 <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
-                    <div class="font-medium text-amber-300 text-sm md:text-base">${item.q}</div>
+                    <div class="font-medium text-amber-300 text-sm md:text-base">Câu ${idx + 1}: ${item.q.split(': ')[1]}</div>
                     <textarea id="essay-input-${item.id}" rows="3" class="w-full p-3 bg-slate-800 border border-slate-700 focus:border-amber-500 rounded-xl text-slate-100 text-xs md:text-sm outline-none" placeholder="Nhập phần tính toán của bạn..."></textarea>
                     <div id="essay-key-${item.id}" class="hidden p-3 bg-slate-800/90 border border-amber-500/40 rounded-xl text-xs text-amber-200 whitespace-pre-line">
                         <b>Lời giải chi tiết:</b>\n${item.key}
@@ -270,9 +324,24 @@
 
         function checkAllAnswers() {
             let correctMCQ = 0;
-            mcqData.forEach(item => {
+            shuffledMcq.forEach(item => {
                 const checked = document.querySelector(`input[name="mcq-${item.id}"]:checked`);
-                if (checked && checked.value === item.a) correctMCQ++;
+                const feedbackEl = document.getElementById(`mcq-feedback-${item.id}`);
+                feedbackEl.classList.remove('hidden');
+
+                if (checked) {
+                    if (checked.value === item.a) {
+                        correctMCQ++;
+                        feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-emerald-950/60 border-emerald-800 text-emerald-300";
+                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <b>Chính xác!</b> Đáp án: ${item.a}. <br><em>Giải thích:</em> ${item.exp}`;
+                    } else {
+                        feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-rose-950/60 border-rose-800 text-rose-300";
+                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> <b>Chưa đúng.</b> Đáp án đúng là: <u>${item.a}</u>. <br><em>Giải thích:</em> ${item.exp}`;
+                    }
+                } else {
+                    feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-amber-950/60 border-amber-800 text-amber-300";
+                    feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Chưa chọn đáp án!</b> Đáp án đúng: <u>${item.a}</u>. <br><em>Giải thích:</em> ${item.exp}`;
+                }
             });
 
             let correctTF = 0;
@@ -280,7 +349,19 @@
             tfData.forEach(qGroup => {
                 qGroup.items.forEach(item => {
                     totalTF++;
-                    if (userTFAnswers[item.id] === item.correct) correctTF++;
+                    const userVal = userTFAnswers[item.id];
+                    const feedbackTfEl = document.getElementById(`tf-feedback-${item.id}`);
+                    feedbackTfEl.classList.remove('hidden');
+
+                    const correctStr = item.correct ? "Đúng" : "Sai";
+                    if (userVal === item.correct) {
+                        correctTF++;
+                        feedbackTfEl.className = "text-xs font-medium p-2 rounded bg-emerald-950/60 border border-emerald-800 text-emerald-300";
+                        feedbackTfEl.innerHTML = `✓ <b>Chính xác!</b> Phát biểu này là <b>${correctStr}</b>. <em>Giải thích:</em> ${item.exp}`;
+                    } else {
+                        feedbackTfEl.className = "text-xs font-medium p-2 rounded bg-rose-950/60 border border-rose-800 text-rose-300";
+                        feedbackTfEl.innerHTML = `✗ <b>Chưa chính xác.</b> Đáp án đúng là: <b>${correctStr}</b>. <em>Giải thích:</em> ${item.exp}`;
+                    }
                 });
             });
 
@@ -291,17 +372,14 @@
             const resultEl = document.getElementById('total-result');
             resultEl.classList.remove('hidden');
             resultEl.innerHTML = `
-                <div>Trắc nghiệm công thức: <span class="text-emerald-400">${correctMCQ}/30</span> câu đúng</div>
+                <div>Trắc nghiệm công thức: <span class="text-emerald-400">${correctMCQ}/50</span> câu đúng</div>
                 <div>Đúng / Sai: <span class="text-blue-400">${correctTF}/${totalTF}</span> ý đúng</div>
-                <div class="text-xs font-normal text-slate-400 mt-1">* Lời giải chi tiết câu tự luận đã hiển thị ở bên dưới!</div>
+                <div class="text-xs font-normal text-slate-400 mt-1">* Xem phần giải thích chi tiết ngay bên dưới từng câu!</div>
             `;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
-        window.onload = () => {
-            renderMCQ();
-            renderTF();
-            renderEssay();
-        };
+        window.onload = initQuiz;
     </script>
 </body>
 </html>
