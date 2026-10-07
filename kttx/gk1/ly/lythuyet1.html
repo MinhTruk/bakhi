@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trắc Nghiệm Bài 1: Dao Động Điều Hoà - Vật Lý 11</title>
+    <title>Lý Thuyết Bài 1: Dao Động Điều Hoà - Vật Lý 11</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Lexend', sans-serif; }
-        .option-btn { transition: all 0.2s ease-in-out; }
-        .option-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-purple-500 selection:text-white">
@@ -23,313 +21,300 @@
                     <i class="fa-solid fa-arrow-left text-lg"></i>
                 </a>
                 <div>
-                    <h1 class="text-lg font-bold leading-tight">Bài 1: Dao Động Điều Hoà</h1>
-                    <p class="text-xs text-slate-400">Trắc nghiệm & Đúng/Sai • Vật Lý 11</p>
+                    <h1 class="text-lg font-bold leading-tight">Bài 1: Lý Thuyết Dao Động Điều Hoà</h1>
+                    <p class="text-xs text-slate-400">30 Trắc nghiệm • 4 Đúng/Sai • 3 Tự luận</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-2">
-                <a href="../../../index.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
-                    <i class="fa-solid fa-house text-purple-400"></i>
-                    <span>Index</span>
-                </a>
-                <div id="quiz-progress-badge" class="hidden bg-slate-700/70 border border-slate-600 px-3 py-1.5 rounded-full text-xs font-medium text-slate-300">
-                    Câu <span id="current-question-num" class="text-purple-400 font-bold">1</span>/<span id="total-questions-num">8</span>
-                </div>
-            </div>
+            <a href="../../../index.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
+                <i class="fa-solid fa-house text-purple-400"></i>
+                <span>Index</span>
+            </a>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-3xl w-full mx-auto p-4 md:p-6 flex-grow flex items-center justify-center">
+    <!-- Main Content Container -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow space-y-8">
 
-        <!-- START SCREEN -->
-        <div id="start-screen" class="w-full bg-slate-800 border border-slate-700/80 rounded-2xl p-6 md:p-10 shadow-2xl text-center">
-            <div class="w-20 h-20 bg-purple-600/20 text-purple-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-500/30">
-                <i class="fa-solid fa-atom text-4xl"></i>
-            </div>
-            <h2 class="text-2xl md:text-3xl font-bold mb-3 text-white">Luyện Tập Bài 1: Dao Động Điều Hoà</h2>
-            <p class="text-slate-300 text-sm md:text-base max-w-xl mx-auto mb-8 leading-relaxed">
-                Bộ câu hỏi tổng hợp kiến thức từ SGK Vật Lý 11 bao gồm cả dạng câu hỏi <b>Trắc nghiệm 4 lựa chọn</b> và <b>Trắc nghiệm Đúng/Sai</b>.
-            </p>
-            <button id="start-btn" type="button" class="w-full sm:w-auto px-8 py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-purple-600/30 transition duration-200 text-base inline-flex items-center justify-center space-x-2 cursor-pointer">
-                <span>Bắt Đầu Làm Bài</span>
-                <i class="fa-solid fa-arrow-right"></i>
-            </button>
-        </div>
-
-        <!-- QUIZ SCREEN -->
-        <div id="quiz-screen" class="hidden w-full space-y-6">
-            <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
-                <div id="progress-bar" class="bg-purple-500 h-full w-0 transition-all duration-300 ease-out"></div>
-            </div>
-
-            <div class="bg-slate-800 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl relative overflow-hidden">
-                <div class="flex justify-between items-start mb-4">
-                    <span id="question-tag" class="px-3 py-1 bg-purple-950/80 text-purple-300 border border-purple-800/50 text-xs font-semibold rounded-full uppercase tracking-wider">
-                        Trắc Nghiệm
+        <!-- PART 1: 30 CÂU TRẮC NGHIỆM 4 LỰA CHỌN -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                    <span class="p-2.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl">
+                        <i class="fa-solid fa-list-check text-lg"></i>
                     </span>
-                </div>
-                
-                <h2 id="question-text" class="text-lg md:text-xl font-medium text-slate-100 leading-snug mb-6">Đang tải câu hỏi...</h2>
-                
-                <div id="options-container" class="grid grid-cols-1 gap-3.5"></div>
-                
-                <div id="feedback" class="hidden mt-6 p-4 rounded-xl border text-sm font-medium transition-all"></div>
-                
-                <div class="mt-6 flex justify-end">
-                    <button id="next-btn" type="button" class="hidden px-6 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-xl transition duration-200 inline-flex items-center space-x-2 cursor-pointer">
-                        <span>Câu tiếp theo</span>
-                        <i class="fa-solid fa-chevron-right text-xs"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- RESULT SCREEN -->
-        <div id="result-screen" class="hidden w-full bg-slate-800 border border-slate-700/80 rounded-2xl p-6 md:p-10 shadow-2xl text-center">
-            <div id="result-icon-container" class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500 bg-emerald-950/80 text-emerald-400">
-                <i class="fa-solid fa-trophy text-5xl"></i>
-            </div>
-            <h2 class="text-2xl md:text-3xl font-bold mb-2">Hoàn Thành Bài Tập!</h2>
-            <p class="text-slate-400 text-sm mb-6">Kết quả kiểm tra kiến thức Dao Động Điều Hoà</p>
-
-            <div class="bg-slate-900/80 border border-slate-700/60 rounded-2xl p-6 max-w-md mx-auto mb-8">
-                <div class="text-4xl font-extrabold mb-2" id="score-text">0 / 0</div>
-                <div class="text-slate-400 text-sm mb-4">Tỷ lệ chính xác: <span id="percentage-text" class="text-purple-400 font-bold">0%</span></div>
-                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                    <div id="result-bar" class="h-full bg-purple-500 transition-all duration-1000"></div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Phần 1: Trắc Nghiệm 4 Lựa Chọn (30 Câu)</h2>
+                        <p class="text-xs text-slate-400">Chọn 1 đáp án đúng nhất cho mỗi câu hỏi</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
-                <button id="restart-btn" type="button" class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl shadow-lg transition duration-200 inline-flex items-center justify-center space-x-2 cursor-pointer">
-                    <i class="fa-solid fa-rotate-right"></i>
-                    <span>Làm Lại Bài Thi</span>
-                </button>
+            <div id="mcq-container" class="space-y-6">
+                <!-- Javascript render 30 câu trắc nghiệm -->
             </div>
+        </section>
+
+        <!-- PART 2: 4 CÂU TRẮC NGHIỆM ĐÚNG / SAI (TOGGLE A, B, C, D) -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                    <span class="p-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl">
+                        <i class="fa-solid fa-toggle-on text-lg"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Phần 2: Trắc Nghiệm Đúng / Sai (4 Câu)</h2>
+                        <p class="text-xs text-slate-400">Click chọn Đúng hoặc Sai cho mỗi ý a, b, c, d</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tf-container" class="space-y-6">
+                <!-- Javascript render 4 câu đúng sai -->
+            </div>
+        </section>
+
+        <!-- PART 3: 3 CÂU TỰ LUẬN -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                    <span class="p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl">
+                        <i class="fa-solid fa-pen-nib text-lg"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Phần 3: Câu Hỏi Tự Luận (3 Câu)</h2>
+                        <p class="text-xs text-slate-400">Gõ câu trả lời bằng văn bản và đối chiếu kết quả</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="essay-container" class="space-y-6">
+                <!-- Javascript render 3 câu tự luận -->
+            </div>
+        </section>
+
+        <!-- SUBMIT / CHECK ALL -->
+        <div class="p-6 bg-slate-800 border border-slate-700 rounded-2xl text-center space-y-4 shadow-2xl">
+            <button type="button" id="submit-all-btn" onclick="checkAllAnswers()" class="px-8 py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Nộp Bài & Kiểm Tra Kết Quả</span>
+            </button>
+            <div id="total-result" class="hidden p-4 rounded-xl bg-slate-900 border border-purple-500/50 text-slate-200 font-bold text-lg"></div>
         </div>
 
     </main>
 
     <!-- Footer -->
-    <footer class="w-full py-4 text-center text-slate-500 text-xs border-t border-slate-800">
-        Vật Lý 11 • Bài 1: Dao Động Điều Hoà
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        Bài 1: Dao Động Điều Hoà • Ôn Tập Lý Thuyết
     </footer>
 
     <script>
-        const rawData = [
-            // DẠNG TRẮC NGHIỆM LỰA CHỌN (4 CÂU)
-            {
-                type: "mcq",
-                tag: "Trắc Nghiệm 4 Lựa Chọn",
-                q: "Chuyển động qua lại quanh một vị trí cân bằng xác định được gọi là gì?",
-                a: "Dao động cơ",
-                o: ["Dao động cơ", "Chuyển động tròn đều", "Chuyển động thẳng biến đổi đều", "Dao động điều hoà"]
-            },
-            {
-                type: "mcq",
-                tag: "Trắc Nghiệm 4 Lựa Chọn",
-                q: "Dao động tuần hoàn đơn giản nhất là loại dao động nào?",
-                a: "Dao động điều hoà",
-                o: ["Dao động điều hoà", "Dao động tắt dần", "Dao động cưỡng bức", "Dao động duy trì"]
-            },
-            {
-                type: "mcq",
-                tag: "Trắc Nghiệm 4 Lựa Chọn",
-                q: "Đường cong đồ thị biểu diễn vị trí của quả cầu con lắc lò xo theo thời gian có dạng gì?",
-                a: "Hình sin",
-                o: ["Hình sin", "Đường parabol", "Đường thẳng", "Đường tròn"]
-            },
-            {
-                type: "mcq",
-                tag: "Trắc Nghiệm 4 Lựa Chọn",
-                q: "Một vật dao động điều hoà có phương trình x = 2*cos(4*pi*t + pi/2) (cm). Biên độ A của dao động là bao nhiêu?",
-                a: "2 cm",
-                o: ["2 cm", "4 cm", "4*pi cm", "pi/2 cm"]
-            },
+        // DATA 30 CÂU TRẮC NGHIỆM
+        const mcqData = [
+            { id: 1, q: "Chuyển động qua lại quanh một vị trí cân bằng gọi là gì?", a: "Dao động cơ", o: ["Dao động cơ", "Chuyển động tròn đều", "Chuyển động biến đổi đều", "Dao động điều hoà"] },
+            { id: 2, q: "Dao động cơ của một vật có thể thuộc loại nào dưới đây?", a: "Tuần hoàn hoặc không tuần hoàn", o: ["Tuần hoàn hoặc không tuần hoàn", "Chỉ có thể là tuần hoàn", "Chỉ có thể là không tuần hoàn", "Luôn luôn là dao động điều hoà"] },
+            { id: 3, q: "Dao động nào sau đây là ví dụ về dao động tuần hoàn?", a: "Dao động của con lắc đồng hồ", o: ["Dao động của con lắc đồng hồ", "Dao động của cành cây khi gió thổi", "Chuyển động của chiếc xe máy trên đường", "Thả rơi tự do một hòn đá"] },
+            { id: 4, q: "Dao động của cành cây đu đưa khi gió thổi là ví dụ của loại dao động nào?", a: "Dao động không tuần hoàn", o: ["Dao động không tuần hoàn", "Dao động tuần hoàn", "Dao động điều hoà", "Dao động cưỡng bức"] },
+            { id: 5, q: "Dao động tuần hoàn đơn giản nhất là loại dao động nào?", a: "Dao động điều hoà", o: ["Dao động điều hoà", "Dao động tắt dần", "Dao động cưỡng bức", "Dao động duy trì"] },
+            { id: 6, q: "Hình dạng đồ thị biểu diễn li độ theo thời gian của dao động điều hoà là đường gì?", a: "Đường hình sin", o: ["Đường hình sin", "Đường parabol", "Đường thẳng", "Đường tròn"] },
+            { id: 7, q: "Một vật dao động điều hoà có phương trình x = A*cos(omega*t + phi). Trong đó x được gọi là gì?", a: "Li độ dao động", o: ["Li độ dao động", "Biên độ dao động", "Pha dao động", "Pha ban đầu"] },
+            { id: 8, q: "Trong phương trình x = A*cos(omega*t + phi), đại lượng A đại diện cho điều gì?", a: "Biên độ dao động", o: ["Biên độ dao động", "Li độ tức thời", "Tần số góc", "Pha ban đầu"] },
+            { id: 9, q: "Đại lượng (omega*t + phi) trong phương trình x = A*cos(omega*t + phi) gọi là gì?", a: "Pha của dao động ở thời điểm t", o: ["Pha của dao động ở thời điểm t", "Pha ban đầu", "Tần số góc", "Chu kỳ dao động"] },
+            { id: 10, q: "Góc phi trong phương trình x = A*cos(omega*t + phi) xác định đại lượng nào?", a: "Pha ban đầu tại thời điểm t = 0", o: ["Pha ban đầu tại thời điểm t = 0", "Li độ tại thời điểm t", "Tần số góc", "Biên độ cực đại"] },
+            { id: 11, q: "Khoảng thời gian ngắn nhất để vật thực hiện hết một dao động toàn phần gọi là gì?", a: "Chu kỳ dao động", o: ["Chu kỳ dao động", "Tần số dao động", "Tần số góc", "Pha ban đầu"] },
+            { id: 12, q: "Số dao động toàn phần mà vật thực hiện được trong một giây gọi là gì?", a: "Tần số dao động", o: ["Tần số dao động", "Chu kỳ dao động", "Biên độ", "Pha dao động"] },
+            { id: 13, q: "Đơn vị đo của tần số trong hệ SI là gì?", a: "Héc (Hz)", o: ["Héc (Hz)", "Giây (s)", "Radian (rad)", "Met (m)"] },
+            { id: 14, q: "Mối liên hệ giữa chu kỳ T và tần số f là gì?", a: "T = 1 / f", o: ["T = 1 / f", "T = f", "T = 2*pi*f", "T = 1 / (2*f)"] },
+            { id: 15, q: "Vật nặng của con lắc đang dao động điều hoà được gọi là gì?", a: "Vật dao động điều hoà", o: ["Vật dao động điều hoà", "Vật rơi tự do", "Chất điểm tự do", "Hệ dao động cơ"] },
+            { id: 16, q: "Vị trí mà vật nặng dừng lại khi không dao động gọi là gì?", a: "Vị trí cân bằng", o: ["Vị trí cân bằng", "Vị trí biên dương", "Vị trí biên âm", "Vị trí ngẫu nhiên"] },
+            { id: 17, q: "Độ dịch chuyển lớn nhất của vật khỏi vị trí cân bằng chính là gì?", a: "Biên độ dao động", o: ["Biên độ dao động", "Li độ", "Pha ban đầu", "Chu kỳ"] },
+            { id: 18, q: "Biên độ dao động A luôn mang giá trị như thế nào?", a: "Luôn luôn dương", o: ["Luôn luôn dương", "Luôn luôn âm", "Có thể âm hoặc dương", "Bằng 0"] },
+            { id: 19, q: "Giá trị li độ x của vật dao động điều hoà biến thiên trong khoảng nào?", a: "Từ -A đến +A", o: ["Từ -A đến +A", "Từ 0 đến +A", "Từ -infinity đến +infinity", "Chỉ mang giá trị dương"] },
+            { id: 20, q: "Đơn vị của pha dao động và pha ban đầu trong hệ SI là gì?", a: "Radian (rad)", o: ["Radian (rad)", "Héc (Hz)", "Giây (s)", "Độ (deg)"] },
+            { id: 21, q: "Đại lượng cho biết trạng thái dao động của vật ở thời điểm t là gì?", a: "Pha của dao động (omega*t + phi)", o: ["Pha của dao động (omega*t + phi)", "Biên độ A", "Chu kỳ T", "Tần số f"] },
+            { id: 22, q: "Khi vật đi qua vị trí cân bằng thì độ lớn li độ x bằng bao nhiêu?", a: "x = 0", o: ["x = 0", "x = A", "x = -A", "x = 2A"] },
+            { q: "Khi vật ở vị trí biên thì độ lớn li độ |x| đạt giá trị nào?", a: "|x| = A", o: ["|x| = A", "|x| = 0", "|x| = A/2", "|x| = 2A"] },
+            { id: 24, q: "Chuyển động nào sau đây KHÔNG phải là dao động cơ?", a: "Chuyển động của Trái Đất quanh Mặt Trời", o: ["Chuyển động của Trái Đất quanh Mặt Trời", "Dao động của con lắc đơn", "Dao động của dây đàn guitar khi gảy", "Chuyển động của màng loa khi phát âm"] },
+            { id: 25, q: "Hàm cosin trong phương trình dao động điều hoà là hàm như thế nào?", a: "Hàm tuần hoàn", o: ["Hàm tuần hoàn", "Hàm bậc nhất", "Hàm hằng", "Hàm không tuần hoàn"] },
+            { id: 26, q: "Đồ thị li độ - thời gian hình sin giúp xác định trực tiếp đại lượng nào?", a: "Biên độ A và chu kỳ T", o: ["Biên độ A và chu kỳ T", "Khối lượng của vật", "Gia tốc trọng trường", "Động năng của vật"] },
+            { id: 27, q: "Số dao động vật thực hiện được trong khoảng thời gian t là N. Chu kỳ T được tính như thế nào?", a: "T = t / N", o: ["T = t / N", "T = N / t", "T = N * t", "T = 1 / (N * t)"] },
+            { id: 28, q: "Đại lượng nào xác định vị trí ban đầu của vật lúc t = 0?", a: "Pha ban đầu phi", o: ["Pha ban đầu phi", "Chu kỳ T", "Tần số góc omega", "Biên độ A"] },
+            { id: 29, q: "Li độ x của vật dao động điều hoà có đặc điểm gì?", a: "Biến thiên điều hoà theo thời gian", o: ["Biến thiên điều hoà theo thời gian", "Không thay đổi theo thời gian", "Tăng đều theo thời gian", "Giảm đều theo thời gian"] },
+            { id: 30, q: "Khi vật thực hiện một dao động toàn phần thì vật đi được quãng đường bằng bao nhiêu biên độ?", a: "4A", o: ["4A", "2A", "A", "3A"] }
+        ];
 
-            // DẠNG TRẮC NGHIỆM ĐÚNG / SAI (4 CÂU)
+        // DATA 4 CÂU ĐÚNG / SAI
+        const tfData = [
             {
-                type: "tf",
-                tag: "Câu Hỏi Đúng / Sai",
-                q: "Phát biểu sau ĐÚNG hay SAI: 'Sau những khoảng thời gian bằng nhau, vật trở lại vị trí cũ theo hướng cũ thì dao động đó là dao động tuần hoàn.'",
-                a: "Đúng",
-                o: ["Đúng", "Sai"]
+                id: 1,
+                title: "Câu 1: Về định nghĩa Dao động cơ và Dao động tuần hoàn",
+                items: [
+                    { id: "1a", text: "Dao động cơ là chuyển động qua lại quanh vị trí cân bằng.", correct: true },
+                    { id: "1b", text: "Mọi dao động cơ đều là dao động tuần hoàn.", correct: false },
+                    { id: "1c", text: "Dao động của chiếc lá thu rơi trong gió là dao động không tuần hoàn.", correct: true },
+                    { id: "1d", text: "Dao động của con lắc lò xo là dao động không tuần hoàn.", correct: false }
+                ]
             },
             {
-                type: "tf",
-                tag: "Câu Hỏi Đúng / Sai",
-                q: "Phát biểu sau ĐÚNG hay SAI: 'Dao động của cành cây đu đưa khi gió thổi là một ví dụ về dao động tuần hoàn.'",
-                a: "Sai",
-                o: ["Đúng", "Sai"]
+                id: 2,
+                title: "Câu 2: Về đồ thị và khái niệm Dao động điều hoà",
+                items: [
+                    { id: "2a", text: "Dao động điều hoà là dao động tuần hoàn đơn giản nhất.", correct: true },
+                    { id: "2b", text: "Đồ thị biểu diễn sự phụ thuộc của li độ vào thời gian là đường parabol.", correct: false },
+                    { id: "2c", text: "Có thể mô tả dao động điều hoà bằng hàm sin hoặc cosin.", correct: true },
+                    { id: "2d", text: "Độ lệch cực đại của vật khỏi vị trí cân bằng gọi là li độ.", correct: false }
+                ]
             },
             {
-                type: "tf",
-                tag: "Câu Hỏi Đúng / Sai",
-                q: "Trong phương trình dao động điều hoà x = A*cos(omega*t + phi), đại lượng (omega*t + phi) đại diện cho pha ban đầu tại thời điểm t = 0.",
-                a: "Sai",
-                o: ["Đúng", "Sai"]
+                id: 3,
+                title: "Câu 3: Về các đại lượng trong phương trình x = A*cos(omega*t + phi)",
+                items: [
+                    { id: "3a", text: "A là biên độ dao động và luôn mang giá trị dương.", correct: true },
+                    { id: "3b", text: "x là li độ dao động và luôn lớn hơn 0.", correct: false },
+                    { id: "3c", text: "(omega*t + phi) xác định trạng thái dao động ở thời điểm t.", correct: true },
+                    { id: "3d", text: "phi là pha ban đầu xác định trạng thái lúc t = 0.", correct: true }
+                ]
             },
             {
-                type: "tf",
-                tag: "Câu Hỏi Đúng / Sai",
-                q: "Mô tả: 'Vật nặng của con lắc đang dao động điều hoà được gọi là vật dao động điều hoà.'",
-                a: "Đúng",
-                o: ["Đúng", "Sai"]
+                id: 4,
+                title: "Câu 4: Về biên độ và vị trí cân bằng",
+                items: [
+                    { id: "4a", text: "Khi vật qua vị trí cân bằng thì li độ x = 0.", correct: true },
+                    { id: "4b", text: "Khoảng cách từ vị trí biên âm đến vị trí biên dương là 2A.", correct: true },
+                    { id: "4c", text: "Li độ x có thể nhận giá trị âm.", correct: true },
+                    { id: "4d", text: "Biên độ A bị giảm dần theo thời gian trong dao động điều hoà lý tưởng.", correct: false }
+                ]
             }
         ];
 
-        let quizData = [];
-        let currentIndex = 0;
-        let score = 0;
-        let answered = false;
-
-        function shuffle(array) {
-            let cur = array.length, randomIdx;
-            let arr = [...array];
-            while (cur !== 0) {
-                randomIdx = Math.floor(Math.random() * cur);
-                cur--;
-                [arr[cur], arr[randomIdx]] = [arr[randomIdx], arr[cur]];
+        // DATA 3 CÂU TỰ LUẬN
+        const essayData = [
+            {
+                id: 1,
+                q: "Câu 1: Dao động cơ là gì? Nêu sự khác nhau giữa dao động tuần hoàn và dao động không tuần hoàn kèm ví dụ.",
+                key: "Dao động cơ là chuyển động qua lại quanh vị trí cân bằng. Dao động tuần hoàn sau khoảng thời gian T lặp lại trạng thái cũ (ví dụ: con lắc đồng hồ). Dao động không tuần hoàn không có tính lặp lại (ví dụ: cành cây đu đưa)."
+            },
+            {
+                id: 2,
+                q: "Câu 2: Viết phương trình tổng quát của dao động điều hoà và giải thích rõ ý nghĩa các đại lượng x, A, (omega*t + phi), phi.",
+                key: "x = A*cos(omega*t + phi). Trong đó: x là li độ (độ lệch khỏi VTCB), A là biên độ (li độ cực đại > 0), (omega*t + phi) là pha dao động ở thời điểm t, phi là pha ban đầu lúc t = 0."
+            },
+            {
+                id: 3,
+                q: "Câu 3: Trình bày đặc điểm đồ thị biểu diễn li độ theo thời gian của con lắc lò xo trong SGK.",
+                key: "Đồ thị có dạng đường cong hình sin biến thiên tuần hoàn theo thời gian giữa hai giá trị cực đại +A và cực tiểu -A."
             }
-            return arr;
+        ];
+
+        // RENDER TRẮC NGHIỆM
+        function renderMCQ() {
+            const container = document.getElementById('mcq-container');
+            container.innerHTML = mcqData.map((item, idx) => `
+                <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                    <div class="font-medium text-slate-100 text-sm md:text-base">
+                        <span class="text-purple-400 font-bold">Câu ${idx + 1}:</span> ${item.q}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        ${item.o.map((opt, oIdx) => `
+                            <label class="p-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-lg flex items-center space-x-3 cursor-pointer text-xs md:text-sm transition">
+                                <input type="radio" name="mcq-${item.id}" value="${opt}" class="accent-purple-500">
+                                <span>${['A', 'B', 'C', 'D'][oIdx]}.${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
         }
 
-        const startScreen = document.getElementById('start-screen');
-        const quizScreen = document.getElementById('quiz-screen');
-        const resultScreen = document.getElementById('result-screen');
-        const progressBadge = document.getElementById('quiz-progress-badge');
-
-        const startBtn = document.getElementById('start-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const restartBtn = document.getElementById('restart-btn');
-
-        const currentQuestionNumEl = document.getElementById('current-question-num');
-        const totalQuestionsNumEl = document.getElementById('total-questions-num');
-        const progressBarEl = document.getElementById('progress-bar');
-        const questionTextEl = document.getElementById('question-text');
-        const questionTagEl = document.getElementById('question-tag');
-        const optionsContainerEl = document.getElementById('options-container');
-        const feedbackEl = document.getElementById('feedback');
-
-        totalQuestionsNumEl.textContent = rawData.length;
-
-        function initQuiz() {
-            quizData = rawData.map(item => ({
-                ...item,
-                o: item.type === "mcq" ? shuffle(item.o) : item.o
-            }));
-            currentIndex = 0;
-            score = 0;
-            
-            startScreen.classList.add('hidden');
-            resultScreen.classList.add('hidden');
-            quizScreen.classList.remove('hidden');
-            progressBadge.classList.remove('hidden');
-
-            loadQuestion();
+        // RENDER ĐÚNG / SAI (TOGGLE BUTTON)
+        function renderTF() {
+            const container = document.getElementById('tf-container');
+            container.innerHTML = tfData.map((qGroup) => `
+                <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                    <h3 class="font-bold text-blue-300 text-sm">${qGroup.title}</h3>
+                    <div class="space-y-2">
+                        ${qGroup.items.map(item => `
+                            <div class="p-3 bg-slate-800/80 border border-slate-700 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                                <span class="text-xs md:text-sm text-slate-200"><b>${item.id}.</b>${item.text}</span>
+                                <div class="flex items-center space-x-2 flex-shrink-0">
+                                    <button type="button" id="btn-true-${item.id}" onclick="setTF('${item.id}', true)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-emerald-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">
+                                        Đúng
+                                    </button>
+                                    <button type="button" id="btn-false-${item.id}" onclick="setTF('${item.id}', false)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-rose-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">
+                                        Sai
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function loadQuestion() {
-            answered = false;
-            nextBtn.classList.add('hidden');
-            feedbackEl.classList.add('hidden');
-            
-            const currentQ = quizData[currentIndex];
-            currentQuestionNumEl.textContent = currentIndex + 1;
-            
-            const progressPercent = ((currentIndex) / quizData.length) * 100;
-            progressBarEl.style.width = `${progressPercent}%`;
+        const userTFAnswers = {};
+        function setTF(itemId, val) {
+            userTFAnswers[itemId] = val;
+            const btnTrue = document.getElementById(`btn-true-${itemId}`);
+            const btnFalse = document.getElementById(`btn-false-${itemId}`);
 
-            questionTagEl.textContent = currentQ.tag;
-            questionTextEl.textContent = currentQ.q;
-            optionsContainerEl.innerHTML = '';
+            if (val === true) {
+                btnTrue.className = "px-3 py-1 bg-emerald-600 text-white rounded-md text-xs font-semibold shadow";
+                btnFalse.className = "px-3 py-1 bg-slate-700 text-slate-300 rounded-md text-xs font-semibold opacity-50";
+            } else {
+                btnFalse.className = "px-3 py-1 bg-rose-600 text-white rounded-md text-xs font-semibold shadow";
+                btnTrue.className = "px-3 py-1 bg-slate-700 text-slate-300 rounded-md text-xs font-semibold opacity-50";
+            }
+        }
 
-            const optionLetters = ['A', 'B', 'C', 'D'];
+        // RENDER TỰ LUẬN
+        function renderEssay() {
+            const container = document.getElementById('essay-container');
+            container.innerHTML = essayData.map((item) => `
+                <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                    <div class="font-medium text-amber-300 text-sm md:text-base">${item.q}</div>
+                    <textarea id="essay-input-${item.id}" rows="3" class="w-full p-3 bg-slate-800 border border-slate-700 focus:border-amber-500 rounded-xl text-slate-100 text-xs md:text-sm outline-none" placeholder="Nhập câu trả lời của bạn..."></textarea>
+                    <div id="essay-key-${item.id}" class="hidden p-3 bg-slate-800/90 border border-amber-500/40 rounded-xl text-xs text-amber-200">
+                        <b>Đáp án gợi ý:</b> ${item.key}
+                    </div>
+                </div>
+            `).join('');
+        }
 
-            currentQ.o.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = `option-btn w-full p-4 text-left rounded-xl border bg-slate-800/80 border-slate-700 hover:border-slate-500 text-slate-200 font-normal flex items-start space-x-3.5 cursor-pointer`;
-                btn.onclick = () => selectOption(opt, currentQ.a, btn);
-
-                const letter = currentQ.type === "mcq" ? optionLetters[idx] : (opt === "Đúng" ? "✓" : "✗");
-                btn.innerHTML = `
-                    <span class="w-7 h-7 rounded-lg bg-slate-700/60 border border-slate-600 text-slate-300 font-semibold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">${letter}</span>
-                    <span class="text-sm md:text-base leading-snug flex-grow">${opt}</span>
-                `;
-                optionsContainerEl.appendChild(btn);
+        // CHECK TẤT CẢ KẾT QUẢ
+        function checkAllAnswers() {
+            let correctMCQ = 0;
+            mcqData.forEach(item => {
+                const checked = document.querySelector(`input[name="mcq-${item.id}"]:checked`);
+                if (checked && checked.value === item.a) correctMCQ++;
             });
-        }
 
-        function selectOption(selected, correct, selectedBtn) {
-            if (answered) return;
-            answered = true;
-
-            const allButtons = optionsContainerEl.querySelectorAll('button');
-            allButtons.forEach(btn => btn.disabled = true);
-
-            const isCorrect = selected === correct;
-
-            if (isCorrect) {
-                score++;
-                selectedBtn.classList.remove('bg-slate-800/80', 'border-slate-700');
-                selectedBtn.classList.add('bg-emerald-950/80', 'border-emerald-500', 'text-emerald-200');
-                feedbackEl.className = "mt-6 p-4 rounded-xl border bg-emerald-950/60 border-emerald-800/60 text-emerald-300 text-sm flex items-center space-x-3";
-                feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i><div><strong>Chính xác!</strong> Đáp án là: ${correct}</div>`;
-            } else {
-                selectedBtn.classList.remove('bg-slate-800/80', 'border-slate-700');
-                selectedBtn.classList.add('bg-rose-950/80', 'border-rose-500', 'text-rose-200');
-
-                allButtons.forEach(btn => {
-                    if (btn.innerText.includes(correct)) {
-                        btn.classList.remove('bg-slate-800/80', 'border-slate-700');
-                        btn.classList.add('bg-emerald-950/40', 'border-emerald-600/80', 'text-emerald-300');
-                    }
+            let correctTF = 0;
+            let totalTF = 0;
+            tfData.forEach(qGroup => {
+                qGroup.items.forEach(item => {
+                    totalTF++;
+                    if (userTFAnswers[item.id] === item.correct) correctTF++;
                 });
+            });
 
-                feedbackEl.className = "mt-6 p-4 rounded-xl border bg-rose-950/60 border-rose-800/60 text-rose-300 text-sm flex items-center space-x-3";
-                feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-400 text-xl"></i><div><strong>Chưa chính xác!</strong> Đáp án đúng là: <u>${correct}</u></div>`;
-            }
+            essayData.forEach(item => {
+                document.getElementById(`essay-key-${item.id}`).classList.remove('hidden');
+            });
 
-            feedbackEl.classList.remove('hidden');
-
-            if (currentIndex < quizData.length - 1) {
-                nextBtn.classList.remove('hidden');
-            } else {
-                nextBtn.innerHTML = `<span>Xem Kết Quả</span><i class="fa-solid fa-flag-checkered text-xs"></i>`;
-                nextBtn.classList.remove('hidden');
-            }
+            const resultEl = document.getElementById('total-result');
+            resultEl.classList.remove('hidden');
+            resultEl.innerHTML = `
+                <div>Trắc nghiệm: <span class="text-purple-400">${correctMCQ}/30</span> đúng</div>
+                <div>Đúng / Sai: <span class="text-blue-400">${correctTF}/${totalTF}</span> ý đúng</div>
+                <div class="text-xs font-normal text-slate-400 mt-1">* Vui lòng đối chiếu câu trả lời tự luận ở ngay bên dưới mỗi câu!</div>
+            `;
         }
 
-        if (startBtn) startBtn.onclick = initQuiz;
-        if (restartBtn) restartBtn.onclick = initQuiz;
-
-        if (nextBtn) {
-            nextBtn.onclick = () => {
-                if (currentIndex < quizData.length - 1) {
-                    currentIndex++;
-                    loadQuestion();
-                } else {
-                    showResults();
-                }
-            };
-        }
-
-        function showResults() {
-            quizScreen.classList.add('hidden');
-            progressBadge.classList.add('hidden');
-            resultScreen.classList.remove('hidden');
-
-            const total = quizData.length;
-            const percentage = Math.round((score / total) * 100);
-
-            document.getElementById('score-text').textContent = `${score} / ${total}`;
-            document.getElementById('percentage-text').textContent = `${percentage}%`;
-            
-            const resultBar = document.getElementById('result-bar');
-            resultBar.style.width = `${percentage}%`;
-        }
+        window.onload = () => {
+            renderMCQ();
+            renderTF();
+            renderEssay();
+        };
     </script>
 </body>
 </html>
