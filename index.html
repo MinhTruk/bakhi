@@ -21,23 +21,15 @@
             opacity: 1;
             transition: max-height 0.5s ease-in, opacity 0.3s ease-in;
         }
-        .folder-icon {
-            transition: transform 0.2s ease;
-        }
-        .folder-header.active .folder-icon {
-            transform: rotate(90deg);
-        }
-        /* Custom Markdown styling for README viewer */
+        .folder-icon { transition: transform 0.2s ease; }
+        .folder-header.active .folder-icon { transform: rotate(90deg); }
         .markdown-body h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; color: #f8fafc; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
         .markdown-body h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; color: #cbd5e1; }
-        .markdown-body h3 { font-size: 1.1rem; font-weight: 600; margin-top: 0.75rem; margin-bottom: 0.5rem; color: #e2e8f0; }
         .markdown-body p { margin-bottom: 0.75rem; font-size: 0.9rem; color: #94a3b8; line-height: 1.6; }
         .markdown-body ul { list-style-type: disc; padding-left: 1.25rem; margin-bottom: 0.75rem; color: #94a3b8; font-size: 0.9rem; }
         .markdown-body table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem; }
         .markdown-body th, .markdown-body td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
         .markdown-body th { background-color: #1e293b; color: #f1f5f9; }
-        .markdown-body pre { background-color: #0f172a; padding: 0.75rem; rounded: 0.5rem; overflow-x: auto; border: 1px solid #334155; }
-        .markdown-body code { font-family: monospace; background-color: #1e293b; padding: 0.15rem 0.3rem; rounded: 0.25rem; color: #38bdf8; font-size: 0.85rem; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
@@ -79,21 +71,15 @@
                 </div>
                 <h2 class="text-2xl md:text-3xl font-bold mb-2 text-white">Thư Mục Tài Liệu & Ôn Tập Hàng Kỳ</h2>
                 <p class="text-slate-300 text-sm max-w-2xl leading-relaxed">
-                    Nhấp vào các mục <b>KTTX (Thường xuyên)</b> hoặc <b>KTGK/KTCK (Định kỳ)</b> bên dưới để mở danh sách 10 môn học kèm đường dẫn trực tiếp.
+                    Chọn các đợt kiểm tra <b>KTTX (Thường xuyên)</b> hoặc <b>KTGK / KTCK (Định kỳ)</b> để tới trang chủ môn học tương ứng.
                 </p>
-            </div>
-            <div class="flex-shrink-0">
-                <button onclick="openReadmeModal()" class="w-full sm:w-auto px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-indigo-500/40 rounded-xl text-indigo-300 font-medium text-sm transition flex items-center justify-center space-x-2 shadow-lg">
-                    <i class="fa-regular fa-file-lines text-base"></i>
-                    <span>Xem Hướng Dẫn & Giới Thiệu (README)</span>
-                </button>
             </div>
         </section>
 
         <!-- Categories Tree -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-            <!-- KHU VỰC 1: KIỂM TRA THƯỜNG XUYÊN (KTTX) -->
+            <!-- KTTX -->
             <div class="space-y-4">
                 <div class="flex items-center space-x-3 pb-2 border-b border-indigo-500/40">
                     <span class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">
@@ -101,11 +87,10 @@
                     </span>
                     <div>
                         <h3 class="text-xl font-bold text-white">Kiểm Tra Thường Xuyên (KTTX)</h3>
-                        <p class="text-xs text-slate-400">Các bài kiểm tra 15 phút, 1 tiết theo từng học kỳ</p>
+                        <p class="text-xs text-slate-400">Các bài kiểm tra ngắn 15 phút, 1 tiết</p>
                     </div>
                 </div>
 
-                <!-- Thư mục KTTX GK1 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-gk1', this)">
                         <span class="flex items-center space-x-3">
@@ -120,7 +105,6 @@
                     </div>
                 </div>
 
-                <!-- Thư mục KTTX HK1 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-hk1', this)">
                         <span class="flex items-center space-x-3">
@@ -135,7 +119,6 @@
                     </div>
                 </div>
 
-                <!-- Thư mục KTTX GK2 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-gk2', this)">
                         <span class="flex items-center space-x-3">
@@ -150,7 +133,6 @@
                     </div>
                 </div>
 
-                <!-- Thư mục KTTX HK2 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-hk2', this)">
                         <span class="flex items-center space-x-3">
@@ -166,7 +148,7 @@
                 </div>
             </div>
 
-            <!-- KHU VỰC 2: KIỂM TRA ĐỊNH KỲ (KTGK & KTCK) -->
+            <!-- Định Kỳ -->
             <div class="space-y-4">
                 <div class="flex items-center space-x-3 pb-2 border-b border-emerald-500/40">
                     <span class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20">
@@ -174,11 +156,10 @@
                     </span>
                     <div>
                         <h3 class="text-xl font-bold text-white">Kiểm Tra Định Kỳ (GK & CK)</h3>
-                        <p class="text-xs text-slate-400">Bài kiểm tra Giữa Kỳ và Cuối Kỳ chính thức</p>
+                        <p class="text-xs text-slate-400">Bài kiểm tra Giữa Kỳ và Cuối Kỳ tập trung</p>
                     </div>
                 </div>
 
-                <!-- Thư mục KTGK 1 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktgk-1', this)">
                         <span class="flex items-center space-x-3">
@@ -193,7 +174,6 @@
                     </div>
                 </div>
 
-                <!-- Thư mục KTCK 1 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktck-1', this)">
                         <span class="flex items-center space-x-3">
@@ -208,7 +188,6 @@
                     </div>
                 </div>
 
-                <!-- Thư mục KTGK 2 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktgk-2', this)">
                         <span class="flex items-center space-x-3">
@@ -223,7 +202,6 @@
                     </div>
                 </div>
 
-                <!-- Thư mục KTCK 2 -->
                 <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
                     <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktck-2', this)">
                         <span class="flex items-center space-x-3">
@@ -243,10 +221,9 @@
         </div>
     </main>
 
-    <!-- README Viewer Modal -->
+    <!-- Modal Xem README -->
     <div id="readme-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-            <!-- Modal Header -->
             <div class="px-6 py-4 border-b border-slate-700/80 flex items-center justify-between bg-slate-800/90 sticky top-0">
                 <div class="flex items-center space-x-2.5">
                     <i class="fa-brands fa-markdown text-sky-400 text-xl"></i>
@@ -256,7 +233,6 @@
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-            <!-- Modal Body / Content -->
             <div class="p-6 overflow-y-auto flex-grow bg-slate-900/90">
                 <div id="readme-content" class="markdown-body text-slate-300">
                     <div class="flex items-center justify-center py-12 text-slate-400 space-x-2">
@@ -270,11 +246,10 @@
 
     <!-- Footer -->
     <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
-        Repository: MinhTruk/bakhi • Dynamic Directory UI
+        Repository: MinhTruk/bakhi • Homepage System
     </footer>
 
     <script>
-        // Danh sách 10 môn học
         const subjects = [
             { id: 'tin', name: 'Tin Học', icon: 'fa-laptop-code', color: 'text-sky-400' },
             { id: 'su', name: 'Lịch Sử', icon: 'fa-landmark', color: 'text-amber-400' },
@@ -288,7 +263,6 @@
             { id: 'gddp', name: 'GDĐP', icon: 'fa-map-location-dot', color: 'text-orange-400' }
         ];
 
-        // Khởi tạo danh sách môn học trong từng thư mục
         document.querySelectorAll('[data-path]').forEach(container => {
             const basePath = container.getAttribute('data-path');
             container.innerHTML = subjects.map(sub => `
@@ -299,7 +273,6 @@
             `).join('');
         });
 
-        // Đóng / Mở thư mục
         function toggleFolder(folderId, btnEl) {
             const content = document.getElementById(folderId);
             const isOpen = content.classList.contains('open');
@@ -313,14 +286,12 @@
             }
         }
 
-        // Đọc & Đóng Modal README.md
         async function openReadmeModal() {
             const modal = document.getElementById('readme-modal');
             const contentEl = document.getElementById('readme-content');
             modal.classList.remove('hidden');
 
             try {
-                // Fetch trực tiếp file README.md trong repository
                 const res = await fetch('./README.md');
                 if (!res.ok) throw new Error("Không thể tải file README.md");
                 const mdText = await res.text();
@@ -329,7 +300,7 @@
                 contentEl.innerHTML = `
                     <div class="p-4 bg-rose-950/60 border border-rose-800 text-rose-300 rounded-xl text-sm">
                         <i class="fa-solid fa-circle-exclamation mr-1"></i>
-                        Chưa tìm thấy file <strong>README.md</strong> ở thư mục gốc hoặc bị lỗi tải. Bạn hãy tạo file README.md cùng cấp với index.html nhé!
+                        Không thể đọc file <strong>README.md</strong>.
                     </div>
                 `;
             }
