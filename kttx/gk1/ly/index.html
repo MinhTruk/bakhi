@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ Môn Vật Lý - MinhTruk/bakhi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-purple-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-purple-600 rounded-xl text-white shadow-lg shadow-purple-600/30">
+                    <i class="fa-solid fa-atom text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">Môn Vật Lý</h1>
+                    <p class="text-xs text-slate-400">Trang chủ môn học • Ôn tập & Kiểm tra</p>
+                </div>
+            </div>
+            
+            <!-- Nút về Index chính -->
+            <a href="../../index.html" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl text-xs font-medium text-slate-200 transition flex items-center space-x-2 shadow-md">
+                <i class="fa-solid fa-house text-purple-400"></i>
+                <span>Về Index Chính</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl w-full mx-auto p-4 md:p-8 flex-grow space-y-8">
+
+        <!-- Banner Chào Mừng -->
+        <section class="bg-gradient-to-r from-purple-900/60 via-slate-800 to-slate-800 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+                <span class="px-3 py-1 bg-purple-950/80 text-purple-300 border border-purple-800/50 text-xs font-semibold rounded-full uppercase tracking-wider mb-3 inline-block">
+                    Physics Hub
+                </span>
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">Trung Tâm Ôn Tập Môn Vật Lý</h2>
+                <p class="text-slate-300 text-sm max-w-2xl leading-relaxed">
+                    Lựa chọn các chuyên đề ôn tập Lý thuyết, hệ thống Công thức quan trọng hoặc thử sức với các Đề thi kiểm tra kiến thức dưới đây.
+                </p>
+            </div>
+            <div class="flex items-center space-x-2 text-purple-400 text-3xl hidden md:flex">
+                <i class="fa-solid fa-square-root-variable"></i>
+                <i class="fa-solid fa-orbit"></i>
+                <i class="fa-solid fa-bolt"></i>
+            </div>
+        </section>
+
+        <!-- Khung danh mục bài học & bài thi -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- MỤC 1: LÝ THUYẾT (3 BÀI) -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-4 hover:border-purple-500/40 transition">
+                <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                    <span class="p-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl">
+                        <i class="fa-solid fa-book-open text-lg"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Ôn Tập Lý Thuyết</h3>
+                        <p class="text-xs text-slate-400">3 bài củng cố khái niệm</p>
+                    </div>
+                </div>
+
+                <ul class="space-y-3">
+                    <li>
+                        <a href="./ly_thuyet_1.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-blue-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-blue-500/20 text-blue-400 rounded-lg text-xs font-bold flex items-center justify-center">1</span>
+                                <span class="text-sm font-medium">Lý thuyết 1: Cơ học & Động lực học</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./ly_thuyet_2.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-blue-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-blue-500/20 text-blue-400 rounded-lg text-xs font-bold flex items-center justify-center">2</span>
+                                <span class="text-sm font-medium">Lý thuyết 2: Năng lượng & Công suất</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./ly_thuyet_3.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-blue-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-blue-500/20 text-blue-400 rounded-lg text-xs font-bold flex items-center justify-center">3</span>
+                                <span class="text-sm font-medium">Lý thuyết 3: Động lượng & Va chạm</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- MỤC 2: CÔNG THỨC (3 BÀI) -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-4 hover:border-purple-500/40 transition">
+                <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                    <span class="p-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl">
+                        <i class="fa-solid fa-square-root-variable text-lg"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Ôn Tập Công Thức</h3>
+                        <p class="text-xs text-slate-400">3 bài tổng hợp công thức ghi nhớ</p>
+                    </div>
+                </div>
+
+                <ul class="space-y-3">
+                    <li>
+                        <a href="./cong_thuc_1.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-emerald-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-bold flex items-center justify-center">1</span>
+                                <span class="text-sm font-medium">Công thức 1: Chuyển động & Chuyển động tròn</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./cong_thuc_2.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-emerald-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-bold flex items-center justify-center">2</span>
+                                <span class="text-sm font-medium">Công thức 2: Moment lực & Cân bằng vật rắn</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./cong_thuc_3.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-emerald-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <span class="w-7 h-7 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-bold flex items-center justify-center">3</span>
+                                <span class="text-sm font-medium">Công thức 3: Công, Cơ năng & Hiệu suất</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- MỤC 3: BÀI THI THỰC HÀNH / TỰ LUYỆN -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-4 hover:border-purple-500/40 transition">
+                <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                    <span class="p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl">
+                        <i class="fa-solid fa-file-signature text-lg"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Bài Thi & Kiểm Tra</h3>
+                        <p class="text-xs text-slate-400">Làm bài tập tổng hợp tính điểm</p>
+                    </div>
+                </div>
+
+                <ul class="space-y-3">
+                    <li>
+                        <a href="./bai_thi_1.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-amber-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-pen-to-square text-amber-400"></i>
+                                <span class="text-sm font-medium">Đề Thi Trắc Nghiệm Tự Luyện #1</span>
+                            </span>
+                            <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-medium">15 Phút</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./bai_thi_2.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-amber-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-pen-to-square text-amber-400"></i>
+                                <span class="text-sm font-medium">Đề Thi Tổng Hợp Định Kỳ #2</span>
+                            </span>
+                            <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-medium">45 Phút</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./bai_thi_tu_luan.html" class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-purple-500/50 rounded-xl flex items-center justify-between text-slate-200 transition group">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i>
+                                <span class="text-sm font-medium">Bài Thi Tự Luận AI Chấm Điểm</span>
+                            </span>
+                            <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-medium">AI Check</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Nút Điều Hướng Nhanh -->
+        <div class="p-6 bg-slate-800/40 border border-slate-700/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-circle-info text-purple-400 text-xl"></i>
+                <p class="text-xs text-slate-400">Tất cả bài thi trắc nghiệm đều tích hợp chế độ ngẫu nhiên (Random 100%) câu hỏi và đáp án khi làm lại bài.</p>
+            </div>
+            <a href="../../index.html" class="w-full sm:w-auto px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-purple-600/30 transition text-center whitespace-nowrap">
+                Trở Về Danh Mục Môn Học
+            </a>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        Môn Vật Lý Hub • Repository: MinhTruk/bakhi
+    </footer>
+
+</body>
+</html>
