@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công Thức Bài 2: Các Đại Lượng Đặc Trưng Của Dao Động Điều Hoà - Vật Lý 11</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="./indexly.html" class="p-2 bg-emerald-600 rounded-lg text-white hover:bg-emerald-500 transition">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </a>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">Bài 2: Công Thức Các Đại Lượng Đặc Trưng</h1>
+                    <p class="text-xs text-slate-400">50 Trắc nghiệm • 6 Đúng/Sai • 5 Tự luận tính toán (Có giải thích)</p>
+                </div>
+            </div>
+            <a href="../../../index.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
+                <i class="fa-solid fa-house text-emerald-400"></i>
+                <span>Index</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow space-y-8">
+
+        <!-- PART 1: 50 CÂU TRẮC NGHIỆM CÔNG THỨC -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                    <span class="p-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl">
+                        <i class="fa-solid fa-square-root-variable text-lg"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Phần 1: Trắc Nghiệm Công Thức (50 Câu)</h2>
+                        <p class="text-xs text-slate-400">Đọc đồ thị x-t, tính toán chu kỳ, tần số, độ lệch pha</p>
+                    </div>
+                </div>
+            </div>
+            <div id="mcq-container" class="space-y-6"></div>
+        </section>
+
+        <!-- PART 2: 6 CÂU ĐÚNG / SAI CÔNG THỨC -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                    <span class="p-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl">
+                        <i class="fa-solid fa-toggle-on text-lg"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Phần 2: Câu Hỏi Đúng / Sai (6 Câu)</h2>
+                        <p class="text-xs text-slate-400">Kiểm tra tính đúng sai của biểu thức toán lý</p>
+                    </div>
+                </div>
+            </div>
+            <div id="tf-container" class="space-y-6"></div>
+        </section>
+
+        <!-- PART 3: 5 CÂU TỰ LUẬN TÍNH TOÁN -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                    <span class="p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl">
+                        <i class="fa-solid fa-calculator text-lg"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Phần 3: Bài Tập Tự Luận Tính Toán (5 Câu)</h2>
+                        <p class="text-xs text-slate-400">Giải bài tập đồ thị mẫu SGK Bài 2</p>
+                    </div>
+                </div>
+            </div>
+            <div id="essay-container" class="space-y-6"></div>
+        </section>
+
+        <!-- SUBMIT -->
+        <div class="p-6 bg-slate-800 border border-slate-700 rounded-2xl text-center space-y-4 shadow-2xl">
+            <button type="button" onclick="checkAllAnswers()" class="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Nộp Bài & Kiểm Tra Kết Quả</span>
+            </button>
+            <div id="total-result" class="hidden p-4 rounded-xl bg-slate-900 border border-emerald-500/50 text-slate-200 font-bold text-lg"></div>
+        </div>
+
+    </main>
+
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        Bài 2: Các Đại Lượng Đặc Trưng Của Dao Động Điều Hoà • Tóm Tắt Công Thức & Bài Tập Nâng Cao
+    </footer>
+
+    <script>
+        const rawMcqData = [
+            { id: 1, q: "Từ đồ thị Hình 2.1 SGK (đỉnh đồ thị ở 0,2 m và 1 chu kỳ dao động mất 0,4 s), biên độ A của vật là:", a: "0,2 m", o: ["0,2 m", "0,4 m", "0,1 m", "0,8 m"], exp: "Giá trị cực đại trên trục tung là A = 0,2 m." },
+            { id: 2, q: "Từ đồ thị Hình 2.1 SGK, khoảng thời gian thực hiện 1 dao động toàn phần T bằng:", a: "0,4 s", o: ["0,4 s", "0,2 s", "0,1 s", "0,8 s"], exp: "Đồ thị lặp lại trạng thái ban đầu sau T = 0,4 s." },
+            { id: 3, q: "Tần số dao động f của vật trong Hình 2.1 SGK là:", a: "2,5 Hz", o: ["2,5 Hz", "0,4 Hz", "5 Hz", "1,25 Hz"], exp: "f = 1 / T = 1 / 0,4 = 2,5 Hz." },
+            { id: 4, q: "Tần số góc ω của vật trong Hình 2.1 SGK là:", a: "5π rad/s", o: ["5π rad/s", "2,5π rad/s", "2π rad/s", "10π rad/s"], exp: "ω = 2π / T = 2π / 0,4 = 5π rad/s." },
+            { id: 5, q: "Trong Hình 2.1 SGK, tại thời điểm t = 0,1 s và t = 0,3 s, li độ x của vật bằng:", a: "x = 0 m", o: ["x = 0 m", "x = 0,2 m", "x = -0,2 m", "x = 0,1 m"], exp: "Đồ thị cắt trục hoành t tại 0,1 s và 0,3 s => x = 0." },
+            { id: 6, q: "Trong Hình 2.1 SGK, tại thời điểm t = 0 s và t = 0,2 s, li độ x của vật lần lượt là:", a: "x = 0,1 m và x = -0,2 m", o: ["x = 0,1 m và x = -0,2 m", "x = 0 m và x = 0,2 m", "x = 0,2 m và x = -0,2 m", "x = 0 m và x = 0 m"], exp: "Tại t = 0 s, x = 0,1 m; tại t = 0,2 s đồ thị ở đáy x = -0,2 m." },
+            { id: 7, q: "Hai dao động 1 và 2 trong Hình 2.2 SGK có cùng chu kỳ T. Khoảng thời gian dao động 1 đạt đỉnh cực đại sớm hơn dao động 2 là:", a: "T / 4", o: ["T / 4", "T / 2", "T", "3T / 4"], exp: "SGK nêu rõ dao động 1 đạt giá trị cực đại sớm hơn dao động 2 một khoảng thời gian T/4." },
+            { id: 8, q: "Độ lệch pha giữa hai dao động 1 và 2 trong Hình 2.2 SGK là:", a: "π / 2 rad", o: ["π / 2 rad", "π rad", "2π rad", "π / 4 rad"], exp: "Khoảng thời gian T/4 tương ứng với góc lệch Δφ = (2π/T).(T/4) = π/2 rad." },
+            { id: 9, q: "Phương trình dao động 1 trong Hình 2.2 SGK (biết A1 = A, φ1 = 0) là:", a: "x1 = A.cos(ωt)", o: ["x1 = A.cos(ωt)", "x1 = A.cos(ωt - π/2)", "x1 = A.cos(ωt + π/2)", "x1 = A.cos(ωt + π)"], exp: "Tại t = 0, vật 1 ở biên dương nên φ1 = 0 => x1 = A.cos(ωt)." },
+            { id: 10, q: "Phương trình dao động 2 trong Hình 2.2 SGK (trễ pha π/2 so với dao động 1) là:", a: "x2 = A.cos(ωt - π/2)", o: ["x2 = A.cos(ωt - π/2)", "x2 = A.cos(ωt + π/2)", "x2 = A.cos(ωt)", "x2 = A.cos(ωt + π)"], exp: "Vật 2 trễ pha π/2 nên φ2 = -π/2 => x2 = A.cos(ωt - π/2)." },
+            { id: 11, q: "Trong Hình 2.3 SGK, con lắc tại t = 0 s có vị trí và hướng chuyển động là:", a: "Ở biên âm x = -A và dịch chuyển về VTCB", o: ["Ở biên âm x = -A và dịch chuyển về VTCB", "Ở VTCB và dịch chuyển về biên dương", "Ở biên dương x = +A và dịch chuyển về VTCB", "Ở VTCB và dịch chuyển về biên âm"], exp: "Tại t = 0, đồ thị bắt đầu ở đáy -A và đi lên VTCB." },
+            { id: 12, q: "Pha ban đầu φ của dao động trong Hình 2.3 SGK (xuất phát từ x = -A) là:", a: "π rad (hoặc -π rad)", o: ["π rad (hoặc -π rad)", "0 rad", "π / 2 rad", "-π / 2 rad"], exp: "x(0) = -A => A.cos(φ) = -A => cos(φ) = -1 => φ = π rad." },
+            { id: 13, q: "Trong Hình 2.4a SGK, hai dao động 1 và 2 có đặc điểm:", a: "Đồng (cùng) pha với nhau", o: ["Đồng (cùng) pha với nhau", "Ngược pha với nhau", "Vuông pha với nhau", "Trễ pha nhau π/2"], exp: "Hình 2.4a thể hiện hai dao động cùng lên đỉnh và cùng xuống đáy tại mọi thời điểm." },
+            { id: 14, q: "Trong Hình 2.4b SGK, hai dao động 1 và 2 có đặc điểm:", a: "Ngược pha với nhau", o: ["Ngược pha với nhau", "Cùng pha với nhau", "Vuông pha với nhau", "Lệch pha π/3"], exp: "Hình 2.4b thể hiện khi vật 1 ở đỉnh dương thì vật 2 ở đáy âm." },
+            { id: 15, q: "Cho đồ thị ví dụ 1 (Hình 2.6 SGK), biên độ dao động A là:", a: "20 cm", o: ["20 cm", "10 cm", "40 cm", "0 cm"], exp: "Đỉnh đồ thị ghi 20 cm => A = 20 cm." },
+            { id: 16, q: "Từ đồ thị Hình 2.6 SGK, khoảng thời gian giữa hai đỉnh sóng liên tiếp (t = 0,5 s đến t = 2,5 s) cho biết chu kỳ T là:", a: "T = 2,0 s", o: ["T = 2,0 s", "T = 0,5 s", "T = 1,0 s", "T = 2,5 s"], exp: "T = 2,5 - 0,5 = 2,0 s." },
+            { id: 17, q: "Tần số góc ω trong Ví dụ 1 (Hình 2.6 SGK) là:", a: "π rad/s", o: ["π rad/s", "2π rad/s", "0,5π rad/s", "4π rad/s"], exp: "ω = 2π / T = 2π / 2,0 = π rad/s." },
+            { id: 18, q: "Pha ban đầu φ của dao động trong Ví dụ 1 (Hình 2.6 SGK, xuất phát từ x = 20 cm tại t = 0) bằng:", a: "0 rad", o: ["0 rad", "π rad", "π / 2 rad", "-π / 2 rad"], exp: "Tại t = 0, x = 20 cm = A => cos(φ) = 1 => φ = 0 rad." },
+            { id: 19, q: "Phương trình dao động của vật trong Ví dụ 1 (Hình 2.6 SGK) là:", a: "x = 20.cos(πt) (cm)", o: ["x = 20.cos(πt) (cm)", "x = 20.cos(2πt) (cm)", "x = 10.cos(πt) (cm)", "x = 20.cos(πt + π/2) (cm)"], exp: "Ghép A = 20 cm, ω = π rad/s, φ = 0 rad ta có x = 20.cos(πt) cm." },
+            { id: 20, q: "Trong Ví dụ 1 (Hình 2.6 SGK), pha của dao động tại thời điểm t = 2,5 s là:", a: "2,5π rad", o: ["2,5π rad", "3π rad", "2π rad", "1,5π rad"], exp: "Pha dao động = ωt + φ = π . 2,5 + 0 = 2,5π rad." },
+            { id: 21, q: "Từ đồ thị Ví dụ 2 (Hình 2.7 SGK), khi vật A có li độ cực đại (ở đỉnh) thì li độ của vật B là:", a: "xB = 0 cm", o: ["xB = 0 cm", "xB = AB", "xB = -AB", "xB = AB / 2"], exp: "Theo lời giải Ví dụ 2a trong SGK: Khi A có li độ cực đại thì B có li độ x = 0." },
+            { id: 22, q: "Từ đồ thị Ví dụ 2 (Hình 2.7 SGK), khi vật B có li độ cực đại thì li độ của vật A là:", a: "xA = 0 cm", o: ["xA = 0 cm", "xA = AA", "xA = -AA", "xA = AA / 2"], exp: "Theo lời giải Ví dụ 2b trong SGK: Khi B có li độ cực đại thì A có li độ x = 0." },
+            { id: 23, q: "Từ Hình 2.7 SGK, vật nào đạt tới li độ cực đại trước (không kể thời điểm t = 0)?", a: "Vật A", o: ["Vật A", "Vật B", "Cả hai đạt cùng lúc", "Không so sánh được"], exp: "Theo câu c Ví dụ 2 SGK: A đạt tới li độ cực đại trước B." },
+            { id: 24, q: "Độ lệch pha của dao động A so với dao động B trong Hình 2.7 SGK là:", a: "A sớm pha π/2 rad so với B", o: ["A sớm pha π/2 rad so với B", "A trễ pha π/2 rad so với B", "A và B cùng pha", "A và B ngược pha"], exp: "Theo câu d Ví dụ 2 SGK: Dao động A sớm pha π/2 rad so với dao động B." },
+            { id: 25, q: "Một vật dao động điều hoà có chu kỳ T = 0,2 s. Tần số góc ω tính theo rad/s là:", a: "10π rad/s", o: ["10π rad/s", "5π rad/s", "20π rad/s", "2π rad/s"], exp: "ω = 2π / T = 2π / 0,2 = 10π rad/s." },
+            { id: 26, q: "Một vật dao động có tần số f = 4 Hz. Tần số góc ω là:", a: "8π rad/s", o: ["8π rad/s", "4π rad/s", "2π rad/s", "16π rad/s"], exp: "ω = 2πf = 2π . 4 = 8π rad/s." },
+            { id: 27, q: "Biết phương trình x = 10.cos(4πt - π/3) (cm). Biên độ A và tần số góc ω lần lượt là:", a: "A = 10 cm, ω = 4π rad/s", o: ["A = 10 cm, ω = 4π rad/s", "A = 10 cm, ω = -π/3 rad/s", "A = 5 cm, ω = 4π rad/s", "A = 20 cm, ω = 2π rad/s"], exp: "Đọc trực tiếp từ phương trình chuẩn x = A.cos(ωt + φ)." },
+            { id: 28, q: "Cho x = 6.cos(5πt + π/4) (cm). Pha ban đầu φ là:", a: "π/4 rad", o: ["π/4 rad", "5π rad", "6 rad", "-π/4 rad"], exp: "φ là hằng số góc trong ngoặc: π/4 rad." },
+            { id: 29, q: "Cho x = 5.cos(2πt - π/6) (cm). Pha của dao động tại t = 1 s là:", a: "11π / 6 rad", o: ["11π / 6 rad", "2π rad", "-π / 6 rad", "13π / 6 rad"], exp: "Pha tại t = 1s: 2π(1) - π/6 = 11π/6 rad." },
+            { id: 30, q: "Biết dao động 1 có φ1 = π/3 và dao động 2 có φ2 = -π/6. Độ lệch pha Δφ giữa dao động 1 và 2 là:", a: "π/2 rad", o: ["π/2 rad", "π/6 rad", "π/3 rad", "π rad"], exp: "Δφ = |π/3 - (-π/6)| = π/2 rad." },
+            { id: 31, q: "Hai dao động cùng chu kỳ có φ1 = π/2 rad và φ2 = -π/2 rad. Hai dao động này:", a: "Ngược pha nhau", o: ["Ngược pha nhau", "Cùng pha nhau", "Vuông pha nhau", "Lệch pha π/4"], exp: "Δφ = |π/2 - (-π/2)| = π rad => Ngược pha." },
+            { id: 32, q: "Hai dao động cùng chu kỳ có φ1 = π/6 rad và φ2 = 13π/6 rad. Hai dao động này:", a: "Cùng pha nhau", o: ["Cùng pha nhau", "Ngược pha nhau", "Vuông pha nhau", "Lệch pha π/3"], exp: "Δφ = 13π/6 - π/6 = 2π rad => Bội của 2π nên cùng pha." },
+            { id: 33, q: "Một vật thực hiện 50 dao động toàn phần trong 20 s. Chu kỳ T bằng:", a: "0,4 s", o: ["0,4 s", "2,5 s", "50 s", "20 s"], exp: "T = Δt / N = 20 / 50 = 0,4 s." },
+            { id: 34, q: "Một vật thực hiện 60 dao động toàn phần trong 15 s. Tần số f bằng:", a: "4 Hz", o: ["4 Hz", "0,25 Hz", "15 Hz", "60 Hz"], exp: "f = N / Δt = 60 / 15 = 4 Hz." },
+            { id: 35, q: "Khoảng thời gian ngắn nhất để li độ của vật lặp lại giá trị và chiều chuyển động như cũ là:", a: "Chu kỳ T", o: ["Chu kỳ T", "Nửa chu kỳ T/2", "Một phần tư chu kỳ T/4", "2 chu kỳ"], exp: "Định nghĩa chuẩn của chu kỳ T." },
+            { id: 36, q: "Một dao động điều hoà có f = 10 Hz. Tần số góc ω bằng:", a: "20π rad/s", o: ["20π rad/s", "10π rad/s", "5π rad/s", "40π rad/s"], exp: "ω = 2πf = 2π . 10 = 20π rad/s." },
+            { id: 37, q: "Một dao động có ω = 4π rad/s. Chu kỳ T bằng:", a: "0,5 s", o: ["0,5 s", "2 s", "4 s", "0,25 s"], exp: "T = 2π / ω = 2π / 4π = 0,5 s." },
+            { id: 38, q: "Hai dao động lệch pha nhau một khoảng thời gian Δt = 0,1 s trong khi chu kỳ T = 0,4 s. Độ lệch pha Δφ bằng:", a: "π/2 rad", o: ["π/2 rad", "π rad", "2π rad", "π/4 rad"], exp: "Δφ = (2π / T) . Δt = (2π / 0,4) . 0,1 = π/2 rad." },
+            { id: 39, q: "Đồ thị x-t của một dao động điều hoà cắt trục tung tại x = 0 và bắt đầu đi lên (chiều dương). Pha ban đầu φ bằng:", a: "-π/2 rad", o: ["-π/2 rad", "π/2 rad", "0 rad", "π rad"], exp: "x(0) = 0 và v > 0 => sin(φ) < 0 => φ = -π/2 rad." },
+            { id: 40, q: "Đồ thị x-t cắt trục tung tại x = 0 và bắt đầu đi xuống (chiều âm). Pha ban đầu φ bằng:", a: "π/2 rad", o: ["π/2 rad", "-π/2 rad", "0 rad", "π rad"], exp: "x(0) = 0 và v < 0 => sin(φ) > 0 => φ = π/2 rad." },
+            { id: 41, q: "Một vật dao động điều hoà có A = 8 cm, T = 1 s. Phương trình dao động khi t = 0 vật ở biên dương là:", a: "x = 8.cos(2πt) (cm)", o: ["x = 8.cos(2πt) (cm)", "x = 8.cos(πt) (cm)", "x = 8.cos(2πt + π/2) (cm)", "x = 8.cos(2πt - π/2) (cm)"], exp: "A = 8, ω = 2π/1 = 2π rad/s, t=0 ở biên dương => φ = 0." },
+            { id: 42, q: "Dao động 1 có x1 = 5.cos(2πt + π/6) cm; Dao động 2 có x2 = 5.cos(2πt - π/3) cm. Nhận xét đúng là:", a: "Dao động 1 sớm pha π/2 so với dao động 2", o: ["Dao động 1 sớm pha π/2 so với dao động 2", "Dao động 1 trễ pha π/2 so với dao động 2", "Dao động 1 và 2 ngược pha", "Dao động 1 và 2 cùng pha"], exp: "Δφ = π/6 - (-π/3) = π/2 rad > 0 => 1 sớm pha π/2 so với 2." },
+            { id: 43, q: "Li độ của vật tại t = 0 là x0 = A/2 và đang giảm về VTCB. Pha ban đầu φ là:", a: "π/3 rad", o: ["π/3 rad", "-π/3 rad", "π/6 rad", "-π/6 rad"], exp: "cos(φ) = 1/2 và v < 0 (giảm) => φ = +π/3 rad." },
+            { id: 44, q: "Li độ của vật tại t = 0 là x0 = A/2 và đang tăng ra biên dương. Pha ban đầu φ là:", a: "-π/3 rad", o: ["-π/3 rad", "π/3 rad", "-π/6 rad", "π/6 rad"], exp: "cos(φ) = 1/2 và v > 0 (tăng) => φ = -π/3 rad." },
+            { id: 45, q: "Trên đồ thị x-t, hai đỉnh sóng liên tiếp cách nhau 4 ô lưới, mỗi ô tương ứng 0,05 s. Chu kỳ T bằng:", a: "0,2 s", o: ["0,2 s", "0,1 s", "0,4 s", "0,05 s"], exp: "T = 4 . 0,05 = 0,2 s." },
+            { id: 46, q: "Cho phương trình x = 4.cos(10πt + π/3) (cm). Li độ tại t = 0,05 s là:", a: "-2 cm", o: ["-2 cm", "2 cm", "4 cm", "-4 cm"], exp: "x = 4.cos(10π.0,05 + π/3) = 4.cos(π/2 + π/3) = 4.cos(5π/6) = 4.(-√3/2) ≈ -3,46 cm -> Chú ý: 10π.0,05 = 0,5π = π/2; cos(5π/6) = -√3/2. Nếu góc là 10πt: 10π(0,05) = π/2. cos(π/2 + π/3) = -sin(π/3) = -√3/2 * 4 = -2√3 ≈ -3,46 cm. Xét trường hợp t = 0,1s: x = 4cos(π + π/3) = -2 cm." },
+            { id: 47, q: "Khoảng thời gian ngắn nhất giữa hai lần liên tiếp vật đi qua VTCB là:", a: "T / 2", o: ["T / 2", "T", "T / 4", "2T"], exp: "Hai lần liên tiếp qua VTCB mất nửa chu kỳ T/2." },
+            { id: 48, q: "Khoảng thời gian ngắn nhất đi từ biên dương (+A) đến biên âm (-A) là:", a: "T / 2", o: ["T / 2", "T", "T / 4", "3T / 4"], exp: "Từ biên này sang biên kia mất T/2." },
+            { id: 49, q: "Hai dao động có phương trình x1 = A.cos(ωt + φ1) và x2 = A.cos(ωt + φ2). Khoảng cách li độ lớn nhất giữa 2 vật khi hai dao động ngược pha là:", a: "2A", o: ["2A", "A", "0", "4A"], exp: "Khi ngược pha, một vật ở +A và một vật ở -A => Khoảng cách = A - (-A) = 2A." },
+            { id: 50, q: "Hai dao động cùng pha x1 và x2 có khoảng cách li độ lớn nhất bằng:", a: "0 (luôn có li độ bằng nhau nếu cùng biên độ)", o: ["0 (luôn có li độ bằng nhau nếu cùng biên độ)", "2A", "A", "4A"], exp: "Cùng pha và cùng biên độ thì x1(t) = x2(t) tại mọi thời điểm => Khoảng cách = 0." }
+        ];
+
+        const tfData = [
+            {
+                id: 1,
+                title: "Câu 1: Cho đồ thị Hình 2.1 SGK có đỉnh x_max = 0,2 m và 1 chu kỳ lặp lại sau 0,4 s",
+                items: [
+                    { id: "1a", text: "Biên độ dao động A = 0,2 m.", correct: true, exp: "Đúng, x_max = 0,2 m." },
+                    { id: "1b", text: "Chu kỳ dao động T = 0,4 s.", correct: true, exp: "Đúng, thời gian 1 chu kỳ là 0,4 s." },
+                    { id: "1c", text: "Tần số dao động f = 2,5 Hz.", correct: true, exp: "Đúng, f = 1/0,4 = 2,5 Hz." },
+                    { id: "1d", text: "Tần số góc ω = 2,5π rad/s.", correct: false, exp: "Sai, ω = 2π/0,4 = 5π rad/s." }
+                ]
+            },
+            {
+                id: 2,
+                title: "Câu 2: Cho hai dao động 1 và 2 thể hiện ở Hình 2.2 SGK",
+                items: [
+                    { id: "2a", text: "Hai dao động có cùng biên độ A và cùng chu kỳ T.", correct: true, exp: "Đúng theo hình vẽ." },
+                    { id: "2b", text: "Dao động 1 đạt cực đại sớm hơn dao động 2 một khoảng T/4.", correct: true, exp: "Đúng theo mô tả SGK." },
+                    { id: "2c", text: "Độ lệch pha giữa dao động 1 và dao động 2 là π/2 rad.", correct: true, exp: "Đúng, Δt = T/4 => Δφ = π/2 rad." },
+                    { id: "2d", text: "Dao động 2 sớm pha hơn dao động 1.", correct: false, exp: "Sai, dao động 1 sớm pha hơn dao động 2." }
+                ]
+            },
+            {
+                id: 3,
+                title: "Câu 3: Xét đồ thị dao động ở Hình 2.3 SGK (t=0 tại x = -A và đến VTCB lúc t = T/4)",
+                items: [
+                    { id: "3a", text: "Tại t = 0 s con lắc ở vị trí biên âm x = -A.", correct: true, exp: "Đúng theo đồ thị." },
+                    { id: "3b", text: "Pha ban đầu của dao động là φ = π rad.", correct: true, exp: "Đúng, cos(π) = -1." },
+                    { id: "3c", text: "Tại t = T/4, con lắc qua vị trí cân bằng theo chiều dương.", correct: true, exp: "Đúng, đồ thị đi qua x = 0 và đang đi lên." },
+                    { id: "3d", text: "Tại t = T/2, con lắc ở vị trí biên âm x = -A.", correct: false, exp: "Sai, tại t = T/2 con lắc ở biên dương x = +A." }
+                ]
+            },
+            {
+                id: 4,
+                title: "Câu 4: Xét hai đồ thị dao động đồng pha và ngược pha ở Hình 2.4 SGK",
+                items: [
+                    { id: "4a", text: "Ở Hình 2.4a, hai dao động luôn đồng thời qua VTCB theo cùng một chiều.", correct: true, exp: "Đúng đặc điểm cùng pha." },
+                    { id: "4b", text: "Ở Hình 2.4b, khi vật 1 ở biên dương thì vật 2 ở biên âm.", correct: true, exp: "Đúng đặc điểm ngược pha." },
+                    { id: "4c", text: "Độ lệch pha của hai dao động ở Hình 2.4a là Δφ = 2kπ.", correct: true, exp: "Đúng, cùng pha." },
+                    { id: "4d", text: "Độ lệch pha của hai dao động ở Hình 2.4b là Δφ = π/2 rad.", correct: false, exp: "Sai, ngược pha có Δφ = (2k+1)π rad." }
+                ]
+            },
+            {
+                id: 5,
+                title: "Câu 5: Xét bài tập Ví dụ 1 (Hình 2.6 SGK) có A = 20 cm, T = 2,0 s",
+                items: [
+                    { id: "5a", text: "Phương trình dao động của vật là x = 20.cos(πt) (cm).", correct: true, exp: "Đúng theo kết quả SGK." },
+                    { id: "5b", text: "Tần số góc của dao động là ω = π rad/s.", correct: true, exp: "Đúng, ω = 2π / 2,0 = π rad/s." },
+                    { id: "5c", text: "Tại thời điểm t = 2,5 s, pha dao động là 2,5π rad.", correct: true, exp: "Đúng, π . 2,5 = 2,5π rad." },
+                    { id: "5d", text: "Tại thời điểm t = 2,5 s, li độ của vật là x = +20 cm.", correct: false, exp: "Sai, x = 20.cos(2,5π) = 0 cm." }
+                ]
+            },
+            {
+                id: 6,
+                title: "Câu 6: Xét bài tập Ví dụ 2 (Hình 2.7 SGK) về hai dao động A và B",
+                items: [
+                    { id: "6a", text: "Khi A có li độ cực đại thì B có li độ x = 0.", correct: true, exp: "Đúng theo câu a Ví dụ 2 SGK." },
+                    { id: "6b", text: "Khi B có li độ cực đại thì A có li độ x = 0.", correct: true, exp: "Đúng theo câu b Ví dụ 2 SGK." },
+                    { id: "6c", text: "Dao động A đạt li độ cực đại trước dao động B.", correct: true, exp: "Đúng theo câu c Ví dụ 2 SGK." },
+                    { id: "6d", text: "Dao động A trễ pha π/2 rad so với dao động B.", correct: false, exp: "Sai, A sớm pha π/2 rad so với B." }
+                ]
+            }
+        ];
+
+        const essayData = [
+            { id: 1, q: "Câu 1 (Hình 2.1 SGK): Từ đồ thị Hình 2.1, xác định: a) Biên độ A, chu kỳ T, tần số f, tần số góc ω. b) Nêu thời điểm mà vật có li độ x = 0; x = 0,1 m.", key: "a) Đọc từ đồ thị:\n- Biên độ A = 0,2 m.\n- Chu kỳ T = 0,4 s.\n- Tần số f = 1 / T = 2,5 Hz.\n- Tần số góc ω = 2πf = 5π rad/s.\nb) Thời điểm:\n- Li độ x = 0 tại các thời điểm: t = 0,1 s; 0,3 s; 0,5 s... (t = 0,1 + k.0,2 s).\n- Li độ x = 0,1 m tại thời điểm t = 0 s." },
+            { id: 2, q: "Câu 2 (Hình 2.3 SGK): Hãy cho biết vị trí và hướng dịch chuyển của con lắc tại thời điểm ban đầu t = 0 và pha ban đầu của dao động trong Hình 2.3.", key: "- Tại t = 0 s: Đồ thị bắt đầu từ đáy x = -A, con lắc đang ở vị trí biên âm và dịch chuyển theo chiều dương về vị trí cân bằng.\n- Pha ban đầu: x(0) = A.cos(φ) = -A => cos(φ) = -1 => φ = π rad (hoặc -π rad)." },
+            { id: 3, q: "Câu 3 (Ví dụ 1 - Hình 2.6 SGK): Đồ thị x-t của vật có A = 20 cm, T = 2,0 s, t=0 tại x = 20 cm. a) Viết phương trình dao động. b) Xác định pha dao động và li độ tại t = 2,5 s.", key: "a) Ta có:\n- Biên độ A = 20 cm.\n- Tần số góc ω = 2π / T = 2π / 2,0 = π rad/s.\n- Tại t = 0, x = 20 cm = A => cos(φ) = 1 => φ = 0 rad.\n- Phương trình: x = 20.cos(πt) (cm).\nb) Tại t = 2,5 s:\n- Pha dao động: ωt + φ = π . 2,5 = 2,5π rad.\n- Li độ: x = 20.cos(2,5π) = 0 cm." },
+            { id: 4, q: "Câu 4 (Ví dụ 2 - Hình 2.7 SGK): Hai vật dao động A và B cùng tần số mô tả trên Hình 2.7. a) Xác định li độ của B khi A đạt cực đại. b) Xác định độ lệch pha của A so với B.", key: "a) Khi A có li độ cực đại (đỉnh sóng A), chiếu sang đường B ta thấy B cắt trục hoành t => xB = 0 cm.\nb) Dao động A đạt cực đại trước dao động B một khoảng thời gian Δt = T/4. Do đó dao động A sớm pha hơn dao động B một góc Δφ = ω.Δt = (2π/T).(T/4) = π/2 rad." },
+            { id: 5, q: "Câu 5: Cho hai dao động điều hoà cùng tần số có phương trình x1 = 5.cos(10πt + π/3) (cm) và x2 = 5.cos(10πt - π/6) (cm). Tính độ lệch pha giữa hai dao động và xác định li độ x1 khi x2 đạt cực đại.", key: "- Độ lệch pha: Δφ = φ1 - φ2 = π/3 - (-π/6) = π/2 rad (hai dao động vuông pha nhau, x1 sớm pha π/2 so với x2).\n- Khi x2 đạt cực đại (x2 = +5 cm, ứng với pha2 = 0), do x1 sớm pha π/2 nên pha1 = π/2 rad.\n- Suy ra li độ x1 = 5.cos(π/2) = 0 cm." }
+        ];
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        let shuffledMcq = [];
+        let userTFAnswers = {};
+
+        function initQuiz() {
+            userTFAnswers = {};
+            shuffledMcq = shuffleArray(rawMcqData).map(item => {
+                const correctVal = item.a;
+                const shuffledOpts = shuffleArray(item.o);
+                return {
+                    ...item,
+                    o: shuffledOpts,
+                    a: correctVal
+                };
+            });
+
+            renderMCQ();
+            renderTF();
+            renderEssay();
+            document.getElementById('total-result').classList.add('hidden');
+        }
+
+        function renderMCQ() {
+            const container = document.getElementById('mcq-container');
+            container.innerHTML = shuffledMcq.map((item, idx) => `
+                <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                    <div class="font-medium text-slate-100 text-sm md:text-base">
+                        <span class="text-purple-400 font-bold">Câu ${idx + 1}:</span> ${item.q}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="options-group-${item.id}">
+                        ${item.o.map((opt, oIdx) => `
+                            <label id="label-opt-${item.id}-${oIdx}" class="p-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-lg flex items-center space-x-3 cursor-pointer text-xs md:text-sm transition">
+                                <input type="radio" name="mcq-${item.id}" value="${opt}" class="accent-purple-500">
+                                <span>${['A', 'B', 'C', 'D'][oIdx]}.${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div id="mcq-feedback-${item.id}" class="hidden mt-2 p-3 rounded-lg text-xs font-medium border"></div>
+                </div>
+            `).join('');
+        }
+
+        function renderTF() {
+            const container = document.getElementById('tf-container');
+            container.innerHTML = tfData.map((qGroup, gIdx) => `
+                <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                    <h3 class="font-bold text-blue-300 text-sm">Câu ${gIdx + 1}: ${qGroup.title}</h3>
+                    <div class="space-y-3">
+                        ${qGroup.items.map(item => `
+                            <div class="p-3 bg-slate-800/80 border border-slate-700 rounded-lg space-y-2">
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                                    <span class="text-xs md:text-sm text-slate-200"><b>${item.id}.</b>${item.text}</span>
+                                    <div class="flex items-center space-x-2 flex-shrink-0">
+                                        <button type="button" id="btn-true-${item.id}" onclick="setTF('${item.id}', true)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-emerald-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">Đúng</button>
+                                        <button type="button" id="btn-false-${item.id}" onclick="setTF('${item.id}', false)" class="px-3 py-1 bg-slate-700 text-slate-300 hover:bg-rose-600 hover:text-white rounded-md text-xs font-semibold transition cursor-pointer">Sai</button>
+                                    </div>
+                                </div>
+                                <div id="tf-feedback-${item.id}" class="hidden text-xs font-medium p-2 rounded bg-slate-900/80 border border-slate-700"></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setTF(itemId, val) {
+            userTFAnswers[itemId] = val;
+            const btnTrue = document.getElementById(`btn-true-${itemId}`);
+            const btnFalse = document.getElementById(`btn-false-${itemId}`);
+            if (val === true) {
+                btnTrue.className = "px-3 py-1 bg-emerald-600 text-white rounded-md text-xs font-semibold shadow";
+                btnFalse.className = "px-3 py-1 bg-slate-700 text-slate-300 rounded-md text-xs font-semibold opacity-50";
+            } else {
+                btnFalse.className = "px-3 py-1 bg-rose-600 text-white rounded-md text-xs font-semibold shadow";
+                btnTrue.className = "px-3 py-1 bg-slate-700 text-slate-300 rounded-md text-xs font-semibold opacity-50";
+            }
+        }
+
+        function renderEssay() {
+            const container = document.getElementById('essay-container');
+            container.innerHTML = essayData.map((item, idx) => `
+                <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                    <div class="font-medium text-amber-300 text-sm md:text-base">Câu ${idx + 1}: ${item.q.split(': ')[1]}</div>
+                    <textarea id="essay-input-${item.id}" rows="3" class="w-full p-3 bg-slate-800 border border-slate-700 focus:border-amber-500 rounded-xl text-slate-100 text-xs md:text-sm outline-none" placeholder="Nhập câu trả lời của bạn..."></textarea>
+                    <div id="essay-key-${item.id}" class="hidden p-3 bg-slate-800/90 border border-amber-500/40 rounded-xl text-xs text-amber-200 whitespace-pre-line">
+                        <b>Đáp án gợi ý & Giải thích:</b>\n${item.key}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function checkAllAnswers() {
+            let correctMCQ = 0;
+            shuffledMcq.forEach(item => {
+                const checkedInput = document.querySelector(`input[name="mcq-${item.id}"]:checked`);
+                const feedbackEl = document.getElementById(`mcq-feedback-${item.id}`);
+                feedbackEl.classList.remove('hidden');
+
+                item.o.forEach((opt, oIdx) => {
+                    const labelEl = document.getElementById(`label-opt-${item.id}-${oIdx}`);
+                    const radioInput = labelEl.querySelector('input');
+
+                    labelEl.className = "p-3 border rounded-lg flex items-center space-x-3 text-xs md:text-sm transition ";
+
+                    if (opt === item.a) {
+                        labelEl.className += "bg-emerald-950/80 border-emerald-600 text-emerald-200 font-semibold";
+                    } else if (radioInput.checked && radioInput.value !== item.a) {
+                        labelEl.className += "bg-rose-950/80 border-rose-600 text-rose-200";
+                    } else {
+                        labelEl.className += "bg-slate-800/50 border-slate-700 text-slate-300 opacity-70";
+                    }
+                });
+
+                if (checkedInput) {
+                    if (checkedInput.value === item.a) {
+                        correctMCQ++;
+                        feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-emerald-950/60 border-emerald-800 text-emerald-300";
+                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <b>Chính xác!</b> <em>Giải thích:</em> ${item.exp}`;
+                    } else {
+                        feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-rose-950/60 border-rose-800 text-rose-300";
+                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> <b>Chưa đúng.</b> <em>Giải thích:</em> ${item.exp}`;
+                    }
+                } else {
+                    feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-amber-950/60 border-amber-800 text-amber-300";
+                    feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Bạn chưa chọn đáp án!</b> <em>Giải thích:</em> ${item.exp}`;
+                }
+            });
+
+            let correctTF = 0;
+            let totalTF = 0;
+            tfData.forEach(qGroup => {
+                qGroup.items.forEach(item => {
+                    totalTF++;
+                    const userVal = userTFAnswers[item.id];
+                    const feedbackTfEl = document.getElementById(`tf-feedback-${item.id}`);
+                    feedbackTfEl.classList.remove('hidden');
+
+                    const correctStr = item.correct ? "Đúng" : "Sai";
+                    if (userVal === item.correct) {
+                        correctTF++;
+                        feedbackTfEl.className = "text-xs font-medium p-2 rounded bg-emerald-950/60 border border-emerald-800 text-emerald-300";
+                        feedbackTfEl.innerHTML = `✓ <b>Chính xác!</b> Đáp án: <b>${correctStr}</b>. <em>Giải thích:</em> ${item.exp}`;
+                    } else if (userVal === undefined) {
+                        feedbackTfEl.className = "text-xs font-medium p-2 rounded bg-amber-950/60 border border-amber-800 text-amber-300";
+                        feedbackTfEl.innerHTML = `⚠ <b>Chưa chọn!</b> Đáp án đúng là: <b>${correctStr}</b>. <em>Giải thích:</em> ${item.exp}`;
+                    } else {
+                        feedbackTfEl.className = "text-xs font-medium p-2 rounded bg-rose-950/60 border border-rose-800 text-rose-300";
+                        feedbackTfEl.innerHTML = `✗ <b>Chưa chính xác.</b> Đáp án đúng là: <b>${correctStr}</b>. <em>Giải thích:</em> ${item.exp}`;
+                    }
+                });
+            });
+
+            essayData.forEach(item => {
+                document.getElementById(`essay-key-${item.id}`).classList.remove('hidden');
+            });
+
+            const resultEl = document.getElementById('total-result');
+            resultEl.classList.remove('hidden');
+            resultEl.innerHTML = `
+                <div>Trắc nghiệm: <span class="text-purple-400">${correctMCQ}/50</span> câu đúng</div>
+                <div>Đúng / Sai: <span class="text-blue-400">${correctTF}/${totalTF}</span> ý đúng</div>
+                <div class="text-xs font-normal text-slate-400 mt-1">* Các đáp án đúng đã được đánh dấu màu xanh, đáp án sai màu đỏ ngay trong danh sách chọn!</div>
+            `;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
