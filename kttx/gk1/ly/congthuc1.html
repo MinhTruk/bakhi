@@ -44,14 +44,12 @@
                     </span>
                     <div>
                         <h2 class="text-xl font-bold text-white">Phần 1: Trắc Nghiệm Công Thức (30 Câu)</h2>
-                        <p class="text-xs text-slate-400">Áp dụng các công thức phương trình li độ, chu kỳ, tần số</p>
+                        <p class="text-xs text-slate-400">Áp dụng công thức li độ x, chu kỳ T, tần số f và tần số góc ω</p>
                     </div>
                 </div>
             </div>
 
-            <div id="mcq-container" class="space-y-6">
-                <!-- Javascript render 30 câu trắc nghiệm -->
-            </div>
+            <div id="mcq-container" class="space-y-6"></div>
         </section>
 
         <!-- PART 2: 4 CÂU ĐÚNG / SAI CÔNG THỨC -->
@@ -68,9 +66,7 @@
                 </div>
             </div>
 
-            <div id="tf-container" class="space-y-6">
-                <!-- Javascript render 4 câu đúng sai -->
-            </div>
+            <div id="tf-container" class="space-y-6"></div>
         </section>
 
         <!-- PART 3: 3 CÂU TỰ LUẬN TÍNH TOÁN -->
@@ -87,9 +83,7 @@
                 </div>
             </div>
 
-            <div id="essay-container" class="space-y-6">
-                <!-- Javascript render 3 câu tự luận -->
-            </div>
+            <div id="essay-container" class="space-y-6"></div>
         </section>
 
         <!-- SUBMIT ALL -->
@@ -109,100 +103,97 @@
     </footer>
 
     <script>
-        // DATA 30 CÂU TRẮC NGHIỆM CÔNG THỨC
         const mcqData = [
-            { id: 1, q: "Công thức tổng quát của phương trình li độ dao động điều hoà là gì?", a: "x = A*cos(omega*t + phi)", o: ["x = A*cos(omega*t + phi)", "x = A*tan(omega*t + phi)", "x = A*omega*t + phi", "x = A + cos(omega*t)"] },
-            { id: 2, q: "Cho phương trình x = 5*cos(2*pi*t + pi/3) (cm). Biên độ A bằng bao nhiêu?", a: "5 cm", o: ["5 cm", "2*pi cm", "pi/3 cm", "10 cm"] },
-            { id: 3, q: "Cho phương trình x = 4*cos(10*pi*t - pi/6) (cm). Tần số góc omega bằng bao nhiêu?", a: "10*pi rad/s", o: ["10*pi rad/s", "4 rad/s", "-pi/6 rad/s", "5*pi rad/s"] },
-            { id: 4, q: "Cho phương trình x = 6*cos(4*pi*t + pi/2) (cm). Pha ban đầu phi bằng bao nhiêu?", a: "pi/2 rad", o: ["pi/2 rad", "6 rad", "4*pi rad", "0 rad"] },
-            { id: 5, q: "Công thức liên hệ giữa chu kỳ T và tần số f là gì?", a: "T = 1 / f", o: ["T = 1 / f", "T = f", "T = 2*pi / f", "T = f / 2*pi"] },
-            { id: 6, q: "Công thức liên hệ giữa tần số góc omega và tần số f là gì?", a: "omega = 2*pi*f", o: ["omega = 2*pi*f", "omega = f / 2*pi", "omega = pi*f", "omega = 1 / f"] },
-            { id: 7, q: "Công thức liên hệ giữa tần số góc omega và chu kỳ T là gì?", a: "omega = 2*pi / T", o: ["omega = 2*pi / T", "omega = T / 2*pi", "omega = 2*pi*T", "omega = 1 / T"] },
-            { id: 8, q: "Một vật dao động có tần số f = 5 Hz. Chu kỳ T của vật là bao nhiêu?", a: "0,2 s", o: ["0,2 s", "5 s", "2 s", "0,5 s"] },
-            { id: 9, q: "Một vật dao động có chu kỳ T = 0,5 s. Tần số f của vật là bao nhiêu?", a: "2 Hz", o: ["2 Hz", "0,5 Hz", "5 Hz", "1 Hz"] },
-            { id: 10, q: "Một vật dao động có tần số f = 2 Hz. Tần số góc omega bằng bao nhiêu?", a: "4*pi rad/s", o: ["4*pi rad/s", "2*pi rad/s", "2 rad/s", "8*pi rad/s"] },
-            { id: 11, q: "Vật thực hiện 20 dao động toàn phần trong 10 giây. Chu kỳ T bằng bao nhiêu?", a: "0,5 s", o: ["0,5 s", "2 s", "20 s", "10 s"] },
-            { id: 12, q: "Vật thực hiện 30 dao động toàn phần trong 10 giây. Tần số f bằng bao nhiêu?", a: "3 Hz", o: ["3 Hz", "0,33 Hz", "30 Hz", "10 Hz"] },
-            { id: 13, q: "Một vật dao động với phương trình x = 2*cos(4*pi*t + pi/2) (cm). Tại t = 0, li độ x bằng bao nhiêu?", a: "0 cm", o: ["0 cm", "2 cm", "-2 cm", "1 cm"] },
-            { id: 14, q: "Cho x = 10*cos(pi*t) (cm). Li độ của vật tại t = 1 s bằng bao nhiêu?", a: "-10 cm", o: ["-10 cm", "10 cm", "0 cm", "5 cm"] },
-            { id: 15, q: "Cho x = 8*cos(2*pi*t) (cm). Li độ của vật tại t = 0,5 s bằng bao nhiêu?", a: "-8 cm", o: ["-8 cm", "8 cm", "0 cm", "4 cm"] },
-            { id: 16, q: "Pha của dao động tại thời điểm t = 2 s của x = 3*cos(2*pi*t + pi/4) là bao nhiêu?", a: "4,25*pi rad", o: ["4,25*pi rad", "pi/4 rad", "4*pi rad", "2*pi rad"] },
+            { id: 1, q: "Công thức tổng quát của phương trình li độ dao động điều hoá là gì?", a: "x = A.cos(ωt + φ)", o: ["x = A.cos(ωt + φ)", "x = A.tan(ωt + φ)", "x = A.ωt + φ", "x = A + cos(ωt)"] },
+            { id: 2, q: "Cho phương trình x = 5.cos(2πt + π/3) (cm). Biên độ A bằng bao nhiêu?", a: "A = 5 cm", o: ["A = 5 cm", "A = 2π cm", "A = π/3 cm", "A = 10 cm"] },
+            { id: 3, q: "Cho phương trình x = 4.cos(10πt - π/6) (cm). Tần số góc ω bằng bao nhiêu?", a: "ω = 10π rad/s", o: ["ω = 10π rad/s", "ω = 4 rad/s", "ω = -π/6 rad/s", "ω = 5π rad/s"] },
+            { id: 4, q: "Cho phương trình x = 6.cos(4πt + π/2) (cm). Pha ban đầu φ bằng bao nhiêu?", a: "φ = π/2 rad", o: ["φ = π/2 rad", "φ = 6 rad", "φ = 4π rad", "φ = 0 rad"] },
+            { id: 5, q: "Công thức liên hệ giữa chu kỳ T và tần số f là gì?", a: "T = 1 / f", o: ["T = 1 / f", "T = f", "T = 2π / f", "T = f / (2π)"] },
+            { id: 6, q: "Công thức liên hệ giữa tần số góc ω và tần số f là gì?", a: "ω = 2πf", o: ["ω = 2πf", "ω = f / (2π)", "ω = πf", "ω = 1 / f"] },
+            { id: 7, q: "Công thức liên hệ giữa tần số góc ω và chu kỳ T là gì?", a: "ω = 2π / T", o: ["ω = 2π / T", "ω = T / (2π)", "ω = 2πT", "ω = 1 / T"] },
+            { id: 8, q: "Một vật dao động có tần số f = 5 Hz. Chu kỳ T của vật là bao nhiêu?", a: "T = 0,2 s", o: ["T = 0,2 s", "T = 5 s", "T = 2 s", "T = 0,5 s"] },
+            { id: 9, q: "Một vật dao động có chu kỳ T = 0,5 s. Tần số f của vật là bao nhiêu?", a: "f = 2 Hz", o: ["f = 2 Hz", "f = 0,5 Hz", "f = 5 Hz", "f = 1 Hz"] },
+            { id: 10, q: "Một vật dao động có tần số f = 2 Hz. Tần số góc ω bằng bao nhiêu?", a: "ω = 4π rad/s", o: ["ω = 4π rad/s", "ω = 2π rad/s", "ω = 2 rad/s", "ω = 8π rad/s"] },
+            { id: 11, q: "Vật thực hiện 20 dao động toàn phần trong thời gian Δt = 10 s. Chu kỳ T bằng bao nhiêu?", a: "T = 0,5 s", o: ["T = 0,5 s", "T = 2 s", "T = 20 s", "T = 10 s"] },
+            { id: 12, q: "Vật thực hiện 30 dao động toàn phần trong thời gian Δt = 10 s. Tần số f bằng bao nhiêu?", a: "f = 3 Hz", o: ["f = 3 Hz", "f = 0,33 Hz", "f = 30 Hz", "f = 10 Hz"] },
+            { id: 13, q: "Phương trình x = 2.cos(4πt + π/2) (cm). Tại t = 0, li độ x bằng bao nhiêu?", a: "x = 0 cm", o: ["x = 0 cm", "x = 2 cm", "x = -2 cm", "x = 1 cm"] },
+            { id: 14, q: "Cho phương trình x = 10.cos(πt) (cm). Li độ x tại thời điểm t = 1 s bằng bao nhiêu?", a: "x = -10 cm", o: ["x = -10 cm", "x = 10 cm", "x = 0 cm", "x = 5 cm"] },
+            { id: 15, q: "Cho phương trình x = 8.cos(2πt) (cm). Li độ x tại thời điểm t = 0,5 s bằng bao nhiêu?", a: "x = -8 cm", o: ["x = -8 cm", "x = 8 cm", "x = 0 cm", "x = 4 cm"] },
+            { id: 16, q: "Pha của dao động (ωt + φ) tại thời điểm t = 2 s của x = 3.cos(2πt + π/4) là bao nhiêu?", a: "4,25π rad", o: ["4,25π rad", "π/4 rad", "4π rad", "2π rad"] },
             { id: 17, q: "Chiều dài quỹ đạo L của vật dao động điều hoá liên hệ với biên độ A như thế nào?", a: "L = 2A", o: ["L = 2A", "L = A", "L = 4A", "L = A / 2"] },
-            { id: 18, q: "Một vật dao động điều hoá trên đoạn thẳng dài 12 cm. Biên độ A bằng bao nhiêu?", a: "6 cm", o: ["6 cm", "12 cm", "24 cm", "3 cm"] },
-            { id: 19, q: "Nếu biên độ A = 5 cm thì chiều dài quỹ đạo L bằng bao nhiêu?", a: "10 cm", o: ["10 cm", "5 cm", "20 cm", "15 cm"] },
-            { id: 20, q: "Trong một chu kỳ T, vật đi được quãng đường S bằng bao nhiêu?", a: "4A", o: ["4A", "2A", "A", "3A"] },
-            { id: 21, q: "Trong nửa chu kỳ T/2, vật đi được quãng đường S bằng bao nhiêu?", a: "2A", o: ["2A", "4A", "A", "3A"] },
-            { id: 22, q: "Giá trị x_max (li độ cực đại) bằng đại lượng nào?", a: "+A", o: ["+A", "0", "-A", "2A"] },
-            { id: 23, q: "Giá trị x_min (li độ cực tiểu) bằng đại lượng nào?", a: "-A", o: ["-A", "0", "+A", "-2A"] },
-            { id: 24, q: "Công thức pha ban đầu phi = 0 nghĩa là tại t = 0 vật ở vị trí nào?", a: "Biên dương (+A)", o: ["Biên dương (+A)", "Vị trí cân bằng (0)", "Biên âm (-A)", "Bất kỳ"] },
-            { id: 25, q: "Công thức pha ban đầu phi = pi nghĩa là tại t = 0 vật ở vị trí nào?", a: "Biên âm (-A)", o: ["Biên âm (-A)", "Biên dương (+A)", "Vị trí cân bằng (0)", "Bất kỳ"] },
-            { id: 26, q: "Công thức pha ban đầu phi = pi/2 nghĩa là tại t = 0 vật đi qua VTCB theo chiều nào?", a: "Chiều âm", o: ["Chiều âm", "Chiều dương", "Đứng yên", "Không xác định"] },
-            { id: 27, q: "Công thức pha ban đầu phi = -pi/2 nghĩa là tại t = 0 vật đi qua VTCB theo chiều nào?", a: "Chiều dương", o: ["Chiều dương", "Chiều âm", "Đứng yên", "Không xác định"] },
-            { id: 28, q: "Cho x = 5*cos(10*t) (cm). Li độ x tại thời điểm t = 0 là bao nhiêu?", a: "5 cm", o: ["5 cm", "0 cm", "-5 cm", "10 cm"] },
-            { id: 29, q: "Tần số góc omega có đơn vị đo là gì?", a: "rad/s", o: ["rad/s", "Hz", "s", "m/s"] },
-            { id: 30, q: "Một vật dao động có T = 0,1 s. Số dao động toàn phần vật thực hiện trong 1 phút (60s) là bao nhiêu?", a: "600 dao động", o: ["600 dao động", "60 dao động", "6 dao động", "6000 dao động"] }
+            { id: 18, q: "Một vật dao động điều hoá trên đoạn thẳng có chiều dài L = 12 cm. Biên độ A bằng bao nhiêu?", a: "A = 6 cm", o: ["A = 6 cm", "A = 12 cm", "A = 24 cm", "A = 3 cm"] },
+            { id: 19, q: "Nếu biên độ A = 5 cm thì chiều dài quỹ đạo L bằng bao nhiêu?", a: "L = 10 cm", o: ["L = 10 cm", "L = 5 cm", "L = 20 cm", "L = 15 cm"] },
+            { id: 20, q: "Trong thời gian 1 chu kỳ T, quãng đường s vật đi được bằng bao nhiêu?", a: "s = 4A", o: ["s = 4A", "s = 2A", "s = A", "s = 3A"] },
+            { id: 21, q: "Trong thời gian nửa chu kỳ T/2, quãng đường s vật đi được bằng bao nhiêu?", a: "s = 2A", o: ["s = 2A", "s = 4A", "s = A", "s = 3A"] },
+            { id: 22, q: "Li độ cực đại x_max bằng đại lượng nào?", a: "x_max = +A", o: ["x_max = +A", "x_max = 0", "x_max = -A", "x_max = 2A"] },
+            { id: 23, q: "Li độ cực tiểu x_min bằng đại lượng nào?", a: "x_min = -A", o: ["x_min = -A", "x_min = 0", "x_min = +A", "x_min = -2A"] },
+            { id: 24, q: "Pha ban đầu φ = 0 nghĩa là tại thời điểm t = 0 vật ở vị trí nào?", a: "Biên dương (x = +A)", o: ["Biên dương (x = +A)", "Vị trí cân bằng (x = 0)", "Biên âm (x = -A)", "Bất kỳ"] },
+            { id: 25, q: "Pha ban đầu φ = π rad nghĩa là tại thời điểm t = 0 vật ở vị trí nào?", a: "Biên âm (x = -A)", o: ["Biên âm (x = -A)", "Biên dương (x = +A)", "Vị trí cân bằng (x = 0)", "Bất kỳ"] },
+            { id: 26, q: "Pha ban đầu φ = π/2 rad nghĩa là tại t = 0 vật đi qua VTCB theo chiều nào?", a: "Chiều âm (v < 0)", o: ["Chiều âm (v < 0)", "Chiều dương (v > 0)", "Đứng yên (v = 0)", "Không xác định"] },
+            { id: 27, q: "Pha ban đầu φ = -π/2 rad nghĩa là tại t = 0 vật đi qua VTCB theo chiều nào?", a: "Chiều dương (v > 0)", o: ["Chiều dương (v > 0)", "Chiều âm (v < 0)", "Đứng yên (v = 0)", "Không xác định"] },
+            { id: 28, q: "Cho phương trình x = 5.cos(10t) (cm). Li độ x tại thời điểm t = 0 s là bao nhiêu?", a: "x = 5 cm", o: ["x = 5 cm", "x = 0 cm", "x = -5 cm", "x = 10 cm"] },
+            { id: 29, q: "Tần số góc ω có đơn vị đo chuẩn trong hệ SI là gì?", a: "rad/s", o: ["rad/s", "Hz", "s", "m/s"] },
+            { id: 30, q: "Vật dao động có chu kỳ T = 0,1 s. Số dao động N vật thực hiện trong 1 phút (60 s) là bao nhiêu?", a: "N = 600 dao động", o: ["N = 600 dao động", "N = 60 dao động", "N = 6 dao động", "N = 6000 dao động"] }
         ];
 
-        // DATA 4 CÂU ĐÚNG / SAI CÔNG THỨC
         const tfData = [
             {
                 id: 1,
-                title: "Câu 1: Cho phương trình x = 2*cos(4*pi*t + pi/2) (cm)",
+                title: "Câu 1: Xét phương trình dao động x = 2.cos(4πt + π/2) (cm)",
                 items: [
                     { id: "1a", text: "Biên độ A = 2 cm.", correct: true },
-                    { id: "1b", text: "Tần số góc omega = 4*pi rad/s.", correct: true },
-                    { id: "1c", text: "Pha ban đầu phi = 4*pi rad.", correct: false },
-                    { id: "1d", text: "Li độ của vật tại t = 0 s là x = 2 cm.", correct: false }
+                    { id: "1b", text: "Tần số góc ω = 4π rad/s.", correct: true },
+                    { id: "1c", text: "Pha ban đầu φ = 4π rad.", correct: false },
+                    { id: "1d", text: "Li độ của vật tại thời điểm t = 0 s là x = 2 cm.", correct: false }
                 ]
             },
             {
                 id: 2,
-                title: "Câu 2: Về công thức liên hệ T, f, omega và quãng đường",
+                title: "Câu 2: Về các công thức biến đổi giữa T, f, ω và quãng đường s",
                 items: [
                     { id: "2a", text: "Chu kỳ T = 1 / f.", correct: true },
-                    { id: "2b", text: "Tần số góc omega = pi * f.", correct: false },
+                    { id: "2b", text: "Tần số góc ω = πf.", correct: false },
                     { id: "2c", text: "Chiều dài quỹ đạo L = 2A.", correct: true },
-                    { id: "2d", text: "Quãng đường vật đi được trong 1 chu kỳ luôn bằng 4A.", correct: true }
+                    { id: "2d", text: "Quãng đường vật đi được trong 1 chu kỳ T luôn bằng 4A.", correct: true }
                 ]
             },
             {
                 id: 3,
-                title: "Câu 3: Xét vật thực hiện 120 dao động trong 1 phút (60s)",
+                title: "Câu 3: Xét vật thực hiện N = 120 dao động trong thời gian Δt = 60 s",
                 items: [
                     { id: "3a", text: "Tần số f = 2 Hz.", correct: true },
                     { id: "3b", text: "Chu kỳ T = 0,5 s.", correct: true },
-                    { id: "3c", text: "Tần số góc omega = 4*pi rad/s.", correct: true },
+                    { id: "3c", text: "Tần số góc ω = 4π rad/s.", correct: true },
                     { id: "3d", text: "Tần số f = 0,5 Hz.", correct: false }
                 ]
             },
             {
                 id: 4,
-                title: "Câu 4: Về li độ và pha của phương trình x = A*cos(omega*t + phi)",
+                title: "Câu 4: Về giá trị li độ x và pha (ωt + φ) trong x = A.cos(ωt + φ)",
                 items: [
-                    { id: "4a", text: "Khi (omega*t + phi) = 0 thì li độ x = A.", correct: true },
-                    { id: "4b", text: "Khi (omega*t + phi) = pi thì li độ x = -A.", correct: true },
-                    { id: "4c", text: "Khi (omega*t + phi) = pi/2 thì li độ x = 0.", correct: true },
-                    { id: "4d", text: "Li độ x nhận giá trị lớn nhất bằng 2A.", correct: false }
+                    { id: "4a", text: "Khi (ωt + φ) = 0 rad thì li độ x = +A.", correct: true },
+                    { id: "4b", text: "Khi (ωt + φ) = π rad thì li độ x = -A.", correct: true },
+                    { id: "4c", text: "Khi (ωt + φ) = π/2 rad thì li độ x = 0 cm.", correct: true },
+                    { id: "4d", text: "Li độ x có thể đạt giá trị cực đại lớn nhất bằng 2A.", correct: false }
                 ]
             }
         ];
 
-        // DATA 3 CÂU TỰ LUẬN TÍNH TOÁN
         const essayData = [
             {
                 id: 1,
-                q: "Câu 1 (SGK): Một vật dao động điều hoà có phương trình x = 2*cos(4*pi*t + pi/2) (cm). Hãy xác định: a) Biên độ A và pha ban đầu phi. b) Pha của dao động và li độ x khi t = 2 s.",
-                key: "a) Biên độ A = 2 cm; Pha ban đầu phi = pi/2 rad.\nb) Khi t = 2 s: Pha của dao động = 4*pi*(2) + pi/2 = 8,5*pi rad; Li độ x = 2*cos(8,5*pi) = 0 cm."
+                q: "Câu 1 (SGK): Một vật dao động điều hoá có phương trình x = 2.cos(4πt + π/2) (cm). Hãy tính: a) Biên độ A và pha ban đầu φ. b) Pha của dao động và li độ x khi t = 2 s.",
+                key: "a) Biên độ A = 2 cm; Pha ban đầu φ = π/2 rad.\nb) Khi t = 2 s:\n- Pha của dao động: (ωt + φ) = 4π.2 + π/2 = 8,5π rad.\n- Li độ: x = 2.cos(8,5π) = 0 cm."
             },
             {
                 id: 2,
-                q: "Câu 2: Một con lắc lò xo dao động trên quỹ đạo dài L = 10 cm. Biết vật thực hiện 20 dao động toàn phần trong 10 giây. Tính: a) Biên độ A. b) Chu kỳ T, tần số f và tần số góc omega.",
-                key: "a) Biên độ A = L / 2 = 10 / 2 = 5 cm.\nb) Chu kỳ T = 10 / 20 = 0,5 s; Tần số f = 1 / T = 2 Hz; Tần số góc omega = 2*pi*f = 4*pi rad/s."
+                q: "Câu 2: Một con lắc lò xo dao động trên quỹ đạo dài L = 10 cm. Vật thực hiện N = 20 dao động trong Δt = 10 s. Tính: a) Biên độ A. b) Chu kỳ T, tần số f và tần số góc ω.",
+                key: "a) Biên độ: A = L / 2 = 10 / 2 = 5 cm.\nb) Các đại lượng:\n- Chu kỳ: T = Δt / N = 10 / 20 = 0,5 s.\n- Tần số: f = 1 / T = 1 / 0,5 = 2 Hz.\n- Tần số góc: ω = 2πf = 2π.2 = 4π rad/s."
             },
             {
                 id: 3,
-                q: "Câu 3: Cho phương trình dao động x = 4*cos(2*pi*t - pi/3) (cm). Tính li độ của vật tại các thời điểm: a) t = 0 s. b) t = 0,25 s.",
-                key: "a) Tại t = 0 s: x = 4*cos(-pi/3) = 4 * 0,5 = 2 cm.\nb) Tại t = 0,25 s: x = 4*cos(2*pi*0,25 - pi/3) = 4*cos(pi/6) = 4 * (sqrt(3)/2) = 2*sqrt(3) cm (khoảng 3,46 cm)."
+                q: "Câu 3: Cho phương trình dao động x = 4.cos(2πt - π/3) (cm). Tính li độ x tại thời điểm: a) t = 0 s. b) t = 0,25 s.",
+                key: "a) Tại t = 0 s:\nx = 4.cos(-π/3) = 4 . 0,5 = 2 cm.\n\nb) Tại t = 0,25 s:\nx = 4.cos(2π.0,25 - π/3) = 4.cos(π/2 - π/3) = 4.cos(π/6) = 4 . (√3 / 2) = 2√3 cm (≈ 3,46 cm)."
             }
         ];
 
