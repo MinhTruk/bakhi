@@ -137,8 +137,8 @@ Xem điểm và đáp án để xác định phần kiến thức cần ôn lạ
 | 📝 Bài tập tương tác | 🟢 Đang phát triển |
 | 🎲 Xáo trộn câu hỏi | 🟢 Có |
 | 📱 Giao diện responsive | 🟢 Đang cải thiện |
-| 📊 Thống kê kết quả | 🟡 Đang lên kế hoạch |
-| 💾 Lưu tiến độ | 🟡 Đang lên kế hoạch |
+| 📊 Thống kê kết quả | 🟢 Đã hoàn thành |
+| 💾 Lưu tiến độ | 🔴 Chưa có kế hoạch |
 
 ---
 
@@ -155,20 +155,11 @@ Xem điểm và đáp án để xác định phần kiến thức cần ôn lạ
 
 ### 🔨 Đang phát triển
 
-- [ ] Cải thiện giao diện
-- [ ] Bổ sung thêm môn học
-- [ ] Bổ sung thêm đề kiểm tra
+- [x] Cải thiện giao diện
+- [ ] Bổ sung thêm môn học (Đang bổ sung)
+- [ ] Bổ sung thêm đề kiểm tra (Chưa có kế hoạch)
 - [x] Tối ưu giao diện trên điện thoại
 - [ ] Cải thiện hệ thống câu hỏi
-
-### 🔮 Dự kiến
-
-- [ ] 💾 Lưu tiến độ học tập
-- [ ] 📊 Thống kê kết quả
-- [ ] 🏆 Lịch sử luyện tập
-- [ ] 🔎 Tìm kiếm tài liệu
-- [ ] 🎯 Phân loại độ khó
-- [ ] 📈 Theo dõi quá trình học tập
 
 ---
 
