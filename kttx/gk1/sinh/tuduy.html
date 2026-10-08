@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mind Map Sinh học 11 - Trao đổi chất & Chuyển hóa năng lượng</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08111f;--panel:#0f1b2d;--line:#334155;--text:#e5eefb;--muted:#9fb0c7;
+  --green:#34d399;--cyan:#22d3ee;--yellow:#fbbf24;--pink:#f472b6;--purple:#a78bfa;
+}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:
+radial-gradient(circle at 50% 15%,#13263d 0,#08111f 42%,#050b14 100%);
+color:var(--text);min-height:100vh;overflow-x:hidden}
+header{text-align:center;padding:24px 18px 12px}
+header h1{font-size:clamp(1.2rem,3vw,1.8rem);letter-spacing:.4px}
+header p{color:var(--muted);font-size:.85rem;margin-top:7px}
+.map{max-width:1500px;margin:auto;padding:25px 25px 55px;position:relative}
+.root{
+  width:min(430px,90%);margin:0 auto 52px;padding:19px 25px;text-align:center;
+  background:linear-gradient(135deg,#059669,#0284c7);border:2px solid #ffffff2b;
+  border-radius:22px;box-shadow:0 15px 45px #0007;position:relative;z-index:2
+}
+.root h2{font-size:1.15rem}.root small{display:block;margin-top:5px;color:#d9f9ff}
+.branches{display:grid;grid-template-columns:1fr 1fr;gap:38px;position:relative}
+.branch{
+  background:#0d192aee;border:1px solid #26364d;border-radius:24px;padding:20px;
+  box-shadow:0 15px 35px #0005;position:relative
+}
+.branch:before{
+  content:"";position:absolute;top:-52px;left:50%;height:52px;width:3px;
+  background:var(--line);transform:translateX(-50%)
+}
+.branch.green{--accent:var(--green)}.branch.cyan{--accent:var(--cyan)}
+.branch-title{
+  display:flex;align-items:center;gap:10px;color:var(--accent);font-size:1.08rem;
+  font-weight:800;padding-bottom:14px;border-bottom:1px solid #26364d;margin-bottom:15px
+}
+.branch-title .num{
+  width:31px;height:31px;border-radius:50%;display:grid;place-items:center;
+  background:#ffffff0c;border:1px solid var(--accent);font-size:.85rem
+}
+.nodes{display:flex;flex-direction:column;gap:13px}
+.node{
+  background:#081321;border:1px solid #26364d;border-radius:16px;padding:14px 15px;
+  position:relative;transition:.2s
+}
+.node:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 8px 25px #0005}
+.node h3{font-size:.92rem;color:#fff;margin-bottom:8px}
+.node h3 span{color:var(--accent)}
+.node ul{padding-left:18px;color:#c4d0df;font-size:.82rem;line-height:1.55}
+.node li{margin:3px 0}
+.key{color:#fff;font-weight:700}
+.flow{
+  display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:9px;font-size:.78rem
+}
+.pill{padding:6px 9px;border-radius:9px;background:#16243a;border:1px solid #334155;color:#dce7f5}
+.arrow{color:var(--accent);font-weight:900}
+.tip{
+  margin-top:16px;padding:11px 13px;border-radius:12px;background:#ffffff06;
+  border-left:3px solid var(--accent);font-size:.78rem;color:#b8c7d9
+}
+footer{text-align:center;color:#71829a;font-size:.75rem;padding:18px;border-top:1px solid #1d2a3c}
+@media(max-width:900px){
+ .branches{grid-template-columns:1fr}
+ .branch:before{display:none}
+ .root{margin-bottom:25px}
+}
+@media(max-width:520px){
+ .map{padding:18px 12px 35px}.branch{padding:15px;border-radius:18px}
+ .node{padding:12px}.node ul{font-size:.78rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌿 MIND MAP SINH HỌC 11</h1>
+  <p>Chương 1 • Trao đổi chất & Chuyển hóa năng lượng ở sinh vật</p>
+</header>
+
+<main class="map">
+  <div class="root">
+    <h2>CHƯƠNG 1</h2>
+    <div>TRAO ĐỔI CHẤT & CHUYỂN HÓA NĂNG LƯỢNG</div>
+    <small>2 bài trọng tâm</small>
+  </div>
+
+  <section class="branches">
+
+    <!-- BÀI 1 -->
+    <article class="branch green">
+      <div class="branch-title">
+        <div class="num">01</div>
+        <div>BÀI 1: KHÁI QUÁT VỀ TRAO ĐỔI CHẤT & CHUYỂN HÓA NĂNG LƯỢNG</div>
+      </div>
+
+      <div class="nodes">
+        <div class="node">
+          <h3><span>①</span> Vai trò</h3>
+          <ul>
+            <li><span class="key">Cung cấp chất</span> từ môi trường → tạo chất sống, tế bào, cơ quan.</li>
+            <li><span class="key">Tích lũy & giải phóng năng lượng</span> → vận động, sinh trưởng, sinh sản.</li>
+            <li><span class="key">Thải chất</span> thải, độc hại, dư thừa → môi trường.</li>
+          </ul>
+        </div>
+
+        <div class="node">
+          <h3><span>②</span> Dấu hiệu đặc trưng</h3>
+          <div class="flow">
+            <span class="pill">Tiếp nhận chất</span><span class="arrow">→</span>
+            <span class="pill">Vận chuyển đến tế bào</span><span class="arrow">→</span>
+            <span class="pill">Đồng hóa & dị hóa</span><span class="arrow">→</span>
+            <span class="pill">Thải chất</span>
+          </div>
+        </div>
+
+        <div class="node">
+          <h3><span>③</span> Các giai đoạn chuyển hóa năng lượng</h3>
+          <ul>
+            <li><span class="key">Tổng hợp:</span> quang năng → hóa năng trong chất hữu cơ.</li>
+            <li><span class="key">Phân giải:</span> phân tử lớn → nhỏ; năng lượng → ATP.</li>
+            <li><span class="key">Huy động:</span> ATP giải phóng năng lượng → hoạt động sống → nhiệt.</li>
+          </ul>
+        </div>
+
+        <div class="node">
+          <h3><span>④</span> Mối quan hệ tế bào ↔ cơ thể</h3>
+          <ul>
+            <li>Chất dinh dưỡng → tế bào → <span class="key">đồng hóa + dị hóa</span>.</li>
+            <li>Trao đổi chất & chuyển hóa năng lượng ở <span class="key">tế bào là cơ sở</span> cho cấp cơ thể.</li>
+          </ul>
+        </div>
+
+        <div class="node">
+          <h3><span>⑤</span> Phương thức trao đổi chất</h3>
+          <ul>
+            <li><span class="key">Tự dưỡng:</span> quang tự dưỡng + hóa tự dưỡng.</li>
+            <li><span class="key">Dị dưỡng:</span> lấy chất hữu cơ từ sinh vật khác → tiêu hóa, hấp thụ, đồng hóa.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <!-- BÀI 2 -->
+    <article class="branch cyan">
+      <div class="branch-title">
+        <div class="num">02</div>
+        <div>BÀI 2: TRAO ĐỔI NƯỚC & KHOÁNG Ở THỰC VẬT</div>
+      </div>
+
+      <div class="nodes">
+        <div class="node">
+          <h3><span>①</span> Vai trò của nước & khoáng</h3>
+          <ul>
+            <li><span class="key">Nước:</span> cấu tạo tế bào, dung môi, vận chuyển, môi trường phản ứng, điều hòa nhiệt.</li>
+            <li><span class="key">Khoáng:</span> cấu trúc tế bào + điều tiết các quá trình sinh lí.</li>
+          </ul>
+        </div>
+
+        <div class="node">
+          <h3><span>②</span> Hấp thụ ở rễ</h3>
+          <ul>
+            <li><span class="key">Nước:</span> chủ yếu thụ động (thẩm thấu).</li>
+            <li><span class="key">Khoáng:</span> thụ động + chủ động.</li>
+            <li>Rễ → mạch gỗ qua <span class="key">gian bào</span> và <span class="key">tế bào chất</span>.</li>
+          </ul>
+        </div>
+
+        <div class="node">
+          <h3><span>③</span> Vận chuyển trong thân & thoát hơi nước</h3>
+          <ul>
+            <li><span class="key">Mạch gỗ:</span> nước + khoáng, một chiều từ rễ → lá.</li>
+            <li>Động lực: <span class="key">áp suất rễ + thoát hơi nước + lực liên kết</span>.</li>
+            <li><span class="key">Mạch rây:</span> chất hữu cơ, vận chuyển 2 hướng theo nguồn → đích.</li>
+            <li><span class="key">Thoát hơi:</span> qua cutin hoặc khí khổng; chủ yếu do đóng/mở khí khổng.</li>
+          </ul>
+        </div>
+
+        <div class="node">
+          <h3><span>④</span> Dinh dưỡng Nitrogen</h3>
+          <ul>
+            <li><span class="key">Vai trò:</span> cấu tạo chất hữu cơ + điều tiết sinh trưởng, phát triển.</li>
+            <li><span class="key">Nguồn:</span> khí quyển, chất hữu cơ, vi khuẩn cố định, phân bón.</li>
+            <li><span class="key">Biến đổi:</span> nitrate → NH₄⁺ → đồng hóa → amino acid / amide.</li>
+          </ul>
+        </div>
+
+        <div class="node">
+          <h3><span>⑤</span> Nhân tố ảnh hưởng</h3>
+          <ul>
+            <li><span class="key">Ánh sáng:</span> tăng mở khí khổng → tăng thoát hơi nước.</li>
+            <li><span class="key">Nhiệt độ:</span> trong giới hạn sinh thái, tăng nhiệt độ → tăng hấp thụ; quá cao gây giảm/dừng hấp thụ.</li>
+            <li><span class="key">Độ ẩm đất:</span> phù hợp giúp rễ hoạt động tốt; quá cao/thấp đều ức chế.</li>
+            <li><span class="key">Độ ẩm không khí:</span> cao → giảm thoát hơi; thấp → tăng thoát hơi.</li>
+          </ul>
+        </div>
+
+        <div class="node">
+          <h3><span>⑥</span> Ứng dụng trong nông nghiệp</h3>
+          <ul>
+            <li><span class="key">Tưới nước hợp lí:</span> đúng nhu cầu, đúng thời điểm, đúng phương pháp.</li>
+            <li><span class="key">Bón phân:</span> <b>4 đúng</b> = đúng loại + đúng liều lượng + đúng thời điểm + đúng phương pháp.</li>
+            <li>Mục tiêu: tăng năng suất, tránh ngộ độc cây và ô nhiễm môi trường.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+  </section>
+</main>
+
+<footer>Mind Map Sinh học 11 • Nội dung được rút gọn từ tài liệu ôn tập đã cung cấp</footer>
+</body>
+</html>
