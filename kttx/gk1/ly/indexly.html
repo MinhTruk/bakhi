@@ -11,7 +11,7 @@
         body { font-family: 'Lexend', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-purple-500 selection:text-white">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-purple-500 selection:text-white relative">
 
     <!-- Header -->
     <header class="w-full bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
@@ -206,6 +206,54 @@
     <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
         Môn Vật Lý Hub • Repository: MinhTruk/bakhi
     </footer>
+
+    <!-- Custom Modal Thông Báo Trên Web -->
+    <div id="customModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 md:p-8 max-w-md w-full mx-4 shadow-2xl text-center space-y-5 animate-in fade-in zoom-in duration-200">
+            <div class="w-12 h-12 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-2xl mx-auto flex items-center justify-center text-xl shadow-lg">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-lg font-bold text-white tracking-wide">THÔNG BÁO</h3>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                    Bạn đã hoàn thành bài thi tại trường lúc <span class="font-semibold text-purple-400">8/10/2026</span>. Bạn có muốn làm lại?
+                </p>
+            </div>
+            <div class="flex items-center space-x-3 pt-2">
+                <button id="btnCancel" class="flex-1 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold rounded-xl transition border border-slate-600">
+                    Hủy
+                </button>
+                <button id="btnConfirm" class="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-xl transition shadow-lg shadow-purple-600/30">
+                    Làm lại
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Hiển Thị & Xử Lý Modal -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('customModal');
+            const btnConfirm = document.getElementById('btnConfirm');
+            const btnCancel = document.getElementById('btnCancel');
+
+            // Hiển thị modal khi mở trang
+            modal.classList.remove('hidden');
+
+            // Xử lý khi nhấn nút "Làm lại"
+            btnConfirm.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                console.log("Người dùng chọn làm lại bài thi.");
+                // Bạn có thể viết thêm logic chuyển hướng hoặc reset bài làm tại đây
+            });
+
+            // Xử lý khi nhấn nút "Hủy"
+            btnCancel.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                console.log("Người dùng chọn hủy.");
+            });
+        });
+    </script>
 
 </body>
 </html>
