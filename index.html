@@ -40,14 +40,13 @@
 </head>
 <body id="pageBody" class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative bg-cover bg-center bg-fixed transition-colors duration-300">
 
-    <!-- Lớp phủ nền tùy chỉnh (Background Overlay) -->
+    <!-- Lớp phủ nền tùy chỉnh -->
     <div id="bgOverlay" class="absolute inset-0 bg-slate-100/90 dark:bg-slate-900/90 pointer-events-none z-0 transition-colors duration-300"></div>
 
-    <!-- Nội dung chính bọc trong container z-10 để nổi lên trên lớp phủ nền -->
     <div class="relative z-10 flex flex-col min-h-screen justify-between">
         
         <!-- Header -->
-        <header class="w-full bg-white/80 dark:bg-slate-800/80 backdrop-blur border-b border-slate-200 dark:border-slate-700/60 sticky top-0 z-20 transition-colors duration-300">
+        <header class="w-full bg-white/80 dark:bg-slate-800/80 backdrop-blur border-b border-slate-200 dark:border-slate-700/60 sticky top-0 z-30 transition-colors duration-300">
             <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <div class="p-2.5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-600/30">
@@ -58,22 +57,52 @@
                         <p class="text-xs text-slate-500 dark:text-slate-400">https://minhtruk.github.io/bakhi/</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <!-- Nút Đổi Dark/Light Mode -->
-                    <button onclick="toggleDarkMode()" class="p-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl text-slate-700 dark:text-slate-200 transition cursor-pointer" title="Chuyển đổi giao diện Sáng / Tối">
-                        <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
+                
+                <div class="flex items-center space-x-3">
+                    <!-- Nút Đọc README ra ngoài Header -->
+                    <button onclick="openReadmeModal()" class="px-3.5 py-2 bg-indigo-600/90 hover:bg-indigo-600 border border-indigo-500/50 rounded-xl text-xs font-medium text-white transition flex items-center space-x-2 shadow-md cursor-pointer">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span class="hidden sm:inline">README.md</span>
                     </button>
 
-                    <!-- Nút Đọc README -->
-                    <button onclick="openReadmeModal()" class="px-3.5 py-1.5 bg-indigo-600/90 hover:bg-indigo-600 border border-indigo-500/50 rounded-lg text-xs font-medium text-white transition flex items-center space-x-2 shadow-md cursor-pointer">
-                        <i class="fa-solid fa-book-open"></i>
-                        <span>Đọc README.md</span>
-                    </button>
-                    
-                    <a href="https://github.com/MinhTruk/bakhi" target="_blank" class="px-3.5 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 transition flex items-center space-x-2">
-                        <i class="fa-brands fa-github text-base"></i>
-                        <span class="hidden sm:inline">GitHub Repo</span>
-                    </a>
+                    <!-- Menu 3 gạch (Dropdown Menu) -->
+                    <div class="relative">
+                        <button onclick="toggleHamburgerMenu()" class="p-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl text-slate-700 dark:text-slate-200 transition cursor-pointer shadow-sm">
+                            <i class="fa-solid fa-bars text-base"></i>
+                        </button>
+
+                        <!-- Dropdown nội dung 3 gạch -->
+                        <div id="hamburgerDropdown" class="hidden absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-3 z-40 space-y-3">
+                            
+                            <!-- Thanh tìm kiếm nằm ngay trong menu 3 gạch khi mở ra -->
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                    <i class="fa-solid fa-search text-xs"></i>
+                                </div>
+                                <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Tìm kiếm môn, KTTX, GK1..." class="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition">
+                            </div>
+
+                            <hr class="border-slate-200 dark:border-slate-700">
+
+                            <!-- Các tùy chọn trong menu -->
+                            <div class="space-y-1.5">
+                                <!-- Dark / Light mode toggle -->
+                                <button onclick="toggleDarkMode()" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer">
+                                    <span class="flex items-center space-x-2.5">
+                                        <i id="themeIcon" class="fa-solid fa-moon text-indigo-500"></i>
+                                        <span>Giao diện Sáng/Tối</span>
+                                    </span>
+                                    <span id="themeText" class="text-[10px] text-slate-400">Đang tối</span>
+                                </button>
+
+                                <!-- GitHub Repo link -->
+                                <a href="https://github.com/MinhTruk/bakhi" target="_blank" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition">
+                                    <i class="fa-brands fa-github text-slate-600 dark:text-slate-300"></i>
+                                    <span>GitHub Repository</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -81,50 +110,39 @@
         <!-- Main Container -->
         <main class="max-w-6xl w-full mx-auto p-4 md:p-8 flex-grow space-y-8">
             
-            <!-- Banner Intro & Search Box -->
-            <section class="bg-white/70 dark:bg-gradient-to-r dark:from-indigo-950/60 dark:via-slate-800 dark:to-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl backdrop-blur-md flex flex-col gap-6 transition-colors duration-300">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <div class="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-2">
-                            <i class="fa-solid fa-cubes"></i>
-                            <span>Cấu Trúc Thư Mục Chuẩn Phân Cấp</span>
-                        </div>
-                        <h2 class="text-2xl md:text-3xl font-bold mb-2 text-slate-900 dark:text-white">Thư Mục Tài Liệu & Ôn Tập Hàng Kỳ</h2>
-                        <p class="text-slate-600 dark:text-slate-300 text-sm max-w-2xl leading-relaxed">
-                            Chọn các đợt kiểm tra <b>KTTX (Thường xuyên)</b> hoặc <b>KTGK / KTCK (Định kỳ)</b> để mở thư mục các môn, hoặc sử dụng công cụ tìm kiếm và tùy chỉnh giao diện bên dưới.
-                        </p>
+            <!-- Banner Intro & Custom Background -->
+            <section class="bg-white/70 dark:bg-gradient-to-r dark:from-indigo-950/60 dark:via-slate-800 dark:to-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-6 transition-colors duration-300">
+                <div>
+                    <div class="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-cubes"></i>
+                        <span>Cấu Trúc Thư Mục Chuẩn Phân Cấp</span>
                     </div>
-
-                    <!-- Khu vực Tùy chỉnh Background -->
-                    <div class="flex flex-col items-start md:items-end gap-2 bg-slate-200/60 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-300 dark:border-slate-700/60">
-                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
-                            <i class="fa-solid fa-image text-indigo-500"></i>
-                            <span>Hình nền tùy chỉnh</span>
-                        </span>
-                        <div class="flex items-center space-x-2">
-                            <label class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium cursor-pointer transition shadow-sm flex items-center space-x-1.5">
-                                <i class="fa-solid fa-upload"></i>
-                                <span>Chọn ảnh</span>
-                                <input type="file" id="bgInput" accept="image/*" class="hidden" onchange="handleCustomBackground(event)">
-                            </label>
-                            <button id="removeBgBtn" onclick="removeCustomBackground()" class="hidden px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-600 dark:text-rose-400 border border-rose-500/30 rounded-lg text-xs font-medium transition cursor-pointer">
-                                Xóa ảnh nền
-                            </button>
-                        </div>
-                        <!-- Thanh kéo chỉnh độ mờ overlay -->
-                        <div id="opacityControl" class="hidden items-center space-x-2 w-full mt-1">
-                            <span class="text-[10px] text-slate-500 dark:text-slate-400">Độ trong suốt:</span>
-                            <input type="range" id="opacityRange" min="0.5" max="0.98" step="0.05" value="0.88" oninput="changeOverlayOpacity(this.value)" class="w-28 accent-indigo-600 cursor-pointer">
-                        </div>
-                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-2 text-slate-900 dark:text-white">Thư Mục Tài Liệu & Ôn Tập Hàng Kỳ</h2>
+                    <p class="text-slate-600 dark:text-slate-300 text-sm max-w-2xl leading-relaxed">
+                        Chọn các đợt kiểm tra <b>KTTX (Thường xuyên)</b> hoặc <b>KTGK / KTCK (Định kỳ)</b> để mở thư mục các môn. Bấm vào biểu tượng <b>3 gạch ở góc trên phải</b> để tìm kiếm nhanh hoặc đổi giao diện[cite: 1].
+                    </p>
                 </div>
 
-                <!-- Ô tìm kiếm -->
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                        <i class="fa-solid fa-search"></i>
+                <!-- Khu vực Tùy chỉnh Background -->
+                <div class="flex flex-col items-start md:items-end gap-2 bg-slate-200/60 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-300 dark:border-slate-700/60 shrink-0">
+                    <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
+                        <i class="fa-solid fa-image text-indigo-500"></i>
+                        <span>Hình nền tùy chỉnh</span>
+                    </span>
+                    <div class="flex items-center space-x-2">
+                        <label class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium cursor-pointer transition shadow-sm flex items-center space-x-1.5">
+                            <i class="fa-solid fa-upload"></i>
+                            <span>Chọn ảnh</span>
+                            <input type="file" id="bgInput" accept="image/*" class="hidden" onchange="handleCustomBackground(event)">
+                        </label>
+                        <button id="removeBgBtn" onclick="removeCustomBackground()" class="hidden px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-600 dark:text-rose-400 border border-rose-500/30 rounded-lg text-xs font-medium transition cursor-pointer">
+                            Xóa ảnh
+                        </button>
                     </div>
-                    <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Tìm kiếm theo môn học, kỳ kiểm tra (VD: Toán, KTTX, GK1, Lịch Sử...)" class="w-full pl-11 pr-4 py-3 bg-white/90 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+                    <div id="opacityControl" class="hidden items-center space-x-2 w-full mt-1">
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400">Độ trong:</span>
+                        <input type="range" id="opacityRange" min="0.5" max="0.98" step="0.05" value="0.88" oninput="changeOverlayOpacity(this.value)" class="w-28 accent-indigo-600 cursor-pointer">
+                    </div>
                 </div>
             </section>
 
@@ -168,7 +186,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="kttx-gk1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk1" data-exam-type="KTTX" data-semester="GK1"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk1"></div>
                         </div>
                     </div>
 
@@ -183,7 +201,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="kttx-hk1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk1" data-exam-type="KTTX" data-semester="HK1"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk1"></div>
                         </div>
                     </div>
 
@@ -198,7 +216,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="kttx-gk2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk2" data-exam-type="KTTX" data-semester="GK2"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk2"></div>
                         </div>
                     </div>
 
@@ -213,7 +231,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="kttx-hk2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk2" data-exam-type="KTTX" data-semester="HK2"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk2"></div>
                         </div>
                     </div>
                 </div>
@@ -241,7 +259,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="ktgk-1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk1" data-exam-type="KTGK" data-semester="GK1"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk1"></div>
                         </div>
                     </div>
 
@@ -256,7 +274,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="ktck-1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck1" data-exam-type="KTCK" data-semester="CK1"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck1"></div>
                         </div>
                     </div>
 
@@ -271,7 +289,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="ktgk-2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk2" data-exam-type="KTGK" data-semester="GK2"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk2"></div>
                         </div>
                     </div>
 
@@ -286,7 +304,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="ktck-2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck2" data-exam-type="KTCK" data-semester="CK2"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck2"></div>
                         </div>
                     </div>
                 </div>
@@ -324,7 +342,6 @@
     </div>
 
     <script>
-        // Cấu hình 10 môn học
         const subjects = [
             { id: 'ly', indexFile: 'indexly.html', name: 'Vật Lý', icon: 'fa-atom', color: 'text-purple-500 dark:text-purple-400' },
             { id: 'su', indexFile: 'indexsu.html', name: 'Lịch Sử', icon: 'fa-landmark', color: 'text-amber-500 dark:text-amber-400' },
@@ -349,11 +366,19 @@
             { path: 'ktck2', examType: 'KTCK', semester: 'CK2' }
         ];
 
-        // Khởi tạo giao diện trang
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
             initCustomBackground();
             renderSubjectsTree();
+
+            // Đóng menu 3 gạch khi click ra ngoài
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('hamburgerDropdown');
+                const btn = dropdown.previousElementSibling;
+                if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
         });
 
         function renderSubjectsTree() {
@@ -368,33 +393,52 @@
             });
         }
 
+        // --- XỬ LÝ MENU 3 GẠCH ---
+        function toggleHamburgerMenu() {
+            const dropdown = document.getElementById('hamburgerDropdown');
+            dropdown.classList.toggle('hidden');
+            if (!dropdown.classList.contains('hidden')) {
+                document.getElementById('searchInput').focus();
+            }
+        }
+
         // --- TÍNH NĂNG DARK / LIGHT MODE ---
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
             if (savedTheme === 'light') {
                 document.documentElement.classList.remove('dark');
-                document.getElementById('themeIcon').className = 'fa-solid fa-sun text-sm text-amber-500';
+                themeIcon.className = 'fa-solid fa-sun text-amber-500';
+                themeText.innerText = 'Đang sáng';
             } else {
                 document.documentElement.classList.add('dark');
-                document.getElementById('themeIcon').className = 'fa-solid fa-moon text-sm';
+                themeIcon.className = 'fa-solid fa-moon text-indigo-500';
+                themeText.innerText = 'Đang tối';
             }
         }
 
         function toggleDarkMode() {
             const htmlEl = document.documentElement;
             const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
             if (htmlEl.classList.contains('dark')) {
                 htmlEl.classList.remove('dark');
                 localStorage.setItem('theme', 'light');
-                themeIcon.className = 'fa-solid fa-sun text-sm text-amber-500';
+                themeIcon.className = 'fa-solid fa-sun text-amber-500';
+                themeText.innerText = 'Đang sáng';
             } else {
                 htmlEl.classList.add('dark');
                 localStorage.setItem('theme', 'dark');
-                themeIcon.className = 'fa-solid fa-moon text-sm';
+                themeIcon.className = 'fa-solid fa-moon text-indigo-500';
+                themeText.innerText = 'Đang tối';
             }
+            const savedBg = localStorage.getItem('customBg');
+            const savedOpacity = localStorage.getItem('bgOpacity') || '0.88';
+            if (savedBg) applyBackground(savedBg, savedOpacity);
         }
 
-        // --- TÍNH NĂNG CUSTOM BACKGROUND TỪ FILE ẢNH ---
+        // --- TÍNH NĂNG CUSTOM BACKGROUND ---
         function initCustomBackground() {
             const savedBg = localStorage.getItem('customBg');
             const savedOpacity = localStorage.getItem('bgOpacity') || '0.88';
@@ -435,9 +479,7 @@
         function changeOverlayOpacity(val) {
             localStorage.setItem('bgOpacity', val);
             const savedBg = localStorage.getItem('customBg');
-            if (savedBg) {
-                applyBackground(savedBg, val);
-            }
+            if (savedBg) applyBackground(savedBg, val);
         }
 
         function removeCustomBackground() {
