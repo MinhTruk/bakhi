@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Quản Lý Tài Liệu & Ôn Tập - MinhTruk/bakhi</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -25,265 +30,489 @@
         .folder-header.active .folder-icon { transform: rotate(90deg); }
         
         /* Style cho Modal README */
-        .markdown-body h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; color: #f8fafc; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
-        .markdown-body h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; color: #cbd5e1; }
-        .markdown-body p { margin-bottom: 0.75rem; font-size: 0.9rem; color: #94a3b8; line-height: 1.6; }
-        .markdown-body ul { list-style-type: disc; padding-left: 1.25rem; margin-bottom: 0.75rem; color: #94a3b8; font-size: 0.9rem; }
+        .markdown-body h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; border-bottom: 1px solid; padding-bottom: 0.5rem; }
+        .markdown-body h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .markdown-body p { margin-bottom: 0.75rem; font-size: 0.9rem; line-height: 1.6; }
+        .markdown-body ul { list-style-type: disc; padding-left: 1.25rem; margin-bottom: 0.75rem; font-size: 0.9rem; }
         .markdown-body table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem; }
-        .markdown-body th, .markdown-body td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
-        .markdown-body th { background-color: #1e293b; color: #f1f5f9; }
+        .markdown-body th, .markdown-body td { border: 1px solid; padding: 0.5rem 0.75rem; text-align: left; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body id="pageBody" class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative bg-cover bg-center bg-fixed transition-colors duration-300">
 
-    <!-- Header -->
-    <header class="w-full bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="p-2.5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-600/30">
-                    <i class="fa-solid fa-folder-tree text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold leading-tight">Cây Tài Liệu Ôn Tập</h1>
-                    <p class="text-xs text-slate-400">https://minhtruk.github.io/bakhi/</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button onclick="openReadmeModal()" class="px-3.5 py-1.5 bg-indigo-600/80 hover:bg-indigo-600 border border-indigo-500/50 rounded-lg text-xs font-medium text-white transition flex items-center space-x-2 shadow-md cursor-pointer">
-                    <i class="fa-solid fa-book-open"></i>
-                    <span>Đọc README.md</span>
-                </button>
-                <a href="https://github.com/MinhTruk/bakhi" target="_blank" class="px-3.5 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-2">
-                    <i class="fa-brands fa-github text-base"></i>
-                    <span class="hidden sm:inline">GitHub Repo</span>
-                </a>
-            </div>
-        </div>
-    </header>
+    <!-- Lớp phủ nền tùy chỉnh (Background Overlay) -->
+    <div id="bgOverlay" class="absolute inset-0 bg-slate-100/90 dark:bg-slate-900/90 pointer-events-none z-0 transition-colors duration-300"></div>
 
-    <!-- Main Container -->
-    <main class="max-w-6xl w-full mx-auto p-4 md:p-8 flex-grow space-y-8">
+    <!-- Nội dung chính bọc trong container z-10 để nổi lên trên lớp phủ nền -->
+    <div class="relative z-10 flex flex-col min-h-screen justify-between">
         
-        <!-- Banner Intro -->
-        <section class="bg-gradient-to-r from-indigo-900/60 via-slate-800 to-slate-800 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-                <div class="flex items-center space-x-2 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-2">
-                    <i class="fa-solid fa-cubes"></i>
-                    <span>Cấu Trúc Thư Mục Chuẩn Phân Cấp</span>
-                </div>
-                <h2 class="text-2xl md:text-3xl font-bold mb-2 text-white">Thư Mục Tài Liệu & Ôn Tập Hàng Kỳ</h2>
-                <p class="text-slate-300 text-sm max-w-2xl leading-relaxed">
-                    Chọn các đợt kiểm tra <b>KTTX (Thường xuyên)</b> hoặc <b>KTGK / KTCK (Định kỳ)</b> để mở thư mục các môn. Bấm vào từng môn để truy cập trang chủ môn học (như <code>indexly.html</code>, <code>indexsu.html</code>, <code>indextin.html</code>).
-                </p>
-            </div>
-        </section>
-
-        <!-- Categories Tree -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-            <!-- KHU VỰC 1: KIỂM TRA THƯỜNG XUYÊN (KTTX) -->
-            <div class="space-y-4">
-                <div class="flex items-center space-x-3 pb-2 border-b border-indigo-500/40">
-                    <span class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">
-                        <i class="fa-solid fa-clock-rotate-left text-lg"></i>
-                    </span>
+        <!-- Header -->
+        <header class="w-full bg-white/80 dark:bg-slate-800/80 backdrop-blur border-b border-slate-200 dark:border-slate-700/60 sticky top-0 z-20 transition-colors duration-300">
+            <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2.5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-600/30">
+                        <i class="fa-solid fa-folder-tree text-xl"></i>
+                    </div>
                     <div>
-                        <h3 class="text-xl font-bold text-white">Kiểm Tra Thường Xuyên (KTTX)</h3>
-                        <p class="text-xs text-slate-400">Cấu trúc: kttx/[kỳ]/[môn]/index[môn].html</p>
+                        <h1 class="text-lg font-bold leading-tight">Cây Tài Liệu Ôn Tập</h1>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">https://minhtruk.github.io/bakhi/</p>
                     </div>
                 </div>
-
-                <!-- Thư mục KTTX GK1 -->
-                <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
-                    <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-gk1', this)">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-chevron-right folder-icon text-indigo-400 text-xs"></i>
-                            <i class="fa-solid fa-folder text-amber-400 text-lg"></i>
-                            <span class="font-semibold text-slate-200">KTTX Giữa Kỳ 1 (GK1)</span>
-                        </span>
-                        <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
+                <div class="flex items-center space-x-2">
+                    <!-- Nút Đổi Dark/Light Mode -->
+                    <button onclick="toggleDarkMode()" class="p-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl text-slate-700 dark:text-slate-200 transition cursor-pointer" title="Chuyển đổi giao diện Sáng / Tối">
+                        <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
                     </button>
-                    <div id="kttx-gk1" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk1"></div>
-                    </div>
-                </div>
 
-                <!-- Thư mục KTTX HK1 -->
-                <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
-                    <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-hk1', this)">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-chevron-right folder-icon text-indigo-400 text-xs"></i>
-                            <i class="fa-solid fa-folder text-amber-400 text-lg"></i>
-                            <span class="font-semibold text-slate-200">KTTX Học Kỳ 1 (HK1)</span>
-                        </span>
-                        <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
+                    <!-- Nút Đọc README -->
+                    <button onclick="openReadmeModal()" class="px-3.5 py-1.5 bg-indigo-600/90 hover:bg-indigo-600 border border-indigo-500/50 rounded-lg text-xs font-medium text-white transition flex items-center space-x-2 shadow-md cursor-pointer">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span>Đọc README.md</span>
                     </button>
-                    <div id="kttx-hk1" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk1"></div>
-                    </div>
-                </div>
-
-                <!-- Thư mục KTTX GK2 -->
-                <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
-                    <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-gk2', this)">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-chevron-right folder-icon text-indigo-400 text-xs"></i>
-                            <i class="fa-solid fa-folder text-amber-400 text-lg"></i>
-                            <span class="font-semibold text-slate-200">KTTX Giữa Kỳ 2 (GK2)</span>
-                        </span>
-                        <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
-                    </button>
-                    <div id="kttx-gk2" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk2"></div>
-                    </div>
-                </div>
-
-                <!-- Thư mục KTTX HK2 -->
-                <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
-                    <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-hk2', this)">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-chevron-right folder-icon text-indigo-400 text-xs"></i>
-                            <i class="fa-solid fa-folder text-amber-400 text-lg"></i>
-                            <span class="font-semibold text-slate-200">KTTX Học Kỳ 2 (HK2)</span>
-                        </span>
-                        <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
-                    </button>
-                    <div id="kttx-hk2" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk2"></div>
-                    </div>
+                    
+                    <a href="https://github.com/MinhTruk/bakhi" target="_blank" class="px-3.5 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 transition flex items-center space-x-2">
+                        <i class="fa-brands fa-github text-base"></i>
+                        <span class="hidden sm:inline">GitHub Repo</span>
+                    </a>
                 </div>
             </div>
+        </header>
 
-            <!-- KHU VỰC 2: KIỂM TRA ĐỊNH KỲ (KTGK & KTCK) -->
-            <div class="space-y-4">
-                <div class="flex items-center space-x-3 pb-2 border-b border-emerald-500/40">
-                    <span class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20">
-                        <i class="fa-solid fa-graduation-cap text-lg"></i>
-                    </span>
+        <!-- Main Container -->
+        <main class="max-w-6xl w-full mx-auto p-4 md:p-8 flex-grow space-y-8">
+            
+            <!-- Banner Intro & Search Box -->
+            <section class="bg-white/70 dark:bg-gradient-to-r dark:from-indigo-950/60 dark:via-slate-800 dark:to-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl backdrop-blur-md flex flex-col gap-6 transition-colors duration-300">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h3 class="text-xl font-bold text-white">Kiểm Tra Định Kỳ (GK & CK)</h3>
-                        <p class="text-xs text-slate-400">Cấu trúc: [đợt]/[môn]/index[môn].html</p>
+                        <div class="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-cubes"></i>
+                            <span>Cấu Trúc Thư Mục Chuẩn Phân Cấp</span>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-bold mb-2 text-slate-900 dark:text-white">Thư Mục Tài Liệu & Ôn Tập Hàng Kỳ</h2>
+                        <p class="text-slate-600 dark:text-slate-300 text-sm max-w-2xl leading-relaxed">
+                            Chọn các đợt kiểm tra <b>KTTX (Thường xuyên)</b> hoặc <b>KTGK / KTCK (Định kỳ)</b> để mở thư mục các môn, hoặc sử dụng công cụ tìm kiếm và tùy chỉnh giao diện bên dưới.
+                        </p>
+                    </div>
+
+                    <!-- Khu vực Tùy chỉnh Background -->
+                    <div class="flex flex-col items-start md:items-end gap-2 bg-slate-200/60 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-300 dark:border-slate-700/60">
+                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
+                            <i class="fa-solid fa-image text-indigo-500"></i>
+                            <span>Hình nền tùy chỉnh</span>
+                        </span>
+                        <div class="flex items-center space-x-2">
+                            <label class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium cursor-pointer transition shadow-sm flex items-center space-x-1.5">
+                                <i class="fa-solid fa-upload"></i>
+                                <span>Chọn ảnh</span>
+                                <input type="file" id="bgInput" accept="image/*" class="hidden" onchange="handleCustomBackground(event)">
+                            </label>
+                            <button id="removeBgBtn" onclick="removeCustomBackground()" class="hidden px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-600 dark:text-rose-400 border border-rose-500/30 rounded-lg text-xs font-medium transition cursor-pointer">
+                                Xóa ảnh nền
+                            </button>
+                        </div>
+                        <!-- Thanh kéo chỉnh độ mờ overlay -->
+                        <div id="opacityControl" class="hidden items-center space-x-2 w-full mt-1">
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400">Độ trong suốt:</span>
+                            <input type="range" id="opacityRange" min="0.5" max="0.98" step="0.05" value="0.88" oninput="changeOverlayOpacity(this.value)" class="w-28 accent-indigo-600 cursor-pointer">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Thư mục KTGK 1 -->
-                <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
-                    <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktgk-1', this)">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-chevron-right folder-icon text-emerald-400 text-xs"></i>
-                            <i class="fa-solid fa-folder-open text-amber-400 text-lg"></i>
-                            <span class="font-semibold text-slate-200">Kiểm Tra Giữa Kỳ 1 (KTGK 1)</span>
+                <!-- Ô tìm kiếm -->
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-search"></i>
+                    </div>
+                    <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Tìm kiếm theo môn học, kỳ kiểm tra (VD: Toán, KTTX, GK1, Lịch Sử...)" class="w-full pl-11 pr-4 py-3 bg-white/90 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+                </div>
+            </section>
+
+            <!-- Khu vực hiển thị kết quả tìm kiếm (Mặc định ẩn) -->
+            <div id="searchResultsSection" class="hidden space-y-4">
+                <div class="flex items-center justify-between pb-2 border-b border-indigo-500/40">
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-magnifying-glass text-indigo-500"></i>
+                        <span>Kết Quả Tìm Kiếm</span>
+                    </h3>
+                    <span id="searchCount" class="text-xs bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-full border border-indigo-500/30">0 kết quả</span>
+                </div>
+                <div id="searchResultsList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <!-- Kết quả render bằng JS -->
+                </div>
+            </div>
+
+            <!-- Categories Tree -->
+            <div id="categoriesTree" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                <!-- KHU VỰC 1: KIỂM TRA THƯỜNG XUYÊN (KTTX) -->
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3 pb-2 border-b border-indigo-500/40">
+                        <span class="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg border border-indigo-500/20">
+                            <i class="fa-solid fa-clock-rotate-left text-lg"></i>
                         </span>
-                        <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
-                    </button>
-                    <div id="ktgk-1" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk1"></div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Kiểm Tra Thường Xuyên (KTTX)</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Cấu trúc: kttx/[kỳ]/[môn]/index[môn].html</p>
+                        </div>
+                    </div>
+
+                    <!-- Thư mục KTTX GK1 -->
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                        <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-gk1', this)">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-chevron-right folder-icon text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                                <i class="fa-solid fa-folder text-amber-400 text-lg"></i>
+                                <span class="font-semibold text-slate-800 dark:text-slate-200">KTTX Giữa Kỳ 1 (GK1)</span>
+                            </span>
+                            <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
+                        </button>
+                        <div id="kttx-gk1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk1" data-exam-type="KTTX" data-semester="GK1"></div>
+                        </div>
+                    </div>
+
+                    <!-- Thư mục KTTX HK1 -->
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                        <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-hk1', this)">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-chevron-right folder-icon text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                                <i class="fa-solid fa-folder text-amber-400 text-lg"></i>
+                                <span class="font-semibold text-slate-800 dark:text-slate-200">KTTX Học Kỳ 1 (HK1)</span>
+                            </span>
+                            <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
+                        </button>
+                        <div id="kttx-hk1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk1" data-exam-type="KTTX" data-semester="HK1"></div>
+                        </div>
+                    </div>
+
+                    <!-- Thư mục KTTX GK2 -->
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                        <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-gk2', this)">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-chevron-right folder-icon text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                                <i class="fa-solid fa-folder text-amber-400 text-lg"></i>
+                                <span class="font-semibold text-slate-800 dark:text-slate-200">KTTX Giữa Kỳ 2 (GK2)</span>
+                            </span>
+                            <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
+                        </button>
+                        <div id="kttx-gk2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk2" data-exam-type="KTTX" data-semester="GK2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Thư mục KTTX HK2 -->
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                        <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-hk2', this)">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-chevron-right folder-icon text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                                <i class="fa-solid fa-folder text-amber-400 text-lg"></i>
+                                <span class="font-semibold text-slate-800 dark:text-slate-200">KTTX Học Kỳ 2 (HK2)</span>
+                            </span>
+                            <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
+                        </button>
+                        <div id="kttx-hk2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk2" data-exam-type="KTTX" data-semester="HK2"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Thư mục KTCK 1 -->
-                <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
-                    <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktck-1', this)">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-chevron-right folder-icon text-emerald-400 text-xs"></i>
-                            <i class="fa-solid fa-folder-open text-amber-400 text-lg"></i>
-                            <span class="font-semibold text-slate-200">Kiểm Tra Cuối Kỳ 1 (KTCK 1)</span>
+                <!-- KHU VỰC 2: KIỂM TRA ĐỊNH KỲ (KTGK & KTCK) -->
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3 pb-2 border-b border-emerald-500/40">
+                        <span class="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg border border-emerald-500/20">
+                            <i class="fa-solid fa-graduation-cap text-lg"></i>
                         </span>
-                        <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
-                    </button>
-                    <div id="ktck-1" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck1"></div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Kiểm Tra Định Kỳ (GK & CK)</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Cấu trúc: [đợt]/[môn]/index[môn].html</p>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Thư mục KTGK 2 -->
-                <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
-                    <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktgk-2', this)">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-chevron-right folder-icon text-emerald-400 text-xs"></i>
-                            <i class="fa-solid fa-folder-open text-amber-400 text-lg"></i>
-                            <span class="font-semibold text-slate-200">Kiểm Tra Giữa Kỳ 2 (KTGK 2)</span>
-                        </span>
-                        <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
-                    </button>
-                    <div id="ktgk-2" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk2"></div>
+                    <!-- Thư mục KTGK 1 -->
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                        <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktgk-1', this)">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-chevron-right folder-icon text-emerald-600 dark:text-emerald-400 text-xs"></i>
+                                <i class="fa-solid fa-folder-open text-amber-400 text-lg"></i>
+                                <span class="font-semibold text-slate-800 dark:text-slate-200">Kiểm Tra Giữa Kỳ 1 (KTGK 1)</span>
+                            </span>
+                            <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
+                        </button>
+                        <div id="ktgk-1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk1" data-exam-type="KTGK" data-semester="GK1"></div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Thư mục KTCK 2 -->
-                <div class="border border-slate-700/80 rounded-xl bg-slate-800/60 overflow-hidden">
-                    <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktck-2', this)">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-chevron-right folder-icon text-emerald-400 text-xs"></i>
-                            <i class="fa-solid fa-folder-open text-amber-400 text-lg"></i>
-                            <span class="font-semibold text-slate-200">Kiểm Tra Cuối Kỳ 2 (KTCK 2)</span>
-                        </span>
-                        <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
-                    </button>
-                    <div id="ktck-2" class="folder-content bg-slate-900/60 px-4 py-2 border-t border-slate-700/40">
-                        <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck2"></div>
+                    <!-- Thư mục KTCK 1 -->
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                        <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktck-1', this)">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-chevron-right folder-icon text-emerald-600 dark:text-emerald-400 text-xs"></i>
+                                <i class="fa-solid fa-folder-open text-amber-400 text-lg"></i>
+                                <span class="font-semibold text-slate-800 dark:text-slate-200">Kiểm Tra Cuối Kỳ 1 (KTCK 1)</span>
+                            </span>
+                            <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
+                        </button>
+                        <div id="ktck-1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck1" data-exam-type="KTCK" data-semester="CK1"></div>
+                        </div>
+                    </div>
+
+                    <!-- Thư mục KTGK 2 -->
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                        <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktgk-2', this)">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-chevron-right folder-icon text-emerald-600 dark:text-emerald-400 text-xs"></i>
+                                <i class="fa-solid fa-folder-open text-amber-400 text-lg"></i>
+                                <span class="font-semibold text-slate-800 dark:text-slate-200">Kiểm Tra Giữa Kỳ 2 (KTGK 2)</span>
+                            </span>
+                            <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
+                        </button>
+                        <div id="ktgk-2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk2" data-exam-type="KTGK" data-semester="GK2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Thư mục KTCK 2 -->
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                        <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktck-2', this)">
+                            <span class="flex items-center space-x-3">
+                                <i class="fa-solid fa-chevron-right folder-icon text-emerald-600 dark:text-emerald-400 text-xs"></i>
+                                <i class="fa-solid fa-folder-open text-amber-400 text-lg"></i>
+                                <span class="font-semibold text-slate-800 dark:text-slate-200">Kiểm Tra Cuối Kỳ 2 (KTCK 2)</span>
+                            </span>
+                            <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
+                        </button>
+                        <div id="ktck-2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck2" data-exam-type="KTCK" data-semester="CK2"></div>
+                        </div>
                     </div>
                 </div>
 
             </div>
+        </main>
 
+        <!-- Modal Xem README -->
+        <div id="readme-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between bg-white/90 dark:bg-slate-800/90 sticky top-0">
+                    <div class="flex items-center space-x-2.5">
+                        <i class="fa-brands fa-markdown text-sky-500 dark:text-sky-400 text-xl"></i>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100">README.md</h3>
+                    </div>
+                    <button onclick="closeReadmeModal()" class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                <div class="p-6 overflow-y-auto flex-grow bg-slate-50 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300">
+                    <div id="readme-content" class="markdown-body">
+                        <div class="flex items-center justify-center py-12 text-slate-500 dark:text-slate-400 space-x-2">
+                            <i class="fa-solid fa-spinner fa-spin text-xl"></i>
+                            <span>Đang tải nội dung README.md...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </main>
 
-    <!-- Modal Xem README -->
-    <div id="readme-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-700/80 flex items-center justify-between bg-slate-800/90 sticky top-0">
-                <div class="flex items-center space-x-2.5">
-                    <i class="fa-brands fa-markdown text-sky-400 text-xl"></i>
-                    <h3 class="font-bold text-lg text-slate-100">README.md</h3>
-                </div>
-                <button onclick="closeReadmeModal()" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-700 transition">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            <div class="p-6 overflow-y-auto flex-grow bg-slate-900/90">
-                <div id="readme-content" class="markdown-body text-slate-300">
-                    <div class="flex items-center justify-center py-12 text-slate-400 space-x-2">
-                        <i class="fa-solid fa-spinner fa-spin text-xl"></i>
-                        <span>Đang tải nội dung README.md...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Footer -->
+        <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-200 dark:border-slate-800 transition-colors duration-300">
+            https://minhtruk.github.io/bakhi/ • GitHub System Index
+        </footer>
     </div>
 
-    <!-- Footer -->
-    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
-        https://minhtruk.github.io/bakhi/ • GitHub System Index
-    </footer>
-
     <script>
-        // Cấu hình 10 môn học kèm tên file index của từng môn
+        // Cấu hình 10 môn học
         const subjects = [
-            { id: 'ly', indexFile: 'indexly.html', name: 'Vật Lý', icon: 'fa-atom', color: 'text-purple-400' },
-            { id: 'su', indexFile: 'indexsu.html', name: 'Lịch Sử', icon: 'fa-landmark', color: 'text-amber-400' },
-            { id: 'tin', indexFile: 'indextin.html', name: 'Tin Học', icon: 'fa-laptop-code', color: 'text-sky-400' },
-            { id: 'toan', indexFile: 'indextoan.html', name: 'Toán Học', icon: 'fa-calculator', color: 'text-blue-400' },
-            { id: 'anh', indexFile: 'indexanh.html', name: 'Tiếng Anh', icon: 'fa-language', color: 'text-indigo-400' },
-            { id: 'van', indexFile: 'indexvan.html', name: 'Ngữ Văn', icon: 'fa-book-open', color: 'text-rose-400' },
-            { id: 'hoa', indexFile: 'indexhoa.html', name: 'Hóa Học', icon: 'fa-flask', color: 'text-emerald-400' },
-            { id: 'sinh', indexFile: 'indexsinh.html', name: 'Sinh Học', icon: 'fa-dna', color: 'text-teal-400' },
-            { id: 'gdqp', indexFile: 'indexgdqp.html', name: 'GDQP', icon: 'fa-shield-halved', color: 'text-green-400' },
-            { id: 'gddp', indexFile: 'indexgddp.html', name: 'GDĐP', icon: 'fa-map-location-dot', color: 'text-orange-400' }
+            { id: 'ly', indexFile: 'indexly.html', name: 'Vật Lý', icon: 'fa-atom', color: 'text-purple-500 dark:text-purple-400' },
+            { id: 'su', indexFile: 'indexsu.html', name: 'Lịch Sử', icon: 'fa-landmark', color: 'text-amber-500 dark:text-amber-400' },
+            { id: 'tin', indexFile: 'indextin.html', name: 'Tin Học', icon: 'fa-laptop-code', color: 'text-sky-500 dark:text-sky-400' },
+            { id: 'toan', indexFile: 'indextoan.html', name: 'Toán Học', icon: 'fa-calculator', color: 'text-blue-500 dark:text-blue-400' },
+            { id: 'anh', indexFile: 'indexanh.html', name: 'Tiếng Anh', icon: 'fa-language', color: 'text-indigo-500 dark:text-indigo-400' },
+            { id: 'van', indexFile: 'indexvan.html', name: 'Ngữ Văn', icon: 'fa-book-open', color: 'text-rose-500 dark:text-rose-400' },
+            { id: 'hoa', indexFile: 'indexhoa.html', name: 'Hóa Học', icon: 'fa-flask', color: 'text-emerald-500 dark:text-emerald-400' },
+            { id: 'sinh', indexFile: 'indexsinh.html', name: 'Sinh Học', icon: 'fa-dna', color: 'text-teal-500 dark:text-teal-400' },
+            { id: 'gdqp', indexFile: 'indexgdqp.html', name: 'GDQP', icon: 'fa-shield-halved', color: 'text-green-500 dark:text-green-400' },
+            { id: 'gddp', indexFile: 'indexgddp.html', name: 'GDĐP', icon: 'fa-map-location-dot', color: 'text-orange-500 dark:text-orange-400' }
         ];
 
-        // Tự động tạo link dạng: [danh-mục]/[môn]/index[môn].html
-        document.querySelectorAll('[data-path]').forEach(container => {
-            const basePath = container.getAttribute('data-path');
-            container.innerHTML = subjects.map(sub => `
-                <a href="${basePath}/${sub.id}/${sub.indexFile}" class="p-2.5 bg-slate-800/80 hover:bg-slate-700/90 border border-slate-700/60 hover:border-indigo-500/50 rounded-lg flex items-center space-x-2.5 text-xs text-slate-200 transition group">
-                    <i class="fa-solid ${sub.icon} ${sub.color} text-sm group-hover:scale-110 transition"></i>
-                    <span class="truncate font-medium">${sub.name}</span>
+        const examCategories = [
+            { path: 'kttx/gk1', examType: 'KTTX', semester: 'GK1' },
+            { path: 'kttx/hk1', examType: 'KTTX', semester: 'HK1' },
+            { path: 'kttx/gk2', examType: 'KTTX', semester: 'GK2' },
+            { path: 'kttx/hk2', examType: 'KTTX', semester: 'HK2' },
+            { path: 'ktgk1', examType: 'KTGK', semester: 'GK1' },
+            { path: 'ktck1', examType: 'KTCK', semester: 'CK1' },
+            { path: 'ktgk2', examType: 'KTGK', semester: 'GK2' },
+            { path: 'ktck2', examType: 'KTCK', semester: 'CK2' }
+        ];
+
+        // Khởi tạo giao diện trang
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            initCustomBackground();
+            renderSubjectsTree();
+        });
+
+        function renderSubjectsTree() {
+            document.querySelectorAll('[data-path]').forEach(container => {
+                const basePath = container.getAttribute('data-path');
+                container.innerHTML = subjects.map(sub => `
+                    <a href="${basePath}/${sub.id}/${sub.indexFile}" class="p-2.5 bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/90 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-500/50 rounded-lg flex items-center space-x-2.5 text-xs text-slate-700 dark:text-slate-200 transition group shadow-sm">
+                        <i class="fa-solid ${sub.icon} text-sm group-hover:scale-110 transition"></i>
+                        <span class="truncate font-medium">${sub.name}</span>
+                    </a>
+                `).join('');
+            });
+        }
+
+        // --- TÍNH NĂNG DARK / LIGHT MODE ---
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-sun text-sm text-amber-500';
+            } else {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-moon text-sm';
+            }
+        }
+
+        function toggleDarkMode() {
+            const htmlEl = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            if (htmlEl.classList.contains('dark')) {
+                htmlEl.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                themeIcon.className = 'fa-solid fa-sun text-sm text-amber-500';
+            } else {
+                htmlEl.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.className = 'fa-solid fa-moon text-sm';
+            }
+        }
+
+        // --- TÍNH NĂNG CUSTOM BACKGROUND TỪ FILE ẢNH ---
+        function initCustomBackground() {
+            const savedBg = localStorage.getItem('customBg');
+            const savedOpacity = localStorage.getItem('bgOpacity') || '0.88';
+            if (savedBg) {
+                applyBackground(savedBg, savedOpacity);
+                document.getElementById('removeBgBtn').classList.remove('hidden');
+                document.getElementById('opacityControl').classList.remove('hidden');
+                document.getElementById('opacityRange').value = savedOpacity;
+            }
+        }
+
+        function handleCustomBackground(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Image = e.target.result;
+                localStorage.setItem('customBg', base64Image);
+                localStorage.setItem('bgOpacity', '0.88');
+                applyBackground(base64Image, '0.88');
+                document.getElementById('removeBgBtn').classList.remove('hidden');
+                document.getElementById('opacityControl').classList.remove('hidden');
+                document.getElementById('opacityRange').value = '0.88';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function applyBackground(imgUrl, opacity) {
+            const body = document.getElementById('pageBody');
+            const overlay = document.getElementById('bgOverlay');
+            body.style.backgroundImage = `url('${imgUrl}')`;
+            overlay.style.backgroundColor = document.documentElement.classList.contains('dark') 
+                ? `rgba(15, 23, 42, ${opacity})` 
+                : `rgba(241, 245, 249, ${opacity})`;
+        }
+
+        function changeOverlayOpacity(val) {
+            localStorage.setItem('bgOpacity', val);
+            const savedBg = localStorage.getItem('customBg');
+            if (savedBg) {
+                applyBackground(savedBg, val);
+            }
+        }
+
+        function removeCustomBackground() {
+            localStorage.removeItem('customBg');
+            localStorage.removeItem('bgOpacity');
+            const body = document.getElementById('pageBody');
+            const overlay = document.getElementById('bgOverlay');
+            body.style.backgroundImage = 'none';
+            overlay.style.backgroundColor = '';
+            document.getElementById('removeBgBtn').classList.add('hidden');
+            document.getElementById('opacityControl').classList.add('hidden');
+            document.getElementById('bgInput').value = '';
+        }
+
+        // --- TÍNH NĂNG TÌM KIẾM ---
+        function handleSearch(keyword) {
+            const query = keyword.trim().toLowerCase();
+            const searchSection = document.getElementById('searchResultsSection');
+            const searchResultsList = document.getElementById('searchResultsList');
+            const searchCount = document.getElementById('searchCount');
+            const categoriesTree = document.getElementById('categoriesTree');
+
+            if (!query) {
+                searchSection.classList.add('hidden');
+                categoriesTree.classList.remove('hidden');
+                searchResultsList.innerHTML = '';
+                return;
+            }
+
+            searchSection.classList.remove('hidden');
+            categoriesTree.classList.add('hidden');
+
+            let matchedResults = [];
+
+            examCategories.forEach(cat => {
+                subjects.forEach(sub => {
+                    const searchableText = `${sub.name} ${cat.examType} ${cat.semester}`.toLowerCase();
+                    if (searchableText.includes(query)) {
+                        matchedResults.push({
+                            subject: sub,
+                            examType: cat.examType,
+                            semester: cat.semester,
+                            url: `${cat.path}/${sub.id}/${sub.indexFile}`
+                        });
+                    }
+                });
+            });
+
+            searchCount.innerText = `${matchedResults.length} kết quả`;
+
+            if (matchedResults.length === 0) {
+                searchResultsList.innerHTML = `
+                    <div class="col-span-full py-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+                        <i class="fa-solid fa-triangle-exclamation mb-2 text-xl text-amber-500"></i>
+                        <p>Không tìm thấy kết quả phù hợp cho từ khóa "<b>${keyword}</b>"</p>
+                    </div>
+                `;
+                return;
+            }
+
+            searchResultsList.innerHTML = matchedResults.map(item => `
+                <a href="${item.url}" class="p-3 bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700/90 border border-slate-200 dark:border-slate-700 hover:border-indigo-500/50 rounded-xl flex items-center justify-between text-xs text-slate-700 dark:text-slate-200 transition group shadow-md">
+                    <div class="flex items-center space-x-3 truncate">
+                        <div class="p-2 bg-slate-100 dark:bg-slate-900 rounded-lg group-hover:scale-110 transition">
+                            <i class="fa-solid ${item.subject.icon} ${item.subject.color} text-base"></i>
+                        </div>
+                        <div class="truncate">
+                            <div class="font-bold text-slate-900 dark:text-slate-100 truncate">${item.subject.name} - ${item.examType} - ${item.semester}</div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">${item.url}</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-slate-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition ml-2"></i>
                 </a>
             `).join('');
-        });
+        }
 
         function toggleFolder(folderId, btnEl) {
             const content = document.getElementById(folderId);
@@ -310,7 +539,7 @@
                 contentEl.innerHTML = marked.parse(mdText);
             } catch (err) {
                 contentEl.innerHTML = `
-                    <div class="p-4 bg-rose-950/60 border border-rose-800 text-rose-300 rounded-xl text-sm">
+                    <div class="p-4 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-300 rounded-xl text-sm">
                         <i class="fa-solid fa-circle-exclamation mr-1"></i>
                         Không thể đọc tệp <strong>README.md</strong>.
                     </div>
