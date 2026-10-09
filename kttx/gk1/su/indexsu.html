@@ -45,7 +45,7 @@
                 </span>
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">Bài Kiểm Tra Lịch Sử</h2>
                 <p class="text-slate-300 text-sm max-w-xl leading-relaxed">
-                    Hệ thống kiểm tra tự luận thông minh hỗ trợ chấm điểm bằng AI dành cho môn Lịch Sử.
+                    Hệ thống kiểm tra trắc nghiệm và tự luận thông minh hỗ trợ ôn tập hiệu quả môn Lịch Sử.
                 </p>
             </div>
             <div class="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-amber-400 text-4xl hidden md:block">
@@ -53,37 +53,64 @@
             </div>
         </section>
 
-        <!-- Danh Mục Bài Thi Tự Luận AI -->
-        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
-                <div class="flex items-center space-x-3">
-                    <span class="p-3 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl">
-                        <i class="fa-solid fa-pen-nib text-xl"></i>
-                    </span>
-                    <div>
-                        <h3 class="font-bold text-lg text-white">Bài Kiểm Tra Tự Luận AI</h3>
-                        <p class="text-xs text-slate-400">Đường dẫn: <code>kttx/gk1/su/su.html</code></p>
+        <!-- Danh Mục Bài Thi Tự Luận AI & Trắc Nghiệm Ôn Tập -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Cột 1: Tự Luận Bài 1 (Có Popup Thông Báo) -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6 flex flex-col justify-between">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                        <div class="flex items-center space-x-3">
+                            <span class="p-3 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl">
+                                <i class="fa-solid fa-pen-nib text-xl"></i>
+                            </span>
+                            <div>
+                                <h3 class="font-bold text-base text-white">Tự Luận Bài 1 (AI Check)</h3>
+                                <p class="text-xs text-slate-400">Đường dẫn: <code>su.html</code></p>
+                            </div>
+                        </div>
                     </div>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        Bài thi tự luận về chủ đề <b>Các cuộc cách mạng tư sản</b> có tích hợp chấm điểm AI[span_0](start_span)[span_0](end_span).
+                    </p>
                 </div>
-                <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-full font-medium">
-                    AI Check
-                </span>
-            </div>
-
-            <div class="space-y-4">
-                <p class="text-slate-300 text-sm leading-relaxed">
-                    Bài thi bao gồm câu hỏi tự luận về chủ đề <b>Các cuộc cách mạng tư sản</b>. Hệ thống AI sẽ phân tích từ khóa và đánh giá mức độ chính xác câu trả lời của bạn.
-                </p>
-
-                <!-- Nút bấm mở thông báo xác nhận -->
-                <button type="button" onclick="openStatusModal()" class="w-full p-4 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl shadow-lg shadow-amber-600/30 transition flex items-center justify-between text-base group cursor-pointer">
-                    <span class="flex items-center space-x-3">
-                        <i class="fa-solid fa-circle-play text-xl group-hover:scale-110 transition"></i>
-                        <span>Vào Làm Bài Thi Tự Luận (su.html)</span>
+                <button type="button" onclick="openStatusModal()" class="w-full p-3.5 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl shadow-lg shadow-amber-600/30 transition flex items-center justify-between text-sm group cursor-pointer">
+                    <span class="flex items-center space-x-2">
+                        <i class="fa-solid fa-circle-play group-hover:scale-110 transition"></i>
+                        <span>Vào Làm Bài Tự Luận</span>
                     </span>
-                    <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition"></i>
+                    <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition"></i>
                 </button>
             </div>
+
+            <!-- Cột 2: Trắc Nghiệm Bài 2 & Bài 3 -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-4 flex flex-col justify-between">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                        <div class="flex items-center space-x-3">
+                            <span class="p-3 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl">
+                                <i class="fa-solid fa-list-check text-xl"></i>
+                            </span>
+                            <div>
+                                <h3 class="font-bold text-base text-white">Trắc Nghiệm Ôn Tập</h3>
+                                <p class="text-xs text-slate-400">Bài 2 và Bài 3</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <a href="./su2.html" class="w-full p-3 bg-slate-700/60 hover:bg-slate-700 border border-slate-600 rounded-xl text-slate-200 text-sm font-medium transition flex items-center justify-between group cursor-pointer">
+                            <span>Bài 2: Sự xác lập và phát triển của CNTB</span>
+                            <i class="fa-solid fa-arrow-right text-xs text-purple-400 group-hover:translate-x-1 transition"></i>
+                        </a>
+                        <a href="./su3.html" class="w-full p-3 bg-slate-700/60 hover:bg-slate-700 border border-slate-600 rounded-xl text-slate-200 text-sm font-medium transition flex items-center justify-between group cursor-pointer">
+                            <span>Bài 3: Sự hình thành Liên Xô</span>
+                            <i class="fa-solid fa-arrow-right text-xs text-emerald-400 group-hover:translate-x-1 transition"></i>
+                        </a>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 italic text-center pt-2">Chọn bài trắc nghiệm để bắt đầu làm bài ngay.</p>
+            </div>
+
         </div>
 
     </main>
@@ -98,7 +125,7 @@
             <div class="space-y-2">
                 <h3 class="text-xl font-bold text-white">Thông Báo Hoàn Thành</h3>
                 <p class="text-slate-300 text-sm leading-relaxed">
-                    Đã hoàn thành bài kiểm tra tại trường vào lúc <span class="font-bold text-amber-400">7/10/2026</span>, bạn có muốn làm lại?
+                    Đã hoàn thành bài kiểm tra tại trường vào lúc <span class="font-bold text-amber-400">7/10/2026</span>, bạn có muốn làm lại?[span_1](start_span)[span_1](end_span)
                 </p>
             </div>
 
@@ -119,7 +146,7 @@
     </footer>
 
     <script>
-        // Mở bảng thông báo khi ấn vào nút làm bài
+        // Mở bảng thông báo khi ấn vào nút làm bài tự luận
         function openStatusModal() {
             document.getElementById('status-modal').classList.remove('hidden');
         }
