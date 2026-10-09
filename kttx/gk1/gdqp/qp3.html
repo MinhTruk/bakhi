@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc Nghiệm Bài 3: Phòng chống tệ nạn xã hội và Việt Nam trong thời kì hội nhập quốc tế - GDQP 11</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/85 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="./indexqp.html" class="p-2 bg-rose-600 rounded-lg text-white hover:bg-rose-500 transition">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </a>
+                <div>
+                    <h1 class="text-base md:text-lg font-bold leading-tight">Bài 3: Phòng chống tệ nạn xã hội và Việt Nam trong thời kì hội nhập quốc tế</h1>
+                    <p class="text-xs text-slate-400">35 Câu hỏi trắc nghiệm ôn tập trọng tâm theo tài liệu</p>
+                </div>
+            </div>
+            <a href="./indexqp.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
+                <i class="fa-solid fa-house text-rose-400"></i>
+                <span>Quay Lại</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow space-y-8">
+
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                    <span class="p-2.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl">
+                        <i class="fa-solid fa-list-check text-lg"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Đề Thi Trắc Nghiệm (35 Câu)</h2>
+                        <p class="text-xs text-slate-400">Chọn 1 đáp án đúng nhất cho mỗi câu hỏi</p>
+                    </div>
+                </div>
+            </div>
+            <div id="mcq-container" class="space-y-6"></div>
+        </section>
+
+        <!-- SUBMIT -->
+        <div class="p-6 bg-slate-800 border border-slate-700 rounded-2xl text-center space-y-4 shadow-2xl">
+            <button type="button" onclick="checkAllAnswers()" class="px-8 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Nộp Bài & Kiểm Tra Kết Quả</span>
+            </button>
+            <div id="total-result" class="hidden p-4 rounded-xl bg-slate-900 border border-rose-500/50 text-slate-200 font-bold text-lg"></div>
+        </div>
+
+    </main>
+
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        GDQP-AN 11 • Bài 3: Phòng, Chống Tội Phạm, Tệ Nạn Xã Hội Và Tội Phạm Sử Dụng Công Nghệ Cao
+    </footer>
+
+    <script>
+        const rawMcqData = [
+            {
+                id: 1,
+                q: "Theo quy định, tội phạm là hành vi nguy hiểm cho xã hội được quy định trong văn bản nào dưới đây?",
+                a: "Bộ luật Hình sự",
+                o: ["Bộ luật Hình sự", "Bộ luật Dân sự", "Luật Xử lý vi phạm hành chính", "Hiến pháp nước CHXHCN Việt Nam"],
+                exp: "Tội phạm là hành vi nguy hiểm cho xã hội được quy định trong Bộ luật Hình sự[cite: 22]."
+            },
+            {
+                id: 2,
+                q: "Chủ thể thực hiện hành vi phạm tội theo quy định pháp luật hình sự bao gồm:",
+                a: "Người có năng lực trách nhiệm hình sự hoặc pháp nhân thương mại",
+                o: ["Người có năng lực trách nhiệm hình sự hoặc pháp nhân thương mại", "Chỉ cá nhân công dân từ đủ 18 tuổi trở lên", "Chỉ các tổ chức chính trị xã hội", "Mọi tổ chức và cá nhân sinh sống trên lãnh thổ Việt Nam"],
+                exp: "Do người có năng lực trách nhiệm hình sự hoặc pháp nhân thương mại thực hiện[cite: 22]."
+            },
+            {
+                id: 3,
+                q: "Hành vi phạm tội do chủ thể thực hiện dưới hình thức lỗi nào?",
+                a: "Một cách cố ý hoặc vô ý",
+                o: ["Một cách cố ý hoặc vô ý", "Chỉ do lỗi cố ý trực tiếp", "Chỉ do lỗi vô ý cẩu thả", "Do sự bất khả kháng"],
+                exp: "Thực hiện một cách cố ý hoặc vô ý[cite: 22]."
+            },
+            {
+                id: 4,
+                q: "Đâu không phải là một trong các loại tội phạm phổ biến được nêu trong tài liệu?",
+                a: "Vi phạm quy định về trật tự an toàn giao thông đường bộ mức độ nhẹ",
+                o: ["Vi phạm quy định về trật tự an toàn giao thông đường bộ mức độ nhẹ", "Giết người, cố ý gây thương tích", "Cướp tài sản, trộm cắp tài sản", "Mua bán trái phép chất ma túy, đánh bạc"],
+                exp: "Các loại tội phạm phổ biến gồm giết người, cố ý gây thương tích, cướp tài sản, trộm cắp tài sản, mua bán ma túy, đánh bạc, tổ chức đánh bạc...[cite: 23]."
+            },
+            {
+                id: 5,
+                q: "Cách thức hoạt động phổ biến của các loại tội phạm hiện nay có đặc điểm gì?",
+                a: "Kết thành các băng nhóm, tổ chức; sử dụng vũ khí và công nghệ cao",
+                o: ["Kết thành các băng nhóm, tổ chức; sử dụng vũ khí và công nghệ cao", "Hoạt động đơn lẻ, tự phát tại từng thôn xóm", "Chỉ hoạt động trong phạm vi một xã, phường nhất định", "Không bao giờ sử dụng phương tiện hiện đại"],
+                exp: "Cách thức hoạt động kết thành băng nhóm, sử dụng vũ khí, lưu động xuyên quốc gia và sử dụng công nghệ cao[cite: 23]."
+            },
+            {
+                id: 6,
+                q: "Khái niệm tội phạm sử dụng công nghệ cao gắn liền với việc sử dụng công nghệ thông tin ở trình độ cao tác động trái pháp luật đến đối tượng nào?",
+                a: "Thông tin số được lưu trữ, xử lí, truyền tải trong hệ thống máy tính",
+                o: ["Thông tin số được lưu trữ, xử lí, truyền tải trong hệ thống máy tính", "Các tài liệu lưu trữ bằng giấy tờ truyền thống tại cơ quan nhà nước", "Hệ thống đường ống cấp nước sinh hoạt đô thị", "Hệ thống giao thông đường sắt quốc gia"],
+                exp: "Tác động trái pháp luật đến thông tin số được lưu trữ, xử lí, truyền tải trong hệ thống máy tính[cite: 23]."
+            },
+            {
+                id: 7,
+                q: "Hành vi nào dưới đây thuộc nhóm hành vi phạm tội sử dụng công nghệ cao ở Việt Nam hiện nay?",
+                a: "Lừa đảo chiếm đoạt tài sản trên không gian mạng",
+                o: ["Lừa đảo chiếm đoạt tài sản trên không gian mạng", "Vi phạm quy định về tham gia giao thông đường bộ", "Trộm cắp vặt tài sản cá nhân thông thường không qua mạng", "Lấn chiếm đất đai canh tác nông nghiệp"],
+                exp: "Lừa đảo chiếm đoạt tài sản trên không gian mạng là hành vi phạm tội sử dụng công nghệ cao[cite: 23]."
+            },
+            {
+                id: 8,
+                q: "Hành vi sử dụng không gian mạng để thực hiện việc mua bán người, buôn bán hàng giả, hàng cấm được xử lý theo nhóm tội phạm nào?",
+                a: "Tội phạm sử dụng công nghệ cao",
+                o: ["Tội phạm sử dụng công nghệ cao", "Tệ nạn xã hội thông thường", "Vi phạm hành chính trong lĩnh vực thương mại", "Tranh chấp dân sự kinh tế"],
+                exp: "Sử dụng không gian mạng để mua bán người, hàng giả là hành vi phạm tội sử dụng công nghệ cao[cite: 23]."
+            },
+            {
+                id: 9,
+                q: "Hành vi làm, tàng trữ, phát tán hoặc tuyên truyền thông tin, tài liệu nhằm chống Nhà nước CHXHCN Việt Nam trên không gian mạng là hành vi:",
+                a: "Phạm tội sử dụng công nghệ cao",
+                o: ["Phạm tội sử dụng công nghệ cao", "Tệ nạn xã hội", "Vi phạm quy tắc sinh hoạt cộng đồng", "Hoạt động văn hóa tư tưởng hợp pháp"],
+                exp: "Thuộc nhóm hành vi phạm tội sử dụng công nghệ cao[cite: 23]."
+            },
+            {
+                id: 10,
+                q: "Hành vi sản xuất, mua bán, trao đổi hoặc tặng cho công cụ, thiết bị, phần mềm để sử dụng vào mục đích trái pháp luật liên quan đến công nghệ cao được pháp luật quy định như thế nào?",
+                a: "Bị nghiêm cấm thực hiện",
+                o: ["Bị nghiêm cấm thực hiện", "Được phép nếu có giấy phép kinh doanh tư nhân", "Được khuyến khích để nâng cao kỹ năng", "Chỉ cấm đối với người dưới 18 tuổi"],
+                exp: "Là hành vi bị nghiêm cấm theo quy định pháp luật về phòng chống tội phạm sử dụng công nghệ cao[cite: 24]."
+            },
+            {
+                id: 11,
+                q: "Hành vi phát tán chương trình tin học gây hại cho hoạt động của mạng máy tính, mạng viễn thông bị pháp luật coi là:",
+                a: "Hành vi bị nghiêm cấm",
+                o: ["Hành vi bị nghiêm cấm", "Hoạt động thử nghiệm an ninh mạng bình thường", "Sáng kiến cải tiến kỹ thuật công nghệ", "Thủ tục kiểm tra bảo mật doanh nghiệp"],
+                exp: "Phát tán chương trình tin học gây hại mạng máy tính là hành vi bị nghiêm cấm[cite: 24]."
+            },
+            {
+                id: 12,
+                q: "Hành vi xâm nhập trái phép vào mạng máy tính, mạng viễn thông hoặc phương tiện điện tử của người khác thuộc nhóm:",
+                a: "Các hành vi vi phạm pháp luật và bị nghiêm cấm thực hiện",
+                o: ["Các hành vi vi phạm pháp luật và bị nghiêm cấm thực hiện", "Các quyền tự do khai thác thông tin cá nhân", "Các hoạt động giao lưu trực tuyến hợp pháp", "Các dịch vụ hỗ trợ kỹ thuật mạng"],
+                exp: "Xâm nhập trái phép mạng máy tính của người khác là hành vi bị nghiêm cấm[cite: 24]."
+            },
+            {
+                id: 13,
+                q: "Hành vi thu thập, tàng trữ, trao đổi, mua bán, công khai hóa trái phép thông tin về tài khoản ngân hàng là hành vi:",
+                a: "Bị nghiêm cấm thực hiện",
+                o: ["Bị nghiêm cấm thực hiện", "Được phép thực hiện giữa các cá nhân với nhau", "Được bảo vệ theo quyền tự do kinh doanh", "Thuộc quyền sở hữu trí tuệ cá nhân"],
+                exp: "Thu thập, mua bán công khai hóa trái phép thông tin tài khoản ngân hàng bị nghiêm cấm[cite: 24]."
+            },
+            {
+                id: 14,
+                q: "Việc sử dụng trái phép tần số vô tuyến điện dành riêng cho mục đích cấp cứu, an toàn, tìm kiếm, cứu hộ, cứu nạn, quốc phòng, an ninh là hành vi:",
+                a: "Bị nghiêm cấm thực hiện",
+                o: ["Bị nghiêm cấm thực hiện", "Được quyền sử dụng tự do trong trường hợp khẩn cấp cá nhân", "Được phép dùng cho mục đích giải trí vô tuyến", "Thuộc quyền ưu tiên của các doanh nghiệp viễn thông"],
+                exp: "Sử dụng trái phép tần số vô tuyến điện dành riêng cho cấp cứu, quốc phòng an ninh bị nghiêm cấm[cite: 24]."
+            },
+            {
+                id: 15,
+                q: "Tệ nạn xã hội được định nghĩa là:",
+                a: "Hiện tượng xã hội tiêu cực, biểu hiện bằng những hành vi sai lệch chuẩn mực xã hội, vi phạm đạo đức, pháp luật và gây nguy hiểm cho xã hội",
+                o: ["Hiện tượng xã hội tiêu cực, biểu hiện bằng những hành vi sai lệch chuẩn mực xã hội, vi phạm đạo đức, pháp luật và gây nguy hiểm cho xã hội", "Các hoạt động giao lưu văn hóa truyền thống chưa được công nhận", "Các hình thức vui chơi giải trí lành mạnh của giới trẻ", "Các phong tục tập quán lâu đời của đồng bào vùng cao"],
+                exp: "Tệ nạn xã hội là hiện tượng xã hội tiêu cực, hành vi sai lệch chuẩn mực, vi phạm đạo đức, pháp luật và gây nguy hiểm[cite: 24]."
+            },
+            {
+                id: 16,
+                q: "Tệ nạn ma túy thể hiện qua tình trạng nào dưới đây?",
+                a: "Sử dụng trái phép chất ma túy, nghiện ma túy và các hành vi vi phạm pháp luật về ma túy chưa đến mức truy cứu trách nhiệm hình sự",
+                o: ["Sử dụng trái phép chất ma túy, nghiện ma túy và các hành vi vi phạm pháp luật về ma túy chưa đến mức truy cứu trách nhiệm hình sự", "Sử dụng thuốc kháng sinh theo đơn của bác sĩ điều trị", "Trồng cây lương thực có chứa tinh bột phục vụ chăn nuôi", "Sử dụng dược phẩm y tế hợp pháp tại các bệnh viện"],
+                exp: "Tệ nạn ma túy là tình trạng sử dụng trái phép, nghiện ma túy và vi phạm pháp luật ma túy chưa đến mức truy cứu hình sự[cite: 24]."
+            },
+            {
+                id: 17,
+                q: "Hình thức sử dụng ma túy phổ biến thường gặp trong tệ nạn ma túy là gì?",
+                a: "Hút, hít, tiêm chích thuốc phiện, heroin và các loại ma túy khác",
+                o: ["Hút, hít, tiêm chích thuốc phiện, heroin và các loại ma túy khác", "Uống nước ép thảo dược thiên nhiên bổ dưỡng", "Sử dụng thực phẩm chức năng tăng cường thể lực", "Đắp lá cây dân gian chữa bệnh thông thường"],
+                exp: "Hình thức sử dụng ma túy chủ yếu là hút, hít, tiêm chích thuốc phiện, heroin...[cite: 24]."
+            },
+            {
+                id: 18,
+                q: "Tệ nạn mại dâm bao gồm những hành vi nào?",
+                a: "Thực hiện các dịch vụ quan hệ tình dục có tính chất mua bán trên cơ sở giá trị vật chất ngoài phạm vi hôn nhân",
+                o: ["Thực hiện các dịch vụ quan hệ tình dục có tính chất mua bán trên cơ sở giá trị vật chất ngoài phạm vi hôn nhân", "Kết hôn hợp pháp theo Luật Hôn nhân và gia đình", "Tổ chức lễ hội văn hóa truyền thống cộng đồng", "Hợp tác lao động sản xuất kinh tế thuần túy"],
+                exp: "Tệ nạn mại dâm là dịch vụ quan hệ tình dục mua bán ngoài phạm vi hôn nhân[cite: 25]."
+            },
+            {
+                id: 19,
+                q: "Hành vi nào dưới đây liên quan đến tệ nạn mại dâm bị pháp luật nghiêm cấm?",
+                a: "Bán dâm, mua dâm, chứa mại dâm, tổ chức mại dâm, môi giới mại dâm, bảo kê mại dâm",
+                o: ["Bán dâm, mua dâm, chứa mại dâm, tổ chức mại dâm, môi giới mại dâm, bảo kê mại dâm", "Tổ chức các câu lạc bộ thể dục thẩm mỹ cộng đồng", "Kinh doanh dịch vụ lưu trú du lịch đúng pháp luật", "Tư vấn chăm sóc sức khỏe sinh sản hợp pháp"],
+                exp: "Nghiêm cấm bán dâm, mua dâm, chứa mại dâm, tổ chức, môi giới và bảo kê mại dâm[cite: 25]."
+            },
+            {
+                id: 20,
+                q: "Tệ nạn cờ bạc được hiểu là việc lợi dụng các hình thức vui chơi giải trí để cá cược, sát phạt nhau bằng tiền hoặc hiện vật mà:",
+                a: "Không được cơ quan nhà nước có thẩm quyền cho phép",
+                o: ["Không được cơ quan nhà nước có thẩm quyền cho phép", "Được tổ chức công khai trong các dịp Tết truyền thống", "Được sự đồng ý của trưởng thôn bản", "Phục vụ cho mục đích từ thiện xã hội"],
+                exp: "Cá cược sát phạt bằng tiền/hiện vật không được cơ quan nhà nước có thẩm quyền cho phép[cite: 25]."
+            },
+            {
+                id: 21,
+                q: "Tệ nạn cờ bạc biểu hiện dưới các hình thức nào phổ biến hiện nay?",
+                a: "Mua bán số lô, số đề, cá độ bóng đá, tổ chức đánh bạc trái phép",
+                o: ["Mua bán số lô, số đề, cá độ bóng đá, tổ chức đánh bạc trái phép", "Tham gia các trò chơi dân gian được cấp phép", "Mua vé số kiến thiết do nhà nước phát hành", "Thi đấu thể thao giải trí không đổi thưởng"],
+                exp: "Tệ nạn cờ bạc thể hiện qua mua bán số lô, số đề, cá độ bóng đá...[cite: 25]."
+            },
+            {
+                id: 22,
+                q: "Tệ nạn mê tín dị đoan bao gồm những hành vi biểu hiện như thế nào?",
+                a: "Thái quá lòng tin vào điều huyền bí không có thật, suy đoán cuồng tín trái chuẩn mực xã hội",
+                o: ["Thái quá lòng tin vào điều huyền bí không có thật, suy đoán cuồng tín trái chuẩn mực xã hội", "Tham gia sinh hoạt tôn giáo thuần túy hợp pháp", "Thực hiện các nghi lễ truyền thống văn hóa lịch sử cấp quốc gia", "Nghiên cứu khoa học tự nhiên và lịch sử văn hóa"],
+                exp: "Tin vào điều huyền bí không có thật, suy đoán cuồng tín, trái chuẩn mực xã hội[cite: 25]."
+            },
+            {
+                id: 23,
+                q: "Các hình thức cụ thể của tệ nạn mê tín dị đoan bao gồm:",
+                a: "Bói toán, đồng bóng, yểm bùa, cúng giải hạn, cúng trừ tà ma",
+                o: ["Bói toán, đồng bóng, yểm bùa, cúng giải hạn, cúng trừ tà ma", "Khám chữa bệnh bằng y học cổ truyền dân tộc", "Tổ chức hội thảo khoa học tâm lý giáo dục", "Tập luyện dưỡng sinh thể dục thể thao"],
+                exp: "Hành vi mê tín dị đoan gồm bói toán, đồng bóng, yểm bùa, cúng giải hạn...[cite: 25]."
+            },
+            {
+                id: 24,
+                q: "Pháp luật Việt Nam đối với hành vi hành nghề mê tín dị đoan để kiếm tiền quy định như thế nào?",
+                a: "Nghiêm cấm thực hiện",
+                o: ["Nghiêm cấm thực hiện", "Khuyến khích phát triển ngành nghề dân gian", "Cho phép hoạt động tự do không cần quản lý", "Chỉ xử phạt hành chính nhẹ đối với người già"],
+                exp: "Pháp luật nghiêm cấm hoạt động và hành nghề mê tín dị đoan kiếm tiền[cite: 25]."
+            },
+            {
+                id: 25,
+                q: "Trách nhiệm chung của công dân trong phòng chống tội phạm, tệ nạn xã hội là gì?",
+                a: "Tuân theo Hiến pháp và pháp luật; tham gia bảo vệ an ninh quốc gia, giữ gìn trật tự an toàn xã hội",
+                o: ["Tuân theo Hiến pháp và pháp luật; tham gia bảo vệ an ninh quốc gia, giữ gìn trật tự an toàn xã hội", "Trực tiếp điều tra và truy bắt tội phạm nguy hiểm trên không gian mạng", "Tự thành lập các tổ chức vũ trang bảo vệ an ninh thôn xóm", "Miễn trừ mọi nghĩa vụ nếu không liên quan đến bản thân"],
+                exp: "Công dân có nghĩa vụ tuân theo Hiến pháp, pháp luật, tham gia bảo vệ an ninh quốc gia, trật tự an toàn xã hội[cite: 25]."
+            },
+            {
+                id: 26,
+                q: "Học sinh có trách nhiệm như thế nào trong việc chấp hành pháp luật phòng chống tội phạm và tệ nạn xã hội?",
+                a: "Chấp hành nghiêm các quy định của pháp luật về trách nhiệm công dân trong phòng chống tội phạm, tệ nạn xã hội và tội phạm công nghệ cao",
+                o: ["Chấp hành nghiêm các quy định của pháp luật về trách nhiệm công dân trong phòng chống tội phạm, tệ nạn xã hội và tội phạm công nghệ cao", "Chỉ cần tuân thủ nội quy nhà trường, không cần quan tâm pháp luật xã hội", "Được quyền tham gia thử nghiệm các tệ nạn xã hội để biết rõ", "Chỉ chấp hành khi có sự giám sát trực tiếp của gia đình"],
+                exp: "Học sinh cần chấp hành nghiêm quy định pháp luật về phòng chống tội phạm, tệ nạn xã hội và tội phạm công nghệ cao[cite: 26]."
+            },
+            {
+                id: 27,
+                q: "Quy định đối với học sinh về việc tham gia các tệ nạn xã hội và hoạt động phạm tội sử dụng công nghệ cao là gì?",
+                a: "Không tham gia dưới bất kì hình thức nào ở nơi sống, học tập và trên không gian mạng",
+                o: ["Không tham gia dưới bất kì hình thức nào ở nơi sống, học tập và trên không gian mạng", "Được phép tham gia giải trí nếu không ảnh hưởng kết quả học tập", "Chỉ tham gia khi ở trên không gian mạng ẩn danh", "Được tham gia dưới sự cho phép của bạn bè"],
+                exp: "Không tham gia các tệ nạn xã hội và hoạt động phạm tội công nghệ cao dưới bất kì hình thức nào[cite: 26]."
+            },
+            {
+                id: 28,
+                q: "Hànhvi nào dưới đây bị nghiêm cấm đối với học sinh khi sử dụng mạng xã hội và không gian mạng?",
+                a: "Không chia sẻ những thông tin trên không gian mạng khi chưa được kiểm chứng",
+                o: ["Không chia sẻ những thông tin trên không gian mạng khi chưa được kiểm chứng", "Chia sẻ mọi thông tin giật gân để thu hút người xem", "Đăng tải hình ảnh sinh hoạt cá nhân của bạn bè công khai", "Sử dụng mạng xã hội để giải trí sau giờ học"],
+                exp: "Không chia sẻ những thông tin trên không gian mạng khi chưa được kiểm chứng[cite: 26]."
+            },
+            {
+                id: 29,
+                q: "Học sinh cần thường xuyên thực hiện hoạt động gì để nâng cao nhận thức phòng chống tội phạm?",
+                a: "Thường xuyên học tập, nâng cao nhận thức về phòng chống các loại tệ nạn xã hội, tội phạm nói chung và tội phạm sử dụng công nghệ cao nói riêng",
+                o: ["Thường xuyên học tập, nâng cao nhận thức về phòng chống các loại tệ nạn xã hội, tội phạm nói chung và tội phạm sử dụng công nghệ cao nói riêng", "Tự nghiên cứu cách thức thực hiện các hành vi công nghệ cao", "Trao đổi kinh nghiệm lừa đảo trực tuyến với bạn bè", "Tham gia các diễn đàn cá cược trực tuyến để giải trí"],
+                exp: "Thường xuyên học tập, nâng cao nhận thức về phòng chống tệ nạn xã hội và tội phạm công nghệ cao[cite: 26]."
+            },
+            {
+                id: 30,
+                q: "Khi thực hiện các biện pháp phòng chống tội phạm và tệ nạn xã hội, học sinh cần tuân theo hướng dẫn của ai?",
+                a: "Nhà trường, chính quyền địa phương và các cơ quan nhà nước",
+                o: ["Nhà trường, chính quyền địa phương và các cơ quan nhà nước", "Các hội nhóm tự phát trên mạng xã hội", "Bạn bè cùng trang lứa trên không gian mạng", "Các cá nhân nổi tiếng trên mạng internet"],
+                exp: "Thực hiện các biện pháp theo hướng dẫn của nhà trường, chính quyền địa phương và cơ quan nhà nước[cite: 26]."
+            },
+            {
+                id: 31,
+                q: "Trách nhiệm tích cực của học sinh trong công tác tuyên truyền phòng chống tội phạm là gì?",
+                a: "Tham gia tuyên truyền phòng chống tội phạm, tệ nạn xã hội, tội phạm sử dụng công nghệ cao",
+                o: ["Tham gia tuyên truyền phòng chống tội phạm, tệ nạn xã hội, tội phạm sử dụng công nghệ cao", "Tổ chức các chiến dịch kêu gọi bạo lực mạng", "Im lặng trước các hành vi vi phạm pháp luật xung quanh", "Che giấu thông tin giúp bạn bè trốn tránh trách nhiệm"],
+                exp: "Tham gia tuyên truyền phòng chống tội phạm, tệ nạn xã hội, tội phạm sử dụng công nghệ cao[cite: 26]."
+            },
+            {
+                id: 32,
+                q: "Tệ nạn xã hội có thể được thực hiện và lan truyền trên mạng xã hội hay không? Vì sao?",
+                a: "Có, vì các đối tượng lợi dụng không gian mạng để tổ chức cờ bạc, mại dâm, mê tín dị đoan và truyền bá văn hóa phẩm độc hại",
+                o: ["Có, vì các đối tượng lợi dụng không gian mạng để tổ chức cờ bạc, mại dâm, mê tín dị đoan và truyền bá văn hóa phẩm độc hại", "Không, vì mạng xã hội chỉ phục vụ cho việc học tập và giải trí lành mạnh", "Không, vì các cơ quan chức năng đã kiểm soát tuyệt đối 100% không gian mạng", "Có, nhưng chỉ diễn ra ở các nước phát triển ngoài lãnh thổ Việt Nam"],
+                exp: "Tệ nạn xã hội hoàn toàn có thể thực hiện và lan truyền trên mạng xã hội thông qua các thủ đoạn lợi dụng không gian mạng[cite: 25]."
+            },
+            {
+                id: 33,
+                q: "Hành vi lợi dụng các quyền tự do dân chủ để xâm phạm lợi ích của Nhà nước, tổ chức, cá nhân trên không gian mạng được xếp vào nhóm hành vi nào?",
+                a: "Vi phạm pháp luật, có thể cấu thành tội phạm sử dụng công nghệ cao",
+                o: ["Vi phạm pháp luật, có thể cấu thành tội phạm sử dụng công nghệ cao", "Quyền tự do ngôn luận hợp pháp của công dân", "Hoạt động phản biện xã hội được khuyến khích", "Vi phạm nội quy nhà trường thông thường"],
+                exp: "Lợi dụng quyền tự do dân chủ xâm phạm lợi ích nhà nước, tổ chức cá nhân là hành vi phạm tội sử dụng công nghệ cao[cite: 23]."
+            },
+            {
+                id: 34,
+                q: "Hành vi nào dưới đây thể hiện tinh thần cảnh giác và trách nhiệm của học sinh khi phát hiện thông tin chưa kiểm chứng trên mạng?",
+                a: "Không chia sẻ và báo cáo với cơ quan chức năng hoặc nhà trường",
+                o: ["Không chia sẻ và báo cáo với cơ quan chức năng hoặc nhà trường", "Chia sẻ thật nhanh cho nhiều người cùng biết để kiểm chứng", "Bình luận kích động thêm để câu tương tác", "Lưu lại và phát tán vào các nhóm kín"],
+                exp: "Học sinh không chia sẻ thông tin trên không gian mạng khi chưa được kiểm chứng[cite: 26]."
+            },
+            {
+                id: 35,
+                q: "Ý nghĩa cốt lõi của việc học sinh tích cực tham gia phòng, chống tội phạm, tệ nạn xã hội và tội phạm sử dụng công nghệ cao là gì?",
+                a: "Góp phần bảo vệ an ninh quốc gia, trật tự an toàn xã hội và xây dựng môi trường sống lành mạnh",
+                o: ["Góp phần bảo vệ an ninh quốc gia, trật tự an toàn xã hội và xây dựng môi trường sống lành mạnh", "Giúp học sinh đạt giải cao trong các kì thi học sinh giỏi quốc gia", "Tạo lợi thế khi xét tuyển vào các trường đại học khối kinh tế", "Giúp cá nhân nổi bật trên các nền tảng mạng xã hội"],
+                exp: "Góp phần giữ gìn trật tự an toàn xã hội, bảo vệ an ninh quốc gia và môi trường sống lành mạnh[cite: 25, 26]."
+            }
+        ];
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        let shuffledMcq = [];
+
+        function initQuiz() {
+            shuffledMcq = shuffleArray(rawMcqData).map(item => {
+                const correctVal = item.a;
+                const shuffledOpts = shuffleArray(item.o);
+                return { ...item, o: shuffledOpts, a: correctVal };
+            });
+            renderMCQ();
+        }
+
+        function renderMCQ() {
+            const container = document.getElementById('mcq-container');
+            container.innerHTML = shuffledMcq.map((item, idx) => `
+                <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                    <div class="font-medium text-slate-100 text-sm md:text-base">
+                        <span class="text-rose-400 font-bold">Câu ${idx + 1}:</span> ${item.q}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="options-group-${item.id}">
+                        ${item.o.map((opt, oIdx) => `
+                            <label id="label-opt-${item.id}-${oIdx}" class="p-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-lg flex items-center space-x-3 cursor-pointer text-xs md:text-sm transition">
+                                <input type="radio" name="mcq-${item.id}" value="${opt}" class="accent-rose-500">
+                                <span>${['A', 'B', 'C', 'D'][oIdx]}.${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div id="mcq-feedback-${item.id}" class="hidden mt-2 p-3 rounded-lg text-xs font-medium border"></div>
+                </div>
+            `).join('');
+        }
+
+        function checkAllAnswers() {
+            let correctMCQ = 0;
+            shuffledMcq.forEach(item => {
+                const checkedInput = document.querySelector(`input[name="mcq-${item.id}"]:checked`);
+                const feedbackEl = document.getElementById(`mcq-feedback-${item.id}`);
+                feedbackEl.classList.remove('hidden');
+
+                item.o.forEach((opt, oIdx) => {
+                    const labelEl = document.getElementById(`label-opt-${item.id}-${oIdx}`);
+                    const radioInput = labelEl.querySelector('input');
+                    labelEl.className = "p-3 border rounded-lg flex items-center space-x-3 text-xs md:text-sm transition ";
+                    if (opt === item.a) {
+                        labelEl.className += "bg-emerald-950/80 border-emerald-600 text-emerald-200 font-semibold";
+                    } else if (radioInput && radioInput.checked && radioInput.value !== item.a) {
+                        labelEl.className += "bg-rose-950/80 border-rose-600 text-rose-200";
+                    } else {
+                        labelEl.className += "bg-slate-800/50 border-slate-700 text-slate-300 opacity-70";
+                    }
+                });
+
+                if (checkedInput) {
+                    if (checkedInput.value === item.a) {
+                        correctMCQ++;
+                        feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-emerald-950/60 border-emerald-800 text-emerald-300";
+                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <b>Chính xác!</b> <em>Giải thích:</em> ${item.exp}`;
+                    } else {
+                        feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-rose-950/60 border-rose-800 text-rose-300";
+                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> <b>Chưa đúng.</b> <em>Giải thích:</em> ${item.exp}`;
+                    }
+                } else {
+                    feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-amber-950/60 border-amber-800 text-amber-300";
+                    feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Bạn chưa chọn đáp án!</b> <em>Giải thích:</em> ${item.exp}`;
+                }
+            });
+
+            const resultEl = document.getElementById('total-result');
+            resultEl.classList.remove('hidden');
+            resultEl.innerHTML = `
+                <div>Tổng kết: <span class="text-rose-400">${correctMCQ}/${shuffledMcq.length}</span> câu đúng</div>
+                <div class="text-xs font-normal text-slate-400 mt-1">* Đáp án đúng đã được hiển thị màu xanh, đáp án sai chọn nhầm hiển thị màu đỏ!</div>
+            `;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
