@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc Nghiệm Bài 1: Bảo Vệ Chủ Quyền Lãnh Thổ, Biên Giới Quốc Gia - GDQP 11</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/85 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="./indexqp.html" class="p-2 bg-rose-600 rounded-lg text-white hover:bg-rose-500 transition">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </a>
+                <div>
+                    <h1 class="text-base md:text-lg font-bold leading-tight">Bài 1: Bảo Vệ Chủ Quyền Lãnh Thổ, Biên Giới Quốc Gia</h1>
+                    <p class="text-xs text-slate-400">35 Câu hỏi trắc nghiệm vận dụng, phân tích và thực tế</p>
+                </div>
+            </div>
+            <a href="./indexqp.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
+                <i class="fa-solid fa-house text-rose-400"></i>
+                <span>Quay Lại</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow space-y-8">
+
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                    <span class="p-2.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl">
+                        <i class="fa-solid fa-list-check text-lg"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Đề Thi Trắc Nghiệm (35 Câu)</h2>
+                        <p class="text-xs text-slate-400">Chọn 1 đáp án đúng nhất cho mỗi câu hỏi</p>
+                    </div>
+                </div>
+            </div>
+            <div id="mcq-container" class="space-y-6"></div>
+        </section>
+
+        <!-- SUBMIT -->
+        <div class="p-6 bg-slate-800 border border-slate-700 rounded-2xl text-center space-y-4 shadow-2xl">
+            <button type="button" onclick="checkAllAnswers()" class="px-8 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Nộp Bài & Kiểm Tra Kết Quả</span>
+            </button>
+            <div id="total-result" class="hidden p-4 rounded-xl bg-slate-900 border border-rose-500/50 text-slate-200 font-bold text-lg"></div>
+        </div>
+
+    </main>
+
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        GDQP-AN 11 • Bài 1: Bảo Vệ Chủ Quyền Lãnh Thổ, Biên Giới Quốc Gia
+    </footer>
+
+    <script>
+        const rawMcqData = [
+            {
+                id: 1,
+                q: "Trong chiến lược bảo vệ Tổ quốc xã hội chủ nghĩa trong tình hình mới, yếu tố nào được Đảng ta xác định là nhân tố quyết định hàng đầu?",
+                a: "Phát huy mạnh mẽ nội lực kết hợp tranh thủ tối đa ngoại lực",
+                o: [
+                    "Phát huy mạnh mẽ nội lực kết hợp tranh thủ tối đa ngoại lực",
+                    "Sự viện trợ kinh tế và quân sự từ các siêu cường quốc tế",
+                    "Việc ký kết các hiệp ước liên minh quân sự song phương",
+                    "Sự hỗ trợ kỹ thuật vũ khí hiện đại từ nước ngoài"
+                ],
+                exp: "Theo quan điểm chiến lược, nội lực (sức mạnh bên trong của đất nước, con người, kinh tế, chính trị) luôn là nhân tố quyết định hàng đầu[cite: 16]."
+            },
+            {
+                id: 2,
+                q: "Khi phân định ranh giới ngoài của vùng biển trên biển, đường cơ sở thẳng của Việt Nam do cơ quan nào quyết định và công bố?",
+                a: "Chính phủ công bố sau khi được Ủy ban thường vụ Quốc hội phê chuẩn",
+                o: [
+                    "Chính phủ công bố sau khi được Ủy ban thường vụ Quốc hội phê chuẩn",
+                    "Bộ Quốc phòng trực tiếp khảo sát và tự ý quyết định",
+                    "Bộ Ngoại giao toàn quyền quyết định không cần thông qua cơ quan khác",
+                    "Ủy ban nhân dân các tỉnh ven biển hiệp thương thống nhất"
+                ],
+                exp: "Căn cứ theo Luật Biển Việt Nam, đường cơ sở thẳng dùng để tính chiều rộng lãnh hải do Chính phủ công bố sau khi được UBTV Quốc hội phê chuẩn[cite: 19]."
+            },
+            {
+                id: 3,
+                q: "Theo Công ước Liên hợp quốc về Luật Biển năm 1982 (UNCLOS 1982), vùng biển có chiều rộng 12 hải lý tính từ đường cơ sở ra phía biển được gọi là gì?",
+                a: "Lãnh hải",
+                o: [
+                    "Lãnh hải",
+                    "Nội thủy",
+                    "Vùng tiếp giáp lãnh hải",
+                    "Vùng đặc quyền kinh tế"
+                ],
+                exp: "Lãnh hải là vùng biển rộng 12 hải lý tính từ đường cơ sở, ranh giới ngoài của nó là biên giới quốc gia trên biển của Việt Nam[cite: 20]."
+            },
+            {
+                id: 4,
+                q: "Vùng biển tiếp liền và nằm ngoài lãnh hải Việt Nam, có chiều rộng 12 hải lý tính từ ranh giới ngoài của lãnh hải, được gọi là:",
+                a: "Vùng tiếp giáp lãnh hải",
+                o: [
+                    "Vùng tiếp giáp lãnh hải",
+                    "Vùng đặc quyền kinh tế",
+                    "Thềm lục địa",
+                    "Nội thủy"
+                ],
+                exp: "Vùng tiếp giáp lãnh hải có chiều rộng 12 hải lý tính từ ranh giới ngoài của lãnh hải nhằm bảo vệ các quyền hải quan, tài chính, y tế...[cite: 20]."
+            },
+            {
+                id: 5,
+                q: "Khoảng cách tối đa từ đường cơ sở đến ranh giới ngoài của thềm lục địa theo quy định pháp lý quốc tế và Luật Biển Việt Nam là bao nhiêu hải lý?",
+                a: "Không quá 350 hải lý",
+                o: [
+                    "Không quá 350 hải lý",
+                    "200 hải lý",
+                    "100 hải lý",
+                    "24 hải lý"
+                ],
+                exp: "Ranh giới ngoài thềm lục địa kéo dài tới mép ngoài của rìa lục địa, nhưng cách đường cơ sở không quá 350 hải lý[cite: 20]."
+            },
+            {
+                id: 6,
+                q: "Trong quan điểm về đối tác và đối tượng của chính sách quốc phòng an ninh Việt Nam hiện nay, hành vi nào dưới đây được xếp vào nhóm 'đối tượng'?",
+                a: "Mọi thế lực có âm mưu và hành động chống phá mục tiêu xây dựng và bảo vệ Tổ quốc",
+                o: [
+                    "Mọi thế lực có âm mưu và hành động chống phá mục tiêu xây dựng và bảo vệ Tổ quốc",
+                    "Các quốc gia có chế độ chính trị khác biệt nhưng tôn trọng chủ quyền Việt Nam",
+                    "Các tập đoàn kinh tế tư bản nước ngoài đầu tư hợp pháp tại Việt Nam",
+                    "Các tổ chức phi chính phủ quốc tế hỗ trợ nhân đạo không điều kiện"
+                ],
+                exp: "Bất kì thế lực nào có âm mưu và hành động chống phá mục tiêu của Nhà nước ta đều là đối tượng đấu tranh[cite: 17]."
+            },
+            {
+                id: 7,
+                q: "Biên giới quốc gia trên đất liền của nước ta được hoạch định và đánh dấu trên thực địa bằng hệ thống nào?",
+                a: "Hệ thống mốc quốc giới chính thức",
+                o: [
+                    "Hệ thống mốc quốc giới chính thức",
+                    "Các phao tiêu điện tử định vị vệ tinh",
+                    "Hệ thống hàng rào kẽm gai kiên cố toàn tuyến",
+                    "Các dòng sông suối tự nhiên hoàn toàn không cắm mốc"
+                ],
+                exp: "Biên giới trên đất liền được đánh dấu bằng hệ thống mốc quốc giới[cite: 17]."
+            },
+            {
+                id: 8,
+                q: "Theo pháp luật Việt Nam, khu vực biên giới trên không bao gồm phần không gian dọc biên giới quốc gia, có chiều rộng tính từ biên giới quốc gia trở vào là bao nhiêu?",
+                a: "10 km",
+                o: [
+                    "10 km",
+                    "5 km",
+                    "20 km",
+                    "50 km"
+                ],
+                exp: "Khu vực biên giới trên không gồm không gian dọc biên giới quốc gia có chiều rộng 10 km tính từ biên giới quốc gia trở vào[cite: 18]."
+            },
+            {
+                id: 9,
+                q: "Hành vi nào sau đây bị nghiêm cấm tuyệt đối tại khu vực biên giới quốc gia theo Luật Biên giới quốc gia?",
+                a: "Xê dịch, phá hoại mốc quốc giới hoặc làm thay đổi dòng chảy tự nhiên của sông suối biên giới",
+                o: [
+                    "Xê dịch, phá hoại mốc quốc giới hoặc làm thay đổi dòng chảy tự nhiên của sông suối biên giới",
+                    "Canh tác nông nghiệp công nghệ cao của người dân vùng biên giới",
+                    "Tổ chức giao lưu văn hóa truyền thống giữa các bản làng hai bên biên giới",
+                    "Xây dựng các công trình cơ sở hạ tầng phục vụ dân sinh theo quy hoạch"
+                ],
+                exp: "Xê dịch, phá hoại mốc giới, làm thay đổi dòng chảy biên giới là hành vi vi phạm pháp luật nghiêm trọng bị nghiêm cấm[cite: 18]."
+            },
+            {
+                id: 10,
+                q: "Vùng nước nằm ở phía trong đường cơ sở và giáp với bờ biển của nước ta được định nghĩa là:",
+                a: "Nội thủy",
+                o: [
+                    "Nội thủy",
+                    "Lãnh hải",
+                    "Vùng đặc quyền kinh tế",
+                    "Vùng tiếp giáp lãnh hải"
+                ],
+                exp: "Nội thủy là vùng nước tiếp giáp với bờ biển, ở phía trong đường cơ sở và là bộ phận lãnh thổ của Việt Nam[cite: 19]."
+            },
+            {
+                id: 11,
+                q: "Nghị quyết của Quốc hội nước CHXHCN Việt Nam khóa IX phê chuẩn Công ước UNCLOS 1982 được thông qua vào năm nào?",
+                a: "Năm 1994",
+                o: [
+                    "Năm 1994",
+                    "Năm 1982",
+                    "Năm 2012",
+                    "Năm 1975"
+                ],
+                exp: "Ngày 23/6/1994, Quốc hội khóa IX đã thông qua Nghị quyết phê chuẩn Công ước của Liên hợp quốc về Luật Biển năm 1982[cite: 19]."
+            },
+            {
+                id: 12,
+                q: "Luật Biển Việt Nam hiện hành (văn bản hợp nhất mới nhất) gồm bao nhiêu chương và bao nhiêu điều?",
+                a: "7 chương, 55 điều",
+                o: [
+                    "7 chương, 55 điều",
+                    "5 chương, 30 điều",
+                    "10 chương, 120 điều",
+                    "3 chương, 15 điều"
+                ],
+                exp: "Luật Biển Việt Nam năm 2012 gồm 7 chương và 55 điều[cite: 19]."
+            },
+            {
+                id: 13,
+                q: "Vùng biển có chiều rộng hợp với lãnh hải thành một vùng biển tổng cộng rộng 200 hải lý tính từ đường cơ sở được gọi là:",
+                a: "Vùng đặc quyền kinh tế",
+                o: [
+                    "Vùng đặc quyền kinh tế",
+                    "Thềm lục địa",
+                    "Vùng tiếp giáp lãnh hải",
+                    "Nội thủy"
+                ],
+                exp: "Vùng đặc quyền kinh tế rộng 200 hải lý tính từ đường cơ sở[cite: 20]."
+            },
+            {
+                id: 14,
+                q: "Theo pháp luật Việt Nam, khái niệm 'Đảo' được hiểu là:",
+                a: "Vùng đất tự nhiên có nước bao bọc, khi thủy triều lên vùng đất này vẫn ở trên mặt nước",
+                o: [
+                    "Vùng đất tự nhiên có nước bao bọc, khi thủy triều lên vùng đất này vẫn ở trên mặt nước",
+                    "Các khối đá ngầm chỉ nổi lên khi thủy triều xuống thấp nhất",
+                    "Các công trình nhân tạo nổi trên mặt biển do con người bồi đắp",
+                    "Tập hợp các bãi cạn san hô ngầm dưới đáy biển"
+                ],
+                exp: "Đảo là vùng đất tự nhiên có nước bao bọc, khi thủy triều lên vẫn nổi trên mặt nước[cite: 20]."
+            },
+            {
+                id: 15,
+                q: "Nhiệm vụ chiến lược nào được Đảng ta khẳng định phải kết hợp chặt chẽ với nhau trong mọi hoàn cảnh?",
+                a: "Xây dựng chủ nghĩa xã hội và bảo vệ Tổ quốc Việt Nam xã hội chủ nghĩa",
+                o: [
+                    "Xây dựng chủ nghĩa xã hội và bảo vệ Tổ quốc Việt Nam xã hội chủ nghĩa",
+                    "Phát triển kinh tế biển và hiện đại hóa lực lượng không quân",
+                    "Hội nhập kinh tế quốc tế và độc lập tự chủ tài chính",
+                    "Cải cách giáo dục và hiện đại hóa công nghiệp quốc phòng"
+                ],
+                exp: "Hai nhiệm vụ chiến lược xuyên suốt là xây dựng và bảo vệ Tổ quốc[cite: 16]."
+            },
+            {
+                id: 16,
+                q: "Đường biên giới quốc gia trên biển của nước ta được xác định căn cứ vào ranh giới ngoài của vùng nào?",
+                a: "Lãnh hải",
+                o: [
+                    "Lãnh hải",
+                    "Nội thủy",
+                    "Vùng đặc quyền kinh tế",
+                    "Thềm lục địa"
+                ],
+                exp: "Ranh giới ngoài của lãnh hải chính là biên giới quốc gia trên biển của Việt Nam[cite: 20]."
+            },
+            {
+                id: 17,
+                q: "Trong các hành vi sau đây, hành vi nào bị pháp luật nghiêm cấm tại khu vực biên giới quốc gia?",
+                a: "Buôn lậu, vận chuyển trái phép hàng hóa, tiền tệ, vũ khí, ma túy qua biên giới",
+                o: [
+                    "Buôn lậu, vận chuyển trái phép hàng hóa, tiền tệ, vũ khí, ma túy qua biên giới",
+                    "Kinh doanh du lịch sinh thái được cơ quan nhà nước có thẩm quyền cấp phép",
+                    "Đi lại thăm thân nhân có khai báo đầy đủ tại các cửa khẩu quốc tế",
+                    "Hợp tác đánh bắt hải sản chung theo hiệp định giữa các chính phủ"
+                ],
+                exp: "Buôn lậu và vận chuyển trái phép chất cấm, vũ khí qua biên giới là hành vi bị nghiêm cấm tuyệt đối[cite: 18]."
+            },
+            {
+                id: 18,
+                q: "Quan điểm đối ngoại của Đảng ta trong tình hình mới là:",
+                a: "Độc lập, tự chủ; đa dạng hóa, đa phương hóa quan hệ quốc tế, chủ động hội nhập quốc tế",
+                o: [
+                    "Độc lập, tự chủ; đa dạng hóa, đa phương hóa quan hệ quốc tế, chủ động hội nhập quốc tế",
+                    "Đóng cửa nền kinh tế để bảo vệ tuyệt đối thị trường nội địa",
+                    "Liên minh quân sự chặt chẽ với một siêu cường để làm chỗ dựa",
+                    "Chỉ hợp tác ngoại giao với các nước có cùng chế độ chính trị xã hội"
+                ],
+                exp: "Đảng chủ trương độc lập, tự chủ, đa phương hóa, đa dạng hóa và chủ động hội nhập quốc tế[cite: 17]."
+            },
+            {
+                id: 19,
+                q: "Vùng đáy biển và lòng đất dưới đáy biển tiếp liền và nằm ngoài lãnh hải Việt Nam, kéo dài đến mép ngoài rìa lục địa, là định nghĩa của:",
+                a: "Thềm lục địa",
+                o: [
+                    "Thềm lục địa",
+                    "Vùng đặc quyền kinh tế",
+                    "Vùng tiếp giáp lãnh hải",
+                    "Nội thủy"
+                ],
+                exp: "Định nghĩa thềm lục địa theo Luật Biển Việt Nam[cite: 20]."
+            },
+            {
+                id: 20,
+                q: "Theo pháp luật, 'Quần đảo' được hiểu là tập hợp các đảo, trong đó có yếu tố nào gắn kết chặt chẽ với nhau?",
+                a: "Bao gồm cả bộ phận các đảo, vùng nước tiếp liền và các thành phần tự nhiên khác",
+                o: [
+                    "Bao gồm cả bộ phận các đảo, vùng nước tiếp liền và các thành phần tự nhiên khác",
+                    "Chỉ bao gồm các đảo nổi cách nhau không quá 3 hải lý",
+                    "Chỉ bao gồm các rạn san hô chìm dưới mặt nước biển",
+                    "Chỉ bao gồm các đảo do con người nhân tạo xây dựng nên"
+                ],
+                exp: "Quần đảo là tập hợp các đảo, bộ phận đảo, vùng nước tiếp liền và các thành phần tự nhiên liên quan chặt chẽ[cite: 20]."
+            },
+            {
+                id: 21,
+                q: "Trách nhiệm hàng đầu của học sinh phổ thông trong việc bảo vệ chủ quyền biên giới quốc gia là gì?",
+                a: "Tích cực học tập, nâng cao nhận thức pháp luật và ý thức trách nhiệm công dân",
+                o: [
+                    "Tích cực học tập, nâng cao nhận thức pháp luật và ý thức trách nhiệm công dân",
+                    "Trực tiếp tham gia tuần tra vũ trang dọc các tuyến biên giới xa xôi",
+                    "Tự ý đàm phán ngoại giao với người nước ngoài về vấn đề biển đảo",
+                    "Thành lập các hội nhóm vũ trang tự vệ bảo vệ địa phương"
+                ],
+                exp: "Trách nhiệm của học sinh là học tập, nâng cao nhận thức, chấp hành nghiêm pháp luật và tuyên truyền đúng đắn[cite: 21]."
+            },
+            {
+                id: 22,
+                q: "Khi phát hiện các hành vi xâm phạm chủ quyền lãnh thổ, biên giới quốc gia, học sinh cần có thái độ và hành động như thế nào?",
+                a: "Báo cáo kịp thời với nhà trường, chính quyền địa phương hoặc lực lượng chức năng gần nhất",
+                o: [
+                    "Báo cáo kịp thời với nhà trường, chính quyền địa phương hoặc lực lượng chức năng gần nhất",
+                    "Tự mình tổ chức lực lượng truy bắt tội phạm xuyên quốc gia",
+                    "Đăng tải thông tin chưa kiểm chứng lên mạng xã hội để câu tương tác",
+                    "Giữ im lặng để tránh vướng vào rắc rối cá nhân"
+                ],
+                exp: "Học sinh cần báo cáo kịp thời cho nhà trường, chính quyền hoặc bộ đội biên phòng/công an khi phát hiện vi phạm[cite: 21]."
+            },
+            {
+                id: 23,
+                q: "Công ước của Liên hợp quốc về Luật Biển năm 1982 (UNCLOS 1982) chính thức có hiệu lực vào thời gian nào?",
+                a: "Ngày 16/11/1994",
+                o: [
+                    "Ngày 16/11/1994",
+                    "Ngày 10/12/1982",
+                    "Ngày 23/6/1994",
+                    "Ngày 30/4/1975"
+                ],
+                exp: "Công ước được công bố ngày 10/12/1982 và chính thức có hiệu lực từ ngày 16/11/1994[cite: 18]."
+            },
+            {
+                id: 24,
+                q: "Ý nghĩa của câu nói Chủ tịch Hồ Chí Minh căn dặn năm 1954: 'Các Vua Hùng đã có công dựng nước, Bác cháu ta phải cùng nhau giữ lấy nước' nhấn mạnh điều gì?",
+                a: "Trách nhiệm bảo vệ độc lập, chủ quyền và toàn vẹn lãnh thổ là sự nghiệp của toàn dân tộc",
+                o: [
+                    "Trách nhiệm bảo vệ độc lập, chủ quyền và toàn vẹn lãnh thổ là sự nghiệp của toàn dân tộc",
+                    "Chỉ có lực lượng quân đội chính quy mới có nhiệm vụ bảo vệ đất nước",
+                    "Việc dựng nước khó khăn hơn rất nhiều so với việc giữ nước",
+                    "Truyền thống lịch sử dựng nước chỉ gắn liền với thời đại các Vua Hùng"
+                ],
+                exp: "Câu nói khẳng định trách nhiệm bảo vệ giang sơn đất nước là truyền thống và nhiệm vụ chung của toàn Đảng, toàn dân và toàn quân[cite: 16]."
+            },
+            {
+                id: 25,
+                q: "Vùng biển quốc tế được quy định là tất cả các vùng biển nằm ngoài vùng nào của các quốc gia?",
+                a: "Vùng đặc quyền kinh tế",
+                o: [
+                    "Vùng đặc quyền kinh tế",
+                    "Lãnh hải",
+                    "Nội thủy",
+                    "Vùng tiếp giáp lãnh hải"
+                ],
+                exp: "Vùng biển quốc tế nằm ngoài vùng đặc quyền kinh tế của Việt Nam và các quốc gia khác[cite: 19]."
+            },
+            {
+                id: 26,
+                q: "Nội dung nào sau đây phản ánh đúng quan điểm về 'đối tác' theo đường lối quốc phòng an ninh của Việt Nam?",
+                a: "Những ai tôn trọng độc lập, chủ quyền, thiết lập và mở rộng quan hệ hữu nghị, hợp tác bình đẳng, cùng có lợi với Việt Nam",
+                o: [
+                    "Những ai tôn trọng độc lập, chủ quyền, thiết lập và mở rộng quan hệ hữu nghị, hợp tác bình đẳng, cùng có lợi với Việt Nam",
+                    "Chỉ những nước có tiềm lực quân sự mạnh vượt trội trên thế giới",
+                    "Những quốc gia ký kết hiệp ước bảo chứng hạt nhân cho Việt Nam",
+                    "Các nước viện trợ không hoàn lại toàn bộ ngân sách quốc phòng hàng năm"
+                ],
+                exp: "Định nghĩa đối tác là những ai tôn trọng độc lập chủ quyền và hợp tác bình đẳng với Việt Nam[cite: 17]."
+            },
+            {
+                id: 27,
+                q: "Mục tiêu tổng quát trong chiến lược bảo vệ Tổ quốc Việt Nam XHCN bao gồm việc giữ vững môi trường nào để phát triển đất nước?",
+                a: "Môi trường hoà bình, ổn định chính trị, an ninh quốc gia, an ninh con người",
+                o: [
+                    "Môi trường hoà bình, ổn định chính trị, an ninh quốc gia, an ninh con người",
+                    "Môi trường cạnh tranh vũ trang tự do giữa các tập đoàn kinh tế",
+                    "Môi trường cô lập hoàn toàn với nền kinh tế thương mại toàn cầu",
+                    "Môi trường phụ thuộc hoàn toàn vào hệ thống an ninh khu vực"
+                ],
+                exp: "Giữ vững môi trường hoà bình, ổn định chính trị, an ninh quốc gia, an ninh con người là mục tiêu quan trọng[cite: 16]."
+            },
+            {
+                id: 28,
+                q: "Hành vi bay vào khu vực cấm bay hoặc bắn, phóng, thả các vật thể gây hại cho quốc phòng an ninh tại khu vực biên giới bị xử lý như thế nào?",
+                a: "Bị nghiêm cấm tuyệt đối theo pháp luật về biên giới quốc gia",
+                o: [
+                    "Bị nghiêm cấm tuyệt đối theo pháp luật về biên giới quốc gia",
+                    "Được phép thực hiện nếu có sự đồng ý của chính quyền cấp xã",
+                    "Chỉ bị cấm vào ban đêm còn ban ngày được tự do thực hiện",
+                    "Được tự do tổ chức nếu phục vụ mục đích thể thao giải trí"
+                ],
+                exp: "Đây là các hành vi bị nghiêm cấm nhằm bảo đảm an ninh biên giới và an toàn hàng không[cite: 18]."
+            },
+            {
+                id: 29,
+                q: "Công tác quản lý, xây dựng và bảo vệ biên giới quốc gia đòi hỏi yếu tố cốt lõi nào từ phía công dân?",
+                a: "Ý thức giác ngộ chính trị, tinh thần thượng tôn pháp luật và trách nhiệm bảo vệ chủ quyền",
+                o: [
+                    "Ý thức giác ngộ chính trị, tinh thần thượng tôn pháp luật và trách nhiệm bảo vệ chủ quyền",
+                    "Sự am hiểu chuyên sâu về kỹ thuật chế tạo vũ khí quân dụng",
+                    "Khả năng ngoại ngữ thành thạo để giao lưu với lực lượng tuần tra nước ngoài",
+                    "Nguồn lực tài chính lớn để đóng góp xây dựng đồn biên phòng"
+                ],
+                exp: "Công dân cần có ý thức giác ngộ, thượng tôn pháp luật và trách nhiệm đối với chủ quyền thiêng liêng[cite: 21]."
+            },
+            {
+                id: 30,
+                q: "Đâu không phải là nội dung thuộc trách nhiệm của công dân trong bảo vệ chủ quyền lãnh thổ, biên giới quốc gia?",
+                a: "Tự ý tiến hành các hoạt động ngoại giao nhân dân thay mặt Nhà nước",
+                o: [
+                    "Tự ý tiến hành các hoạt động ngoại giao nhân dân thay mặt Nhà nước",
+                    "Chủ động học tập, nghiên cứu nắm chắc và chấp hành nghiêm pháp luật",
+                    "Thường xuyên nêu cao tinh thần cảnh giác cách mạng trước âm mưu chống phá",
+                    "Tích cực tham gia tuyên truyền, vận động người thân chấp hành pháp luật biên giới"
+                ],
+                exp: "Công dân không có thẩm quyền tiến hành các hoạt động ngoại giao chính thức thay mặt Nhà nước khi chưa được phân công[cite: 21]."
+            },
+            {
+                id: 31,
+                q: "Sự kết hợp giữa sức mạnh dân tộc và sức mạnh thời đại trong chiến lược bảo vệ Tổ quốc được hiểu là gì?",
+                a: "Phát huy nội lực trong nước kết hợp với tranh thủ sự đồng tình, ủng hộ của cộng đồng quốc tế",
+                o: [
+                    "Phát huy nội lực trong nước kết hợp với tranh thủ sự đồng tình, ủng hộ của cộng đồng quốc tế",
+                    "Đưa toàn bộ lực lượng vũ trang ra nước ngoài tham gia chiến dịch quân sự",
+                    "Phụ thuộc hoàn toàn vào các liên minh quân sự quốc tế để giải quyết tranh chấp",
+                    "Chỉ sử dụng nguồn lực kinh tế bên ngoài để phát triển quốc phòng"
+                ],
+                exp: "Sức mạnh dân tộc kết hợp sức mạnh thời đại là nội lực trong nước kết hợp tranh thủ đồng thuận quốc tế[cite: 16]."
+            },
+            {
+                id: 32,
+                q: "Vùng nước nào nằm ở phía trong đường cơ sở, được coi là bộ phận lãnh thổ của Việt Nam và chịu chủ quyền hoàn toàn như đất liền?",
+                a: "Nội thủy",
+                o: [
+                    "Nội thủy",
+                    "Vùng đặc quyền kinh tế",
+                    "Thềm lục địa",
+                    "Vùng tiếp giáp lãnh hải"
+                ],
+                exp: "Nội thủy là vùng nước phía trong đường cơ sở, là bộ phận lãnh thổ và quốc gia có chủ quyền hoàn toàn tuyệt đối[cite: 19]."
+            },
+            {
+                id: 33,
+                q: "Hoạt động buôn bán, vận chuyển trái phép hàng hóa qua biên giới không chỉ xâm phạm an ninh kinh tế mà còn vi phạm trực tiếp lĩnh vực nào?",
+                a: "Chủ quyền và trật tự an toàn xã hội ở khu vực biên giới",
+                o: [
+                    "Chủ quyền và trật tự an toàn xã hội ở khu vực biên giới",
+                    "Quyền tự do hàng hải quốc tế ở vùng biển khơi",
+                    "Quyền khai thác khoáng sản đáy đại dương sâu",
+                    "Thỏa thuận ngoại giao văn hóa giữa các nước láng giềng"
+                ],
+                exp: "Buôn lậu qua biên giới xâm phạm trật tự an toàn xã hội và chủ quyền biên giới quốc gia[cite: 18]."
+            },
+            {
+                id: 34,
+                q: "Theo Luật Biên giới quốc gia, biên giới quốc gia trên đất liền được định hình thông qua công tác nào giữa Việt Nam và các nước láng giềng có chung đường biên giới?",
+                a: "Hoạch định và cắm mốc giới trên thực địa",
+                o: [
+                    "Hoạch định và cắm mốc giới trên thực địa",
+                    "Ký kết hiệp ước cho thuê đất dài hạn",
+                    "Thành lập khu vực kinh tế phi thuế quan chung",
+                    "Xây dựng tường rào thép gai toàn tuyến liên tục"
+                ],
+                exp: "Biên giới trên đất liền được hoạch định và đánh dấu bằng hệ thống mốc quốc giới[cite: 17]."
+            },
+            {
+                id: 35,
+                q: "Nhiệm vụ xây dựng nền quốc phòng toàn dân gắn liền với thế trận an ninh nhân dân nhằm mục đích cốt lõi gì?",
+                a: "Bảo vệ vững chắc độc lập, chủ quyền, thống nhất, toàn vẹn lãnh thổ của Tổ quốc",
+                o: [
+                    "Bảo vệ vững chắc độc lập, chủ quyền, thống nhất, toàn vẹn lãnh thổ của Tổ quốc",
+                    "Tạo thế độc quyền kiểm soát thương mại khu vực Đông Nam Á",
+                    "Mở rộng lãnh thổ thông qua các chiến dịch quân sự tự vệ",
+                    "Đảm bảo tốc độ tăng trưởng kinh tế luôn dẫn đầu thế giới"
+                ],
+                exp: "Mục tiêu cốt lõi là bảo vệ vững chắc độc lập, chủ quyền, thống nhất, toàn vẹn lãnh thổ của Tổ quốc[cite: 16]."
+            }
+        ];
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        let shuffledMcq = [];
+
+        function initQuiz() {
+            shuffledMcq = shuffleArray(rawMcqData).map(item => {
+                const correctVal = item.a;
+                const shuffledOpts = shuffleArray(item.o);
+                return { ...item, o: shuffledOpts, a: correctVal };
+            });
+            renderMCQ();
+        }
+
+        function renderMCQ() {
+            const container = document.getElementById('mcq-container');
+            container.innerHTML = shuffledMcq.map((item, idx) => `
+                <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                    <div class="font-medium text-slate-100 text-sm md:text-base">
+                        <span class="text-rose-400 font-bold">Câu ${idx + 1}:</span> ${item.q}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="options-group-${item.id}">
+                        ${item.o.map((opt, oIdx) => `
+                            <label id="label-opt-${item.id}-${oIdx}" class="p-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-lg flex items-center space-x-3 cursor-pointer text-xs md:text-sm transition">
+                                <input type="radio" name="mcq-${item.id}" value="${opt}" class="accent-rose-500">
+                                <span>${['A', 'B', 'C', 'D'][oIdx]}.${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div id="mcq-feedback-${item.id}" class="hidden mt-2 p-3 rounded-lg text-xs font-medium border"></div>
+                </div>
+            `).join('');
+        }
+
+        function checkAllAnswers() {
+            let correctMCQ = 0;
+            shuffledMcq.forEach(item => {
+                const checkedInput = document.querySelector(`input[name="mcq-${item.id}"]:checked`);
+                const feedbackEl = document.getElementById(`mcq-feedback-${item.id}`);
+                feedbackEl.classList.remove('hidden');
+
+                item.o.forEach((opt, oIdx) => {
+                    const labelEl = document.getElementById(`label-opt-${item.id}-${oIdx}`);
+                    const radioInput = labelEl.querySelector('input');
+                    labelEl.className = "p-3 border rounded-lg flex items-center space-x-3 text-xs md:text-sm transition ";
+                    if (opt === item.a) {
+                        labelEl.className += "bg-emerald-950/80 border-emerald-600 text-emerald-200 font-semibold";
+                    } else if (radioInput && radioInput.checked && radioInput.value !== item.a) {
+                        labelEl.className += "bg-rose-950/80 border-rose-600 text-rose-200";
+                    } else {
+                        labelEl.className += "bg-slate-800/50 border-slate-700 text-slate-300 opacity-70";
+                    }
+                });
+
+                if (checkedInput) {
+                    if (checkedInput.value === item.a) {
+                        correctMCQ++;
+                        feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-emerald-950/60 border-emerald-800 text-emerald-300";
+                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <b>Chính xác!</b> <em>Giải thích:</em> ${item.exp}`;
+                    } else {
+                        feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-rose-950/60 border-rose-800 text-rose-300";
+                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> <b>Chưa đúng.</b> <em>Giải thích:</em> ${item.exp}`;
+                    }
+                } else {
+                    feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-amber-950/60 border-amber-800 text-amber-300";
+                    feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Bạn chưa chọn đáp án!</b> <em>Giải thích:</em> ${item.exp}`;
+                }
+            });
+
+            const resultEl = document.getElementById('total-result');
+            resultEl.classList.remove('hidden');
+            resultEl.innerHTML = `
+                <div>Tổng kết: <span class="text-rose-400">${correctMCQ}/${shuffledMcq.length}</span> câu đúng</div>
+                <div class="text-xs font-normal text-slate-400 mt-1">* Đáp án đúng đã được hiển thị màu xanh, đáp án sai chọn nhầm hiển thị màu đỏ!</div>
+            `;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
