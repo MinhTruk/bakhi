@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ngữ Văn 11/8 - Hướng Dẫn Giải & Bài Tham Khảo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+        .reference-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, opacity 0.3s ease-out;
+            opacity: 0;
+        }
+        .reference-content.open {
+            max-height: 4000px;
+            opacity: 1;
+            transition: max-height: 0.6s ease-in, opacity 0.4s ease-in;
+        }
+        .arrow-icon { transition: transform 0.3s ease; }
+        .reference-header.active .arrow-icon { transform: rotate(90deg); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="./indexvan.html" class="p-2 bg-rose-600 rounded-lg text-white hover:bg-rose-500 transition">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </a>
+                <div>
+                    <h1 class="text-base md:text-lg font-bold leading-tight">Môn Ngữ Văn 11/8 - KTTX GK1</h1>
+                    <p class="text-xs text-slate-400">Phân tích nghệ thuật kể chuyện truyện ngắn "Áo Tết"</p>
+                </div>
+            </div>
+            
+            <a href="./indexvan.html" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl text-xs font-medium text-slate-200 transition flex items-center space-x-2 shadow-md cursor-pointer">
+                <i class="fa-solid fa-house text-rose-400"></i>
+                <span>Trang Chủ Môn</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-8 flex-grow space-y-6">
+
+        <!-- KHUNG 1: Tác phẩm, Tác giả và Đề -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+            <div class="flex items-center space-x-3 pb-4 border-b border-slate-700/60">
+                <span class="p-3 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl">
+                    <i class="fa-solid fa-book-bookmark text-xl"></i>
+                </span>
+                <div>
+                    <h2 class="text-xl font-bold text-white">Văn Bản Toàn Văn & Đề Bài</h2>
+                    <p class="text-xs text-slate-400">Truyện ngắn "Áo Tết" - Nguyễn Ngọc Tư</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-sm text-slate-300 leading-relaxed">
+                <!-- Nội dung văn bản toàn văn & thông tin tác giả -->
+                <div class="p-4 bg-slate-900/70 border border-slate-700/60 rounded-xl space-y-3 max-h-96 overflow-y-auto">
+                    <p class="font-bold text-rose-300 text-base text-center">ÁO TẾT</p>
+                    <p class="italic text-center text-xs text-slate-400">(Nguyễn Ngọc Tư, in trong Bánh trái mùa xưa, Nxb Văn học)</p>
+                    
+                    <p>Con bé Em cười tủm tỉm khi nghĩ tới cái áo đầm màu hồng mà má nó mới mua cho:
+                    <br>- Tết này, mình mà mặc cái áo đó đi chơi, đẹp như tiên cho mà coi.</p>
+                    <p>Nó nghĩ và nó muốn chia sẻ với con Bích, bạn nó.</p>
+                    <p>Con Bích ở trong hẻm, nhà nó nghèo, má nó đi bán bắp nướng ngoài đầu hẻm, con bé Em thích con Bích vì nó hiền, với lại ngồi kế nhau từ lớp một tới lớp năm, làm sao mà không thân cho được. Hôm hai mươi sáu, học buổi cuối năm, hai đứa nôn Tết quá trời nên tính trước, nếu mùng một con bé Em đi về ngoại thì mùng hai hai đứa đi tới nhà cô giáo. Bây giờ con bé Em tính trong đầu, tới bữa đó chắc nhiều bạn nữa, cho nên nó sẽ mặc cái áo đầm mới thắt nơ, bâu viền kim tuyến cho tụi bạn lé con mắt luôn.</p>
+                    <p>Con Bích đang ngồi nướng bắp thế cho má nó đi xách cặn cho heo. Bé Em muốn khoe liền nhưng bày đặt nói gièm:
+                    <br>- Còn mấy ngày nữa Tết rồi hen, mầy có đồ mới chưa?
+                    <br>- Có, má tao đưa vải cho cô Ba thợ cắt rồi, má tao nói gần Tết đồ nhiều, dồn đống, chắc tới hai mươi tám mới lấy được.
+                    <br>- Vậy mầy được mấy bộ?
+                    <br>- Có một bộ hà.</p>
+                    <p>Con bé Em trợn mắt:
+                    <br>- Ít quá vậy?
+                    <br>- Con Út Mót với Con Út Hết được hai bộ. Tao lớn rồi, nhường cho tụi nó.
+                    <br>- Vậy à?</p>
+                    <p>Bé Em mất hứng hẳn, nó lựng khựng nửa muốn khoe, nửa muốn không.</p>
+                    <p>Nhưng rõ ràng là con Bích không quên nó:
+                    <br>- Còn mầy?
+                    <br>- Bốn bộ. Má tao mua cho đủ mặc từ mùng một tới mùng bốn, bữa nào cũng mặc đồ mới hết trơn. Trong đó có bộ đầm hồng nổi lắm, hết sẩy luôn.
+                    <br>- Mầy sướng rồi.</p>
+                    <p>Con Bích nói xong vẫn cười nhưng mắt nó xịu xuống, buồn hẳn. Nhà nó nghèo, sao bì được với nhà con bé Em. Hồi nhỏ nó chuyên mặc áo con trai của anh hai nó để lại. Áo nó thì chuyền cho mấy đứa em, tới con Út Hết là đồ đã cũ mèm, mỏng tang, kéo nhẹ cũng rách. Được cái mấy chị em nó biết thân, lo học chớ không so đo chuyện cũ mới. Má nó nói hoài: “Nhà mình nghèo quá hà, ráng vài năm nữa, khá giả rồi má sắm cho”. Con bé Em nhìn con Bích lom lom rồi cúi xuống, trở trở trái bắp nướng:
+                    <br>- Bộ đồ mầy may chắc đẹp lắm, bữa mùng hai mầy mặc bộ đó đi nhà cô hen?</p>
+                    <p>Rồi tới mùng một, mùng hai, bé Em lại rủ con Bích đi chơi. Hai đứa mặc đồ hơi giống nhau, chỉ khác là con Bích mặc áo trắng bâu sen, con bé Em thì mặc áo thun có in hình mèo bự. Cô giáo tụi nó khen:
+                    <br>- Coi hai đứa lớn hết trơn rồi, cao nhòng.</p>
+                    <p>Hai đứa cười. Lúc đó con bé Em nghĩ thầm, mình mà mặc bộ đầm hồng, thế nào cũng mất vui. Bạn bè phải vậy chớ. Đứa mặc áo đẹp, đứa mặc áo xấu coi gì được, vậy sao coi là bạn thân. Nhưng Bích lại nghĩ khác, bé Em thương bạn như vậy, tốt như vậy, có mặc áo gì Bích vẫn quý bé em. Thiệt đó.</p>
+
+                    <div class="pt-3 border-t border-slate-700 mt-4 text-xs space-y-1 text-slate-300">
+                        <p class="font-semibold text-rose-300">Thông tin về tác giả:</p>
+                        <p>Nguyễn Ngọc Tư sinh năm 1976 tại Đầm Dơi, Cà Mau. Là nữ nhà văn trẻ của Hội nhà văn Việt Nam. Với niềm đam mê viết lách, chị miệt mài viết như một cách giải tỏa và thể nghiệm, chị biết rằng chị muốn viết về những điều gần gũi nhất xung quanh cuộc sống của mình. Giọng văn chị đậm chất Nam bộ, là giọng kể mềm mại mà sâu cay về những cuộc đời éo le, những số phận chìm nổi. Cái chất miền quê sông nước ngấm vào các tác phẩm, thấm đẫm cái tình của làng, của đất, của những con người chân chất hồn hậu nhưng ít nhiều gặp những bất hạnh. “Áo tết” là một truyện ngắn nhẹ nhàng mà sâu sắc của nhà văn Nam Bộ Nguyễn Ngọc Tư.</p>
+                    </div>
+                </div>
+
+                <!-- Highlight Đề Dưới Tác Phẩm -->
+                <div class="p-4 bg-rose-950/40 border border-rose-800/60 rounded-xl space-y-2">
+                    <span class="px-2.5 py-1 bg-rose-900/80 text-rose-300 text-[10px] font-semibold rounded-md uppercase tracking-wider inline-block">
+                        Đề Bài Trọng Tâm
+                    </span>
+                    <p class="text-white font-semibold text-base">
+                        Anh/Chị hãy viết bài văn nghị luận (khoảng 600 chữ) phân tích một số nét nghệ thuật kể chuyện của tác giả trong văn bản trên.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tiêu đề phân cách -->
+        <div class="pt-2 pb-1 text-center">
+            <h3 class="text-lg font-bold text-rose-400 tracking-wider uppercase inline-flex items-center space-x-2">
+                <i class="fa-solid fa-compass-drafting"></i>
+                <span>Hướng Dẫn Giải & Dàn Ý Chi Tiết</span>
+            </h3>
+        </div>
+
+        <!-- KHUNG 2: Mở bài -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-4">
+            <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                <span class="w-8 h-8 rounded-lg bg-rose-600/20 text-rose-400 flex items-center justify-center font-bold text-sm border border-rose-500/30">1</span>
+                <h3 class="font-bold text-lg text-white">Mở Bài</h3>
+            </div>
+            <div class="text-sm text-slate-300 space-y-2 leading-relaxed">
+                <p>• <b>Giới thiệu tác giả Nguyễn Ngọc Tư:</b> nhà văn có giọng văn đậm chất Nam Bộ, thường viết về những con người bình dị với tình cảm chân thành, sâu sắc.</p>
+                <p>• <b>Giới thiệu truyện ngắn Áo Tết:</b> kể về tình bạn trong sáng giữa bé Em và bé Bích qua câu chuyện mặc quần áo mới ngày Tết.</p>
+                <p>• <b>Nêu vấn đề nghị luận:</b> Thành công của truyện không chỉ nằm ở nội dung cảm động mà còn ở nghệ thuật kể chuyện tinh tế (tình huống truyện, ngôi kể, điểm nhìn, tâm lí, ngôn ngữ).</p>
+            </div>
+        </section>
+
+        <!-- KHUNG 3: Thân bài -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-4">
+            <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                <span class="w-8 h-8 rounded-lg bg-rose-600/20 text-rose-400 flex items-center justify-center font-bold text-sm border border-rose-500/30">2</span>
+                <h3 class="font-bold text-lg text-white">Thân Bài</h3>
+            </div>
+            <div class="text-sm text-slate-300 space-y-4 leading-relaxed">
+                <div class="p-3 bg-slate-900/50 border border-slate-700/50 rounded-xl space-y-1">
+                    <p class="font-semibold text-rose-300">Đoạn 1: Tình huống truyện giản dị nhưng giàu ý nghĩa</p>
+                    <p class="text-xs text-slate-400">Bé Em háo hức khoe đầm hồng nhưng do dự khi biết Bích chỉ có một bộ đồ mới. Qua đó làm nổi bật lòng trắc ẩn, sự tinh tế và thông điệp về tình bạn chân thành.</p>
+                </div>
+
+                <div class="p-3 bg-slate-900/50 border border-slate-700/50 rounded-xl space-y-1">
+                    <p class="font-semibold text-rose-300">Đoạn 2: Ngôi kể thứ ba kết hợp điểm nhìn trần thuật linh hoạt</p>
+                    <p class="text-xs text-slate-400">Sử dụng ngôi kể thứ ba khách quan kết hợp linh hoạt điểm nhìn giữa bé Em và bé Bích, giúp khám phá sâu sắc thế giới nội tâm trẻ thơ từ hai phía.</p>
+                </div>
+
+                <div class="p-3 bg-slate-900/50 border border-slate-700/50 rounded-xl space-y-1">
+                    <p class="font-semibold text-rose-300">Đoạn 3: Nghệ thuật miêu tả tâm lí nhân vật tinh tế, tự nhiên</p>
+                    <p class="text-xs text-slate-400">Khả năng nắm bắt những biến chuyển cảm xúc nhỏ bé: niềm vui thích khoe đồ mới của bé Em chuyển thành sự tế nhị, và ánh mắt "xịu xuống, buồn hẳn" nhưng đầy cao thượng của bé Bích.</p>
+                </div>
+
+                <div class="p-3 bg-slate-900/50 border border-slate-700/50 rounded-xl space-y-1">
+                    <p class="font-semibold text-rose-300">Đoạn 4: Ngôn ngữ kể chuyện và đối thoại đậm chất Nam Bộ</p>
+                    <p class="text-xs text-slate-400">Sử dụng từ ngữ mộc mạc đời thường ("nôn Tết quá trời", "hết sẩy luôn") tạo màu sắc địa phương chân thực và sinh động.</p>
+                </div>
+
+                <div class="p-3 bg-slate-900/50 border border-slate-700/50 rounded-xl space-y-1">
+                    <p class="font-semibold text-rose-300">Đoạn 5: Cách kết thúc truyện nhẹ nhàng mà giàu sức gợi</p>
+                    <p class="text-xs text-slate-400">Khép lại bằng sự đối chiếu suy nghĩ của hai nhân vật ("Bạn bè phải vậy chớ", "có mặc áo gì Bích vẫn quý bé Em"), khẳng định giá trị thiêng liêng của tình bạn.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- KHUNG 4: Kết bài -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-4">
+            <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                <span class="w-8 h-8 rounded-lg bg-rose-600/20 text-rose-400 flex items-center justify-center font-bold text-sm border border-rose-500/30">3</span>
+                <h3 class="font-bold text-lg text-white">Kết Bài</h3>
+            </div>
+            <div class="text-sm text-slate-300 space-y-2 leading-relaxed">
+                <p>• <b>Khẳng định lại thành công nghệ thuật:</b> Tình huống giản dị, điểm nhìn linh hoạt, miêu tả tâm lí tinh tế và ngôn ngữ đậm chất Nam Bộ.</p>
+                <p>• <b>Đánh giá ý nghĩa:</b> Biến câu chuyện chiếc áo Tết thành bài học cảm động về tình bạn và lòng nhân ái.</p>
+                <p>• <b>Bài học rút ra:</b> Trong cuộc sống, điều đáng quý nhất là biết quan tâm, thấu hiểu và trân trọng cảm xúc của người khác.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        Lớp 11/8 • Môn Ngữ Văn • Repository: MinhTruk/bakhi
+    </footer>
+
+    <script>
+        // Hàm xử lí ẩn/hiện bài tham khảo và xoay mũi tên từ > sang xuống dưới v
+        function toggleReference(btnEl) {
+            const content = document.getElementById('referenceContent');
+            const isOpen = content.classList.contains('open');
+
+            if (isOpen) {
+                content.classList.remove('open');
+                btnEl.classList.remove('active');
+            } else {
+                content.classList.add('open');
+                btnEl.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
