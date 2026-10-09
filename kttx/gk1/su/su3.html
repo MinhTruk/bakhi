@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc Nghiệm Bài 3: Sự Hình Thành Liên Bang Xô Viết - Lịch Sử 11</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/85 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="./index.html" class="p-2 bg-emerald-600 rounded-lg text-white hover:bg-emerald-500 transition">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </a>
+                <div>
+                    <h1 class="text-base md:text-lg font-bold leading-tight">Bài 3: Sự Hình Thành Liên Bang Xô Viết</h1>
+                    <p class="text-xs text-slate-400">Trắc nghiệm ôn tập đầy đủ quá trình & ý nghĩa</p>
+                </div>
+            </div>
+            <a href="./index.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
+                <i class="fa-solid fa-house text-emerald-400"></i>
+                <span>Trang chủ</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow space-y-8">
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                    <span class="p-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl">
+                        <i class="fa-solid fa-list-check text-lg"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Danh Sách Câu Hỏi Trắc Nghiệm Bài 3</h2>
+                        <p class="text-xs text-slate-400">Chọn 1 đáp án đúng nhất cho mỗi câu hỏi</p>
+                    </div>
+                </div>
+            </div>
+            <div id="mcq-container" class="space-y-6"></div>
+        </section>
+
+        <!-- SUBMIT -->
+        <div class="p-6 bg-slate-800 border border-slate-700 rounded-2xl text-center space-y-4 shadow-2xl">
+            <button type="button" onclick="checkAllAnswers()" class="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Nộp Bài & Kiểm Tra Kết Quả</span>
+            </button>
+            <div id="total-result" class="hidden p-4 rounded-xl bg-slate-900 border border-emerald-500/50 text-slate-200 font-bold text-lg"></div>
+        </div>
+    </main>
+
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        Lịch Sử 11 • Ôn Tập Bài 3: Sự Hình Thành Liên Bang Cộng Hòa Xã Hội Chủ Nghĩa Xô Viết
+    </footer>
+
+    <script>
+        const rawMcqData = [
+            { id: 1, q: "[Bài 3] Sau thắng lợi của Cách mạng tháng Mười Nga (1917), nhiệm vụ hàng đầu của Chính quyền Xô viết là", a: "đập tan bộ máy nhà nước cũ, xây dựng nhà nước mới của những người lao động", o: ["đập tan bộ máy nhà nước cũ, xây dựng nhà nước mới của những người lao động", "huy động tối đa nhân tài, vật lực để phục vụ cho cuộc chiến đấu bảo vệ Tổ quốc", "khôi phục kinh tế, hàn gắn vết thương chiến tranh và bảo vệ Tổ quốc", "ban hành Hiến pháp mới và chiến đấu chống “thù trong giặc ngoài”"], exp: "Nhiệm vụ hàng đầu là đập tan bộ máy nhà nước cũ, xây dựng nhà nước mới[span_20](start_span)[span_20](end_span)." },
+            { id: 2, q: "[Bài 3] Đại hội Xô viết toàn Nga lần Thứ hai, khai mạc đêm 25/10/1917 đã", a: "tuyên bố thành lập Chính quyền Xô viết do Lê-nin đứng đầu", o: ["ban hành “Chính sách Cộng sản thời chiến”", "phát động cuộc chiến đấu chống “thù trong giặc ngoài”", "thông qua “Chính sách kinh tế mới” do Lê-nin soạn thảo", "tuyên bố thành lập Chính quyền Xô viết do Lê-nin đứng đầu"], exp: "Đại hội tuyên bố thành lập Chính quyền Xô viết do Lê-nin đứng đầu[span_21](start_span)[span_21](end_span)." },
+            { id: 3, q: "[Bài 3] Ở Nga, Chính quyền Xô viết do Lê-nin đứng đầu được thành lập vào năm nào?", a: "Năm 1917", o: ["Năm 1917", "Năm 1918", "Năm 1919", "Năm 1922"], exp: "Thành lập năm 1917 (tháng 10/1917)[span_22](start_span)[span_22](end_span)." },
+            { id: 4, q: "[Bài 3] Khi mới thành lập, Liên Xô gồm 4 nước Cộng hoà Xô viết là", a: "Nga, U-crai-na, Bê-lô-rút-xi-a và Ngoại Cáp-ca-dơ", o: ["Nga, U-crai-na, Bê-lô-rút-xi-a và Lít-va", "Nga, U-crai-na, Bê-lô-rút-xi-a và Ngoại Cáp-ca-dơ", "Nga, U-crai-na, Môn-đô-va và Lát-vi-a", "Nga, U-crai-na, Tuốc-mê-ni-xtan và Ác-mê-ni-a"], exp: "4 nước đầu tiên gồm Nga, U-crai-na, Bê-lô-rút-xi-a và Ngoại Cáp-ca-dơ[span_23](start_span)[span_23](end_span)." },
+            { id: 5, q: "[Bài 3] Nội dung nào dưới đây không phải là tư tưởng chỉ đạo của Lê-nin trong việc thành lập Liên bang Cộng hoà xã hội chủ nghĩa Xô viết?", a: "Dùng bạo lực để xây dựng nền chuyên chính vô sản", o: ["Sự bình đẳng về mọi mặt giữa các dân tộc", "Quyền dân tộc tự quyết của các dân tộc", "Xây dựng một cộng đồng anh em giữa các dân tộc", "Dùng bạo lực để xây dựng nền chuyên chính vô sản"], exp: "Tư tưởng chỉ đạo tập trung vào bình đẳng, tự quyết và đoàn kết anh em[span_24](start_span)[span_24](end_span)." },
+            { id: 6, q: "[Bài 3] Liên bang Cộng hoà xã hội chủ nghĩa Xô viết được thành lập vào thời gian nào?", a: "Tháng 12/1922", o: ["Tháng 3/1921", "Tháng 12/1922", "Tháng 3/1923", "Tháng 1/1924"], exp: "Tháng 12/1922, Liên Xô chính thức được thành lập[span_25](start_span)[span_25](end_span)." },
+            { id: 7, q: "[Bài 3] Trong những năm 1918 - 1921, nhân dân Nga Xô viết đã tiến hành", a: "cuộc chiến đấu chống thù trong, giặc ngoài", o: ["chính sách kinh tế mới do Lê-nin soạn thảo", "xây dựng cơ sở vật chất của chủ nghĩa xã hội", "cuộc chiến đấu chống thù trong, giặc ngoài", "tiến hành Chiến tranh Vệ quốc chống lại phát xít Đức"], exp: "Giai đoạn 1918 - 1921 là cuộc chiến chống thù trong giặc ngoài[span_26](start_span)[span_26](end_span)." },
+            { id: 8, q: "[Bài 3] Sự kiện nào dưới đây đánh dấu mốc hoàn thành của quá trình thành lập Nhà nước Liên bang Cộng hòa xã hội chủ nghĩa Xô viết?", a: "Bản Hiến pháp đầu tiên của Liên Xô được thông qua (tháng 1/1924)", o: ["Nước Nga Xô viết thực hiện chính sách kinh tế mới (tháng 3/1921)", "Bản Hiệp ước Liên bang được thông qua (tháng 12/1922)", "Tuyên ngôn thành lập Liên bang Xô viết được thông qua (tháng 12/1922)", "Bản Hiến pháp đầu tiên của Liên Xô được thông qua (tháng 1/1924)"], exp: "Hiến pháp đầu tiên (1/1924) đánh dấu hoàn thành quá trình thành lập[span_27](start_span)[span_27](end_span)." },
+            { id: 9, q: "[Bài 3] Sự ra đời của chính quyền Xô viết ở Nga gắn liền với sự kiện nào sau đây?", a: "Cách mạng tháng Mười ở Nga thành công (1917)", o: ["Cách mạng tháng Hai ở Nga thành công (1917)", "Cách mạng tháng Mười ở Nga thành công (1917)", "Chính sách Cộng sản thời chiến được ban hành (1919)", "Chính sách Kinh tế mới (NEP) được ban hành (1921)"], exp: "Gắn liền với thắng lợi của Cách mạng tháng Mười Nga[span_28](start_span)[span_28](end_span)." },
+            { id: 10, q: "[Bài 3] Mục tiêu của việc thành lập Nhà nước Liên bang Cộng hòa xã hội chủ nghĩa Xô viết là", a: "hợp tác, giúp đỡ lẫn nhau để cùng phát triển", o: ["chống lại sự tấn công của 14 nước đế quốc", "thực hiện hiệu quả Chính sách Kinh tế mới", "hợp tác, giúp đỡ lẫn nhau để cùng phát triển", "chống lại cuộc tấn công của phát xít Đức"], exp: "Mục tiêu là hợp tác và giúp đỡ lẫn nhau[span_29](start_span)[span_29](end_span)." },
+            { id: 11, q: "[Bài 3] Cuộc Cách mạng tháng Mười Nga (1917) thành công dưới sự lãnh đạo của chính đảng nào sau đây?", a: "Đảng Bôn-sê-vích", o: ["Đảng Xã hội", "Đảng Bôn-sê-vích", "Đảng Men-sê-vích", "Đảng Cộng hòa"], exp: "Dưới sự lãnh đạo của Đảng Bôn-sê-vích[span_30](start_span)[span_30](end_span)." },
+            { id: 12, q: "[Bài 3] Năm 1924, Bản Hiến pháp đầu tiên của Liên Xô được thông qua đã", a: "hoàn thành quá trình thành lập nhà nước Liên Xô", o: ["hoàn thành quá trình thành lập nhà nước Liên Xô", "kết thúc cuộc chiến tranh bảo vệ tổ quốc Liên Xô", "hoàn thành giải quyết yêu cầu hòa bình cho nhân dân", "giải quyết triệt để vấn đề ruộng đất cho nông dân"], exp: "Hiến pháp 1924 hoàn thành quá trình lập nhà nước Liên Xô[span_31](start_span)[span_31](end_span)." },
+            { id: 13, q: "[Bài 3] Đến năm 1940, Liên Xô gồm bao nhiêu nước cộng hoà?", a: "15", o: ["7", "15", "25", "39"], exp: "Đến năm 1940, Liên Xô gồm 15 nước cộng hoà[span_32](start_span)[span_32](end_span)." },
+            { id: 14, q: "[Bài 3] Đối với Liên Xô, sự ra đời của Liên bang Cộng hoà xã hội chủ nghĩa Xô viết có ý nghĩa như thế nào?", a: "Tạo điều kiện để các nước cộng hòa phát triển kinh tế - xã hội", o: ["Tạo điều kiện để các nước cộng hòa phát triển kinh tế - xã hội", "Chứng minh tính khoa học, đúng đắn của học thuyết Mác - Lênin", "Cổ vũ phong trào giải phóng dân tộc của nhân dân các nước thuộc địa", "Để lại bài học kinh nghiệm về mô hình nhà nước sau khi giành chính quyền"], exp: "Ý nghĩa trong nước quan trọng đối với sự phát triển kinh tế - xã hội[span_33](start_span)[span_33](end_span)." },
+            { id: 15, q: "[Bài 3] Nội dung nào sau đây không phản ánh đúng ý nghĩa sự ra đời của Liên bang Cộng hoà xã hội chủ nghĩa Xô viết đối với Liên Xô?", a: "Cổ vũ phong trào giải phóng dân tộc ở các nước thuộc địa", o: ["Giải quyết đúng đắn vấn đề dân tộc trên đất nước Xô viết", "Cổ vũ phong trào giải phóng dân tộc ở các nước thuộc địa", "Củng cố và tăng cường vị thế của Liên Xô trên trường quốc tế", "Tạo điều kiện để các nước cộng hòa phát triển kinh tế - xã hội"], exp: "Cổ vũ phong trào GPDT là ý nghĩa quốc tế, không phải ý nghĩa trong nước trực tiếp[span_34](start_span)[span_34](end_span)." },
+            { id: 16, q: "[Bài 3] Sự ra đời của Liên bang Cộng hoà xã hội chủ nghĩa Xô viết không có ý nghĩa nào sau đây đối với nhân dân Liên Xô?", a: "Làm cho chủ nghĩa xã hội phát triển trở thành hệ thống trên thế giới", o: ["Thể hiện sức mạnh đoàn kết, giúp đỡ nhau giữa các dân tộc Xô viết", "Phù hợp với các lợi ích chung của các dân tộc trên đất nước Xô viết", "Đã tăng cường vị thế của Nhà nước Liên Xô trên trường quốc tế", "Làm cho chủ nghĩa xã hội phát triển trở thành hệ thống trên thế giới"], exp: "Trở thành hệ thống thế giới là sự kiện sau Chiến tranh thế giới thứ hai[span_35](start_span)[span_35](end_span)." },
+            { id: 17, q: "[Bài 3] Trong giai đoạn xây dựng và bảo vệ đất nước hiện nay, Việt Nam có thể học tập điều gì từ sự ra đời của Liên bang Cộng hòa xã hội chủ nghĩa Xô viết?", a: "Tinh thần đoàn kết, hợp tác và sự giúp đỡ nhau giữa các dân tộc", o: ["Tinh thần đoàn kết, hợp tác và sự giúp đỡ nhau giữa các dân tộc", "Mở rộng, giao lưu hợp tác quốc tế để khẳng định vị thế đất nước", "Đoàn kết, hợp tác để đấu tranh chống ngoại xâm giữa các dân tộc", "Tham gia các liên minh quân sự để tăng cường sức mạnh phòng thủ"], exp: "Bài học về tinh thần đoàn kết, hợp tác giữa các dân tộc[span_36](start_span)[span_36](end_span)." },
+            { id: 18, q: "[Bài 3] Đối với quốc tế, sự ra đời của Liên bang Cộng hoà xã hội chủ nghĩa Xô viết có ý nghĩa như thế nào?", a: "Chứng minh tính khoa học, đúng đắn của chủ nghĩa Mác - Lênin", o: ["Làm thất bại ý đồ và hành động chia rẽ của các thế lực thù địch", "Chứng minh tính khoa học, đúng đắn của chủ nghĩa Mác - Lênin", "Củng cố và tăng cường vị thế của Liên Xô trên trường quốc tế", "Tạo điều kiện để các nước cộng hòa phát triển kinh tế - xã hội"], exp: "Chứng minh tính đúng đắn của chủ nghĩa Mác - Lênin[span_37](start_span)[span_37](end_span)." },
+            { id: 19, q: "[Bài 3] Nội dung nào sau đây phản ánh đúng ý nghĩa quốc tế từ sự ra đời của Liên bang Cộng hoà xã hội chủ nghĩa Xô viết?", a: "Cổ vũ phong trào giải phóng dân tộc của các nước thuộc địa", o: ["Làm thất bại ý đồ và hành động chia rẽ của các thế lực thù địch", "Cổ vũ phong trào giải phóng dân tộc của các nước thuộc địa", "Củng cố và tăng cường vị thế của Liên Xô trên trường quốc tế", "Tạo điều kiện để các nước cộng hòa phát triển kinh tế - xã hội"], exp: "Cổ vũ phong trào giải phóng dân tộc trên thế giới[span_38](start_span)[span_38](end_span)." }
+        ];
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        let shuffledMcq = [];
+
+        function initQuiz() {
+            shuffledMcq = shuffleArray(rawMcqData).map(item => {
+                const correctVal = item.a;
+                const shuffledOpts = shuffleArray(item.o);
+                return { ...item, o: shuffledOpts, a: correctVal };
+            });
+            renderMCQ();
+        }
+
+        function renderMCQ() {
+            const container = document.getElementById('mcq-container');
+            container.innerHTML = shuffledMcq.map((item, idx) => `
+                <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                    <div class="font-medium text-slate-100 text-sm md:text-base">
+                        <span class="text-emerald-400 font-bold">Câu ${idx + 1}:</span> ${item.q}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="options-group-${item.id}">
+                        ${item.o.map((opt, oIdx) => `
+                            <label id="label-opt-${item.id}-${oIdx}" class="p-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-lg flex items-center space-x-3 cursor-pointer text-xs md:text-sm transition">
+                                <input type="radio" name="mcq-${item.id}" value="${opt}" class="accent-emerald-500">
+                                <span>${['A', 'B', 'C', 'D'][oIdx]}.${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div id="mcq-feedback-${item.id}" class="hidden mt-2 p-3 rounded-lg text-xs font-medium border"></div>
+                </div>
+            `).join('');
+        }
+
+        function checkAllAnswers() {
+            let correctMCQ = 0;
+            shuffledMcq.forEach(item => {
+                const checkedInput = document.querySelector(`input[name="mcq-${item.id}"]:checked`);
+                const feedbackEl = document.getElementById(`mcq-feedback-${item.id}`);
+                feedbackEl.classList.remove('hidden');
+
+                item.o.forEach((opt, oIdx) => {
+                    const labelEl = document.getElementById(`label-opt-${item.id}-${oIdx}`);
+                    const radioInput = labelEl.querySelector('input');
+                    labelEl.className = "p-3 border rounded-lg flex items-center space-x-3 text-xs md:text-sm transition ";
+                    if (opt === item.a) {
+                        labelEl.className += "bg-emerald-950/80 border-emerald-600 text-emerald-200 font-semibold";
+                    } else if (radioInput && radioInput.checked && radioInput.value !== item.a) {
+                        labelEl.className += "bg-rose-950/80 border-rose-600 text-rose-200";
+                    } else {
+                        labelEl.className += "bg-slate-800/50 border-slate-700 text-slate-300 opacity-70";
+                    }
+                });
+
+                if (checkedInput) {
+                    if (checkedInput.value === item.a) {
+                        correctMCQ++;
+                        feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-emerald-950/60 border-emerald-800 text-emerald-300";
+                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <b>Chính xác!</b> <em>Giải thích:</em> ${item.exp}`;
+                    } else {
+                        feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-rose-950/60 border-rose-800 text-rose-300";
+                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> <b>Chưa đúng.</b> <em>Giải thích:</em> ${item.exp}`;
+                    }
+                } else {
+                    feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-amber-950/60 border-amber-800 text-amber-300";
+                    feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Bạn chưa chọn đáp án!</b> <em>Giải thích:</em> ${item.exp}`;
+                }
+            });
+
+            const resultEl = document.getElementById('total-result');
+            resultEl.classList.remove('hidden');
+            resultEl.innerHTML = `
+                <div>Tổng kết: <span class="text-emerald-400">${correctMCQ}/${shuffledMcq.length}</span> câu đúng</div>
+                <div class="text-xs font-normal text-slate-400 mt-1">* Đáp án đúng đã được hiển thị màu xanh, đáp án sai chọn nhầm hiển thị màu đỏ!</div>
+            `;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+  </html>
+  
