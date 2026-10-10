@@ -36,12 +36,24 @@
         .markdown-body ul { list-style-type: disc; padding-left: 1.25rem; margin-bottom: 0.75rem; font-size: 0.9rem; }
         .markdown-body table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem; }
         .markdown-body th, .markdown-body td { border: 1px solid; padding: 0.5rem 0.75rem; text-align: left; }
+
+        /* Animation Toast Notification */
+        @keyframes slideIn {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-animate {
+            animation: slideIn 0.3s ease-out forwards;
+        }
     </style>
 </head>
 <body id="pageBody" class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative bg-cover bg-center bg-fixed transition-colors duration-300">
 
     <!-- Lớp phủ nền tùy chỉnh -->
     <div id="bgOverlay" class="absolute inset-0 bg-slate-100/90 dark:bg-slate-900/90 pointer-events-none z-0 transition-colors duration-300"></div>
+
+    <!-- Toast Notification Container (Thông báo HTML) -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
     <div class="relative z-10 flex flex-col min-h-screen justify-between">
         
@@ -106,6 +118,26 @@
                                     <i class="fa-brands fa-github text-slate-600 dark:text-slate-300"></i>
                                     <span>GitHub Repository</span>
                                 </a>
+
+                                <hr class="border-slate-200 dark:border-slate-700 my-1">
+
+                                <!-- KHU VỰC NHẬP CODE FOR DEVELOPER -->
+                                <div id="devCodeSection" class="space-y-2 pt-1">
+                                    <div class="flex items-center space-x-1.5">
+                                        <input type="password" id="devCodeInput" placeholder="Mã Developer..." class="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+                                        <button onclick="verifyDevCode()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition cursor-pointer shrink-0">
+                                            Gửi
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Nút bật Bảng Quản Lý Highlight (Chỉ hiện khi nhập đúng mã) -->
+                                <div id="devPanelBtnContainer" class="hidden pt-1">
+                                    <button onclick="openHighlightManagerModal()" class="w-full px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-2 cursor-pointer shadow-sm">
+                                        <i class="fa-solid fa-sliders"></i>
+                                        <span>Quản lý Highlight Môn Học</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -192,7 +224,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="kttx-gk1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk1"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk1" data-examkey="kttx_gk1"></div>
                         </div>
                     </div>
 
@@ -207,7 +239,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="kttx-hk1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk1"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk1" data-examkey="kttx_hk1"></div>
                         </div>
                     </div>
 
@@ -222,7 +254,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="kttx-gk2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk2"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk2" data-examkey="kttx_gk2"></div>
                         </div>
                     </div>
 
@@ -237,7 +269,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="kttx-hk2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk2"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk2" data-examkey="kttx_hk2"></div>
                         </div>
                     </div>
                 </div>
@@ -265,7 +297,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="ktgk-1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk1"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk1" data-examkey="ktgk1"></div>
                         </div>
                     </div>
 
@@ -280,7 +312,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="ktck-1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck1"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck1" data-examkey="ktck1"></div>
                         </div>
                     </div>
 
@@ -295,7 +327,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="ktgk-2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk2"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk2" data-examkey="ktgk2"></div>
                         </div>
                     </div>
 
@@ -310,13 +342,67 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="ktck-2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck2"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck2" data-examkey="ktck2"></div>
                         </div>
                     </div>
                 </div>
 
             </div>
         </main>
+
+        <!-- Modal Quản Lý Highlight (Developer) -->
+        <div id="highlight-manager-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between bg-white/90 dark:bg-slate-800/90 sticky top-0">
+                    <div class="flex items-center space-x-2.5">
+                        <i class="fa-solid fa-sliders text-indigo-500 text-xl"></i>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100">Quản Lý Highlight Môn Học</h3>
+                    </div>
+                    <button onclick="closeHighlightManagerModal()" class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <div class="p-6 overflow-y-auto flex-grow space-y-4 bg-slate-50 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300">
+                    <!-- Chọn đợt kiểm tra để cấu hình -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Chọn Đợt Kiểm Tra:</label>
+                            <select id="selectExamCategory" onchange="renderHighlightManagerUI()" class="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500">
+                                <option value="kttx_gk1">KTTX - Giữa Kỳ 1 (GK1)</option>
+                                <option value="kttx_hk1">KTTX - Học Kỳ 1 (HK1)</option>
+                                <option value="kttx_gk2">KTTX - Giữa Kỳ 2 (GK2)</option>
+                                <option value="kttx_hk2">KTTX - Học Kỳ 2 (HK2)</option>
+                                <option value="ktgk1">KTGK - Giữa Kỳ 1</option>
+                                <option value="ktck1">KTCK - Cuối Kỳ 1</option>
+                                <option value="ktgk2">KTGK - Giữa Kỳ 2</option>
+                                <option value="ktck2">KTCK - Cuối Kỳ 2</option>
+                            </select>
+                        </div>
+                        <!-- Thanh tìm kiếm trong modal quản lý -->
+                        <div class="w-full sm:w-64">
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Tìm kiếm môn:</label>
+                            <input type="text" id="modalSearchInput" oninput="renderHighlightManagerUI()" placeholder="Lọc tên môn..." class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+                        </div>
+                    </div>
+
+                    <!-- Danh sách check môn học -->
+                    <div id="modalSubjectList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+                        <!-- Render bằng JS -->
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700/80 flex items-center justify-end space-x-3 bg-white/90 dark:bg-slate-800/90">
+                    <button onclick="closeHighlightManagerModal()" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-medium transition cursor-pointer">
+                        Hủy
+                    </button>
+                    <button onclick="saveHighlightSettings()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2 cursor-pointer shadow-md">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Save & Áp dụng</span>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- Modal Xem README -->
         <div id="readme-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -362,20 +448,33 @@
         ];
 
         const examCategories = [
-            { path: 'kttx/gk1', examType: 'KTTX', semester: 'GK1' },
-            { path: 'kttx/hk1', examType: 'KTTX', semester: 'HK1' },
-            { path: 'kttx/gk2', examType: 'KTTX', semester: 'GK2' },
-            { path: 'kttx/hk2', examType: 'KTTX', semester: 'HK2' },
-            { path: 'ktgk1', examType: 'KTGK', semester: 'GK1' },
-            { path: 'ktck1', examType: 'KTCK', semester: 'CK1' },
-            { path: 'ktgk2', examType: 'KTGK', semester: 'GK2' },
-            { path: 'ktck2', examType: 'KTCK', semester: 'CK2' }
+            { path: 'kttx/gk1', examType: 'KTTX', semester: 'GK1', key: 'kttx_gk1' },
+            { path: 'kttx/hk1', examType: 'KTTX', semester: 'HK1', key: 'kttx_hk1' },
+            { path: 'kttx/gk2', examType: 'KTTX', semester: 'GK2', key: 'kttx_gk2' },
+            { path: 'kttx/hk2', examType: 'KTTX', semester: 'HK2', key: 'kttx_hk2' },
+            { path: 'ktgk1', examType: 'KTGK', semester: 'GK1', key: 'ktgk1' },
+            { path: 'ktck1', examType: 'KTCK', semester: 'CK1', key: 'ktck1' },
+            { path: 'ktgk2', examType: 'KTGK', semester: 'GK2', key: 'ktgk2' },
+            { path: 'ktck2', examType: 'KTCK', semester: 'CK2', key: 'ktck2' }
         ];
+
+        const defaultHighlights = {
+            'kttx_gk1': ['su', 'ly', 'van', 'tin', 'sinh'],
+            'kttx_hk1': [],
+            'kttx_gk2': [],
+            'kttx_hk2': [],
+            'ktgk1': ['van'],
+            'ktck1': [],
+            'ktgk2': [],
+            'ktck2': []
+        };
 
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
             initCustomBackground();
+            initHighlightsStorage();
             renderSubjectsTree();
+            checkDevSession();
 
             // Đóng menu 3 gạch khi click ra ngoài
             document.addEventListener('click', (e) => {
@@ -387,16 +486,152 @@
             });
         });
 
+        // --- HỆ THỐNG THÔNG BÁO HTML (TOAST) ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let bgClass = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
+            let iconClass = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+
+            toast.className = `toast-animate pointer-events-auto px-4 py-3 rounded-xl shadow-xl text-white text-xs font-medium flex items-center space-x-2.5 ${bgClass}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${iconClass} text-sm"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function initHighlightsStorage() {
+            if (!localStorage.getItem('appHighlightsData')) {
+                localStorage.setItem('appHighlightsData', JSON.stringify(defaultHighlights));
+            }
+        }
+
+        function getHighlightsData() {
+            try {
+                return JSON.parse(localStorage.getItem('appHighlightsData')) || defaultHighlights;
+            } catch (e) {
+                return defaultHighlights;
+            }
+        }
+
         function renderSubjectsTree() {
-            document.querySelectorAll('[data-path]').forEach(container => {
+            const highlightsMap = getHighlightsData();
+
+            document.querySelectorAll('[data-examkey]').forEach(container => {
                 const basePath = container.getAttribute('data-path');
-                container.innerHTML = subjects.map(sub => `
-                    <a href="${basePath}/${sub.id}/${sub.indexFile}" class="p-2.5 bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/90 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-500/50 rounded-lg flex items-center space-x-2.5 text-xs text-slate-700 dark:text-slate-200 transition group shadow-sm">
-                        <i class="fa-solid ${sub.icon} text-sm group-hover:scale-110 transition"></i>
-                        <span class="truncate font-medium">${sub.name}</span>
-                    </a>
-                `).join('');
+                const examKey = container.getAttribute('data-examkey');
+                const activeList = highlightsMap[examKey] || [];
+
+                container.innerHTML = subjects.map(sub => {
+                    const isHighlighted = activeList.includes(sub.id);
+                    
+                    const customStyle = isHighlighted 
+                        ? 'border-indigo-500/80 bg-indigo-50/80 dark:bg-indigo-950/40 ring-1 ring-indigo-500/50 shadow-md' 
+                        : '';
+                    const badgeHtml = isHighlighted 
+                        ? '<span class="ml-auto w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>' 
+                        : '';
+
+                    return `
+                        <a href="${basePath}/${sub.id}/${sub.indexFile}" class="p-2.5 bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/90 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-500/50 rounded-lg flex items-center space-x-2.5 text-xs text-slate-700 dark:text-slate-200 transition group shadow-sm ${customStyle}">
+                            <i class="fa-solid ${sub.icon} text-sm group-hover:scale-110 transition"></i>
+                            <span class="truncate font-medium">${sub.name}</span>
+                            ${badgeHtml}
+                        </a>
+                    `;
+                }).join('');
             });
+        }
+
+        // --- XỬ LÝ DEVELOPER CODE & MODAL QUẢN LÝ ---
+        function checkDevSession() {
+            if (localStorage.getItem('isDevAuthenticated') === 'true') {
+                document.getElementById('devCodeSection').classList.add('hidden');
+                document.getElementById('devPanelBtnContainer').classList.remove('hidden');
+            }
+        }
+
+        function verifyDevCode() {
+            const inputVal = document.getElementById('devCodeInput').value.trim();
+            if (inputVal === 'reinguyeenx822004') {
+                localStorage.setItem('isDevAuthenticated', 'true');
+                document.getElementById('devCodeSection').classList.add('hidden');
+                document.getElementById('devPanelBtnContainer').classList.remove('hidden');
+                showToast('Xác thực Developer thành công!', 'success');
+            } else {
+                showToast('Mã code không chính xác!', 'error');
+            }
+        }
+
+        function openHighlightManagerModal() {
+            document.getElementById('highlight-manager-modal').classList.remove('hidden');
+            renderHighlightManagerUI();
+        }
+
+        function closeHighlightManagerModal() {
+            document.getElementById('highlight-manager-modal').classList.add('hidden');
+        }
+
+        function renderHighlightManagerUI() {
+            const selectedExamKey = document.getElementById('selectExamCategory').value;
+            const searchKeyword = document.getElementById('modalSearchInput').value.trim().toLowerCase();
+            const highlightsMap = getHighlightsData();
+            const activeList = highlightsMap[selectedExamKey] || [];
+            const listContainer = document.getElementById('modalSubjectList');
+
+            const filteredSubjects = subjects.filter(sub => sub.name.toLowerCase().includes(searchKeyword));
+
+            if (filteredSubjects.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="col-span-full py-6 text-center text-slate-400 text-xs">
+                        Không tìm thấy môn học phù hợp.
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = filteredSubjects.map(sub => {
+                const isChecked = activeList.includes(sub.id) ? 'checked' : '';
+                return `
+                    <label class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl flex items-center justify-between cursor-pointer hover:border-indigo-500 transition shadow-xs">
+                        <div class="flex items-center space-x-2.5 truncate">
+                            <i class="fa-solid ${sub.icon} ${sub.color} text-sm"></i>
+                            <span class="text-xs font-medium text-slate-800 dark:text-slate-200 truncate">${sub.name}</span>
+                        </div>
+                        <input type="checkbox" value="${sub.id}" ${isChecked} class="sub-checkbox w-4 h-4 accent-indigo-600 rounded cursor-pointer">
+                    </label>
+                `;
+            }).join('');
+        }
+
+        function saveHighlightSettings() {
+            const selectedExamKey = document.getElementById('selectExamCategory').value;
+            const checkboxes = document.querySelectorAll('.sub-checkbox');
+            const newCheckedIds = [];
+            
+            checkboxes.forEach(chk => {
+                if (chk.checked) {
+                    newCheckedIds.push(chk.value);
+                }
+            });
+
+            let highlightsMap = getHighlightsData();
+            highlightsMap[selectedExamKey] = newCheckedIds;
+            localStorage.setItem('appHighlightsData', JSON.stringify(highlightsMap));
+
+            renderSubjectsTree();
+            closeHighlightManagerModal();
+            showToast('Đã lưu cấu hình highlight thành công!', 'success');
         }
 
         // --- XỬ LÝ MENU 3 GẠCH ---
