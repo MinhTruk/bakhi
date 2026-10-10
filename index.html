@@ -224,7 +224,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="kttx-gk1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk1" data-examkey="kttx_gk1"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk1" data-examkey="kttx/gk1"></div>
                         </div>
                     </div>
 
@@ -239,7 +239,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="kttx-hk1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk1" data-examkey="kttx_hk1"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk1" data-examkey="kttx/hk1"></div>
                         </div>
                     </div>
 
@@ -254,7 +254,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="kttx-gk2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk2" data-examkey="kttx_gk2"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk2" data-examkey="kttx/gk2"></div>
                         </div>
                     </div>
 
@@ -269,7 +269,7 @@
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
                         <div id="kttx-hk2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk2" data-examkey="kttx_hk2"></div>
+                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk2" data-examkey="kttx/hk2"></div>
                         </div>
                     </div>
                 </div>
@@ -369,10 +369,10 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Chọn Đợt Kiểm Tra:</label>
                             <select id="selectExamCategory" onchange="renderHighlightManagerUI()" class="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500">
-                                <option value="kttx_gk1">KTTX - Giữa Kỳ 1 (GK1)</option>
-                                <option value="kttx_hk1">KTTX - Học Kỳ 1 (HK1)</option>
-                                <option value="kttx_gk2">KTTX - Giữa Kỳ 2 (GK2)</option>
-                                <option value="kttx_hk2">KTTX - Học Kỳ 2 (HK2)</option>
+                                <option value="kttx/gk1">KTTX - Giữa Kỳ 1 (GK1)</option>
+                                <option value="kttx/hk1">KTTX - Học Kỳ 1 (HK1)</option>
+                                <option value="kttx/gk2">KTTX - Giữa Kỳ 2 (GK2)</option>
+                                <option value="kttx/hk2">KTTX - Học Kỳ 2 (HK2)</option>
                                 <option value="ktgk1">KTGK - Giữa Kỳ 1</option>
                                 <option value="ktck1">KTCK - Cuối Kỳ 1</option>
                                 <option value="ktgk2">KTGK - Giữa Kỳ 2</option>
@@ -448,25 +448,70 @@
         ];
 
         const examCategories = [
-            { path: 'kttx/gk1', examType: 'KTTX', semester: 'GK1', key: 'kttx_gk1' },
-            { path: 'kttx/hk1', examType: 'KTTX', semester: 'HK1', key: 'kttx_hk1' },
-            { path: 'kttx/gk2', examType: 'KTTX', semester: 'GK2', key: 'kttx_gk2' },
-            { path: 'kttx/hk2', examType: 'KTTX', semester: 'HK2', key: 'kttx_hk2' },
+            { path: 'kttx/gk1', examType: 'KTTX', semester: 'GK1', key: 'kttx/gk1' },
+            { path: 'kttx/hk1', examType: 'KTTX', semester: 'HK1', key: 'kttx/hk1' },
+            { path: 'kttx/gk2', examType: 'KTTX', semester: 'GK2', key: 'kttx/gk2' },
+            { path: 'kttx/hk2', examType: 'KTTX', semester: 'HK2', key: 'kttx/hk2' },
             { path: 'ktgk1', examType: 'KTGK', semester: 'GK1', key: 'ktgk1' },
             { path: 'ktck1', examType: 'KTCK', semester: 'CK1', key: 'ktck1' },
             { path: 'ktgk2', examType: 'KTGK', semester: 'GK2', key: 'ktgk2' },
             { path: 'ktck2', examType: 'KTCK', semester: 'CK2', key: 'ktck2' }
         ];
 
+        // =========================================================================
+        // CẤU HÌNH HIGHLIGHT TRUE / FALSE THEO ĐỊNH DANH YÊU CẦU:
+        // - kttx/[kỳ]/[môn]
+        // - ktgk[số]/[môn]
+        // - ktck[số]/[môn]
+        // =========================================================================
         const defaultHighlights = {
-            'kttx_gk1': ['su', 'ly', 'van', 'tin', 'sinh'],
-            'kttx_hk1': [],
-            'kttx_gk2': [],
-            'kttx_hk2': [],
-            'ktgk1': ['van'],
-            'ktck1': [],
-            'ktgk2': [],
-            'ktck2': []
+            // KTTX Giữa Kỳ 1
+            'kttx/gk1/su': true,
+            'kttx/gk1/ly': true,
+            'kttx/gk1/van': true,
+            'kttx/gk1/tin': true,
+            'kttx/gk1/sinh': true,
+            'kttx/gk1/toan': false,
+            'kttx/gk1/anh': false,
+            'kttx/gk1/hoa': false,
+            'kttx/gk1/gdqp': false,
+            'kttx/gk1/gddp': false,
+
+            // KTTX Học Kỳ 1
+            'kttx/hk1/su': false,
+            'kttx/hk1/ly': false,
+            'kttx/hk1/van': false,
+            'kttx/hk1/tin': false,
+            'kttx/hk1/sinh': false,
+            'kttx/hk1/toan': false,
+            'kttx/hk1/anh': false,
+            'kttx/hk1/hoa': false,
+            'kttx/hk1/gdqp': false,
+            'kttx/hk1/gddp': false,
+
+            // Kiểm Tra Giữa Kỳ 1
+            'ktgk1/van': true,
+            'ktgk1/toan': false,
+            'ktgk1/anh': false,
+            'ktgk1/ly': false,
+            'ktgk1/hoa': false,
+            'ktgk1/sinh': false,
+            'ktgk1/su': false,
+            'ktgk1/tin': false,
+            'ktgk1/gdqp': false,
+            'ktgk1/gddp': false,
+
+            // Kiểm Tra Cuối Kỳ 1
+            'ktck1/toan': false,
+            'ktck1/van': false,
+            'ktck1/anh': false,
+            'ktck1/ly': false,
+            'ktck1/hoa': false,
+            'ktck1/sinh': false,
+            'ktck1/su': false,
+            'ktck1/tin': false,
+            'ktck1/gdqp': false,
+            'ktck1/gddp': false
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -510,15 +555,14 @@
             }, 3000);
         }
 
+        // Ép buộc đồng bộ hóa để cập nhật code true/false mới nhất từ file
         function initHighlightsStorage() {
-            if (!localStorage.getItem('appHighlightsData')) {
-                localStorage.setItem('appHighlightsData', JSON.stringify(defaultHighlights));
-            }
+            localStorage.setItem('appHighlightsDataMap', JSON.stringify(defaultHighlights));
         }
 
         function getHighlightsData() {
             try {
-                return JSON.parse(localStorage.getItem('appHighlightsData')) || defaultHighlights;
+                return JSON.parse(localStorage.getItem('appHighlightsDataMap')) || defaultHighlights;
             } catch (e) {
                 return defaultHighlights;
             }
@@ -530,10 +574,10 @@
             document.querySelectorAll('[data-examkey]').forEach(container => {
                 const basePath = container.getAttribute('data-path');
                 const examKey = container.getAttribute('data-examkey');
-                const activeList = highlightsMap[examKey] || [];
 
                 container.innerHTML = subjects.map(sub => {
-                    const isHighlighted = activeList.includes(sub.id);
+                    const configKey = `${examKey}/${sub.id}`;
+                    const isHighlighted = highlightsMap[configKey] === true;
                     
                     const customStyle = isHighlighted 
                         ? 'border-indigo-500/80 bg-indigo-50/80 dark:bg-indigo-950/40 ring-1 ring-indigo-500/50 shadow-md' 
@@ -586,7 +630,6 @@
             const selectedExamKey = document.getElementById('selectExamCategory').value;
             const searchKeyword = document.getElementById('modalSearchInput').value.trim().toLowerCase();
             const highlightsMap = getHighlightsData();
-            const activeList = highlightsMap[selectedExamKey] || [];
             const listContainer = document.getElementById('modalSubjectList');
 
             const filteredSubjects = subjects.filter(sub => sub.name.toLowerCase().includes(searchKeyword));
@@ -601,14 +644,15 @@
             }
 
             listContainer.innerHTML = filteredSubjects.map(sub => {
-                const isChecked = activeList.includes(sub.id) ? 'checked' : '';
+                const configKey = `${selectedExamKey}/${sub.id}`;
+                const isChecked = highlightsMap[configKey] === true ? 'checked' : '';
                 return `
                     <label class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl flex items-center justify-between cursor-pointer hover:border-indigo-500 transition shadow-xs">
                         <div class="flex items-center space-x-2.5 truncate">
                             <i class="fa-solid ${sub.icon} ${sub.color} text-sm"></i>
                             <span class="text-xs font-medium text-slate-800 dark:text-slate-200 truncate">${sub.name}</span>
                         </div>
-                        <input type="checkbox" value="${sub.id}" ${isChecked} class="sub-checkbox w-4 h-4 accent-indigo-600 rounded cursor-pointer">
+                        <input type="checkbox" data-subid="${sub.id}" ${isChecked} class="sub-checkbox w-4 h-4 accent-indigo-600 rounded cursor-pointer">
                     </label>
                 `;
             }).join('');
@@ -617,17 +661,15 @@
         function saveHighlightSettings() {
             const selectedExamKey = document.getElementById('selectExamCategory').value;
             const checkboxes = document.querySelectorAll('.sub-checkbox');
-            const newCheckedIds = [];
+            let highlightsMap = getHighlightsData();
             
             checkboxes.forEach(chk => {
-                if (chk.checked) {
-                    newCheckedIds.push(chk.value);
-                }
+                const subId = chk.getAttribute('data-subid');
+                const configKey = `${selectedExamKey}/${subId}`;
+                highlightsMap[configKey] = chk.checked;
             });
 
-            let highlightsMap = getHighlightsData();
-            highlightsMap[selectedExamKey] = newCheckedIds;
-            localStorage.setItem('appHighlightsData', JSON.stringify(highlightsMap));
+            localStorage.setItem('appHighlightsDataMap', JSON.stringify(highlightsMap));
 
             renderSubjectsTree();
             closeHighlightManagerModal();
