@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Tập GK1 - Ngữ Văn 11</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+        .reference-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, opacity 0.3s ease-out;
+            opacity: 0;
+        }
+        .reference-content.open {
+            max-height: 8000px;
+            opacity: 1;
+            transition: max-height: 0.6s ease-in, opacity 0.4s ease-in;
+        }
+        .arrow-icon { transition: transform 0.3s ease; }
+        .reference-header.active .arrow-icon { transform: rotate(90deg); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="./indexvan.html" class="p-2 bg-rose-600 rounded-lg text-white hover:bg-rose-500 transition">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </a>
+                <div>
+                    <h1 class="text-base md:text-lg font-bold leading-tight">Ôn Tập Giữa Kỳ 1 - Ngữ Văn 11</h1>
+                    <p class="text-xs text-slate-400">Đề minh họa: Trẻ con không được ăn thịt chó - Nam Cao</p>
+                </div>
+            </div>
+            
+            <a href="./indexvan.html" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl text-xs font-medium text-slate-200 transition flex items-center space-x-2 shadow-md cursor-pointer">
+                <i class="fa-solid fa-house text-rose-400"></i>
+                <span>Trang Chủ Môn</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-8 flex-grow space-y-6">
+
+        <!-- ================= PHẦN I: ĐỌC HIỂU ================= -->
+        <div class="pb-2">
+            <h2 class="text-xl font-bold text-rose-400 uppercase tracking-wider flex items-center space-x-2">
+                <i class="fa-solid fa-book-open-reader"></i>
+                <span>I. ĐỌC HIỂU (5,0 điểm)</span>
+            </h2>
+        </div>
+
+        <!-- KHUNG 1: Văn bản đọc hiểu -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-4">
+            <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                <span class="p-2.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl">
+                    <i class="fa-solid fa-file-lines text-lg"></i>
+                </span>
+                <div>
+                    <h3 class="font-bold text-base text-white">Đọc Hiểu: Trẻ con không được ăn thịt chó</h3>
+                    <p class="text-xs text-slate-400">Tuyển tập Nam Cao, Nxb Văn học</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-sm text-slate-300 leading-relaxed max-h-[500px] overflow-y-auto p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
+                <p class="text-xs text-amber-300 italic bg-slate-800 p-2.5 rounded-lg border border-slate-700">
+                    <b>(Tóm tắt đoạn trước đó:</b> Câu chuyện kể về một kẻ nghiện rượu bỗng một ngày lên cơn thèm thịt chó. Khi nhìn thấy con chó nhà mình nằm ở bờ rào hắn đã viện đủ lí do để thịt nó. Đám con đói lâu ngày cũng háo hức chờ được ăn. Người vợ đành đi mua chịu thêm gạo, rượu, mắm để về nấu. Thế nhưng khi nấu xong, gã chồng mời bạn bè về nhậu. Dưới bếp mấy mẹ con còm cõi nheo nhóc ngồi chờ.<b>)</b>
+                </p>
+
+                <p>Người mẹ rất còm cõi và bốn đứa con gầy ốm, quây quần với nhau trong xó bếp. Trong gia đình này, năm mẹ con thường giống như một bọn dân hèn yếu cùng chung phận con sâu, cái kiến dưới cái ách một ông bạo chúa.</p>
+                
+                <p>Thấy lũ con đứa nào cũng nhăn nhăn, nhó nhó, người mẹ thương đứt ruột. Thị biết rằng chúng đói. Khi người ta đã đói mà lại ngửi thấy mùi thịt chó, thì bụng càng đói thêm. Thế mà bữa rượu của người bố với ba ông khách cứ kéo dài mãi. Nghĩ mà bực quá! Cái thế không chết được, chứ giá chết được thì thị chỉ thắt cổ đi cho rồi….Thị dỗ con: <br><i>- Cố mà nhịn lúc nữa, các con ạ. Đợi trên nhà ăn xong, còn thừa thì ta ăn.</i></p>
+
+                <p>Rồi muốn cho chúng quên đi, thị sổ tóc ra cho chúng xúm vào bắt chấy. Úi chà! Nhiều chấy quá! Chỉ việc rẽ một đám tóc ra là đủ thấy bốn, năm con bò lổm ngổm. Cái Gái và cu Nhớn, cu Nhỡ thi nhau bắt. Chúng cho cu Con mấy con chấy kềnh làm trâu. Mới đầu cái trò chơi ấy cũng hay hay. Nhưng chỉ một lúc là chúng chán. Thằng cu Con ra hiệu đình công trước. Nó lăn vào lòng mẹ, oằn oại vừa hụ hị kêu: <br><i>- Đói!...Bu ơi! Đói…</i></p>
+
+                <p>Tức khắc những đứa kia cũng nhớ ra rằng chúng đói. Chúng không bắt chấy cho mẹ nữa. Chúng thở dài. Chúng nuốt bọt nhem nhép. Chúng thừ mặt ra. Chúng nằm ẹp xuống đất và lật áo lên để khoe cái bụng. Bụng đứa nào đứa nấy cũng gần dính lưng.</p>
+
+                <p>Mắt thị rơm rớm nước. Cũng may, tiếng người bố trên nhà gọi: <br><i>- Cái Gái đâu! Dẹp mâm đi, này!</i></p>
+
+                <p>Bốn đứa trẻ cùng nhỏm dậy: mặt chúng đột nhiên tươi tỉnh lại. Gái “vâng” một tiếng thật to và chạy lên. Cu Nhớn, cu Nhỡ ngồi chồm chỗm đợi…Một lát sau, Gái bê mâm xuống. Nó cũng nâng lên ngang mặt như cha lúc nãy. Các em nó đứng cả lên, chực đu lấy cái mâm. Nó càng nâng cao hơn, mồm thét: <br><i>- Khoan! Khoan! Kẻo vỡ…</i> <br>Cu Nhớn thét: <br><i>- Thì bỏ xuống!</i> <br>Cái Gái vênh mặt lên, trêu nó: <br><i>- Không bỏ. Không cho chúng mày ăn. <br>- Có sợ thành tật không? <br>- Không cho ăn thật đấy.</i> <br>Cu Nhỡ sốt ruột, khoặm mặt lại, vằng nhau với chị: <br><i>- Làm trò mãi! Có bỏ xuống đây không nào?</i> <br>Gái hạ nhanh mâm xuống đất bảo: <br><i>- Này, ăn đi.</i> <br>Nó ngẩng mặt nhìn các em, cười the thé. Người mẹ xịu ngay xuống. Trong mâm, chỉ còn bát không. Thằng cu Con khóc òa lên. Nó lăn ra, chân đạp như một người giãy chết, tay cào xé mẹ. Người mẹ đỏ mũi lên và mếu xệch đi, rưng rưng khóc. Cái Gái và cu Nhớn, cu Nhỡ cũng khóc theo.</p>
+            </div>
+        </section>
+
+        <!-- KHUNG 2: Câu hỏi & Trả lời Câu 1 -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 md:p-6 shadow-xl space-y-3">
+            <h3 class="font-bold text-sm text-rose-300">Câu 1. Xác định ngôi kể của đoạn trích.</h3>
+            <div class="text-sm text-slate-200 bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/50">
+                <p><b>Trả lời:</b> Đoạn trích sử dụng <b>ngôi kể thứ ba</b> (người kể chuyện giấu mình, quan sát và thấu hiểu mọi diễn biến tâm lý, hành động của nhân vật).</p>
+            </div>
+        </section>
+
+        <!-- KHUNG 3: Câu hỏi & Trả lời Câu 2 -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 md:p-6 shadow-xl space-y-3">
+            <h3 class="font-bold text-sm text-rose-300">Câu 2. Điểm nhìn và Biện pháp tu từ</h3>
+            <div class="text-sm text-slate-200 bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/50 space-y-2">
+                <p>• <b>Điểm nhìn:</b> Người kể chuyện đặt điểm nhìn ở <b>bên trong nhân vật (người mẹ)</b>, thấu cảm sâu sắc nỗi xót xa, sự bực bội và bất lực của người mẹ khi thấy các con đang chịu đói.</p>
+                <p>• <b>Biện pháp tu từ trong câu văn:</b> <i>“Trong gia đình này, năm mẹ con thường giống như một bọn dân hèn yếu cùng chung phận con sâu, cái kiến dưới cái ách một ông bạo chúa.”</i></p>
+                <p class="pl-3 border-l-2 border-rose-500 text-xs text-slate-300">
+                    - Sử dụng phép <b>so sánh</b> (năm mẹ con như bọn dân hèn yếu, con sâu cái kiến; người bố như ông bạo chúa) kết hợp với các hình ảnh ẩn dụ giàu sức gợi.<br>
+                    - <b>Tác dụng:</b> Nhấn mạnh hoàn cảnh áp bức, sự bất bình đẳng tột cùng và số phận khốn khổ, bé mọn của người mẹ và các con trong chính mái ấm gia đình dưới sự thống trị độc đoán của người chồng/cha vũ phu.
+                </p>
+            </div>
+        </section>
+
+        <!-- KHUNG 4: Câu hỏi & Trả lời Câu 3 -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 md:p-6 shadow-xl space-y-3">
+            <h3 class="font-bold text-sm text-rose-300">Câu 3. Sự việc đóng vai trò “nút thắt” (cao trào) của đoạn trích</h3>
+            <div class="text-sm text-slate-200 bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/50">
+                <p><b>Trả lời:</b> Sự việc cái Gái hạ mâm xuống và ngẩng mặt nhìn các em cười the thé, nhưng mở ra thì <b>trong mâm chỉ còn toàn bát không</b> (không còn miếng thịt chó thừa nào cho mấy mẹ con), khiến thằng cu Con khóc òa và cả nhà cùng khóc thét lên trong tuyệt vọng.</p>
+            </div>
+        </section>
+
+        <!-- KHUNG 5: Câu hỏi & Trả lời Câu 4 -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 md:p-6 shadow-xl space-y-3">
+            <h3 class="font-bold text-sm text-rose-300">Câu 4. Ông bố trong đoạn trích là người như thế nào?</h3>
+            <div class="text-sm text-slate-200 bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/50">
+                <p><b>Trả lời:</b> Ông bố hiện lên là một kẻ ích kỷ, vô trách nhiệm, vô cảm và tàn nhẫn. Dù nhà túng quẫn, các con đói lả mòn mỏi dưới bếp nhưng hắn vẫn thản nhiên nhậu nhẹt kéo dài với bạn bè, ăn uống đến mức sạch trơn không chừa lại cho vợ con dù chỉ một miếng, thể hiện rõ bản chất của một “ông bạo chúa” gia trưởng trong gia đình.</p>
+            </div>
+        </section>
+
+        <!-- KHUNG 6: Câu hỏi & Trả lời Câu 5 -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 md:p-6 shadow-xl space-y-3">
+            <h3 class="font-bold text-sm text-rose-300">Câu 5. Thái độ của người kể chuyện ở đoạn cuối</h3>
+            <div class="text-sm text-slate-200 bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/50">
+                <p><b>Trả lời:</b> Qua điểm nhìn và lời kể, tác giả bộc lộ thái độ <b>đồng cảm sâu sắc, xót xa, thương cảm tột cùng</b> trước nỗi đau đớn, bất lực của người mẹ và sự đói khát, tội nghiệp của những đứa trẻ thơ ngây. Đồng thời, đó cũng là thái độ căm phẫn trước hiện thực tàn nhẫn đẩy con người vào đường cùng.</p>
+            </div>
+        </section>
+
+        <!-- KHUNG 7: Câu hỏi & Trả lời Câu 6 -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 md:p-6 shadow-xl space-y-3">
+            <h3 class="font-bold text-sm text-rose-300">Câu 6. Đồng tình với hành xử người chồng/cha và so sánh tiếng khóc</h3>
+            <div class="text-sm text-slate-200 bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/50 space-y-3">
+                <p>• <b>Ý 1 (Đồng tình/Không đồng tình):</b> Hoàn toàn <b>không đồng tình</b> với cách hành xử của người bố. Trong lúc vợ con đang đói lả quây quần dưới xó bếp, việc người bố thản nhiên ăn nhậu vô độ với bạn bè, mặc kệ đói khát và vét sạch mâm không chừa lại gì cho con là hành động ích kỷ, thiếu tình thương và vô trách nhiệm của người trụ cột gia đình.</p>
+                <p>• <b>Ý 2 (So sánh tiếng khóc):</b> Tiếng khóc của người mẹ và những đứa con ở cuối truyện <b>không hoàn toàn giống nhau về bản chất</b> dù cùng chung nỗi đau:</p>
+                <p class="pl-3 border-l-2 border-rose-500 text-xs text-slate-300">
+                    - <i>Tiếng khóc của những đứa trẻ:</i> Là tiếng khóc bản năng, xuất phát từ cơn đói cào xé thể xác, sự tủi thân và hụt hẫng khi hy vọng chờ đợi món ăn ngon bị dập tắt.<br>
+                    - <i>Tiếng khóc của người mẹ:</i> Là tiếng khóc của sự bất lực đớn đau, xót xa khi nhìn con đói khát mà không thể cứu giúp, cùng nỗi nhục nhã, tủi cực của một người làm mẹ dưới ách áp bức gia đình.
+                </p>
+            </div>
+        </section>
+
+        <hr class="border-slate-700 my-6">
+
+        <!-- ================= PHẦN II: VIẾT ================= -->
+        <div class="pb-2">
+            <h2 class="text-xl font-bold text-rose-400 uppercase tracking-wider flex items-center space-x-2">
+                <i class="fa-solid fa-pen-nib"></i>
+                <span>II. VIẾT (5,0 điểm)</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Đề bài: Viết bài văn nghị luận phân tích, đánh giá nét nổi bật trong nghệ thuật kể chuyện của nhà văn Nam Cao qua đoạn trích ở phần đọc hiểu.</p>
+        </div>
+
+        <!-- KHUNG 8: Mở bài -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-4">
+            <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                <span class="w-8 h-8 rounded-lg bg-rose-600/20 text-rose-400 flex items-center justify-center font-bold text-sm border border-rose-500/30">1</span>
+                <h3 class="font-bold text-lg text-white">Mở Bài</h3>
+            </div>
+            <div class="text-sm text-slate-300 space-y-2 leading-relaxed">
+                <p>• <b>Giới thiệu tác giả Nam Cao:</b> Bậc thầy truyện ngắn hiện thực, ngòi bút sắc sảo chuyên khai thác sâu sắc bi kịch đời sống và tâm lý người nông dân trước Cách mạng.</p>
+                <p>• <b>Giới thiệu tác phẩm/đoạn trích:</b> Đoạn trích trong "Trẻ con không được ăn thịt chó" là bức tranh bi thảm về gia đình nghèo đói và sự tha hóa.</p>
+                <p>• <b>Nêu vấn đề nghị luận:</b> Thành công xuất sắc của đoạn trích kết tinh từ nghệ thuật kể chuyện độc đáo: nghệ thuật dựng tình huống tâm lý, điểm nhìn trần thuật linh hoạt, miêu tả chi tiết sinh động và giọng điệu xót xa, ám ảnh.</p>
+            </div>
+        </section>
+
+        <!-- KHUNG 9: Thân bài -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-4">
+            <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                <span class="w-8 h-8 rounded-lg bg-rose-600/20 text-rose-400 flex items-center justify-center font-bold text-sm border border-rose-500/30">2</span>
+                <h3 class="font-bold text-lg text-white">Thân Bài</h3>
+            </div>
+            <div class="text-sm text-slate-300 space-y-4 leading-relaxed">
+                <div class="p-3 bg-slate-900/50 border border-slate-700/50 rounded-xl space-y-1">
+                    <p class="font-semibold text-rose-300">1. Nghệ thuật xây dựng tình huống trớ trêu, giàu kịch tính</p>
+                    <p class="text-xs text-slate-400">Tình huống năm mẹ con còm cõi mòn mỏi chờ đợi phần cơm thừa từ bữa nhậu thịt chó của người chồng trên nhà. Sự mong mỏi đổi thành hụt hẫng khi mâm cơm mang xuống chỉ toàn bát không, đẩy bi kịch đói khát lên cao trào.</p>
+                </div>
+
+                <div class="p-3 bg-slate-900/50 border border-slate-700/50 rounded-xl space-y-1">
+                    <p class="font-semibold text-rose-300">2. Điểm nhìn trần thuật tinh tế, thấu cảm sâu sắc</p>
+                    <p class="text-xs text-slate-400">Điểm nhìn đặt sâu vào tâm trạng người mẹ giúp phơi bày nỗi xót ruột, sự bất lực và cay đắng, qua đó mở rộng biên độ hiện thực thấu hiểu bi kịch của tầng lớp lao động cùng khổ.</p>
+                </div>
+
+                <div class="p-3 bg-slate-900/50 border border-slate-700/50 rounded-xl space-y-1">
+                    <p class="font-semibold text-rose-300">3. Nghệ thuật miêu tả tâm lý và chi tiết sinh động, chân thực</p>
+                    <p class="text-xs text-slate-400">Tác giả khắc họa chi tiết từ trò bắt chấy giải khuây, tiếng kêu réo rắt của cu Con, hành động vằng mâm của lũ trẻ đến cái mếu xệch và giọt nước mắt bất lực của người mẹ.</p>
+                </div>
+
+                <div class="p-3 bg-slate-900/50 border border-slate-700/50 rounded-xl space-y-1">
+                    <p class="font-semibold text-rose-300">4. Ngôn ngữ mộc mạc kết hợp giọng điệu xót xa, ám ảnh</p>
+                    <p class="text-xs text-slate-400">Ngôn ngữ đậm chất đời thường kết hợp giọng văn đầy trăn trở, dằn vặt tạo nên chiều sâu nhân đạo lớn lao cho tác phẩm.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- KHUNG 10: Kết bài -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-4">
+            <div class="flex items-center space-x-3 pb-3 border-b border-slate-700/60">
+                <span class="w-8 h-8 rounded-lg bg-rose-600/20 text-rose-400 flex items-center justify-center font-bold text-sm border border-rose-500/30">3</span>
+                <h3 class="font-bold text-lg text-white">Kết Bài</h3>
+            </div>
+            <div class="text-sm text-slate-300 space-y-2 leading-relaxed">
+                <p>• <b>Khẳng định lại giá trị nghệ thuật:</b> Tình huống trớ trêu, điểm nhìn linh hoạt cùng miêu tả tâm lý sắc sảo đã minh chứng tài năng nghệ thuật đỉnh cao của Nam Cao.</p>
+                <p>• <b>Đánh giá ý nghĩa nhân đạo:</b> Đoạn trích không chỉ tố cáo hiện thực nghèo đói tàn khốc mà còn ngời sáng tình mẫu tử thiêng liêng, sâu nặng.</p>
+            </div>
+        </section>
+
+        <!-- KHUNG 11: Bài tham khảo chi tiết đầy đủ (Bấm mũi tên > để hiện, chuyển thành mũi tên xuống v) -->
+        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl overflow-hidden shadow-xl">
+            <button class="reference-header w-full p-6 flex items-center justify-between text-left hover:bg-slate-700/50 transition cursor-pointer" onclick="toggleReference(this)">
+                <span class="flex items-center space-x-3">
+                    <span class="p-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl">
+                        <i class="fa-solid fa-file-lines text-lg"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-base text-white">Bài Văn Tham Khảo Chi Tiết Đầy Đủ</h3>
+                        <p class="text-xs text-slate-400">Bấm vào mũi tên bên phải để xem toàn bộ bài viết mẫu</p>
+                    </div>
+                </span>
+                <span class="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center text-rose-400 shadow-sm">
+                    <i class="fa-solid fa-chevron-right arrow-icon text-sm"></i>
+                </span>
+            </button>
+            
+            <div id="referenceContent" class="reference-content bg-slate-900/80 px-6 py-6 border-t border-slate-700/60">
+                <div class="space-y-6 text-sm text-slate-300 leading-relaxed">
+                    
+                    <h4 class="font-bold text-white text-base pb-2 border-b border-slate-700">Đề bài: Phân tích, đánh giá nét nổi bật trong nghệ thuật kể chuyện của nhà văn Nam Cao qua đoạn trích "Trẻ con không được ăn thịt chó".</h4>
+                    
+                    <p><b>Bài làm mẫu:</b></p>
+                    
+                    <p>Nam Cao là một trong những cây bút hiện thực xuất sắc nhất của nền văn học Việt Nam trước Cách mạng tháng Tám. Với quan điểm nghệ thuật vị nhân sinh, các sáng tác của ông luôn hướng ngòi bút về phía những người nông dân nghèo khổ, qua đó mổ xẻ những bi kịch đau đớn của đời sống xã hội. Đoạn trích trong truyện ngắn "Trẻ con không được ăn thịt chó" là một dẫn chứng tiêu biểu cho phong cách nghệ thuật ấy. Đằng sau bức tranh đói khát đến cùng cực là những đặc sắc vô cùng độc đáo về nghệ thuật kể chuyện, thể hiện qua tình huống truyện trớ trêu, điểm nhìn trần thuật sắc sảo cùng nghệ thuật miêu tả tâm lý nhân vật tinh tế.</p>
+                    
+                    <p>Trước hết, sức hấp dẫn và ám ảnh của đoạn trích trước hết được tạo nên từ nghệ thuật xây dựng tình huống truyện độc đáo. Nam Cao đã đẩy năm mẹ con người vợ vào một nghịch cảnh vô cùng trớ trêu: người chồng lên cơn thèm thịt chó, bất chấp gia cảnh túng quẫn để làm thịt con chó nhà, mặc kệ lũ con nheo nhóc đói lả dưới bếp. Đỉnh điểm của tình huống là khi mấy mẹ con còm cõi mòn mỏi chờ đợi bữa cơm thừa từ nhà trên, để rồi hy vọng bé nhỏ ấy bị dập tắt phũ phàng khi chiếc mâm bê xuống chỉ toàn bát không. Tình huống ấy không chỉ tạo nên nút thắt cao trào đầy kịch tính mà còn làm nổi bật sự tàn nhẫn của hoàn cảnh, phơi bày trần trụi thực trạng đói nghèo đến mức tột cùng của con người thời bấy giờ.</p>
+                    
+                    <p>Không chỉ dừng lại ở tình huống truyện giàu kịch tính, Nam Cao còn thành công rực rỡ nhờ việc lựa chọn và kết hợp linh hoạt điểm nhìn trần thuật. Tác giả đặt điểm nhìn sâu vào thế giới nội tâm của người mẹ – người phụ nữ khốn khổ chịu đựng dưới ách "bạo chúa" của người chồng. Qua điểm nhìn đó, người đọc thấu cảm sâu sắc nỗi xót xa "thương đứt ruột" khi nhìn các con nhăn nhó vì đói, sự bực bội bất lực trước bữa nhậu kéo dài vô tận và cả những ý nghĩ tuyệt vọng đến xé lòng. Điểm nhìn linh hoạt giúp nhà văn không chỉ đứng bên ngoài quan sát mà như đang hòa chung nhịp đập đau đớn với số phận nhân vật, làm tăng chiều sâu nhân đạo cho trang văn.</p>
+                    
+                    <p>Bên cạnh đó, nghệ thuật miêu tả tâm lý và khắc họa chi tiết sinh động chính là chìa khóa chạm đến cảm xúc người đọc. Nam Cao rất tài tình khi miêu tả chuyển biến tâm lý của những đứa trẻ: từ trò bắt chấy giải khuây ngây thơ, đến sự thừ mặt, nuốt bọt nhem nhép khi cơn đói cào xé, và cuối cùng là tiếng khóc òa tức tưởi khi mâm cơm không có gì. Đặc biệt, hình ảnh người mẹ "rơm rớm nước mắt", "đỏ mũi lên và mếu xệch đi" rồi khóc theo các con là một chi tiết nghệ thuật đắt giá, gói trọn sự bất lực đớn đau của tình mẫu tử nghèo khó. Ngôn ngữ kể chuyện mộc mạc, đậm chất đời thường kết hợp với giọng điệu xót xa, dằn vặt đã góp phần hoàn thiện bức tranh hiện thực ám ảnh.</p>
+                    
+                    <p>Bằng nghệ thuật kể chuyện đỉnh cao qua tình huống trớ trêu, điểm nhìn sắc sảo và miêu tả tâm lý tinh tế, Nam Cao đã tái hiện thành công bi kịch đói nghèo đầy xót xa. Đoạn trích không chỉ minh chứng cho tài năng nghệ thuật bậc thầy của nhà văn mà còn đánh thức lòng trắc ẩn, sự thấu cảm sâu sắc đối với những số phận bé mọn trong xã hội cũ.</p>
+
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        Ôn Tập GK1 • Môn Ngữ Văn • Repository: MinhTruk/bakhi
+    </footer>
+
+    <script>
+        // Hàm xử lí ẩn/hiện bài tham khảo và xoay mũi tên từ > sang xuống dưới v
+        function toggleReference(btnEl) {
+            const content = document.getElementById('referenceContent');
+            const isOpen = content.classList.contains('open');
+
+            if (isOpen) {
+                content.classList.remove('open');
+                btnEl.classList.remove('active');
+            } else {
+                content.classList.add('open');
+                btnEl.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
