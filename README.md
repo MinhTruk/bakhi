@@ -6,9 +6,10 @@
 
 <p align="center">
 
-🌐 **[Mở BAKHI](https://minhtruk.github.io/bakhi/)**  
-&nbsp; • &nbsp;
-📦 **[GitHub Repository](https://github.com/MinhTruk/bakhi)**
+- 🌐 **[Mở BAKHI](https://minhtruk.github.io/bakhi/)**  
+- 📦 **[GitHub Repository](https://github.com/MinhTruk/bakhi)**
+- 📱 **[TikTok](https://www.tiktok.com/@meionyx)**   
+- 🟦 **[Facebook](https://www.facebook.com/meionyxx/)**
 
 </p>
 
