@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc Nghiệm Bài 4: Sự Phát Triển Của CNXH Từ Sau Chiến Tranh Thế Giới Thứ Hai Đến Nay - Lịch Sử 11</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/85 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="./indexsu.html" class="p-2 bg-amber-600 rounded-lg text-white hover:bg-amber-500 transition">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </a>
+                <div>
+                    <h1 class="text-base md:text-lg font-bold leading-tight">Bài 4: Sự Phát Triển Của Chủ Nghĩa Xã Hội</h1>
+                    <p class="text-xs text-slate-400">Trắc nghiệm ôn tập từng câu hỏi</p>
+                </div>
+            </div>
+            <a href="https://minhtruk.github.io/bakhi/" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
+                <i class="fa-solid fa-house text-amber-400"></i>
+                <span>Trang chủ</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col justify-center space-y-6">
+        
+        <!-- Progress Bar -->
+        <div id="progress-container" class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-4 shadow-md flex items-center justify-between">
+            <span class="text-xs font-semibold text-amber-400 uppercase tracking-wider" id="question-progress">Câu 1 / 9</span>
+            <div class="w-1/2 bg-slate-700 h-2 rounded-full overflow-hidden">
+                <div id="progress-bar-fill" class="bg-amber-500 h-full transition-all duration-300" style="width: 11.1%;"></div>
+            </div>
+        </div>
+
+        <!-- Quiz Box -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+            <div id="quiz-box" class="space-y-6">
+                <!-- Nội dung câu hỏi sẽ được render bằng JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        Lịch Sử 11 • Ôn Tập Bài 4: Sự Phát Triển Của Chủ Nghĩa Xã Hội Từ Sau Chiến Tranh Thế Giới Thứ Hai Đến Nay
+    </footer>
+
+    <script>
+        const rawMcqData = [
+            { 
+                id: 1, 
+                q: "[Bài 4] Chủ nghĩa xã hội vượt ra khỏi phạm vi một nước và trở thành hệ thống thế giới trong giai đoạn", 
+                a: "sau Chiến tranh thế giới thứ hai.", 
+                o: ["trước Chiến tranh thế giới thứ hai.", "sau Chiến tranh thế giới thứ hai.", "trước khi Liên bang Xô Viết ra đời.", "Chiến tranh thế giới thứ nhất kết thúc."], 
+                exp: "Chủ nghĩa xã hội trở thành hệ thống thế giới sau Chiến tranh thế giới thứ hai." 
+            },
+            { 
+                id: 2, 
+                q: "[Bài 4] Trong những năm 1944 - 1945, điều kiện khách quan thuận lợi nào đã thúc đẩy nhân dân các nước Đông Âu nổi dậy giành chính quyền, thành lập nhà nước dân chủ nhân dân?", 
+                a: "Thắng lợi của Hồng quân Liên Xô trong việc tiêu diệt chủ nghĩa phát xít ở châu Âu.", 
+                o: ["Phát xít Đức chuyển hướng tấn công sang đánh chiếm các nước ở Bắc Âu và Tây Âu.", "Sự viện trợ về mọi mặt của các nước xã hội chủ nghĩa như: Liên Xô, Trung Quốc,…", "Thắng lợi của Hồng quân Liên Xô trong việc tiêu diệt chủ nghĩa phát xít ở châu Âu.", "Phe Đồng minh suy yếu, liên tục thất bại và buộc phải rút khỏi mặt trận Đông Âu."], 
+                exp: "Thắng lợi của Hồng quân Liên Xô tiêu diệt phát xít là điều kiện khách quan thuận lợi thúc đẩy nhân dân Đông Âu nổi dậy." 
+            },
+            { 
+                id: 3, 
+                q: "[Bài 4] Sự kiện nào sau đây đã đánh dấu chủ nghĩa xã hội vượt ra khỏi phạm vi một nước?", 
+                a: "Sự ra đời các nước XHCN Đông Âu.", 
+                o: ["Sự ra đời các nước XHCN Đông Âu.", "Chiến tranh thế giới kết thúc.", "Liên bang Xô Viết thành lập.", "Cách mạng Cu - ba thắng lợi."], 
+                exp: "Sự ra đời của các nước xã hội chủ nghĩa Đông Âu đánh dấu CNXH vượt ra khỏi phạm vi một nước." 
+            },
+            { 
+                id: 4, 
+                q: "[Bài 4] Đâu là nguyên nhân khách quan để các nước Đông Âu đạt được nhiều thành tựu to lớn trong công cuộc xây dựng chủ nghĩa xã hội?", 
+                a: "Sự giúp đỡ của Liên Xô.", 
+                o: ["Sự giúp đỡ của Liên Xô.", "Tinh thần tự lực, tự cường.", "Tài nguyên rất phong phú.", "Học tập mô hình Tây Âu."], 
+                exp: "Sự giúp đỡ to lớn của Liên Xô là nguyên nhân khách quan giúp các nước Đông Âu đạt nhiều thành tựu." 
+            },
+            { 
+                id: 5, 
+                q: "[Bài 4] Trước năm 1945, quốc gia duy nhất trên thế giới đi theo con đường xã hội chủ nghĩa là", 
+                a: "Liên Xô.", 
+                o: ["Liên Xô.", "Trung Quốc.", "Việt Nam.", "Cu-ba."], 
+                exp: "Trước năm 1945, Liên Xô là quốc gia duy nhất trên thế giới theo con đường xã hội chủ nghĩa." 
+            },
+            { 
+                id: 6, 
+                q: "[Bài 4] Năm 1949, Trung Quốc đã", 
+                a: "hoàn thành thắng lợi cuộc cách mạng dân tộc dân chủ nhân dân.", 
+                o: ["lâm vào suy thoái, khủng hoảng nghiêm trọng về kinh tế - xã hội.", "lựa chọn con đường phát triển đất nước theo hướng tư bản chủ nghĩa.", "tiến hành cải cách mở cửa để đưa đất nước thoát khỏi khủng hoảng.", "hoàn thành thắng lợi cuộc cách mạng dân tộc dân chủ nhân dân."], 
+                exp: "Năm 1949, Trung Quốc hoàn thành thắng lợi cuộc cách mạng dân tộc dân chủ nhân dân." 
+            },
+            { 
+                id: 7, 
+                q: "[Bài 4] Hiện nay, quốc gia nào ở châu Á đi theo con đường xã hội chủ nghĩa?", 
+                a: "Cộng hòa Nhân dân Trung Hoa.", 
+                o: ["Cộng hòa Nhân dân Trung Hoa.", "Cộng hòa In-đô-nê-xi-a.", "Đại Hàn Dân Quốc.", "Nhật Bản."], 
+                exp: "Cộng hòa Nhân dân Trung Hoa là quốc gia ở châu Á đi theo con đường xã hội chủ nghĩa." 
+            },
+            { 
+                id: 8, 
+                q: "[Bài 4] Nước Cộng hòa Cu-ba được thành lập (1959) sau khi đánh bại", 
+                a: "chế độ độc tài thân Mỹ.", 
+                o: ["đế quốc Tây Ban Nha.", "chế độ độc tài thân Mỹ.", "chủ nghĩa thực dân cũ.", "sự nô dịch của thực dân Anh."], 
+                exp: "Cách mạng Cuba (1959) lật đổ chế độ độc tài thân Mỹ." 
+            },
+            { 
+                id: 9, 
+                q: "[Bài 4] Nhận xét nào dưới đây về vị trí, vai trò của cách mạng Cuba (1959) đối với khu vực Mĩ Latinh là đúng?", 
+                a: "Cuba được xem là lá cờ đầu của phong trào giải phóng dân tộc ở Mĩ Latinh.", 
+                o: ["Cuba được xem là lá cờ đầu của phong trào giải phóng dân tộc ở Mĩ Latinh.", "Là nước đi tiên phong trong cuộc đấu tranh chống chủ nghĩa thực dân kiểu cũ.", "Là nước đầu tiên giành độc lập ở khu vực và đi theo chế độ xã hội chủ nghĩa.", "Là nước đã đập tan hoàn toàn âm mưu áp đặt chủ nghĩa thực dân mới của Mỹ."], 
+                exp: "Cuba được xem là lá cờ đầu của phong trào giải phóng dân tộc ở khu vực Mĩ Latinh." 
+            }
+        ];
+
+        let shuffledMcq = [];
+        let currentIndex = 0;
+        let score = 0;
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function initQuiz() {
+            shuffledMcq = shuffleArray(rawMcqData).map(item => {
+                const correctVal = item.a;
+                const shuffledOpts = shuffleArray(item.o);
+                return { ...item, o: shuffledOpts, a: correctVal };
+            });
+            currentIndex = 0;
+            score = 0;
+            document.getElementById('progress-container').style.display = 'flex';
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            if (currentIndex >= shuffledMcq.length) {
+                renderResult();
+                return;
+            }
+
+            const item = shuffledMcq[currentIndex];
+            const progressPercent = ((currentIndex + 1) / shuffledMcq.length) * 100;
+            document.getElementById('question-progress').innerText = `Câu ${currentIndex + 1} / ${shuffledMcq.length}`;
+            document.getElementById('progress-bar-fill').style.width = `${progressPercent}%`;
+
+            const box = document.getElementById('quiz-box');
+            box.innerHTML = `
+                <div class="space-y-4">
+                    <div class="font-bold text-base md:text-lg text-slate-100">
+                        <span class="text-amber-400">Câu ${currentIndex + 1}:</span> ${item.q}
+                    </div>
+                    <div class="grid grid-cols-1 gap-2.5" id="options-group">
+                        ${item.o.map((opt, oIdx) => `
+                            <button type="button" onclick="selectAnswer('${opt.replace(/'/g, "\\'")}', this)" class="w-full text-left p-3.5 bg-slate-900/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center space-x-3 text-sm transition cursor-pointer option-btn">
+                                <span class="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-amber-400 border border-slate-700 text-xs">${['A', 'B', 'C', 'D'][oIdx]}</span>
+                                <span class="flex-grow">${opt}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="feedback-area" class="hidden mt-4 p-4 rounded-xl border space-y-3"></div>
+                </div>
+            `;
+        }
+
+        function selectAnswer(selectedOpt, btnEl) {
+            const item = shuffledMcq[currentIndex];
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(b => b.disabled = true);
+
+            const feedbackArea = document.getElementById('feedback-area');
+            feedbackArea.classList.remove('hidden');
+
+            const isCorrect = (selectedOpt === item.a);
+            if (isCorrect) {
+                score++;
+                btnEl.className = "w-full text-left p-3.5 bg-emerald-950/80 border border-emerald-600 rounded-xl flex items-center space-x-3 text-sm text-emerald-200 font-semibold";
+                feedbackArea.className = "mt-4 p-4 rounded-xl border bg-emerald-950/60 border-emerald-800 text-emerald-200 space-y-3";
+                feedbackArea.innerHTML = `
+                    <div class="flex items-center space-x-2 font-bold text-emerald-400">
+                        <i class="fa-solid fa-circle-check text-lg"></i>
+                        <span>Chính xác!</span>
+                    </div>
+                    <div class="text-xs text-slate-300 leading-relaxed"><b>Giải thích:</b> ${item.exp}</div>
+                    <button type="button" onclick="nextQuestion()" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg text-xs transition inline-flex items-center space-x-2 cursor-pointer">
+                        <span>Câu tiếp theo</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                `;
+            } else {
+                btnEl.className = "w-full text-left p-3.5 bg-rose-950/80 border border-rose-600 rounded-xl flex items-center space-x-3 text-sm text-rose-200";
+                
+                allBtns.forEach(b => {
+                    if (b.innerText.includes(item.a)) {
+                        b.className = "w-full text-left p-3.5 bg-emerald-950/80 border border-emerald-600 rounded-xl flex items-center space-x-3 text-sm text-emerald-200 font-semibold";
+                    }
+                });
+
+                feedbackArea.className = "mt-4 p-4 rounded-xl border bg-rose-950/60 border-rose-800 text-rose-200 space-y-3";
+                feedbackArea.innerHTML = `
+                    <div class="flex items-center space-x-2 font-bold text-rose-400">
+                        <i class="fa-solid fa-circle-xmark text-lg"></i>
+                        <span>Chưa đúng! Đáp án đúng là: <b>${item.a}</b></span>
+                    </div>
+                    <div class="text-xs text-slate-300 leading-relaxed"><b>Giải thích:</b> ${item.exp}</div>
+                    <button type="button" onclick="nextQuestion()" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg text-xs transition inline-flex items-center space-x-2 cursor-pointer">
+                        <span>Câu tiếp theo</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                `;
+            }
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            renderQuestion();
+        }
+
+        function renderResult() {
+            document.getElementById('progress-container').style.display = 'none';
+            const box = document.getElementById('quiz-box');
+            box.innerHTML = `
+                <div class="text-center space-y-6 py-6">
+                    <div class="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto border border-amber-500/30 text-3xl">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <h3 class="text-2xl font-bold text-white">Hoàn Thành Bài Ôn Tập Bài 4!</h3>
+                        <p class="text-slate-300 text-base">
+                            Số câu trả lời đúng của bạn: <span class="font-bold text-amber-400 text-xl">${score} / ${shuffledMcq.length}</span>
+                        </p>
+                    </div>
+                    <button type="button" onclick="initQuiz()" class="px-8 py-3.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Thử Lại Từ Đầu</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
+  
