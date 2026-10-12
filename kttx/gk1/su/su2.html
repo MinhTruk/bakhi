@@ -49,12 +49,18 @@
             <div id="mcq-container" class="space-y-6"></div>
         </section>
 
-        <!-- SUBMIT -->
+        <!-- SUBMIT & RETRY BUTTONS -->
         <div class="p-6 bg-slate-800 border border-slate-700 rounded-2xl text-center space-y-4 shadow-2xl">
-            <button type="button" onclick="checkAllAnswers()" class="px-8 py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <span>Nộp Bài & Kiểm Tra Kết Quả</span>
-            </button>
+            <div class="flex flex-wrap items-center justify-center gap-3">
+                <button type="button" onclick="checkAllAnswers()" class="px-8 py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Nộp Bài & Kiểm Tra Kết Quả</span>
+                </button>
+                <button type="button" onclick="resetQuiz()" class="px-6 py-3.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold rounded-xl transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Thử Lại</span>
+                </button>
+            </div>
             <div id="total-result" class="hidden p-4 rounded-xl bg-slate-900 border border-purple-500/50 text-slate-200 font-bold text-lg"></div>
         </div>
     </main>
@@ -65,14 +71,13 @@
 
     <script>
         const rawMcqData = [
-            // Phần 1 & 2
             { id: 1, q: "[Bài 2] Thời kì xác lập chủ nghĩa tư bản là thời kỳ:", a: "Tự do cạnh tranh", o: ["Tự do cạnh tranh", "Hình thành độc quyền", "Áp bức bóc lột của chính quyền đối với giai cấp tư sản", "Áp bức đè nén của giai cấp tư sản đối với chính quyền"], exp: "Theo tài liệu ôn tập, thời kì xác lập chủ nghĩa tư bản là thời kỳ tự do cạnh tranh." },
             { id: 2, q: "[Bài 2] Chủ nghĩa đế quốc là:", a: "Hệ quả trực tiếp của quá trình xâm lược thuộc địa nhằm tìm kiếm thị trường, thu lợi nhuận và đầu tư tư bản ở nước ngoài", o: ["Hệ quả trực tiếp của quá trình xâm lược thuộc địa nhằm tìm kiếm thị trường, thu lợi nhuận và đầu tư tư bản ở nước ngoài", "Hệ quả gián tiếp của quá trình xâm lược thuộc địa nhằm tìm kiếm thị trường, thu lợi nhuận và đầu tư tư bản ở nước ngoài", "Hệ quả trực tiếp của việc tái thiết trật tự thế giới mới giữa các siêu cường", "Hệ quả gián tiếp của việc tái thiết trật tự thế giới mới giữa các siêu cường"], exp: "Chủ nghĩa đế quốc là hệ quả trực tiếp của quá trình xâm lược thuộc địa." },
             { id: 3, q: "[Bài 2] Trong số các nước đế quốc, nước nào được mệnh danh là “đế quốc mà Mặt Trời không bao giờ lặn”?", a: "Anh", o: ["Anh", "Pháp", "Mỹ", "Đức"], exp: "Đế quốc Anh được mệnh danh là đế quốc mà Mặt Trời không bao giờ lặn." },
             { id: 4, q: "[Bài 2] Đâu là một thuộc địa của Pháp?", a: "Algeria", o: ["Canada", "Ấn Độ", "Kazakhstan", "Algeria"], exp: "Algeria là một thuộc địa nổi tiếng của Pháp ở châu Phi." },
             { id: 5, q: "[Bài 2] Đầu thế kỷ XX, hệ thống thuộc địa của chủ nghĩa thực dân không được thiết lập ở", a: "châu Âu", o: ["châu Á", "châu Phi", "châu Âu", "châu Mỹ"], exp: "Châu Âu là các chính quốc tư bản, không phải là thuộc địa của chủ nghĩa thực dân." },
             { id: 6, q: "[Bài 2] “Điều quan trọng là chủ nghĩa tư bản không thể tồn tại và phát triển được nếu không thường xuyên mở rộng phạm vi thống trị của nó...” Đây là quan điểm của ai?", a: "V. I. Lenin", o: ["Hồ Chí Minh", "Karl Marx", "F. Engels", "V. I. Lenin"], exp: "Đây là quan điểm nổi tiếng của V. I. Lenin." },
-            { id: 7, q: "[Bài 2] Nước nào ở khu vực Mỹ Latin là thuộc địa của Bồ Đào Nha?", a: "Brazil", o: ["Colombia", "Brazil", "Argentina", "Chile"], exp: "Brazil là thuộc địa của Bồ Đào Nha ở khu vực Mỹ Latinh[span_6](start_span)[span_6](end_span)." },
+            { id: 7, q: "[Bài 2] Nước nào ở khu vực Mỹ Latin là thuộc địa của Bồ Đào Nha?", a: "Brazil", o: ["Colombia", "Brazil", "Argentina", "Chile"], exp: "Brazil là thuộc địa của Bồ Đào Nha ở khu vực Mỹ Latinh." },
             { id: 8, q: "[Bài 2] Nội dung nào sau đây không phản ánh đúng vai trò của thuộc địa đối với các nước đế quốc?", a: "Là đồng minh chiến lược trong chiến tranh", o: ["Nơi cung cấp nhiên liệu và nhân công", "Thị trường đầu tư và tiêu thụ hàng hóa", "Là cơ sở phục vụ cho các cuộc chiến tranh", "Là đồng minh chiến lược trong chiến tranh"], exp: "Thuộc địa bị các nước đế quốc bóc lột, không phải là 'đồng minh chiến lược' bình đẳng." },
             { id: 9, q: "[Bài 2] Nguyên nhân trực tiếp nào đã thúc đẩy các nước đế quốc tiến hành xâm lược các nước châu Á, Phi, Mỹ Latinh?", a: "Do nhu cầu về nguyên liệu và nhân công", o: ["Do nhu cầu về nguyên liệu và nhân công", "Khát vọng chinh phục những vùng đất mới", "Thực hiện tham vọng bá chủ toàn thế giới", "Thúc đẩy sự giao lưu văn hóa các châu lục"], exp: "Do nhu cầu bức thiết về nguyên liệu và nhân công cho nền công nghiệp tư bản." },
             { id: 10, q: "[Bài 2] Ở châu Á, cuộc Duy tân Minh Trị bắt đầu từ năm 1868, đã đưa Nhật Bản:", a: "Từ một nước phong kiến trở thành nước tư bản chủ nghĩa", o: ["Từ một nước phong kiến trở thành nước vô sản chủ nghĩa", "Từ một nước phong kiến trở thành nước tư bản chủ nghĩa", "Từ một nước cộng sản chủ nghĩa trở thành một nước tư bản chủ nghĩa", "Từ một nước với chế độ quân chủ lập hiến trở thành một nước với chế độ cộng hoà tổng thống"], exp: "Duy tân Minh Trị đưa Nhật Bản từ nước phong kiến sang tư bản chủ nghĩa." },
@@ -172,8 +177,15 @@
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
+        function resetQuiz() {
+            initQuiz();
+            const resultEl = document.getElementById('total-result');
+            resultEl.classList.add('hidden');
+            resultEl.innerHTML = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         window.onload = initQuiz;
     </script>
 </body>
-  </html>
-  
+</html>
