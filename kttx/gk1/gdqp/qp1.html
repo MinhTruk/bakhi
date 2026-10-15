@@ -15,49 +15,58 @@
 
     <!-- Header -->
     <header class="w-full bg-slate-800/85 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
-        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <a href="./indexqp.html" class="p-2 bg-rose-600 rounded-lg text-white hover:bg-rose-500 transition">
                     <i class="fa-solid fa-arrow-left text-lg"></i>
                 </a>
                 <div>
                     <h1 class="text-base md:text-lg font-bold leading-tight">Bài 1: Bảo Vệ Chủ Quyền Lãnh Thổ, Biên Giới Quốc Gia</h1>
-                    <p class="text-xs text-slate-400">35 Câu hỏi trắc nghiệm vận dụng, phân tích và thực tế</p>
+                    <p class="text-xs text-slate-400">Làm từng câu - Kiểm tra và giải thích ngay</p>
                 </div>
             </div>
-            <a href="./indexqp.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
-                <i class="fa-solid fa-house text-rose-400"></i>
-                <span>Quay Lại</span>
-            </a>
+            <button onclick="initQuiz()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>Làm Lại</span>
+            </button>
         </div>
     </header>
 
     <!-- Main Content Container -->
-    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow space-y-8">
+    <main class="max-w-3xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col justify-center">
 
-        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
-                <div class="flex items-center space-x-3">
-                    <span class="p-2.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl">
-                        <i class="fa-solid fa-list-check text-lg"></i>
-                    </span>
-                    <div>
-                        <h2 class="text-xl font-bold text-white">Đề Thi Trắc Nghiệm (35 Câu)</h2>
-                        <p class="text-xs text-slate-400">Chọn 1 đáp án đúng nhất cho mỗi câu hỏi</p>
-                    </div>
-                </div>
+        <!-- Quiz Box (Hiển thị từng câu) -->
+        <section id="quiz-card-container" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+            <!-- Progress & Score Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60 text-xs md:text-sm">
+                <span id="question-counter" class="font-bold text-rose-400">Câu 1 / 35</span>
+                <span class="text-slate-300">Đúng: <strong id="live-score" class="text-emerald-400">0</strong></span>
             </div>
-            <div id="mcq-container" class="space-y-6"></div>
+
+            <!-- Question & Options will be injected here -->
+            <div id="single-question-box" class="space-y-6"></div>
         </section>
 
-        <!-- SUBMIT -->
-        <div class="p-6 bg-slate-800 border border-slate-700 rounded-2xl text-center space-y-4 shadow-2xl">
-            <button type="button" onclick="checkAllAnswers()" class="px-8 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-base inline-flex items-center space-x-2 cursor-pointer">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <span>Nộp Bài & Kiểm Tra Kết Quả</span>
-            </button>
-            <div id="total-result" class="hidden p-4 rounded-xl bg-slate-900 border border-rose-500/50 text-slate-200 font-bold text-lg"></div>
-        </div>
+        <!-- Result Screen (Hiện khi hoàn thành hết câu cuối) -->
+        <section id="result-screen" class="hidden bg-slate-800/90 border border-slate-700 rounded-2xl p-8 text-center shadow-2xl space-y-6">
+            <div class="w-20 h-20 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-full flex items-center justify-center mx-auto text-3xl">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <div class="space-y-2">
+                <h2 class="text-2xl font-bold text-white">Hoàn Thành Bài Kiểm Tra!</h2>
+                <p class="text-slate-400 text-sm">Bạn đã hoàn thành xuất sắc tất cả các câu hỏi.</p>
+            </div>
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 max-w-xs mx-auto">
+                <div class="text-4xl font-black text-rose-400 mb-1" id="final-score">0 / 35</div>
+                <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Kết quả tổng kết</div>
+            </div>
+            <div>
+                <button onclick="initQuiz()" class="px-8 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-sm inline-flex items-center space-x-2">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Làm Lại Từ Đầu</span>
+                </button>
+            </div>
+        </section>
 
     </main>
 
@@ -77,7 +86,7 @@
                     "Việc ký kết các hiệp ước liên minh quân sự song phương",
                     "Sự hỗ trợ kỹ thuật vũ khí hiện đại từ nước ngoài"
                 ],
-                exp: "Theo quan điểm chiến lược, nội lực (sức mạnh bên trong của đất nước, con người, kinh tế, chính trị) luôn là nhân tố quyết định hàng đầu[cite: 16]."
+                exp: "Theo quan điểm chiến lược, nội lực (sức mạnh bên trong của đất nước, con người, kinh tế, chính trị) luôn là nhân tố quyết định hàng đầu."
             },
             {
                 id: 2,
@@ -89,7 +98,7 @@
                     "Bộ Ngoại giao toàn quyền quyết định không cần thông qua cơ quan khác",
                     "Ủy ban nhân dân các tỉnh ven biển hiệp thương thống nhất"
                 ],
-                exp: "Căn cứ theo Luật Biển Việt Nam, đường cơ sở thẳng dùng để tính chiều rộng lãnh hải do Chính phủ công bố sau khi được UBTV Quốc hội phê chuẩn[cite: 19]."
+                exp: "Căn cứ theo Luật Biển Việt Nam, đường cơ sở thẳng dùng để tính chiều rộng lãnh hải do Chính phủ công bố sau khi được UBTV Quốc hội phê chuẩn."
             },
             {
                 id: 3,
@@ -101,7 +110,7 @@
                     "Vùng tiếp giáp lãnh hải",
                     "Vùng đặc quyền kinh tế"
                 ],
-                exp: "Lãnh hải là vùng biển rộng 12 hải lý tính từ đường cơ sở, ranh giới ngoài của nó là biên giới quốc gia trên biển của Việt Nam[cite: 20]."
+                exp: "Lãnh hải là vùng biển rộng 12 hải lý tính từ đường cơ sở, ranh giới ngoài của nó là biên giới quốc gia trên biển của Việt Nam."
             },
             {
                 id: 4,
@@ -113,7 +122,7 @@
                     "Thềm lục địa",
                     "Nội thủy"
                 ],
-                exp: "Vùng tiếp giáp lãnh hải có chiều rộng 12 hải lý tính từ ranh giới ngoài của lãnh hải nhằm bảo vệ các quyền hải quan, tài chính, y tế...[cite: 20]."
+                exp: "Vùng tiếp giáp lãnh hải có chiều rộng 12 hải lý tính từ ranh giới ngoài của lãnh hải nhằm bảo vệ các quyền hải quan, tài chính, y tế...."
             },
             {
                 id: 5,
@@ -125,7 +134,7 @@
                     "100 hải lý",
                     "24 hải lý"
                 ],
-                exp: "Ranh giới ngoài thềm lục địa kéo dài tới mép ngoài của rìa lục địa, nhưng cách đường cơ sở không quá 350 hải lý[cite: 20]."
+                exp: "Ranh giới ngoài thềm lục địa kéo dài tới mép ngoài của rìa lục địa, nhưng cách đường cơ sở không quá 350 hải lý."
             },
             {
                 id: 6,
@@ -137,7 +146,7 @@
                     "Các tập đoàn kinh tế tư bản nước ngoài đầu tư hợp pháp tại Việt Nam",
                     "Các tổ chức phi chính phủ quốc tế hỗ trợ nhân đạo không điều kiện"
                 ],
-                exp: "Bất kì thế lực nào có âm mưu và hành động chống phá mục tiêu của Nhà nước ta đều là đối tượng đấu tranh[cite: 17]."
+                exp: "Bất kì thế lực nào có âm mưu và hành động chống phá mục tiêu của Nhà nước ta đều là đối tượng đấu tranh."
             },
             {
                 id: 7,
@@ -149,7 +158,7 @@
                     "Hệ thống hàng rào kẽm gai kiên cố toàn tuyến",
                     "Các dòng sông suối tự nhiên hoàn toàn không cắm mốc"
                 ],
-                exp: "Biên giới trên đất liền được đánh dấu bằng hệ thống mốc quốc giới[cite: 17]."
+                exp: "Biên giới trên đất liền được đánh dấu bằng hệ thống mốc quốc giới."
             },
             {
                 id: 8,
@@ -161,7 +170,7 @@
                     "20 km",
                     "50 km"
                 ],
-                exp: "Khu vực biên giới trên không gồm không gian dọc biên giới quốc gia có chiều rộng 10 km tính từ biên giới quốc gia trở vào[cite: 18]."
+                exp: "Khu vực biên giới trên không gồm không gian dọc biên giới quốc gia có chiều rộng 10 km tính từ biên giới quốc gia trở vào."
             },
             {
                 id: 9,
@@ -173,7 +182,7 @@
                     "Tổ chức giao lưu văn hóa truyền thống giữa các bản làng hai bên biên giới",
                     "Xây dựng các công trình cơ sở hạ tầng phục vụ dân sinh theo quy hoạch"
                 ],
-                exp: "Xê dịch, phá hoại mốc giới, làm thay đổi dòng chảy biên giới là hành vi vi phạm pháp luật nghiêm trọng bị nghiêm cấm[cite: 18]."
+                exp: "Xê dịch, phá hoại mốc giới, làm thay đổi dòng chảy biên giới là hành vi vi phạm pháp luật nghiêm trọng bị nghiêm cấm."
             },
             {
                 id: 10,
@@ -185,7 +194,7 @@
                     "Vùng đặc quyền kinh tế",
                     "Vùng tiếp giáp lãnh hải"
                 ],
-                exp: "Nội thủy là vùng nước tiếp giáp với bờ biển, ở phía trong đường cơ sở và là bộ phận lãnh thổ của Việt Nam[cite: 19]."
+                exp: "Nội thủy là vùng nước tiếp giáp với bờ biển, ở phía trong đường cơ sở và là bộ phận lãnh thổ của Việt Nam."
             },
             {
                 id: 11,
@@ -197,7 +206,7 @@
                     "Năm 2012",
                     "Năm 1975"
                 ],
-                exp: "Ngày 23/6/1994, Quốc hội khóa IX đã thông qua Nghị quyết phê chuẩn Công ước của Liên hợp quốc về Luật Biển năm 1982[cite: 19]."
+                exp: "Ngày 23/6/1994, Quốc hội khóa IX đã thông qua Nghị quyết phê chuẩn Công ước của Liên hợp quốc về Luật Biển năm 1982."
             },
             {
                 id: 12,
@@ -209,7 +218,7 @@
                     "10 chương, 120 điều",
                     "3 chương, 15 điều"
                 ],
-                exp: "Luật Biển Việt Nam năm 2012 gồm 7 chương và 55 điều[cite: 19]."
+                exp: "Luật Biển Việt Nam năm 2012 gồm 7 chương và 55 điều."
             },
             {
                 id: 13,
@@ -221,7 +230,7 @@
                     "Vùng tiếp giáp lãnh hải",
                     "Nội thủy"
                 ],
-                exp: "Vùng đặc quyền kinh tế rộng 200 hải lý tính từ đường cơ sở[cite: 20]."
+                exp: "Vùng đặc quyền kinh tế rộng 200 hải lý tính từ đường cơ sở."
             },
             {
                 id: 14,
@@ -233,7 +242,7 @@
                     "Các công trình nhân tạo nổi trên mặt biển do con người bồi đắp",
                     "Tập hợp các bãi cạn san hô ngầm dưới đáy biển"
                 ],
-                exp: "Đảo là vùng đất tự nhiên có nước bao bọc, khi thủy triều lên vẫn nổi trên mặt nước[cite: 20]."
+                exp: "Đảo là vùng đất tự nhiên có nước bao bọc, khi thủy triều lên vẫn nổi trên mặt nước."
             },
             {
                 id: 15,
@@ -245,7 +254,7 @@
                     "Hội nhập kinh tế quốc tế và độc lập tự chủ tài chính",
                     "Cải cách giáo dục và hiện đại hóa công nghiệp quốc phòng"
                 ],
-                exp: "Hai nhiệm vụ chiến lược xuyên suốt là xây dựng và bảo vệ Tổ quốc[cite: 16]."
+                exp: "Hai nhiệm vụ chiến lược xuyên suốt là xây dựng và bảo vệ Tổ quốc."
             },
             {
                 id: 16,
@@ -257,7 +266,7 @@
                     "Vùng đặc quyền kinh tế",
                     "Thềm lục địa"
                 ],
-                exp: "Ranh giới ngoài của lãnh hải chính là biên giới quốc gia trên biển của Việt Nam[cite: 20]."
+                exp: "Ranh giới ngoài của lãnh hải chính là biên giới quốc gia trên biển của Việt Nam."
             },
             {
                 id: 17,
@@ -269,7 +278,7 @@
                     "Đi lại thăm thân nhân có khai báo đầy đủ tại các cửa khẩu quốc tế",
                     "Hợp tác đánh bắt hải sản chung theo hiệp định giữa các chính phủ"
                 ],
-                exp: "Buôn lậu và vận chuyển trái phép chất cấm, vũ khí qua biên giới là hành vi bị nghiêm cấm tuyệt đối[cite: 18]."
+                exp: "Buôn lậu và vận chuyển trái phép chất cấm, vũ khí qua biên giới là hành vi bị nghiêm cấm tuyệt đối."
             },
             {
                 id: 18,
@@ -281,7 +290,7 @@
                     "Liên minh quân sự chặt chẽ với một siêu cường để làm chỗ dựa",
                     "Chỉ hợp tác ngoại giao với các nước có cùng chế độ chính trị xã hội"
                 ],
-                exp: "Đảng chủ trương độc lập, tự chủ, đa phương hóa, đa dạng hóa và chủ động hội nhập quốc tế[cite: 17]."
+                exp: "Đảng chủ trương độc lập, tự chủ, đa phương hóa, đa dạng hóa và chủ động hội nhập quốc tế."
             },
             {
                 id: 19,
@@ -293,7 +302,7 @@
                     "Vùng tiếp giáp lãnh hải",
                     "Nội thủy"
                 ],
-                exp: "Định nghĩa thềm lục địa theo Luật Biển Việt Nam[cite: 20]."
+                exp: "Định nghĩa thềm lục địa theo Luật Biển Việt Nam."
             },
             {
                 id: 20,
@@ -305,7 +314,7 @@
                     "Chỉ bao gồm các rạn san hô chìm dưới mặt nước biển",
                     "Chỉ bao gồm các đảo do con người nhân tạo xây dựng nên"
                 ],
-                exp: "Quần đảo là tập hợp các đảo, bộ phận đảo, vùng nước tiếp liền và các thành phần tự nhiên liên quan chặt chẽ[cite: 20]."
+                exp: "Quần đảo là tập hợp các đảo, bộ phận đảo, vùng nước tiếp liền và các thành phần tự nhiên liên quan chặt chẽ."
             },
             {
                 id: 21,
@@ -317,7 +326,7 @@
                     "Tự ý đàm phán ngoại giao với người nước ngoài về vấn đề biển đảo",
                     "Thành lập các hội nhóm vũ trang tự vệ bảo vệ địa phương"
                 ],
-                exp: "Trách nhiệm của học sinh là học tập, nâng cao nhận thức, chấp hành nghiêm pháp luật và tuyên truyền đúng đắn[cite: 21]."
+                exp: "Trách nhiệm của học sinh là học tập, nâng cao nhận thức, chấp hành nghiêm pháp luật và tuyên truyền đúng đắn."
             },
             {
                 id: 22,
@@ -329,7 +338,7 @@
                     "Đăng tải thông tin chưa kiểm chứng lên mạng xã hội để câu tương tác",
                     "Giữ im lặng để tránh vướng vào rắc rối cá nhân"
                 ],
-                exp: "Học sinh cần báo cáo kịp thời cho nhà trường, chính quyền hoặc bộ đội biên phòng/công an khi phát hiện vi phạm[cite: 21]."
+                exp: "Học sinh cần báo cáo kịp thời cho nhà trường, chính quyền hoặc bộ đội biên phòng/công an khi phát hiện vi phạm."
             },
             {
                 id: 23,
@@ -341,7 +350,7 @@
                     "Ngày 23/6/1994",
                     "Ngày 30/4/1975"
                 ],
-                exp: "Công ước được công bố ngày 10/12/1982 và chính thức có hiệu lực từ ngày 16/11/1994[cite: 18]."
+                exp: "Công ước được công bố ngày 10/12/1982 và chính thức có hiệu lực từ ngày 16/11/1994."
             },
             {
                 id: 24,
@@ -353,7 +362,7 @@
                     "Việc dựng nước khó khăn hơn rất nhiều so với việc giữ nước",
                     "Truyền thống lịch sử dựng nước chỉ gắn liền với thời đại các Vua Hùng"
                 ],
-                exp: "Câu nói khẳng định trách nhiệm bảo vệ giang sơn đất nước là truyền thống và nhiệm vụ chung của toàn Đảng, toàn dân và toàn quân[cite: 16]."
+                exp: "Câu nói khẳng định trách nhiệm bảo vệ giang sơn đất nước là truyền thống và nhiệm vụ chung của toàn Đảng, toàn dân và toàn quân."
             },
             {
                 id: 25,
@@ -365,7 +374,7 @@
                     "Nội thủy",
                     "Vùng tiếp giáp lãnh hải"
                 ],
-                exp: "Vùng biển quốc tế nằm ngoài vùng đặc quyền kinh tế của Việt Nam và các quốc gia khác[cite: 19]."
+                exp: "Vùng biển quốc tế nằm ngoài vùng đặc quyền kinh tế của Việt Nam và các quốc gia khác."
             },
             {
                 id: 26,
@@ -377,7 +386,7 @@
                     "Những quốc gia ký kết hiệp ước bảo chứng hạt nhân cho Việt Nam",
                     "Các nước viện trợ không hoàn lại toàn bộ ngân sách quốc phòng hàng năm"
                 ],
-                exp: "Định nghĩa đối tác là những ai tôn trọng độc lập chủ quyền và hợp tác bình đẳng với Việt Nam[cite: 17]."
+                exp: "Định nghĩa đối tác là những ai tôn trọng độc lập chủ quyền và hợp tác bình đẳng với Việt Nam."
             },
             {
                 id: 27,
@@ -389,7 +398,7 @@
                     "Môi trường cô lập hoàn toàn với nền kinh tế thương mại toàn cầu",
                     "Môi trường phụ thuộc hoàn toàn vào hệ thống an ninh khu vực"
                 ],
-                exp: "Giữ vững môi trường hoà bình, ổn định chính trị, an ninh quốc gia, an ninh con người là mục tiêu quan trọng[cite: 16]."
+                exp: "Giữ vững môi trường hoà bình, ổn định chính trị, an ninh quốc gia, an ninh con người là mục tiêu quan trọng."
             },
             {
                 id: 28,
@@ -401,7 +410,7 @@
                     "Chỉ bị cấm vào ban đêm còn ban ngày được tự do thực hiện",
                     "Được tự do tổ chức nếu phục vụ mục đích thể thao giải trí"
                 ],
-                exp: "Đây là các hành vi bị nghiêm cấm nhằm bảo đảm an ninh biên giới và an toàn hàng không[cite: 18]."
+                exp: "Đây là các hành vi bị nghiêm cấm nhằm bảo đảm an ninh biên giới và an toàn hàng không."
             },
             {
                 id: 29,
@@ -413,7 +422,7 @@
                     "Khả năng ngoại ngữ thành thạo để giao lưu với lực lượng tuần tra nước ngoài",
                     "Nguồn lực tài chính lớn để đóng góp xây dựng đồn biên phòng"
                 ],
-                exp: "Công dân cần có ý thức giác ngộ, thượng tôn pháp luật và trách nhiệm đối với chủ quyền thiêng liêng[cite: 21]."
+                exp: "Công dân cần có ý thức giác ngộ, thượng tôn pháp luật và trách nhiệm đối với chủ quyền thiêng liêng."
             },
             {
                 id: 30,
@@ -425,7 +434,7 @@
                     "Thường xuyên nêu cao tinh thần cảnh giác cách mạng trước âm mưu chống phá",
                     "Tích cực tham gia tuyên truyền, vận động người thân chấp hành pháp luật biên giới"
                 ],
-                exp: "Công dân không có thẩm quyền tiến hành các hoạt động ngoại giao chính thức thay mặt Nhà nước khi chưa được phân công[cite: 21]."
+                exp: "Công dân không có thẩm quyền tiến hành các hoạt động ngoại giao chính thức thay mặt Nhà nước khi chưa được phân công."
             },
             {
                 id: 31,
@@ -437,7 +446,7 @@
                     "Phụ thuộc hoàn toàn vào các liên minh quân sự quốc tế để giải quyết tranh chấp",
                     "Chỉ sử dụng nguồn lực kinh tế bên ngoài để phát triển quốc phòng"
                 ],
-                exp: "Sức mạnh dân tộc kết hợp sức mạnh thời đại là nội lực trong nước kết hợp tranh thủ đồng thuận quốc tế[cite: 16]."
+                exp: "Sức mạnh dân tộc kết hợp sức mạnh thời đại là nội lực trong nước kết hợp tranh thủ đồng thuận quốc tế."
             },
             {
                 id: 32,
@@ -449,7 +458,7 @@
                     "Thềm lục địa",
                     "Vùng tiếp giáp lãnh hải"
                 ],
-                exp: "Nội thủy là vùng nước phía trong đường cơ sở, là bộ phận lãnh thổ và quốc gia có chủ quyền hoàn toàn tuyệt đối[cite: 19]."
+                exp: "Nội thủy là vùng nước phía trong đường cơ sở, là bộ phận lãnh thổ và quốc gia có chủ quyền hoàn toàn tuyệt đối."
             },
             {
                 id: 33,
@@ -461,7 +470,7 @@
                     "Quyền khai thác khoáng sản đáy đại dương sâu",
                     "Thỏa thuận ngoại giao văn hóa giữa các nước láng giềng"
                 ],
-                exp: "Buôn lậu qua biên giới xâm phạm trật tự an toàn xã hội và chủ quyền biên giới quốc gia[cite: 18]."
+                exp: "Buôn lậu qua biên giới xâm phạm trật tự an toàn xã hội và chủ quyền biên giới quốc gia."
             },
             {
                 id: 34,
@@ -473,7 +482,7 @@
                     "Thành lập khu vực kinh tế phi thuế quan chung",
                     "Xây dựng tường rào thép gai toàn tuyến liên tục"
                 ],
-                exp: "Biên giới trên đất liền được hoạch định và đánh dấu bằng hệ thống mốc quốc giới[cite: 17]."
+                exp: "Biên giới trên đất liền được hoạch định và đánh dấu bằng hệ thống mốc quốc giới."
             },
             {
                 id: 35,
@@ -485,9 +494,13 @@
                     "Mở rộng lãnh thổ thông qua các chiến dịch quân sự tự vệ",
                     "Đảm bảo tốc độ tăng trưởng kinh tế luôn dẫn đầu thế giới"
                 ],
-                exp: "Mục tiêu cốt lõi là bảo vệ vững chắc độc lập, chủ quyền, thống nhất, toàn vẹn lãnh thổ của Tổ quốc[cite: 16]."
+                exp: "Mục tiêu cốt lõi là bảo vệ vững chắc độc lập, chủ quyền, thống nhất, toàn vẹn lãnh thổ của Tổ quốc."
             }
         ];
+
+        let shuffledMcq = [];
+        let currentIndex = 0;
+        let score = 0;
 
         function shuffleArray(array) {
             let arr = [...array];
@@ -498,79 +511,99 @@
             return arr;
         }
 
-        let shuffledMcq = [];
-
         function initQuiz() {
             shuffledMcq = shuffleArray(rawMcqData).map(item => {
                 const correctVal = item.a;
                 const shuffledOpts = shuffleArray(item.o);
                 return { ...item, o: shuffledOpts, a: correctVal };
             });
-            renderMCQ();
+            currentIndex = 0;
+            score = 0;
+            document.getElementById('live-score').textContent = "0";
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-card-container').classList.remove('hidden');
+            renderCurrentQuestion();
         }
 
-        function renderMCQ() {
-            const container = document.getElementById('mcq-container');
-            container.innerHTML = shuffledMcq.map((item, idx) => `
-                <div class="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
-                    <div class="font-medium text-slate-100 text-sm md:text-base">
-                        <span class="text-rose-400 font-bold">Câu ${idx + 1}:</span> ${item.q}
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="options-group-${item.id}">
-                        ${item.o.map((opt, oIdx) => `
-                            <label id="label-opt-${item.id}-${oIdx}" class="p-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-lg flex items-center space-x-3 cursor-pointer text-xs md:text-sm transition">
-                                <input type="radio" name="mcq-${item.id}" value="${opt}" class="accent-rose-500">
-                                <span>${['A', 'B', 'C', 'D'][oIdx]}.${opt}</span>
-                            </label>
-                        `).join('')}
-                    </div>
-                    <div id="mcq-feedback-${item.id}" class="hidden mt-2 p-3 rounded-lg text-xs font-medium border"></div>
+        function renderCurrentQuestion() {
+            const item = shuffledMcq[currentIndex];
+            document.getElementById('question-counter').textContent = `Câu ${currentIndex + 1} / ${shuffledMcq.length}`;
+            
+            const container = document.getElementById('single-question-box');
+            container.innerHTML = `
+                <div class="font-medium text-slate-100 text-base md:text-lg leading-relaxed">
+                    ${item.q}
                 </div>
-            `).join('');
+                <div class="grid grid-cols-1 gap-3" id="options-group">
+                    ${item.o.map((opt, oIdx) => `
+                        <label id="label-opt-${oIdx}" class="p-3.5 bg-slate-900/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center space-x-3 cursor-pointer text-sm md:text-base transition">
+                            <input type="radio" name="current-opt" value="${opt}" onclick="handleSelect('${opt.replace(/'/g, "\\'")}')" class="accent-rose-500 w-4 h-4">
+                            <span><strong class="text-rose-400 mr-2">${['A', 'B', 'C', 'D'][oIdx]}.</strong>${opt}</span>
+                        </label>
+                    `).join('')}
+                </div>
+                <div id="feedback-box" class="hidden mt-4 p-4 rounded-xl text-xs md:text-sm font-medium border space-y-3"></div>
+            `;
         }
 
-        function checkAllAnswers() {
-            let correctMCQ = 0;
-            shuffledMcq.forEach(item => {
-                const checkedInput = document.querySelector(`input[name="mcq-${item.id}"]:checked`);
-                const feedbackEl = document.getElementById(`mcq-feedback-${item.id}`);
-                feedbackEl.classList.remove('hidden');
+        function handleSelect(selectedVal) {
+            const item = shuffledMcq[currentIndex];
+            const isCorrect = (selectedVal === item.a);
 
-                item.o.forEach((opt, oIdx) => {
-                    const labelEl = document.getElementById(`label-opt-${item.id}-${oIdx}`);
-                    const radioInput = labelEl.querySelector('input');
-                    labelEl.className = "p-3 border rounded-lg flex items-center space-x-3 text-xs md:text-sm transition ";
-                    if (opt === item.a) {
-                        labelEl.className += "bg-emerald-950/80 border-emerald-600 text-emerald-200 font-semibold";
-                    } else if (radioInput && radioInput.checked && radioInput.value !== item.a) {
-                        labelEl.className += "bg-rose-950/80 border-rose-600 text-rose-200";
-                    } else {
-                        labelEl.className += "bg-slate-800/50 border-slate-700 text-slate-300 opacity-70";
-                    }
-                });
+            if (isCorrect) {
+                score++;
+                document.getElementById('live-score').textContent = score;
+            }
 
-                if (checkedInput) {
-                    if (checkedInput.value === item.a) {
-                        correctMCQ++;
-                        feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-emerald-950/60 border-emerald-800 text-emerald-300";
-                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <b>Chính xác!</b> <em>Giải thích:</em> ${item.exp}`;
-                    } else {
-                        feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-rose-950/60 border-rose-800 text-rose-300";
-                        feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> <b>Chưa đúng.</b> <em>Giải thích:</em> ${item.exp}`;
-                    }
+            // Vô hiệu hóa các nút sau khi chọn
+            const allRadios = document.querySelectorAll('input[name="current-opt"]');
+            allRadios.forEach(radio => radio.disabled = true);
+
+            item.o.forEach((opt, oIdx) => {
+                const labelEl = document.getElementById(`label-opt-${oIdx}`);
+                labelEl.classList.remove('cursor-pointer', 'hover:bg-slate-700/80');
+                if (opt === item.a) {
+                    labelEl.className = "p-3.5 border rounded-xl flex items-center space-x-3 text-sm md:text-base transition bg-emerald-950/80 border-emerald-600 text-emerald-200 font-semibold";
+                } else if (opt === selectedVal && !isCorrect) {
+                    labelEl.className = "p-3.5 border rounded-xl flex items-center space-x-3 text-sm md:text-base transition bg-rose-950/80 border-rose-600 text-rose-200";
                 } else {
-                    feedbackEl.className = "mt-2 p-3 rounded-lg text-xs font-medium border bg-amber-950/60 border-amber-800 text-amber-300";
-                    feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Bạn chưa chọn đáp án!</b> <em>Giải thích:</em> ${item.exp}`;
+                    labelEl.className = "p-3.5 border rounded-xl flex items-center space-x-3 text-sm md:text-base transition bg-slate-900/40 border-slate-800 text-slate-400 opacity-50";
                 }
             });
 
-            const resultEl = document.getElementById('total-result');
-            resultEl.classList.remove('hidden');
-            resultEl.innerHTML = `
-                <div>Tổng kết: <span class="text-rose-400">${correctMCQ}/${shuffledMcq.length}</span> câu đúng</div>
-                <div class="text-xs font-normal text-slate-400 mt-1">* Đáp án đúng đã được hiển thị màu xanh, đáp án sai chọn nhầm hiển thị màu đỏ!</div>
-            `;
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            // Hiển thị feedback và nút "Câu tiếp theo"
+            const feedbackBox = document.getElementById('feedback-box');
+            feedbackBox.classList.remove('hidden');
+            
+            if (isCorrect) {
+                feedbackBox.className = "mt-4 p-4 rounded-xl text-xs md:text-sm font-medium border bg-emerald-950/60 border-emerald-800 text-emerald-300 space-y-3";
+                feedbackBox.innerHTML = `
+                    <div><i class="fa-solid fa-circle-check"></i> <b>Chính xác!</b> <em>Giải thích:</em> ${item.exp}</div>
+                    <div><button onclick="nextQuestion()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow transition">Câu tiếp theo <i class="fa-solid fa-arrow-right ml-1"></i></button></div>
+                `;
+            } else {
+                feedbackBox.className = "mt-4 p-4 rounded-xl text-xs md:text-sm font-medium border bg-rose-950/60 border-rose-800 text-rose-300 space-y-3";
+                feedbackBox.innerHTML = `
+                    <div><i class="fa-solid fa-circle-xmark"></i> <b>Chưa đúng!</b> <em>Giải thích:</em> ${item.exp}</div>
+                    <div><button onclick="nextQuestion()" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg shadow transition">Câu tiếp theo <i class="fa-solid fa-arrow-right ml-1"></i></button></div>
+                `;
+            }
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < shuffledMcq.length) {
+                renderCurrentQuestion();
+            } else {
+                showFinalResult();
+            }
+        }
+
+        function showFinalResult() {
+            document.getElementById('quiz-card-container').classList.add('hidden');
+            const resultScreen = document.getElementById('result-screen');
+            resultScreen.classList.remove('hidden');
+            document.getElementById('final-score').textContent = `${score} / ${shuffledMcq.length}`;
         }
 
         window.onload = initQuiz;
