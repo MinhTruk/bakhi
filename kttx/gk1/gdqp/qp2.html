@@ -1,432 +1,642 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trắc Nghiệm Bài 2: Luật Nghĩa vụ quân sự và trách nhiệm của học sinh - GDQP 11</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Lexend', sans-serif; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KTTX GDQP-AN 11 - Bài 2: Luật Nghĩa Vụ Quân Sự</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap');
+:root{
+  color-scheme: dark;
+  --bg: #0b0f19;
+  --panel: rgba(19, 28, 48, 0.85);
+  --panel-solid: #131c30;
+  --ink: #f8fafc;
+  --muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-glow: rgba(59, 130, 246, 0.25);
+  --good: #10b981;
+  --good-bg: rgba(16, 185, 129, 0.15);
+  --bad: #f43f5e;
+  --bad-bg: rgba(244, 63, 94, 0.15);
+  --line: rgba(148, 163, 184, 0.15);
+  --radius: 20px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 50%, #080d16 100%);
+  color: var(--ink);
+  font: 15px/1.65 'Lexend', system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main{
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+header{
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+  padding: 16px max(16px, calc((100vw - 828px)/2));
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.header-top{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.header-left{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.back-btn{
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #cbd5e1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.back-btn:hover{background: #334155; color: #fff;}
+.header-actions{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+h1{font-size: clamp(1.1rem, 2.2vw, 1.35rem); line-height: 1.4; margin: 0 0 4px; font-weight: 700; color: #fff;}
+h2{font-size: clamp(1rem, 2.4vw, 1.2rem); line-height: 1.6; margin: 0 0 16px; font-weight: 600; color: #f1f5f9;}
+.sub{font-size: .8rem; color: var(--muted); margin: 0;}
+header .tag{
+  display: inline-block;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+header .progress-wrap{
+  max-width: 828px;
+  margin: 12px auto 0;
+  height: 6px;
+  background: #1e293b;
+  border-radius: 99px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+header .progress{
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  transition: width .35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+header .progress-label{
+  max-width: 828px;
+  margin: 6px auto 0;
+  font-size: .75rem;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+}
+.panel{
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: clamp(20px, 4vw, 36px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  backdrop-filter: blur(12px);
+  animation: fadeIn .3s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+#quiz .tag{
+  display: inline-flex;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.options{display: grid; gap: 12px; margin: 20px 0 0;}
+.option{
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+}
+.option:hover{
+  border-color: #60a5fa;
+  background: rgba(30, 41, 59, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.option input{
+  margin-top: 4px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+.option:has(input:checked){
+  border-color: var(--accent);
+  background: rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+button{
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 700;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+button:hover{transform: translateY(-2px); filter: brightness(1.1);}
+button:active{transform: translateY(0);}
+.primary{
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 8px 20px var(--accent-glow);
+}
+.primary:hover{background: var(--accent-hover);}
+.secondary{
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+.secondary:hover{background: #334155; color: #fff;}
+button:disabled{opacity: .45; cursor: not-allowed; transform: none !important; box-shadow: none !important;}
+.actions{display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px;}
+.feedback{
+  display: none;
+  margin-top: 22px;
+  border-radius: 14px;
+  padding: 18px;
+  background: var(--good-bg);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  animation: fadeIn .3s ease-out;
+}
+.feedback.wrong{
+  background: var(--bad-bg);
+  border-color: rgba(244, 63, 94, 0.3);
+}
+.feedback h3{margin: 0 0 8px; font-size: 1rem; display: flex; align-items: center; gap: 6px;}
+.feedback p{margin: 6px 0; font-size: .9rem; color: #e2e8f0; line-height: 1.6;}
+.note{font-size: .78rem; color: var(--muted); margin: 20px 4px 0; line-height: 1.6; border-left: 2px solid var(--accent); padding-left: 10px;}
+.source{font-size: .78rem; color: var(--muted); margin-top: 10px; padding-left: 12px;}
+
+/* Summary Panel */
+.summary{display: none; text-align: center;}
+.summary h2{font-size: 1.6rem; margin-bottom: 8px;}
+.score-badge{
+  display: inline-block;
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  padding: 10px 30px;
+  border-radius: 16px;
+  margin: 14px 0;
+  letter-spacing: -1px;
+}
+.summary p{color: #cbd5e1; font-size: 1rem; max-width: 500px; margin: 0 auto 24px;}
+.summary-actions{display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;}
+
+/* Modal Ma Trận */
+.modal-overlay{
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 15, 25, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-content{
+  background: var(--panel-solid);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  max-width: 600px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 24px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+  animation: fadeIn .25s ease-out;
+}
+.modal-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+.modal-header h3{margin: 0; font-size: 1.1rem; color: #fff;}
+.close-modal{
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+.close-modal:hover{background: rgba(255,255,255,0.1); color: #fff; transform: none;}
+
+footer{
+  padding: 20px;
+  text-align: center;
+  color: #64748b;
+  font-size: .75rem;
+  border-top: 1px solid var(--line);
+  margin-top: auto;
+}
+
+@media(max-width: 580px){
+  main{padding: 16px 12px 28px;}
+  .panel{border-radius: 16px; padding: 20px 16px;}
+  .actions button{flex: 1;}
+}
+</style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white">
+<body>
 
-    <!-- Header -->
-    <header class="w-full bg-slate-800/85 backdrop-blur border-b border-slate-700/60 sticky top-0 z-20">
-        <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <a href="./indexqp.html" class="p-2 bg-rose-600 rounded-lg text-white hover:bg-rose-500 transition">
-                    <i class="fa-solid fa-arrow-left text-lg"></i>
-                </a>
-                <div>
-                    <h1 class="text-base md:text-lg font-bold leading-tight">Bài 2: Luật Nghĩa vụ quân sự và trách nhiệm của học sinh</h1>
-                    <p class="text-xs text-slate-400">Làm từng câu - Kiểm tra và giải thích ngay</p>
-                </div>
-            </div>
-            <button onclick="initQuiz()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1">
-                <i class="fa-solid fa-rotate-right"></i>
-                <span>Làm Lại</span>
-            </button>
-        </div>
-    </header>
+<header>
+  <div class="header-top">
+    <div class="header-left">
+      <a href="./indexqp.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i><span>Quay lại</span></a>
+    </div>
+    <div class="header-actions">
+      <button class="back-btn" onclick="openMatrixModal()"><i class="fa-solid fa-table text-blue-400"></i><span>Xem ma trận</span></button>
+      <a href="../../../index.html" class="back-btn"><i class="fa-solid fa-house text-blue-400"></i><span>Trang chủ chính</span></a>
+    </div>
+  </div>
+  <div class="tag">Kiểm tra thường xuyên · GDQP-AN 11</div>
+  <h1>Bài 2: Luật Nghĩa vụ quân sự và trách nhiệm học sinh</h1>
+  <p class="sub">Lựa chọn đáp án đúng nhất, hệ thống sẽ tự động tổng kết kết quả sau khi hoàn thành.</p>
+  <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+  <div class="progress-label"><span id="progressText">Câu 1/15</span><span id="scoreText">Đúng: 0</span></div>
+</header>
 
-    <!-- Main Content Container -->
-    <main class="max-w-3xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col justify-center">
+<main>
+  <section class="panel" id="quiz">
+    <div class="tag" id="questionNumber">Câu 1</div>
+    <h2 id="question"></h2>
+    <div id="options" class="options"></div>
+    <div class="feedback" id="feedback" aria-live="polite"></div>
+    <div class="actions">
+      <button class="primary" id="checkBtn">Kiểm tra đáp án</button>
+      <button class="primary" id="nextBtn" hidden>Câu tiếp theo →</button>
+      <button class="secondary" id="restartBtn">Làm lại từ đầu</button>
+    </div>
+  </section>
 
-        <!-- Quiz Box (Hiển thị từng câu) -->
-        <section id="quiz-card-container" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60 text-xs md:text-sm">
-                <span id="question-counter" class="font-bold text-rose-400">Câu 1 / 35</span>
-                <span class="text-slate-300">Đúng: <strong id="live-score" class="text-emerald-400">0</strong></span>
-            </div>
-            <div id="single-question-box" class="space-y-6"></div>
-        </section>
+  <section class="panel summary" id="summary">
+    <div class="tag">Hoàn thành</div>
+    <h2>Đã hoàn thành bài KTTX Bài 2!</h2>
+    <div class="score-badge" id="finalScore"></div>
+    <p id="finalMessage"></p>
+    <div class="summary-actions">
+      <button class="primary" id="againBtn">Làm lại bài từ đầu</button>
+    </div>
+  </section>
 
-        <!-- Result Screen -->
-        <section id="result-screen" class="hidden bg-slate-800/90 border border-slate-700 rounded-2xl p-8 text-center shadow-2xl space-y-6">
-            <div class="w-20 h-20 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-full flex items-center justify-center mx-auto text-3xl">
-                <i class="fa-solid fa-trophy"></i>
-            </div>
-            <div class="space-y-2">
-                <h2 class="text-2xl font-bold text-white">Hoàn Thành Bài Kiểm Tra!</h2>
-                <p class="text-slate-400 text-sm">Bạn đã hoàn thành xuất sắc tất cả các câu hỏi Bài 2.</p>
-            </div>
-            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 max-w-xs mx-auto">
-                <div class="text-4xl font-black text-rose-400 mb-1" id="final-score">0 / 35</div>
-                <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Kết quả tổng kết</div>
-            </div>
-            <div>
-                <button onclick="initQuiz()" class="px-8 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg transition duration-200 text-sm inline-flex items-center space-x-2">
-                    <i class="fa-solid fa-rotate-right"></i>
-                    <span>Làm Lại Từ Đầu</span>
-                </button>
-            </div>
-        </section>
+  <p class="note"><strong>Lưu ý:</strong> Nội dung bám sát Luật Nghĩa vụ quân sự và các quy định tuyển chọn thực hiện nghĩa vụ tham gia Công an nhân dân.</p>
+</main>
 
-    </main>
+<!-- Modal Ma Trận -->
+<div class="modal-overlay" id="matrixModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-table text-blue-400"></i> Bảng Ma Trận Nội Dung Ôn Tập Bài 2</h3>
+      <button class="close-modal" onclick="closeMatrixModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+      <p>Cấu trúc phân bổ nội dung ôn tập Bài 2: Luật Nghĩa vụ quân sự và trách nhiệm học sinh (15 câu trắc nghiệm).</p>
+      <ul style="padding-left: 18px; margin: 10px 0; display: grid; gap: 6px;">
+        <li><strong>Đăng ký & Độ tuổi nhập ngũ:</strong> Quy định về độ tuổi, thời gian đăng ký và lệnh gọi nhập ngũ lần đầu.</li>
+        <li><strong>Tiêu chuẩn & Hồ sơ:</strong> Các tiêu chuẩn tuyển chọn, hồ sơ nghĩa vụ quân sự và nghĩa vụ Công an nhân dân.</li>
+        <li><strong>Chế độ & Miễn giảm:</strong> Các trường hợp miễn, tạm hoãn gọi nhập ngũ, thời hạn phục vụ tại ngũ trong thời bình.</li>
+        <li><strong>Trách nhiệm & Xử lý vi phạm:</strong> Các hành vi bị nghiêm cấm và hình thức xử phạt khi vi phạm luật nghĩa vụ quân sự.</li>
+      </ul>
+    </div>
+  </div>
+</div>
 
-    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
-        GDQP-AN 11 • Bài 2: Thực Hiện Nghĩa Vụ Quân Sự Và Tham Gia Công An Nhân Dân
-    </footer>
+<footer>GDQP-AN 11 · Bài 2: Luật Nghĩa Vụ Quân Sự</footer>
 
-    <script>
-        const rawMcqData = [
-            {
-                id: 1,
-                q: "Theo Luật Nghĩa vụ quân sự hiện hành (văn bản hợp nhất năm 2025), văn bản luật này gồm bao nhiêu chương và bao nhiêu điều?",
-                a: "9 chương, 62 điều",
-                o: ["9 chương, 62 điều", "7 chương, 55 điều", "11 chương, 75 điều", "5 chương, 40 điều"],
-                exp: "Luật Nghĩa vụ quân sự năm 2015 (hợp nhất số 80/VBHN-VPQH ngày 20/8/2025) gồm 9 chương, 62 điều."
-            },
-            {
-                id: 2,
-                q: "Công dân thực hiện nghĩa vụ tham gia Công an nhân dân được pháp luật quy định như thế nào về mặt bản chất phục vụ tại ngũ?",
-                a: "Được coi là thực hiện nghĩa vụ quân sự tại ngũ",
-                o: ["Được coi là thực hiện nghĩa vụ quân sự tại ngũ", "Chỉ là hình thức lao động hợp đồng dân sự thuần túy", "Là một dạng công tác xã hội tự nguyện không bắt buộc", "Được miễn trừ mọi trách nhiệm liên quan đến quân đội"],
-                exp: "Công dân thực hiện nghĩa vụ tham gia Công an nhân dân được coi là thực hiện nghĩa vụ quân sự tại ngũ."
-            },
-            {
-                id: 3,
-                q: "Trường hợp nào dưới đây được công nhận đã hoàn thành nghĩa vụ quân sự tại ngũ trong thời bình đối với dân quân?",
-                a: "Dân quân thường trực có ít nhất 24 tháng phục vụ",
-                o: ["Dân quân thường trực có ít nhất 24 tháng phục vụ", "Dân quân tự vệ cơ sở tham gia huấn luyện đủ 5 năm", "Dân quân biển hoạt động liên tục trong 12 tháng", "Thành viên đội dân quân cứu hộ cứu nạn xã"],
-                exp: "Dân quân thường trực có ít nhất 24 tháng phục vụ được công nhận hoàn thành nghĩa vụ quân sự tại ngũ trong thời bình."
-            },
-            {
-                id: 4,
-                q: "Độ tuổi đăng ký nghĩa vụ quân sự lần đầu đối với công dân nam theo quy định là từ bao nhiêu tuổi trở lên?",
-                a: "Đủ 17 tuổi trở lên",
-                o: ["Đủ 17 tuổi trở lên", "Đủ 18 tuổi trở lên", "Đủ 16 tuổi trở lên", "Từ 19 đến 25 tuổi"],
-                exp: "Công dân nam đủ 17 tuổi trở lên phải thực hiện đăng ký nghĩa vụ quân sự lần đầu."
-            },
-            {
-                id: 5,
-                q: "Công dân nữ trong độ tuổi thực hiện nghĩa vụ quân sự được đăng ký khi nào?",
-                a: "Đủ 18 tuổi trở lên và có ngành, nghề chuyên môn phù hợp yêu cầu của Quân đội",
-                o: ["Đủ 18 tuổi trở lên và có ngành, nghề chuyên môn phù hợp yêu cầu của Quân đội", "Bắt buộc khi đủ 17 tuổi như nam giới", "Chỉ khi tự nguyện đăng ký vào lực lượng dự bị động viên", "Khi tốt nghiệp đại học bất kỳ chuyên ngành nào"],
-                exp: "Công dân nữ đủ 18 tuổi trở lên, có ngành nghề chuyên môn phù hợp thì được đăng ký nghĩa vụ quân sự."
-            },
-            {
-                id: 6,
-                q: "Cơ quan nào chịu trách nhiệm thực hiện đăng ký nghĩa vụ quân sự cho công dân cư trú tại địa phương?",
-                a: "Ban Chỉ huy quân sự cấp xã",
-                o: ["Ban Chỉ huy quân sự cấp xã", "Công an cấp xã", "Ủy ban nhân dân cấp huyện", "Ban chỉ huy quân sự cấp tỉnh"],
-                exp: "Ban Chỉ huy quân sự cấp xã thực hiện đăng ký nghĩa vụ quân sự cho công dân cư trú tại địa phương."
-            },
-            {
-                id: 7,
-                q: "Thời hạn phục vụ tại ngũ trong thời bình của hạ sĩ quan, binh sĩ là bao nhiêu tháng?",
-                a: "24 tháng",
-                o: ["24 tháng", "18 tháng", "36 tháng", "12 tháng"],
-                exp: "Trong thời bình, thời hạn phục vụ của hạ sĩ quan, binh sĩ là 24 tháng."
-            },
-            {
-                id: 8,
-                q: "Bộ trưởng Bộ Quốc phòng được quyền quyết định kéo dài thời hạn phục vụ tại ngũ của hạ sĩ quan, binh sĩ nhưng không quá mấy tháng trong các trường hợp đặc biệt?",
-                a: "Không quá 06 tháng",
-                o: ["Không quá 06 tháng", "Không quá 12 tháng", "Không quá 03 tháng", "Không quá 09 tháng"],
-                exp: "Bộ trưởng Bộ Quốc phòng được kéo dài nhưng không quá 06 tháng để bảo đảm sẵn sàng chiến đấu, phòng chống thiên tai, dịch bệnh."
-            },
-            {
-                id: 9,
-                q: "Độ tuổi gọi nhập ngũ trong thời bình đối với công dân nam thông thường là từ:",
-                a: "Đủ 18 tuổi đến hết 25 tuổi",
-                o: ["Đủ 18 tuổi đến hết 25 tuổi", "Từ 17 đến 27 tuổi", "Đủ 19 đến hết 26 tuổi", "Từ 18 đến 30 tuổi"],
-                exp: "Công dân từ đủ 18 tuổi đến hết 25 tuổi được gọi nhập ngũ (riêng học đại học, cao đẳng tạm hoãn đến hết 27 tuổi)."
-            },
-            {
-                id: 10,
-                q: "Trường hợp nào sau đây được tạm hoãn gọi nhập ngũ trong thời bình?",
-                a: "Đang được đào tạo trình độ đại học hệ chính quy thuộc cơ sở giáo dục đại học",
-                o: ["Đang được đào tạo trình độ đại học hệ chính quy thuộc cơ sở giáo dục đại học", "Là con duy nhất của gia đình có điều kiện kinh tế khá giả", "Có anh trai đang đi lao động hợp tác quốc tế ở nước ngoài", "Đã lập gia đình nhưng chưa có con nhỏ"],
-                exp: "Đang học đại học hệ chính quy thuộc diện được tạm hoãn gọi nhập ngũ trong thời bình."
-            },
-            {
-                id: 11,
-                q: "Đối tượng nào sau đây được miễn gọi nhập ngũ trong thời bình?",
-                a: "Con của liệt sĩ, con của thương binh hạng một",
-                o: ["Con của liệt sĩ, con của thương binh hạng một", "Con trai duy nhất của gia đình thuần nông", "Học sinh đang học lớp 12 chuẩn bị thi đại học", "Cán bộ công chức mới tuyển dụng tại huyện lỵ"],
-                exp: "Con của liệt sĩ, con của thương binh hạng một được miễn gọi nhập ngũ."
-            },
-            {
-                id: 12,
-                q: "Mức phạt tiền nặng nhất áp dụng cho hành vi không chấp hành quyết định gọi kiểm tra, khám sức khỏe nghĩa vụ quân sự theo Nghị định xử phạt vi phạm hành chính trong lĩnh vực quốc phòng có thể lên tới mức nào?",
-                a: "50 000 000 đồng đến 75 000 000 đồng",
-                o: ["50 000 000 đồng đến 75 000 000 đồng", "10 000 000 đồng đến 20 000 000 đồng", "30 000 000 đồng đến 40 000 000 đồng", "5 000 000 đồng đến 10 000 000 đồng"],
-                exp: "Phạt tiền từ 50 000 000 đồng đến 75 000 000 đồng đối với hành vi không chấp hành quyết định gọi kiểm tra, khám sức khỏe nghĩa vụ quân sự."
-            },
-            {
-                id: 13,
-                q: "Hành vi gian dối làm sai lệch kết quả phân loại sức khỏe của mình nhằm trốn tránh nghĩa vụ quân sự bị xử lý phạt tiền trong khung nào?",
-                a: "30 000 000 đồng đến 40 000 000 đồng",
-                o: ["30 000 000 đồng đến 40 000 000 đồng", "8 000 000 đồng đến 10 000 000 đồng", "15 000 000 đồng đến 20 000 000 đồng", "50 000 000 đồng đến 75 000 000 đồng"],
-                exp: "Phạt tiền từ 30 000 000 đồng đến 40 000 000 đồng đối với hành vi gian dối làm sai lệch kết quả khám sức khỏe nhằm trốn tránh NVQS."
-            },
-            {
-                id: 14,
-                q: "Nghị định số 70/2019/NĐ-CP (được sửa đổi, bổ sung bởi Nghị định số 184/2025/NĐ-CP) quy định về nội dung gì?",
-                a: "Thực hiện nghĩa vụ tham gia Công an nhân dân",
-                o: ["Thực hiện nghĩa vụ tham gia Công an nhân dân", "Xử phạt vi phạm hành chính trong lĩnh vực quốc phòng", "Quy chế hoạt động của lực lượng dân quân tự vệ", "Chế độ phụ cấp đặc thù đối với quân nhân chuyên nghiệp"],
-                exp: "Nghị định 70/2019/NĐ-CP (sửa đổi bởi 184/2025/NĐ-CP) quy định về việc thực hiện nghĩa vụ tham gia Công an nhân dân."
-            },
-            {
-                id: 15,
-                q: "Tiêu chuẩn về trình độ học vấn chung để tuyển chọn công dân thực hiện nghĩa vụ tham gia Công an nhân dân là:",
-                a: "Có bằng tốt nghiệp Trung học phổ thông trở lên",
-                o: ["Có bằng tốt nghiệp Trung học phổ thông trở lên", "Bắt buộc phải tốt nghiệp trình độ đại học hoặc cao đẳng", "Chỉ cần tốt nghiệp Trung học cơ sở trên toàn quốc", "Không yêu cầu bằng cấp văn hóa, chỉ cần biết đọc biết viết"],
-                exp: "Tiêu chuẩn chung là có bằng tốt nghiệp Trung học phổ thông trở lên (vùng khó khăn có thể tuyển tốt nghiệp THCS)."
-            },
-            {
-                id: 16,
-                q: "Thời hạn tiếp nhận hồ sơ đăng ký dự tuyển thực hiện nghĩa vụ tham gia Công an nhân dân tính từ ngày thông báo tối thiểu là bao nhiêu ngày?",
-                a: "Ít nhất là 30 ngày",
-                o: ["Ít nhất là 30 ngày", "15 ngày", "45 ngày", "60 ngày"],
-                exp: "Thời hạn tiếp nhận hồ sơ đăng ký dự tuyển ít nhất là 30 ngày kể từ ngày thông báo."
-            },
-            {
-                id: 17,
-                q: "Chủ tịch Ủy ban nhân dân cấp xã ra quyết định gọi khám sức khỏe thực hiện nghĩa vụ tham gia CAND phải giao cho công dân trước thời điểm khám ít nhất mấy ngày?",
-                a: "Trước 15 ngày",
-                o: ["Trước 15 ngày", "Trước 7 ngày", "Trước 30 ngày", "Trước 10 ngày"],
-                exp: "Quyết định gọi khám sức khỏe phải được giao cho công dân trước thời điểm khám sức khỏe 15 ngày."
-            },
-            {
-                id: 18,
-                q: "Khi hết thời hạn phục vụ tại ngũ và có đủ tiêu chuẩn đáp ứng yêu cầu của Công an nhân dân, hạ sĩ quan, chiến sĩ có nguyện vọng sẽ được:",
-                a: "Xem xét chuyển sang chế độ phục vụ chuyên nghiệp",
-                o: ["Xem xét chuyển sang chế độ phục vụ chuyên nghiệp", "Bắt buộc phải xuất ngũ về địa phương ngay lập tức", "Được thăng hàm sĩ quan cấp tá trực tiếp", "Chuyển công tác sang các doanh nghiệp tư nhân"],
-                exp: "Nếu tự nguyện và CAND có nhu cầu, chiến sĩ nghĩa vụ được xem xét chuyển sang chế độ phục vụ chuyên nghiệp."
-            },
-            {
-                id: 19,
-                q: "Trách nhiệm của công dân khi có lệnh gọi đăng ký nghĩa vụ quân sự là gì?",
-                a: "Phải đến đúng thời gian, địa điểm và thực hiện đăng ký theo quy định",
-                o: ["Phải đến đúng thời gian, địa điểm và thực hiện đăng ký theo quy định", "Có thể ủy quyền cho người thân đi thay nếu bận việc học", "Chỉ cần khai báo trực tuyến qua mạng xã hội là đủ", "Được quyền từ chối nếu cảm thấy chưa sẵn sàng"],
-                exp: "Công dân phải đến đúng thời gian, địa điểm ghi trong lệnh gọi để thực hiện đăng ký NVQS."
-            },
-            {
-                id: 20,
-                q: "Hành vi nào dưới đây thể hiện đúng trách nhiệm của học sinh đối với pháp luật về nghĩa vụ quân sự và tham gia CAND?",
-                a: "Tích cực học tập các nội dung chính trị, quân sự trong chương trình GDQP-AN ở nhà trường",
-                o: ["Tích cực học tập các nội dung chính trị, quân sự trong chương trình GDQP-AN ở nhà trường", "Tìm mọi cách trốn tránh các tiết học thực hành quân sự", "Cổ vũ các hành vi trốn tránh nghĩa vụ quân sự trên không gian mạng", "Từ chối tham gia các hoạt động tuyên truyền pháp luật tại địa phương"],
-                exp: "Học sinh có trách nhiệm chấp hành pháp luật và tích cực học tập nội dung GDQP-AN."
-            },
-            {
-                id: 21,
-                q: "Hồ sơ đăng ký nghĩa vụ quân sự lần đầu bao gồm những giấy tờ cơ bản nào?",
-                a: "Phiếu tự khai sức khỏe nghĩa vụ quân sự; bản chụp căn cước công dân hoặc thẻ căn cước",
-                o: ["Phiếu tự khai sức khỏe nghĩa vụ quân sự; bản chụp căn cước công dân hoặc thẻ căn cước", "Sơ lý lịch tư pháp số 2 và giấy khám sức khỏe toàn diện bệnh viện tỉnh", "Bằng tốt nghiệp THPT và giấy chứng nhận đoàn viên", "Hộ khẩu thường trú và giấy xác nhận thu nhập gia đình"],
-                exp: "Hồ sơ gồm Phiếu tự khai sức khỏe NVQS và bản chụp CCCD hoặc thẻ căn cước."
-            },
-            {
-                id: 22,
-                q: "Vào thời gian nào hằng năm, Chỉ huy trưởng Ban Chỉ huy quân sự cấp xã báo cáo danh sách công dân nam đủ 17 tuổi cho Chủ tịch UBND cùng cấp?",
-                a: "Tháng Một hằng năm",
-                o: ["Tháng Một hằng năm", "Tháng Tư hằng năm", "Tháng Chín hằng năm", "Tháng Mười hai hằng năm"],
-                exp: "Tháng Một hằng năm, BCHQS cấp xã báo cáo danh sách công dân đủ 17 tuổi trong năm."
-            },
-            {
-                id: 23,
-                q: "Chủ tịch Ủy ban nhân dân cấp xã quyết định gọi công dân đăng ký nghĩa vụ quân sự lần đầu vào tháng nào?",
-                a: "Tháng Tư hằng năm",
-                o: ["Tháng Tư hằng năm", "Tháng Một hằng năm", "Tháng Sáu hằng năm", "Tháng Mười hằng năm"],
-                exp: "Tháng Tư hằng năm, Chủ tịch UBND cấp xã quyết định gọi công dân đăng ký nghĩa vụ quân sự lần đầu."
-            },
-            {
-                id: 24,
-                q: "Đối tượng nào sau đây thuộc diện không được đăng ký nghĩa vụ quân sự?",
-                a: "Đang bị truy cứu trách nhiệm hình sự hoặc đang chấp hành hình phạt tù",
-                o: ["Đang bị truy cứu trách nhiệm hình sự hoặc đang chấp hành hình phạt tù", "Người bị cận thị nhẹ 1-2 đi-ốp", "Người có hoàn cảnh gia đình khó khăn kinh tế", "Sinh viên đang bảo lưu kết quả học tập đại học"],
-                exp: "Người đang bị truy cứu TNHS, chấp hành án phạt tù... không được đăng ký NVQS."
-            },
-            {
-                id: 25,
-                q: "Thân nhân của hạ sĩ quan, binh sĩ tại ngũ (như bố mẹ đẻ, vợ/chồng, con đẻ) được hưởng chế độ gì theo quy định?",
-                a: "Được hưởng chế độ bảo hiểm y tế và trợ cấp khó khăn",
-                o: ["Được hưởng chế độ bảo hiểm y tế và trợ cấp khó khăn", "Được miễn toàn bộ thuế thu nhập cá nhân hàng năm", "Được cấp đất ở miễn phí tại nơi cư trú", "Được ưu tiên tuyển dụng công chức không qua thi tuyển"],
-                exp: "Thân nhân hạ sĩ quan, binh sĩ tại ngũ được hưởng chế độ bảo hiểm y tế, trợ cấp khó khăn."
-            },
-            {
-                id: 26,
-                q: "Khi hạ sĩ quan, binh sĩ xuất ngũ trở về địa phương, họ được hưởng quyền lợi hỗ trợ nào sau đây?",
-                a: "Được cấp tiền tàu xe, phụ cấp đi đường, trợ cấp xuất ngũ và hỗ trợ tạo việc làm",
-                o: ["Được cấp tiền tàu xe, phụ cấp đi đường, trợ cấp xuất ngũ và hỗ trợ tạo việc làm", "Được cấp một khoản vốn lập nghiệp tương đương 100 tháng lương cơ sở", "Được nhận ngay nhà ở xã hội do Nhà nước xây dựng", "Được cử đi đào tạo thạc sĩ toàn phần bằng ngân sách nhà nước"],
-                exp: "Quân nhân xuất ngũ được cấp tiền tàu xe, trợ cấp xuất ngũ, bảo lưu học tập, trợ cấp tạo việc làm."
-            },
-            {
-                id: 27,
-                q: "Mức phạt tiền đối với hành vi không có mặt đúng thời gian hoặc địa điểm tập trung sơ tuyển sức khỏe mà không có lý do chính đáng là:",
-                a: "Từ 3 000 000 đồng đến 5 000 000 đồng",
-                o: ["Từ 3 000 000 đồng đến 5 000 000 đồng", "Từ 500 000 đồng đến 1 000 000 đồng", "Từ 10 000 000 đồng đến 15 000 000 đồng", "Từ 20 000 000 đồng đến 30 000 000 đồng"],
-                exp: "Phạt tiền từ 3 000 000 đồng đến 5 000 000 đồng đối với hành vi không có mặt đúng thời gian sơ tuyển không có lý do chính đáng."
-            },
-            {
-                id: 28,
-                q: "Hành vi không nhận quyết định gọi sơ tuyển sức khỏe nghĩa vụ quân sự mà không có lý do chính đáng bị xử phạt trong khung tiền nào?",
-                a: "Từ 5 000 000 đồng đến 8 000 000 đồng",
-                o: ["Từ 5 000 000 đồng đến 8 000 000 đồng", "Từ 1 000 000 đồng đến 3 000 000 đồng", "Từ 15 000 000 đồng đến 20 000 000 đồng", "Từ 25 000 000 đồng đến 30 000 000 đồng"],
-                exp: "Phạt tiền từ 5 000 000 đồng đến 8 000 000 đồng đối với hành vi không nhận quyết định gọi sơ tuyển sức khỏe."
-            },
-            {
-                id: 29,
-                q: "Hành vi không có mặt đúng thời gian hoặc địa điểm khám sức khỏe ghi trong lệnh gọi mà không có lý do chính đáng bị phạt tiền trong khoảng:",
-                a: "Từ 15 000 000 đồng đến 20 000 000 đồng",
-                o: ["Từ 15 000 000 đồng đến 20 000 000 đồng", "Từ 5 000 000 đồng đến 10 000 000 đồng", "Từ 25 000 000 đồng đến 30 000 000 đồng", "Từ 40 000 000 đồng đến 50 000 000 đồng"],
-                exp: "Phạt tiền từ 15 000 000 đồng đến 20 000 000 đồng đối với hành vi không có mặt đúng lịch khám sức khỏe."
-            },
-            {
-                id: 30,
-                q: "Hành vi không nhận quyết định gọi khám sức khỏe nghĩa vụ quân sự mà không có lý do chính đáng bị phạt tiền từ:",
-                a: "20 000 000 đồng đến 30 000 000 đồng",
-                o: ["20 000 000 đồng đến 30 000 000 đồng", "5 000 000 đồng đến 10 000 000 đồng", "10 000 000 đồng đến 15 000 000 đồng", "35 000 000 đồng đến 50 000 000 đồng"],
-                exp: "Phạt tiền từ 20 000 000 đồng đến 30 000 000 đồng đối với hành vi không nhận quyết định gọi khám sức khỏe."
-            },
-            {
-                id: 31,
-                q: "Hành vi đưa hoặc nhận tiền, tài sản trị giá dưới 2 000 000 đồng để làm sai lệch kết quả phân loại sức khỏe nhằm trốn tránh NVQS sẽ bị xử lý phạt tiền trong khung:",
-                a: "30 000 000 đồng đến 40 000 000 đồng",
-                o: ["30 000 000 đồng đến 40 000 000 đồng", "5 000 000 đồng đến 10 000 000 đồng", "15 000 000 đồng đến 20 000 000 đồng", "50 000 000 đồng đến 75 000 000 đồng"],
-                exp: "Phạt tiền từ 30 000 000 đồng đến 40 000 000 đồng đối với hành vi đưa/nhận tài sản dưới 2 triệu đồng để làm sai lệch kết quả khám sức khỏe."
-            },
-            {
-                id: 32,
-                q: "Công dân nữ trong độ tuổi nhập ngũ muốn tham gia Công an nhân dân cần có điều kiện tiên quyết nào về mặt chuyên môn?",
-                a: "Có trình độ chuyên môn phù hợp với yêu cầu của Công an nhân dân",
-                o: ["Có trình độ chuyên môn phù hợp với yêu cầu của Công an nhân dân", "Phải tốt nghiệp thủ khoa các trường đại học lớn", "Phải có bằng thạc sĩ luật học trở lên", "Chỉ cần tự nguyện đăng ký không phân biệt chuyên môn"],
-                exp: "Công dân nữ có trình độ chuyên môn phù hợp, tự nguyện và CAND có nhu cầu thì được xem xét tuyển chọn."
-            },
-            {
-                id: 33,
-                q: "Tiêu chuẩn về thể hình đối với công dân thực hiện nghĩa vụ tham gia CAND được quy định thế nào?",
-                a: "Thể hình cân đối, không dị hình, dị dạng và đáp ứng các tiêu chuẩn sức khỏe theo quy định",
-                o: ["Thể hình cân đối, không dị hình, dị dạng và đáp ứng các tiêu chuẩn sức khỏe theo quy định", "Chiều cao tối thiểu bắt buộc phải từ 1m80 trở lên đối với nam", "Không được có bất kỳ vết xăm nghệ thuật nào trên cơ thể", "Chỉ tuyển chọn những người có thể lực đạt loại đặc biệt"],
-                exp: "Tiêu chuẩn thể hình là cân đối, không dị hình, dị dạng và đạt tiêu chuẩn sức khỏe."
-            },
-            {
-                id: 34,
-                q: "Hành vi nào dưới đây bị nghiêm cấm trong thực hiện nghĩa vụ quân sự và tham gia CAND?",
-                a: "Trốn tránh, chống đối, cản trở việc thực hiện nghĩa vụ quân sự",
-                o: ["Trốn tránh, chống đối, cản trở việc thực hiện nghĩa vụ quân sự", "Chủ động đến đăng ký nghĩa vụ quân sự đúng hạn", "Tích cực tham gia khám tuyển sức khỏe theo lệnh gọi", "Động viên người thân chấp hành nghiêm luật pháp quân sự"],
-                exp: "Trốn tránh, chống đối, cản trở thực hiện NVQS là hành vi bị pháp luật nghiêm cấm."
-            },
-            {
-                id: 35,
-                q: "Trách nhiệm đấu tranh của học sinh đối với các hành vi vi phạm pháp luật về nghĩa vụ quân sự là gì?",
-                a: "Kịp thời phát hiện, ngăn chặn, đấu tranh với các biểu hiện ngại khó, ngại khổ và thông tin sai lệch",
-                o: ["Kịp thời phát hiện, ngăn chặn, đấu tranh với các biểu hiện ngại khó, ngại khổ và thông tin sai lệch", "Tự ý xử phạt hành chính những người vi phạm tại địa phương", "Chia sẻ các tin đồn thất thiệt để câu view trên mạng xã hội", "Bàng quan không quan tâm vì không phải việc của mình"],
-                exp: "Học sinh có trách nhiệm kịp thời phát hiện, ngăn chặn, đấu tranh với các biểu hiện ngại khó, ngại khổ và thông tin sai lệch."
-            }
-        ];
+<script>
+const questions = [
+  {
+    q: "Những đối tượng nào sau đây được tuyển sinh đi nghĩa vụ quân sự?",
+    a: [
+      "Công dân nam từ đủ 17 tuổi và công dân nữ từ đủ 18 tuổi trở lên.",
+      "Người bị tước quyền phục vụ trong lực lượng vũ trang nhân dân.",
+      "Công dân đang chấp hành hình phạt tù, cải tạo không giam giữ.",
+      "Người đang bị áp dụng biện pháp giáo dục tại xã, phường, thị trấn."
+    ],
+    correct: 0,
+    why: "Theo Luật NVQS, công dân nam từ đủ 17 tuổi đăng ký nghĩa vụ quân sự lần đầu và công dân nữ có chuyên môn kỹ thuật phù hợp từ đủ 18 tuổi."
+  },
+  {
+    q: "Sau khi Chỉ huy quân sự cấp xã chuyển Lệnh gọi đăng ký nghĩa vụ quân sự đến công dân cư trú tại địa phương trước thời hạn đăng ký nghĩa vụ quân sự bao nhiêu ngày?",
+    a: ["2 ngày.", "5 ngày.", "10 ngày.", "15 ngày."],
+    correct: 2,
+    why: "Lệnh gọi đăng ký nghĩa vụ quân sự phải được chuyển đến công dân trước thời hạn đăng ký ít nhất 10 ngày."
+  },
+  {
+    q: "Độ tuổi được gọi nhập ngũ đối với công dân Việt Nam là",
+    a: [
+      "Từ đủ 20 đến hết 25 tuổi.",
+      "Từ đủ 19 đến hết 27 tuổi.",
+      "Từ đủ 18 đến hết 23 tuổi.",
+      "Từ đủ 17 đến hết 27 tuổi."
+    ],
+    correct: 1,
+    why: "Công dân đủ 18 tuổi được gọi nhập ngũ; độ tuổi gọi nhập ngũ trong thời bình từ đủ 18 tuổi đến hết 27 tuổi đối với công dân được đào tạo trình độ cao đẳng, đại học."
+  },
+  {
+    q: "Nội dung nào sau đây không phản ánh đúng đối tượng tiêu chuẩn được gọi nhập ngũ vào Công an nhân dân?",
+    a: [
+      "Có lí lịch rõ ràng.",
+      "Đủ tiêu chuẩn về phẩm chất chính trị.",
+      "Chấp hành tốt pháp luật của nhà nước.",
+      "Không yêu cầu trình độ văn hóa."
+    ],
+    correct: 3,
+    why: "Tuyển chọn công dân thực hiện nghĩa vụ tham gia CAND có yêu cầu rõ ràng về trình độ văn hóa (thường tốt nghiệp THPT trở lên hoặc các tiêu chuẩn cụ thể theo quy định), do đó phương án 'Không yêu cầu trình độ văn hóa' là không đúng."
+  },
+  {
+    q: "Hằng năm, gọi công dân nhập ngũ một lần vào thời gian nào?",
+    a: [
+      "Tháng 11 hoặc tháng 12.",
+      "Tháng 1 hoặc tháng 2.",
+      "Tháng 2 hoặc tháng 3.",
+      "Tháng 3 hoặc tháng 4."
+    ],
+    correct: 2,
+    why: "Hằng năm, gọi công dân nhập ngũ và thực hiện nghĩa vụ tham gia CAND một lần vào tháng 2 hoặc tháng 3 (thường gọi là mùa giao nhận quân đầu năm)."
+  },
+  {
+    q: "Công dân thuộc trường hợp nào sau đây được miễn gọi nhập ngũ?",
+    a: [
+      "Các con của thương binh hạng hai, anh trai em trai của liệt sĩ.",
+      "Một người con trai duy nhất của người mẹ góa chồng từ khi còn trẻ.",
+      "Con của sĩ quan chuyên nghiệp đang tại ngũ.",
+      "Tất cả các anh trai hoặc em trai của liệt sĩ."
+    ],
+    correct: 0,
+    why: "Con của liệt sĩ, con của thương binh hạng một được miễn gọi nhập ngũ; con của thương binh hạng hai cũng thuộc diện được xem xét miễn."
+  },
+  {
+    q: "Trong thời bình, thời hạn phục vụ tại ngũ của hạ sĩ quan, binh sĩ là",
+    a: ["12 tháng.", "18 tháng.", "24 tháng.", "30 tháng."],
+    correct: 2,
+    why: "Thời hạn phục vụ tại ngũ của hạ sĩ quan, binh sĩ trong thời bình là 24 tháng."
+  },
+  {
+    q: "Nội dung nào sau đây không phản ánh đúng các hành vi bị nghiêm cấm trong thực hiện nghĩa vụ quân sự?",
+    a: [
+      "Chống đối, cản trở việc thực hiện nghĩa vụ quân sự.",
+      "Xâm phạm thân thể, sức khỏe của hạ sĩ quan, binh lính.",
+      "Tồn tại đơn vị dự bị, nhận phần của hạ sĩ quan, binh lính.",
+      "Gian dối trong hoạt động khám sức khỏe nghĩa vụ quân sự."
+    ],
+    correct: 2,
+    why: "Hành vi gian dối, chống đối, xâm phạm thân thể bị nghiêm cấm. Phương án C là nội dung nhiễu không phản ánh đúng quy định pháp luật nghiêm cấm."
+  },
+  {
+    q: "Hành vi gian dối làm sai lệch kết quả phân loại sức khỏe của mình nhằm trốn tránh nghĩa vụ quân sự sẽ bị xử phạt bằng hình thức nào sau đây?",
+    a: [
+      "Cải tạo không giam giữ.",
+      "Tù không thời hạn.",
+      "Tù có thời hạn.",
+      "Phạt tiền."
+    ],
+    correct: 3,
+    why: "Các hành vi vi phạm hành chính như gian dối làm sai lệch kết quả khám sức khỏe nhằm trốn tránh NVQS chủ yếu bị áp dụng hình thức xử phạt vi phạm hành chính là phạt tiền (theo các nghị định xử phạt vi phạm hành chính trong lĩnh vực quốc phòng)."
+  },
+  {
+    q: "Người nào có chức trách quyết định về độ tuổi tuyển chọn và ngành nghề cần thiết để tuyển chọn công dân nữ thực hiện nghĩa vụ tham gia Công an nhân dân?",
+    a: [
+      "Bộ trưởng Bộ Quốc phòng.",
+      "Bộ trưởng Bộ Công an.",
+      "Thủ tướng Chính phủ.",
+      "Chủ tịch nước."
+    ],
+    correct: 1,
+    why: "Bộ trưởng Bộ Công an quyết định độ tuổi tuyển chọn và ngành nghề cần thiết để tuyển chọn công dân nữ thực hiện nghĩa vụ tham gia CAND."
+  },
+  {
+    q: "Nội dung nào sau đây phản ánh đúng tiêu chuẩn tuyển chọn công dân thực hiện nghĩa vụ tham gia Công an nhân dân?",
+    a: [
+      "Công dân đã có tiền án, tiền sự.",
+      "Đang bị truy cứu trách nhiệm hình sự.",
+      "Thể hình cân đối, không dị dạng, dị tật.",
+      "Tốt nghiệp THPT đối với công dân các xã miền núi."
+    ],
+    correct: 2,
+    why: "Tiêu chuẩn tuyển chọn CAND yêu cầu công dân có thể hình cân đối, không dị dạng, dị tật, không có tiền án tiền sự và không trong diện truy cứu trách nhiệm hình sự."
+  },
+  {
+    q: "Trong hồ sơ đăng ký nghĩa vụ quân sự lần đầu cần có",
+    a: [
+      "Phiếu tự khai sức khỏe nghĩa vụ quân sự.",
+      "Giấy chứng nhận đăng ký nghĩa vụ quân sự.",
+      "Sổ hộ khẩu và bản chụp căn cước công dân.",
+      "Bản chụp giấy khai sinh và sổ hộ khẩu."
+    ],
+    correct: 0,
+    why: "Hồ sơ đăng ký NVQS lần đầu bao gồm Phiếu tự khai sức khỏe nghĩa vụ quân sự và bản chụp các giấy tờ tùy thân như CCCD."
+  },
+  {
+    q: "Hồ sơ đăng kí nghĩa vụ tham gia Công an nhân dân cần có loại giấy tờ nào sau đây?",
+    a: [
+      "Giấy khai sinh và phiếu tự khai sức khỏe nghĩa vụ quân sự.",
+      "Tờ khai đăng kí thực hiện nghĩa vụ tham gia Công an nhân dân.",
+      "Bản chụp căn cước công dân hoặc giấy chứng minh nhân dân.",
+      "Sổ hộ khẩu, giấy khai sinh hoặc bản chụp căn cước công dân."
+    ],
+    correct: 1,
+    why: "Hồ sơ tuyển chọn thực hiện nghĩa vụ tham gia CAND bắt buộc phải có Tờ khai đăng kí thực hiện nghĩa vụ tham gia Công an nhân dân theo mẫu."
+  },
+  {
+    q: "Nội dung nào sau đây không phản ánh đúng trách nhiệm của công dân trong thực hiện nghĩa vụ quân sự?",
+    a: [
+      "Nghiêm chỉnh chấp hành lệnh gọi kiểm tra sức khỏe.",
+      "Làm sai lệch thời gian quy định trong giấy gọi khám, kiểm tra sức khỏe.",
+      "Làm sai lệch kết quả khám sức khỏe nhằm trốn tránh nghĩa vụ quân sự.",
+      "Chấp hành quy định của pháp luật về đăng ký và thực hiện nghĩa vụ quân sự."
+    ],
+    correct: 1,
+    why: "Làm sai lệch thời gian quy định trong giấy gọi hoặc trốn tránh là hành vi vi phạm pháp luật, không phải là trách nhiệm của công dân."
+  },
+  {
+    q: "Công dân được công nhận hoàn thành nghĩa vụ quân sự tại ngũ trong thời bình, khi đã hoàn thành nhiệm vụ tham gia công an xã liên tục từ đủ",
+    a: [
+      "18 tháng trở lên.",
+      "24 tháng trở lên.",
+      "30 tháng trở lên.",
+      "36 tháng trở lên."
+    ],
+    correct: 3,
+    why: "Công dân hoàn thành nghĩa vụ tham gia Công an xã liên tục từ đủ 36 tháng trở lên được công nhận hoàn thành nghĩa vụ quân sự tại ngũ trong thời bình."
+  }
+];
 
-        let shuffledMcq = [];
-        let currentIndex = 0;
-        let score = 0;
+let index = 0, score = 0, answered = false;
+const $ = id => document.getElementById(id);
 
-        function shuffleArray(array) {
-            let arr = [...array];
-            for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
-            }
-            return arr;
-        }
+function render(){
+  answered = false;
+  const item = questions[index];
+  $("questionNumber").textContent = `Câu ${index + 1}`;
+  $("question").textContent = item.q;
+  $("options").innerHTML = "";
+  
+  item.a.forEach((text, i) => {
+    const label = document.createElement("label");
+    label.className = "option";
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "answer";
+    input.value = i;
+    const span = document.createElement("span");
+    span.textContent = String.fromCharCode(65 + i) + ". " + text;
+    label.append(input, span);
+    $("options").append(label);
+  });
 
-        function initQuiz() {
-            shuffledMcq = shuffleArray(rawMcqData).map(item => {
-                const correctVal = item.a;
-                const shuffledOpts = shuffleArray(item.o);
-                return { ...item, o: shuffledOpts, a: correctVal };
-            });
-            currentIndex = 0;
-            score = 0;
-            document.getElementById('live-score').textContent = "0";
-            document.getElementById('result-screen').classList.add('hidden');
-            document.getElementById('quiz-card-container').classList.remove('hidden');
-            renderCurrentQuestion();
-        }
+  $("feedback").style.display = "none";
+  $("feedback").className = "feedback";
+  $("checkBtn").hidden = false;
+  $("checkBtn").disabled = false;
+  $("nextBtn").hidden = true;
+  $("progressText").textContent = `Câu ${index + 1}/${questions.length}`;
+  $("scoreText").textContent = `Đúng: ${score}`;
+  $("progress").style.width = `${(index / questions.length) * 100}%`;
+}
 
-        function renderCurrentQuestion() {
-            const item = shuffledMcq[currentIndex];
-            document.getElementById('question-counter').textContent = `Câu ${currentIndex + 1} / ${shuffledMcq.length}`;
-            
-            const container = document.getElementById('single-question-box');
-            container.innerHTML = `
-                <div class="font-medium text-slate-100 text-base md:text-lg leading-relaxed">
-                    ${item.q}
-                </div>
-                <div class="grid grid-cols-1 gap-3" id="options-group">
-                    ${item.o.map((opt, oIdx) => `
-                        <label id="label-opt-${oIdx}" class="p-3.5 bg-slate-900/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center space-x-3 cursor-pointer text-sm md:text-base transition">
-                            <input type="radio" name="current-opt" value="${opt}" onclick="handleSelect('${opt.replace(/'/g, "\\'")}')" class="accent-rose-500 w-4 h-4">
-                            <span><strong class="text-rose-400 mr-2">${['A', 'B', 'C', 'D'][oIdx]}.</strong>${opt}</span>
-                        </label>
-                    `).join('')}
-                </div>
-                <div id="feedback-box" class="hidden mt-4 p-4 rounded-xl text-xs md:text-sm font-medium border space-y-3"></div>
-            `;
-        }
+function check(){
+  if(answered) return;
+  const chosen = document.querySelector('input[name="answer"]:checked');
+  if(!chosen){ alert("Bạn hãy chọn một đáp án trước nhé!"); return; }
+  
+  answered = true;
+  const item = questions[index];
+  const val = Number(chosen.value);
+  const correct = val === item.correct;
+  
+  if(correct) score++;
+  
+  document.querySelectorAll('input[name="answer"]').forEach(x => x.disabled = true);
+  
+  const fb = $("feedback");
+  fb.style.display = "block";
+  fb.className = "feedback" + (correct ? "" : " wrong");
+  fb.innerHTML = `<h3>${correct ? "✓ Chính xác!" : "✗ Chưa chính xác."} Đáp án đúng: ${String.fromCharCode(65 + item.correct)}</h3><p><strong>Giải thích:</strong> ${item.why}</p>`;
+  
+  $("checkBtn").hidden = true;
+  $("nextBtn").hidden = false;
+  $("nextBtn").textContent = index === questions.length - 1 ? "Xem kết quả →" : "Câu tiếp theo →";
+  $("scoreText").textContent = `Đúng: ${score}`;
+}
 
-        function handleSelect(selectedVal) {
-            const item = shuffledMcq[currentIndex];
-            const isCorrect = (selectedVal === item.a);
+function next(){
+  if(index < questions.length - 1){
+    index++;
+    render();
+    window.scrollTo({top: 0, behavior: "smooth"});
+    return;
+  }
+  $("quiz").style.display = "none";
+  $("summary").style.display = "block";
+  $("progress").style.width = "100%";
+  $("progressText").textContent = `Hoàn thành ${questions.length}/${questions.length}`;
+  $("finalScore").textContent = `${score}/${questions.length}`;
+  
+  let msg = "Đừng nản nhé. Hãy đọc kỹ phần giải thích và làm lại một lượt để ghi nhớ kiến thức tốt hơn!";
+  if(score >= 13) msg = "Rất xuất sắc! Bạn đã nắm vững toàn bộ kiến thức cốt lõi của Bài 2.";
+  else if(score >= 9) msg = "Khá tốt! Hãy ôn lại một vài câu trả lời sai để củng cố kiến thức hoàn thiện hơn.";
+  $("finalMessage").textContent = msg;
+  window.scrollTo({top: 0, behavior: "smooth"});
+}
 
-            if (isCorrect) {
-                score++;
-                document.getElementById('live-score').textContent = score;
-            }
+function restart(){
+  index = 0;
+  score = 0;
+  $("quiz").style.display = "block";
+  $("summary").style.display = "none";
+  render();
+  window.scrollTo({top: 0, behavior: "smooth"});
+}
 
-            const allRadios = document.querySelectorAll('input[name="current-opt"]');
-            allRadios.forEach(radio => radio.disabled = true);
+function openMatrixModal(){
+  $("matrixModal").style.display = "flex";
+}
 
-            item.o.forEach((opt, oIdx) => {
-                const labelEl = document.getElementById(`label-opt-${oIdx}`);
-                labelEl.classList.remove('cursor-pointer', 'hover:bg-slate-700/80');
-                if (opt === item.a) {
-                    labelEl.className = "p-3.5 border rounded-xl flex items-center space-x-3 text-sm md:text-base transition bg-emerald-950/80 border-emerald-600 text-emerald-200 font-semibold";
-                } else if (opt === selectedVal && !isCorrect) {
-                    labelEl.className = "p-3.5 border rounded-xl flex items-center space-x-3 text-sm md:text-base transition bg-rose-950/80 border-rose-600 text-rose-200";
-                } else {
-                    labelEl.className = "p-3.5 border rounded-xl flex items-center space-x-3 text-sm md:text-base transition bg-slate-900/40 border-slate-800 text-slate-400 opacity-50";
-                }
-            });
+function closeMatrixModal(){
+  $("matrixModal").style.display = "none";
+}
 
-            const feedbackBox = document.getElementById('feedback-box');
-            feedbackBox.classList.remove('hidden');
-            
-            if (isCorrect) {
-                feedbackBox.className = "mt-4 p-4 rounded-xl text-xs md:text-sm font-medium border bg-emerald-950/60 border-emerald-800 text-emerald-300 space-y-3";
-                feedbackBox.innerHTML = `
-                    <div><i class="fa-solid fa-circle-check"></i> <b>Chính xác!</b> <em>Giải thích:</em> ${item.exp}</div>
-                    <div><button onclick="nextQuestion()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow transition">Câu tiếp theo <i class="fa-solid fa-arrow-right ml-1"></i></button></div>
-                `;
-            } else {
-                feedbackBox.className = "mt-4 p-4 rounded-xl text-xs md:text-sm font-medium border bg-rose-950/60 border-rose-800 text-rose-300 space-y-3";
-                feedbackBox.innerHTML = `
-                    <div><i class="fa-solid fa-circle-xmark"></i> <b>Chưa đúng!</b> <em>Giải thích:</em> ${item.exp}</div>
-                    <div><button onclick="nextQuestion()" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg shadow transition">Câu tiếp theo <i class="fa-solid fa-arrow-right ml-1"></i></button></div>
-                `;
-            }
-        }
+$("checkBtn").addEventListener("click", check);
+$("nextBtn").addEventListener("click", next);
+$("restartBtn").addEventListener("click", restart);
+$("againBtn").addEventListener("click", restart);
 
-        function nextQuestion() {
-            currentIndex++;
-            if (currentIndex < shuffledMcq.length) {
-                renderCurrentQuestion();
-            } else {
-                showFinalResult();
-            }
-        }
-
-        function showFinalResult() {
-            document.getElementById('quiz-card-container').classList.add('hidden');
-            const resultScreen = document.getElementById('result-screen');
-            resultScreen.classList.remove('hidden');
-            document.getElementById('final-score').textContent = `${score} / ${shuffledMcq.length}`;
-        }
-
-        window.onload = initQuiz;
-    </script>
+render();
+</script>
 </body>
 </html>
