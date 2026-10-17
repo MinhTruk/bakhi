@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm Tra Giữa Kỳ I - Môn GDQPAN 11</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-blue-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/85 backdrop-blur border-b border-slate-700/60 sticky top-0 z-30">
+        <div class="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="./indexqp.html" class="p-2 bg-blue-600 rounded-lg text-white hover:bg-blue-500 transition cursor-pointer" title="Quay lại indexqp.html">
+                    <i class="fa-solid fa-arrow-left text-base"></i>
+                </a>
+                <div>
+                    <h1 class="text-sm md:text-base font-bold leading-tight">GDQPAN 11 - Kiểm Tra Giữa Kỳ I</h1>
+                    <p class="text-xs text-slate-400">Trường THPT FPT</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <!-- Nút xem ma trận popup chi tiết -->
+                <button type="button" onclick="openMatrixModal()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1.5 cursor-pointer">
+                    <i class="fa-solid fa-table text-blue-400"></i>
+                    <span class="hidden sm:inline">Xem ma trận chi tiết</span>
+                </button>
+                <!-- Nút Trang chủ chính -->
+                <a href="../../../index.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1.5 cursor-pointer">
+                    <i class="fa-solid fa-house text-blue-400"></i>
+                    <span class="hidden sm:inline">Trang chủ chính</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col justify-center space-y-6">
+
+        <!-- TRANG 1: MA TRẬN ĐỀ VÀ NỘI DUNG ÔN TẬP CHI TIẾT -->
+        <section id="page-matrix" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+            <div class="flex items-center space-x-3 pb-4 border-b border-slate-700/60">
+                <span class="p-3 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl">
+                    <i class="fa-solid fa-file-waveform text-xl"></i>
+                </span>
+                <div>
+                    <h2 class="text-xl font-bold text-white">Ma Trận & Nội Dung Ôn Tập Chi Tiết Giữa Kỳ 1</h2>
+                    <p class="text-xs text-slate-400">Môn: Giáo dục Quốc phòng và An ninh lớp 11 (40 câu trắc nghiệm - 45 phút)</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-sm text-slate-300 leading-relaxed">
+                <div class="p-4 bg-slate-900/70 border border-slate-700/60 rounded-xl space-y-3">
+                    <h3 class="font-bold text-blue-300 text-base">I. Mục đích yêu cầu & Cấu trúc phân bổ</h3>
+                    <p>Đánh giá toàn diện năng lực, kiến thức lý thuyết của học sinh qua các nội dung trọng tâm. Cấu trúc đề thi gồm 40 câu trắc nghiệm khách quan (10 điểm):</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                        <div class="p-3 bg-slate-800 rounded-lg border border-slate-700 text-center">
+                            <div class="text-blue-400 font-bold text-base">15 Câu</div>
+                            <div class="text-xs text-slate-400">Bảo vệ chủ quyền lãnh thổ</div>
+                        </div>
+                        <div class="p-3 bg-slate-800 rounded-lg border border-slate-700 text-center">
+                            <div class="text-blue-400 font-bold text-base">15 Câu</div>
+                            <div class="text-xs text-slate-400">Luật NVQS & Trách nhiệm HS</div>
+                        </div>
+                        <div class="p-3 bg-slate-800 rounded-lg border border-slate-700 text-center">
+                            <div class="text-blue-400 font-bold text-base">10 Câu</div>
+                            <div class="text-xs text-slate-400">Phòng chống tệ nạn xã hội</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-900/70 border border-slate-700/60 rounded-xl space-y-3">
+                    <h3 class="font-bold text-blue-300 text-base">II. Tóm tắt nội dung cốt lõi theo ma trận</h3>
+                    <ul class="list-disc pl-5 space-y-2 text-xs text-slate-300">
+                        <li><b>Chủ đề 1 (15 câu):</b> Hệ thống kiến thức về chủ quyền quốc gia, Công ước UNCLOS 1982 (320 điều, 9 phụ lục), Luật Biển Việt Nam 2012 (5 bộ phận vùng biển), đường biên giới trên đất liền/trên biển và chủ quyền Hoàng Sa, Trường Sa.</li>
+                        <li><b>Chủ đề 2 (15 câu):</b> Luật Nghĩa vụ quân sự (độ tuổi đăng ký lần đầu nam 17, nữ 18 có chuyên môn kỹ thuật), hồ sơ, thủ tục, thời gian khám sức khỏe (01/11 - 31/12), quy định tạm hoãn/miễn gọi nhập ngũ và nghĩa vụ tham gia CAND.</li>
+                        <li><b>Chủ đề 3 (10 câu):</b> Khái niệm tội phạm (14 chương trong Bộ luật Hình sự 2015 sửa đổi 2017), các loại tệ nạn xã hội (ma túy, mại dâm, cờ bạc, mê tín dị đoan), phương thức thủ đoạn của tội phạm công nghệ cao và trách nhiệm của học sinh trong phòng chống.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center pt-2">
+                <button type="button" onclick="goToExam()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 transition text-base inline-flex items-center space-x-2 cursor-pointer">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Xác nhận và làm đề</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- TRANG 2: LÀM ĐỀ TRẮC NGHIỆM TỪNG CÂU -->
+        <section id="page-exam" class="hidden bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div>
+                    <h2 class="text-lg md:text-xl font-bold text-white">Đề Kiểm Tra Giữa Kỳ I - Môn GDQPAN 11 (Mã đề 132)</h2>
+                    <p class="text-xs text-slate-400" id="exam-progress-text">Câu 1 / 40</p>
+                </div>
+                <div class="w-1/3 bg-slate-700 h-2 rounded-full overflow-hidden hidden sm:block">
+                    <div id="progress-bar" class="bg-blue-500 h-full transition-all duration-300" style="width: 2.5%;"></div>
+                </div>
+            </div>
+
+            <!-- Khu vực hiển thị từng câu hỏi -->
+            <div id="question-container" class="space-y-4">
+                <!-- Render bằng JavaScript -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL MA TRẬN CHI TIẾT NHẤT (NHẬN BIẾT - THÔNG HIỂU - VẬN DỤNG) -->
+    <div id="matrix-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
+                <h3 class="font-bold text-base text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-table text-blue-400"></i>
+                    <span>Bảng Ma Trận & Nội Dung Ôn Tập Chi Tiết Nhất</span>
+                </h3>
+                <button type="button" onclick="closeMatrixModal()" class="w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-slate-300 transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 text-xs text-slate-300 leading-relaxed">
+                <p class="text-slate-400 italic">Bảng chi tiết các mức độ Nhận biết, Thông hiểu và Vận dụng cần học cho từng chương trình kiểm tra:</p>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse border border-slate-700">
+                        <thead>
+                            <tr class="bg-slate-900 text-blue-300 border-b border-slate-700">
+                                <th class="p-3 border border-slate-700 w-1/4">Nội dung kiến thức</th>
+                                <th class="p-3 border border-slate-700 w-1/4">Nhận biết</th>
+                                <th class="p-3 border border-slate-700 w-1/4">Thông hiểu</th>
+                                <th class="p-3 border border-slate-700 w-1/4">Vận dụng</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700 text-slate-300">
+                            <tr>
+                                <td class="p-3 border border-slate-700 font-semibold text-white">
+                                    1. Bảo vệ chủ quyền lãnh thổ và biên giới quốc gia <span class="block text-blue-400 font-normal mt-1">(15 câu)</span>
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Khái niệm, nội dung cơ bản về chủ quyền lãnh thổ, biên giới quốc gia.<br>
+                                    • Công ước UNCLOS 1982 (320 điều, 9 phụ lục).<br>
+                                    • Luật Biển Việt Nam 2012 (5 bộ phận vùng biển).<br>
+                                    • Khái niệm biên giới trên đất liền, trên biển, trên không, trong lòng đất.<br>
+                                    • Chủ quyền Hoàng Sa, Trường Sa và mốc giới với các nước (Trung Quốc, Lào, Campuchia).
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Trình bày các bộ phận cấu thành lãnh thổ và biên giới quốc gia VN.<br>
+                                    • Nội dung Chiến lược bảo vệ Tổ quốc VN XHCN trong tình hình mới (mục tiêu, quan điểm chỉ đạo như kiên định độc lập dân tộc gắn liền với CNXH, khái niệm đối tác - đối tượng).
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Vận dụng kiến thức xác định và thực hiện ý thức trách nhiệm của công dân trong quản lý, xây dựng và bảo vệ biên giới, chủ quyền quốc gia.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 border border-slate-700 font-semibold text-white">
+                                    2. Luật nghĩa vụ quân sự và trách nhiệm của học sinh <span class="block text-blue-400 font-normal mt-1">(15 câu)</span>
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Nội dung chính của Luật NVQS (độ tuổi đăng ký lần đầu: nam đủ 17, nữ đủ 18 có chuyên môn kỹ thuật).<br>
+                                    • Nghị định thực hiện nghĩa vụ tham gia Công an nhân dân.<br>
+                                    • Thời gian gọi khám sức khỏe (01/11 đến 31/12).<br>
+                                    • Hồ sơ đăng ký NVQS lần đầu và hồ sơ tham gia CAND.
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Các trường hợp được tạm hoãn gọi nhập ngũ (đang học ĐH chính quy...) và trường hợp được miễn.<br>
+                                    • Thời hạn phục vụ tại ngũ trong thời bình và trường hợp kéo dài khi sẵn sàng chiến đấu, cứu hộ cứu nạn.<br>
+                                    • Các hình thức xử lý vi phạm pháp luật về NVQS.
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Liên hệ thực tiễn trách nhiệm của học sinh trong việc chấp hành Luật Nghĩa vụ quân sự, nghĩa vụ tham gia Công an nhân dân.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 border border-slate-700 font-semibold text-white">
+                                    3. Phòng chống tệ nạn xã hội ở VN trong thời kỳ hội nhập <span class="block text-blue-400 font-normal mt-1">(10 câu)</span>
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Khái niệm tội phạm và các loại tội phạm (cố ý/vô ý, năng lực trách nhiệm hình sự, 14 chương trong BLHS).<br>
+                                    • Các loại hình tệ nạn xã hội (ma túy, mại dâm, cờ bạc, mê tín dị đoan) và phương thức hoạt động tội phạm công nghệ cao.
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Quy định của pháp luật về phòng chống tệ nạn xã hội, phòng chống tội phạm công nghệ cao.<br>
+                                    • Hình thức xử phạt vi phạm hành chính hoặc hình sự đối với hành vi vi phạm (đánh bạc, mại dâm, bói toán).
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Tích cực, chủ động thực hiện trách nhiệm công dân trong phòng chống tệ nạn xã hội, phòng chống tội phạm công nghệ cao.<br>
+                                    • Kỹ năng ứng xử khi bị rủ rê vào tệ nạn và thực hiện quyền tố giác tội phạm đúng pháp luật.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="text-right pt-2 sticky bottom-0 bg-slate-800 py-2 border-t border-slate-700">
+                <button type="button" onclick="closeMatrixModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition cursor-pointer">
+                    Đóng bảng ma trận chi tiết
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        GDQPAN 11 • Ôn Tập & Kiểm Tra Giữa Kỳ I • Repository: MinhTruk/bakhi
+    </footer>
+
+    <script>
+        // Dữ liệu 40 câu hỏi chuẩn từ file de.pdf / de_2.pdf và đáp án chuẩn
+        const questionsData = [
+            { id: 1, q: "Nội dung nào sau đây không phản ánh đúng mục tiêu của Đảng về Chiến lược bảo vệ Tổ quốc Việt Nam xã hội chủ nghĩa trong tình hình mới?", o: ["Kết hợp chặt chẽ hai nhiệm vụ: xây dựng và bảo vệ Tổ quốc xã hội chủ nghĩa.", "Bảo vệ vững chắc độc lập, chủ quyền, thống nhất, toàn vẹn lãnh thổ của Tổ quốc.", "Giữ vững môi trường hòa bình, ổn định chính trị, an ninh quốc gia, an ninh con người.", "Bảo vệ Đảng, Nhà nước, nhân dân, chế độ xã hội chủ nghĩa, văn hóa, lợi ích quốc gia."], a: 0, exp: "Đáp án phản ánh nội dung mục tiêu chiến lược bảo vệ Tổ quốc." },
+            { id: 2, q: "Một trong những quan điểm chỉ đạo của Đảng về Chiến lược bảo vệ Tổ quốc Việt Nam xã hội chủ nghĩa trong tình hình mới là:", o: ["coi ngoại lực là nhân tố quyết định mọi thắng lợi, thành công.", "kiên định mục tiêu độc lập dân tộc gắn liền với chủ nghĩa xã hội.", "chỉ chú trọng xây dựng sức mạnh của đất nước về văn hóa - xã hội.", "kết hợp chặt chẽ hai nhiệm vụ chiến lược: kháng chiến và kiến quốc."], a: 1, exp: "Kiên định mục tiêu độc lập dân tộc gắn liền với chủ nghĩa xã hội." },
+            { id: 3, q: "Những ai tôn trọng độc lập, chủ quyền, thiết lập và mở rộng quan hệ hữu nghị, hợp tác bình đẳng, cùng có lợi với Việt Nam đều là", o: ["đối tác.", "đối tượng.", "kẻ thù.", "đối thủ."], a: 0, exp: "Đó là định nghĩa về đối tác." },
+            { id: 4, q: "Công ước của Liên hợp quốc về Luật Biển năm 1982 bao gồm", o: ["320 điều và 9 phụ lục.", "7 chương với 55 điều.", "9 chương với 62 điều.", "36 điều và 8 phụ lục."], a: 0, exp: "UNCLOS 1982 gồm 320 điều và 9 phụ lục." },
+            { id: 5, q: "Theo quy định trong Luật Biển Việt Nam năm 2012, vùng biển Việt Nam gồm bao nhiêu bộ phận?", o: ["3 bộ phận.", "4 bộ phận.", "5 bộ phận.", "6 bộ phận."], a: 2, exp: "Gồm 5 bộ phận: nội thủy, lãnh hải, vùng tiếp giáp lãnh hải, vùng đặc quyền kinh tế và thềm lục địa." },
+            { id: 6, q: "Biên giới quốc gia trên biển được hoạch định và đánh dấu bằng", o: ["hệ tọa độ trên đất liền.", "các tọa độ trên hải đồ.", "hệ thống mốc quốc giới.", "một mốc quốc giới duy nhất."], a: 1, exp: "Đánh dấu bằng các tọa độ trên hải đồ." },
+            { id: 7, q: "“Mặt thẳng đứng từ biên giới quốc gia trên đất liền và biên giới quốc gia trên biển lên vùng trời” - đó là nội dung của khái niệm nào sau đây?", o: ["Biên giới quốc gia trên biển.", "Biên giới quốc gia trên không.", "Biên giới quốc gia trên đất liền.", "Biên giới quốc gia trong lòng đất."], a: 1, exp: "Khái niệm biên giới quốc gia trên không." },
+            { id: 8, q: "Trong bảo vệ biên giới quốc gia của Việt Nam, pháp luật Việt Nam không nghiêm cấm thực hiện hành vi nào sau đây?", o: ["Làm sai lệch, chệch hướng đi của đường biên giới quốc gia.", "Vận chuyển qua biên giới quốc gia các văn hoá phẩm độc hại.", "Bảo vệ môi trường, tài nguyên thiên nhiên và lợi ích quốc gia.", "Xâm canh, xâm cư; phá hoại công trình ở khu vực biên giới."], a: 2, exp: "Bảo vệ môi trường là hành vi được khuyến khích, không bị nghiêm cấm." },
+            { id: 9, q: "Ngày 03 tháng 3 hằng năm là ngày truyền thống của lực lượng nào sau đây?", o: ["Bộ đội Biên phòng Việt Nam.", "Quân đội nhân dân Việt Nam.", "Công an nhân dân Việt Nam.", "Hải quân nhân dân Việt Nam."], a: 0, exp: "Ngày truyền thống Bộ đội Biên phòng Việt Nam." },
+            { id: 10, q: "Việt Nam có đường biên giới chung trên đất liền với những quốc gia nào?", o: ["Lào, Thái Lan, Philíppin.", "Mianma, Malaixia, Inđônêxia.", "Lào, Campuchia, Thái Lan.", "Trung Quốc, Lào, Campuchia."], a: 3, exp: "Trung Quốc, Lào, Campuchia." },
+            { id: 11, q: "Vùng nước tiếp giáp với bờ biển, ở phía trong đường cơ sở được gọi là", o: ["nội thủy.", "lãnh hải.", "vùng tiếp giáp lãnh hải.", "thềm lục địa."], a: 0, exp: "Đó là nội thủy." },
+            { id: 12, q: "Vùng biển tiếp liền và nằm ngoài lãnh hải Việt Nam, có chiều rộng 12 hải lí tính từ ranh giới ngoài của lãnh hải, được gọi là", o: ["nội thủy.", "vùng tiếp giáp lãnh hải.", "vùng đặc quyền kinh tế.", "thềm lục địa."], a: 1, exp: "Vùng tiếp giáp lãnh hải." },
+            { id: 13, q: "Vùng đáy biển và lòng đất dưới đáy biển, tiếp liền và nằm ngoài lãnh hải Việt Nam, trên toàn bộ phần kéo dài tự nhiên...", o: ["nội thủy.", "vùng tiếp giáp lãnh hải.", "vùng đặc quyền kinh tế.", "thềm lục địa."], a: 3, exp: "Thềm lục địa." },
+            { id: 14, q: "“Vùng đất tự nhiên có nước bao bọc, khi thuỷ triều lên vùng đất này vẫn ở trên mặt nước” - đó là nội dung của khái niệm nào sau đây?", o: ["Đảo.", "Quần đảo.", "Nội thủy.", "Lãnh hải."], a: 0, exp: "Đảo." },
+            { id: 15, q: "Nước Cộng hòa xã hội chủ nghĩa Việt Nam là một nước độc lập, có chủ quyền, thống nhất và toàn vẹn lãnh thổ, bao gồm:", o: ["đất liền và hải đảo.", "vùng biển và vùng trời.", "vùng đất, vùng trời và hải đảo.", "đất liền, hải đảo, vùng biển và vùng trời."], a: 3, exp: "Đất liền, hải đảo, vùng biển và vùng trời." },
+            { id: 16, q: "Đối tượng đăng kí nghĩa vụ quân sự gồm", o: ["công dân nam đủ 17 tuổi trở lên; công dân nữ đủ 18 tuổi trở lên.", "công dân nam đủ 18 tuổi trở lên; công dân nữ đủ 17 tuổi trở lên.", "công dân nam đủ 21 tuổi trở lên; công dân nữ đủ 22 tuổi trở lên.", "công dân nam đủ 22 tuổi trở lên; công dân nữ đủ 23 tuổi trở lên."], a: 0, exp: "Nam đủ 17 tuổi trở lên; nữ đủ 18 tuổi trở lên có chuyên môn kỹ thuật." },
+            { id: 17, q: "Chỉ huy trưởng Ban chỉ huy quân sự cấp huyện ra lệnh gọi công dân đăng kí nghĩa vụ quân sự lần đầu vào thời gian nào?", o: ["Tháng ba hằng năm.", "Tháng tư hằng năm.", "Tháng năm hằng năm.", "Tháng sáu hằng năm."], a: 1, exp: "Tháng tư hằng năm." },
+            { id: 18, q: "Công dân trực tiếp đăng kí nghĩa vụ quân sự tại", o: ["Ban Chỉ huy quân sự cấp xã.", "Ban Chỉ huy quân sự quận.", "Ban Chỉ huy quân sự cấp huyện.", "Ban Chỉ huy quân sự cấp tỉnh."], a: 0, exp: "Ban Chỉ huy quân sự cấp xã." },
+            { id: 19, q: "Ở Việt Nam, công dân được đào tạo trình độ cao đẳng, đại học đã được tạm hoãn gọi nhập ngũ thì độ tuổi gọi nhập ngũ đến hết", o: ["25 tuổi.", "27 tuổi.", "29 tuổi.", "31 tuổi."], a: 1, exp: "Đến hết 27 tuổi." },
+            { id: 20, q: "Công dân thuộc diện gọi nhập ngũ được gọi khám sức khỏe. Thời gian khám sức khỏe từ ngày", o: ["01 tháng 11 đến hết ngày 31 tháng 12 hằng năm.", "01 tháng 1 đến hết ngày 28 tháng 2 hằng năm.", "01 tháng 3 đến hết ngày 30 tháng 4 hằng năm.", "01 tháng 5 đến hết ngày 30 tháng 6 hằng năm."], a: 0, exp: "Từ 01/11 đến hết 31/12 hằng năm." },
+            { id: 21, q: "Nội dung nào sau đây không phản ánh đúng tiêu chuẩn tuyển chọn công dân thực hiện nghĩa vụ tham gia công an nhân dân?", o: ["Không có tiền án, tiền sự.", "Lý lịch nhân thân không rõ ràng.", "Không bị truy cứu trách nhiệm hình sự.", "Chấp hành chính sách, pháp luật của nhà nước."], a: 1, exp: "Lý lịch không rõ ràng là không đạt tiêu chuẩn." },
+            { id: 22, q: "Hồ sơ đăng kí nghĩa vụ quân sự lần đầu bao gồm các loại giấy tờ nào sau đây?", o: ["Phiếu tự khai sức khỏe và bản chụp căn cước công dân.", "Giấy khai sinh và giấy chứng nhận đăng kí nghĩa vụ quân sự.", "Giấy khai sinh, số hộ khẩu và phiếu tự khai sức khỏe.", "Sổ hộ khẩu và giấy chứng nhận đăng kí nghĩa vụ quân sự."], a: 0, exp: "Phiếu tự khai sức khỏe và bản chụp CCCD." },
+            { id: 23, q: "Trong hồ sơ đăng kí nghĩa vụ tham gia Công an nhân dân cần có", o: ["phiếu tự khai sức khỏe nghĩa vụ quân sự.", "giấy chứng nhận đăng kí nghĩa vụ quân sự.", "số hộ khẩu và bản chụp căn cước công dân.", "bản chụp giấy khai sinh và số hộ khẩu."], a: 1, exp: "Giấy chứng nhận đăng ký nghĩa vụ quân sự." },
+            { id: 24, q: "Công dân có trách nhiệm gì trong thực hiện nghĩa vụ quân sự?", o: ["Không chấp hành lệnh gọi kiểm tra, khám sức khỏe nghĩa vụ quân sự.", "Cố ý không nhận lệnh gọi kiểm tra, khám sức khỏe nghĩa vụ quân sự.", "Làm sai lệch kết quả phân loại sức khỏe nhằm trốn tránh nghĩa vụ quân sự.", "Chấp hành quy định của pháp luật về đăng kí và thực hiện nghĩa vụ quân sự."], a: 3, exp: "Chấp hành quy định pháp luật về đăng ký và thực hiện NVQS." },
+            { id: 25, q: "Công dân được công nhận hoàn thành nghĩa vụ quân sự tại ngũ trong thời bình khi có thời gian phục vụ trên tàu kiểm ngư từ đủ", o: ["12 tháng trở lên.", "18 tháng trở lên.", "24 tháng trở lên.", "30 tháng trở lên."], a: 2, exp: "Từ đủ 24 tháng trở lên." },
+            { id: 26, q: "Công dân thuộc trường hợp nào sau đây được tạm hoãn gọi nhập ngũ?", o: ["Đang được đào tạo trình độ đại học hệ chính quy thuộc cơ sở giáo dục đại học.", "Đủ sức khỏe phục vụ tại ngũ theo kết luận của Hội đồng khám sức khỏe.", "Có anh, chị hoặc em họ là hạ sĩ quan, binh sĩ đang phục vụ tại ngũ.", "Có người thân bị suy giảm khả năng lao động từ 40 đến 60%."], a: 0, exp: "Đang học đại học hệ chính quy." },
+            { id: 27, q: "Công dân thuộc trường hợp nào sau đây được công nhận hoàn thành nghĩa vụ quân sự tại ngũ trong thời bình?", o: ["Dân quân thường trực có ít nhất 24 tháng phục vụ.", "Tham gia Công an xã liên tục từ đủ 24 tháng trở lên.", "Phục vụ trên tàu kiểm ngư từ đủ 36 tháng trở lên.", "Phục vụ trên tàu kiểm ngư từ đủ 12 tháng trở lên."], a: 0, exp: "Dân quân thường trực có ít nhất 24 tháng phục vụ." },
+            { id: 28, q: "Ở thời bình, trong trường hợp để bảo đảm nhiệm vụ sẵn sàng chiến đấu hoặc phòng chống thiên tai... thời hạn tại ngũ kéo dài không quá", o: ["24 tháng.", "18 tháng.", "12 tháng.", "6 tháng."], a: 3, exp: "Không quá 6 tháng." },
+            { id: 29, q: "Hành vi không đăng kí nghĩa vụ quân sự lần đầu sẽ bị xử phạt bằng hình thức nào sau đây?", o: ["Cải tạo không giam giữ.", "Tù không thời hạn.", "Tù có thời hạn.", "Phạt tiền."], a: 3, exp: "Phạt tiền." },
+            { id: 30, q: "Đối tượng được tuyển chọn thực hiện nghĩa vụ tham gia công an nhân dân là công dân nam", o: ["trong độ tuổi gọi nhập ngũ đã đăng kí nghĩa vụ quân sự.", "ngoài độ tuổi gọi nhập ngũ đã hoàn thành nghĩa vụ quân sự.", "từ 18 đến hết 27 tuổi, thuộc trường hợp miễn gọi nhập ngũ.", "từ 18 đến hết 45 tuổi, thuộc trường hợp tạm hoãn gọi nhập ngũ."], a: 0, exp: "Trong độ tuổi gọi nhập ngũ đã đăng ký NVQS." },
+            { id: 31, q: "Nội dung nào sau đây không phản ánh đúng về khái niệm “tội phạm”?", o: ["Do pháp nhân thương mại thực hiện một cách vô ý hoặc cố ý.", "Do người mất năng lực trách nhiệm hình sự thực hiện một cách cố ý.", "Là hành vi nguy hiểm cho xã hội được quy định trong Bộ luật Hình sự.", "Do người có năng lực trách nhiệm hình sự thực hiện một cách vô ý hoặc cố ý."], a: 1, exp: "Người mất năng lực TNHS thực hiện hành vi không phải là tội phạm." },
+            { id: 32, q: "Trong Bộ luật Hình sự năm 2015, sửa đổi, bổ sung năm 2017 có bao nhiêu chương quy định về hình phạt các tội phạm?", o: ["12 chương.", "13 chương.", "14 chương.", "15 chương."], a: 2, exp: "14 chương." },
+            { id: 33, q: "Nội dung nào sau đây không phản ánh đúng những cách thức hoạt động phổ biến của tội phạm?", o: ["Câu kết thành các băng nhóm, tổ chức.", "Chỉ lưu động trên phạm vi xã, phường.", "Sử dụng thủ đoạn giả mạo, gian dối.", "Sử dụng vũ khí, công cụ, phương tiện."], a: 1, exp: "Tội phạm hoạt động lưu động trên nhiều địa bàn rộng, không chỉ ở xã phường." },
+            { id: 34, q: "Tội phạm sử dụng công nghệ cao là những hành vi vi phạm", o: ["pháp luật hình sự.", "pháp luật dân sự.", "pháp luật lao động.", "pháp luật tố tụng."], a: 0, exp: "Vi phạm pháp luật hình sự." },
+            { id: 35, q: "Hành vi sản xuất, mua bán, trao đổi hoặc tặng cho công cụ, thiết bị, phần mềm để sử dụng vào mục đích trái pháp luật sẽ bị xử phạt theo những hình thức nào?", o: ["Cảnh cáo hoặc phạt tiền.", "Cảnh cáo, phạt tiền và phạt tử hình.", "Cải tạo không giam giữ hoặc cảnh cáo.", "Phạt tiền, phạt cải tạo không giam giữ hoặc phạt tù."], a: 3, exp: "Phạt tiền, phạt cải tạo không giam giữ hoặc phạt tù." },
+            { id: 36, q: "Trong dịp Tết Nguyên đán, P rủ mấy bạn đến nhà đánh tú lơ khơ ăn tiền. Nếu nhận được lời mời của P, em nên lựa chọn cách ứng xử nào sau đây?", o: ["Lập tức đồng ý đến nhà P chơi đánh bài ăn tiền.", "Từ chối nhưng vẫn đến nhà P để xem các bạn chơi.", "Từ chối và khuyên P không nên thực hiện hành vi đó.", "Đồng ý và rủ thêm các bạn khác cùng tham gia cho vui."], a: 2, exp: "Từ chối và khuyên bạn không thực hiện hành vi đó." },
+            { id: 37, q: "Xử phạt vi phạm hành chính đối với cá nhân, tổ chức có hành vi", o: ["tham gia hoặc tổ chức hoạt động mê tín dị đoan trong lễ hội.", "dùng bói toán để thu lợi bất chính từ 200 triệu đồng trở lên.", "dùng bói toán, đồng bóng gây ảnh hưởng xấu đến an toàn xã hội.", "sử dụng các hình thức mê tín dị đoan dẫn đến chết người."], a: 2, exp: "Dùng bói toán, đồng bóng gây ảnh hưởng xấu đến trật tự, an toàn xã hội." },
+            { id: 38, q: "Pháp luật Việt Nam không nghiêm cấm thực hiện hành vi nào sau đây?", o: ["Mua dâm; bán dâm và tổ chức hoạt động mại dâm.", "Tố giác hành vi: mua dâm, bán dâm, chứa mại dâm.", "Lợi dụng kinh doanh dịch vụ để hoạt động mại dâm.", "Cưỡng bức, môi giới mại dâm và bảo kê mại dâm."], a: 1, exp: "Tố giác hành vi vi phạm là việc làm đúng pháp luật, không bị nghiêm cấm." },
+            { id: 39, q: "Nội dung nào sau đây không phản ánh đúng trách nhiệm của học sinh trong việc phòng chống tệ nạn xã hội?", o: ["Học tập đầy đủ các nội dung giáo dục về phòng, chống tệ nạn xã hội.", "Tự giác thực hiện trách nhiệm công dân trong phòng, chống tệ nạn xã hội.", "Gương mẫu thực hiện quy định của pháp luật, quy tắc sinh hoạt cộng đồng.", "Không tham gia hoạt động phòng chống tệ nạn xã hội do địa phương tổ chức."], a: 3, exp: "Học sinh cần tích cực tham gia các hoạt động phòng chống tệ nạn xã hội do địa phương tổ chức." },
+            { id: 40, q: "Chủ thể nào dưới đây không vi phạm pháp luật về phòng, chống tệ nạn xã hội?", o: ["Chị V tố cáo với cơ quan công an về hành vi tổ chức đánh bạc của ông P.", "Anh K lợi dụng việc kinh doanh dịch vụ massage để môi giới mại dâm.", "Bạn K vận chuyển giúp ông C 200g ma túy để nhận 1 triệu đồng tiền công.", "Bà S tung tin mình được “thánh cho ăn lộc để tổ chức hoạt động bói toán."], a: 0, exp: "Chị V tố cáo tội phạm là thực hiện đúng quy định pháp luật." }
+        ];
+
+        let currentIndex = 0;
+        let userAnswers = {};
+
+        function goToExam() {
+            document.getElementById('page-matrix').classList.add('hidden');
+            document.getElementById('page-exam').classList.remove('hidden');
+            currentIndex = 0;
+            userAnswers = {};
+            renderQuestion();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openMatrixModal() {
+            document.getElementById('matrix-modal').classList.remove('hidden');
+        }
+
+        function closeMatrixModal() {
+            document.getElementById('matrix-modal').classList.add('hidden');
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('question-container');
+            
+            if (currentIndex >= questionsData.length) {
+                renderResult();
+                return;
+            }
+
+            const item = questionsData[currentIndex];
+            const progressPercent = ((currentIndex + 1) / questionsData.length) * 100;
+            document.getElementById('exam-progress-text').innerText = `Câu ${currentIndex + 1} / ${questionsData.length}`;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            const answered = userAnswers[currentIndex] !== undefined;
+            const selectedOpt = userAnswers[currentIndex];
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="font-bold text-base md:text-lg text-slate-100">
+                        <span class="text-blue-400">Câu ${currentIndex + 1}:</span> ${item.q}
+                    </div>
+                    <div class="grid grid-cols-1 gap-2.5">
+                        ${item.o.map((opt, oIdx) => {
+                            let btnClass = "w-full text-left p-3.5 bg-slate-900/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center space-x-3 text-sm transition cursor-pointer option-btn";
+                            if (answered) {
+                                if (oIdx === item.a) {
+                                    btnClass = "w-full text-left p-3.5 bg-emerald-950/80 border border-emerald-600 rounded-xl flex items-center space-x-3 text-sm text-emerald-200 font-semibold";
+                                } else if (oIdx === selectedOpt && selectedOpt !== item.a) {
+                                    btnClass = "w-full text-left p-3.5 bg-rose-950/80 border border-rose-600 rounded-xl flex items-center space-x-3 text-sm text-rose-200";
+                                } else {
+                                    btnClass = "w-full text-left p-3.5 bg-slate-900/40 border border-slate-800 rounded-xl flex items-center space-x-3 text-sm text-slate-500 opacity-60";
+                                }
+                            }
+                            return `
+                                <button type="button" ${answered ? 'disabled' : ''} onclick="handleSelect(${oIdx})" class="${btnClass}">
+                                    <span class="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-blue-400 border border-slate-700 text-xs">${['A', 'B', 'C', 'D'][oIdx]}</span>
+                                    <span class="flex-grow">${opt}</span>
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <div id="feedback-box" class="${answered ? '' : 'hidden'} mt-4 p-4 rounded-xl border space-y-3 ${answered && selectedOpt === item.a ? 'bg-emerald-950/60 border-emerald-800 text-emerald-200' : 'bg-rose-950/60 border-rose-800 text-rose-200'}">
+                        <div class="flex items-center space-x-2 font-bold ${answered && selectedOpt === item.a ? 'text-emerald-400' : 'text-rose-400'}">
+                            <i class="fa-solid ${answered && selectedOpt === item.a ? 'fa-circle-check' : 'fa-circle-xmark'} text-lg"></i>
+                            <span>${answered && selectedOpt === item.a ? 'Chính xác!' : `Chưa đúng! Đáp án đúng là: <b>${['A', 'B', 'C', 'D'][item.a]}</b>`}</span>
+                        </div>
+                        <div class="text-xs text-slate-300 leading-relaxed"><b>Giải thích:</b> ${item.exp}</div>
+                        <div class="pt-2 flex justify-between items-center">
+                            <span class="text-xs text-slate-400 italic">Đã trả lời câu ${currentIndex + 1}</span>
+                            <button type="button" onclick="nextQuestion()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-xs transition inline-flex items-center space-x-2 cursor-pointer">
+                                <span>${currentIndex < questionsData.length - 1 ? 'Câu tiếp theo' : 'Xem kết quả'}</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleSelect(oIdx) {
+            userAnswers[currentIndex] = oIdx;
+            renderQuestion();
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            renderQuestion();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderResult() {
+            let correctCount = 0;
+            questionsData.forEach((item, idx) => {
+                if (userAnswers[idx] === item.a) correctCount++;
+            });
+
+            const container = document.getElementById('question-container');
+            document.getElementById('exam-progress-text').innerText = `Hoàn thành kiểm tra`;
+            document.getElementById('progress-bar').style.width = `100%`;
+
+            container.innerHTML = `
+                <div class="text-center space-y-6 py-6">
+                    <div class="w-20 h-20 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center mx-auto border border-blue-500/30 text-3xl">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <h3 class="text-2xl font-bold text-white">Kết Quả Kiểm Tra Giữa Kỳ I</h3>
+                        <p class="text-slate-300 text-base">
+                            Số câu trả lời đúng của bạn: <span class="font-bold text-blue-400 text-xl">${correctCount} / ${questionsData.length}</span>
+                            <span class="block text-xs text-slate-400 mt-1">(Điểm số tương ứng: ${(correctCount * 0.25).toFixed(2)} điểm)</span>
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                        <button type="button" onclick="retryQuiz()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg transition text-sm inline-flex items-center space-x-2 cursor-pointer">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            <span>Thi lại bài mới</span>
+                        </button>
+                        <button type="button" onclick="backToMatrix()" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold rounded-xl transition text-sm inline-flex items-center space-x-2 cursor-pointer">
+                            <i class="fa-solid fa-table"></i>
+                            <span>Về trang ma trận</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function retryQuiz() {
+            currentIndex = 0;
+            userAnswers = {};
+            goToExam();
+        }
+
+        function backToMatrix() {
+            currentIndex = 0;
+            userAnswers = {};
+            document.getElementById('page-exam').classList.add('hidden');
+            document.getElementById('page-matrix').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
