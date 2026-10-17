@@ -443,7 +443,7 @@
             { id: 'van', indexFile: 'indexvan.html', name: 'Ngữ Văn', icon: 'fa-book-open', color: 'text-rose-500 dark:text-rose-400' },
             { id: 'hoa', indexFile: 'indexhoa.html', name: 'Hóa Học', icon: 'fa-flask', color: 'text-emerald-500 dark:text-emerald-400' },
             { id: 'sinh', indexFile: 'indexsinh.html', name: 'Sinh Học', icon: 'fa-dna', color: 'text-teal-500 dark:text-teal-400' },
-            { id: 'gdqp', indexFile: 'indexgdqp.html', name: 'GDQP', icon: 'fa-shield-halved', color: 'text-green-500 dark:text-green-400' },
+            { id: 'gdqp', indexFile: 'indexqp.html', name: 'GDQP', icon: 'fa-shield-halved', color: 'text-green-500 dark:text-green-400' },
             { id: 'gddp', indexFile: 'indexgddp.html', name: 'GDĐP', icon: 'fa-map-location-dot', color: 'text-orange-500 dark:text-orange-400' }
         ];
 
@@ -498,7 +498,7 @@
             'ktgk1/sinh': false,
             'ktgk1/su': false,
             'ktgk1/tin': false,
-            'ktgk1/gdqp': false,
+            'ktgk1/gdqp': true,
             'ktgk1/gddp': false,
 
             // Kiểm Tra Cuối Kỳ 1
@@ -511,7 +511,31 @@
             'ktck1/su': false,
             'ktck1/tin': false,
             'ktck1/gdqp': false,
-            'ktck1/gddp': false
+            'ktck1/gddp': false,
+            
+            // Kiểm Tra Giữa Kỳ 2
+            'ktgk2/van': true,
+            'ktgk2/toan': false,
+            'ktgk2/anh': false,
+            'ktgk2/ly': false,
+            'ktgk2/hoa': false,
+            'ktgk2/sinh': false,
+            'ktgk2/su': false,
+            'ktgk2/tin': false,
+            'ktgk2/gdqp': true,
+            'ktgk2/gddp': false,
+
+            // Kiểm Tra Cuối Kỳ 2
+            'ktck2/toan': false,
+            'ktck2/van': false,
+            'ktck2/anh': false,
+            'ktck2/ly': false,
+            'ktck2/hoa': false,
+            'ktck2/sinh': false,
+            'ktck2/su': false,
+            'ktck2/tin': false,
+            'ktck2/gdqp': false,
+            'ktck2/gddp': true
         };
 
         document.addEventListener('DOMContentLoaded', () => {
