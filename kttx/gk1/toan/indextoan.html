@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ - Chuyên Đề Toán 11</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- KaTeX CSS & JS (Hỗ trợ hiển thị chuẩn các ký hiệu biến số như $n$, công thức toán) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-blue-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/85 backdrop-blur border-b border-slate-700/60 sticky top-0 z-30">
+        <div class="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="https://minhtruk.github.io/bakhi/" class="p-2 bg-blue-600 rounded-lg text-white hover:bg-blue-500 transition cursor-pointer" title="Trang chủ chính">
+                    <i class="fa-solid fa-house text-base"></i>
+                </a>
+                <div>
+                    <h1 class="text-sm md:text-base font-bold leading-tight">Môn Toán 11 - Ôn Tập Trắc Nghiệm</h1>
+                    <p class="text-xs text-slate-400">Trường THPT FPT</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <!-- Nút quay lại trang chủ chính -->
+                <a href="https://minhtruk.github.io/bakhi/" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1.5 cursor-pointer">
+                    <i class="fa-solid fa-house text-blue-400"></i>
+                    <span class="hidden sm:inline">Trang chủ chính</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col justify-center space-y-6">
+
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-10 shadow-xl space-y-8 text-center">
+            <div class="space-y-3 max-w-xl mx-auto">
+                <span class="p-3 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-2xl inline-flex items-center justify-center text-2xl mb-2">
+                    <i class="fa-solid fa-book-open"></i>
+                </span>
+                <h2 class="text-2xl md:text-3xl font-bold text-white">Hệ Thống Chuyên Đề Đại Số 11</h2>
+                <p class="text-xs md:text-sm text-slate-400">Lựa chọn chuyên đề ôn tập trắc nghiệm dưới đây để bắt đầu làm bài kiểm tra:</p>
+            </div>
+
+            <!-- Danh sách 3 nút chuyên đề -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                <!-- Button 1: Dãy số -->
+                <a href="dayso.html" class="p-5 bg-slate-900/90 hover:bg-blue-600/20 border border-slate-700 hover:border-blue-500 rounded-2xl transition duration-300 flex flex-col items-center justify-center space-y-3 group cursor-pointer shadow-md">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center transition text-xl">
+                        <i class="fa-solid fa-list-ol"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-base group-hover:text-blue-300 transition">Dãy Số</h3>
+                        <p class="text-xs text-slate-400 mt-1">Số hạng tổng quát, tính tăng giảm & bị chặn</p>
+                    </div>
+                </a>
+
+                <!-- Button 2: Cấp số cộng -->
+                <a href="csc.html" class="p-5 bg-slate-900/90 hover:bg-blue-600/20 border border-slate-700 hover:border-blue-500 rounded-2xl transition duration-300 flex flex-col items-center justify-center space-y-3 group cursor-pointer shadow-md">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center transition text-xl">
+                        <i class="fa-solid fa-plus-minus"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-base group-hover:text-blue-300 transition">Cấp Số Cộng</h3>
+                        <p class="text-xs text-slate-400 mt-1">Công sai, số hạng tổng quát & tổng $n$ số hạng</p>
+                    </div>
+                </a>
+
+                <!-- Button 3: Cấp số nhân -->
+                <a href="csn.html" class="p-5 bg-slate-900/90 hover:bg-blue-600/20 border border-slate-700 hover:border-blue-500 rounded-2xl transition duration-300 flex flex-col items-center justify-center space-y-3 group cursor-pointer shadow-md">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center transition text-xl">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-base group-hover:text-blue-300 transition">Cấp Số Nhân</h3>
+                        <p class="text-xs text-slate-400 mt-1">Công bội, số hạng tổng quát & tính chất</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        Toán 11 • Hệ Thống Trắc Nghiệm Khách Quan • Trường THPT FPT
+    </footer>
+
+</body>
+</html>
