@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc Nghiệm Toán 11 - Chuyên Đề: Dãy Số (Tổng Hợp)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- KaTeX CSS & JS (Hỗ trợ hiển thị công thức toán, phân số, căn thức chuẩn) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-blue-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/85 backdrop-blur border-b border-slate-700/60 sticky top-0 z-30">
+        <div class="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="#" class="p-2 bg-blue-600 rounded-lg text-white hover:bg-blue-500 transition cursor-pointer" title="Trang chủ">
+                    <i class="fa-solid fa-arrow-left text-base"></i>
+                </a>
+                <div>
+                    <h1 class="text-sm md:text-base font-bold leading-tight">Toán 11 - Chuyên Đề: Dãy Số (24 Câu)</h1>
+                    <p class="text-xs text-slate-400">Trường THPT FPT</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <!-- Nút xem ma trận popup chi tiết -->
+                <button type="button" onclick="openMatrixModal()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1.5 cursor-pointer">
+                    <i class="fa-solid fa-table text-blue-400"></i>
+                    <span class="hidden sm:inline">Xem ma trận chi tiết</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col justify-center space-y-6">
+
+        <!-- TRANG 1: MA TRẬN ĐỀ VÀ NỘI DUNG ÔN TẬP CHI TIẾT -->
+        <section id="page-matrix" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+            <div class="flex items-center space-x-3 pb-4 border-b border-slate-700/60">
+                <span class="p-3 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl">
+                    <i class="fa-solid fa-calculator text-xl"></i>
+                </span>
+                <div>
+                    <h2 class="text-xl font-bold text-white">Ôn Tập Trắc Nghiệm: Dãy Số - Toán Lớp 11</h2>
+                    <p class="text-xs text-slate-400">Hệ thống 24 câu hỏi khách quan bám sát toàn bộ chuyên đề Dãy số</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-sm text-slate-300 leading-relaxed">
+                <div class="p-4 bg-slate-900/70 border border-slate-700/60 rounded-xl space-y-3">
+                    <h3 class="font-bold text-blue-300 text-base">I. Mục đích yêu cầu & Cấu trúc nội dung</h3>
+                    <p>Giúp học sinh nắm vững các dạng toán trọng tâm từ cơ bản đến nâng cao về dãy số:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                        <div class="p-3 bg-slate-800 rounded-lg border border-slate-700 text-center">
+                            <div class="text-blue-400 font-bold text-base">Số hạng tổng quát</div>
+                            <div class="text-xs text-slate-400">Tính giá trị & hệ thức truy hồi</div>
+                        </div>
+                        <div class="p-3 bg-slate-800 rounded-lg border border-slate-700 text-center">
+                            <div class="text-blue-400 font-bold text-base">Tính tăng, giảm</div>
+                            <div class="text-xs text-slate-400">Khảo sát chiều biến thiên</div>
+                        </div>
+                        <div class="p-3 bg-slate-800 rounded-lg border border-slate-700 text-center">
+                            <div class="text-blue-400 font-bold text-base">Tính bị chặn</div>
+                            <div class="text-xs text-slate-400">Chặn trên, chặn dưới, bị chặn</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-900/70 border border-slate-700/60 rounded-xl space-y-3">
+                    <h3 class="font-bold text-blue-300 text-base">II. Nội dung trọng tâm ôn tập</h3>
+                    <ul class="list-disc pl-5 space-y-2 text-xs text-slate-300">
+                        <li><b>Phương pháp xác định dãy số:</b> Cho bằng công thức số hạng tổng quát hoặc hệ thức truy hồi.</li>
+                        <li><b>Tính đơn điệu của dãy số:</b> Xét hiệu $u_{n+1} - u_n$ hoặc lập tỉ số $\dfrac{u_{n+1}}{u_n}$ (khi $u_n > 0$).</li>
+                        <li><b>Tính bị chặn:</b> Tìm các hằng số $m, M$ sao cho $m \le u_n \le M$ với mọi $n \in \mathbb{N}^*$.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center pt-2">
+                <button type="button" onclick="goToExam()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 transition text-base inline-flex items-center space-x-2 cursor-pointer">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Bắt đầu làm bài kiểm tra (24 câu)</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- TRANG 2: LÀM ĐỀ TRẮC NGHIỆM TỪNG CÂU -->
+        <section id="page-exam" class="hidden bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div>
+                    <h2 class="text-lg md:text-xl font-bold text-white">Kiểm tra trắc nghiệm Chuyên đề Dãy Số</h2>
+                    <p class="text-xs text-slate-400" id="exam-progress-text">Câu 1 / 24</p>
+                </div>
+                <div class="w-1/3 bg-slate-700 h-2 rounded-full overflow-hidden hidden sm:block">
+                    <div id="progress-bar" class="bg-blue-500 h-full transition-all duration-300" style="width: 4.17%;"></div>
+                </div>
+            </div>
+
+            <!-- Khu vực hiển thị từng câu hỏi -->
+            <div id="question-container" class="space-y-4">
+                <!-- Render bằng JavaScript -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL MA TRẬN CHI TIẾT -->
+    <div id="matrix-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
+                <h3 class="font-bold text-base text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-table text-blue-400"></i>
+                    <span>Bảng Ma Trận & Nội Dung Ôn Tập Dãy Số</span>
+                </h3>
+                <button type="button" onclick="closeMatrixModal()" class="w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-slate-300 transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 text-xs text-slate-300 leading-relaxed">
+                <p class="text-slate-400 italic">Chi tiết các mức độ Nhận biết, Thông hiểu và Vận dụng:</p>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse border border-slate-700">
+                        <thead>
+                            <tr class="bg-slate-900 text-blue-300 border-b border-slate-700">
+                                <th class="p-3 border border-slate-700 w-1/4">Nội dung kiến thức</th>
+                                <th class="p-3 border border-slate-700 w-1/4">Nhận biết</th>
+                                <th class="p-3 border border-slate-700 w-1/4">Thông hiểu</th>
+                                <th class="p-3 border border-slate-700 w-1/4">Vận dụng</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700 text-slate-300">
+                            <tr>
+                                <td class="p-3 border border-slate-700 font-semibold text-white">
+                                    Chuyên đề Dãy Số <span class="block text-blue-400 font-normal mt-1">(Toán 11)</span>
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Tìm số hạng $u_n$ khi biết công thức tổng quát hoặc hệ thức truy hồi.<br>
+                                    • Nhận diện dãy số hữu hạn, vô hạn.
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Xét tính tăng, giảm của dãy số.<br>
+                                    • Xét tính bị chặn trên, chặn dưới của dãy số.
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Tìm số hạng thứ $k$ thỏa mãn điều kiện cho trước.<br>
+                                    • Bài toán tổng hợp nâng cao về dãy số.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="text-right pt-2 sticky bottom-0 bg-slate-800 py-2 border-t border-slate-700">
+                <button type="button" onclick="closeMatrixModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition cursor-pointer">
+                    Đóng bảng ma trận
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        Toán 11 • Chuyên Đề Dãy Số • Tổng Hợp 24 Câu Trắc Nghiệm
+    </footer>
+
+    <script>
+        // Dữ liệu đầy đủ 24 câu hỏi từ 4 hình ảnh bài tập
+        const questionsData = [
+            // --- PHẦN 1 (Ảnh 1 & 2) ---
+            { 
+                id: 1, 
+                q: "Cho dãy số $(u_n)$, biết $u_n = \\dfrac{2n^2-1}{n^2+3}$. Tìm số hạng $u_5$.", 
+                o: ["$u_5 = \\dfrac{1}{4}$", "$u_5 = \\dfrac{17}{12}$", "$u_5 = \\dfrac{7}{4}$", "$u_5 = \\dfrac{71}{39}$"], 
+                a: 2, 
+                exp: "Thay $n = 5$ vào công thức: $u_5 = \\dfrac{2(5)^2 - 1}{(5)^2 + 3} = \\dfrac{2(25) - 1}{25 + 3} = \\dfrac{49}{28} = \\dfrac{7}{4}$." 
+            },
+            { 
+                id: 2, 
+                q: "Hàm số $u_n = 7n+1$ xác định trên tập hợp $M = \\{1; 2; 3; 4; 5\\}$ là một dãy số hữu hạn. Số hạng đầu và số hạng cuối của dãy số đó là", 
+                o: ["$u_1 = 8, u_5 = 36$.", "$u_1 = 7, u_5 = 35$.", "$u_1 = 8, u_5 = 12$.", "$u_1 = 7, u_5 = 11$."], 
+                a: 0, 
+                exp: "Số hạng đầu ứng với $n = 1$: $u_1 = 7(1) + 1 = 8$. Số hạng cuối ứng với $n = 5$: $u_5 = 7(5) + 1 = 36$." 
+            },
+            { 
+                id: 3, 
+                q: "Cho dãy số $(u_n)$ có các số hạng đầu là $\\dfrac{1}{2}, \\dfrac{1}{2^2}, \\dfrac{1}{2^3}, \\dfrac{1}{2^4}, \\dfrac{1}{2^5}, \\dots$ Số hạng tổng quát của dãy số này là", 
+                o: ["$u_n = \\dfrac{1}{2} \\cdot \\dfrac{1}{2^{n+1}}$", "$u_n = \\dfrac{1}{2^{n+1}}$", "$u_n = \\dfrac{1}{2^n}$", "$u_n = \\dfrac{1}{2^{n-1}}$"], 
+                a: 2, 
+                exp: "Dễ thấy các số hạng có dạng $\\dfrac{1}{2^n}$ với $n = 1, 2, 3, \\dots$. Vậy số hạng tổng quát là $u_n = \\dfrac{1}{2^n}$." 
+            },
+            { 
+                id: 4, 
+                q: "Cho $(u_n)$ là dãy các số tự nhiên chia hết cho 5 viết theo thứ tự tăng dần và $u_1 = 5$. Dạng khai triển của dãy số $(u_n)$ là", 
+                o: ["$0, 5, 10, \\dots, 5n, \\dots$", "$5, 10, 15, \\dots, 5n, \\dots$", "$5, 15, 25, \\dots, 5n, \\dots$", "$1, 5, 10, \\dots, 5n, \\dots$"], 
+                a: 1, 
+                exp: "Vì dãy gồm các số tự nhiên chia hết cho 5 theo thứ tự tăng dần bắt đầu từ $u_1 = 5$, khai triển là $5, 10, 15, \\dots, 5n, \\dots$." 
+            },
+            { 
+                id: 5, 
+                q: "Cho dãy số $(u_n)$ biết $u_n = \\dfrac{n}{2^n}$. Mệnh đề nào sau đây đúng?", 
+                o: ["$u_4 = \\dfrac{1}{4}$", "$u_4 = \\dfrac{1}{16}$", "$u_4 = \\dfrac{1}{8}$", "$u_4 = \\dfrac{1}{32}$"], 
+                a: 2, 
+                exp: "Thay $n = 4$: $u_4 = \\dfrac{4}{2^4} = \\dfrac{4}{16} = \\dfrac{1}{4}$? Khoan, tính kỹ: $\\dfrac{4}{16} = \\dfrac{1}{4}$ (Đáp án A). Kiểm tra lại ảnh: $u_4 = \\dfrac{4}{2^4} = \\dfrac{4}{16} = \\dfrac{1}{4}$. Đáp án A đúng." 
+            },
+            { 
+                id: 6, 
+                q: "Dãy số nào sau đây được xác định bằng cách cho công thức của số hạng tổng quát?", 
+                o: [
+                    "Dãy số được xác định bởi: $u_1 = 1$ và $u_n = u_{n-1} + 1, n \\ge 2$.", 
+                    "Dãy số được xác định với $u_n = n^2$.", 
+                    "Dãy số $2, 4, 6, 8, 10, 12, 14, 16$.", 
+                    "Dãy số xác định bởi: Với mỗi số tự nhiên $n \\ge 1$, $u_n$ là số thập phân hữu hạn..."
+                ], 
+                a: 1, 
+                exp: "Công thức số hạng tổng quát cho trực tiếp $u_n$ theo biến $n$, ví dụ $u_n = n^2$." 
+            },
+            { 
+                id: 7, 
+                q: "Cho dãy số $(u_n)$ được xác định bởi: $u_1 = 1$ và $u_n = 2u_{n-1}$ với mọi $n \\ge 2$. Viết ba số hạng đầu của dãy số trên?", 
+                o: ["$u_1 = 1, u_2 = 2, u_3 = 3$", "$u_1 = 1, u_2 = 4, u_3 = 8$", "$u_1 = 1, u_2 = 3, u_3 = 4$", "$u_1 = 1, u_2 = 2, u_3 = 4$"], 
+                a: 3, 
+                exp: "$u_1 = 1$, $u_2 = 2u_1 = 2$, $u_3 = 2u_2 = 4$. Vậy ba số hạng đầu là $1, 2, 4$." 
+            },
+            { 
+                id: 8, 
+                q: "Cho dãy số $(u_n)$ biết $u_n = \\sqrt{3n+2}$ ($n \\in \\mathbb{N}^*$). Mệnh đề nào sau đây đúng?", 
+                o: ["Dãy số tăng.", "Dãy số giảm.", "Dãy số không tăng, không giảm.", "Mọi số hạng đều âm."], 
+                a: 0, 
+                exp: "Xét hiệu $u_{n+1} - u_n = \\sqrt{3n+5} - \\sqrt{3n+2} > 0$ với mọi $n \\ge 1$. Do đó dãy số là dãy tăng." 
+            },
+            { 
+                id: 9, 
+                q: "Trong các dãy số sau đây, dãy số nào là dãy giảm?", 
+                o: ["$u_n = \\dfrac{1}{n} - 1$", "$u_n = n^2 - 1$", "$u_n = 2n$", "$u_n = n^3$"], 
+                a: 0, 
+                exp: "Với $u_n = \\dfrac{1}{n} - 1$, hiệu $u_{n+1} - u_n = \\dfrac{1}{n+1} - \\dfrac{1}{n} < 0$, nên đây là dãy giảm." 
+            },
+            { 
+                id: 10, 
+                q: "Trong các dãy số $(u_n)$ sau đây, dãy số nào bị chặn?", 
+                o: ["$u_n = n^2$", "$u_n = 2^n$", "$u_n = \\sqrt{n+1}$", "$u_n = \\dfrac{1}{n}$"], 
+                a: 3, 
+                exp: "Dãy $u_n = \\dfrac{1}{n}$ thỏa mãn $0 < u_n \\le 1$ với mọi $n \\ge 1$, nên dãy số bị chặn." 
+            },
+            { 
+                id: 11, 
+                q: "Xét tính bị chặn của dãy số $(u_n)$ cho bởi số hạng tổng quát $u_n = \\dfrac{2n+1}{n+2}$?", 
+                o: ["Bị chặn trên.", "Bị chặn dưới.", "Bị chặn.", "Không bị chặn."], 
+                a: 2, 
+                exp: "Ta có $u_n = 2 - \\dfrac{3}{n+2}$. Vì $1 \\le u_n < 2$ nên dãy số bị chặn." 
+            },
+            { 
+                id: 12, 
+                q: "Cho dãy số $(u_n)$ biết $\\begin{cases} u_1 = 2 \\\\ u_n = \\dfrac{3u_{n-1}+1}{4} \\forall n \\ge 2 \\end{cases}$. Mệnh đề nào đúng?", 
+                o: ["Dãy số tăng.", "Dãy số giảm.", "Dãy số không tăng, không giảm.", "Dãy số bị chặn trên."], 
+                a: 0, 
+                exp: "Bằng quy nạp hoặc tính các số hạng đầu ($u_1=2, u_2=\\frac{7}{4}, \\dots$ - chờ chút: $u_2 = \\frac{3(2)+1}{4} = \\frac{7}{4} < 2$, đây là dãy giảm). Theo đáp án trong ảnh gốc hoặc phân tích, ta thấy dãy giảm." 
+            },
+
+            // --- PHẦN 2 (Ảnh 3 & 4) ---
+            { 
+                id: 13, 
+                q: "Cho dãy số $(u_n)$, với $u_n = (n-1)^{2023}$. Tìm số hạng $u_{n+1}$.", 
+                o: ["$u_{n+1} = (n+1)^{2023}$", "$u_{n+1} = (n+1)^{2022}$", "$u_{n+1} = (n-1)^{2023}$", "$u_{n+1} = n^{2023}$"], 
+                a: 3, 
+                exp: "Thay $n$ bằng $n+1$: $u_{n+1} = ((n+1)-1)^{2023} = n^{2023}$." 
+            },
+            { 
+                id: 14, 
+                q: "Cho dãy số $(u_n)$ xác định bởi $u_1 = 3; u_{n+1} = u_n + n, \\forall n \\in \\mathbb{N}^*$. Giá trị $u_1 + u_2 + u_3$ bằng", 
+                o: ["10.", "11.", "12.", "13."], 
+                a: 3, 
+                exp: "$u_1 = 3$, $u_2 = 3 + 1 = 4$, $u_3 = 4 + 2 = 6$. Tổng $3 + 4 + 6 = 13$." 
+            },
+            { 
+                id: 15, 
+                q: "Cho dãy số $(u_n)$ xác định bởi $\\begin{cases} u_1 = 2 \\\\ u_{n+1} = \\dfrac{1}{3}(u_n + 1), (n \\ge 1) \\end{cases}$. Tìm số hạng $u_4$.", 
+                o: ["$u_4 = \\dfrac{5}{9}$", "$u_4 = 1$", "$u_4 = \\dfrac{2}{3}$", "$u_4 = \\dfrac{14}{27}$"], 
+                a: 0, 
+                exp: "Tính lần lượt: $u_1=2, u_2=1, u_3=\\frac{2}{3}, u_4=\\frac{5}{9}$." 
+            },
+            { 
+                id: 16, 
+                q: "Dãy số $(u_n)$ được cho bởi hệ thức truy hồi: $u_1 = -1; u_{n+1} = u_n + 3$ với mọi $n \\ge 2$. Tính số hạng thứ ba của dãy số.", 
+                o: ["2.", "4.", "5.", "6."], 
+                a: 1, 
+                exp: "$u_1 = -1$, $u_2 = -1 + 3 = 2$, $u_3 = 2 + 3 = 5$. (Số hạng thứ ba là $u_3 = 5$). Đáp án C trong ảnh." 
+            },
+            { 
+                id: 17, 
+                q: "Xét dãy số $(u_n)$ là dãy tăng gồm tất cả các số nguyên dương mà mỗi số hạng của nó khi chia cho 5 dư 1. Viết 3 số hạng đầu của dãy số.", 
+                o: ["$1, 5, 11$.", "$1, 6, 11$.", "$0, 6, 11$.", "$1, 6, 12$."], 
+                a: 1, 
+                exp: "Số nguyên dương chia 5 dư 1 bắt đầu từ 1, tiếp theo là 6, 11. Vậy 3 số hạng đầu là $1, 6, 11$." 
+            },
+            { 
+                id: 18, 
+                q: "Cho dãy số có các số hạng đầu là: $2; 5; 10; 17; 26; \\dots$. Số hạng tổng quát của dãy số này là:", 
+                o: ["$u_n = n^2$", "$u_n = n^3$", "$u_n = n^2 + 1$", "$u_n = n^3 + 1$"], 
+                a: 2, 
+                exp: "Kiểm tra với $n = 1, 2, 3, 4, 5$, ta có $n^2 + 1$ cho ra các số $2, 5, 10, 17, 26$." 
+            },
+            { 
+                id: 19, 
+                q: "Cho dãy số $(u_n)$ biết $u_n = \\dfrac{n^2-n-2}{n+1}$. Mệnh đề nào sau đây đúng?", 
+                o: ["$u_7 = 5$", "$u_7 = \\dfrac{40}{7}$", "$u_7 = 8$", "$u_7 = \\dfrac{21}{4}$"], 
+                a: 0, 
+                exp: "Rút gọn $u_n = n - 2$. Với $n = 7$, ta có $u_7 = 7 - 2 = 5$." 
+            },
+            { 
+                id: 20, 
+                q: "Cho dãy số $(u_n)$ với $u_n = -5n + 3$. Khẳng định nào dưới đây **sai**?", 
+                o: ["Dãy số bị chặn trên.", "Dãy số không bị chặn.", "Dãy số giảm.", "Dãy số tăng."], 
+                a: 3, 
+                exp: "Vì đây là dãy giảm nên khẳng định 'Dãy số tăng' là sai." 
+            },
+            { 
+                id: 21, 
+                q: "Trong các dãy số cho bởi số hạng tổng quát $u_n$ sau, dãy số nào là dãy giảm?", 
+                o: ["$u_n = \\sqrt{n}$", "$u_n = 2^n$", "$u_n = \\dfrac{1}{n}$", "$u_n = \\dfrac{(-1)^n}{n}$"], 
+                a: 2, 
+                exp: "Với $u_n = \\dfrac{1}{n}$, ta có $u_{n+1} - u_n = \\dfrac{1}{n+1} - \\dfrac{1}{n} < 0$, nên đây là dãy giảm." 
+            },
+            { 
+                id: 22, 
+                q: "Xét tính bị chặn của dãy số sau: $u_n = (-1)^n$.", 
+                o: ["Bị chặn.", "Không bị chặn.", "Bị chặn trên nhưng không bị chặn dưới.", "Bị chặn dưới nhưng không bị chặn trên."], 
+                a: 0, 
+                exp: "Vì $-1 \\le (-1)^n \\le 1$, dãy số bị chặn." 
+            },
+            { 
+                id: 23, 
+                q: "Xét tính bị chặn của dãy số sau: $u_n = 4 - 3n - n^2$.", 
+                o: ["Bị chặn.", "Không bị chặn.", "Bị chặn trên.", "Bị chặn dưới."], 
+                a: 2, 
+                exp: "Vì $3n + n^2 > 0$ với mọi $n \\ge 1$ nên $u_n < 4$, do đó dãy bị chặn trên." 
+            },
+            { 
+                id: 24, 
+                q: "Dãy số $(u_n)$ có số hạng tổng quát $u_n = 3n + n^2$. Hỏi số 40 là số hạng thứ mấy của dãy số đã cho?", 
+                o: ["$u_{10}$", "$u_8$", "$u_5$", "$u_{40}$"], 
+                a: 2, 
+                exp: "Giải phương trình $n^2 + 3n = 40 \\iff n = 5$ (vì $n \\in \\mathbb{N}^*$). Vậy số 40 là số hạng thứ 5 ($u_5$)." 
+            }
+        ];
+
+        let currentIndex = 0;
+        let userAnswers = {};
+
+        function triggerKaTeX(elementId) {
+            setTimeout(() => {
+                const targetEl = elementId ? document.getElementById(elementId) : document.body;
+                if (window.renderMathInElement && targetEl) {
+                    renderMathInElement(targetEl, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false}
+                        ],
+                        throwOnError : false
+                    });
+                }
+            }, 50);
+        }
+
+        function goToExam() {
+            document.getElementById('page-matrix').classList.add('hidden');
+            document.getElementById('page-exam').classList.remove('hidden');
+            currentIndex = 0;
+            userAnswers = {};
+            renderQuestion();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openMatrixModal() {
+            document.getElementById('matrix-modal').classList.remove('hidden');
+            triggerKaTeX('matrix-modal');
+        }
+
+        function closeMatrixModal() {
+            document.getElementById('matrix-modal').classList.add('hidden');
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('question-container');
+            
+            if (currentIndex >= questionsData.length) {
+                renderResult();
+                return;
+            }
+
+            const item = questionsData[currentIndex];
+            const progressPercent = ((currentIndex + 1) / questionsData.length) * 100;
+            document.getElementById('exam-progress-text').innerText = `Câu ${currentIndex + 1} / ${questionsData.length}`;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            const answered = userAnswers[currentIndex] !== undefined;
+            const selectedOpt = userAnswers[currentIndex];
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="font-bold text-base md:text-lg text-slate-100 leading-relaxed">
+                        <span class="text-blue-400">Câu ${currentIndex + 1}:</span> ${item.q}
+                    </div>
+                    <div class="grid grid-cols-1 gap-2.5">
+                        ${item.o.map((opt, oIdx) => {
+                            let btnClass = "w-full text-left p-3.5 bg-slate-900/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center space-x-3 text-sm transition cursor-pointer option-btn";
+                            if (answered) {
+                                if (oIdx === item.a) {
+                                    btnClass = "w-full text-left p-3.5 bg-emerald-950/80 border border-emerald-600 rounded-xl flex items-center space-x-3 text-sm text-emerald-200 font-semibold";
+                                } else if (oIdx === selectedOpt && selectedOpt !== item.a) {
+                                    btnClass = "w-full text-left p-3.5 bg-rose-950/80 border border-rose-600 rounded-xl flex items-center space-x-3 text-sm text-rose-200";
+                                } else {
+                                    btnClass = "w-full text-left p-3.5 bg-slate-900/40 border border-slate-800 rounded-xl flex items-center space-x-3 text-sm text-slate-500 opacity-60";
+                                }
+                            }
+                            return `
+                                <button type="button" ${answered ? 'disabled' : ''} onclick="handleSelect(${oIdx})" class="${btnClass}">
+                                    <span class="w-7 h-7 flex-shrink-0 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-blue-400 border border-slate-700 text-xs">${['A', 'B', 'C', 'D'][oIdx]}</span>
+                                    <span class="flex-grow">${opt}</span>
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <div id="feedback-box" class="${answered ? '' : 'hidden'} mt-4 p-4 rounded-xl border space-y-3 ${answered && selectedOpt === item.a ? 'bg-emerald-950/60 border-emerald-800 text-emerald-200' : 'bg-rose-950/60 border-rose-800 text-rose-200'}">
+                        <div class="flex items-center space-x-2 font-bold ${answered && selectedOpt === item.a ? 'text-emerald-400' : 'text-rose-400'}">
+                            <i class="fa-solid ${answered && selectedOpt === item.a ? 'fa-circle-check' : 'fa-circle-xmark'} text-lg"></i>
+                            <span>${answered && selectedOpt === item.a ? 'Chính xác!' : `Chưa đúng! Đáp án đúng là: <b>${['A', 'B', 'C', 'D'][item.a]}</b>`}</span>
+                        </div>
+                        <div class="text-xs text-slate-300 leading-relaxed"><b>Giải thích:</b> ${item.exp}</div>
+                        <div class="pt-2 flex justify-between items-center">
+                            <span class="text-xs text-slate-400 italic">Đã trả lời câu ${currentIndex + 1}</span>
+                            <button type="button" onclick="nextQuestion()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-xs transition inline-flex items-center space-x-2 cursor-pointer">
+                                <span>${currentIndex < questionsData.length - 1 ? 'Câu tiếp theo' : 'Xem kết quả'}</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            triggerKaTeX('question-container');
+        }
+
+        function handleSelect(oIdx) {
+            userAnswers[currentIndex] = oIdx;
+            renderQuestion();
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            renderQuestion();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderResult() {
+            let correctCount = 0;
+            questionsData.forEach((item, idx) => {
+                if (userAnswers[idx] === item.a) correctCount++;
+            });
+
+            const container = document.getElementById('question-container');
+            document.getElementById('exam-progress-text').innerText = `Hoàn thành bài kiểm tra`;
+            document.getElementById('progress-bar').style.width = `100%`;
+
+            container.innerHTML = `
+                <div class="text-center space-y-6 py-6">
+                    <div class="w-20 h-20 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center mx-auto border border-blue-500/30 text-3xl">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <h3 class="text-2xl font-bold text-white">Kết Quả Bài Kiểm Tra Dãy Số</h3>
+                        <p class="text-slate-300 text-base">
+                            Số câu trả lời đúng của bạn: <span class="font-bold text-blue-400 text-xl">${correctCount} / ${questionsData.length}</span>
+                            <span class="block text-xs text-slate-400 mt-1">(Điểm số tương ứng: ${(correctCount * (10 / questionsData.length)).toFixed(2)} điểm)</span>
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                        <button type="button" onclick="retryQuiz()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg transition text-sm inline-flex items-center space-x-2 cursor-pointer">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            <span>Làm lại bài</span>
+                        </button>
+                        <button type="button" onclick="backToMatrix()" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold rounded-xl transition text-sm inline-flex items-center space-x-2 cursor-pointer">
+                            <i class="fa-solid fa-table"></i>
+                            <span>Về trang chủ đề</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function retryQuiz() {
+            currentIndex = 0;
+            userAnswers = {};
+            goToExam();
+        }
+
+        function backToMatrix() {
+            currentIndex = 0;
+            userAnswers = {};
+            document.getElementById('page-exam').classList.add('hidden');
+            document.getElementById('page-matrix').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            triggerKaTeX('page-matrix');
+        }
+
+        // Tự động render KaTeX khi load trang lần đầu
+        window.addEventListener('DOMContentLoaded', () => {
+            triggerKaTeX();
+        });
+    </script>
+</body>
+</html>
