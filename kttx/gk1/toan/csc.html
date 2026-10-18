@@ -344,11 +344,16 @@
                 exp: "Cấp số cộng có 1001 số hạng với $u_1 = 1$ và $u_{1001} = 2018$. Số hạng thứ 501 là số chính giữa ($501 = \\dfrac{1 + 1001}{2}$), do đó $u_{501} = \\dfrac{u_1 + u_{1001}}{2} = \\dfrac{1 + 2018}{2} = \\dfrac{2019}{2}$ (Đáp án B)." 
             },
             { 
-                id: 23, 
-                q: "Cho cấp số cộng $(u_n)$ thỏa mãn $\\begin{cases} u_1 - u_2 + u_3 = 12 \\\\ u_1 + u_5 = 40 \end{cases}$. Chọn khẳng định đúng trong các khẳng định sau?", 
-                o: ["$\\begin{cases} u_1 = 8 \\\\ d = 4 \\end{cases}$", "$\\begin{cases} u_1 = 3 \\\\ d = 2 \\end{cases}$", "$\\begin{cases} u_1 = 10 \\\\ d = 2 \\end{cases}$", "$\\begin{cases} u_1 = 4 \\\\ d = 8 \\end{cases}$"], 
-                a: 0, 
-                exp: "Ta có $\\begin{cases} u_1 - (u_1+d) + (u_1+2d) = 12 \\\\ u_1 + (u_1+4d) = 40 \end{cases} \\iff \\begin{cases} u_1 + d = 12 \\\\ 2u_1 + 4d = 40 \\iff u_1 + 2d = 20 \end{cases} \\iff \\begin{cases} d = 8 \\text{ (khoan: } 20 - 12 = 8) \\\\ u_1 = 4 \end{cases}$. Thử lại đáp án D: $\\begin{cases} u_1 = 4 \\\\ d = 8 \\end{cases}$. Kiểm tra: $4 + 4(8) = 36 \\neq 40$. Thử lại hệ: $u_1 + d = 12 \\implies 4 + 8 = 12$. $u_1 + 2d = 4 + 16 = 20$. Vậy $u_1 = 4, d = 8$ (Đáp án D trong ảnh)." 
+                id: 23,
+                q: "Cho cấp số cộng $(u_n)$ thỏa mãn $\\begin{cases} u_1 - u_2 + u_3 = 12 \\\\ u_1 + u_5 = 40 \\end{cases}$. Chọn khẳng định đúng trong các khẳng định sau?",
+                o: [
+                    "$\\begin{cases} u_1 = 8 \\\\ d = 4 \\end{cases}$",
+                    "$\\begin{cases} u_1 = 3 \\\\ d = 2 \\end{cases}$",
+                    "$\\begin{cases} u_1 = 10 \\\\ d = 2 \\end{cases}$",
+                    "$\\begin{cases} u_1 = 4 \\\\ d = 8 \\end{cases}$"
+                ],
+                a: 3,
+                exp: "Vì $(u_n)$ là cấp số cộng nên $u_2=u_1+d$, $u_3=u_1+2d$ và $u_5=u_1+4d$.\\n\\nThay vào hệ đã cho, ta được:\\n$\\begin{cases} u_1-(u_1+d)+(u_1+2d)=12 \\\\ u_1+(u_1+4d)=40 \\end{cases}$\\n$\\iff \\begin{cases} u_1+d=12 \\\\ 2u_1+4d=40 \\end{cases}$\\n$\\iff \\begin{cases} u_1+d=12 \\\\ u_1+2d=20 \\end{cases}$.\\n\\nLấy phương trình thứ hai trừ phương trình thứ nhất, ta có $d=8$. Suy ra $u_1=12-8=4$.\\n\\nVậy $u_1=4$, $d=8$. Chọn đáp án D." 
             }
         ];
 
