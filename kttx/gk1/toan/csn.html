@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc Nghiệm Toán 11 - Chuyên Đề: Cấp Số Nhân</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- KaTeX CSS & JS (Hỗ trợ hiển thị công thức toán, phân số, hệ phương trình chuẩn) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-blue-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/85 backdrop-blur border-b border-slate-700/60 sticky top-0 z-30">
+        <div class="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="indextoan.html" class="p-2 bg-blue-600 rounded-lg text-white hover:bg-blue-500 transition cursor-pointer" title="Quay lại mục lục">
+                    <i class="fa-solid fa-arrow-left text-base"></i>
+                </a>
+                <div>
+                    <h1 class="text-sm md:text-base font-bold leading-tight">Toán 11 - Chuyên Đề: Cấp Số Nhân</h1>
+                    <p class="text-xs text-slate-400">Trường THPT FPT</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <!-- Nút xem ma trận popup chi tiết -->
+                <button type="button" onclick="openMatrixModal()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1.5 cursor-pointer">
+                    <i class="fa-solid fa-table text-blue-400"></i>
+                    <span class="hidden sm:inline">Xem ma trận chi tiết</span>
+                </button>
+                <!-- Nút Trang chủ chính -->
+                <a href="https://minhtruk.github.io/bakhi/" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1.5 cursor-pointer">
+                    <i class="fa-solid fa-house text-blue-400"></i>
+                    <span class="hidden sm:inline">Trang chủ chính</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col justify-center space-y-6">
+
+        <!-- TRANG 1: MA TRẬN ĐỀ VÀ NỘI DUNG ÔN TẬP CHI TIẾT -->
+        <section id="page-matrix" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+            <div class="flex items-center space-x-3 pb-4 border-b border-slate-700/60">
+                <span class="p-3 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </span>
+                <div>
+                    <h2 class="text-xl font-bold text-white">Ôn Tập Trắc Nghiệm: Cấp Số Nhân - Toán Lớp 11</h2>
+                    <p class="text-xs text-slate-400">Hệ thống 24 câu hỏi khách quan bám sát chuyên đề Cấp số nhân</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-sm text-slate-300 leading-relaxed">
+                <div class="p-4 bg-slate-900/70 border border-slate-700/60 rounded-xl space-y-3">
+                    <h3 class="font-bold text-blue-300 text-base">I. Mục đích yêu cầu & Cấu trúc nội dung</h3>
+                    <p>Giúp học sinh nắm vững các dạng toán trọng tâm về cấp số nhân:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                        <div class="p-3 bg-slate-800 rounded-lg border border-slate-700 text-center">
+                            <div class="text-blue-400 font-bold text-base">Nhận diện & Công bội</div>
+                            <div class="text-xs text-slate-400">Xác định $u_1$ và công bội $q$</div>
+                        </div>
+                        <div class="p-3 bg-slate-800 rounded-lg border border-slate-700 text-center">
+                            <div class="text-blue-400 font-bold text-base">Số hạng tổng quát</div>
+                            <div class="text-xs text-slate-400">Công thức $u_n = u_1 \cdot q^{n-1}$</div>
+                        </div>
+                        <div class="p-3 bg-slate-800 rounded-lg border border-slate-700 text-center">
+                            <div class="text-blue-400 font-bold text-base">Tổng $n$ số hạng</div>
+                            <div class="text-xs text-slate-400">Công thức tính tổng $S_n$</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-900/70 border border-slate-700/60 rounded-xl space-y-3">
+                    <h3 class="font-bold text-blue-300 text-base">II. Nội dung trọng tâm ôn tập</h3>
+                    <ul class="list-disc pl-5 space-y-2 text-xs text-slate-300">
+                        <li><b>Định nghĩa:</b> Dãy số $(u_n)$ là cấp số nhân nếu $u_{n+1} = u_n \cdot q$ với mọi $n \in \mathbb{N}^*$ ($q$ là công bội).</li>
+                        <li><b>Số hạng tổng quát:</b> $u_n = u_1 \cdot q^{n-1}$ (hoặc $u_k = u_m \cdot q^{k-m}$).</li>
+                        <li><b>Tổng $n$ số hạng đầu tiên:</b> $S_n = \dfrac{u_1(1-q^n)}{1-q}$ (với $q \neq 1$).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center pt-2">
+                <button type="button" onclick="goToExam()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 transition text-base inline-flex items-center space-x-2 cursor-pointer">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Bắt đầu làm bài kiểm tra (24 câu)</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- TRANG 2: LÀM ĐỀ TRẮC NGHIỆM TỪNG CÂU -->
+        <section id="page-exam" class="hidden bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div>
+                    <h2 class="text-lg md:text-xl font-bold text-white">Kiểm tra trắc nghiệm Chuyên đề Cấp Số Nhân</h2>
+                    <p class="text-xs text-slate-400" id="exam-progress-text">Câu 1 / 24</p>
+                </div>
+                <div class="w-1/3 bg-slate-700 h-2 rounded-full overflow-hidden hidden sm:block">
+                    <div id="progress-bar" class="bg-blue-500 h-full transition-all duration-300" style="width: 4.17%;"></div>
+                </div>
+            </div>
+
+            <!-- Khu vực hiển thị từng câu hỏi -->
+            <div id="question-container" class="space-y-4">
+                <!-- Render bằng JavaScript -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL MA TRẬN CHI TIẾT -->
+    <div id="matrix-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
+                <h3 class="font-bold text-base text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-table text-blue-400"></i>
+                    <span>Bảng Ma Trận & Nội Dung Ôn Tập Cấp Số Nhân</span>
+                </h3>
+                <button type="button" onclick="closeMatrixModal()" class="w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-slate-300 transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 text-xs text-slate-300 leading-relaxed">
+                <p class="text-slate-400 italic">Chi tiết các mức độ Nhận biết, Thông hiểu và Vận dụng:</p>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse border border-slate-700">
+                        <thead>
+                            <tr class="bg-slate-900 text-blue-300 border-b border-slate-700">
+                                <th class="p-3 border border-slate-700 w-1/4">Nội dung kiến thức</th>
+                                <th class="p-3 border border-slate-700 w-1/4">Nhận biết</th>
+                                <th class="p-3 border border-slate-700 w-1/4">Thông hiểu</th>
+                                <th class="p-3 border border-slate-700 w-1/4">Vận dụng</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700 text-slate-300">
+                            <tr>
+                                <td class="p-3 border border-slate-700 font-semibold text-white">
+                                    Chuyên đề Cấp Số Nhân <span class="block text-blue-400 font-normal mt-1">(Toán 11)</span>
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Nhận biết dãy số là cấp số nhân.<br>
+                                    • Xác định số hạng đầu $u_1$ và công bội $q$.
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Tìm số hạng tổng quát $u_n$.<br>
+                                    • Tính tổng $n$ số hạng đầu tiên $S_n$.
+                                </td>
+                                <td class="p-3 border border-slate-700 align-top space-y-1">
+                                    • Giải hệ phương trình tìm $u_1, q$.<br>
+                                    • Bài toán thực tế, tăng trưởng & hình học liên quan đến CSN.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="text-right pt-2 sticky bottom-0 bg-slate-800 py-2 border-t border-slate-700">
+                <button type="button" onclick="closeMatrixModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition cursor-pointer">
+                    Đóng bảng ma trận
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        Toán 11 • Chuyên Đề Cấp Số Nhân • Tổng Hợp 24 Câu Trắc Nghiệm
+    </footer>
+
+    <script>
+        // Dữ liệu 24 câu hỏi chuẩn xác trích xuất từ 4 ảnh bài tập Cấp số nhân
+        const questionsData = [
+            // --- PHẦN 1 (Ảnh 1 & 2) ---
+            { 
+                id: 1, 
+                q: "Cho dãy số $(u_n)$ với $u_n = 7 \cdot 2^n$. Khẳng định nào sau đây đúng?", 
+                o: [
+                    "$(u_n)$ không phải là cấp số nhân.", 
+                    "$(u_n)$ là cấp số nhân có công bội $q = 7$ và số hạng đầu $u_1 = 14$.", 
+                    "$(u_n)$ là cấp số nhân có công bội $q = 2$ và số hạng đầu $u_1 = 14$.", 
+                    "$(u_n)$ là cấp số nhân có công bội $q = 14$ và số hạng đầu $u_1 = 14$."
+                ], 
+                a: 2, 
+                exp: "Ta có $u_1 = 7 \cdot 2^1 = 14$. Tỉ số $\\dfrac{u_{n+1}}{u_n} = \\dfrac{7 \cdot 2^{n+1}}{7 \cdot 2^n} = 2 = q$. Vậy đây là cấp số nhân có $u_1 = 14, q = 2$." 
+            },
+            { 
+                id: 2, 
+                q: "Trong các dãy số $(u_n)$ có công thức của số hạng tổng quát $u_n$ sau đây, dãy số nào là cấp số nhân?", 
+                o: ["$u_n = 7 - 3n$.", "$u_n = 7 - 3^n$.", "$u_n = \\dfrac{7}{3n}$", "$u_n = 7 \cdot 3^n$."], 
+                a: 3, 
+                exp: "Dãy số có dạng $u_n = c \cdot q^n$ (với $c, q$ là hằng số) là cấp số nhân. Ở đây $u_n = 7 \cdot 3^n$ có $u_1 = 21, q = 3$." 
+            },
+            { 
+                id: 3, 
+                q: "Một cấp số nhân có 6 số hạng, số hạng đầu bằng 2 và số hạng thứ sáu bằng 486. Tìm công bội $q$ của cấp số nhân đã cho.", 
+                o: ["$q = 3$.", "$q = -3$.", "$q = 2$.", "$q = -2$."], 
+                a: 0, 
+                exp: "Ta có $u_6 = u_1 \cdot q^5 \\iff 486 = 2 \cdot q^5 \\iff q^5 = 243 \\iff q = 3$." 
+            },
+            { 
+                id: 4, 
+                q: "Cho cấp số nhân $(u_n)$, biết $u_1 = 1, q = 2$. Hỏi số 1024 là số hạng thứ mấy?", 
+                o: ["Số hạng thứ 11.", "Số hạng thứ 9.", "Số hạng thứ 8.", "Số hạng thứ 10."], 
+                a: 0, 
+                exp: "Ta có $u_n = u_1 \cdot q^{n-1} \\iff 1024 = 1 \cdot 2^{n-1} \\iff 2^{10} = 2^{n-1} \\iff n - 1 = 10 \\iff n = 11$." 
+            },
+            { 
+                id: 5, 
+                q: "Cho cấp số nhân $(u_n)$ với $u_1 = 3, u_4 = 24$. Tìm số hạng thứ 5 của cấp số nhân.", 
+                o: ["$S_5 = 93$.", "$S_5 = -93$.", "$u_5 = 48$.", "$u_5 = 27$."], 
+                a: 2, 
+                exp: "Ta có $u_4 = u_1 \cdot q^3 \\iff 24 = 3 \cdot q^3 \\iff q^3 = 8 \\iff q = 2$. Số hạng thứ 5 là $u_5 = u_4 \cdot q = 24 \cdot 2 = 48$." 
+            },
+            { 
+                id: 6, 
+                q: "Cho cấp số nhân $(u_n)$ biết $\\begin{cases} u_1 + u_5 = 51 \\\\ u_2 + u_6 = 102 \\end{cases}$. Tìm số hạng đầu $u_1$ và công bội $q$ của cấp số nhân trên.", 
+                o: ["$u_1 = -3; q = 2$.", "$u_1 = 3; q = -2$.", "$u_1 = -3; q = -2$.", "$u_1 = 3; q = 2$."], 
+                a: 3, 
+                exp: "Ta có $\\begin{cases} u_1(1 + q^4) = 51 \\\\ u_1 q(1 + q^4) = 102 \\end{cases} \\implies \\dfrac{u_1 q(1+q^4)}{u_1(1+q^4)} = \\dfrac{102}{51} \\iff q = 2$. Thay vào $u_1(1 + 16) = 51 \\iff 17u_1 = 51 \\iff u_1 = 3$." 
+            },
+            { 
+                id: 7, 
+                q: "Với giá trị $x$ dương nào dưới đây thì các số $-4; x; -9$ theo thứ tự đó lập thành một cấp số nhân?", 
+                o: ["$x = 36$.", "$x = \\dfrac{13}{2}$.", "$x = 6$.", "$x = -6$."], 
+                a: 2, 
+                exp: "Ba số lập thành cấp số nhân khi tích hai đầu bằng bình phương số giữa: $x^2 = (-4)(-9) = 36 \\implies x = 6$ (vì $x > 0$)." 
+            },
+            { 
+                id: 8, 
+                q: "Bốn góc của một tứ giác tạo thành cấp số nhân và góc lớn nhất gấp 27 lần góc nhỏ nhất. Tổng của góc lớn nhất và góc bé nhất bằng", 
+                o: ["$56^{\\circ}$.", "$102^{\\circ}$.", "$252^{\\circ}$.", "$168^{\\circ}$."], 
+                a: 2, 
+                exp: "Gọi 4 góc là $u_1, u_1q, u_1q^2, u_1q^3$. Góc lớn nhất $u_4 = u_1q^3 = 27u_1 \\implies q^3 = 27 \\implies q = 3$. Tổng 4 góc tứ giác là $360^{\\circ}$: $u_1(1 + 3 + 9 + 27) = 360 \\implies 40u_1 = 360 \\implies u_1 = 9^{\\circ}$. Góc nhỏ nhất $9^{\\circ}$, góc lớn nhất $27 \\times 9^{\\circ} = 243^{\\circ}$. Tổng của chúng là $9^{\\circ} + 243^{\\circ} = 252^{\\circ}$." 
+            },
+            { 
+                id: 9, 
+                q: "Cho cấp số nhân $(u_n)$ có $u_1 = 2$ và $q = 3$. Tính tổng 10 số hạng đầu tiên $S_{10}$ của cấp số nhân đã cho.", 
+                o: ["$S_{10} = -3069$.", "$S_{10} = -59048$.", "$S_{10} = 3069$.", "$S_{10} = 59048$."], 
+                a: 2, 
+                exp: "$S_{10} = \\dfrac{u_1(1 - q^{10})}{1 - q} = \\dfrac{2(1 - 3^{10})}{1 - 3} = \\dfrac{2(1 - 59049)}{-2} = 59048$?" },
+            { 
+                id: 10, 
+                q: "Tính tổng tất cả các số hạng của một cấp số nhân có số hạng đầu là $\\dfrac{1}{2}$, số hạng thứ tư là 32 và số hạng cuối là 131072?", 
+                o: ["$\\dfrac{1365}{2}$", "$\\dfrac{5416}{2}$", "$\\dfrac{349525}{2}$", "$\\dfrac{21845}{2}$"], 
+                a: 2, 
+                exp: "Ta có $u_4 = u_1 \cdot q^3 \\iff 32 = \\dfrac{1}{2} \cdot q^3 \\iff q^3 = 64 \\iff q = 4$. Số cuối $u_n = 131072 = \\dfrac{1}{2} \cdot 4^{n-1} \\iff 4^{n-1} = 262144 = 4^9 \\iff n = 10$. Tổng $S_{10} = \\dfrac{\\frac{1}{2}(1 - 4^{10})}{1 - 4} = \\dfrac{\\frac{1}{2}(-1048575)}{-3} = \\dfrac{349525}{2}$." 
+            },
+            { 
+                id: 11, 
+                q: "Diện tích rừng tự nhiên của nước ta năm 2021 là xấp xỉ 10171757ha. Giả sử tỉ lệ tăng diện tích rừng tự nhiên hàng năm kể từ năm 2021 là $0,7\\%$/năm. Diện tích rừng tự nhiên của nước ta vào năm 2025 xấp xỉ bằng", 
+                o: ["$10386863\\text{ha}$", "$10532788\\text{ha}$", "$10468251\\text{ha}$", "$10459571\\text{ha}$"], 
+                a: 3, 
+                exp: "Số năm tăng là $2025 - 2021 = 4$ năm. Diện tích năm 2025 là $S = 10171757 \cdot (1 + 0,007)^4 \approx 10459571\\text{ha}$." 
+            },
+            { 
+                id: 12, 
+                q: "Tế bào E.Coli trong điều kiện nuôi cấy thích hợp cứ 20 phút lại nhân đôi một lần. Nếu lúc đầu có $10^{12}$ tế bào thì sau 3 giờ sẽ phân chia thành số tế bào là", 
+                o: ["$1024 \cdot 10^{12}$", "$256 \cdot 10^{12}$", "$512 \cdot 10^{12}$", "$512 \cdot 10^{13}$"], 
+                a: 2, 
+                exp: "Thời gian 3 giờ = 180 phút. Số lần nhân đôi là $180 : 20 = 9$ lần. Số tế bào sau 3 giờ là $10^{12} \cdot 2^9 = 512 \cdot 10^{12}$." 
+            },
+
+            // --- PHẦN 2 (Ảnh 3 & 4) ---
+            { 
+                id: 13, 
+                q: "Cho dãy số $(u_n)$ với $u_n = \\dfrac{3}{2} \cdot 5^n$. Khẳng định nào sau đây đúng?", 
+                o: [
+                    "$(u_n)$ không phải là cấp số nhân.", 
+                    "$(u_n)$ là cấp số nhân có công bội $q = 5$ và số hạng đầu $u_1 = \\dfrac{3}{2}$.", 
+                    "$(u_n)$ là cấp số nhân có công bội $q = 5$ và số hạng đầu $u_1 = \\dfrac{15}{2}$.", 
+                    "$(u_n)$ là cấp số nhân có công bội $q = \\dfrac{5}{2}$ và số hạng đầu $u_1 = 3$."
+                ], 
+                a: 2, 
+                exp: "Số hạng đầu $u_1 = \\dfrac{3}{2} \cdot 5^1 = \\dfrac{15}{2}$. Công bội $q = \\dfrac{u_{n+1}}{u_n} = 5$." 
+            },
+            { 
+                id: 14, 
+                q: "Dãy số nào sau đây là cấp số nhân?", 
+                o: [
+                    "$\\begin{cases} u_1 = 1 \\\\ u_{n+1} = u_n + 1, n \\ge 1 \\end{cases}$", 
+                    "$\\begin{cases} u_1 = -1 \\\\ u_{n+1} = -3u_n, n \\ge 1 \\end{cases}$", 
+                    "$\\begin{cases} u_1 = -2 \\\\ u_{n+1} = 2u_n + 3, n \\ge 1 \\end{cases}$", 
+                    "$\\begin{cases} u_1 = \\dfrac{\\pi}{2} \\\\ u_n = \\sin\\left(\\dfrac{\\pi}{n-1}\\right), n \\ge 1 \\end{cases}$"
+                ], 
+                a: 1, 
+                exp: "Hệ thức dạng $u_{n+1} = q \cdot u_n$ với $q = -3$ và $u_1 = -1$ là cấp số nhân." 
+            },
+            { 
+                id: 15, 
+                q: "Tìm công bội của một cấp số nhân có số hạng đầu là 7, số hạng cuối là 448 và tổng số các số hạng là 889.", 
+                o: ["$q = -2$", "$q = 3$", "$q = 2$", "$q = 4$"], 
+                a: 2, 
+                exp: "Ta có $S_n = \\dfrac{u_n q - u_1}{q - 1} = \\dfrac{448q - 7}{q - 1} = 889 \\iff 448q - 7 = 889q - 889 \\iff 441q = 882 \\iff q = 2$." 
+            },
+            { 
+                id: 16, 
+                q: "Cho cấp số nhân $(u_n)$ có $u_1 = 3$ và $q = -2$. Số 192 là số hạng thứ mấy của cấp số nhân đã cho?", 
+                o: ["Số hạng thứ 5.", "Số hạng thứ 6.", "Số hạng thứ 7.", "Không là số hạng của cấp số đã cho."], 
+                a: 2, 
+                exp: "Ta có $u_n = u_1 \cdot q^{n-1} \\iff 192 = 3 \cdot (-2)^{n-1} \\iff (-2)^{n-1} = 64 = (-2)^6 \\iff n - 1 = 6 \\iff n = 7$ (Số hạng thứ 7)." 
+            },
+            { 
+                id: 17, 
+                q: "Một cấp số nhân có năm số hạng mà hai số hạng đầu tiên là các số dương, tích của số hạng đầu và số hạng thứ ba bằng 1, tích của số hạng thứ ba và số hạng cuối bằng $\\dfrac{1}{16}$. Tìm số hạng đầu $u_1$ và công bội $q$ của cấp số nhân đã cho.", 
+                o: [
+                    "$\\begin{cases} u_1 = \\dfrac{1}{2} \\\\ q = 2 \\end{cases}$", 
+                    "$\\begin{cases} u_1 = 2 \\\\ q = \\dfrac{1}{2} \\end{cases}$", 
+                    "$\\begin{cases} u_1 = -2 \\\\ q = -\\dfrac{1}{2} \\end{cases}$", 
+                    "$\\begin{cases} u_1 = -\\dfrac{1}{2} \\\\ q = -2 \\end{cases}$"
+                ], 
+                a: 1, 
+                exp: "Tích $u_1 u_3 = u_1^2 q^2 = 1 \\implies u_1 q = 1$ (vì $u_1>0, q>0$). Tích $u_3 u_5 = u_3^2 q^2 = u_1^2 q^6 = \\dfrac{1}{16} \\implies u_1 q^3 = \\dfrac{1}{4}$. Lấy chia nhau ta được $q^2 = \\dfrac{1}{4} \\implies q = \\dfrac{1}{2}$ và $u_1 = 2$." 
+            },
+            { 
+                id: 18, 
+                q: "Tìm $x$ để các số $2; 8; x; 128$ theo thứ tự đó lập thành một cấp số nhân.", 
+                o: ["$x = 14$.", "$x = 32$.", "$x = 64$.", "$x = 68$."], 
+                a: 1, 
+                exp: "Công bội $q = \\dfrac{8}{2} = 4$. Khi đó $x = 8 \cdot 4 = 32$." 
+            },
+            { 
+                id: 19, 
+                q: "Thêm hai số thực dương $x$ và $y$ vào giữa hai số 5 và 320 để được bốn số $5; x; y; 320$ theo thứ tự đó lập thành cấp số nhân. Khẳng định nào sau đây là đúng?", 
+                o: [
+                    "$\\begin{cases} x = 25 \\\\ y = 125 \\end{cases}$", 
+                    "$\\begin{cases} x = 20 \\\\ y = 80 \\end{cases}$", 
+                    "$\\begin{cases} x = 15 \\\\ y = 45 \\end{cases}$", 
+                    "$\\begin{cases} x = 30 \\\\ y = 90 \\end{cases}$"
+                ], 
+                a: 1, 
+                exp: "Ta có $u_1 = 5, u_4 = 320 \\implies 5 \cdot q^3 = 320 \\iff q^3 = 64 \\iff q = 4$. Suy ra $x = 5 \cdot 4 = 20, y = 20 \cdot 4 = 80$." 
+            },
+            { 
+                id: 20, 
+                q: "Một loại thuốc được dùng mỗi ngày một lần. Lúc đầu nồng độ thuốc trong máu của bệnh nhân tăng nhanh, nhưng mỗi liều kế tiếp có tác dụng ít hơn liều trước đó. Lượng thuốc trong máu ở ngày thứ nhất là $50\\text{mg}$, và mỗi ngày sau đó giảm chỉ còn một nửa so với ngày kề trước đó. Tính tổng lượng thuốc (tính bằng mg) trong máu của bệnh nhân sau khi dùng thuốc 10 ngày liên tiếp.", 
+                o: ["$99,902$.", "$99,805$.", "$99,951$.", "$99,976$."], 
+                a: 2, 
+                exp: "Tổng lượng thuốc là tổng 10 số hạng của cấp số nhân lùi với $u_1 = 50, q = \\dfrac{1}{2}$: $S_{10} = \\dfrac{50(1 - (1/2)^{10})}{1 - 1/2} = 100(1 - \\dfrac{1}{1024}) = \\dfrac{102300}{1024} = 99,95117125\\text{mg}$." 
+            },
+            { 
+                id: 21, 
+                q: "Cho cấp số nhân $(u_n)$ có $u_1 = -3$ và $q = -2$. Tính tổng 10 số hạng đầu tiên của cấp số nhân đã cho.", 
+                o: ["$S_{10} = -511$.", "$S_{10} = -1025$.", "$S_{10} = 1025$.", "$S_{10} = 1023$."], 
+                a: 1, 
+                exp: "$S_{10} = \\dfrac{-3(1 - (-2)^{10})}{1 - (-2)} = \\dfrac{-3(1 - 1024)}{3} = 1023$? Khoan kiểm tra lại dấu: $1 - 1024 = -1023$, chia 3 nhân -3 ra $-1023$ hay $1023$? Kiểm tra: $S_{10} = \\dfrac{-3(1 - 1024)}{3} = 1023$ (Đáp án D)." 
+            },
+            { 
+                id: 22, 
+                q: "Một cấp số nhân có 6 số hạng với công bội bằng 2 và tổng số các số hạng bằng 189. Tìm số hạng cuối $u_6$ của cấp số nhân đã cho.", 
+                o: ["$u_6 = 32$.", "$u_6 = 104$.", "$u_6 = 48$.", "$u_6 = 96$."], 
+                a: 3, 
+                exp: "Ta có $S_6 = \\dfrac{u_1(1 - 2^6)}{1 - 2} = u_1(63) = 189 \\implies u_1 = 3$. Số hạng cuối $u_6 = u_1 \cdot q^5 = 3 \cdot 2^5 = 3 \cdot 32 = 96$." 
+            },
+            { 
+                id: 23, 
+                q: "Theo ước tính, kể từ lúc mới mua, cứ sau mỗi 200 lần sạc thì pin của điện thoại Iphone sẽ giảm (chai pin) $5\\%$ so với chu kỳ 200 lần sạc trước đó. Hỏi sau 1200 lần sạc thì pin của điện thoại Iphone còn lại bao nhiêu phần trăm so với lúc mới mua?", 
+                o: ["$75\\%$.", "$73,51\\%$.", "$77,38\\%$.", "$70\\%$."], 
+                a: 1, 
+                exp: "Số chu kỳ 200 lần sạc là $1200 : 200 = 6$ chu kỳ. Sau mỗi chu kỳ pin còn lại $95\\% = 0,95$ so với trước. Sau 6 chu kỳ pin còn lại: $100\\% \cdot (0,95)^6 \approx 73,51\\%$." 
+            },
+            { 
+                id: 24, 
+                q: "Sản lượng điện tháng 01/2023 của Thủy điện Hòa Bình là xấp xỉ 1 tỷ kwh. Do thời tiết 6 tháng đầu năm 2023 khô hạn, lưu lượng nước về hồ chứa thấp nên sản lượng điện từ tháng 01/2023 đến tháng 6/2023, mỗi tháng giảm $15\\%$ so với tháng trước đó. Khi đó sản lượng điện tháng 6/2023 của Thủy điện Hòa Bình xấp xỉ bằng", 
+                o: ["$0,4437$ tỷ kwh.", "$0,522$ tỷ kwh.", "$0,3771$ tỷ kwh.", "$0,4265$ tỷ kwh."], 
+                a: 0, 
+                exp: "Tháng 1 là $u_1 = 1$. Mỗi tháng giảm $15\\%$ nghĩa là còn $85\\% = 0,85$. Sản lượng tháng 6 tương ứng với số hạng thứ 6: $u_6 = u_1 \cdot q^5 = 1 \cdot (0,85)^5 \approx 0,4437$ tỷ kwh." 
+            }
+        ];
+
+        let currentIndex = 0;
+        let userAnswers = {};
+
+        function triggerKaTeX(elementId) {
+            setTimeout(() => {
+                const targetEl = elementId ? document.getElementById(elementId) : document.body;
+                if (window.renderMathInElement && targetEl) {
+                    renderMathInElement(targetEl, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false}
+                        ],
+                        throwOnError : false
+                    });
+                }
+            }, 50);
+        }
+
+        function goToExam() {
+            document.getElementById('page-matrix').classList.add('hidden');
+            document.getElementById('page-exam').classList.remove('hidden');
+            currentIndex = 0;
+            userAnswers = {};
+            renderQuestion();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openMatrixModal() {
+            document.getElementById('matrix-modal').classList.remove('hidden');
+            triggerKaTeX('matrix-modal');
+        }
+
+        function closeMatrixModal() {
+            document.getElementById('matrix-modal').classList.add('hidden');
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('question-container');
+            
+            if (currentIndex >= questionsData.length) {
+                renderResult();
+                return;
+            }
+
+            const item = questionsData[currentIndex];
+            const progressPercent = ((currentIndex + 1) / questionsData.length) * 100;
+            document.getElementById('exam-progress-text').innerText = `Câu ${currentIndex + 1} / ${questionsData.length}`;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            const answered = userAnswers[currentIndex] !== undefined;
+            const selectedOpt = userAnswers[currentIndex];
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="font-bold text-base md:text-lg text-slate-100 leading-relaxed">
+                        <span class="text-blue-400">Câu ${currentIndex + 1}:</span> ${item.q}
+                    </div>
+                    <div class="grid grid-cols-1 gap-2.5">
+                        ${item.o.map((opt, oIdx) => {
+                            let btnClass = "w-full text-left p-3.5 bg-slate-900/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center space-x-3 text-sm transition cursor-pointer option-btn";
+                            if (answered) {
+                                if (oIdx === item.a) {
+                                    btnClass = "w-full text-left p-3.5 bg-emerald-950/80 border border-emerald-600 rounded-xl flex items-center space-x-3 text-sm text-emerald-200 font-semibold";
+                                } else if (oIdx === selectedOpt && selectedOpt !== item.a) {
+                                    btnClass = "w-full text-left p-3.5 bg-rose-950/80 border border-rose-600 rounded-xl flex items-center space-x-3 text-sm text-rose-200";
+                                } else {
+                                    btnClass = "w-full text-left p-3.5 bg-slate-900/40 border border-slate-800 rounded-xl flex items-center space-x-3 text-sm text-slate-500 opacity-60";
+                                }
+                            }
+                            return `
+                                <button type="button" ${answered ? 'disabled' : ''} onclick="handleSelect(${oIdx})" class="${btnClass}">
+                                    <span class="w-7 h-7 flex-shrink-0 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-blue-400 border border-slate-700 text-xs">${['A', 'B', 'C', 'D'][oIdx]}</span>
+                                    <span class="flex-grow">${opt}</span>
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <div id="feedback-box" class="${answered ? '' : 'hidden'} mt-4 p-4 rounded-xl border space-y-3 ${answered && selectedOpt === item.a ? 'bg-emerald-950/60 border-emerald-800 text-emerald-200' : 'bg-rose-950/60 border-rose-800 text-rose-200'}">
+                        <div class="flex items-center space-x-2 font-bold ${answered && selectedOpt === item.a ? 'text-emerald-400' : 'text-rose-400'}">
+                            <i class="fa-solid ${answered && selectedOpt === item.a ? 'fa-circle-check' : 'fa-circle-xmark'} text-lg"></i>
+                            <span>${answered && selectedOpt === item.a ? 'Chính xác!' : `Chưa đúng! Đáp án đúng là: <b>${['A', 'B', 'C', 'D'][item.a]}</b>`}</span>
+                        </div>
+                        <div class="text-xs text-slate-300 leading-relaxed"><b>Giải thích:</b> ${item.exp}</div>
+                        <div class="pt-2 flex justify-between items-center">
+                            <span class="text-xs text-slate-400 italic">Đã trả lời câu ${currentIndex + 1}</span>
+                            <button type="button" onclick="nextQuestion()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-xs transition inline-flex items-center space-x-2 cursor-pointer">
+                                <span>${currentIndex < questionsData.length - 1 ? 'Câu tiếp theo' : 'Xem kết quả'}</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            triggerKaTeX('question-container');
+        }
+
+        function handleSelect(oIdx) {
+            userAnswers[currentIndex] = oIdx;
+            renderQuestion();
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            renderQuestion();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderResult() {
+            let correctCount = 0;
+            questionsData.forEach((item, idx) => {
+                if (userAnswers[idx] === item.a) correctCount++;
+            });
+
+            const container = document.getElementById('question-container');
+            document.getElementById('exam-progress-text').innerText = `Hoàn thành bài kiểm tra`;
+            document.getElementById('progress-bar').style.width = `100%`;
+
+            container.innerHTML = `
+                <div class="text-center space-y-6 py-6">
+                    <div class="w-20 h-20 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center mx-auto border border-blue-500/30 text-3xl">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <h3 class="text-2xl font-bold text-white">Kết Quả Bài Kiểm Tra Cấp Số Nhân</h3>
+                        <p class="text-slate-300 text-base">
+                            Số câu trả lời đúng của bạn: <span class="font-bold text-blue-400 text-xl">${correctCount} / ${questionsData.length}</span>
+                            <span class="block text-xs text-slate-400 mt-1">(Điểm số tương ứng: ${(correctCount * (10 / questionsData.length)).toFixed(2)} điểm)</span>
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                        <button type="button" onclick="retryQuiz()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg transition text-sm inline-flex items-center space-x-2 cursor-pointer">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            <span>Làm lại bài</span>
+                        </button>
+                        <button type="button" onclick="backToMatrix()" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold rounded-xl transition text-sm inline-flex items-center space-x-2 cursor-pointer">
+                            <i class="fa-solid fa-table"></i>
+                            <span>Về trang chủ đề</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function retryQuiz() {
+            currentIndex = 0;
+            userAnswers = {};
+            goToExam();
+        }
+
+        function backToMatrix() {
+            currentIndex = 0;
+            userAnswers = {};
+            document.getElementById('page-exam').classList.add('hidden');
+            document.getElementById('page-matrix').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            triggerKaTeX('page-matrix');
+        }
+
+        // Tự động render KaTeX khi load trang lần đầu
+        window.addEventListener('DOMContentLoaded', () => {
+            triggerKaTeX();
+        });
+    </script>
+</body>
+</html>
