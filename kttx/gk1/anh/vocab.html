@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trắc Nghiệm Tiếng Anh 11 - Global Success</title>
+    <title>Trắc Nghiệm Tiếng Anh 11 - Unit 1 & Unit 2 (Global Success)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
@@ -24,7 +24,7 @@
                     <i class="fa-solid fa-graduation-cap text-base"></i>
                 </div>
                 <div>
-                    <h1 class="text-sm md:text-base font-bold leading-tight">Tiếng Anh 11 - Global Success (Full Từ Vựng)</h1>
+                    <h1 class="text-sm md:text-base font-bold leading-tight">Tiếng Anh 11 - Global Success</h1>
                     <p class="text-xs text-slate-400">Unit 1: Healthy Life & Unit 2: The Generation Gap</p>
                 </div>
             </div>
@@ -46,10 +46,10 @@
             <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
                 <div>
                     <h2 class="text-lg md:text-xl font-bold text-white">Trắc nghiệm điền từ vựng vào chỗ trống</h2>
-                    <p class="text-xs text-slate-400" id="exam-progress-text">Câu 1 / 28</p>
+                    <p class="text-xs text-slate-400" id="exam-progress-text">Câu 1 / 20</p>
                 </div>
                 <div class="w-1/3 bg-slate-700 h-2 rounded-full overflow-hidden hidden sm:block">
-                    <div id="progress-bar" class="bg-blue-500 h-full transition-all duration-300" style="width: 3.5%;"></div>
+                    <div id="progress-bar" class="bg-blue-500 h-full transition-all duration-300" style="width: 5%;"></div>
                 </div>
             </div>
 
@@ -62,210 +62,151 @@
     </main>
 
     <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
-        Tiếng Anh 11 • Global Success • Hệ thống từ vựng trọng điểm Unit 1 & Unit 2
+        Tiếng Anh 11 • Global Success • Vocabulary Practice
     </footer>
 
     <script>
-        // Ngân hàng câu hỏi mở rộng bao trọn từ vựng trọng điểm từ các ảnh cung cấp
+        // Dữ liệu 20 câu hỏi chuẩn xác theo yêu cầu
         const rawQuestionsData = [
-            // --- UNIT 1: HEALTHY LIFE ---
-            { 
-                q: "The doctor prescribed a course of _______ to treat her severe bacterial infection.", 
-                o: ["antibiotic", "recipe", "ingredient", "curfew"], 
-                a: 0, 
-                vocab: "Antibiotic (n): Thuốc kháng sinh", 
-                trans: "Bác sĩ đã kê một đợt thuốc kháng sinh để điều trị bệnh nhiễm trùng do vi khuẩn nặng của cô ấy." 
+            {
+                q: "Eating a __________ diet with enough vegetables and fruit helps us stay healthy.",
+                correct: "balanced",
+                distractors: ["flashy", "mature", "nutritious"],
+                vocab: "balanced (adj): cân bằng, cân đối",
+                trans: "Ăn một chế độ ăn cân bằng với đủ rau củ và trái cây giúp chúng ta giữ gìn sức khỏe."
             },
-            { 
-                q: "Washing your hands regularly helps remove harmful _______ and prevents diseases.", 
-                o: ["bacteria", "freedoms", "burdens", "arguments"], 
-                a: 0, 
-                vocab: "Bacteria (n): Vi khuẩn", 
-                trans: "Rửa tay thường xuyên giúp loại bỏ vi khuẩn có hại và phòng ngừa bệnh tật." 
+            {
+                q: "My father told me to __________ the amount of sugary drinks I have every day.",
+                correct: "cut down on",
+                distractors: ["impose on", "examine", "obey"],
+                vocab: "cut down on (phr. v): cắt giảm",
+                trans: "Bố tôi bảo tôi phải cắt giảm lượng đồ uống có đường mà tôi dùng mỗi ngày."
             },
-            { 
-                q: "Maintaining a _______ diet with adequate nutrients is crucial for a long life.", 
-                o: ["balanced", "flashy", "curious", "elegant"], 
-                a: 0, 
-                vocab: "Balanced (a): Cân bằng, cân đối", 
-                trans: "Duy trì một chế độ ăn cân bằng với đầy đủ chất dinh dưỡng là rất quan trọng để có một cuộc sống trường thọ." 
+            {
+                q: "Regular exercise gives us more __________ and helps us feel less tired.",
+                correct: "energy",
+                distractors: ["fitness", "disease", "germs"],
+                vocab: "energy (n): năng lượng",
+                trans: "Tập thể dục thường xuyên cho chúng ta nhiều năng lượng hơn và giúp chúng ta cảm thấy ít mệt mỏi hơn."
             },
-            { 
-                q: "Health experts advise people to _______ on sugary drinks and fast food.", 
-                o: ["cut down", "give up", "look after", "take up"], 
-                a: 0, 
-                vocab: "Cut down on (phr v): Cắt giảm", 
-                trans: "Các chuyên gia sức khỏe khuyên mọi người nên cắt giảm đồ uống có đường và đồ ăn nhanh." 
+            {
+                q: "The doctor will __________ my eyes because I have difficulty seeing the board.",
+                correct: "examine",
+                distractors: ["obey", "impose", "follow"],
+                vocab: "examine (v): khám, kiểm tra",
+                trans: "Bác sĩ sẽ khám mắt cho tôi vì tôi gặp khó khăn khi nhìn bảng."
             },
-            { 
-                q: "Regular exercise reduces the risk of developing chronic _______ like heart problems.", 
-                o: ["diseases", "ingredients", "viewpoints", "norms"], 
-                a: 0, 
-                vocab: "Disease (n): Bệnh, bệnh tật", 
-                trans: "Tập thể dục đều đặn làm giảm nguy cơ mắc các bệnh mãn tính như các vấn đề về tim mạch." 
+            {
+                q: "Diabetes is a common __________ that can affect people's health for a long time.",
+                correct: "disease",
+                distractors: ["fitness", "argument", "energy"],
+                vocab: "disease (n): bệnh tật",
+                trans: "Bệnh tiểu đường là một bệnh phổ biến có thể ảnh hưởng đến sức khỏe của con người trong thời gian dài."
             },
-            { 
-                q: "Eating a healthy breakfast gives you enough _______ for the whole morning.", 
-                o: ["energy", "infection", "curfew", "individualism"], 
-                a: 0, 
-                vocab: "Energy (n): Năng lượng, sinh lực", 
-                trans: "Ăn một bữa sáng lành mạnh cung cấp cho bạn đủ năng lượng cho cả buổi sáng." 
+            {
+                q: "Swimming is a good way to improve your physical __________.",
+                correct: "fitness",
+                distractors: ["energy", "disease", "germs"],
+                vocab: "fitness (n): thể lực, sự khỏe mạnh",
+                trans: "Bơi lội là một cách tốt để cải thiện thể lực của bạn."
             },
-            { 
-                q: "The doctor needs to _______ the patient carefully before giving a diagnosis.", 
-                o: ["examine", "ignore", "obey", "impose"], 
-                a: 0, 
-                vocab: "Examine (v): Khám bệnh, xem xét, nghiên cứu", 
-                trans: "Bác sĩ cần khám bệnh nhân cẩn thận trước khi đưa ra chẩn đoán." 
+            {
+                q: "We should wash our hands before eating to remove __________ and prevent illness.",
+                correct: "germs",
+                distractors: ["nutrients", "antibiotics", "arguments"],
+                vocab: "germs (n): vi trùng",
+                trans: "Chúng ta nên rửa tay trước khi ăn để loại bỏ vi trùng và phòng ngừa bệnh tật."
             },
-            { 
-                q: "Doing regular workouts helps improve your physical _______ and overall health.", 
-                o: ["fitness", "burden", "argument", "conflict"], 
-                a: 0, 
-                vocab: "Fitness (n): Sự mạnh khỏe, thể lực, sự sung sức", 
-                trans: "Tập luyện đều đặn giúp cải thiện thể lực và sức khỏe tổng thể của bạn." 
+            {
+                q: "Eggs, fish and milk are __________ foods because they provide important nutrients.",
+                correct: "nutritious",
+                distractors: ["balanced", "flashy", "mature"],
+                vocab: "nutritious (adj): bổ dưỡng",
+                trans: "Trứng, cá và sữa là những thực phẩm bổ dưỡng vì chúng cung cấp các chất dinh dưỡng quan trọng."
             },
-            { 
-                q: "Eating contaminated seafood can lead to severe food _______.", 
-                o: ["poisoning", "treatment", "energy", "organism"], 
-                a: 0, 
-                vocab: "Food poisoning (n): Ngộ độc thực phẩm", 
-                trans: "Ăn hải sản bị nhiễm khuẩn có thể dẫn đến ngộ độc thực phẩm nặng." 
+            {
+                q: "You should only take __________ when they are prescribed by a doctor to treat certain bacterial infections.",
+                correct: "antibiotics",
+                distractors: ["germs", "nutrients", "diseases"],
+                vocab: "antibiotics (n): thuốc kháng sinh",
+                trans: "Bạn chỉ nên uống thuốc kháng sinh khi được bác sĩ kê đơn để điều trị một số bệnh nhiễm trùng do vi khuẩn."
             },
-            { 
-                q: "Medical researchers study different types of living _______ in the laboratory.", 
-                o: ["organisms", "recipes", "curfews", "nutrients"], 
-                a: 0, 
-                vocab: "Organism (n): Sinh vật, thể sống", 
-                trans: "Các nhà nghiên cứu y học nghiên cứu các loại sinh vật sống khác nhau trong phòng thí nghiệm." 
+            {
+                q: "Eating food that has not been stored properly may cause __________.",
+                correct: "food poisoning",
+                distractors: ["generation gap", "digital native", "extended family"],
+                vocab: "food poisoning (n): ngộ độc thực phẩm",
+                trans: "Ăn thức ăn không được bảo quản đúng cách có thể gây ngộ độc thực phẩm."
             },
-            { 
-                q: "Doing daily _______ is a great way to strengthen your upper body muscles.", 
-                o: ["press-ups", "arguments", "attitudes", "conflicts"], 
-                a: 0, 
-                vocab: "Press-up (n): Động tác chống đẩy", 
-                trans: "Tập chống đẩy hàng ngày là một cách tuyệt vời để tăng cường cơ bắp phần thân trên của bạn." 
+            {
+                q: "The __________ between parents and teenagers can sometimes lead to misunderstandings.",
+                correct: "generation gap",
+                distractors: ["extended family", "food poisoning", "digital native"],
+                vocab: "generation gap (n): khoảng cách thế hệ",
+                trans: "Khoảng cách thế hệ giữa cha mẹ và thanh thiếu niên đôi khi có thể dẫn đến những hiểu lầm."
             },
-            { 
-                q: "You should sleep and wake up _______ to keep your biological clock stable.", 
-                o: ["properly", "badly", "slowly", "suddenly"], 
-                a: 0, 
-                vocab: "Properly (adv): Một cách điều độ, hợp lí", 
-                trans: "Bạn nên ngủ và thức dậy điều độ để giữ cho đồng hồ sinh học ổn định." 
+            {
+                q: "As a __________, my younger brother can use computers and smartphones easily.",
+                correct: "digital native",
+                distractors: ["generation gap", "extended family", "mature"],
+                vocab: "digital native (n): người sinh ra trong thời đại số",
+                trans: "Là một người sinh ra trong thời đại số, em trai tôi có thể sử dụng máy tính và điện thoại thông minh một cách dễ dàng."
             },
-            { 
-                q: "Following a healthy cooking _______ can help you prepare nutritious meals easily.", 
-                o: ["recipe", "curfew", "norm", "burden"], 
-                a: 0, 
-                vocab: "Recipe (n): Công thức chế biến món ăn", 
-                trans: "Tuân theo một công thức nấu ăn lành mạnh có thể giúp bạn chuẩn bị các bữa ăn bổ dưỡng dễ dàng." 
+            {
+                q: "In an __________, grandparents, parents and children often live together in the same house.",
+                correct: "extended family",
+                distractors: ["generation gap", "digital native", "balanced diet"],
+                vocab: "extended family (n): gia đình đa thế hệ",
+                trans: "Trong một gia đình đa thế hệ, ông bà, cha mẹ và con cái thường sống chung trong một ngôi nhà."
             },
-            { 
-                q: "Physical therapy is an effective _______ for chronic back pain.", 
-                o: ["treatment", "poisoning", "fitness", "infection"], 
-                a: 0, 
-                vocab: "Treatment (n): Sự điều trị, phương pháp điều trị", 
-                trans: "Vật lý trị liệu là một phương pháp điều trị hiệu quả cho chứng đau lưng mãn tính." 
+            {
+                q: "A __________ teenager can accept responsibility for their actions and learn from their mistakes.",
+                correct: "mature",
+                distractors: ["flashy", "open-minded", "balanced"],
+                vocab: "mature (adj): trưởng thành, chín chắn",
+                trans: "Một thiếu niên trưởng thành có thể nhận trách nhiệm về hành động của mình và học hỏi từ những sai lầm."
             },
-            { 
-                q: "Vaccines help protect our bodies against dangerous viruses and _______.", 
-                o: ["bacteria", "nutrients", "ingredients", "recipes"], 
-                a: 0, 
-                vocab: "Bacteria (n): Vi khuẩn / vi trùng", 
-                trans: "Vắc-xin giúp bảo vệ cơ thể chúng ta chống lại các loại vi-rút và vi khuẩn nguy hiểm." 
+            {
+                q: "Children should __________ their parents' reasonable rules at home.",
+                correct: "obey",
+                distractors: ["examine", "impose", "follow"],
+                vocab: "obey (v): tuân theo, vâng lời",
+                trans: "Trẻ em nên tuân theo các quy tắc hợp lý của cha mẹ ở nhà."
             },
-
-            // --- UNIT 2: THE GENERATION GAP ---
-            { 
-                q: "The _______ between parents and teenagers often leads to misunderstandings at home.", 
-                o: ["generation gap", "digital native", "nuclear family", "extended family"], 
-                a: 0, 
-                vocab: "Generation gap (np): Khoảng cách thế hệ", 
-                trans: "Khoảng cách thế hệ giữa cha mẹ và thanh thiếu niên thường dẫn đến những hiểu lầm ở nhà." 
+            {
+                q: "My parents are __________ enough to listen to my opinions, even when they disagree with me.",
+                correct: "open-minded",
+                distractors: ["flashy", "mature", "balanced"],
+                vocab: "open-minded (adj): cởi mở",
+                trans: "Bố mẹ tôi đủ cởi mở để lắng nghe ý kiến của tôi, ngay cả khi họ không đồng ý với tôi."
             },
-            { 
-                q: "Different viewpoints on modern lifestyle can cause family _______.", 
-                o: ["conflicts", "nutrients", "recipes", "organisms"], 
-                a: 0, 
-                vocab: "Conflict (n): Sự mâu thuẫn, xung đột", 
-                trans: "Những quan điểm khác nhau về lối sống hiện đại có thể gây ra xung đột gia đình." 
+            {
+                q: "My sister had an __________ with our mother because they had different ideas about her weekend plans.",
+                correct: "argument",
+                distractors: ["disease", "fitness", "energy"],
+                vocab: "argument (n): cuộc tranh cãi",
+                trans: "Chị gái tôi đã có một cuộc tranh cãi với mẹ vì họ có những ý tưởng khác nhau về kế hoạch cuối tuần của chị ấy."
             },
-            { 
-                q: "Teenagers today are considered _______s because they grow up with advanced technology.", 
-                o: ["digital native", "elderly person", "ancestor", "stranger"], 
-                a: 0, 
-                vocab: "Digital native (np): Người sinh ra trong thời đại công nghệ số", 
-                trans: "Thanh thiếu niên ngày nay được coi là cư dân số vì họ lớn lên cùng công nghệ tiên tiến." 
+            {
+                q: "Some parents try to __________ their own ideas about clothes and hobbies on their children.",
+                correct: "impose",
+                distractors: ["examine", "obey", "follow"],
+                vocab: "impose (v): áp đặt",
+                trans: "Một số bậc cha mẹ cố gắng áp đặt những ý tưởng của chính họ về trang phục và sở thích lên con cái."
             },
-            { 
-                q: "Living in a _______ family allows children to receive care from grandparents, parents, and aunts.", 
-                o: ["extended", "nuclear", "single", "modern"], 
-                a: 0, 
-                vocab: "Extended family (np): Gia đình đa thế hệ / đại gia đình", 
-                trans: "Sống trong một gia đình đa thế hệ giúp trẻ em nhận được sự chăm sóc từ ông bà, cha mẹ và cô bác." 
+            {
+                q: "My brother wants to become a teacher and follow in our mother's __________.",
+                correct: "footsteps",
+                distractors: ["footpath", "steps", "tracks"],
+                vocab: "follow in someone's footsteps (idiom): nối nghiệp, theo bước",
+                trans: "Anh trai tôi muốn trở thành giáo viên và nối nghiệp mẹ của chúng tôi."
             },
-            { 
-                q: "Parents often set a strict _______ on weekend nights to ensure their children's safety.", 
-                o: ["curfew", "limit", "norm", "burden"], 
-                a: 0, 
-                vocab: "Curfew (n): Lệnh giới nghiêm, giờ giới nghiêm phải về nhà", 
-                trans: "Cha mẹ thường đặt ra giờ giới nghiêm nghiêm ngặt vào các đêm cuối tuần để đảm bảo an toàn cho con cái." 
-            },
-            { 
-                q: "Many young people wish to have more personal _______ in making their own life choices.", 
-                o: ["freedom", "burden", "curfew", "objection"], 
-                a: 0, 
-                vocab: "Freedom (n): Sự tự do, quyền tự do", 
-                trans: "Nhiều người trẻ muốn có sự tự do cá nhân hơn trong việc đưa ra các lựa chọn cuộc đời của họ." 
-            },
-            { 
-                q: "Some parents tend to _______ their old-fashioned values on their teenage children.", 
-                o: ["impose", "adapt", "examine", "bridge"], 
-                a: 0, 
-                vocab: "Impose on (v phr): Áp đặt cái gì lên ai", 
-                trans: "Một số bậc cha mẹ có xu hướng áp đặt các giá trị lỗi thời của họ lên những đứa con tuổi teen." 
-            },
-            { 
-                q: "Open communication is the key to _______ the gap between different generations.", 
-                o: ["bridge", "widen", "increase", "break"], 
-                a: 0, 
-                vocab: "Bridge the gap (idiom): Thu hẹp/giảm thiểu khoảng cách", 
-                trans: "Giao tiếp cởi mở là chìa khóa để thu hẹp khoảng cách giữa các thế hệ khác nhau." 
-            },
-            { 
-                q: "Children in traditional families are expected to show _______ to their parents and elders.", 
-                o: ["obedience", "disobedience", "rebellion", "argument"], 
-                a: 0, 
-                vocab: "Obedience (n): Sự vâng lời, tuân thủ", 
-                trans: "Trẻ em trong các gia đình truyền thống được kỳ vọng phải thể hiện sự vâng lời đối với cha mẹ và người lớn tuổi." 
-            },
-            { 
-                q: "Being _______ helps parents understand modern trends and accept their children's new ideas.", 
-                o: ["open-minded", "conservative", "strict", "harsh"], 
-                a: 0, 
-                vocab: "Open-minded (a): Cởi mở, phóng khoáng", 
-                trans: "Sự cởi mở giúp cha mẹ hiểu các xu hướng hiện đại và chấp nhận những ý tưởng mới của con cái." 
-            },
-            { 
-                q: "Paying for college tuition and housing creates a huge financial _______ for many families.", 
-                o: ["burden", "freedom", "recipe", "diet"], 
-                a: 0, 
-                vocab: "Financial burden (compound n): Gánh nặng tài chính", 
-                trans: "Chi trả học phí đại học và nhà ở tạo ra một gánh nặng tài chính lớn cho nhiều gia đình." 
-            },
-            { 
-                q: "He decided to follow in his father's _______ and pursue a career in medicine.", 
-                o: ["footsteps", "views", "limits", "norms"], 
-                a: 0, 
-                vocab: "Follow in one's footsteps (idiom): Theo bước, nối nghiệp", 
-                trans: "Anh ấy quyết định nối nghiệp cha mình và theo đuổi sự nghiệp y khoa." 
-            },
-            { 
-                q: "Respecting cultural _______ helps maintain harmony within a multi-generational household.", 
-                o: ["norms", "burdens", "curfews", "arguments"], 
-                a: 0, 
-                vocab: "Norm (n): Chuẩn mực, quy chuẩn", 
-                trans: "Tôn trọng các chuẩn mực văn hóa giúp duy trì sự hòa thuận trong một mái ấm đa thế hệ." 
+            {
+                q: "My grandmother thinks that wearing too many bright colours and expensive accessories looks __________.",
+                correct: "flashy",
+                distractors: ["mature", "open-minded", "nutritious"],
+                vocab: "flashy (adj): hào nhoáng, phô trương",
+                trans: "Bà tôi nghĩ rằng mặc quá nhiều màu sắc sặc sỡ và phụ kiện đắt tiền trông có vẻ hào nhoáng, phô trương."
             }
         ];
 
@@ -283,23 +224,20 @@
             return arr;
         }
 
-        // Khởi tạo bài thi, xáo trộn câu hỏi và các lựa chọn đáp án
+        // Khởi tạo bài thi, xáo trộn câu hỏi và các lựa chọn đáp án thành 4 đáp án A, B, C, D
         function initQuiz() {
             let shuffledQuestions = shuffleArray(rawQuestionsData);
 
             questionsData = shuffledQuestions.map(item => {
-                let optionsWithCorrect = item.o.map((opt, idx) => ({
-                    text: opt,
-                    isCorrect: idx === item.a
-                }));
-                
-                let shuffledOptions = shuffleArray(optionsWithCorrect);
-                let newCorrectIndex = shuffledOptions.findIndex(opt => opt.isCorrect);
+                // Gom đáp án đúng và các phương án nhiễu thành một mảng 4 lựa chọn
+                let allOptions = [item.correct, ...item.distractors];
+                let shuffledOpts = shuffleArray(allOptions);
+                let correctIndex = shuffledOpts.indexOf(item.correct);
 
                 return {
                     q: item.q,
-                    o: shuffledOptions.map(opt => opt.text),
-                    a: newCorrectIndex,
+                    o: shuffledOpts,
+                    a: correctIndex,
                     vocab: item.vocab,
                     trans: item.trans
                 };
@@ -330,7 +268,7 @@
             container.innerHTML = `
                 <div class="space-y-4">
                     <div class="font-bold text-base md:text-lg text-slate-100 leading-relaxed">
-                        <span class="text-blue-400">Câu ${currentIndex + 1}:</span> ${item.q.replace('_______', '<u class="text-yellow-400 font-bold px-1">_______</u>')}
+                        <span class="text-blue-400">Câu ${currentIndex + 1}:</span> ${item.q.replace('__________', '<u class="text-yellow-400 font-bold px-1">__________</u>')}
                     </div>
                     <div class="grid grid-cols-1 gap-2.5">
                         ${item.o.map((opt, oIdx) => {
@@ -356,11 +294,11 @@
                     <div id="feedback-box" class="${answered ? '' : 'hidden'} mt-4 p-4 rounded-xl border space-y-3 ${answered && selectedOpt === item.a ? 'bg-emerald-950/60 border-emerald-800 text-emerald-200' : 'bg-rose-950/60 border-rose-800 text-rose-200'}">
                         <div class="flex items-center space-x-2 font-bold ${answered && selectedOpt === item.a ? 'text-emerald-400' : 'text-rose-400'}">
                             <i class="fa-solid ${answered && selectedOpt === item.a ? 'fa-circle-check' : 'fa-circle-xmark'} text-lg"></i>
-                            <span>${answered && selectedOpt === item.a ? 'Chính xác!' : `Chưa đúng! Đáp án đúng là: <b>${['A', 'B', 'C', 'D'][item.a]}</b>`}</span>
+                            <span>${answered && selectedOpt === item.a ? 'Chính xác!' : `Chưa đúng! Đáp án đúng là: <b>${['A', 'B', 'C', 'D'][item.a]} (${item.o[item.a]})</b>`}</span>
                         </div>
                         <div class="text-xs text-slate-300 space-y-1.5 leading-relaxed bg-slate-900/60 p-3 rounded-lg border border-slate-800">
-                            <div><b class="text-blue-300">Từ vựng trọng tâm:</b> <span class="text-yellow-300">${item.vocab}</span></div>
-                            <div><b class="text-blue-300">Dịch nghĩa toàn câu:</b> <i>"${item.trans}"</i></div>
+                            <div><b class="text-blue-300">Từ vựng:</b> <span class="text-yellow-300">${item.vocab}</span></div>
+                            <div><b class="text-blue-300">Dịch nghĩa câu:</b> <i>"${item.trans}"</i></div>
                         </div>
                         <div class="pt-2 flex justify-between items-center">
                             <span class="text-xs text-slate-400 italic">Đã trả lời câu ${currentIndex + 1}</span>
@@ -418,7 +356,7 @@
             `;
         }
 
-        // Tự động khởi tạo khi load trang lần đầu
+        // Tự động khởi tạo khi load trang
         window.addEventListener('DOMContentLoaded', () => {
             initQuiz();
         });
