@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc Nghiệm Tiếng Anh 11 - Global Success (Mở Rộng)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-blue-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full bg-slate-800/85 backdrop-blur border-b border-slate-700/60 sticky top-0 z-30">
+        <div class="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-blue-600 rounded-lg text-white">
+                    <i class="fa-solid fa-graduation-cap text-base"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm md:text-base font-bold leading-tight">Tiếng Anh 11 - Global Success (Full Từ Vựng)</h1>
+                    <p class="text-xs text-slate-400">Unit 1: Healthy Life & Unit 2: The Generation Gap</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <button type="button" onclick="initQuiz()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1.5 cursor-pointer">
+                    <i class="fa-solid fa-rotate-right text-blue-400"></i>
+                    <span class="hidden sm:inline">Làm lại từ đầu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col justify-center space-y-6">
+
+        <!-- TRẮC NGHIỆM TỪNG CÂU -->
+        <section id="page-exam" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div>
+                    <h2 class="text-lg md:text-xl font-bold text-white">Trắc nghiệm điền từ vựng vào chỗ trống</h2>
+                    <p class="text-xs text-slate-400" id="exam-progress-text">Câu 1 / 28</p>
+                </div>
+                <div class="w-1/3 bg-slate-700 h-2 rounded-full overflow-hidden hidden sm:block">
+                    <div id="progress-bar" class="bg-blue-500 h-full transition-all duration-300" style="width: 3.5%;"></div>
+                </div>
+            </div>
+
+            <!-- Khu vực hiển thị từng câu hỏi -->
+            <div id="question-container" class="space-y-4">
+                <!-- Render bằng JavaScript -->
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        Tiếng Anh 11 • Global Success • Hệ thống từ vựng trọng điểm Unit 1 & Unit 2
+    </footer>
+
+    <script>
+        // Ngân hàng câu hỏi mở rộng bao trọn từ vựng trọng điểm từ các ảnh cung cấp
+        const rawQuestionsData = [
+            // --- UNIT 1: HEALTHY LIFE ---
+            { 
+                q: "The doctor prescribed a course of _______ to treat her severe bacterial infection.", 
+                o: ["antibiotic", "recipe", "ingredient", "curfew"], 
+                a: 0, 
+                vocab: "Antibiotic (n): Thuốc kháng sinh", 
+                trans: "Bác sĩ đã kê một đợt thuốc kháng sinh để điều trị bệnh nhiễm trùng do vi khuẩn nặng của cô ấy." 
+            },
+            { 
+                q: "Washing your hands regularly helps remove harmful _______ and prevents diseases.", 
+                o: ["bacteria", "freedoms", "burdens", "arguments"], 
+                a: 0, 
+                vocab: "Bacteria (n): Vi khuẩn", 
+                trans: "Rửa tay thường xuyên giúp loại bỏ vi khuẩn có hại và phòng ngừa bệnh tật." 
+            },
+            { 
+                q: "Maintaining a _______ diet with adequate nutrients is crucial for a long life.", 
+                o: ["balanced", "flashy", "curious", "elegant"], 
+                a: 0, 
+                vocab: "Balanced (a): Cân bằng, cân đối", 
+                trans: "Duy trì một chế độ ăn cân bằng với đầy đủ chất dinh dưỡng là rất quan trọng để có một cuộc sống trường thọ." 
+            },
+            { 
+                q: "Health experts advise people to _______ on sugary drinks and fast food.", 
+                o: ["cut down", "give up", "look after", "take up"], 
+                a: 0, 
+                vocab: "Cut down on (phr v): Cắt giảm", 
+                trans: "Các chuyên gia sức khỏe khuyên mọi người nên cắt giảm đồ uống có đường và đồ ăn nhanh." 
+            },
+            { 
+                q: "Regular exercise reduces the risk of developing chronic _______ like heart problems.", 
+                o: ["diseases", "ingredients", "viewpoints", "norms"], 
+                a: 0, 
+                vocab: "Disease (n): Bệnh, bệnh tật", 
+                trans: "Tập thể dục đều đặn làm giảm nguy cơ mắc các bệnh mãn tính như các vấn đề về tim mạch." 
+            },
+            { 
+                q: "Eating a healthy breakfast gives you enough _______ for the whole morning.", 
+                o: ["energy", "infection", "curfew", "individualism"], 
+                a: 0, 
+                vocab: "Energy (n): Năng lượng, sinh lực", 
+                trans: "Ăn một bữa sáng lành mạnh cung cấp cho bạn đủ năng lượng cho cả buổi sáng." 
+            },
+            { 
+                q: "The doctor needs to _______ the patient carefully before giving a diagnosis.", 
+                o: ["examine", "ignore", "obey", "impose"], 
+                a: 0, 
+                vocab: "Examine (v): Khám bệnh, xem xét, nghiên cứu", 
+                trans: "Bác sĩ cần khám bệnh nhân cẩn thận trước khi đưa ra chẩn đoán." 
+            },
+            { 
+                q: "Doing regular workouts helps improve your physical _______ and overall health.", 
+                o: ["fitness", "burden", "argument", "conflict"], 
+                a: 0, 
+                vocab: "Fitness (n): Sự mạnh khỏe, thể lực, sự sung sức", 
+                trans: "Tập luyện đều đặn giúp cải thiện thể lực và sức khỏe tổng thể của bạn." 
+            },
+            { 
+                q: "Eating contaminated seafood can lead to severe food _______.", 
+                o: ["poisoning", "treatment", "energy", "organism"], 
+                a: 0, 
+                vocab: "Food poisoning (n): Ngộ độc thực phẩm", 
+                trans: "Ăn hải sản bị nhiễm khuẩn có thể dẫn đến ngộ độc thực phẩm nặng." 
+            },
+            { 
+                q: "Medical researchers study different types of living _______ in the laboratory.", 
+                o: ["organisms", "recipes", "curfews", "nutrients"], 
+                a: 0, 
+                vocab: "Organism (n): Sinh vật, thể sống", 
+                trans: "Các nhà nghiên cứu y học nghiên cứu các loại sinh vật sống khác nhau trong phòng thí nghiệm." 
+            },
+            { 
+                q: "Doing daily _______ is a great way to strengthen your upper body muscles.", 
+                o: ["press-ups", "arguments", "attitudes", "conflicts"], 
+                a: 0, 
+                vocab: "Press-up (n): Động tác chống đẩy", 
+                trans: "Tập chống đẩy hàng ngày là một cách tuyệt vời để tăng cường cơ bắp phần thân trên của bạn." 
+            },
+            { 
+                q: "You should sleep and wake up _______ to keep your biological clock stable.", 
+                o: ["properly", "badly", "slowly", "suddenly"], 
+                a: 0, 
+                vocab: "Properly (adv): Một cách điều độ, hợp lí", 
+                trans: "Bạn nên ngủ và thức dậy điều độ để giữ cho đồng hồ sinh học ổn định." 
+            },
+            { 
+                q: "Following a healthy cooking _______ can help you prepare nutritious meals easily.", 
+                o: ["recipe", "curfew", "norm", "burden"], 
+                a: 0, 
+                vocab: "Recipe (n): Công thức chế biến món ăn", 
+                trans: "Tuân theo một công thức nấu ăn lành mạnh có thể giúp bạn chuẩn bị các bữa ăn bổ dưỡng dễ dàng." 
+            },
+            { 
+                q: "Physical therapy is an effective _______ for chronic back pain.", 
+                o: ["treatment", "poisoning", "fitness", "infection"], 
+                a: 0, 
+                vocab: "Treatment (n): Sự điều trị, phương pháp điều trị", 
+                trans: "Vật lý trị liệu là một phương pháp điều trị hiệu quả cho chứng đau lưng mãn tính." 
+            },
+            { 
+                q: "Vaccines help protect our bodies against dangerous viruses and _______.", 
+                o: ["bacteria", "nutrients", "ingredients", "recipes"], 
+                a: 0, 
+                vocab: "Bacteria (n): Vi khuẩn / vi trùng", 
+                trans: "Vắc-xin giúp bảo vệ cơ thể chúng ta chống lại các loại vi-rút và vi khuẩn nguy hiểm." 
+            },
+
+            // --- UNIT 2: THE GENERATION GAP ---
+            { 
+                q: "The _______ between parents and teenagers often leads to misunderstandings at home.", 
+                o: ["generation gap", "digital native", "nuclear family", "extended family"], 
+                a: 0, 
+                vocab: "Generation gap (np): Khoảng cách thế hệ", 
+                trans: "Khoảng cách thế hệ giữa cha mẹ và thanh thiếu niên thường dẫn đến những hiểu lầm ở nhà." 
+            },
+            { 
+                q: "Different viewpoints on modern lifestyle can cause family _______.", 
+                o: ["conflicts", "nutrients", "recipes", "organisms"], 
+                a: 0, 
+                vocab: "Conflict (n): Sự mâu thuẫn, xung đột", 
+                trans: "Những quan điểm khác nhau về lối sống hiện đại có thể gây ra xung đột gia đình." 
+            },
+            { 
+                q: "Teenagers today are considered _______s because they grow up with advanced technology.", 
+                o: ["digital native", "elderly person", "ancestor", "stranger"], 
+                a: 0, 
+                vocab: "Digital native (np): Người sinh ra trong thời đại công nghệ số", 
+                trans: "Thanh thiếu niên ngày nay được coi là cư dân số vì họ lớn lên cùng công nghệ tiên tiến." 
+            },
+            { 
+                q: "Living in a _______ family allows children to receive care from grandparents, parents, and aunts.", 
+                o: ["extended", "nuclear", "single", "modern"], 
+                a: 0, 
+                vocab: "Extended family (np): Gia đình đa thế hệ / đại gia đình", 
+                trans: "Sống trong một gia đình đa thế hệ giúp trẻ em nhận được sự chăm sóc từ ông bà, cha mẹ và cô bác." 
+            },
+            { 
+                q: "Parents often set a strict _______ on weekend nights to ensure their children's safety.", 
+                o: ["curfew", "limit", "norm", "burden"], 
+                a: 0, 
+                vocab: "Curfew (n): Lệnh giới nghiêm, giờ giới nghiêm phải về nhà", 
+                trans: "Cha mẹ thường đặt ra giờ giới nghiêm nghiêm ngặt vào các đêm cuối tuần để đảm bảo an toàn cho con cái." 
+            },
+            { 
+                q: "Many young people wish to have more personal _______ in making their own life choices.", 
+                o: ["freedom", "burden", "curfew", "objection"], 
+                a: 0, 
+                vocab: "Freedom (n): Sự tự do, quyền tự do", 
+                trans: "Nhiều người trẻ muốn có sự tự do cá nhân hơn trong việc đưa ra các lựa chọn cuộc đời của họ." 
+            },
+            { 
+                q: "Some parents tend to _______ their old-fashioned values on their teenage children.", 
+                o: ["impose", "adapt", "examine", "bridge"], 
+                a: 0, 
+                vocab: "Impose on (v phr): Áp đặt cái gì lên ai", 
+                trans: "Một số bậc cha mẹ có xu hướng áp đặt các giá trị lỗi thời của họ lên những đứa con tuổi teen." 
+            },
+            { 
+                q: "Open communication is the key to _______ the gap between different generations.", 
+                o: ["bridge", "widen", "increase", "break"], 
+                a: 0, 
+                vocab: "Bridge the gap (idiom): Thu hẹp/giảm thiểu khoảng cách", 
+                trans: "Giao tiếp cởi mở là chìa khóa để thu hẹp khoảng cách giữa các thế hệ khác nhau." 
+            },
+            { 
+                q: "Children in traditional families are expected to show _______ to their parents and elders.", 
+                o: ["obedience", "disobedience", "rebellion", "argument"], 
+                a: 0, 
+                vocab: "Obedience (n): Sự vâng lời, tuân thủ", 
+                trans: "Trẻ em trong các gia đình truyền thống được kỳ vọng phải thể hiện sự vâng lời đối với cha mẹ và người lớn tuổi." 
+            },
+            { 
+                q: "Being _______ helps parents understand modern trends and accept their children's new ideas.", 
+                o: ["open-minded", "conservative", "strict", "harsh"], 
+                a: 0, 
+                vocab: "Open-minded (a): Cởi mở, phóng khoáng", 
+                trans: "Sự cởi mở giúp cha mẹ hiểu các xu hướng hiện đại và chấp nhận những ý tưởng mới của con cái." 
+            },
+            { 
+                q: "Paying for college tuition and housing creates a huge financial _______ for many families.", 
+                o: ["burden", "freedom", "recipe", "diet"], 
+                a: 0, 
+                vocab: "Financial burden (compound n): Gánh nặng tài chính", 
+                trans: "Chi trả học phí đại học và nhà ở tạo ra một gánh nặng tài chính lớn cho nhiều gia đình." 
+            },
+            { 
+                q: "He decided to follow in his father's _______ and pursue a career in medicine.", 
+                o: ["footsteps", "views", "limits", "norms"], 
+                a: 0, 
+                vocab: "Follow in one's footsteps (idiom): Theo bước, nối nghiệp", 
+                trans: "Anh ấy quyết định nối nghiệp cha mình và theo đuổi sự nghiệp y khoa." 
+            },
+            { 
+                q: "Respecting cultural _______ helps maintain harmony within a multi-generational household.", 
+                o: ["norms", "burdens", "curfews", "arguments"], 
+                a: 0, 
+                vocab: "Norm (n): Chuẩn mực, quy chuẩn", 
+                trans: "Tôn trọng các chuẩn mực văn hóa giúp duy trì sự hòa thuận trong một mái ấm đa thế hệ." 
+            }
+        ];
+
+        let questionsData = [];
+        let currentIndex = 0;
+        let userAnswers = {};
+
+        // Hàm xáo trộn mảng (Fisher-Yates Shuffle)
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Khởi tạo bài thi, xáo trộn câu hỏi và các lựa chọn đáp án
+        function initQuiz() {
+            let shuffledQuestions = shuffleArray(rawQuestionsData);
+
+            questionsData = shuffledQuestions.map(item => {
+                let optionsWithCorrect = item.o.map((opt, idx) => ({
+                    text: opt,
+                    isCorrect: idx === item.a
+                }));
+                
+                let shuffledOptions = shuffleArray(optionsWithCorrect);
+                let newCorrectIndex = shuffledOptions.findIndex(opt => opt.isCorrect);
+
+                return {
+                    q: item.q,
+                    o: shuffledOptions.map(opt => opt.text),
+                    a: newCorrectIndex,
+                    vocab: item.vocab,
+                    trans: item.trans
+                };
+            });
+
+            currentIndex = 0;
+            userAnswers = {};
+            renderQuestion();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('question-container');
+            
+            if (currentIndex >= questionsData.length) {
+                renderResult();
+                return;
+            }
+
+            const item = questionsData[currentIndex];
+            const progressPercent = ((currentIndex + 1) / questionsData.length) * 100;
+            document.getElementById('exam-progress-text').innerText = `Câu ${currentIndex + 1} / ${questionsData.length}`;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            const answered = userAnswers[currentIndex] !== undefined;
+            const selectedOpt = userAnswers[currentIndex];
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="font-bold text-base md:text-lg text-slate-100 leading-relaxed">
+                        <span class="text-blue-400">Câu ${currentIndex + 1}:</span> ${item.q.replace('_______', '<u class="text-yellow-400 font-bold px-1">_______</u>')}
+                    </div>
+                    <div class="grid grid-cols-1 gap-2.5">
+                        ${item.o.map((opt, oIdx) => {
+                            let btnClass = "w-full text-left p-3.5 bg-slate-900/85 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center space-x-3 text-sm transition cursor-pointer option-btn";
+                            if (answered) {
+                                if (oIdx === item.a) {
+                                    btnClass = "w-full text-left p-3.5 bg-emerald-950/80 border border-emerald-600 rounded-xl flex items-center space-x-3 text-sm text-emerald-200 font-semibold";
+                                } else if (oIdx === selectedOpt && selectedOpt !== item.a) {
+                                    btnClass = "w-full text-left p-3.5 bg-rose-950/80 border border-rose-600 rounded-xl flex items-center space-x-3 text-sm text-rose-200";
+                                } else {
+                                    btnClass = "w-full text-left p-3.5 bg-slate-900/40 border border-slate-800 rounded-xl flex items-center space-x-3 text-sm text-slate-500 opacity-60";
+                                }
+                            }
+                            return `
+                                <button type="button" ${answered ? 'disabled' : ''} onclick="handleSelect(${oIdx})" class="${btnClass}">
+                                    <span class="w-7 h-7 flex-shrink-0 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-blue-400 border border-slate-700 text-xs">${['A', 'B', 'C', 'D'][oIdx]}</span>
+                                    <span class="flex-grow">${opt}</span>
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <div id="feedback-box" class="${answered ? '' : 'hidden'} mt-4 p-4 rounded-xl border space-y-3 ${answered && selectedOpt === item.a ? 'bg-emerald-950/60 border-emerald-800 text-emerald-200' : 'bg-rose-950/60 border-rose-800 text-rose-200'}">
+                        <div class="flex items-center space-x-2 font-bold ${answered && selectedOpt === item.a ? 'text-emerald-400' : 'text-rose-400'}">
+                            <i class="fa-solid ${answered && selectedOpt === item.a ? 'fa-circle-check' : 'fa-circle-xmark'} text-lg"></i>
+                            <span>${answered && selectedOpt === item.a ? 'Chính xác!' : `Chưa đúng! Đáp án đúng là: <b>${['A', 'B', 'C', 'D'][item.a]}</b>`}</span>
+                        </div>
+                        <div class="text-xs text-slate-300 space-y-1.5 leading-relaxed bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+                            <div><b class="text-blue-300">Từ vựng trọng tâm:</b> <span class="text-yellow-300">${item.vocab}</span></div>
+                            <div><b class="text-blue-300">Dịch nghĩa toàn câu:</b> <i>"${item.trans}"</i></div>
+                        </div>
+                        <div class="pt-2 flex justify-between items-center">
+                            <span class="text-xs text-slate-400 italic">Đã trả lời câu ${currentIndex + 1}</span>
+                            <button type="button" onclick="nextQuestion()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-xs transition inline-flex items-center space-x-2 cursor-pointer">
+                                <span>${currentIndex < questionsData.length - 1 ? 'Câu tiếp theo' : 'Xem kết quả'}</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleSelect(oIdx) {
+            userAnswers[currentIndex] = oIdx;
+            renderQuestion();
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            renderQuestion();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderResult() {
+            let correctCount = 0;
+            questionsData.forEach((item, idx) => {
+                if (userAnswers[idx] === item.a) correctCount++;
+            });
+
+            const container = document.getElementById('question-container');
+            document.getElementById('exam-progress-text').innerText = `Hoàn thành bài kiểm tra`;
+            document.getElementById('progress-bar').style.width = `100%`;
+
+            container.innerHTML = `
+                <div class="text-center space-y-6 py-6">
+                    <div class="w-20 h-20 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center mx-auto border border-blue-500/30 text-3xl">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <h3 class="text-2xl font-bold text-white">Kết Quả Bài Kiểm Tra</h3>
+                        <p class="text-slate-300 text-base">
+                            Số câu trả lời đúng của bạn: <span class="font-bold text-blue-400 text-xl">${correctCount} / ${questionsData.length}</span>
+                            <span class="block text-xs text-slate-400 mt-1">(Điểm số tương ứng: ${(correctCount * (10 / questionsData.length)).toFixed(2)} / 10 điểm)</span>
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                        <button type="button" onclick="initQuiz()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg transition text-sm inline-flex items-center space-x-2 cursor-pointer">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            <span>Thử lại (Xáo trộn đề mới)</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Tự động khởi tạo khi load trang lần đầu
+        window.addEventListener('DOMContentLoaded', () => {
+            initQuiz();
+        });
+    </script>
+</body>
+</html>
