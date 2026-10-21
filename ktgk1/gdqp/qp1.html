@@ -27,6 +27,11 @@
             </div>
             
             <div class="flex items-center space-x-2">
+                <!-- Nút xáo trộn câu hỏi nhanh -->
+                <button type="button" onclick="shuffleAndRestartExam()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 rounded-lg text-xs font-medium text-white transition flex items-center space-x-1.5 cursor-pointer" title="Xáo trộn lại toàn bộ câu hỏi và đáp án">
+                    <i class="fa-solid fa-shuffle"></i>
+                    <span class="hidden sm:inline">Xáo trộn đề</span>
+                </button>
                 <!-- Nút xem ma trận popup chi tiết -->
                 <button type="button" onclick="openMatrixModal()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1.5 cursor-pointer">
                     <i class="fa-solid fa-table text-blue-400"></i>
@@ -98,7 +103,7 @@
         <section id="page-exam" class="hidden bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
             <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
                 <div>
-                    <h2 class="text-lg md:text-xl font-bold text-white">Đề Kiểm Tra Giữa Kỳ I - Môn GDQPAN 11 (Mã đề 132)</h2>
+                    <h2 class="text-lg md:text-xl font-bold text-white">Đề Kiểm Tra Giữa Kỳ I - Môn GDQPAN 11 (Mã đề xáo trộn)</h2>
                     <p class="text-xs text-slate-400" id="exam-progress-text">Câu 1 / 40</p>
                 </div>
                 <div class="w-1/3 bg-slate-700 h-2 rounded-full overflow-hidden hidden sm:block">
@@ -214,8 +219,8 @@
     </footer>
 
     <script>
-        // Dữ liệu 40 câu hỏi chuẩn từ file de.pdf / de_2.pdf và đáp án chuẩn
-        const questionsData = [
+        // Dữ liệu gốc 40 câu hỏi
+        const rawQuestionsData = [
             { id: 1, q: "Nội dung nào sau đây không phản ánh đúng mục tiêu của Đảng về Chiến lược bảo vệ Tổ quốc Việt Nam xã hội chủ nghĩa trong tình hình mới?", o: ["Kết hợp chặt chẽ hai nhiệm vụ: xây dựng và bảo vệ Tổ quốc xã hội chủ nghĩa.", "Bảo vệ vững chắc độc lập, chủ quyền, thống nhất, toàn vẹn lãnh thổ của Tổ quốc.", "Giữ vững môi trường hòa bình, ổn định chính trị, an ninh quốc gia, an ninh con người.", "Bảo vệ Đảng, Nhà nước, nhân dân, chế độ xã hội chủ nghĩa, văn hóa, lợi ích quốc gia."], a: 0, exp: "Đáp án phản ánh nội dung mục tiêu chiến lược bảo vệ Tổ quốc." },
             { id: 2, q: "Một trong những quan điểm chỉ đạo của Đảng về Chiến lược bảo vệ Tổ quốc Việt Nam xã hội chủ nghĩa trong tình hình mới là:", o: ["coi ngoại lực là nhân tố quyết định mọi thắng lợi, thành công.", "kiên định mục tiêu độc lập dân tộc gắn liền với chủ nghĩa xã hội.", "chỉ chú trọng xây dựng sức mạnh của đất nước về văn hóa - xã hội.", "kết hợp chặt chẽ hai nhiệm vụ chiến lược: kháng chiến và kiến quốc."], a: 1, exp: "Kiên định mục tiêu độc lập dân tộc gắn liền với chủ nghĩa xã hội." },
             { id: 3, q: "Những ai tôn trọng độc lập, chủ quyền, thiết lập và mở rộng quan hệ hữu nghị, hợp tác bình đẳng, cùng có lợi với Việt Nam đều là", o: ["đối tác.", "đối tượng.", "kẻ thù.", "đối thủ."], a: 0, exp: "Đó là định nghĩa về đối tác." },
@@ -258,15 +263,63 @@
             { id: 40, q: "Chủ thể nào dưới đây không vi phạm pháp luật về phòng, chống tệ nạn xã hội?", o: ["Chị V tố cáo với cơ quan công an về hành vi tổ chức đánh bạc của ông P.", "Anh K lợi dụng việc kinh doanh dịch vụ massage để môi giới mại dâm.", "Bạn K vận chuyển giúp ông C 200g ma túy để nhận 1 triệu đồng tiền công.", "Bà S tung tin mình được “thánh cho ăn lộc để tổ chức hoạt động bói toán."], a: 0, exp: "Chị V tố cáo tội phạm là thực hiện đúng quy định pháp luật." }
         ];
 
+        let questionsData = [];
         let currentIndex = 0;
         let userAnswers = {};
 
+        // Hàm xáo trộn mảng (Fisher-Yates Shuffle) kết hợp xáo trộn đáp án
+        function shuffleExam() {
+            // Copy mảng gốc
+            let cloned = JSON.parse(JSON.stringify(rawQuestionsData));
+            
+            // Xáo trộn thứ tự các câu hỏi
+            for (let i = cloned.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cloned[i], cloned[j]] = [cloned[j], cloned[i]];
+            }
+
+            // Xáo trộn các đáp án trong từng câu hỏi và cập nhật lại vị trí đáp án đúng
+            questionsData = cloned.map(item => {
+                let optionsWithIndex = item.o.map((opt, idx) => ({ text: opt, isCorrect: idx === item.a }));
+                
+                // Xáo trộn mảng options
+                for (let i = optionsWithIndex.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [optionsWithIndex[i], optionsWithIndex[j]] = [optionsWithIndex[j], optionsWithIndex[i]];
+                }
+
+                return {
+                    id: item.id,
+                    q: item.q,
+                    o: optionsWithIndex.map(o => o.text),
+                    a: optionsWithIndex.findIndex(o => o.isCorrect),
+                    exp: item.exp
+                };
+            });
+        }
+
         function goToExam() {
+            shuffleExam();
             document.getElementById('page-matrix').classList.add('hidden');
             document.getElementById('page-exam').classList.remove('hidden');
             currentIndex = 0;
             userAnswers = {};
             renderQuestion();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Nút xáo trộn nhanh trên Header
+        function shuffleAndRestartExam() {
+            shuffleExam();
+            currentIndex = 0;
+            userAnswers = {};
+            // Nếu đang ở trang làm bài thì render lại câu đầu tiên của bộ đề mới
+            if (!document.getElementById('page-exam').classList.contains('hidden')) {
+                renderQuestion();
+            } else {
+                // Nếu đang ở trang ma trận thì chuyển thẳng sang trang làm bài với đề mới
+                goToExam();
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -375,7 +428,7 @@
                     <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
                         <button type="button" onclick="retryQuiz()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg transition text-sm inline-flex items-center space-x-2 cursor-pointer">
                             <i class="fa-solid fa-rotate-right"></i>
-                            <span>Thi lại bài mới</span>
+                            <span>Thi lại bài mới (Xáo trộn)</span>
                         </button>
                         <button type="button" onclick="backToMatrix()" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold rounded-xl transition text-sm inline-flex items-center space-x-2 cursor-pointer">
                             <i class="fa-solid fa-table"></i>
@@ -387,9 +440,7 @@
         }
 
         function retryQuiz() {
-            currentIndex = 0;
-            userAnswers = {};
-            goToExam();
+            goToExam(); // Tự động xáo trộn bộ đề mới khi bấm thi lại
         }
 
         function backToMatrix() {
