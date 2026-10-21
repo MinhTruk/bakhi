@@ -1,504 +1,316 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KTTX GDQP-AN 11 - Bài 1</title>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap');
-:root{
-  color-scheme: dark;
-  --bg: #0b0f19;
-  --panel: rgba(19, 28, 48, 0.85);
-  --panel-solid: #131c30;
-  --ink: #f8fafc;
-  --muted: #94a3b8;
-  --accent: #f43f5e;
-  --accent-hover: #e11d48;
-  --accent-glow: rgba(244, 63, 94, 0.25);
-  --good: #10b981;
-  --good-bg: rgba(16, 185, 129, 0.15);
-  --bad: #f43f5e;
-  --bad-bg: rgba(244, 63, 94, 0.15);
-  --line: rgba(148, 163, 184, 0.15);
-  --radius: 20px;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 50%, #080d16 100%);
-  color: var(--ink);
-  font: 15px/1.65 'Lexend', system-ui, sans-serif;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-main{
-  width: 100%;
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 24px 16px 40px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-header{
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: rgba(15, 23, 42, 0.9);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--line);
-  padding: 16px max(16px, calc((100vw - 828px)/2));
-  margin-bottom: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-.header-top{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-.header-left{
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.back-btn{
-  background: #1e293b;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  color: #cbd5e1;
-  padding: 8px 12px;
-  border-radius: 10px;
-  text-decoration: none;
-  font-size: 0.8rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-}
-.back-btn:hover{background: #334155; color: #fff;}
-.header-actions{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-h1{font-size: clamp(1.1rem, 2.2vw, 1.35rem); line-height: 1.4; margin: 0 0 4px; font-weight: 700; color: #fff;}
-h2{font-size: clamp(1rem, 2.4vw, 1.2rem); line-height: 1.6; margin: 0 0 16px; font-weight: 600; color: #f1f5f9;}
-.sub{font-size: .8rem; color: var(--muted); margin: 0;}
-header .tag{
-  display: inline-block;
-  color: #fda4af;
-  background: rgba(244, 63, 94, 0.12);
-  border: 1px solid rgba(244, 63, 94, 0.25);
-  border-radius: 6px;
-  padding: 2px 8px;
-  font-size: .65rem;
-  font-weight: 700;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-header .progress-wrap{
-  max-width: 828px;
-  margin: 12px auto 0;
-  height: 6px;
-  background: #1e293b;
-  border-radius: 99px;
-  overflow: hidden;
-  border: 1px solid var(--line);
-}
-header .progress{
-  height: 100%;
-  background: linear-gradient(90deg, #f43f5e, #fb7185);
-  transition: width .35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-header .progress-label{
-  max-width: 828px;
-  margin: 6px auto 0;
-  font-size: .75rem;
-  color: var(--muted);
-  display: flex;
-  justify-content: space-between;
-  font-weight: 500;
-}
-.panel{
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: clamp(20px, 4vw, 36px);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-  backdrop-filter: blur(12px);
-  animation: fadeIn .3s ease-out;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-#quiz .tag{
-  display: inline-flex;
-  color: #fda4af;
-  background: rgba(244, 63, 94, 0.12);
-  border: 1px solid rgba(244, 63, 94, 0.25);
-  border-radius: 8px;
-  padding: 5px 10px;
-  font-size: .7rem;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  margin-bottom: 14px;
-}
-.options{display: grid; gap: 12px; margin: 20px 0 0;}
-.option{
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  border-radius: 14px;
-  padding: 14px 16px;
-  cursor: pointer;
-  transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(15, 23, 42, 0.6);
-  color: #e2e8f0;
-}
-.option:hover{
-  border-color: #fb7185;
-  background: rgba(30, 41, 59, 0.8);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-.option input{
-  margin-top: 4px;
-  accent-color: var(--accent);
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-.option:has(input:checked){
-  border-color: var(--accent);
-  background: rgba(244, 63, 94, 0.15);
-  box-shadow: 0 0 0 1px var(--accent);
-}
-button{
-  font: inherit;
-  font-size: .85rem;
-  font-weight: 700;
-  border: 0;
-  border-radius: 12px;
-  padding: 12px 20px;
-  cursor: pointer;
-  transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-button:hover{transform: translateY(-2px); filter: brightness(1.1);}
-button:active{transform: translateY(0);}
-.primary{
-  background: var(--accent);
-  color: white;
-  box-shadow: 0 8px 20px var(--accent-glow);
-}
-.primary:hover{background: var(--accent-hover);}
-.secondary{
-  background: #1e293b;
-  color: #cbd5e1;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-}
-.secondary:hover{background: #334155; color: #fff;}
-button:disabled{opacity: .45; cursor: not-allowed; transform: none !important; box-shadow: none !important;}
-.actions{display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px;}
-.feedback{
-  display: none;
-  margin-top: 22px;
-  border-radius: 14px;
-  padding: 18px;
-  background: var(--good-bg);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  animation: fadeIn .3s ease-out;
-}
-.feedback.wrong{
-  background: var(--bad-bg);
-  border-color: rgba(244, 63, 94, 0.3);
-}
-.feedback h3{margin: 0 0 8px; font-size: 1rem; display: flex; align-items: center; gap: 6px;}
-.feedback p{margin: 6px 0; font-size: .9rem; color: #e2e8f0; line-height: 1.6;}
-.note{font-size: .78rem; color: var(--muted); margin: 20px 4px 0; line-height: 1.6; border-left: 2px solid var(--accent); padding-left: 10px;}
-.source{font-size: .78rem; color: var(--muted); margin-top: 10px; padding-left: 12px;}
-.source a{color: #fda4af; text-decoration: none; font-weight: 500;}
-.source a:hover{text-decoration: underline;}
-
-/* Summary Panel */
-.summary{display: none; text-align: center;}
-.summary h2{font-size: 1.6rem; margin-bottom: 8px;}
-.score-badge{
-  display: inline-block;
-  font-size: 2.8rem;
-  font-weight: 800;
-  color: #fb7185;
-  background: rgba(244, 63, 94, 0.1);
-  border: 1px solid rgba(244, 63, 94, 0.2);
-  padding: 10px 30px;
-  border-radius: 16px;
-  margin: 14px 0;
-  letter-spacing: -1px;
-}
-.summary p{color: #cbd5e1; font-size: 1rem; max-width: 500px; margin: 0 auto 24px;}
-.summary-actions{display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;}
-
-/* Modal Ma Trận */
-.modal-overlay{
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(11, 15, 25, 0.85);
-  backdrop-filter: blur(8px);
-  z-index: 100;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-.modal-content{
-  background: var(--panel-solid);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  max-width: 600px;
-  width: 100%;
-  max-height: 85vh;
-  overflow-y: auto;
-  padding: 24px;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-  animation: fadeIn .25s ease-out;
-}
-.modal-header{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 12px;
-  margin-bottom: 16px;
-}
-.modal-header h3{margin: 0; font-size: 1.1rem; color: #fff;}
-.close-modal{
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 8px;
-}
-.close-modal:hover{background: rgba(255,255,255,0.1); color: #fff; transform: none;}
-
-footer{
-  padding: 20px;
-  text-align: center;
-  color: #64748b;
-  font-size: .75rem;
-  border-top: 1px solid var(--line);
-  margin-top: auto;
-}
-
-@media(max-width: 580px){
-  main{padding: 16px 12px 28px;}
-  .panel{border-radius: 16px; padding: 20px 16px;}
-  .actions button{flex: 1;}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KTTX GDQP-AN 11 - Bài 1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
 </head>
-<body>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white">
 
-<header>
-  <div class="header-top">
-    <div class="header-left">
-      <a href="./indexqp.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i><span>Quay lại</span></a>
+    <!-- Header -->
+    <header class="w-full bg-slate-800/85 backdrop-blur border-b border-slate-700/60 sticky top-0 z-30">
+        <div class="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="./indexqp.html" class="p-2 bg-rose-600 rounded-lg text-white hover:bg-rose-500 transition cursor-pointer" title="Quay lại indexqp.html">
+                    <i class="fa-solid fa-arrow-left text-base"></i>
+                </a>
+                <div>
+                    <h1 class="text-sm md:text-base font-bold leading-tight">Bài 1: Bảo vệ chủ quyền lãnh thổ, biên giới quốc gia</h1>
+                    <p class="text-xs text-slate-400">GDQP-AN 11</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <!-- Nút xáo trộn câu hỏi nhanh -->
+                <button type="button" onclick="shuffleAndRestartExam()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 rounded-lg text-xs font-medium text-white transition flex items-center space-x-1.5 cursor-pointer" title="Xáo trộn lại toàn bộ câu hỏi và đáp án">
+                    <i class="fa-solid fa-shuffle"></i>
+                    <span class="hidden sm:inline">Xáo trộn đề</span>
+                </button>
+                <!-- Nút xem ma trận popup chi tiết -->
+                <button type="button" onclick="openMatrixModal()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1.5 cursor-pointer">
+                    <i class="fa-solid fa-table text-rose-400"></i>
+                    <span class="hidden sm:inline">Xem ma trận chi tiết</span>
+                </button>
+                <!-- Nút Trang chủ chính -->
+                <a href="../../../index.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition flex items-center space-x-1.5 cursor-pointer">
+                    <i class="fa-solid fa-house text-rose-400"></i>
+                    <span class="hidden sm:inline">Trang chủ chính</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col justify-center space-y-6">
+
+        <!-- TRANG 1: MA TRẬN ĐỀ VÀ NỘI DUNG ÔN TẬP CHI TIẾT -->
+        <section id="page-matrix" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+            <div class="flex items-center space-x-3 pb-4 border-b border-slate-700/60">
+                <span class="p-3 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl">
+                    <i class="fa-solid fa-file-waveform text-xl"></i>
+                </span>
+                <div>
+                    <h2 class="text-xl font-bold text-white">Ma Trận & Nội Dung Ôn Tập - Bài 1</h2>
+                    <p class="text-xs text-slate-400">Môn: Giáo dục Quốc phòng và An ninh lớp 11 (15 câu trắc nghiệm)</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-sm text-slate-300 leading-relaxed">
+                <div class="p-4 bg-slate-900/70 border border-slate-700/60 rounded-xl space-y-3">
+                    <h3 class="font-bold text-rose-300 text-base">I. Mục đích yêu cầu & Cấu trúc</h3>
+                    <p>Đánh giá toàn diện kiến thức của học sinh về chủ quyền lãnh thổ, biên giới quốc gia, Công ước UNCLOS 1982 và Luật Biển Việt Nam 2012.</p>
+                </div>
+            </div>
+
+            <div class="text-center pt-2">
+                <button type="button" onclick="goToExam()" class="px-8 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg shadow-rose-600/30 transition text-base inline-flex items-center space-x-2 cursor-pointer">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Xác nhận và làm đề</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- TRANG 2: LÀM ĐỀ TRẮC NGHIỆM TỪNG CÂU -->
+        <section id="page-exam" class="hidden bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700/60">
+                <div>
+                    <h2 class="text-lg md:text-xl font-bold text-white">Bài 1: Bảo vệ chủ quyền lãnh thổ, biên giới quốc gia</h2>
+                    <p class="text-xs text-slate-400" id="exam-progress-text">Câu 1 / 15</p>
+                </div>
+                <div class="w-1/3 bg-slate-700 h-2 rounded-full overflow-hidden hidden sm:block">
+                    <div id="progress-bar" class="bg-rose-500 h-full transition-all duration-300" style="width: 6.66%;"></div>
+                </div>
+            </div>
+
+            <!-- Khu vực hiển thị từng câu hỏi -->
+            <div id="question-container" class="space-y-4"></div>
+        </section>
+
+    </main>
+
+    <!-- MODAL MA TRẬN CHI TIẾT -->
+    <div id="matrix-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
+                <h3 class="font-bold text-base text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-table text-rose-400"></i>
+                    <span>Bảng Ma Trận & Nội Dung Ôn Tập Bài 1</span>
+                </h3>
+                <button type="button" onclick="closeMatrixModal()" class="w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-slate-300 transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
+                <ul class="list-disc pl-5 space-y-2">
+                    <li><strong>Mục tiêu & Quan điểm chiến lược:</strong> Nắm vững tư tưởng, mục tiêu bảo vệ Tổ quốc.</li>
+                    <li><strong>Đối tác & Đối tượng:</strong> Phân biệt rõ lực lượng hợp tác và đối tượng đấu tranh.</li>
+                    <li><strong>Luật Biển & Các vùng biển:</strong> Nội dung Công ước UNCLOS 1982 và Luật Biển Việt Nam 2012 (Nội thủy, lãnh hải, tiếp giáp lãnh hải, đặc quyền kinh tế, thềm lục địa).</li>
+                    <li><strong>Biên giới quốc gia:</strong> Hệ thống biên giới trên đất liền, trên biển, trên không và các hành vi bị nghiêm cấm.</li>
+                </ul>
+            </div>
+            <div class="text-right pt-2 sticky bottom-0 bg-slate-800 py-2 border-t border-slate-700">
+                <button type="button" onclick="closeMatrixModal()" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl text-xs transition cursor-pointer">Đóng</button>
+            </div>
+        </div>
     </div>
-    <div class="header-actions">
-      <button class="back-btn" onclick="openMatrixModal()"><i class="fa-solid fa-table text-rose-400"></i><span>Xem ma trận</span></button>
-      <a href="../../../index.html" class="back-btn"><i class="fa-solid fa-house text-rose-400"></i><span>Trang chủ chính</span></a>
-    </div>
-  </div>
-  <div class="tag">Kiểm tra thường xuyên · GDQP-AN 11</div>
-  <h1>Bài 1: Bảo vệ chủ quyền lãnh thổ, biên giới quốc gia Việt Nam</h1>
-  <p class="sub">Lựa chọn đáp án đúng nhất, hệ thống sẽ tự động lưu lại tiến trình làm bài của bạn.</p>
-  <div class="progress-wrap"><div class="progress" id="progress"></div></div>
-  <div class="progress-label"><span id="progressText">Câu 1/15</span><span id="scoreText">Đúng: 0</span></div>
-</header>
 
-<main>
-  <section class="panel" id="quiz">
-    <div class="tag" id="questionNumber">Câu 1</div>
-    <h2 id="question"></h2>
-    <div id="options" class="options"></div>
-    <div class="feedback" id="feedback" aria-live="polite"></div>
-    <div class="actions">
-      <button class="primary" id="checkBtn">Kiểm tra đáp án</button>
-      <button class="primary" id="nextBtn" hidden>Câu tiếp theo →</button>
-      <button class="secondary" id="restartBtn">Làm lại từ đầu</button>
-    </div>
-  </section>
+    <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-800">
+        GDQP-AN 11 • Bài 1: Bảo vệ chủ quyền lãnh thổ, biên giới quốc gia
+    </footer>
 
-  <section class="panel summary" id="summary">
-    <div class="tag">Hoàn thành</div>
-    <h2>Đã hoàn thành bài KTTX!</h2>
-    <div class="score-badge" id="finalScore"></div>
-    <p id="finalMessage"></p>
-    <div class="summary-actions">
-      <button class="primary" id="againBtn">Làm lại bài từ đầu</button>
-    </div>
-  </section>
+    <script>
+        const rawQuestionsData = [
+            {q:"Nội dung nào phản ánh đúng mục tiêu của Chiến lược bảo vệ Tổ quốc Việt Nam xã hội chủ nghĩa trong tình hình mới?",a:["Phát huy cao nhất sức mạnh dân tộc kết hợp với sức mạnh thời đại.","Bảo vệ vững chắc độc lập, chủ quyền, thống nhất, toàn vẹn lãnh thổ của Tổ quốc.","Quán triệt đường lối độc lập, tự chủ và chủ động hội nhập quốc tế.","Kiên định mục tiêu độc lập dân tộc gắn liền với chủ nghĩa xã hội."],correct:1,why:"Đây là mục tiêu cốt lõi được nêu trực tiếp."},
+            {q:"Nội dung nào KHÔNG phản ánh đúng quan điểm chỉ đạo về Chiến lược bảo vệ Tổ quốc?",a:["Giữ vững sự lãnh đạo của Đảng đối với sự nghiệp bảo vệ Tổ quốc.","Giải quyết tranh chấp, bất đồng trên biển bằng biện pháp hòa bình.","Xây dựng thế trận lòng dân vững chắc.","Khép chặt mọi hoạt động giao lưu, hợp tác với các nước láng giềng."],correct:3,why:"Chủ trương là chủ động hợp tác và giải quyết tranh chấp bằng biện pháp hòa bình."},
+            {q:"Sự kết hợp chặt chẽ giữa kinh tế, quốc phòng, an ninh và đối ngoại trong thực hiện Chiến lược bảo vệ Tổ quốc là yêu cầu mang tính gì?",a:["Tất yếu.","Ngẫu nhiên.","Tạm thời.","Riêng biệt."],correct:0,why:"Đây là yêu cầu tất yếu."},
+            {q:"Luật Biển Việt Nam năm 2012 gồm bao nhiêu chương và điều?",a:["3 chương, 20 điều.","7 chương, 55 điều.","7 chương, 50 điều.","5 chương, 35 điều."],correct:1,why:"Luật Biển Việt Nam năm 2012 gồm 7 chương, 55 điều."},
+            {q:"Theo Luật Biển Việt Nam, vùng nào thuộc chủ quyền hoàn toàn, đầy đủ của Việt Nam như lãnh thổ đất liền?",a:["Vùng nội thủy.","Vùng tiếp giáp lãnh hải.","Vùng đặc quyền kinh tế.","Thềm lục địa."],correct:0,why:"Nội thủy nằm phía trong đường cơ sở và thuộc chủ quyền của quốc gia ven biển."},
+            {q:"Lãnh hải Việt Nam có chiều rộng 12 hải lí tính từ đâu?",a:["Đường cơ sở dùng để tính chiều rộng lãnh hải.","Ranh giới ngoài của vùng đặc quyền kinh tế.","Bờ biển khi thủy triều xuống thấp ở mọi nơi.","Ranh giới ngoài thềm lục địa."],correct:0,why:"Lãnh hải rộng 12 hải lí tính từ đường cơ sở."},
+            {q:"Vùng biển nằm ngoài lãnh hải, hợp với lãnh hải thành vùng biển rộng 200 hải lí tính từ đường cơ sở là gì?",a:["Nội thủy.","Vùng tiếp giáp lãnh hải.","Vùng đặc quyền kinh tế.","Thềm lục địa."],correct:2,why:"Vùng đặc quyền kinh tế kéo dài ra đến 200 hải lí."},
+            {q:"Theo Công ước Liên Hợp Quốc về Luật Biển năm 1982, giới hạn ngoài tối đa thông thường của thềm lục địa có thể đến bao nhiêu hải lí tính từ đường cơ sở?",a:["12 hải lí.","100 hải lí.","200 hải lí trong mọi trường hợp.","350 hải lí, nếu đáp ứng các điều kiện pháp lý liên quan."],correct:3,why:"Có thể đến 350 hải lí nếu đáp ứng điều kiện địa chất và pháp lý."},
+            {q:"Hai quần đảo xa bờ tiêu biểu của Việt Nam là những quần đảo nào?",a:["Hoàng Sa và Trường Sa.","Hoàng Sa và Phú Quốc.","Thổ Chu và Phú Quý.","Côn Đảo và Cát Bà."],correct:0,why:"Hoàng Sa và Trường Sa."},
+            {q:"Biên giới quốc gia trên đất liền được hoạch định và đánh dấu trên thực địa bằng gì?",a:["Một mốc quốc giới duy nhất.","Các trụ sở biên phòng.","Hệ thống mốc quốc giới.","Hệ thống đèn biên giới."],correct:2,why:"Hệ thống mốc quốc giới."},
+            {q:"Đường biên giới quốc gia trên biển được xác định như thế nào?",a:["Là đường ranh giới ngoài của lãnh hải Việt Nam.","Là đường bờ biển khi thủy triều lên.","Là ranh giới ngoài của vùng đặc quyền kinh tế.","Là đường giữa Việt Nam và mọi quốc gia khác."],correct:0,why:"Là đường ranh giới ngoài của lãnh hải."},
+            {q:"Hành vi nào bị nghiêm cấm trong bảo vệ biên giới quốc gia Việt Nam?",a:["Bảo vệ môi trường và tài nguyên ở khu vực biên giới.","Phá hoại an ninh, trật tự, an toàn xã hội ở khu vực biên giới.","Chấp hành quy định pháp luật khi qua cửa khẩu.","Tham gia phong trào tự quản đường biên, mốc quốc giới."],correct:1,why:"Phá hoại an ninh trật tự là hành vi bị nghiêm cấm."},
+            {q:"Địa phương có cả biên giới đất liền và biển nên thực hiện công tác quản lý, bảo vệ biên giới theo hướng nào?",a:["Hạn chế giao lưu với các nước láng giềng.","Chỉ phát triển kinh tế, không cần chú ý quốc phòng.","Kết hợp phát triển kinh tế – xã hội với củng cố quốc phòng, an ninh và đối ngoại.","Chỉ bảo vệ biên giới đất liền, không cần quản lý vùng biển."],correct:2,why:"Kết hợp phát triển kinh tế – xã hội với củng cố quốc phòng, an ninh và đối ngoại."},
+            {q:"Ngày Biên phòng toàn dân ở Việt Nam là ngày nào?",a:["Ngày 3 tháng 3 hằng năm.","Ngày 1 tháng 3 hằng năm.","Ngày 22 tháng 2 hằng năm.","Ngày 7 tháng 3 hằng năm."],correct:0,why:"Ngày 3 tháng 3 hằng năm."},
+            {q:"Nội dung nào KHÔNG phù hợp với phương châm huy động toàn dân tham gia quản lý, xây dựng và bảo vệ biên giới quốc gia?",a:["Chấp hành nghiêm pháp luật về biên giới quốc gia.","Củng cố hệ thống chính trị cơ sở ở khu vực biên giới.","Vận chuyển qua biên giới hàng hóa phi pháp, độc hại.","Tham gia phong trào tự quản đường biên, mốc quốc giới."],correct:2,why:"Vận chuyển hàng hóa phi pháp, độc hại là hành vi vi phạm pháp luật."}
+        ];
 
-  <p class="note"><strong>Lưu ý:</strong> Một số câu hỏi từ nguồn tham khảo đã được tinh chỉnh lại văn phong và đáp án (đặc biệt câu 9 và 11) để đảm bảo tính chuẩn xác theo chuẩn kiến thức sách giáo khoa GDQP-AN 11.</p>
-  <p class="source">Nguồn tham khảo: <a href="https://dethitracnghiem.vn/trac-nghiem-giao-duc-quoc-phong-11-bai-1-bao-ve-chu-quyen-lanh-tho-bien-gioi-quoc-gia-nuoc-cong-hoa-xa-hoi-chu-nghia-viet-nam/" target="_blank" rel="noopener">Đề Thi Trắc Nghiệm – GDQP-AN 11, Bài 1</a></p>
-</main>
+        let questionsData = [];
+        let currentIndex = 0;
+        let userAnswers = {};
 
-<!-- Modal Ma Trận -->
-<div class="modal-overlay" id="matrixModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3><i class="fa-solid fa-table text-rose-400"></i> Bảng Ma Trận Nội Dung Ôn Tập</h3>
-      <button class="close-modal" onclick="closeMatrixModal()"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
-      <p>Cấu trúc phân bổ nội dung ôn tập Bài 1: Bảo vệ chủ quyền lãnh thổ, biên giới quốc gia nước CHXHCN Việt Nam (15 câu trắc nghiệm).</p>
-      <ul style="padding-left: 18px; margin: 10px 0; display: grid; gap: 6px;">
-        <li><strong>Mục tiêu & Quan điểm chiến lược:</strong> Nắm vững tư tưởng, mục tiêu và quan điểm chỉ đạo bảo vệ Tổ quốc.</li>
-        <li><strong>Đối tác & Đối tượng:</strong> Phân biệt rõ lực lượng hợp tác và đối tượng đấu tranh trong tình hình mới.</li>
-        <li><strong>Luật Biển & Các vùng biển:</strong> Nội dung Công ước UNCLOS 1982 và Luật Biển Việt Nam 2012 (Nội thủy, lãnh hải, tiếp giáp lãnh hải, đặc quyền kinh tế, thềm lục địa).</li>
-        <li><strong>Biên giới quốc gia:</strong> Hệ thống biên giới trên đất liền, trên biển, trên không và các hành vi bị nghiêm cấm.</li>
-      </ul>
-    </div>
-  </div>
-</div>
+        function shuffleExam() {
+            let cloned = JSON.parse(JSON.stringify(rawQuestionsData));
+            for (let i = cloned.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cloned[i], cloned[j]] = [cloned[j], cloned[i]];
+            }
 
-<footer>GDQP-AN 11 · Bài 1: Bảo vệ chủ quyền lãnh thổ, biên giới quốc gia</footer>
+            questionsData = cloned.map(item => {
+                let optionsWithIndex = item.a.map((opt, idx) => ({ text: opt, isCorrect: idx === item.correct }));
+                for (let i = optionsWithIndex.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [optionsWithIndex[i], optionsWithIndex[j]] = [optionsWithIndex[j], optionsWithIndex[i]];
+                }
+                return {
+                    q: item.q,
+                    a: optionsWithIndex.map(o => o.text),
+                    correct: optionsWithIndex.findIndex(o => o.isCorrect),
+                    why: item.why
+                };
+            });
+        }
 
-<script>
-const questions = [
-  {q:"Nội dung nào phản ánh đúng mục tiêu của Chiến lược bảo vệ Tổ quốc Việt Nam xã hội chủ nghĩa trong tình hình mới?",a:["Phát huy cao nhất sức mạnh dân tộc kết hợp với sức mạnh thời đại.","Bảo vệ vững chắc độc lập, chủ quyền, thống nhất, toàn vẹn lãnh thổ của Tổ quốc.","Quán triệt đường lối độc lập, tự chủ và chủ động hội nhập quốc tế.","Kiên định mục tiêu độc lập dân tộc gắn liền với chủ nghĩa xã hội."],correct:1,why:"Đây là mục tiêu cốt lõi được nêu trực tiếp. Các phương án còn lại là những quan điểm hoặc phương hướng quan trọng, nhưng không diễn đạt đúng mục tiêu được hỏi."},
-  {q:"Nội dung nào KHÔNG phản ánh đúng quan điểm chỉ đạo về Chiến lược bảo vệ Tổ quốc?",a:["Giữ vững sự lãnh đạo của Đảng đối với sự nghiệp bảo vệ Tổ quốc.","Giải quyết tranh chấp, bất đồng trên biển bằng biện pháp hòa bình.","Xây dựng thế trận lòng dân vững chắc.","Khép chặt mọi hoạt động giao lưu, hợp tác với các nước láng giềng."],correct:3,why:"Chủ trương là chủ động hợp tác, giữ môi trường hòa bình và giải quyết tranh chấp bằng biện pháp hòa bình, không phải đóng kín giao lưu với các nước."},
-  {q:"Sự kết hợp chặt chẽ giữa kinh tế, quốc phòng, an ninh và đối ngoại trong thực hiện Chiến lược bảo vệ Tổ quốc là yêu cầu mang tính gì?",a:["Tất yếu.","Ngẫu nhiên.","Tạm thời.","Riêng biệt."],correct:0,why:"Phát triển kinh tế cần gắn với củng cố quốc phòng, an ninh và đối ngoại. Đây là yêu cầu tất yếu để xây dựng và bảo vệ đất nước."},
-  {q:"Luật Biển Việt Nam năm 2012 gồm bao nhiêu chương và điều?",a:["3 chương, 20 điều.","7 chương, 55 điều.","7 chương, 50 điều.","5 chương, 35 điều."],correct:1,why:"Luật Biển Việt Nam năm 2012 gồm 7 chương, 55 điều."},
-  {q:"Theo Luật Biển Việt Nam, vùng nào thuộc chủ quyền hoàn toàn, đầy đủ của Việt Nam như lãnh thổ đất liền?",a:["Vùng nội thủy.","Vùng tiếp giáp lãnh hải.","Vùng đặc quyền kinh tế.","Thềm lục địa."],correct:0,why:"Nội thủy nằm phía trong đường cơ sở và thuộc chủ quyền của quốc gia ven biển. Vùng tiếp giáp lãnh hải, vùng đặc quyền kinh tế và thềm lục địa có chế độ pháp lý khác."},
-  {q:"Lãnh hải Việt Nam có chiều rộng 12 hải lí tính từ đâu?",a:["Đường cơ sở dùng để tính chiều rộng lãnh hải.","Ranh giới ngoài của vùng đặc quyền kinh tế.","Bờ biển khi thủy triều xuống thấp ở mọi nơi.","Ranh giới ngoài thềm lục địa."],correct:0,why:"Lãnh hải rộng 12 hải lí tính từ đường cơ sở. Đường cơ sở là căn cứ pháp lý để xác định các vùng biển tính từ bờ."},
-  {q:"Vùng biển nằm ngoài lãnh hải, hợp với lãnh hải thành vùng biển rộng 200 hải lí tính từ đường cơ sở là gì?",a:["Nội thủy.","Vùng tiếp giáp lãnh hải.","Vùng đặc quyền kinh tế.","Thềm lục địa."],correct:2,why:"Vùng đặc quyền kinh tế kéo dài ra đến 200 hải lí tính từ đường cơ sở, theo quy định của pháp luật và luật pháp quốc tế."},
-  {q:"Theo Công ước Liên Hợp Quốc về Luật Biển năm 1982, giới hạn ngoài tối đa thông thường của thềm lục địa có thể đến bao nhiêu hải lí tính từ đường cơ sở?",a:["12 hải lí.","100 hải lí.","200 hải lí trong mọi trường hợp.","350 hải lí, nếu đáp ứng các điều kiện pháp lý liên quan."],correct:3,why:"Trong trường hợp đáp ứng các điều kiện địa chất và pháp lý quy định, giới hạn ngoài thềm lục địa có thể được xác định đến 350 hải lí tính từ đường cơ sở. Không phải mọi quốc gia đều tự động có thềm lục địa 350 hải lí."},
-  {q:"Hai quần đảo xa bờ tiêu biểu của Việt Nam là những quần đảo nào?",a:["Hoàng Sa và Trường Sa.","Hoàng Sa và Phú Quốc.","Thổ Chu và Phú Quý.","Côn Đảo và Cát Bà."],correct:0,why:"Hoàng Sa và Trường Sa là hai quần đảo của Việt Nam ở Biển Đông. Câu trên trang nguồn ghi “bao nhiêu đảo” nhưng các lựa chọn lại là tên địa danh, nên đã được chỉnh thành câu hỏi rõ nghĩa."},
-  {q:"Biên giới quốc gia trên đất liền được hoạch định và đánh dấu trên thực địa bằng gì?",a:["Một mốc quốc giới duy nhất.","Các trụ sở biên phòng.","Hệ thống mốc quốc giới.","Hệ thống đèn biên giới."],correct:2,why:"Hệ thống mốc quốc giới thể hiện đường biên giới trên thực địa, giúp nhận biết và quản lý đường biên."},
-  {q:"Đường biên giới quốc gia trên biển được xác định như thế nào?",a:["Là đường ranh giới ngoài của lãnh hải Việt Nam.","Là đường bờ biển khi thủy triều lên.","Là ranh giới ngoài của vùng đặc quyền kinh tế.","Là đường giữa Việt Nam và mọi quốc gia khác."],correct:0,why:"Biên giới quốc gia trên biển là ranh giới ngoài của lãnh hải. Vùng đặc quyền kinh tế nằm ngoài lãnh hải và không đồng nghĩa với lãnh thổ có chủ quyền đầy đủ."},
-  {q:"Hành vi nào bị nghiêm cấm trong bảo vệ biên giới quốc gia Việt Nam?",a:["Bảo vệ môi trường và tài nguyên ở khu vực biên giới.","Phá hoại an ninh, trật tự, an toàn xã hội ở khu vực biên giới.","Chấp hành quy định pháp luật khi qua cửa khẩu.","Tham gia phong trào tự quản đường biên, mốc quốc giới."],correct:1,why:"Phá hoại an ninh, trật tự và an toàn xã hội ở khu vực biên giới là hành vi vi phạm. Các phương án còn lại là hành động có trách nhiệm."},
-  {q:"Địa phương có cả biên giới đất liền và biển nên thực hiện công tác quản lý, bảo vệ biên giới theo hướng nào?",a:["Hạn chế giao lưu với các nước láng giềng.","Chỉ phát triển kinh tế, không cần chú ý quốc phòng.","Kết hợp phát triển kinh tế – xã hội với củng cố quốc phòng, an ninh và đối ngoại.","Chỉ bảo vệ biên giới đất liền, không cần quản lý vùng biển."],correct:2,why:"Phát triển kinh tế – xã hội phải gắn với củng cố quốc phòng, an ninh và đối ngoại; đồng thời quản lý cả biên giới đất liền lẫn biên giới biển."},
-  {q:"Ngày Biên phòng toàn dân ở Việt Nam là ngày nào?",a:["Ngày 3 tháng 3 hằng năm.","Ngày 1 tháng 3 hằng năm.","Ngày 22 tháng 2 hằng năm.","Ngày 7 tháng 3 hằng năm."],correct:0,why:"Ngày 3/3 hằng năm là Ngày truyền thống Bộ đội Biên phòng và Ngày Biên phòng toàn dân."},
-  {q:"Nội dung nào KHÔNG phù hợp với phương châm huy động toàn dân tham gia quản lý, xây dựng và bảo vệ biên giới quốc gia?",a:["Chấp hành nghiêm pháp luật về biên giới quốc gia.","Củng cố hệ thống chính trị cơ sở ở khu vực biên giới.","Vận chuyển qua biên giới hàng hóa phi pháp, độc hại.","Tham gia phong trào tự quản đường biên, mốc quốc giới."],correct:2,why:"Vận chuyển hàng hóa phi pháp, độc hại là hành vi vi phạm pháp luật, trái với trách nhiệm bảo vệ biên giới quốc gia."}
-];
+        function goToExam() {
+            shuffleExam();
+            document.getElementById('page-matrix').classList.add('hidden');
+            document.getElementById('page-exam').classList.remove('hidden');
+            currentIndex = 0;
+            userAnswers = {};
+            renderQuestion();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
-let index = 0, score = 0, answered = false;
-const $ = id => document.getElementById(id);
+        function shuffleAndRestartExam() {
+            shuffleExam();
+            currentIndex = 0;
+            userAnswers = {};
+            if (!document.getElementById('page-exam').classList.contains('hidden')) {
+                renderQuestion();
+            } else {
+                goToExam();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
-function render(){
-  answered = false;
-  const item = questions[index];
-  $("questionNumber").textContent = `Câu ${index + 1}`;
-  $("question").textContent = item.q;
-  $("options").innerHTML = "";
-  
-  item.a.forEach((text, i) => {
-    const label = document.createElement("label");
-    label.className = "option";
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.name = "answer";
-    input.value = i;
-    const span = document.createElement("span");
-    span.textContent = String.fromCharCode(65 + i) + ". " + text;
-    label.append(input, span);
-    $("options").append(label);
-  });
+        function openMatrixModal() {
+            document.getElementById('matrix-modal').classList.remove('hidden');
+        }
 
-  $("feedback").style.display = "none";
-  $("feedback").className = "feedback";
-  $("checkBtn").hidden = false;
-  $("checkBtn").disabled = false;
-  $("nextBtn").hidden = true;
-  $("progressText").textContent = `Câu ${index + 1}/${questions.length}`;
-  $("scoreText").textContent = `Đúng: ${score}`;
-  $("progress").style.width = `${(index / questions.length) * 100}%`;
-}
+        function closeMatrixModal() {
+            document.getElementById('matrix-modal').classList.add('hidden');
+        }
 
-function check(){
-  if(answered) return;
-  const chosen = document.querySelector('input[name="answer"]:checked');
-  if(!chosen){ alert("Bạn hãy chọn một đáp án trước nhé!"); return; }
-  
-  answered = true;
-  const item = questions[index];
-  const val = Number(chosen.value);
-  const correct = val === item.correct;
-  
-  if(correct) score++;
-  
-  document.querySelectorAll('input[name="answer"]').forEach(x => x.disabled = true);
-  
-  const fb = $("feedback");
-  fb.style.display = "block";
-  fb.className = "feedback" + (correct ? "" : " wrong");
-  fb.innerHTML = `<h3>${correct ? "✓ Chính xác!" : "✗ Chưa chính xác."} Đáp án đúng: ${String.fromCharCode(65 + item.correct)}</h3><p><strong>Giải thích:</strong> ${item.why}</p>`;
-  
-  $("checkBtn").hidden = true;
-  $("nextBtn").hidden = false;
-  $("nextBtn").textContent = index === questions.length - 1 ? "Xem kết quả →" : "Câu tiếp theo →";
-  $("scoreText").textContent = `Đúng: ${score}`;
-}
+        function renderQuestion() {
+            const container = document.getElementById('question-container');
+            if (currentIndex >= questionsData.length) {
+                renderResult();
+                return;
+            }
 
-function next(){
-  if(index < questions.length - 1){
-    index++;
-    render();
-    window.scrollTo({top: 0, behavior: "smooth"});
-    return;
-  }
-  $("quiz").style.display = "none";
-  $("summary").style.display = "block";
-  $("progress").style.width = "100%";
-  $("progressText").textContent = `Hoàn thành ${questions.length}/${questions.length}`;
-  $("finalScore").textContent = `${score}/${questions.length}`;
-  
-  let msg = "Đừng nản nhé. Hãy đọc kỹ phần giải thích và làm lại một lượt để ghi nhớ kiến thức tốt hơn!";
-  if(score >= 13) msg = "Rất xuất sắc! Bạn đã nắm vững toàn bộ kiến thức cốt lõi của bài học.";
-  else if(score >= 9) msg = "Khá tốt! Hãy ôn lại một vài câu trả lời sai để củng cố kiến thức hoàn thiện hơn.";
-  $("finalMessage").textContent = msg;
-  window.scrollTo({top: 0, behavior: "smooth"});
-}
+            const item = questionsData[currentIndex];
+            const progressPercent = ((currentIndex + 1) / questionsData.length) * 100;
+            document.getElementById('exam-progress-text').innerText = `Câu ${currentIndex + 1} / ${questionsData.length}`;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
 
-function restart(){
-  index = 0;
-  score = 0;
-  $("quiz").style.display = "block";
-  $("summary").style.display = "none";
-  render();
-  window.scrollTo({top: 0, behavior: "smooth"});
-}
+            const answered = userAnswers[currentIndex] !== undefined;
+            const selectedOpt = userAnswers[currentIndex];
 
-function openMatrixModal(){
-  $("matrixModal").style.display = "flex";
-}
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="font-bold text-base md:text-lg text-slate-100">
+                        <span class="text-rose-400">Câu ${currentIndex + 1}:</span> ${item.q}
+                    </div>
+                    <div class="grid grid-cols-1 gap-2.5">
+                        ${item.a.map((opt, oIdx) => {
+                            let btnClass = "w-full text-left p-3.5 bg-slate-900/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center space-x-3 text-sm transition cursor-pointer";
+                            if (answered) {
+                                if (oIdx === item.correct) {
+                                    btnClass = "w-full text-left p-3.5 bg-emerald-950/80 border border-emerald-600 rounded-xl flex items-center space-x-3 text-sm text-emerald-200 font-semibold";
+                                } else if (oIdx === selectedOpt && selectedOpt !== item.correct) {
+                                    btnClass = "w-full text-left p-3.5 bg-rose-950/80 border border-rose-600 rounded-xl flex items-center space-x-3 text-sm text-rose-200";
+                                } else {
+                                    btnClass = "w-full text-left p-3.5 bg-slate-900/40 border border-slate-800 rounded-xl flex items-center space-x-3 text-sm text-slate-500 opacity-60";
+                                }
+                            }
+                            return `
+                                <button type="button" ${answered ? 'disabled' : ''} onclick="handleSelect(${oIdx})" class="${btnClass}">
+                                    <span class="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-rose-400 border border-slate-700 text-xs">${['A', 'B', 'C', 'D'][oIdx]}</span>
+                                    <span class="flex-grow">${opt}</span>
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
 
-function closeMatrixModal(){
-  $("matrixModal").style.display = "none";
-}
+                    <div class="${answered ? '' : 'hidden'} mt-4 p-4 rounded-xl border space-y-3 ${answered && selectedOpt === item.correct ? 'bg-emerald-950/60 border-emerald-800 text-emerald-200' : 'bg-rose-950/60 border-rose-800 text-rose-200'}">
+                        <div class="flex items-center space-x-2 font-bold ${answered && selectedOpt === item.correct ? 'text-emerald-400' : 'text-rose-400'}">
+                            <i class="fa-solid ${answered && selectedOpt === item.correct ? 'fa-circle-check' : 'fa-circle-xmark'} text-lg"></i>
+                            <span>${answered && selectedOpt === item.correct ? 'Chính xác!' : `Chưa đúng! Đáp án đúng là: <b>${['A', 'B', 'C', 'D'][item.correct]}</b>`}</span>
+                        </div>
+                        <div class="text-xs text-slate-300 leading-relaxed"><b>Giải thích:</b> ${item.why}</div>
+                        <div class="pt-2 flex justify-between items-center">
+                            <span class="text-xs text-slate-400 italic">Đã trả lời câu ${currentIndex + 1}</span>
+                            <button type="button" onclick="nextQuestion()" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg text-xs transition inline-flex items-center space-x-2 cursor-pointer">
+                                <span>${currentIndex < questionsData.length - 1 ? 'Câu tiếp theo' : 'Xem kết quả'}</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
 
-$("checkBtn").addEventListener("click", check);
-$("nextBtn").addEventListener("click", next);
-$("restartBtn").addEventListener("click", restart);
-$("againBtn").addEventListener("click", restart);
+        function handleSelect(oIdx) {
+            userAnswers[currentIndex] = oIdx;
+            renderQuestion();
+        }
 
-render();
-</script>
+        function nextQuestion() {
+            currentIndex++;
+            renderQuestion();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderResult() {
+            let correctCount = 0;
+            questionsData.forEach((item, idx) => {
+                if (userAnswers[idx] === item.correct) correctCount++;
+            });
+
+            const container = document.getElementById('question-container');
+            document.getElementById('exam-progress-text').innerText = `Hoàn thành`;
+            document.getElementById('progress-bar').style.width = `100%`;
+
+            container.innerHTML = `
+                <div class="text-center space-y-6 py-6">
+                    <div class="w-20 h-20 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto border border-rose-500/30 text-3xl">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <h3 class="text-2xl font-bold text-white">Kết Quả Kiểm Tra Bài 1</h3>
+                        <p class="text-slate-300 text-base">
+                            Số câu trả lời đúng của bạn: <span class="font-bold text-rose-400 text-xl">${correctCount} / ${questionsData.length}</span>
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                        <button type="button" onclick="goToExam()" class="px-6 py-3 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg transition text-sm inline-flex items-center space-x-2 cursor-pointer">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            <span>Thi lại bài mới (Xáo trộn)</span>
+                        </button>
+                        <button type="button" onclick="backToMatrix()" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold rounded-xl transition text-sm inline-flex items-center space-x-2 cursor-pointer">
+                            <i class="fa-solid fa-table"></i>
+                            <span>Về trang ma trận</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function backToMatrix() {
+            currentIndex = 0;
+            userAnswers = {};
+            document.getElementById('page-exam').classList.add('hidden');
+            document.getElementById('page-matrix').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
 </body>
 </html>
