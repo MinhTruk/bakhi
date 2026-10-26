@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ôn Tập Lịch Sử 11 - Giữa Học Kỳ I | BAKHI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: { extend: { colors: { brand: { 300:'#fcd34d', 400:'#fbbf24', 500:'#f59e0b', 600:'#d97706', 700:'#b45309', 900:'#78350f', 950:'#451a03' } } } }
+}
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:#1e293b}
+  ::-webkit-scrollbar-thumb{background:#475569;border-radius:4px}
+  .fade-in{animation:fadeIn .25s ease-in-out}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  .opt{transition:all .15s}
+  .opt:not(:disabled):hover{border-color:#f59e0b;background:rgba(245,158,11,.08)}
+</style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased flex flex-col selection:bg-brand-500 selection:text-white">
+
+<!-- HEADER -->
+<header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-md">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="flex flex-col md:flex-row items-center justify-between py-3 gap-3">
+      <div class="flex items-center gap-2 w-full md:w-auto">
+        <a id="btn-back-subject" href="#" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs sm:text-sm font-medium transition border border-slate-700 flex items-center gap-1.5" title="Quay về trang môn học">
+          <i class="fa-solid fa-arrow-left"></i><span>Môn học</span>
+        </a>
+        <a id="btn-back-home" href="#" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs sm:text-sm font-medium transition border border-slate-700 flex items-center gap-1.5" title="Về trang chủ BAKHI">
+          <i class="fa-solid fa-house text-brand-500"></i>
+          <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">BAKHI</span>
+        </a>
+        <button onclick="shuffleAndRestart()" class="ml-auto md:ml-2 px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white text-xs sm:text-sm font-semibold transition border border-indigo-500/40 flex items-center gap-1.5" title="Xáo trộn câu hỏi và đáp án">
+          <i class="fa-solid fa-shuffle"></i><span>Xáo trộn</span>
+        </button>
+      </div>
+
+      <div class="text-center md:text-left flex-1 md:ml-4">
+        <h1 class="text-base sm:text-lg font-bold text-white flex items-center justify-center md:justify-start gap-2">
+          <i class="fa-solid fa-landmark text-brand-500"></i>
+          <span>Lịch sử 11</span>
+          <span class="text-xs font-normal px-2 py-0.5 rounded bg-brand-900/60 text-brand-300 border border-brand-700/50">Giữa HK1</span>
+        </h1>
+        <p class="text-xs text-slate-400 hidden sm:block">Trường THPT Huỳnh Ngọc Huệ · Bài 1 – Bài 4</p>
+      </div>
+
+      <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700/60 w-full md:w-auto">
+        <button id="tab-matrix" onclick="switchPage('matrix')" class="flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-table-cells"></i><span>Ma trận</span>
+        </button>
+        <button id="tab-practice" onclick="switchPage('practice')" class="flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-pen-to-square"></i><span>Câu hỏi</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="header-progress" class="hidden py-2 border-t border-slate-800/80">
+      <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <span id="progress-text">Câu 1/25</span>
+        <span id="score-text" class="text-brand-400 font-medium">Đúng: 0</span>
+      </div>
+      <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+        <div id="progress-bar" class="bg-gradient-to-r from-amber-500 to-orange-500 h-full w-0 transition-all duration-300"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
+
+<!-- ============ PAGE 1: MA TRẬN ============ -->
+<section id="page-matrix" class="space-y-6 fade-in">
+  <div class="bg-gradient-to-r from-slate-800 via-slate-800/90 to-amber-950/40 p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+    <div class="absolute right-0 top-0 bottom-0 opacity-10 flex items-center pr-10 pointer-events-none"><i class="fa-solid fa-scroll text-9xl text-brand-400"></i></div>
+    <div class="relative z-10">
+      <span class="text-xs font-semibold uppercase tracking-wider text-brand-400 bg-brand-950/80 px-2.5 py-1 rounded-md border border-brand-700/50">Ma trận – Đặc tả giữa kì I</span>
+      <h2 class="text-xl sm:text-2xl font-bold text-white mt-2">Ma Trận Đề Kiểm Tra Môn Lịch Sử 11</h2>
+      <p class="text-slate-300 text-sm mt-1 max-w-2xl">Thời gian 45 phút · Trắc nghiệm khách quan 70% – Tự luận 30% · Sở GD&ĐT TP Đà Nẵng, Trường THPT Huỳnh Ngọc Huệ.</p>
+    </div>
+  </div>
+
+  <!-- stat cards -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60"><span class="text-xs text-slate-400 block">Thời gian</span><span class="text-lg font-bold">45 phút</span></div>
+    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60"><span class="text-xs text-slate-400 block">Tổng điểm</span><span class="text-lg font-bold text-brand-400">10,0 điểm</span></div>
+    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60"><span class="text-xs text-slate-400 block">Cấu trúc</span><span class="text-lg font-bold text-indigo-400">12 TN + 4 ĐS + 2 TL</span></div>
+    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60"><span class="text-xs text-slate-400 block">Nhận biết (40%)</span><span class="text-lg font-bold text-emerald-400">4,0 điểm</span></div>
+    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60"><span class="text-xs text-slate-400 block">Thông hiểu (30%)</span><span class="text-lg font-bold text-amber-400">3,0 điểm</span></div>
+    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60"><span class="text-xs text-slate-400 block">Vận dụng (30%)</span><span class="text-lg font-bold text-purple-400">3,0 điểm</span></div>
+  </div>
+
+  <!-- structure -->
+  <div class="bg-slate-800/60 rounded-2xl border border-slate-700/60 overflow-hidden">
+    <div class="p-4 border-b border-slate-700/80"><h3 class="font-bold text-white flex items-center gap-2"><i class="fa-solid fa-list-check text-brand-400"></i>Cấu trúc đề thi</h3></div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs sm:text-sm text-slate-300">
+        <thead class="bg-slate-900/80 text-slate-400 uppercase text-xs border-b border-slate-700">
+          <tr><th class="p-3">Phần</th><th class="p-3">Số câu / mức độ</th><th class="p-3">Điểm</th><th class="p-3">Ghi chú</th></tr>
+        </thead>
+        <tbody class="divide-y divide-slate-700/50">
+          <tr><td class="p-3 font-semibold text-white">I. TN nhiều lựa chọn</td><td class="p-3">12 câu (12 Nhận biết)</td><td class="p-3">3,0 đ (0,25 đ/câu)</td><td class="p-3">Chọn 01 phương án đúng nhất</td></tr>
+          <tr><td class="p-3 font-semibold text-white">II. TN Đúng – Sai</td><td class="p-3">4 câu = 16 lệnh hỏi (4 NB, 8 TH, 4 VD)</td><td class="p-3">4,0 đ (1,0 đ/câu)</td><td class="p-3">0,25 đ cho mỗi ý đúng</td></tr>
+          <tr><td class="p-3 font-semibold text-white">III. Tự luận</td><td class="p-3">2 câu (1 câu 2,0 đ; 1 câu 1,0 đ)</td><td class="p-3">3,0 đ (1,0 đ TH, 2,0 đ VD)</td><td class="p-3">Đánh giá tư duy phân tích, tổng hợp, vận dụng thực tiễn</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- matrix table -->
+  <div class="bg-slate-800/60 rounded-2xl border border-slate-700/60 overflow-hidden">
+    <div class="p-4 border-b border-slate-700/80"><h3 class="font-bold text-white flex items-center gap-2"><i class="fa-solid fa-table text-brand-400"></i>Khung ma trận đề kiểm tra giữa học kì I</h3></div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-center text-xs sm:text-sm text-slate-300 min-w-[900px]">
+        <thead class="bg-slate-900/80 text-slate-400 text-xs border-b border-slate-700">
+          <tr>
+            <th rowspan="2" class="p-3 text-left min-w-[220px] align-middle">Nội dung / Đơn vị kiến thức</th>
+            <th colspan="1" class="p-2 border-l border-slate-700">TN nhiều lựa chọn</th>
+            <th colspan="3" class="p-2 border-l border-slate-700">TN Đúng – Sai (lệnh hỏi)</th>
+            <th colspan="2" class="p-2 border-l border-slate-700">Tự luận (điểm)</th>
+            <th rowspan="2" class="p-3 border-l border-slate-700 align-middle">Tổng số câu / lệnh</th>
+            <th rowspan="2" class="p-3 border-l border-slate-700 align-middle">Tổng điểm</th>
+            <th rowspan="2" class="p-3 border-l border-slate-700 align-middle">Tỉ lệ</th>
+          </tr>
+          <tr class="border-t border-slate-700">
+            <th class="p-2 border-l border-slate-700 text-emerald-400">NB</th>
+            <th class="p-2 border-l border-slate-700 text-emerald-400">NB (a,b)</th>
+            <th class="p-2 text-amber-400">TH (c)</th>
+            <th class="p-2 text-purple-400">VD (d)</th>
+            <th class="p-2 border-l border-slate-700 text-amber-400">TH</th>
+            <th class="p-2 text-purple-400">VD</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body" class="divide-y divide-slate-700/50"></tbody>
+        <tfoot class="bg-slate-900/60 font-bold text-white border-t-2 border-slate-600">
+          <tr>
+            <td class="p-3 text-left">TỔNG CỘNG</td>
+            <td class="p-3">12 câu<br><span class="text-xs text-slate-400 font-normal">(3,0 đ)</span></td>
+            <td class="p-3">4 lệnh<br><span class="text-xs text-slate-400 font-normal">(1,0 đ)</span></td>
+            <td class="p-3">8 lệnh<br><span class="text-xs text-slate-400 font-normal">(2,0 đ)</span></td>
+            <td class="p-3">4 lệnh<br><span class="text-xs text-slate-400 font-normal">(1,0 đ)</span></td>
+            <td class="p-3">1,0 đ</td>
+            <td class="p-3">2,0 đ</td>
+            <td class="p-3 text-xs">12 TN + 4 ĐS + 2 TL</td>
+            <td class="p-3 text-brand-400">10,0 đ</td>
+            <td class="p-3">100%</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- spec -->
+  <div class="bg-slate-800/60 p-5 rounded-2xl border border-slate-700/60 space-y-3">
+    <div class="flex items-center justify-between">
+      <h3 class="font-bold text-white flex items-center gap-2"><i class="fa-solid fa-book-bookmark text-brand-400"></i>Bảng đặc tả – Yêu cầu cần đạt</h3>
+      <button onclick="toggleAll()" class="text-xs text-brand-400 hover:text-brand-300 font-medium">Mở/Thu gọn tất cả</button>
+    </div>
+    <div id="spec-list" class="space-y-3"></div>
+  </div>
+
+  <div class="flex justify-center py-2">
+    <button onclick="switchPage('practice')" class="px-8 py-3.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-xl shadow-lg transition transform hover:-translate-y-0.5 flex items-center gap-2">
+      <span>Bắt đầu làm câu hỏi</span><i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </div>
+</section>
+
+<!-- ============ PAGE 2: CÂU HỎI ============ -->
+<section id="page-practice" class="hidden space-y-5 fade-in">
+  <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-800/80 p-3 rounded-2xl border border-slate-700/60">
+    <div class="flex items-center gap-2 flex-wrap">
+      <button onclick="shuffleAndRestart()" class="px-3.5 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white rounded-xl border border-indigo-500/40 text-xs sm:text-sm font-semibold transition flex items-center gap-2"><i class="fa-solid fa-shuffle"></i>Xáo trộn</button>
+      <button onclick="restart(false)" class="px-3.5 py-2 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 hover:text-white rounded-xl border border-rose-500/40 text-xs sm:text-sm font-semibold transition flex items-center gap-2"><i class="fa-solid fa-rotate-right"></i>Làm lại</button>
+      <button onclick="switchPage('matrix')" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2"><i class="fa-solid fa-table-cells"></i>Xem ma trận</button>
+    </div>
+    <span class="hidden sm:block text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700/50">Phím tắt: A B C D chọn · Enter / → câu tiếp</span>
+  </div>
+
+  <div id="quiz-area" class="space-y-4"></div>
+
+  <!-- RESULT -->
+  <div id="result" class="hidden bg-slate-800/90 p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-6 fade-in">
+    <div class="text-center space-y-2">
+      <div class="inline-flex p-3 rounded-full bg-emerald-500/20 text-emerald-400 text-3xl"><i class="fa-solid fa-trophy"></i></div>
+      <h3 class="text-2xl font-bold text-white">Hoàn thành bài làm!</h3>
+      <p id="res-msg" class="text-slate-300 text-sm"></p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Số câu đúng</span><span id="res-correct" class="text-xl font-bold text-emerald-400"></span></div>
+      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Số câu sai</span><span id="res-wrong" class="text-xl font-bold text-rose-400"></span></div>
+      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Tỉ lệ đúng</span><span id="res-pct" class="text-xl font-bold text-brand-400"></span></div>
+      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Điểm (thang 10)</span><span id="res-score" class="text-xl font-bold text-white"></span></div>
+    </div>
+    <div class="space-y-2">
+      <h4 class="text-sm font-bold text-slate-200">Kết quả theo từng bài:</h4>
+      <div id="res-lessons" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+    </div>
+    <div id="res-wrong-wrap" class="space-y-2 hidden">
+      <h4 class="text-sm font-bold text-slate-200">Các câu làm sai (nhấn để xem lại đáp án):</h4>
+      <div id="res-wrong-list" class="space-y-2"></div>
+    </div>
+    <div class="flex flex-col sm:flex-row justify-center gap-4 pt-4 border-t border-slate-700">
+      <button onclick="shuffleAndRestart()" class="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2"><i class="fa-solid fa-shuffle"></i>Làm lại &amp; xáo trộn</button>
+      <button onclick="restart(false)" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-100 font-semibold rounded-xl border border-slate-600 transition flex items-center justify-center gap-2"><i class="fa-solid fa-rotate-right"></i>Làm lại (giữ thứ tự)</button>
+      <button onclick="switchPage('matrix')" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-100 font-semibold rounded-xl border border-slate-600 transition flex items-center justify-center gap-2"><i class="fa-solid fa-table-cells"></i>Xem lại ma trận</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="bg-slate-950 border-t border-slate-800/80 py-6 mt-10 text-xs text-slate-400">
+  <div class="max-w-6xl mx-auto px-4 text-center space-y-1">
+    <p class="font-medium text-slate-300">Nền tảng ôn tập trực tuyến BAKHI — Trường THPT Huỳnh Ngọc Huệ</p>
+    <p>Môn Lịch sử 11 — Giữa học kì I. Bộ câu hỏi gồm 25 câu trắc nghiệm.</p>
+  </div>
+</footer>
+
+<script>
+/* ===== CẤU HÌNH LIÊN KẾT — sửa lại cho đúng đường dẫn trên website ===== */
+const CONFIG = {
+  subjectIndexUrl: "index_lichsu11.html", // trang index của môn Lịch sử 11
+  homeUrl: "/bakhi/"                       // trang chủ BAKHI
+};
+document.getElementById('btn-back-subject').href = CONFIG.subjectIndexUrl;
+document.getElementById('btn-back-home').href = CONFIG.homeUrl;
+
+/* ===== DỮ LIỆU MA TRẬN ===== */
+const LESSONS = {
+  1: { name: "Bài 1: Một số vấn đề chung về cách mạng tư sản", topic: "Chủ đề 1: Cách mạng tư sản và sự phát triển của chủ nghĩa tư bản",
+       row: [3,1,2,1,"","1,0","3 câu TN + 1 ĐS (4 ý) + 1 TL","2,75 đ","27,5%"],
+       spec: { nb:["Trình bày được tiền đề của các cuộc cách mạng tư sản về kinh tế, chính trị, xã hội, tư tưởng.","Trình bày được kết quả, ý nghĩa của các cuộc cách mạng tư sản."],
+               th:["Phân tích được mục tiêu, nhiệm vụ, giai cấp lãnh đạo, động lực của các cuộc cách mạng tư sản."],
+               vd:["Rút ra được tính chất, đặc điểm hoặc bài học kinh nghiệm từ các cuộc cách mạng tư sản đối với sự phát triển xã hội."] } },
+  2: { name: "Bài 2: Sự xác lập và phát triển của chủ nghĩa tư bản", topic: "Chủ đề 1: Cách mạng tư sản và sự phát triển của chủ nghĩa tư bản",
+       row: [3,1,2,1,"","","3 câu TN + 1 ĐS (4 ý)","1,75 đ","17,5%"],
+       spec: { nb:["Nêu được khái niệm chủ nghĩa tư bản hiện đại.","Nêu được tiềm năng và thách thức của chủ nghĩa tư bản hiện đại.","Trình bày được sự phát triển của chủ nghĩa tư bản từ tự do cạnh tranh sang độc quyền.","Trình bày được quá trình mở rộng xâm lược thuộc địa của chủ nghĩa tư bản."],
+               th:["Phân tích được các đặc điểm cơ bản của chủ nghĩa tư bản hiện đại.","Giải thích được nguyên nhân các nước tư bản chuyển sang giai đoạn độc quyền, đế quốc chủ nghĩa."],
+               vd:["Có nhận thức đúng đắn về tiềm năng và hạn chế của CNTB; vận dụng kiến thức để giải thích các vấn đề thời sự của xã hội tư bản hiện nay."] } },
+  3: { name: "Bài 3: Sự hình thành Liên bang Cộng hòa xã hội chủ nghĩa Xô viết", topic: "Chủ đề 2: Sự hình thành và phát triển của chủ nghĩa xã hội",
+       row: [3,1,2,1,"1,0","1,0","3 câu TN + 1 ĐS (4 ý) + 1 TL (2 ý)","3,75 đ","37,5%"],
+       spec: { nb:["Trình bày được quá trình hình thành Liên bang Cộng hòa xã hội chủ nghĩa Xô viết."],
+               th:["Phân tích được ý nghĩa lịch sử sự ra đời của Liên bang Cộng hòa xã hội chủ nghĩa Xô viết đối với nước Nga và quốc tế."],
+               vd:["Rút ra bài học lịch sử từ quá trình thành lập và giải quyết vấn đề dân tộc của Liên bang Xô viết đối với sự nghiệp xây dựng khối đại đoàn kết toàn dân tộc và xây dựng Nhà nước ở Việt Nam hiện nay."] } },
+  4: { name: "Bài 4: Sự phát triển của chủ nghĩa xã hội từ sau Chiến tranh thế giới thứ hai đến nay", topic: "Chủ đề 2: Chủ nghĩa xã hội từ năm 1917 đến nay",
+       row: [3,1,2,1,"","","3 câu TN + 1 ĐS (4 ý)","1,75 đ","17,5%"],
+       spec: { nb:["Nêu được sự mở rộng của chủ nghĩa xã hội ở Đông Âu, khu vực châu Á và khu vực Mỹ Latinh.","Nêu được nét chính về chủ nghĩa xã hội từ năm 1991 đến nay.","Nêu được những thành tựu chính và ý nghĩa của công cuộc cải cách mở cửa của Trung Quốc từ năm 1978 đến nay."],
+               th:["Giải thích được nguyên nhân dẫn tới sự sụp đổ mô hình chủ nghĩa xã hội ở Đông Âu và Liên Xô.","Phân tích được nguyên nhân thắng lợi và ý nghĩa công cuộc cải cách mở cửa của Trung Quốc."],
+               vd:["Có ý thức trân trọng thành tựu của CNXH; đánh giá được những thách thức, triển vọng của CNXH ở Trung Quốc, Việt Nam trong bối cảnh hiện nay."] } }
+};
+
+/* ===== NGÂN HÀNG CÂU HỎI (l = bài, a = chỉ số đáp án đúng 0..3) ===== */
+const BANK = [
+{l:1,q:"Tại sao Cách mạng Pháp 1789 được coi là cuộc cách mạng tư sản triệt để nhất?",
+ o:["Do giai cấp công nhân lãnh đạo và lật đổ hoàn toàn chủ nghĩa tư bản","Xác lập chế độ quân chủ lập hiến ngay từ khi bắt đầu nổ ra","Giải quyết được vấn đề ruộng đất cho nông dân và xóa bỏ đặc quyền phong kiến","Không gây ra đổ máu và nhận được sự ủng hộ của tất cả các vua chúa châu Âu"],a:2,
+ e:"Cách mạng Pháp 1789 là cuộc cách mạng tư sản triệt để nhất vì đã lật đổ chế độ phong kiến, xóa bỏ các đặc quyền phong kiến và giải quyết vấn đề ruộng đất cho nông dân (đặc biệt dưới thời Gia-cô-banh). Giai cấp tư sản (không phải công nhân) lãnh đạo; cách mạng gây nhiều đổ máu và bị các vua chúa châu Âu can thiệp, chống phá."},
+{l:1,q:"Văn kiện nào sau đây được coi là bản tuyên ngôn độc lập đầu tiên của nhân loại khẳng định quyền con người?",
+ o:["Tuyên ngôn Nhân quyền và Dân quyền (Pháp)","Tuyên ngôn Độc lập (Mỹ)","Hiến pháp năm 1791 của Pháp","Sắc lệnh về ruộng đất của Nga"],a:1,
+ e:"Tuyên ngôn Độc lập của Mỹ (1776) là bản tuyên ngôn độc lập đầu tiên của nhân loại, lần đầu khẳng định quyền con người: mọi người sinh ra đều bình đẳng, có quyền sống, quyền tự do và mưu cầu hạnh phúc. Tuyên ngôn Nhân quyền và Dân quyền của Pháp ra đời sau (1789) và không phải là tuyên ngôn độc lập."},
+{l:1,q:"Tiền đề tư tưởng của Cách mạng tư sản Pháp cuối thế kỷ XVIII là gì?",
+ o:["Thuyết kinh tế học cổ điển Anh","Chủ nghĩa xã hội không tưởng","Triết học Ánh sáng","Chủ nghĩa Mác - Lênin"],a:2,
+ e:"Triết học Ánh sáng (Mông-tex-ki-ơ, Vôn-te, Rút-xô…) phê phán chế độ phong kiến, tôn giáo và đề cao tự do, bình đẳng, dân chủ, chuẩn bị về tư tưởng cho Cách mạng Pháp. Chủ nghĩa Mác – Lênin ra đời sau (giữa thế kỷ XIX)."},
+{l:1,q:"Cuộc Duy tân Minh Trị (1868) ở Nhật Bản có tính chất là một cuộc",
+ o:["cách mạng vô sản triệt để","cuộc cải cách phong kiến tiến bộ","cách mạng tư sản không triệt để","cuộc khởi nghĩa nông dân điển hình"],a:2,
+ e:"Duy tân Minh Trị thực chất là một cuộc cách mạng tư sản không triệt để: mở đường cho chủ nghĩa tư bản phát triển nhưng vẫn giữ lại nhiều yếu tố phong kiến, quyền lực chủ yếu thuộc tầng lớp quý tộc tư sản hóa và Thiên hoàng."},
+{l:2,q:"Thách thức lớn nhất mà chủ nghĩa tư bản hiện đại đang phải đối mặt là gì?",
+ o:["Sự thiếu hụt trầm trọng về lực lượng lao động trí tuệ","Các cuộc khủng hoảng kinh tế, chính trị, xã hội có tính hệ thống","Sự phát triển quá nhanh của các công nghệ xanh","Việc tất cả các quốc gia trên thế giới đều chuyển sang CNXH"],a:1,
+ e:"Thách thức lớn của CNTB hiện đại là các cuộc khủng hoảng mang tính hệ thống (kinh tế, tài chính, chính trị, xã hội), bất bình đẳng giàu nghèo, mâu thuẫn giữa lao động và tư bản. Các phương án còn lại không đúng với thực tế."},
+{l:2,q:"Thế nào là chủ nghĩa tư bản hiện đại?",
+ o:["Giai đoạn chủ nghĩa tư bản phát triển sau Chiến tranh thế giới thứ hai đến nay","Giai đoạn chủ nghĩa tư bản khi mới hình thành ở thế kỷ XVI","Giai đoạn chủ nghĩa tư bản tự do cạnh tranh ở thế kỷ XVIII","Giai đoạn chủ nghĩa tư bản bị khủng hoảng trầm trọng và sụp đổ"],a:0,
+ e:"Chủ nghĩa tư bản hiện đại là giai đoạn phát triển của CNTB từ sau Chiến tranh thế giới thứ hai đến nay, gắn với cuộc cách mạng khoa học – kỹ thuật, toàn cầu hóa và sự điều chỉnh của nhà nước tư sản. Giai đoạn hình thành (thế kỷ XVI) và tự do cạnh tranh (XVIII – XIX) là các giai đoạn trước."},
+{l:2,q:"Đặc điểm nổi bật của chủ nghĩa tư bản từ cuối thế kỷ XIX đến đầu thế kỷ XX là gì?",
+ o:["Sự ra đời của các công trường thủ công","Chuyển từ tự do cạnh tranh sang giai đoạn độc quyền","Sự suy yếu hoàn toàn của các tập đoàn tài chính","Xóa bỏ tình trạng phân hóa giàu nghèo trong xã hội"],a:1,
+ e:"Cuối thế kỷ XIX – đầu thế kỷ XX, CNTB chuyển từ tự do cạnh tranh sang giai đoạn độc quyền (chủ nghĩa đế quốc), với sự xuất hiện của các tổ chức độc quyền và sự thống trị của tư bản tài chính. Công trường thủ công xuất hiện từ giai đoạn sớm hơn."},
+{l:4,q:"Hiện nay, những quốc gia nào vẫn đang kiên trì con đường đi lên chủ nghĩa xã hội?",
+ o:["Nga, Ba Lan, Hung-ga-ri, Đức","Việt Nam, Trung Quốc, Lào, Cu-ba","Việt Nam, Anh, Pháp, Hoa Kỳ","Triều Tiên, Nhật Bản, Hàn Quốc, Ấn Độ"],a:1,
+ e:"Sau năm 1991, các nước vẫn kiên trì con đường xã hội chủ nghĩa là Việt Nam, Trung Quốc, Lào và Cu-ba (cùng với một số nước tiến hành cải cách, đổi mới). Các nước Đông Âu và Nga đã từ bỏ mô hình xã hội chủ nghĩa; Anh, Pháp, Mỹ, Nhật… là các nước tư bản."},
+{l:1,q:"Mục tiêu chung của các cuộc cách mạng tư sản thời cận đại là gì?",
+ o:["Lật đổ chế độ phong kiến, thực dân, mở đường cho chủ nghĩa tư bản phát triển","Xóa bỏ triệt để mọi bất bình đẳng trong xã hội và giải phóng nông dân","Thiết lập chế độ xã hội chủ nghĩa và quyền làm chủ của giai cấp công nhân","Mở rộng lãnh thổ và tìm kiếm thị trường tiêu thụ ở các nước phương Đông"],a:0,
+ e:"Các cuộc cách mạng tư sản có chung mục tiêu lật đổ chế độ phong kiến (hoặc ách thống trị thực dân, như ở Bắc Mỹ), xác lập quan hệ sản xuất tư bản chủ nghĩa, mở đường cho CNTB phát triển. Xóa bỏ mọi bất bình đẳng, xây dựng CNXH không phải là mục tiêu của cách mạng tư sản."},
+{l:2,q:"Các tổ chức độc quyền ở Mỹ thường được gọi là gì?",
+ o:["Cac-ten","Xanh-đi-ca","Tờ-rớt","Công-xooc-xi-om"],a:2,
+ e:"Tên gọi tổ chức độc quyền khác nhau tùy nước: ở Đức là Cac-ten và Xanh-đi-ca (Pháp), còn ở Mỹ là Tờ-rớt (trust), điển hình như Tờ-rớt dầu mỏ, thép, đường sắt."},
+{l:4,q:"Thắng lợi của cuộc cách mạng nào sau đây đã mở rộng không gian của chủ nghĩa xã hội sang khu vực Mỹ Latinh?",
+ o:["Cách mạng Trung Quốc (1949)","Cách mạng Cuba (1959)","Cách mạng Lào (1975)","Cách mạng Việt Nam (1945)"],a:1,
+ e:"Cách mạng Cu-ba thắng lợi năm 1959 (do Phi-đen Ca-xtơ-rô lãnh đạo) đã đưa Cu-ba trở thành nước xã hội chủ nghĩa đầu tiên ở Mỹ Latinh. Cách mạng Trung Quốc, Lào, Việt Nam thuộc khu vực châu Á."},
+{l:1,q:"Giai cấp nào đóng vai trò lãnh đạo trong cuộc Cách mạng tư sản Anh thế kỷ XVII?",
+ o:["Giai cấp công nhân và nông dân","Giai cấp tư sản và Quý tộc mới","Tầng lớp trí thức và tăng lữ giáo hội","Giai cấp tư sản và đại địa chủ phong kiến"],a:1,
+ e:"Cách mạng tư sản Anh do liên minh giai cấp tư sản và quý tộc mới (quý tộc tư sản hóa) lãnh đạo; lực lượng chủ yếu là quần chúng nhân dân (nông dân, thợ thủ công…). Đại địa chủ phong kiến và tăng lữ thuộc lực lượng bảo thủ, đứng về phía vua."},
+{l:2,q:"Ý nào không phải là đặc điểm của chủ nghĩa đế quốc?",
+ o:["Sự xuất hiện của các tổ chức độc quyền","Sự thống trị của tư bản tài chính","Đẩy mạnh xuất khẩu tư bản ra nước ngoài","Ưu tiên phát triển kinh tế nông nghiệp gia đình"],a:3,
+ e:"Đặc điểm của chủ nghĩa đế quốc: các tổ chức độc quyền giữ vai trò quyết định; tư bản tài chính thống trị; xuất khẩu tư bản; các liên minh độc quyền phân chia thế giới; các cường quốc chia nhau thuộc địa. Ưu tiên kinh tế nông nghiệp gia đình không phải là đặc điểm của chủ nghĩa đế quốc."},
+{l:4,q:"Sau Chiến tranh thế giới thứ hai, chủ nghĩa xã hội đã lan rộng sang khu vực nào sau đây?",
+ o:["Tây Âu và Bắc Mỹ","Đông Âu và một số nước châu Á","Châu Úc và Nam Cực","Bắc Phi và Trung Đông"],a:1,
+ e:"Sau năm 1945, chủ nghĩa xã hội vượt ra khỏi phạm vi một nước và hình thành hệ thống thế giới: ở Đông Âu (Ba Lan, Tiệp Khắc, Hung-ga-ri, Đông Đức…) và một số nước châu Á (Trung Quốc, Triều Tiên, Việt Nam, Mông Cổ…)."},
+{l:3,q:"Liên bang Cộng hòa xã hội chủ nghĩa Xô viết (Liên Xô) được thành lập vào năm nào?",
+ o:["1917","1918","1922","1924"],a:2,
+ e:"Ngày 30-12-1922, Đại hội Xô viết toàn Liên bang họp, tuyên bố thành lập Liên bang Cộng hòa xã hội chủ nghĩa Xô viết (Liên Xô) gồm 4 nước cộng hòa ban đầu: Nga, Ngoại Cáp-ca-dơ, U-crai-na, Bê-lô-rút-xi-a. Năm 1917 là năm Cách mạng tháng Mười; năm 1924 là năm Hiến pháp đầu tiên của Liên Xô được thông qua."},
+{l:1,q:"Điểm giống nhau cơ bản giữa cuộc Cách mạng tư sản Anh và cuộc Chiến tranh giành độc lập ở Bắc Mỹ là gì?",
+ o:["Đều do giai cấp tư sản lãnh đạo","Đều lật đổ chế độ quân chủ chuyên chế trong nước","Đều giải phóng dân tộc khỏi sự đô hộ của nước ngoài","Đều dẫn đến sự ra đời của chế độ cộng hòa ngay lập tức"],a:0,
+ e:"Cả hai cuộc cách mạng đều do giai cấp tư sản (cùng liên minh với quý tộc mới/chủ nô) lãnh đạo nhằm mở đường cho CNTB phát triển. Chỉ Cách mạng Anh lật đổ quân chủ chuyên chế; chỉ chiến tranh Bắc Mỹ là giải phóng dân tộc khỏi thực dân Anh; Anh sau cách mạng là quân chủ lập hiến chứ không phải cộng hòa."},
+{l:1,q:"Sự kiện nào được coi là đỉnh cao của phong trào cách mạng tư sản Pháp cuối thế kỷ XVIII?",
+ o:["Phái Lập hiến nắm chính quyền","Phái Gi-rông-đanh lên nắm quyền","Nền chuyên chính dân chủ cách mạng Gia-cô-banh","Napoleon Bonaparte đảo chính thành công"],a:2,
+ e:"Nền chuyên chính dân chủ cách mạng Gia-cô-banh (1793 – 1794) do Rô-be-xpie đứng đầu là đỉnh cao của cách mạng: đàn áp thế lực phản cách mạng, chia ruộng đất cho nông dân, ban hành nhiều chính sách tiến bộ. Phái Lập hiến và Gi-rông-đanh thuộc giai đoạn trước, còn Napoleon đảo chính (1799) chấm dứt cách mạng."},
+{l:4,q:"Nội dung nào sau đây phản ánh đúng triển vọng của chủ nghĩa xã hội hiện nay?",
+ o:["Chủ nghĩa xã hội chắc chắn sẽ biến mất hoàn toàn trên thế giới","Chủ nghĩa xã hội tiếp tục điều chỉnh, cải cách để phát triển","Chủ nghĩa xã hội quay lại áp dụng mô hình cũ trước năm 1991","Các nước xã hội chủ nghĩa sẽ từ bỏ vai trò lãnh đạo của Đảng Cộng sản"],a:1,
+ e:"Các nước xã hội chủ nghĩa hiện nay tiếp tục cải cách, đổi mới, điều chỉnh mô hình cho phù hợp điều kiện mới (như Việt Nam, Trung Quốc, Lào, Cu-ba) để phát triển, giữ vững vai trò lãnh đạo của Đảng Cộng sản. CNXH không biến mất và cũng không quay lại mô hình cũ trước 1991 (mô hình tập trung, quan liêu, bao cấp)."},
+{l:4,q:"Trọng tâm của công cuộc cải cách mở cửa ở Trung Quốc từ năm 1978 là gì?",
+ o:["Lấy cải cách chính trị làm trung tâm","Lấy phát triển kinh tế làm trung tâm","Tập trung xây dựng nền văn hóa thuần túy","Quốc hữu hóa toàn bộ tư liệu sản xuất"],a:1,
+ e:"Từ tháng 12-1978, Trung Quốc tiến hành cải cách, mở cửa với đường lối lấy phát triển kinh tế làm trung tâm, kiên trì bốn nguyên tắc cơ bản, chuyển từ kinh tế kế hoạch hóa tập trung sang kinh tế thị trường xã hội chủ nghĩa, mở cửa với bên ngoài."},
+{l:3,q:"Cách mạng tháng Mười Nga năm 1917 đã",
+ o:["giúp giai cấp tư sản Nga nắm quyền lực tuyệt đối","thiết lập nhà nước xã hội chủ nghĩa đầu tiên trên thế giới","đưa Nga trở thành một nước quân chủ lập hiến","kết thúc sự tồn tại của các đảng cộng sản ở châu Âu"],a:1,
+ e:"Cách mạng tháng Mười Nga 1917 do Đảng Bôn-sê-vích đứng đầu là V. I. Lê-nin lãnh đạo đã lật đổ Chính phủ lâm thời tư sản, thiết lập nhà nước công – nông, mở ra thời đại mới: nhà nước xã hội chủ nghĩa đầu tiên trên thế giới."},
+{l:3,q:"Ý nghĩa quan trọng nhất của việc thành lập Liên bang Xô viết (1922) là gì?",
+ o:["Chấm dứt hoàn toàn sự can thiệp của các nước đế quốc","Tăng cường sức mạnh để bảo vệ và xây dựng chủ nghĩa xã hội","Hoàn thành cuộc cách mạng dân chủ tư sản kiểu mới","Thiết lập sự thống trị của giai cấp tư sản Nga trên toàn liên bang"],a:1,
+ e:"Việc các nước cộng hòa Xô viết liên hiệp thành một nhà nước thống nhất đã tăng cường sức mạnh về kinh tế, quốc phòng, chính trị để bảo vệ thành quả cách mạng và xây dựng chủ nghĩa xã hội, đồng thời thể hiện giải pháp đúng đắn cho vấn đề dân tộc (bình đẳng, tự nguyện, đoàn kết)."},
+{l:4,q:"Một trong những nguyên nhân khách quan dẫn đến sự sụp đổ của mô hình chủ nghĩa xã hội ở Đông Âu và Liên Xô là gì?",
+ o:["Do sự chống phá của các thế lực thù địch trong và ngoài nước","Do trình độ dân trí của người dân quá thấp","Do thiếu tài nguyên thiên nhiên để phát triển kinh tế","Do không nhận được sự viện trợ của các nước phương Tây"],a:0,
+ e:"Nguyên nhân khách quan là sự chống phá của các thế lực thù địch trong và ngoài nước (chiến lược “diễn biến hòa bình” của đế quốc). Nguyên nhân chủ quan gồm sai lầm trong đường lối, mô hình tập trung quan liêu bao cấp, chậm cải cách, một số lãnh đạo mắc sai lầm nghiêm trọng. Dân trí thấp hay thiếu tài nguyên không phải là nguyên nhân (Liên Xô rất giàu tài nguyên)."},
+{l:2,q:"Cuộc cách mạng công nghiệp lần thứ nhất bắt đầu sớm nhất ở quốc gia nào?",
+ o:["Pháp","Đức","Anh","Mỹ"],a:2,
+ e:"Cách mạng công nghiệp lần thứ nhất bắt đầu từ nước Anh vào khoảng giữa thế kỷ XVIII, nhờ Anh sớm hoàn thành cách mạng tư sản (thế kỷ XVII), có thuộc địa rộng lớn và nguồn nhân công, vốn, nguyên liệu dồi dào; sau đó lan sang Pháp, Đức, Mỹ."},
+{l:2,q:"Một trong những tiềm năng của chủ nghĩa tư bản hiện đại là gì?",
+ o:["Không còn xảy ra các cuộc khủng hoảng kinh tế","Có khả năng tự điều chỉnh và thích nghi để tồn tại","Xóa bỏ hoàn toàn mâu thuẫn giữa tư bản và lao động","Xác lập quyền sở hữu tập thể về tư liệu sản xuất"],a:1,
+ e:"CNTB hiện đại còn tiềm năng nhờ khả năng tự điều chỉnh, thích nghi (ứng dụng thành tựu khoa học – công nghệ, nhà nước can thiệp vào kinh tế, điều chỉnh quan hệ sản xuất). Tuy nhiên khủng hoảng và mâu thuẫn tư bản – lao động vẫn tồn tại; chế độ sở hữu tư nhân vẫn là cơ sở."},
+{l:4,q:"Sự kiện nào đánh dấu sự xác lập của chủ nghĩa xã hội trên phạm vi thế giới?",
+ o:["Thắng lợi của Cách mạng tháng Mười Nga năm 1917","Sự ra đời của Liên bang Cộng hòa xã hội chủ nghĩa Xô viết (1922)","Sự hình thành hệ thống các nước xã hội chủ nghĩa sau Chiến tranh thế giới thứ hai","Sự sụp đổ của chế độ phong kiến ở các nước châu Á"],a:2,
+ e:"Cách mạng tháng Mười (1917) đưa CNXH từ lý luận thành hiện thực ở một nước; sau Chiến tranh thế giới thứ hai, CNXH vượt ra khỏi phạm vi một nước và hình thành hệ thống thế giới gồm Liên Xô, các nước Đông Âu và một số nước châu Á, châu Mỹ Latinh, đánh dấu sự xác lập của CNXH trên phạm vi thế giới."}
+];
+
+/* ===== RENDER MA TRẬN ===== */
+(function renderMatrix(){
+  let h = "";
+  for (const k of [1,2,3,4]) {
+    const L = LESSONS[k], r = L.row;
+    h += `<tr class="hover:bg-slate-800/60">
+      <td class="p-3 text-left font-medium text-slate-100">${L.name}</td>
+      <td class="p-3 font-bold text-emerald-400">${r[0]}</td>
+      <td class="p-3 font-bold text-emerald-400">${r[1]}</td>
+      <td class="p-3 font-bold text-amber-400">${r[2]}</td>
+      <td class="p-3 font-bold text-purple-400">${r[3]}</td>
+      <td class="p-3">${r[4]||"–"}</td>
+      <td class="p-3">${r[5]||"–"}</td>
+      <td class="p-3 text-xs">${r[6]}</td>
+      <td class="p-3 font-semibold text-brand-400">${r[7]}</td>
+      <td class="p-3">${r[8]}</td></tr>`;
+  }
+  document.getElementById('matrix-body').innerHTML = h;
+  // fix header col: NB(a,b) shown under TN-ĐS; rows hold [TN, NB(a)/(a,b), TH, VD, TL-TH, TL-VD]
+  let s = "";
+  for (const k of [1,2,3,4]) {
+    const L = LESSONS[k], c = BANK.filter(x=>x.l===k).length;
+    const li = a => a.map(t=>`<li>${t}</li>`).join("");
+    s += `<details class="bg-slate-900/50 rounded-xl border border-slate-700/60 group">
+      <summary class="cursor-pointer p-4 flex items-start justify-between gap-3 list-none">
+        <div><span class="text-xs text-brand-400 font-semibold">${L.topic}</span>
+        <p class="font-semibold text-white mt-0.5">${L.name}</p></div>
+        <span class="shrink-0 text-xs bg-slate-800 border border-slate-700 rounded-full px-2.5 py-1 text-slate-300">${c} câu trong bộ đề</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-3 text-sm text-slate-300 border-t border-slate-700/50 pt-3">
+        <div><b class="text-emerald-400">Nhận biết:</b><ul class="list-disc ml-5 mt-1 space-y-0.5">${li(L.spec.nb)}</ul></div>
+        <div><b class="text-amber-400">Thông hiểu:</b><ul class="list-disc ml-5 mt-1 space-y-0.5">${li(L.spec.th)}</ul></div>
+        <div><b class="text-purple-400">Vận dụng:</b><ul class="list-disc ml-5 mt-1 space-y-0.5">${li(L.spec.vd)}</ul></div>
+      </div></details>`;
+  }
+  document.getElementById('spec-list').innerHTML = s;
+})();
+let allOpen = false;
+function toggleAll(){ allOpen=!allOpen; document.querySelectorAll('#spec-list details').forEach(d=>d.open=allOpen); }
+
+/* ===== TRẠNG THÁI BÀI LÀM ===== */
+let quiz = [];     // danh sách câu đã (có thể) xáo trộn: {l,q,o[],a,e}
+let cur = 0, answered = false, results = []; // results[i] = {pick, ok}
+let correctCount = 0;
+
+function clone(){ return BANK.map(x=>({l:x.l,q:x.q,e:x.e,o:x.o.map((t,i)=>({t,ok:i===x.a}))})); }
+function shuffleArr(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function buildQuiz(shuffle){
+  quiz = clone();
+  if (shuffle){ shuffleArr(quiz); quiz.forEach(x=>shuffleArr(x.o)); }
+  quiz.forEach(x=>x.a = x.o.findIndex(o=>o.ok));
+  cur = 0; answered = false; correctCount = 0; results = new Array(quiz.length).fill(null);
+}
+function restart(shuffle){
+  buildQuiz(shuffle);
+  document.getElementById('result').classList.add('hidden');
+  document.getElementById('quiz-area').classList.remove('hidden');
+  switchPage('practice', true);
+  renderQ();
+}
+function shuffleAndRestart(){
+  if (results.some(r=>r) && !document.getElementById('result').classList.contains('hidden')===false) {
+    if(!confirm('Xáo trộn sẽ làm lại bài từ đầu. Bạn có chắc không?')) return;
+  }
+  restart(true);
+}
+
+/* ===== HIỂN THỊ CÂU HỎI ===== */
+const LET = ['A','B','C','D'];
+function renderQ(){
+  const x = quiz[cur]; answered = false;
+  const opts = x.o.map((o,i)=>`
+    <button class="opt w-full text-left flex items-start gap-3 p-3.5 rounded-xl border border-slate-700 bg-slate-900/60" data-i="${i}" onclick="pick(${i})">
+      <span class="shrink-0 w-8 h-8 rounded-lg bg-slate-800 border border-slate-600 flex items-center justify-center text-sm font-bold">${LET[i]}</span>
+      <span class="pt-1 text-sm sm:text-base">${o.t}</span>
+      <span class="ml-auto pt-1.5 icon"></span>
+    </button>`).join('');
+  document.getElementById('quiz-area').innerHTML = `
+    <div class="fade-in space-y-4">
+      <div class="flex flex-wrap gap-1.5" id="dots">${quiz.map((_,i)=>dot(i)).join('')}</div>
+      <div class="bg-slate-800/90 p-5 sm:p-6 rounded-2xl border border-slate-700/80 shadow-xl space-y-5">
+        <div class="flex items-center justify-between text-xs">
+          <span class="px-2.5 py-1 rounded-md bg-brand-950/80 text-brand-300 border border-brand-700/50 font-semibold">Câu ${cur+1} / ${quiz.length}</span>
+          <span class="text-slate-400 text-right">${LESSONS[x.l].name.split(':')[0]}</span>
+        </div>
+        <h3 class="text-base sm:text-lg font-semibold text-white leading-relaxed">${x.q}</h3>
+        <div class="space-y-2.5" id="opts">${opts}</div>
+        <div id="explain" class="hidden"></div>
+      </div>
+      <div class="flex justify-end">
+        <button id="btn-next" onclick="next()" disabled class="px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-semibold transition shadow-md disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
+          <span>${cur===quiz.length-1?'Xem kết quả':'Câu tiếp theo'}</span><i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>`;
+  updateHeader();
+}
+function dot(i){
+  const r = results[i];
+  let cls = "bg-slate-800 text-slate-400 border-slate-700";
+  if (r) cls = r.ok ? "bg-emerald-600/30 text-emerald-300 border-emerald-500/50" : "bg-rose-600/30 text-rose-300 border-rose-500/50";
+  if (i===cur) cls += " ring-2 ring-brand-500";
+  return `<span class="w-7 h-7 rounded-md border text-xs font-semibold flex items-center justify-center ${cls}">${i+1}</span>`;
+}
+
+function pick(i){
+  if (answered) return;
+  answered = true;
+  const x = quiz[cur], ok = i===x.a;
+  results[cur] = {pick:i, ok}; if (ok) correctCount++;
+  document.querySelectorAll('#opts .opt').forEach((b,j)=>{
+    b.disabled = true; b.classList.remove('hover:border-amber-500');
+    const ic = b.querySelector('.icon');
+    if (j===x.a){ b.className = b.className.replace('border-slate-700','border-emerald-500').replace('bg-slate-900/60','bg-emerald-900/30'); ic.innerHTML='<i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>'; }
+    else if (j===i){ b.className = b.className.replace('border-slate-700','border-rose-500').replace('bg-slate-900/60','bg-rose-900/30'); ic.innerHTML='<i class="fa-solid fa-circle-xmark text-rose-400 text-lg"></i>'; }
+    else b.classList.add('opacity-60');
+  });
+  const ex = document.getElementById('explain');
+  ex.className = "fade-in p-4 rounded-xl border " + (ok?"bg-emerald-950/40 border-emerald-700/50":"bg-rose-950/40 border-rose-700/50");
+  ex.innerHTML = `<p class="font-bold ${ok?'text-emerald-400':'text-rose-400'} mb-1">${ok?'<i class="fa-solid fa-check mr-1"></i>Chính xác!':'<i class="fa-solid fa-xmark mr-1"></i>Chưa đúng — đáp án đúng là '+LET[x.a]+'.'}</p>
+    <p class="text-sm text-slate-200 leading-relaxed"><b class="text-brand-300">Giải thích:</b> ${x.e}</p>`;
+  document.getElementById('btn-next').disabled = false;
+  document.getElementById('dots').innerHTML = quiz.map((_,k)=>dot(k)).join('');
+  updateHeader();
+}
+function next(){
+  if (!answered) return;
+  if (cur < quiz.length-1){ cur++; renderQ(); window.scrollTo({top:0,behavior:'smooth'}); }
+  else showResult();
+}
+function updateHeader(){
+  const done = results.filter(r=>r).length;
+  document.getElementById('progress-text').textContent = `Đã làm ${done}/${quiz.length} câu`;
+  document.getElementById('score-text').textContent = `Đúng: ${correctCount}`;
+  document.getElementById('progress-bar').style.width = (done/quiz.length*100)+'%';
+}
+
+/* ===== KẾT QUẢ ===== */
+function showResult(){
+  document.getElementById('quiz-area').classList.add('hidden');
+  const R = document.getElementById('result'); R.classList.remove('hidden');
+  const n = quiz.length, wrong = n-correctCount, pct = Math.round(correctCount/n*100);
+  document.getElementById('res-correct').textContent = `${correctCount} / ${n}`;
+  document.getElementById('res-wrong').textContent = wrong;
+  document.getElementById('res-pct').textContent = pct+'%';
+  document.getElementById('res-score').textContent = (correctCount/n*10).toFixed(1).replace('.',',');
+  document.getElementById('res-msg').textContent = pct>=80 ? 'Xuất sắc! Bạn nắm rất chắc kiến thức.' : pct>=50 ? 'Khá tốt! Hãy xem lại các câu sai để chắc hơn.' : 'Cần ôn thêm. Hãy xem lại ma trận và làm lại nhé!';
+  // theo bài
+  const st = {1:[0,0],2:[0,0],3:[0,0],4:[0,0]};
+  quiz.forEach((x,i)=>{ st[x.l][1]++; if(results[i].ok) st[x.l][0]++; });
+  document.getElementById('res-lessons').innerHTML = [1,2,3,4].map(k=>{
+    const [c,t]=st[k], p=t?Math.round(c/t*100):0, col = p>=80?'bg-emerald-500':p>=50?'bg-amber-500':'bg-rose-500';
+    return `<div class="bg-slate-900/70 p-3 rounded-xl border border-slate-700">
+      <div class="flex justify-between text-xs mb-1.5"><span class="text-slate-200 font-medium">${LESSONS[k].name.split(':')[0]}</span><span class="text-slate-400">${c}/${t} câu</span></div>
+      <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="${col} h-full" style="width:${p}%"></div></div></div>`;
+  }).join('');
+  // câu sai
+  const wl = quiz.map((x,i)=>({x,i,r:results[i]})).filter(o=>!o.r.ok);
+  document.getElementById('res-wrong-wrap').classList.toggle('hidden', wl.length===0);
+  document.getElementById('res-wrong-list').innerHTML = wl.map(o=>`
+    <details class="bg-slate-900/60 border border-slate-700 rounded-xl">
+      <summary class="cursor-pointer p-3 text-sm text-slate-200"><b class="text-rose-400">Câu ${o.i+1}.</b> ${o.x.q}</summary>
+      <div class="px-3 pb-3 text-sm space-y-1 border-t border-slate-700/50 pt-2">
+        <p class="text-rose-300">Bạn chọn: ${LET[o.r.pick]}. ${o.x.o[o.r.pick].t}</p>
+        <p class="text-emerald-300">Đáp án đúng: ${LET[o.x.a]}. ${o.x.o[o.x.a].t}</p>
+        <p class="text-slate-300"><b class="text-brand-300">Giải thích:</b> ${o.x.e}</p>
+      </div></details>`).join('');
+  document.getElementById('progress-text').textContent = `Hoàn thành ${n}/${n} câu`;
+  document.getElementById('progress-bar').style.width = '100%';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ===== CHUYỂN TRANG ===== */
+function switchPage(p, keep){
+  const m = p==='matrix';
+  document.getElementById('page-matrix').classList.toggle('hidden', !m);
+  document.getElementById('page-practice').classList.toggle('hidden', m);
+  document.getElementById('header-progress').classList.toggle('hidden', m);
+  const on = "bg-brand-600 text-white shadow", off = "text-slate-400 hover:text-white";
+  const base = "flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 ";
+  document.getElementById('tab-matrix').className = base + (m?on:off);
+  document.getElementById('tab-practice').className = base + (m?off:on);
+  if (!m && !keep && quiz.length===0){ restart(false); }
+  window.scrollTo({top:0});
+}
+
+/* ===== PHÍM TẮT ===== */
+document.addEventListener('keydown', e=>{
+  if (document.getElementById('page-practice').classList.contains('hidden')) return;
+  if (document.getElementById('quiz-area').classList.contains('hidden')) return;
+  const k = e.key.toUpperCase();
+  if (['A','B','C','D'].includes(k)) pick(LET.indexOf(k));
+  else if (e.key==='Enter' || e.key==='ArrowRight') next();
+});
+
+
+/* ===== KHỞI TẠO ===== */
+buildQuiz(false);
+renderQ(); // Hiển thị câu hỏi ngay từ đầu
+switchPage('matrix');
+</script>
+</body>
+</html>
