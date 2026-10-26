@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Tập Tin Học 11 - Giữa Học Kỳ I | BAKHI</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                            dark: '#0f172a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbars and transition effects */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        .fade-in {
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+    <!-- HEADER SYSTEM -->
+    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between py-3 gap-3">
+                <!-- Navigation & Title -->
+                <div class="flex items-center justify-between w-full md:w-auto gap-4">
+                    <div class="flex items-center gap-2">
+                        <a id="btn-back-subject" href="#" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs sm:text-sm font-medium transition border border-slate-700 flex items-center gap-1.5" title="Quay về trang môn học">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span>Môn học</span>
+                        </a>
+                        <a id="btn-back-home" href="#" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs sm:text-sm font-medium transition border border-slate-700 flex items-center gap-1.5" title="Về trang chủ BAKHI">
+                            <i class="fa-solid fa-house text-brand-500"></i>
+                            <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">BAKHI</span>
+                        </a>
+                    </div>
+                    
+                    <div class="md:hidden flex items-center gap-2">
+                        <button id="theme-toggle-mobile" class="p-2 text-slate-400 hover:text-white rounded-lg bg-slate-800">
+                            <i class="fa-solid fa-moon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Course/Exam Title -->
+                <div class="text-center md:text-left flex-1 md:ml-4">
+                    <h1 class="text-base sm:text-lg font-bold text-white flex items-center justify-center md:justify-start gap-2">
+                        <i class="fa-solid fa-laptop-code text-brand-500"></i>
+                        <span>Tin học 11</span>
+                        <span class="text-xs font-normal px-2 py-0.5 rounded bg-brand-900/60 text-brand-300 border border-brand-700/50">Giữa HK1</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Ôn tập & Luyện thi Giữa Học kỳ I (Năm học 2026 - 2027)</p>
+                </div>
+
+                <!-- Navigation Tabs & Theme Toggle -->
+                <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+                    <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700/60 w-full md:w-auto">
+                        <button id="tab-matrix" onclick="switchPage('matrix')" class="flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 bg-brand-600 text-white shadow">
+                            <i class="fa-solid fa-table-cells"></i>
+                            <span>Ma Trận Đề</span>
+                        </button>
+                        <button id="tab-practice" onclick="switchPage('practice')" class="flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 text-slate-400 hover:text-white">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                            <span>Luyện Tập</span>
+                        </button>
+                    </div>
+                    <button id="theme-toggle" class="hidden md:flex p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 transition">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Global Practice Progress Bar (Visible in practice mode) -->
+            <div id="header-progress-container" class="hidden py-2 border-t border-slate-800/80">
+                <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+                    <span id="progress-text-summary">Tiến độ bài làm: 0/36 câu (0%)</span>
+                    <span id="score-text-summary" class="text-brand-400 font-medium">Đúng: 0 câu</span>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div id="header-progress-bar" class="bg-gradient-to-r from-brand-500 to-indigo-500 h-full w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+        <!-- ================= PAGE 1: MA TRẬN ĐỀ KIỂM TRA ================= -->
+        <section id="page-matrix" class="space-y-6 fade-in">
+            <!-- Header Banner -->
+            <div class="bg-gradient-to-r from-slate-800 via-slate-800/90 to-brand-950/40 p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+                <div class="absolute right-0 top-0 bottom-0 opacity-10 flex items-center pr-10 pointer-events-none">
+                    <i class="fa-solid fa-chart-pie text-9xl text-brand-400"></i>
+                </div>
+                <div class="relative z-10">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-brand-400 bg-brand-950/80 px-2.5 py-1 rounded-md border border-brand-800/50">Cấu trúc chuẩn Bộ GD&ĐT</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-white mt-2">Khung Ma Trận & Bản Đặc Tả Kĩ Thuật</h2>
+                    <p class="text-slate-300 text-sm mt-1 max-w-2xl">Đề kiểm tra Giữa học kỳ I môn Tin học 11 (Bộ sách Kết nối tri thức - Định hướng Tin học ứng dụng). Thời gian làm bài 45 phút.</p>
+                </div>
+            </div>
+
+            <!-- Overview Stat Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                    <span class="text-xs text-slate-400 block">Thời gian</span>
+                    <span class="text-lg font-bold text-slate-100">45 phút</span>
+                </div>
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                    <span class="text-xs text-slate-400 block">Thang điểm</span>
+                    <span class="text-lg font-bold text-brand-400">10,0 điểm</span>
+                </div>
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                    <span class="text-xs text-slate-400 block">Tổng số lệnh hỏi</span>
+                    <span class="text-lg font-bold text-indigo-400">40 lệnh</span>
+                </div>
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                    <span class="text-xs text-slate-400 block">Nhận biết (40%)</span>
+                    <span class="text-lg font-bold text-emerald-400">16 lệnh (4đ)</span>
+                </div>
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                    <span class="text-xs text-slate-400 block">Thông hiểu (30%)</span>
+                    <span class="text-lg font-bold text-amber-400">12 lệnh (3đ)</span>
+                </div>
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                    <span class="text-xs text-slate-400 block">Vận dụng (30%)</span>
+                    <span class="text-lg font-bold text-purple-400">12 lệnh (3đ)</span>
+                </div>
+                <div class="col-span-2 sm:col-span-1 bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                    <span class="text-xs text-slate-400 block">Phân bố Chủ đề</span>
+                    <span class="text-xs font-semibold text-sky-300">CĐ1: 62.5% | CĐ2: 37.5%</span>
+                </div>
+            </div>
+
+            <!-- Charts & Visualization Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Cognitive Levels Bar Graph -->
+                <div class="bg-slate-800/60 p-5 rounded-2xl border border-slate-700/60 shadow">
+                    <h3 class="text-sm font-bold text-slate-200 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-brand-400"></i>
+                        <span>Phân bổ Mức độ Nhận thức</span>
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs font-medium mb-1">
+                                <span class="text-emerald-400">Nhận biết (40% - 4.0 điểm - 16 lệnh)</span>
+                                <span>40%</span>
+                            </div>
+                            <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                                <div class="bg-emerald-500 h-full rounded-full" style="width: 40%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-medium mb-1">
+                                <span class="text-amber-400">Thông hiểu (30% - 3.0 điểm - 12 lệnh)</span>
+                                <span>30%</span>
+                            </div>
+                            <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                                <div class="bg-amber-500 h-full rounded-full" style="width: 30%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-medium mb-1">
+                                <span class="text-purple-400">Vận dụng (30% - 3.0 điểm - 12 lệnh)</span>
+                                <span>30%</span>
+                            </div>
+                            <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                                <div class="bg-purple-500 h-full rounded-full" style="width: 30%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Topic Distribution Bar Graph -->
+                <div class="bg-slate-800/60 p-5 rounded-2xl border border-slate-700/60 shadow">
+                    <h3 class="text-sm font-bold text-slate-200 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-bar text-brand-400"></i>
+                        <span>Phân bổ Tỉ lệ Điểm Theo Chủ đề</span>
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs font-medium mb-1">
+                                <span class="text-sky-400">Chủ đề 1: Máy tính & Xã hội tri thức (Bài 1–5)</span>
+                                <span>62.5% (6.25 điểm)</span>
+                            </div>
+                            <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                                <div class="bg-sky-500 h-full rounded-full" style="width: 62.5%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-medium mb-1">
+                                <span class="text-indigo-400">Chủ đề 2: Lưu trữ, Tìm kiếm & Trao đổi thông tin (Bài 6–8)</span>
+                                <span>37.5% (3.75 điểm)</span>
+                            </div>
+                            <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                                <div class="bg-indigo-500 h-full rounded-full" style="width: 37.5%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Matrix Table -->
+            <div class="bg-slate-800/60 rounded-2xl border border-slate-700/60 shadow overflow-hidden">
+                <div class="p-4 border-b border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-table text-brand-400"></i>
+                        <span>Bảng Ma Trận Chi Tiết Từng Bài Học</span>
+                    </h3>
+                    <span class="text-xs text-slate-400">Nhấn vào từng bài để xem chi tiết yêu cầu kiến thức</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs sm:text-sm text-slate-300">
+                        <thead class="bg-slate-900/80 text-slate-400 font-semibold uppercase text-xs border-b border-slate-700">
+                            <tr>
+                                <th class="p-3.5 min-w-[200px]">Bài học</th>
+                                <th class="p-3.5 text-center">Trắc nghiệm nhiều lựa chọn</th>
+                                <th class="p-3.5 text-center">Trắc nghiệm Đúng / Sai</th>
+                                <th class="p-3.5 text-center">Tự luận</th>
+                                <th class="p-3.5 text-center">Số lệnh</th>
+                                <th class="p-3.5 text-center">Điểm số</th>
+                                <th class="p-3.5 text-center">Tỉ lệ</th>
+                                <th class="p-3.5 text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matrix-table-body" class="divide-y divide-slate-700/50">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Content Outline / Focal Points Accordion -->
+            <div id="review-content-section" class="bg-slate-800/60 p-5 rounded-2xl border border-slate-700/60 shadow space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-book-bookmark text-brand-400"></i>
+                        <span>Nội Dung Trọng Tâm 8 Bài Học</span>
+                    </h3>
+                    <button onclick="toggleAllAccordions()" class="text-xs text-brand-400 hover:text-brand-300 font-medium">
+                        Mở/Thu gọn tất cả
+                    </button>
+                </div>
+                <div id="focal-points-accordion" class="space-y-3">
+                    <!-- Dynamic rendering of lesson key notes -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 py-4">
+                <button onclick="switchPage('practice')" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-brand-900/30 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                    <span>Bắt Đầu Luyện Tập Nghay</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <a href="#review-content-section" class="w-full sm:w-auto px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl border border-slate-700 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>Xem Kiến Thức Trọng Tâm</span>
+                </a>
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE 2: LUYỆN TẬP CÂU HỎI ================= -->
+        <section id="page-practice" class="hidden space-y-6 fade-in">
+            <!-- Practice Control Toolbar -->
+            <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/60 shadow flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="shuffleCurrentQuestions()" class="px-3.5 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white rounded-xl border border-indigo-500/40 text-xs sm:text-sm font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-shuffle"></i>
+                        <span>🔀 Xáo trộn câu hỏi</span>
+                    </button>
+                    <button onclick="confirmResetPractice()" class="px-3.5 py-2 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 hover:text-white rounded-xl border border-rose-500/40 text-xs sm:text-sm font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>🔄 Làm lại từ đầu</span>
+                    </button>
+                    <button onclick="switchPage('matrix')" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-table-cells"></i>
+                        <span>▦ Xem ma trận</span>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                    <span class="bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700/50">Phím tắt PC: <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-slate-200">A</kbd> <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-slate-200">B</kbd> <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-slate-200">C</kbd> <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-slate-200">D</kbd></span>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs for Question Types -->
+            <div class="flex border-b border-slate-800 overflow-x-auto gap-2 text-sm font-medium">
+                <button id="p-tab-mc" onclick="switchPracticeSection('mc')" class="px-4 py-2.5 text-brand-400 border-b-2 border-brand-500 font-bold whitespace-nowrap flex items-center gap-2">
+                    <span>Phần I: Trắc nghiệm (12)</span>
+                    <span id="badge-mc-count" class="px-2 py-0.5 text-xs bg-slate-800 text-slate-300 rounded-full">0/12</span>
+                </button>
+                <button id="p-tab-tf" onclick="switchPracticeSection('tf')" class="px-4 py-2.5 text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap flex items-center gap-2">
+                    <span>Phần II: Đúng - Sai (4 câu - 16 ý)</span>
+                    <span id="badge-tf-count" class="px-2 py-0.5 text-xs bg-slate-800 text-slate-300 rounded-full">0/16</span>
+                </button>
+                <button id="p-tab-es" onclick="switchPracticeSection('es')" class="px-4 py-2.5 text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap flex items-center gap-2">
+                    <span>Phần III: Tự luận tình huống (3 câu - 8 ý)</span>
+                    <span id="badge-es-count" class="px-2 py-0.5 text-xs bg-slate-800 text-slate-300 rounded-full">0/8</span>
+                </button>
+            </div>
+
+            <!-- SECTION I: MULTIPLE CHOICE (Single Focus Mode) -->
+            <div id="section-mc" class="space-y-6">
+                <!-- Question Navigation Dots -->
+                <div id="mc-dots-nav" class="flex flex-wrap gap-2 p-3 bg-slate-800/40 rounded-xl border border-slate-800">
+                    <!-- Rendered dynamically -->
+                </div>
+
+                <!-- Single Active MC Question Card -->
+                <div id="mc-question-card" class="bg-slate-800/90 p-6 rounded-2xl border border-slate-700/80 shadow-xl space-y-6">
+                    <!-- Rendered via renderMCQuestion() -->
+                </div>
+
+                <!-- Next/Prev Control Buttons -->
+                <div class="flex items-center justify-between pt-2">
+                    <button id="btn-mc-prev" onclick="navMCQuestion(-1)" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 text-sm font-semibold transition disabled:opacity-40">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> Câu trước
+                    </button>
+                    <button id="btn-mc-next" onclick="navMCQuestion(1)" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-semibold transition shadow-md">
+                        Câu tiếp theo <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SECTION II: TRUE / FALSE (Grouped Cards) -->
+            <div id="section-tf" class="hidden space-y-6">
+                <div class="bg-brand-950/40 p-4 rounded-xl border border-brand-800/40 text-xs sm:text-sm text-brand-200">
+                    <i class="fa-solid fa-circle-info mr-2 text-brand-400"></i>
+                    Mỗi câu hỏi lớn gồm 4 ý độc lập (a, b, c, d). Hãy chọn <b>Đúng</b> hoặc <b>Sai</b> cho từng phát biểu để nhận phản hồi ngay lập tức.
+                </div>
+                <div id="tf-questions-container" class="space-y-6">
+                    <!-- Rendered dynamically -->
+                </div>
+            </div>
+
+            <!-- SECTION III: ESSAY SITUATIONS -->
+            <div id="section-es" class="hidden space-y-6">
+                <div class="bg-indigo-950/40 p-4 rounded-xl border border-indigo-800/40 text-xs sm:text-sm text-indigo-200">
+                    <i class="fa-solid fa-pen-nib mr-2 text-indigo-400"></i>
+                    Hãy tự nhập câu trả lời của bạn vào ô văn bản, sau đó nhấn <b>"Xem đáp án và giải thích"</b> để tự đối chiếu và học tập.
+                </div>
+                <div id="es-questions-container" class="space-y-6">
+                    <!-- Rendered dynamically -->
+                </div>
+            </div>
+
+            <!-- FINAL SUMMARY & REVIEW MODAL / BOARD -->
+            <div id="summary-card" class="hidden bg-slate-800/90 p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-6">
+                <div class="text-center space-y-2">
+                    <div class="inline-flex p-3 rounded-full bg-emerald-500/20 text-emerald-400 text-3xl mb-2">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white">Hoàn Thành Bài Luyện Tập!</h3>
+                    <p class="text-slate-300 text-sm">Dưới đây là kết quả chi tiết dựa trên thang điểm đề thi giữa kỳ.</p>
+                </div>
+
+                <!-- Stats Overview Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center">
+                        <span class="text-xs text-slate-400 block">Số lệnh đã làm</span>
+                        <span id="sum-total-answered" class="text-xl font-bold text-white">0 / 36</span>
+                    </div>
+                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center">
+                        <span class="text-xs text-slate-400 block">Trắc nghiệm Đúng</span>
+                        <span id="sum-mc-correct" class="text-xl font-bold text-emerald-400">0 / 12</span>
+                    </div>
+                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center">
+                        <span class="text-xs text-slate-400 block">Đúng / Sai đạt</span>
+                        <span id="sum-tf-correct" class="text-xl font-bold text-emerald-400">0 / 16</span>
+                    </div>
+                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center">
+                        <span class="text-xs text-slate-400 block">Điểm Trắc Nghiệm Ước Tính</span>
+                        <span id="sum-score-estimated" class="text-xl font-bold text-brand-400">0.0 / 7.0</span>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-700/60 text-xs text-slate-300 space-y-1">
+                    <p>📌 <b>Ghi chú về thang điểm:</b> Điểm trắc nghiệm (Phần I + II) được tính tối đa 7.0 điểm. Phần Tự luận (3.0 điểm) dành cho bạn tự đối chiếu với đáp án chuẩn.</p>
+                </div>
+
+                <!-- Wrong Answers & Weak Lessons Section -->
+                <div id="sum-weaknesses-container" class="space-y-3">
+                    <h4 class="text-sm font-bold text-slate-200">Các bài học cần củng cố lại:</h4>
+                    <div id="sum-weak-lessons-list" class="flex flex-wrap gap-2">
+                        <!-- Dynamic list -->
+                    </div>
+                </div>
+
+                <!-- Summary Actions -->
+                <div class="flex flex-col sm:flex-row justify-center gap-4 pt-4 border-t border-slate-700">
+                    <button onclick="confirmResetPractice()" class="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>🔄 Làm lại & Xáo trộn đề</span>
+                    </button>
+                    <button onclick="switchPage('matrix')" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold rounded-xl border border-slate-600 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-table-cells"></i>
+                        <span>▦ Xem lại Ma trận</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- GLOBAL FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-800/80 py-6 mt-10 text-xs text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="font-medium text-slate-300">Nền Tảng Ôn Tập Trực Tuyến BAKHI — Trường THPT Huỳnh Ngọc Huệ</p>
+            <p>Môn Tin học 11 — Năm học 2026 - 2027. Thiết kế dựa trên Ma trận & Bản đặc tả chuẩn 40 lệnh hỏi.</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT APPLICATION CODE -->
+    <script>
+        /**
+         * GLOBAL CONFIGURATION
+         * Easily edit URLs for site integration
+         */
+        const CONFIG = {
+            subjectIndexUrl: "index_tinhoc11.html", // Change to relative or absolute path of Informatics 11 main index
+            homeUrl: "/bakhi/"                       // Main BAKHI platform homepage
+        };
+
+        // Attach static URLs
+        document.getElementById('btn-back-subject').href = CONFIG.subjectIndexUrl;
+        document.getElementById('btn-back-home').href = CONFIG.homeUrl;
+
+        /**
+         * 1. DATA SOURCE: MATRIX & DETAILED SPECIFICATIONS
+         */
+        const MATRIX_DATA = [
+            {
+                lessonId: 1,
+                title: "Bài 1. Hệ điều hành",
+                mc: { nb: 1, th: 1, vd: 0, total: 2 },
+                tf: { nb: 2, th: 1, vd: 1, total: 4 },
+                es: { nb: 0, th: 0, vd: 0, total: 0 },
+                totalCommands: 6,
+                points: 1.50,
+                percentage: "15.0%",
+                outcomes: "Nắm lịch sử HĐH (Windows, LINUX từ UNIX), 5 nhóm chức năng, đặc trưng HĐH di động (cảm biến, kết nối, cá nhân hóa), mối quan hệ giữa phần cứng, HĐH và ứng dụng.",
+                priorityFocus: "5 nhóm chức năng HĐH; Nguồn gốc LINUX; Đặc trưng HĐH di động."
+            },
+            {
+                lessonId: 2,
+                title: "Bài 2. Thực hành sử dụng hệ điều hành",
+                mc: { nb: 1, th: 1, vd: 0, total: 2 },
+                tf: { nb: 0, th: 0, vd: 0, total: 0 },
+                es: { nb: 0, th: 0, vd: 0, total: 0 },
+                totalCommands: 2,
+                points: 0.50,
+                percentage: "5.0%",
+                outcomes: "Thao tác cửa sổ, File Explorer, kiểm tra đĩa, chống phân mảnh đĩa (HDD), so sánh giao diện Windows và Ubuntu.",
+                priorityFocus: "Phím tắt quản lý tệp; Công cụ chống phân mảnh đĩa (HDD)."
+            },
+            {
+                lessonId: 3,
+                title: "Bài 3. Phần mềm nguồn mở và phần mềm chạy trên Internet",
+                mc: { nb: 1, th: 0, vd: 0, total: 1 },
+                tf: { nb: 2, th: 1, vd: 1, total: 4 },
+                es: { nb: 0, th: 0, vd: 0, total: 0 },
+                totalCommands: 5,
+                points: 1.25,
+                percentage: "12.5%",
+                outcomes: "Phân biệt PM thương mại, nguồn mở, miễn phí. Giấy phép GPL, MIT. Đặc điểm Web App (Google Docs, Sheets).",
+                priorityFocus: "Đặc điểm phần mềm nguồn mở; Giấy phép GPL & MIT; Ưu nhược điểm Web App."
+            },
+            {
+                lessonId: 4,
+                title: "Bài 4. Bên trong máy tính",
+                mc: { nb: 1, th: 1, vd: 0, total: 2 },
+                tf: { nb: 0, th: 0, vd: 0, total: 0 },
+                es: { nb: 0, th: 2, vd: 2, total: 4 },
+                totalCommands: 6,
+                points: 1.50,
+                percentage: "15.0%",
+                outcomes: "Bộ phận trong máy (CPU, RAM, HDD/SSD, Mạch logic). Bảng chân lý AND, OR, NOT. Đề xuất nâng cấp cấu hình máy tính.",
+                priorityFocus: "Giải thích máy chậm do RAM/HDD; Bảng chân lý mạch logic; Đề xuất cấu hình nâng cấp SSD/RAM."
+            },
+            {
+                lessonId: 5,
+                title: "Bài 5. Kết nối máy tính với các thiết bị số",
+                mc: { nb: 1, th: 0, vd: 0, total: 1 },
+                tf: { nb: 0, th: 0, vd: 0, total: 0 },
+                es: { nb: 0, th: 2, vd: 2, total: 4 },
+                totalCommands: 5,
+                points: 1.25,
+                percentage: "12.5%",
+                outcomes: "Thông số màn hình (inch, px, Hz), loa, máy in. Cổng USB, HDMI, Bluetooth. Lý do cần cài Driver.",
+                priorityFocus: "Ý nghĩa 27 inch, Full HD, 144Hz; Các bước kết nối màn hình HDMI & loa Bluetooth; Driver."
+            },
+            {
+                lessonId: 6,
+                title: "Bài 6. Lưu trữ và chia sẻ tệp trên Internet",
+                mc: { nb: 1, th: 0, vd: 0, total: 1 },
+                tf: { nb: 2, th: 1, vd: 1, total: 4 },
+                es: { nb: 0, th: 0, vd: 0, total: 0 },
+                totalCommands: 5,
+                points: 1.25,
+                percentage: "12.5%",
+                outcomes: "Khái niệm lưu trữ đám mây (Google Drive), các quyền chia sẻ (Xem, Nhận xét, Chỉnh sửa), ưu/nhược điểm.",
+                priorityFocus: "Quyền chia sẻ Google Drive; Ưu nhược điểm lưu trữ đám mây."
+            },
+            {
+                lessonId: 7,
+                title: "Bài 7. Thực hành tìm kiếm thông tin trên Internet",
+                mc: { nb: 1, th: 0, vd: 0, total: 1 },
+                tf: { nb: 0, th: 0, vd: 0, total: 0 },
+                es: { nb: 0, th: 0, vd: 0, total: 0 },
+                totalCommands: 1,
+                points: 0.25,
+                percentage: "2.5%",
+                outcomes: "Kĩ thuật tìm kiếm nâng cao (filetype:pdf, site:, ngoặc kép), đánh giá độ tin cậy thông tin.",
+                priorityFocus: "Cú pháp tìm kiếm filetype:pdf và từ khóa chính xác."
+            },
+            {
+                lessonId: 8,
+                title: "Bài 8. Thực hành nâng cao sử dụng thư điện tử và mạng xã hội",
+                mc: { nb: 1, th: 0, vd: 0, total: 1 },
+                tf: { nb: 2, th: 1, vd: 1, total: 4 },
+                es: { nb: 0, th: 0, vd: 0, total: 4 },
+                totalCommands: 9,
+                points: 2.25,
+                percentage: "22.5%",
+                outcomes: "Tính năng Gmail (is:important, Nhãn Label, đính kèm), ứng dụng Machine Learning trong Gmail, quy tắc ứng xử MXH.",
+                priorityFocus: "Cú pháp is:important; Tạo Nhãn trong Gmail; Trí tuệ nhân tạo (ML) trong Gmail; Quy tắc ứng xử MXH."
+            }
+        ];
+
+        /**
+         * 2. DATA SOURCE: FOCAL REVIEW NOTES (8 LESSONS)
+         */
+        const FOCAL_NOTES = [
+            { id: 1, title: "Bài 1. Hệ điều hành", text: "• 5 nhóm chức năng: Quản lý phần cứng, Lưu trữ dữ liệu, Môi trường chạy ứng dụng, Giao diện người dùng, Tiện ích nâng cao.<br>• Windows: HĐH thương mại phổ biến nhất.<br>• LINUX: Nguồn gốc từ UNIX, là phần mềm nguồn mở miễn phí.<br>• HĐH di động: Giao diện cảm ứng, tích hợp nhiều cảm biến (GPS, gia tốc), kết nối không dây linh hoạt, tối ưu pin." },
+            { id: 2, title: "Bài 2. Thực hành sử dụng hệ điều hành", text: "• Quản lý tệp với File Explorer (Ctrl+Shift+N tạo thư mục, Shift+Delete xóa hẳn).<br>• Tiện ích nâng cao: Kiểm tra đĩa (Check Disk), Chống phân mảnh đĩa (Defragment - áp dụng cho đĩa từ HDD).<br>• So sánh: Windows, Ubuntu, iOS, Android đều dùng giao diện đồ họa, cửa sổ, biểu tượng." },
+            { id: 3, title: "Bài 3. Phần mềm nguồn mở và Internet", text: "• PM Thương mại: Trả phí bản quyền (MS Office, Photoshop).<br>• PM Nguồn mở: Mở mã nguồn, tự do sửa đổi/phân phối (Linux, LibreOffice, GIMP).<br>• Giấy phép: GPL (bắt buộc tiếp tục mở), MIT (cho phép dùng trong sản phẩm thương mại).<br>• Web App: Google Docs/Sheets (không cần cài đặt, cộng tác tốt, phụ thuộc Internet)." },
+            { id: 4, title: "Bài 4. Bên trong máy tính", text: "• CPU: Bộ điều khiển + Bộ số học & logic (ALU - thực hiện phép tính). Tốc độ (GHz), số nhân.<br>• RAM: Bộ nhớ tạm thời (GB, MHz). Thiếu RAM làm máy chạy chậm khi mở nhiều app.<br>• Mạch logic: AND (chỉ =1 khi cả 2 =1), OR ( ít nhất 1 cái =1), NOT (đảo ngược 0↔1)." },
+            { id: 5, title: "Bài 5. Kết nối máy tính với thiết bị số", text: "• Màn hình: Kích thước (inch), Độ phân giải (px - ví dụ 1920x1080 Full HD), Tần số quét (Hz - số lần làm mới/giây).<br>• Cổng kết nối: HDMI (truyền cả hình và âm thanh HD), USB (phổ biến), Bluetooth (không dây tầm ngắn ~10m).<br>• Driver: Phần mềm giúp HĐH điều khiển thiết bị." },
+            { id: 6, title: "Bài 6. Lưu trữ và chia sẻ tệp trên Internet", text: "• Lưu trữ đám mây: Google Drive, OneDrive, Dropbox.<br>• Chế độ chia sẻ: Chỉ xem | Xem & Nhận xét | Chỉnh sửa (Editor).<br>• Ưu điểm: Truy cập mọi lúc mọi nơi, làm việc nhóm tốt; Nhược điểm: Phụ thuộc Internet, rủi ro bảo mật." },
+            { id: 7, title: "Bài 7. TH tìm kiếm thông tin trên Internet", text: "• Cú pháp nâng cao: filetype:pdf (tìm tệp PDF), site:edu.vn (tìm trong domain), \"từ khóa\" (tìm chính xác).<br>• Đánh giá độ tin cậy: Tác giả, nguồn uy tín (.gov, .edu), ngày xuất bản, đối chiếu nhiều nguồn." },
+            { id: 8, title: "Bài 8. TH nâng cao thư điện tử và mạng xã hội", text: "• Gmail: Tìm thư quan trọng gõ <b>is:important</b>. Phân loại tự động bằng Học máy (Machine Learning).<br>• Nhãn (Label): Một thư có thể gắn nhiều nhãn (khác với Thư mục).<br>• Ứng xử MXH: Kiểm tra thông tin trước khi chia sẻ, tôn trọng riêng tư, không lan truyền fake news." }
+        ];
+
+        /**
+         * 3. DATA SOURCE: QUESTION BANK FROM OUTLINE
+         */
+        // Section I: 12 Multiple Choice Questions
+        const QUESTIONS_MC = [
+            {
+                id: "mc-1",
+                topic: "Chủ đề 1",
+                lesson: "Bài 1. Hệ điều hành",
+                level: "Nhận biết",
+                question: "Hệ điều hành LINUX có nguồn gốc từ hệ điều hành nào?",
+                options: ["A. DOS", "B. UNIX", "C. Windows", "D. macOS"],
+                correctIndex: 1, // B
+                explanation: "LINUX được phát triển bởi Linus Torvalds dựa trên cấu trúc và nguyên lý của hệ điều hành UNIX (ra đời từ những năm 1970)."
+            },
+            {
+                id: "mc-2",
+                topic: "Chủ đề 1",
+                lesson: "Bài 1. Hệ điều hành",
+                level: "Thông hiểu",
+                question: "Trong 5 nhóm chức năng của hệ điều hành, nhóm nào thể hiện rõ nhất đặc thù của HĐH máy tính cá nhân?",
+                options: ["A. Quản lí thiết bị", "B. Quản lí lưu trữ dữ liệu", "C. Cung cấp môi trường giao tiếp với người dùng", "D. Môi trường chạy ứng dụng"],
+                correctIndex: 2, // C
+                explanation: "Giao diện người dùng đồ họa (GUI) trực quan thân thiện chính là đặc thù quan trọng giúp máy tính cá nhân phổ cập tới mọi người dùng."
+            },
+            {
+                id: "mc-3",
+                topic: "Chủ đề 1",
+                lesson: "Bài 2. Thực hành sử dụng HĐH",
+                level: "Nhận biết",
+                question: "Để quản lí tệp và thư mục trên Windows, người dùng dùng tiện ích nào sau đây?",
+                options: ["A. Task Manager", "B. File Explorer", "C. Control Panel", "D. Device Manager"],
+                correctIndex: 1, // B
+                explanation: "File Explorer là công cụ quản lý tệp, thư mục và các ổ đĩa chuẩn trên hệ điều hành Windows."
+            },
+            {
+                id: "mc-4",
+                topic: "Chủ đề 1",
+                lesson: "Bài 2. Thực hành sử dụng HĐH",
+                level: "Thông hiểu",
+                question: "Hệ điều hành di động khác với HĐH máy tính cá nhân chủ yếu ở điểm nào?",
+                options: ["A. Có thể chạy ứng dụng", "B. Quản lí tệp được", "C. Tích hợp cảm biến, tối ưu cảm ứng và pin", "D. Có giao diện đồ họa"],
+                correctIndex: 2, // C
+                explanation: "HĐH di động được thiết kế đặc thù cho thiết bị nhỏ gọn: giao diện cảm ứng đa điểm, tích hợp cảm biến (GPS, gia tốc) và tối ưu hóa năng lượng pin."
+            },
+            {
+                id: "mc-5",
+                topic: "Chủ đề 1",
+                lesson: "Bài 3. Phần mềm nguồn mở & Internet",
+                level: "Nhận biết",
+                question: "Phần mềm nào sau đây là phần mềm nguồn mở?",
+                options: ["A. Microsoft Word", "B. Adobe Photoshop", "C. LibreOffice", "D. WinRAR"],
+                correctIndex: 2, // C
+                explanation: "LibreOffice là bộ ứng dụng văn phòng nguồn mở hoàn toàn miễn phí; trong khi Word, Photoshop là phần mềm thương mại."
+            },
+            {
+                id: "mc-6",
+                topic: "Chủ đề 1",
+                lesson: "Bài 4. Bên trong máy tính",
+                level: "Nhận biết",
+                question: "Bộ phận nào trong máy tính thực hiện tất cả các phép tính số học và logic?",
+                options: ["A. RAM", "B. ROM", "C. Bộ điều khiển", "D. Bộ số học và logic (trong CPU)"],
+                correctIndex: 3, // D
+                explanation: "Bộ số học và logic (ALU - Arithmetic Logic Unit) nằm bên trong CPU đảm nhận nhiệm vụ tính toán số học và xử lý logic."
+            },
+            {
+                id: "mc-7",
+                topic: "Chủ đề 1",
+                lesson: "Bài 4. Bên trong máy tính",
+                level: "Thông hiểu",
+                question: "Thông số nào sau đây là thông số hiệu năng của RAM?",
+                options: ["A. Tốc độ GHz", "B. Dung lượng GB và tốc độ MHz", "C. Số nhân (Core)", "D. Dung lượng cache"],
+                correctIndex: 1, // B
+                explanation: "Dung lượng (tính bằng GB) và Tốc độ/Bus (tính bằng MHz hoặc MT/s) là hai thông số hiệu năng cốt lõi của bộ nhớ RAM."
+            },
+            {
+                id: "mc-8",
+                topic: "Chủ đề 1",
+                lesson: "Bài 5. Kết nối máy tính với thiết bị số",
+                level: "Nhận biết",
+                question: "Để kết nối màn hình với máy tính và truyền cả âm thanh lẫn hình ảnh HD, loại cổng nào phù hợp nhất?",
+                options: ["A. USB", "B. VGA", "C. HDMI", "D. Audio Jack"],
+                correctIndex: 2, // C
+                explanation: "Cổng HDMI (High-Definition Multimedia Interface) có khả năng truyền tải song song cả tín hiệu video chất lượng cao và âm thanh số."
+            },
+            {
+                id: "mc-9",
+                topic: "Chủ đề 2",
+                lesson: "Bài 6. Lưu trữ và chia sẻ tệp trên Internet",
+                level: "Nhận biết",
+                question: "Dịch vụ lưu trữ và chia sẻ tệp trên Internet còn gọi là gì?",
+                options: ["A. Lưu trữ đĩa cứng", "B. Lưu trữ đám mây", "C. Lưu trữ USB", "D. Lưu trữ ROM"],
+                correctIndex: 1, // B
+                explanation: "Cloud Storage (Lưu trữ đám mây) là thuật ngữ chỉ các dịch vụ lưu trữ dữ liệu trực tuyến qua mạng Internet như Google Drive, OneDrive."
+            },
+            {
+                id: "mc-10",
+                topic: "Chủ đề 2",
+                lesson: "Bài 7. TH tìm kiếm thông tin",
+                level: "Nhận biết",
+                question: "Để tìm tài liệu định dạng PDF trên Google, ta sử dụng cú pháp nào?",
+                options: ["A. type:pdf", "B. format:pdf", "C. filetype:pdf", "D. ext:pdf"],
+                correctIndex: 2, // C
+                explanation: "Toán tử 'filetype:pdf' dùng để lọc kết quả tìm kiếm đúng định dạng tệp tin PDF trên máy tìm kiếm Google."
+            },
+            {
+                id: "mc-11",
+                topic: "Chủ đề 2",
+                lesson: "Bài 8. Thư điện tử & Mạng xã hội",
+                level: "Nhận biết",
+                question: "Trong Gmail, để hiển thị tất cả thư quan trọng, ta gõ vào ô tìm kiếm cú pháp gì?",
+                options: ["A. is:starred", "B. is:important", "C. label:important", "D. mark:important"],
+                correctIndex: 1, // B
+                explanation: "Cú pháp 'is:important' lọc ra toàn bộ các thư điện tử được Gmail hoặc người dùng đánh dấu là quan trọng."
+            },
+            {
+                id: "mc-12",
+                topic: "Chủ đề 2",
+                lesson: "Bài 8. Thư điện tử & Mạng xã hội",
+                level: "Thông hiểu",
+                question: "Phân loại thư điện tử tự động trong Gmail là ứng dụng của công nghệ nào?",
+                options: ["A. Mã hóa dữ liệu", "B. Học máy (Machine Learning)", "C. Lập trình hướng đối tượng", "D. Mạng máy tính"],
+                correctIndex: 1, // B
+                explanation: "Gmail áp dụng thuật toán Học máy (Machine Learning) để phân tích thói quen mở/trả lời thư của người dùng và tự động gắn nhãn quan trọng/thư rác."
+            }
+        ];
+
+        // Section II: 4 True/False Questions (16 Sub-items)
+        const QUESTIONS_TF = [
+            {
+                id: "tf-1",
+                lesson: "Bài 1. Hệ điều hành",
+                title: "Câu 1 (Bài 1 – Hệ điều hành)",
+                items: [
+                    { key: "a", text: "Hệ điều hành Windows là phần mềm thương mại của Microsoft.", correct: true, level: "Nhận biết", exp: "ĐÚNG. Windows là phần mềm có bản quyền thương mại do công ty Microsoft sở hữu và bán quyền sử dụng." },
+                    { key: "b", text: "LINUX có nguồn gốc từ hệ điều hành UNIX và là phần mềm nguồn mở.", correct: true, level: "Nhận biết", exp: "ĐÚNG. LINUX dựa trên UNIX và được mở mã nguồn hoàn toàn theo giấy phép GPL." },
+                    { key: "c", text: "HĐH di động (iOS, Android) không cần tích hợp cảm biến vì giao diện chạm là đủ.", correct: false, level: "Thông hiểu", exp: "SAI. HĐH di động rất cần tích hợp các cảm biến (gia tốc, GPS, con quay hồi chuyển...) để cung cấp tính năng định vị, tự xoay màn hình, đếm bước chân..." },
+                    { key: "d", text: "Hệ điều hành đóng vai trò môi trường trung gian giúp phần mềm ứng dụng khai thác phần cứng.", correct: true, level: "Vận dụng", exp: "ĐÚNG. HĐH điều phối tài nguyên phần cứng để các chương trình ứng dụng chạy ổn định trên đó." }
+                ]
+            },
+            {
+                id: "tf-2",
+                lesson: "Bài 3. Phần mềm nguồn mở & Internet",
+                title: "Câu 2 (Bài 3 – Phần mềm nguồn mở)",
+                items: [
+                    { key: "a", text: "Phần mềm thương mại bắt buộc người dùng phải trả phí mới được sử dụng.", correct: true, level: "Nhận biết", exp: "ĐÚNG. Muốn dùng phần mềm thương mại hợp pháp, người dùng hoặc tổ chức phải mua bản quyền." },
+                    { key: "b", text: "Phần mềm nguồn mở cho phép người dùng xem, sửa đổi và phân phối lại mã nguồn.", correct: true, level: "Nhận biết", exp: "ĐÚNG. Đây chính là nguyên lý cốt lõi của triết lý phần mềm nguồn mở (Open Source)." },
+                    { key: "c", text: "Phần mềm chạy trên Internet như Google Docs cần cài đặt trực tiếp trên máy tính mới dùng được.", correct: false, level: "Thông hiểu", exp: "SAI. Web App chạy trực tiếp trên trình duyệt web, dữ liệu xử lý đám mây nên không cần cài vào máy." },
+                    { key: "d", text: "Giấy phép MIT cho phép dùng mã nguồn mở để phát triển phần mềm thương mại.", correct: true, level: "Vận dụng", exp: "ĐÚNG. Giấy phép MIT rất thông thoáng, cho phép tự do tích hợp mã nguồn vào sản phẩm thương mại." }
+                ]
+            },
+            {
+                id: "tf-3",
+                lesson: "Bài 6. Lưu trữ và chia sẻ tệp trên Internet",
+                title: "Câu 3 (Bài 6 – Lưu trữ đám mây)",
+                items: [
+                    { key: "a", text: "Google Drive là một dịch vụ lưu trữ và chia sẻ tệp tin trên Internet.", correct: true, level: "Nhận biết", exp: "ĐÚNG. Google Drive là dịch vụ đĩa đám mây hàng đầu hiện nay." },
+                    { key: "b", text: "Khi chia sẻ tệp, chủ sở hữu có thể cấp quyền Chỉnh sửa cho người được chia sẻ.", correct: true, level: "Nhận biết", exp: "ĐÚNG. Google Drive cung cấp 3 quyền: Chỉ xem, Xem & nhận xét, Chỉnh sửa (Editor)." },
+                    { key: "c", text: "Lưu trữ đám mây không phụ thuộc vào kết nối Internet, có thể dùng offline hoàn toàn.", correct: false, level: "Thông hiểu", exp: "SAI. Bản chất lưu trữ đám mây đòi hỏi phải có Internet để đồng bộ và chia sẻ dữ liệu trực tuyến." },
+                    { key: "d", text: "Lưu trữ đám mây có rủi ro bảo mật nếu tài khoản người dùng bị xâm phạm.", correct: true, level: "Vận dụng", exp: "ĐÚNG. Nếu bị lộ mật khẩu tài khoản, kẻ xấu có thể truy cập toàn bộ tài liệu trực tuyến." }
+                ]
+            },
+            {
+                id: "tf-4",
+                lesson: "Bài 8. Thư điện tử & Mạng xã hội",
+                title: "Câu 4 (Bài 8 – Thư điện tử & MXH)",
+                items: [
+                    { key: "a", text: "Gmail dùng trí tuệ nhân tạo (Machine Learning) để tự động phân loại thư.", correct: true, level: "Nhận biết", exp: "ĐÚNG. AI/Machine Learning trong Gmail giúp phát hiện thư rác và đánh dấu thư quan trọng." },
+                    { key: "b", text: "Nhãn (Label) trong Gmail hoạt động giống hệt Thư mục (Folder), không có sự khác biệt.", correct: false, level: "Thông hiểu", exp: "SAI. Khác với Thư mục (1 tệp chỉ nằm ở 1 nơi), Nhãn trong Gmail cho phép gắn nhiều nhãn khác nhau cho cùng một thư." },
+                    { key: "c", text: "Quy tắc ứng xử văn minh trên MXH bao gồm việc kiểm tra thông tin trước khi chia sẻ.", correct: true, level: "Vận dụng", exp: "ĐÚNG. Xác minh tính chính xác giúp ngăn chặn lan truyền thông tin sai sự thật (Fake news)." },
+                    { key: "d", text: "Chia sẻ thông tin sai sự thật (fake news) trên mạng xã hội có thể vi phạm pháp luật.", correct: true, level: "Vận dụng", exp: "ĐÚNG. Hành vi tung tin giả bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự theo Luật An ninh mạng." }
+                ]
+            }
+        ];
+
+        // Section III: 3 Essay Situation Questions (8 Sub-items)
+        const QUESTIONS_ES = [
+            {
+                id: "es-1",
+                lesson: "Bài 4. Bên trong máy tính",
+                title: "Câu 1 (1,0 điểm) — Bài 4: Bên trong máy tính",
+                scenario: "📋 Tình huống: Một máy tính có cấu hình: CPU Core i5 (4 nhân, 2.4 GHz), RAM 4GB, ổ cứng HDD 1TB. Bạn An thấy máy chạy chậm khi mở nhiều ứng dụng cùng lúc.",
+                subQuestions: [
+                    {
+                        key: "a",
+                        level: "Thông hiểu (0,5 điểm)",
+                        question: "a) Giải thích tại sao máy chạy chậm khi mở nhiều ứng dụng?",
+                        modelAnswer: "Nguyên nhân chính là dung lượng RAM 4GB khá hạn chế. Khi mở nhiều ứng dụng cùng lúc, RAM bị quá tải (đầy bộ nhớ), hệ điều hành buộc phải dùng một phần ổ cứng HDD làm 'bộ nhớ ảo' (Virtual Memory). Vì tốc độ đọc/ghi của HDD rất chậm so với RAM nên máy bị giật lag rõ rệt.",
+                        keyChecklist: ["RAM 4GB quá nhỏ", "Tràn bộ nhớ RAM khi mở nhiều ứng dụng", "HĐH phải dùng ổ cứng HDD làm bộ nhớ ảo", "Tốc độ đọc/ghi của HDD rất chậm"]
+                    },
+                    {
+                        key: "b",
+                        level: "Vận dụng (0,5 điểm)",
+                        question: "b) Đề xuất cách nâng cấp để cải thiện tốc độ với chi phí hợp lí nhất?",
+                        modelAnswer: "Giải pháp nâng cấp hiệu quả và tiết kiệm:\n1. Nâng cấp RAM: Lắp thêm 1 thanh RAM 4GB hoặc thay bằng 8GB/16GB để thoải mái đa nhiệm.\n2. Lắp thêm/Thay thế ổ cứng SSD (dung lượng 128GB - 256GB) để cài đặt Hệ điều hành và ứng dụng (SSD có tốc độ nhanh gấp 5-10 lần HDD). HDD 1TB cũ giữ lại làm ổ chứa dữ liệu.",
+                        keyChecklist: ["Nâng cấp RAM lên 8GB hoặc 16GB", "Thay thế hoặc lắp thêm ổ cứng SSD", "Chuyển cài HĐH sang SSD"]
+                    }
+                ]
+            },
+            {
+                id: "es-2",
+                lesson: "Bài 5. Kết nối thiết bị số",
+                title: "Câu 2 (1,0 điểm) — Bài 5: Kết nối thiết bị số",
+                scenario: "📋 Tình huống: Bạn Bình muốn kết nối máy tính với màn hình ngoài 27 inch (Full HD, 144Hz) và loa Bluetooth để có trải nghiệm tốt hơn khi học online.",
+                subQuestions: [
+                    {
+                        key: "a",
+                        level: "Thông hiểu (0,5 điểm)",
+                        question: "a) Giải thích ý nghĩa các thông số kĩ thuật: '27 inch', 'Full HD (1920×1080)', '144Hz'?",
+                        modelAnswer: "• 27 inch: Độ dài đường chéo của màn hình hiển thị (1 inch ≈ 2.54 cm).\n• Full HD (1920×1080): Độ phân giải của màn hình, gồm 1920 điểm ảnh chiều ngang và 1080 điểm ảnh chiều dọc (tổng cộng khoảng 2 triệu điểm ảnh).\n• 144Hz: Tần số quét (tốc độ làm mới), nghĩa là màn hình có khả năng làm mới hình ảnh 144 lần trong một giây, giúp chuyển động mượt mà hơn hẳn màn 60Hz chuẩn.",
+                        keyChecklist: ["27 inch là độ dài đường chéo", "Full HD là độ phân giải 1920x1080 pixel", "144Hz là tần số quét / 144 khung hình/giây"]
+                    },
+                    {
+                        key: "b",
+                        level: "Vận dụng (0,5 điểm)",
+                        question: "b) Nêu cách kết nối màn hình (qua HDMI) và loa Bluetooth với máy tính?",
+                        modelAnswer: "• Kết nối màn hình: Cắm một đầu cáp HDMI vào cổng HDMI trên máy tính, đầu còn lại cắm vào cổng HDMI của màn hình. Mở nguồn màn hình, HĐH Windows sẽ tự nhận dạng và xuất hình ảnh.\n• Kết nối Loa Bluetooth: Bật nguồn loa và kích hoạt chế độ ghép đôi (Pairing) -> Trên máy tính vào Settings -> Bluetooth & devices -> Bật Bluetooth -> Chọn Add device -> Chọn Bluetooth -> Nhấp chọn tên loa Bluetooth để kết nối.",
+                        keyChecklist: ["Kết nối HDMI: Cắm cáp HDMI vào cổng máy tính và màn hình", "Kết nối Loa: Bật Bluetooth máy tính & loa", "Vào Settings -> Bluetooth -> Add device -> Chọn loa"]
+                    }
+                ]
+            },
+            {
+                id: "es-3",
+                lesson: "Bài 8. Thư điện tử & Mạng xã hội",
+                title: "Câu 3 (1,0 điểm) — Bài 8: Thư điện tử & Mạng xã hội",
+                scenario: "📋 Tình huống: Bạn Lan cần tổ chức hộp thư Gmail cho nhóm học tập: phân loại thư theo môn học, đánh dấu thư quan trọng từ giáo viên. Bạn cũng cần chia sẻ tài liệu nhóm qua Google Drive.",
+                subQuestions: [
+                    {
+                        key: "a",
+                        level: "Vận dụng (0,25 điểm)",
+                        question: "a) Nêu các bước tạo Nhãn 'Tin học' trong Gmail?",
+                        modelAnswer: "Bước 1: Đăng nhập Gmail, ở danh mục bên trái nhấp vào nút 'Danh sách mở rộng' (More) -> Chọn 'Tạo nhãn mới' (Create new label).\nBước 2: Nhập tên nhãn là 'Tin học' -> Nhấn 'Tạo' (Create).\nBước 3: Chọn các thư cần phân loại -> Nhấp vào biểu tượng Nhãn -> Tích chọn 'Tin học' -> Nhấn Áp dụng.",
+                        keyChecklist: ["Vào Danh sách mở rộng bên trái Gmail", "Chọn Tạo nhãn mới", "Gõ tên 'Tin học' và nhấn Save/Create"]
+                    },
+                    {
+                        key: "b",
+                        level: "Vận dụng (0,25 điểm)",
+                        question: "b) Làm thế nào để tìm tất cả thư quan trọng từ giáo viên trong Gmail?",
+                        modelAnswer: "Gõ cú pháp 'is:important' vào thanh tìm kiếm ở trên cùng của Gmail rồi nhấn Enter. Để chính xác hơn thư của giáo viên, có thể kết hợp: 'is:important từ_email_giáo_viên'.",
+                        keyChecklist: ["Gõ is:important vào thanh tìm kiếm Gmail"]
+                    },
+                    {
+                        key: "c",
+                        level: "Vận dụng (0,25 điểm)",
+                        question: "c) Để chia sẻ tài liệu nhóm trên Google Drive cho các bạn có thể cùng chỉnh sửa, cần cấp quyền gì?",
+                        modelAnswer: "Cần cấp quyền 'Người chỉnh sửa' (Editor). Thao tác: Nhấp chuột phải vào tệp/thư mục trên Drive -> Chọn 'Chia sẻ' (Share) -> Nhập địa chỉ Gmail của các bạn -> Tại mục phân quyền chọn 'Người chỉnh sửa' (Editor) -> Nhấn Gửi.",
+                        keyChecklist: ["Cấp quyền 'Người chỉnh sửa' (Editor)"]
+                    },
+                    {
+                        key: "d",
+                        level: "Vận dụng (0,25 điểm)",
+                        question: "d) Nêu 2 nguyên tắc ứng xử văn minh cần nhớ khi chia sẻ thông tin nhóm học qua MXH?",
+                        modelAnswer: "1. Kiểm tra tính xác thực của thông tin trước khi đăng tải/chia sẻ, tránh gửi các file nhiễm virus hoặc tin đồn vô căn cứ.\n2. Tôn trọng quyền riêng tư của các bạn: Không tự ý chia sẻ hình ảnh, tin nhắn cá nhân hoặc bài làm của người khác lên mạng xã hội khi chưa được sự đồng ý.",
+                        keyChecklist: ["Kiểm tra tính xác thực thông tin trước khi chia sẻ", "Tôn trọng quyền riêng tư & bản quyền của người khác"]
+                    }
+                ]
+            }
+        ];
+
+        /**
+         * 4. STATE MANAGEMENT & APP VARS
+         */
+        let state = {
+            currentPage: 'matrix', // 'matrix' | 'practice'
+            currentSection: 'mc',  // 'mc' | 'tf' | 'es'
+            
+            // Practice Questions Order (Can be shuffled)
+            mcQuestions: [...QUESTIONS_MC],
+            tfQuestions: JSON.parse(JSON.stringify(QUESTIONS_TF)),
+            esQuestions: JSON.parse(JSON.stringify(QUESTIONS_ES)),
+
+            // Active single MC Index
+            activeMCIndex: 0,
+
+            // User Answers Store
+            mcAnswers: {}, // { [questionId]: selectedOptionIndex }
+            tfAnswers: {}, // { "tf-1-a": true/false }
+            esAnswers: {}, // { "es-1-a": "text answer..." }
+            esRevealed: {} // { "es-1-a": true/false }
+        };
+
+        /**
+         * 5. INITIALIZATION & ROUTING
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMatrixTable();
+            renderFocalPointsAccordion();
+            renderMCDotsNav();
+            renderActiveMCQuestion();
+            renderTFQuestions();
+            renderESQuestions();
+            updateProgressSummary();
+
+            // Keyboard Shortcuts
+            document.addEventListener('keydown', handleKeyboardShortcuts);
+        });
+
+        function switchPage(page) {
+            state.currentPage = page;
+            const matrixSec = document.getElementById('page-matrix');
+            const practiceSec = document.getElementById('page-practice');
+            const btnMatrix = document.getElementById('tab-matrix');
+            const btnPractice = document.getElementById('tab-practice');
+            const progressHeader = document.getElementById('header-progress-container');
+
+            if (page === 'matrix') {
+                matrixSec.classList.remove('hidden');
+                practiceSec.classList.add('hidden');
+                progressHeader.classList.add('hidden');
+
+                btnMatrix.className = "flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 bg-brand-600 text-white shadow";
+                btnPractice.className = "flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 text-slate-400 hover:text-white";
+            } else {
+                matrixSec.classList.add('hidden');
+                practiceSec.classList.remove('hidden');
+                progressHeader.classList.remove('hidden');
+
+                btnPractice.className = "flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 bg-brand-600 text-white shadow";
+                btnMatrix.className = "flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 text-slate-400 hover:text-white";
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function switchPracticeSection(section) {
+            state.currentSection = section;
+            const secMC = document.getElementById('section-mc');
+            const secTF = document.getElementById('section-tf');
+            const secES = document.getElementById('section-es');
+
+            const tabMC = document.getElementById('p-tab-mc');
+            const tabTF = document.getElementById('p-tab-tf');
+            const tabES = document.getElementById('p-tab-es');
+
+            const inactiveCls = "px-4 py-2.5 text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap flex items-center gap-2";
+            const activeCls = "px-4 py-2.5 text-brand-400 border-b-2 border-brand-500 font-bold whitespace-nowrap flex items-center gap-2";
+
+            tabMC.className = section === 'mc' ? activeCls : inactiveCls;
+            tabTF.className = section === 'tf' ? activeCls : inactiveCls;
+            tabES.className = section === 'es' ? activeCls : inactiveCls;
+
+            secMC.classList.toggle('hidden', section !== 'mc');
+            secTF.classList.toggle('hidden', section !== 'tf');
+            secES.classList.toggle('hidden', section !== 'es');
+        }
+
+        /**
+         * 6. PAGE 1: MATRIX TABLE & REVIEW RENDERING
+         */
+        function renderMatrixTable() {
+            const tbody = document.getElementById('matrix-table-body');
+            tbody.innerHTML = MATRIX_DATA.map(item => `
+                <tr class="hover:bg-slate-800/80 transition">
+                    <td class="p-3.5 font-bold text-white">${item.title}</td>
+                    <td class="p-3.5 text-center">
+                        <span class="inline-block px-2 py-0.5 rounded bg-slate-900 border border-slate-700 font-medium">
+                            ${item.mc.total} câu (${item.mc.nb}NB - ${item.mc.th}TH)
+                        </span>
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <span class="inline-block px-2 py-0.5 rounded bg-slate-900 border border-slate-700 font-medium">
+                            ${item.tf.total > 0 ? `${item.tf.total} lệnh (${item.tf.nb}NB - ${item.tf.th}TH - ${item.tf.vd}VD)` : '0'}
+                        </span>
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <span class="inline-block px-2 py-0.5 rounded bg-slate-900 border border-slate-700 font-medium">
+                            ${item.es.total > 0 ? `${item.es.total} ý (${item.es.th}TH - ${item.es.vd}VD)` : '0'}
+                        </span>
+                    </td>
+                    <td class="p-3.5 text-center font-bold text-indigo-400">${item.totalCommands}</td>
+                    <td class="p-3.5 text-center font-bold text-emerald-400">${item.points.toFixed(2)}đ</td>
+                    <td class="p-3.5 text-center font-semibold text-brand-400">${item.percentage}</td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="toggleMatrixDetail(${item.lessonId})" class="text-xs px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition">
+                            Chi tiết <i id="icon-mat-detail-${item.lessonId}" class="fa-solid fa-chevron-down ml-1"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr id="row-mat-detail-${item.lessonId}" class="hidden bg-slate-900/90">
+                    <td colspan="8" class="p-4 border-t border-slate-800">
+                        <div class="space-y-2 text-xs">
+                            <p class="text-slate-300">🎯 <b>Yêu cầu kiến thức chuẩn:</b> ${item.outcomes}</p>
+                            <p class="text-amber-300">⚡ <b>Nội dung ưu tiên ôn tập:</b> ${item.priorityFocus}</p>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function toggleMatrixDetail(id) {
+            const row = document.getElementById(`row-mat-detail-${id}`);
+            const icon = document.getElementById(`icon-mat-detail-${id}`);
+            row.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        }
+
+        function renderFocalPointsAccordion() {
+            const container = document.getElementById('focal-points-accordion');
+            container.innerHTML = FOCAL_NOTES.map(note => `
+                <div class="bg-slate-900/80 rounded-xl border border-slate-700/70 overflow-hidden">
+                    <button onclick="toggleAccordionNote(${note.id})" class="w-full p-3.5 text-left font-bold text-slate-200 hover:text-white flex items-center justify-between transition">
+                        <span>${note.title}</span>
+                        <i id="acc-icon-${note.id}" class="fa-solid fa-chevron-down text-slate-400"></i>
+                    </button>
+                    <div id="acc-body-${note.id}" class="hidden p-4 border-t border-slate-800 text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-950/40">
+                        ${note.text}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleAccordionNote(id) {
+            const body = document.getElementById(`acc-body-${id}`);
+            const icon = document.getElementById(`acc-icon-${id}`);
+            body.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        }
+
+        function toggleAllAccordions() {
+            FOCAL_NOTES.forEach(note => {
+                const body = document.getElementById(`acc-body-${note.id}`);
+                const icon = document.getElementById(`acc-icon-${note.id}`);
+                if (body && icon) {
+                    body.classList.remove('hidden');
+                    icon.classList.add('rotate-180');
+                }
+            });
+        }
+
+        /**
+         * 7. PAGE 2: PRACTICE - MULTIPLE CHOICE LOGIC
+         */
+        function renderMCDotsNav() {
+            const container = document.getElementById('mc-dots-nav');
+            container.innerHTML = state.mcQuestions.map((q, idx) => {
+                const isAnswered = state.mcAnswers.hasOwnProperty(q.id);
+                const isCorrect = isAnswered && state.mcAnswers[q.id] === q.correctIndex;
+                const isActive = idx === state.activeMCIndex;
+
+                let cls = "w-8 h-8 rounded-lg text-xs font-bold transition flex items-center justify-center border ";
+                if (isActive) {
+                    cls += "ring-2 ring-brand-400 border-brand-500 bg-brand-600 text-white ";
+                } else if (isAnswered) {
+                    cls += isCorrect ? "bg-emerald-950/80 border-emerald-500 text-emerald-400 " : "bg-rose-950/80 border-rose-500 text-rose-400 ";
+                } else {
+                    cls += "bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700 ";
+                }
+
+                return `<button onclick="jumpToMCQuestion(${idx})" class="${cls}">${idx + 1}</button>`;
+            }).join('');
+        }
+
+        function renderActiveMCQuestion() {
+            const q = state.mcQuestions[state.activeMCIndex];
+            const card = document.getElementById('mc-question-card');
+            const isAnswered = state.mcAnswers.hasOwnProperty(q.id);
+            const userChoice = state.mcAnswers[q.id];
+
+            let optionsHTML = q.options.map((opt, optIdx) => {
+                let btnStyle = "w-full text-left p-4 rounded-xl border text-sm font-medium transition flex items-center justify-between ";
+                let badge = "";
+
+                if (isAnswered) {
+                    if (optIdx === q.correctIndex) {
+                        btnStyle += "bg-emerald-950/80 border-emerald-500 text-emerald-200 font-bold ";
+                        badge = `<span class="text-xs px-2 py-0.5 rounded bg-emerald-800 text-emerald-100"><i class="fa-solid fa-check mr-1"></i>Đáp án đúng</span>`;
+                    } else if (optIdx === userChoice) {
+                        btnStyle += "bg-rose-950/80 border-rose-500 text-rose-200 font-bold ";
+                        badge = `<span class="text-xs px-2 py-0.5 rounded bg-rose-800 text-rose-100"><i class="fa-solid fa-xmark mr-1"></i>Đã chọn</span>`;
+                    } else {
+                        btnStyle += "bg-slate-900/50 border-slate-800 text-slate-500 opacity-60 ";
+                    }
+                } else {
+                    btnStyle += "bg-slate-900/80 border-slate-700/80 text-slate-200 hover:bg-slate-700 hover:border-brand-500 ";
+                }
+
+                return `
+                    <button ${isAnswered ? 'disabled' : ''} onclick="handleMCAnswer('${q.id}', ${optIdx})" class="${btnStyle}">
+                        <span>${opt}</span>
+                        ${badge}
+                    </button>
+                `;
+            }).join('');
+
+            let feedbackHTML = "";
+            if (isAnswered) {
+                const isCorrect = userChoice === q.correctIndex;
+                feedbackHTML = `
+                    <div class="p-4 rounded-xl border ${isCorrect ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300' : 'bg-rose-950/40 border-rose-800/60 text-rose-300'} space-y-2 fade-in">
+                        <div class="flex items-center gap-2 font-bold text-sm">
+                            <i class="fa-solid ${isCorrect ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-rose-400'}"></i>
+                            <span>${isCorrect ? 'Chính xác!' : 'Chưa chính xác!'}</span>
+                        </div>
+                        <p class="text-xs leading-relaxed text-slate-300"><b>Lời giải:</b> ${q.explanation}</p>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="flex items-center justify-between text-xs border-b border-slate-700/60 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-1 rounded bg-brand-950 text-brand-300 border border-brand-800/50 font-bold">Câu ${state.activeMCIndex + 1} / 12</span>
+                        <span class="px-2 py-1 rounded bg-slate-900 text-slate-400">${q.lesson}</span>
+                    </div>
+                    <span class="px-2 py-1 rounded bg-slate-900 text-amber-400 border border-amber-900/40 font-medium">${q.level}</span>
+                </div>
+
+                <h3 class="text-base sm:text-lg font-bold text-white leading-snug">${q.question}</h3>
+
+                <div class="space-y-2.5">
+                    ${optionsHTML}
+                </div>
+
+                ${feedbackHTML}
+            `;
+
+            // Update Prev/Next buttons
+            document.getElementById('btn-mc-prev').disabled = state.activeMCIndex === 0;
+            document.getElementById('btn-mc-next').disabled = state.activeMCIndex === state.mcQuestions.length - 1;
+
+            renderMCDotsNav();
+            updateProgressSummary();
+        }
+
+        function handleMCAnswer(qId, selectedOpt) {
+            if (state.mcAnswers.hasOwnProperty(qId)) return;
+            state.mcAnswers[qId] = selectedOpt;
+            renderActiveMCQuestion();
+        }
+
+        function navMCQuestion(dir) {
+            const nextIdx = state.activeMCIndex + dir;
+            if (nextIdx >= 0 && nextIdx < state.mcQuestions.length) {
+                state.activeMCIndex = nextIdx;
+                renderActiveMCQuestion();
+            }
+        }
+
+        function jumpToMCQuestion(idx) {
+            state.activeMCIndex = idx;
+            renderActiveMCQuestion();
+        }
+
+        /**
+         * 8. PAGE 2: PRACTICE - TRUE / FALSE LOGIC
+         */
+        function renderTFQuestions() {
+            const container = document.getElementById('tf-questions-container');
+            container.innerHTML = state.tfQuestions.map((qGroup) => {
+                const itemsHTML = qGroup.items.map((item) => {
+                    const itemKey = `${qGroup.id}-${item.key}`;
+                    const isAnswered = state.tfAnswers.hasOwnProperty(itemKey);
+                    const userVal = state.tfAnswers[itemKey];
+                    const isCorrect = isAnswered && userVal === item.correct;
+
+                    let trueBtnCls = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition border ";
+                    let falseBtnCls = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition border ";
+
+                    if (isAnswered) {
+                        if (userVal === true) {
+                            trueBtnCls += isCorrect ? "bg-emerald-600 text-white border-emerald-500" : "bg-rose-600 text-white border-rose-500";
+                            falseBtnCls += "bg-slate-900 border-slate-800 text-slate-600 opacity-40";
+                        } else {
+                            falseBtnCls += isCorrect ? "bg-emerald-600 text-white border-emerald-500" : "bg-rose-600 text-white border-rose-500";
+                            trueBtnCls += "bg-slate-900 border-slate-800 text-slate-600 opacity-40";
+                        }
+                    } else {
+                        trueBtnCls += "bg-slate-800 border-slate-700 text-slate-200 hover:bg-emerald-600 hover:text-white";
+                        falseBtnCls += "bg-slate-800 border-slate-700 text-slate-200 hover:bg-rose-600 hover:text-white";
+                    }
+
+                    return `
+                        <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800 space-y-2">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <p class="text-xs sm:text-sm text-slate-200 flex-1"><b>${item.key})</b> ${item.text}</p>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <button ${isAnswered ? 'disabled' : ''} onclick="handleTFAnswer('${itemKey}', true)" class="${trueBtnCls}">Đúng</button>
+                                    <button ${isAnswered ? 'disabled' : ''} onclick="handleTFAnswer('${itemKey}', false)" class="${falseBtnCls}">Sai</button>
+                                </div>
+                            </div>
+                            ${isAnswered ? `
+                                <div class="p-2.5 rounded-lg ${isCorrect ? 'bg-emerald-950/30 text-emerald-300' : 'bg-rose-950/30 text-rose-300'} text-xs fade-in">
+                                    <b>${isCorrect ? '✓ Chính xác!' : '✗ Chưa chính xác! (Đáp án chuẩn: ' + (item.correct ? 'ĐÚNG' : 'SAI') + ')'}</b>
+                                    <p class="mt-0.5 text-slate-300">${item.exp}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="bg-slate-800/90 p-5 rounded-2xl border border-slate-700/80 shadow-md space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-700/60 pb-2">
+                            <h3 class="text-base font-bold text-white">${qGroup.title}</h3>
+                            <span class="text-xs px-2.5 py-0.5 rounded bg-slate-900 text-brand-400 border border-slate-700">${qGroup.lesson}</span>
+                        </div>
+                        <div class="space-y-3">
+                            ${itemsHTML}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function handleTFAnswer(itemKey, choice) {
+            if (state.tfAnswers.hasOwnProperty(itemKey)) return;
+            state.tfAnswers[itemKey] = choice;
+            renderTFQuestions();
+            updateProgressSummary();
+        }
+
+        /**
+         * 9. PAGE 2: PRACTICE - ESSAY SITUATIONS LOGIC
+         */
+        function renderESQuestions() {
+            const container = document.getElementById('es-questions-container');
+            container.innerHTML = state.esQuestions.map((qGroup) => {
+                const subHTML = qGroup.subQuestions.map((sub) => {
+                    const subKey = `${qGroup.id}-${sub.key}`;
+                    const textVal = state.esAnswers[subKey] || "";
+                    const isRevealed = state.esRevealed[subKey] || false;
+
+                    const checklistHTML = sub.keyChecklist.map(pt => `
+                        <li class="flex items-start gap-1.5 text-xs text-slate-300">
+                            <i class="fa-solid fa-square-check text-emerald-400 mt-0.5"></i>
+                            <span>${pt}</span>
+                        </li>
+                    `).join('');
+
+                    return `
+                        <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-200">${sub.question}</h4>
+                                <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-amber-400 border border-slate-700">${sub.level}</span>
+                            </div>
+
+                            <textarea oninput="handleESTextInput('${subKey}', this.value)" rows="3" placeholder="Nhập câu trả lời hoặc dàn ý của bạn tại đây..." class="w-full p-3 bg-slate-950 text-slate-200 text-xs sm:text-sm rounded-xl border border-slate-700 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition">${textVal}</textarea>
+
+                            <div class="flex items-center justify-between pt-1">
+                                <button onclick="toggleESReveal('${subKey}')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-brand-900/60 hover:bg-brand-800 text-brand-300 border border-brand-700/50 transition flex items-center gap-1.5">
+                                    <i class="fa-solid ${isRevealed ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                                    <span>${isRevealed ? 'Ẩn đáp án tham khảo' : 'Xem đáp án và giải thích'}</span>
+                                </button>
+                                ${textVal.trim() ? '<span class="text-xs text-emerald-400"><i class="fa-solid fa-check mr-1"></i>Đã ghi chép</span>' : ''}
+                            </div>
+
+                            ${isRevealed ? `
+                                <div class="p-4 bg-slate-950/80 rounded-xl border border-brand-800/40 text-xs sm:text-sm space-y-3 fade-in">
+                                    <div class="space-y-1">
+                                        <p class="font-bold text-brand-300">💡 Đáp án & Lời giải tham khảo:</p>
+                                        <p class="text-slate-200 whitespace-pre-line leading-relaxed">${sub.modelAnswer}</p>
+                                    </div>
+                                    <div class="pt-2 border-t border-slate-800 space-y-1">
+                                        <p class="font-bold text-slate-400 text-xs uppercase tracking-wider">Checklist các ý bắt buộc phải có:</p>
+                                        <ul class="space-y-1">
+                                            ${checklistHTML}
+                                        </ul>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="bg-slate-800/90 p-5 rounded-2xl border border-slate-700/80 shadow-md space-y-4">
+                        <div class="border-b border-slate-700/60 pb-3">
+                            <span class="text-xs px-2.5 py-0.5 rounded bg-brand-950 text-brand-300 border border-brand-800/50 font-bold mb-2 inline-block">${qGroup.lesson}</span>
+                            <h3 class="text-base font-bold text-white mb-1">${qGroup.title}</h3>
+                            <p class="text-xs sm:text-sm text-slate-300 italic bg-slate-900/80 p-3 rounded-xl border border-slate-800">${qGroup.scenario}</p>
+                        </div>
+                        <div class="space-y-4">
+                            ${subHTML}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function handleESTextInput(subKey, val) {
+            state.esAnswers[subKey] = val;
+            updateProgressSummary();
+        }
+
+        function toggleESReveal(subKey) {
+            state.esRevealed[subKey] = !state.esRevealed[subKey];
+            renderESQuestions();
+            updateProgressSummary();
+        }
+
+        /**
+         * 10. PROGRESS CALCULATION & SUMMARY BOARD
+         */
+        function updateProgressSummary() {
+            // Section I Count
+            const mcAnswered = Object.keys(state.mcAnswers).length;
+            let mcCorrect = 0;
+            state.mcQuestions.forEach(q => {
+                if (state.mcAnswers[q.id] === q.correctIndex) mcCorrect++;
+            });
+
+            // Section II Count
+            const tfAnswered = Object.keys(state.tfAnswers).length;
+            let tfCorrect = 0;
+            state.tfQuestions.forEach(qGroup => {
+                qGroup.items.forEach(item => {
+                    const key = `${qGroup.id}-${item.key}`;
+                    if (state.tfAnswers.hasOwnProperty(key) && state.tfAnswers[key] === item.correct) {
+                        tfCorrect++;
+                    }
+                });
+            });
+
+            // Section III Count (Count as answered if user wrote text OR revealed answer)
+            let esAnswered = 0;
+            state.esQuestions.forEach(qGroup => {
+                qGroup.subQuestions.forEach(sub => {
+                    const key = `${qGroup.id}-${sub.key}`;
+                    if ((state.esAnswers[key] && state.esAnswers[key].trim().length > 0) || state.esRevealed[key]) {
+                        esAnswered++;
+                    }
+                });
+            });
+
+            const totalAnswered = mcAnswered + tfAnswered + esAnswered;
+            const totalCommands = 12 + 16 + 8; // 36 commands in study guide
+            const pct = Math.round((totalAnswered / totalCommands) * 100);
+
+            // Update Header Progress Bar
+            document.getElementById('progress-text-summary').innerText = `Tiến độ bài làm: ${totalAnswered}/${totalCommands} câu (${pct}%)`;
+            document.getElementById('score-text-summary').innerText = `Đúng: ${mcCorrect + tfCorrect} / 28 lệnh TN`;
+            document.getElementById('header-progress-bar').style.width = `${pct}%`;
+
+            // Update Tab Badges
+            document.getElementById('badge-mc-count').innerText = `${mcAnswered}/12`;
+            document.getElementById('badge-tf-count').innerText = `${tfAnswered}/16`;
+            document.getElementById('badge-es-count').innerText = `${esAnswered}/8`;
+
+            // Check if all completed -> Show summary card
+            if (totalAnswered >= totalCommands) {
+                showSummaryCard(mcAnswered, mcCorrect, tfAnswered, tfCorrect);
+            }
+        }
+
+        function showSummaryCard(mcAnswered, mcCorrect, tfAnswered, tfCorrect) {
+            const summaryCard = document.getElementById('summary-card');
+            summaryCard.classList.remove('hidden');
+
+            document.getElementById('sum-total-answered').innerText = `${mcAnswered + tfAnswered + 8} / 36`;
+            document.getElementById('sum-mc-correct').innerText = `${mcCorrect} / 12`;
+            document.getElementById('sum-tf-correct').innerText = `${tfCorrect} / 16`;
+
+            // Score estimation based on Matrix formula (7.0 max for TN)
+            // MC: 12 questions = 3.0 points (0.25 pt each)
+            // TF: 16 items = 4.0 points (0.25 pt each item)
+            const mcScore = mcCorrect * 0.25;
+            const tfScore = tfCorrect * 0.25;
+            const estimatedTNScore = (mcScore + tfScore).toFixed(2);
+
+            document.getElementById('sum-score-estimated').innerText = `${estimatedTNScore} / 7.0`;
+
+            // Collect Weak Lessons
+            const weakLessonsSet = new Set();
+            state.mcQuestions.forEach(q => {
+                if (state.mcAnswers.hasOwnProperty(q.id) && state.mcAnswers[q.id] !== q.correctIndex) {
+                    weakLessonsSet.add(q.lesson);
+                }
+            });
+            state.tfQuestions.forEach(qGroup => {
+                qGroup.items.forEach(item => {
+                    const key = `${qGroup.id}-${item.key}`;
+                    if (state.tfAnswers.hasOwnProperty(key) && state.tfAnswers[key] !== item.correct) {
+                        weakLessonsSet.add(qGroup.lesson);
+                    }
+                });
+            });
+
+            const weakListEl = document.getElementById('sum-weak-lessons-list');
+            if (weakLessonsSet.size === 0) {
+                weakListEl.innerHTML = `<span class="text-xs text-emerald-400 font-bold"><i class="fa-solid fa-star mr-1"></i>Tuyệt vời! Bạn không làm sai câu trắc nghiệm nào.</span>`;
+            } else {
+                weakListEl.innerHTML = Array.from(weakLessonsSet).map(les => `
+                    <span class="px-2.5 py-1 rounded-lg bg-rose-950/80 text-rose-300 border border-rose-800/60 text-xs font-semibold">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i>${les}
+                    </span>
+                `).join('');
+            }
+
+            summaryCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        /**
+         * 11. SHUFFLE & RESET FUNCTIONS
+         */
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function shuffleCurrentQuestions() {
+            // Shuffle Section I
+            state.mcQuestions = shuffleArray([...QUESTIONS_MC]);
+            state.activeMCIndex = 0;
+
+            // Shuffle Section II (Shuffle group order, keep a,b,c,d intact)
+            state.tfQuestions = shuffleArray(JSON.parse(JSON.stringify(QUESTIONS_TF)));
+
+            // Shuffle Section III (Shuffle situation order, keep sub-questions intact)
+            state.esQuestions = shuffleArray(JSON.parse(JSON.stringify(QUESTIONS_ES)));
+
+            renderMCDotsNav();
+            renderActiveMCQuestion();
+            renderTFQuestions();
+            renderESQuestions();
+
+            showToast("🔀 Đã xáo trộn thứ tự tất cả câu hỏi thành công!");
+        }
+
+        function confirmResetPractice() {
+            if (confirm("Bạn có chắc chắn muốn làm lại bài ôn tập từ đầu? Mọi đáp án đã chọn sẽ được làm mới.")) {
+                state.mcAnswers = {};
+                state.tfAnswers = {};
+                state.esAnswers = {};
+                state.esRevealed = {};
+                state.activeMCIndex = 0;
+
+                document.getElementById('summary-card').classList.add('hidden');
+
+                // Re-shuffle for fresh practice
+                shuffleCurrentQuestions();
+                updateProgressSummary();
+
+                showToast("🔄 Đã đặt lại trạng thái bài làm!");
+            }
+        }
+
+        /**
+         * 12. UTILITY & SHORTCUTS
+         */
+        function handleKeyboardShortcuts(e) {
+            if (state.currentPage !== 'practice' || state.currentSection !== 'mc') return;
+
+            // Ignore typing in input/textarea
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+            const key = e.key.toUpperCase();
+            if (['A', 'B', 'C', 'D'].includes(key)) {
+                const optMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+                const currentQ = state.mcQuestions[state.activeMCIndex];
+                if (currentQ) {
+                    handleMCAnswer(currentQ.id, optMap[key]);
+                }
+            } else if (e.key === 'ArrowLeft') {
+                navMCQuestion(-1);
+            } else if (e.key === 'ArrowRight') {
+                navMCQuestion(1);
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-5 right-5 z-50 bg-brand-600 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs sm:text-sm font-semibold flex items-center gap-2 border border-brand-400 fade-in";
+            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${msg}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
