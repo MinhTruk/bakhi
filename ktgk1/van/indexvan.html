@@ -75,17 +75,30 @@
                     Bấm vào nút bên dưới để mở đề ôn tập chi tiết gồm phần Đọc hiểu, các câu hỏi phân tích từng khung và bài văn nghị luận mẫu.
                 </p>
 
-                <!-- Nút Dẫn Đến van.html -->
-                <a href="./van.html" class="w-full p-4 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl shadow-lg shadow-rose-600/30 transition flex items-center justify-between text-base group cursor-pointer">
-                    <span class="flex items-center space-x-3">
-                        <i class="fa-solid fa-arrow-up-right-from-square text-xl group-hover:scale-110 transition"></i>
-                        <span>Mở Đề Ôn Tập KTGK 1 (van.html)</span>
-                    </span>
-                    <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition"></i>
-                </a>
-            </div>
-        </div>
+                <!-- Khung chứa các nút bấm (Giúp các nút cách đều nhau) -->
+		<div class="flex flex-col gap-3 w-full">
 
+    			<!-- Nút 1: Đề Ôn Tập Văn -->
+    			<a href="./matran.html" class="w-full p-4 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl shadow-lg shadow-rose-600/30 transition flex items-center justify-between text-base group cursor-pointer">
+        			<span class="flex items-center gap-3">
+            				<i class="fa-solid fa-arrow-up-right-from-square text-xl group-hover:scale-110 transition"></i>
+            				<span>Mở Ma Trận Ôn Tập KTGK 1 (Văn)</span>
+        			</span>
+        			<i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition"></i>
+    			</a>
+
+    			<!-- Nút 2: Đề Ôn Tập Toán (Mới thêm) -->
+    			<!-- Bạn có thể đổi màu bg-blue-600 (Xanh dương) để phân biệt với nút Văn -->
+    			<a href="./van.html" class="w-full p-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center justify-between text-base group cursor-pointer">
+        			<span class="flex items-center gap-3">
+            				<i class="fa-solid fa-arrow-up-right-from-square text-xl group-hover:scale-110 transition"></i>
+            				<span>Mở Đề Ôn Tập KTGK 1 (Văn)</span>
+        			</span>
+        			<i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition"></i>
+    			</a>
+                </div> <!-- Đóng thẻ div khung chứa nút -->
+            </div>
+        </div> <!-- Đóng thẻ div Danh Mục Chức Năng -->
     </main>
 
     <!-- Footer -->
