@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn tập Giữa kì I – Ngữ văn 11</title>
+    <!-- Google Fonts: Lexend -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Lexend', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#151f32',
+                            900: '#0f172a',
+                            950: '#090d16',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+            scroll-behavior: smooth;
+        }
+        @media print {
+            body { background-color: #ffffff !important; color: #000000 !important; }
+            no-print, header, footer, button { display: none !important; }
+            .print-card { background: #ffffff !important; border: 1px solid #cbd5e1 !important; color: #000000 !important; box-shadow: none !important; }
+            table { border-collapse: collapse !important; width: 100% !important; }
+            th, td { border: 1px solid #94a3b8 !important; color: #000000 !important; padding: 6px !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col selection:bg-rose-500 selection:text-white">
+
+    <!-- HEADER CỐ ĐỊNH -->
+    <header class="sticky top-0 z-30 bg-slate-800/80 backdrop-blur border-b border-slate-700/60 shadow-lg">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="index.html" class="bg-rose-600 hover:bg-rose-500 text-white p-2 rounded-lg transition-colors flex items-center justify-center shadow-md" title="Quay lại">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h1 class="text-base md:text-lg font-bold leading-tight text-slate-100">Ôn tập GK1 – Ngữ văn 11</h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Năm học 2026–2027 • 90 phút • Đọc hiểu truyện & Nghị luận nghệ thuật</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-2 rounded-xl border border-slate-700 text-xs md:text-sm font-medium transition-colors flex items-center space-x-1.5" title="In / Lưu PDF">
+                    <i class="fa-solid fa-print text-rose-400"></i>
+                    <span class="hidden sm:inline">In / PDF</span>
+                </button>
+                <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-2 rounded-xl border border-slate-700 text-xs md:text-sm font-medium transition-colors flex items-center space-x-1.5" title="Trang chủ môn">
+                    <i class="fa-solid fa-house text-rose-400"></i>
+                    <span class="hidden sm:inline">Trang chủ</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- NỘI DUNG CHÍNH -->
+    <main class="max-w-4xl w-full mx-auto p-4 md:p-8 space-y-8 flex-grow">
+
+        <!-- INTRO HERO -->
+        <section class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 text-rose-500/10 text-9xl font-bold pointer-events-none">11</div>
+            <div class="inline-flex items-center space-x-2 bg-rose-500/10 text-rose-400 px-3 py-1 rounded-full text-xs font-semibold mb-4 border border-rose-500/20">
+                <i class="fa-solid fa-book-open"></i><span>Tài liệu ôn tập chính thức</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-100 mb-3">Ôn Tập Kiểm Tra Giữa Kì I Ngữ Văn 11</h2>
+            <p class="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
+                Hệ thống kiến thức trọng tâm, ma trận đề, cẩm nang chiến thuật đọc hiểu truyện ngắn, dàn ý chi tiết bài nghị luận văn học về đặc sắc nghệ thuật kể chuyện cùng kho lý luận và câu nối chuẩn xác.
+            </p>
+            <!-- THANH ĐIỀU HƯỚNG NHANH -->
+            <div class="flex flex-wrap gap-2 text-xs">
+                <a href="#muc1" class="bg-slate-900/80 hover:bg-rose-600/20 hover:text-rose-300 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">I. Ma trận</a>
+                <a href="#muc2" class="bg-slate-900/80 hover:bg-rose-600/20 hover:text-rose-300 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">II. Đặc tả</a>
+                <a href="#muc3" class="bg-slate-900/80 hover:bg-rose-600/20 hover:text-rose-300 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">III. Cẩm nang đọc hiểu</a>
+                <a href="#muc4" class="bg-slate-900/80 hover:bg-rose-600/20 hover:text-rose-300 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">IV. Mẹo & Lỗi</a>
+                <a href="#muc5" class="bg-slate-900/80 hover:bg-rose-600/20 hover:text-rose-300 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">V. Dàn ý Viết</a>
+                <a href="#muc6" class="bg-slate-900/80 hover:bg-rose-600/20 hover:text-rose-300 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">VI. Lý luận văn học</a>
+                <a href="#muc7" class="bg-slate-900/80 hover:bg-rose-600/20 hover:text-rose-300 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">VII. Câu nối</a>
+                <a href="#muc8" class="bg-slate-900/80 hover:bg-rose-600/20 hover:text-rose-300 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">VIII. Ôn nhanh</a>
+                <a href="#muc9" class="bg-slate-900/80 hover:bg-rose-600/20 hover:text-rose-300 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">IX. Nguồn</a>
+            </div>
+        </section>
+
+        <!-- MỤC 1: TỔNG QUAN ĐỀ VÀ MA TRẬN -->
+        <section id="muc1" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl print-card">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 font-bold text-lg border border-rose-500/20">I</div>
+                <div>
+                    <h2 class="text-xl font-bold text-rose-400 uppercase tracking-wider">Tổng Quan Đề Và Ma Trận</h2>
+                    <p class="text-xs text-slate-400">Cấu trúc đề kiểm tra giữa kì I môn Ngữ văn 11 (Thời gian: 90 phút)</p>
+                </div>
+            </div>
+            <div class="overflow-x-auto mb-4">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-900/90 text-slate-200 border-b border-slate-700">
+                            <th class="p-3 font-semibold">Phần</th>
+                            <th class="p-3 font-semibold">Nội dung</th>
+                            <th class="p-3 font-semibold text-center">Số câu</th>
+                            <th class="p-3 font-semibold text-center">Nhận biết</th>
+                            <th class="p-3 font-semibold text-center">Thông hiểu</th>
+                            <th class="p-3 font-semibold text-center">Vận dụng</th>
+                            <th class="p-3 font-semibold text-center">Tổng</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700/60 text-slate-300">
+                        <tr class="hover:bg-slate-900/40">
+                            <td class="p-3 font-medium text-slate-200">Đọc hiểu</td>
+                            <td class="p-3">Truyện ngắn / đoạn trích truyện ngắn</td>
+                            <td class="p-3 text-center">6</td>
+                            <td class="p-3 text-center">2 câu – 15%</td>
+                            <td class="p-3 text-center">3 câu – 30%</td>
+                            <td class="p-3 text-center">1 câu – 15%</td>
+                            <td class="p-3 text-center font-bold text-rose-400">60%</td>
+                        </tr>
+                        <tr class="hover:bg-slate-900/40">
+                            <td class="p-3 font-medium text-slate-200">Viết</td>
+                            <td class="p-3">Nghị luận văn học về đặc sắc nghệ thuật kể chuyện</td>
+                            <td class="p-3 text-center">1 câu (*)</td>
+                            <td class="p-3 text-center">10%</td>
+                            <td class="p-3 text-center">15%</td>
+                            <td class="p-3 text-center">15%</td>
+                            <td class="p-3 text-center font-bold text-rose-400">40%</td>
+                        </tr>
+                        <tr class="bg-slate-900/60 font-bold text-slate-200">
+                            <td class="p-3" colspan="3">Tổng tỉ lệ chung</td>
+                            <td class="p-3 text-center text-rose-400">25%</td>
+                            <td class="p-3 text-center text-rose-400">45%</td>
+                            <td class="p-3 text-center text-rose-400">30%</td>
+                            <td class="p-3 text-center text-rose-400">100%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 text-xs md:text-sm text-slate-300 space-y-2">
+                <p><strong class="text-rose-400">Lưu ý quan trọng:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-slate-400">
+                    <li>Kí hiệu <strong>01*</strong> ở phần Viết nghĩa là một câu hỏi tự luận lớn tích hợp cả ba mức độ nhận thức (Nhận biết, Thông hiểu, Vận dụng), không phải ba câu viết riêng biệt.</li>
+                    <li>Phần Đọc hiểu tập trung vào ngữ liệu văn bản truyện ngắn; các vấn đề về <em>ngôn ngữ nói</em> và <em>ngôn ngữ viết</em> được nhấn mạnh trong đặc tả gốc.</li>
+                    <li>Thang điểm chi tiết từng câu tuân theo hướng dẫn chấm chính thức của nhà trường/sở giáo dục; không tự gán điểm cố định nếu ma trận gốc chưa quy định.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- MỤC 2: BẢNG ĐẶC TẢ ĐỀ -->
+        <section id="muc2" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl print-card">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 font-bold text-lg border border-rose-500/20">II</div>
+                <div>
+                    <h2 class="text-xl font-bold text-rose-400 uppercase tracking-wider">Bảng Đặc Tả Đề Kiểm Tra</h2>
+                    <p class="text-xs text-slate-400">Chi tiết yêu cầu cần đạt theo từng mức độ nhận thức</p>
+                </div>
+            </div>
+            <div class="space-y-6 text-sm">
+                <!-- ĐỌC HIỂU -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-base text-rose-300 flex items-center space-x-2">
+                        <i class="fa-solid fa-file-lines text-rose-400"></i><span>A. ĐỌC HIỂU (6 câu – 60%)</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                        <div class="bg-slate-800/80 p-4 rounded-lg border border-slate-700/60 space-y-2">
+                            <span class="text-xs font-bold bg-rose-500/20 text-rose-300 px-2.5 py-1 rounded">1. Nhận biết (2 câu – 15%)</span>
+                            <ul class="list-disc list-inside space-y-1 text-slate-300 text-xs">
+                                <li>Nhận biết ngôi kể và căn cứ/dấu hiệu xác định.</li>
+                                <li>Nhận biết nhân vật chính/trung tâm qua sự kiện, xung đột và chủ đề.</li>
+                                <li>Nhận biết chi tiết tiêu biểu, từ ngữ, hình ảnh, sự việc nổi bật hoặc lời thoại.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-slate-800/80 p-4 rounded-lg border border-slate-700/60 space-y-2">
+                            <span class="text-xs font-bold bg-amber-500/20 text-amber-300 px-2.5 py-1 rounded">2. Thông hiểu (3 câu – 30%)</span>
+                            <ul class="list-disc list-inside space-y-1 text-slate-300 text-xs">
+                                <li>Hiểu đặc điểm, tâm trạng, sự chuyển biến của nhân vật.</li>
+                                <li>Hiểu sự kết nối giữa lời người kể chuyện và lời độc thoại nội tâm.</li>
+                                <li>Hiểu tư tưởng nhà văn gửi gắm qua lời nhân vật.</li>
+                                <li>Đặc thù: Nhấn mạnh đặc điểm ngôn ngữ nói và ngôn ngữ viết.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-slate-800/80 p-4 rounded-lg border border-slate-700/60 space-y-2">
+                            <span class="text-xs font-bold bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded">3. Vận dụng (1 câu – 15%)</span>
+                            <ul class="list-disc list-inside space-y-1 text-slate-300 text-xs">
+                                <li>Kết nối nội dung văn bản với thực tiễn.</li>
+                                <li>Rút ra bài học ứng xử hoặc thông điệp nhân sinh có ý nghĩa.</li>
+                                <li>Hình thức: Viết đoạn văn ngắn (mở - thân - kết) đúng chuẩn lập luận.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- VIẾT -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-base text-rose-300 flex items-center space-x-2">
+                        <i class="fa-solid fa-pen-nib text-rose-400"></i><span>B. VIẾT (1 câu tích hợp – 40%)</span>
+                    </h3>
+                    <p class="text-slate-300 text-xs leading-relaxed">
+                        Nghị luận văn học về đặc sắc nghệ thuật kể chuyện của tác phẩm truyện (tích hợp Nhận biết 10%, Thông hiểu 15%, Vận dụng 15%). Yêu cầu học sinh biết phân tích các phương diện nghệ thuật (ngôi kể, điểm nhìn, ngôn ngữ, tình huống, miêu tả tâm lí, giọng điệu, chi tiết nghệ thuật…) và đánh giá tác dụng của chúng đối với việc khắc họa nhân vật và thể hiện chủ đề.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- MỤC 3: CẨM NANG TRIỂN KHAI CÁC DẠNG CÂU HỎI ĐỌC HIỂU -->
+        <section id="muc3" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl print-card">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 font-bold text-lg border border-rose-500/20">III</div>
+                <div>
+                    <h2 class="text-xl font-bold text-rose-400 uppercase tracking-wider">Cẩm Nang Triển Khai Các Dạng Câu Hỏi Đọc Hiểu</h2>
+                    <p class="text-xs text-slate-400">Dấu hiệu nhận biết, phương pháp làm bài, khung trả lời và lỗi thường gặp</p>
+                </div>
+            </div>
+            <div class="space-y-6 text-sm">
+                <!-- Dạng 1 -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-base text-slate-100 flex items-center justify-between">
+                        <span>1. Xác định ngôi kể</span>
+                        <span class="text-xs bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded">Nhận biết</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-rose-300">Dấu hiệu nhận biết:</strong></p>
+                            <p>• Ngôi thứ nhất: Xưng "tôi", "ta", tham gia trực tiếp vào câu chuyện.</p>
+                            <p>• Ngôi thứ ba: Gọi tên nhân vật, người kể giấu mặt, bao quát linh hoạt.</p>
+                        </div>
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-emerald-300">Khung trả lời chuẩn:</strong></p>
+                            <p class="italic bg-slate-900 p-2.5 rounded border border-slate-700 text-slate-200">"Văn bản được kể theo ngôi thứ... Dấu hiệu nhận biết là... Việc lựa chọn ngôi kể này giúp... [nêu hiệu quả cụ thể đối với đoạn trích]."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dạng 2 -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-base text-slate-100 flex items-center justify-between">
+                        <span>2. Xác định nhân vật chính / trung tâm</span>
+                        <span class="text-xs bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded">Nhận biết</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-rose-300">Cách làm:</strong> Xét vai trò gắn với sự kiện then chốt, xung đột và chủ đề; không chỉ đếm số lần xuất hiện.</p>
+                        </div>
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-emerald-300">Khung trả lời:</strong></p>
+                            <p class="italic bg-slate-900 p-2.5 rounded border border-slate-700 text-slate-200">"Nhân vật trung tâm là... vì nhân vật này... và giữ vai trò... trong việc thể hiện..."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dạng 3 -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-base text-slate-100 flex items-center justify-between">
+                        <span>3. Phân tích chi tiết tiêu biểu / chi tiết nghệ thuật</span>
+                        <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">Thông hiểu</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-rose-300">Cách làm:</strong> Trích dẫn chính xác từ ngữ/chi tiết → Xác định vị trí xuất hiện → Phân tích tác động đến tâm lí, cốt truyện và chủ đề.</p>
+                        </div>
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-emerald-300">Khung trả lời:</strong></p>
+                            <p class="italic bg-slate-900 p-2.5 rounded border border-slate-700 text-slate-200">"Chi tiết... xuất hiện khi... Trước hết, chi tiết này...; đồng thời bộc lộ... và góp phần làm sáng rõ..."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dạng 4 -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-base text-slate-100 flex items-center justify-between">
+                        <span>4. Phân tích tính cách / tâm trạng nhân vật</span>
+                        <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">Thông hiểu</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-rose-300">Công thức:</strong> Nhận định → Dẫn chứng (ngoại hình, hành động, lời thoại, độc thoại) → Phân tích → Kết luận.</p>
+                        </div>
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-emerald-300">Khung trả lời:</strong></p>
+                            <p class="italic bg-slate-900 p-2.5 rounded border border-slate-700 text-slate-200">"Qua chi tiết/hành động/lời nói..., nhân vật hiện lên là người... Điều này thể hiện ở... Từ đó, người đọc nhận ra..."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dạng 5 -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-base text-slate-100 flex items-center justify-between">
+                        <span>5. Phân biệt lời người kể chuyện, lời nhân vật và độc thoại nội tâm</span>
+                        <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">Thông hiểu</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-rose-300">Nhận diện:</strong> Lời người kể chuyện (trần thuật khách quan/chủ quan), lời đối thoại (giao tiếp bên ngoài), độc thoại nội tâm (tiếng nói thầm bên trong).</p>
+                        </div>
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-emerald-300">Khung trả lời:</strong></p>
+                            <p class="italic bg-slate-900 p-2.5 rounded border border-slate-700 text-slate-200">"Phần... là lời của... bởi... Lời này cho thấy...; khi đặt cạnh lời trần thuật..., nó làm nổi bật..."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dạng 6 -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-base text-slate-100 flex items-center justify-between">
+                        <span>6. Xác định điểm nhìn trần thuật</span>
+                        <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">Thông hiểu</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-rose-300">Lưu ý:</strong> Điểm nhìn ngôi thứ ba không đồng nghĩa toàn tri; có thể là điểm nhìn bên trong (hạn tri) bám sát ý thức nhân vật.</p>
+                        </div>
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-emerald-300">Khung trả lời:</strong></p>
+                            <p class="italic bg-slate-900 p-2.5 rounded border border-slate-700 text-slate-200">"Điểm nhìn chủ yếu được đặt vào... Dấu hiệu là... Cách tổ chức điểm nhìn giúp người đọc... đồng thời tạo..."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dạng 7 -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-base text-slate-100 flex items-center justify-between">
+                        <span>7. Ngôn ngữ nói và ngôn ngữ viết trong văn bản truyện</span>
+                        <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">Thông hiểu</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-rose-300">Cách làm:</strong> Nhận diện khẩu ngữ, thán từ, câu tỉnh lược (ngôn ngữ nói) mô phỏng trong lời thoại nhân vật kết hợp với ngôn ngữ viết chuẩn mực của người kể chuyện.</p>
+                        </div>
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-emerald-300">Khung trả lời:</strong></p>
+                            <p class="italic bg-slate-900 p-2.5 rounded border border-slate-700 text-slate-200">"Đoạn lời... có đặc điểm của ngôn ngữ nói/viết qua... Những dấu hiệu này giúp... và góp phần thể hiện..."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dạng 8 -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-base text-slate-100 flex items-center justify-between">
+                        <span>8. Ý nghĩa nhan đề</span>
+                        <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">Thông hiểu</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-rose-300">Cách làm:</strong> Giải nghĩa từ ngữ nghĩa đen → Đối chiếu ý nghĩa biểu sinh, chủ đề và nhân vật trung tâm.</p>
+                        </div>
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-emerald-300">Khung trả lời:</strong></p>
+                            <p class="italic bg-slate-900 p-2.5 rounded border border-slate-700 text-slate-200">"Nhan đề... trước hết gợi... Khi đặt trong mạch truyện..., nhan đề còn... Qua đó, tác giả nhấn mạnh..."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dạng 9 -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-base text-slate-100 flex items-center justify-between">
+                        <span>9. Câu hỏi vận dụng: Rút ra bài học / thông điệp</span>
+                        <span class="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded">Vận dụng</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-rose-300">Quy trình đoạn văn (5–7 câu):</strong> Khoanh từ khóa → Nêu bài học rút ra từ văn bản → Giải thích ý nghĩa → Liên hệ bản thân và hành động cụ thể.</p>
+                        </div>
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/60 space-y-2">
+                            <p><strong class="text-emerald-300">Khung đoạn văn:</strong></p>
+                            <p class="italic bg-slate-900 p-2.5 rounded border border-slate-700 text-slate-200">"Từ câu chuyện trong văn bản, tôi rút ra bài học sâu sắc rằng... Điều này có ý nghĩa vì... Về phía bản thân, tôi sẽ..."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MỤC 4: MẸO ĐỌC HIỂU VÀ LỖI THƯỜNG GẶP -->
+        <section id="muc4" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl print-card">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 font-bold text-lg border border-rose-500/20">IV</div>
+                <div>
+                    <h2 class="text-xl font-bold text-rose-400 uppercase tracking-wider">Mẹo Đọc Hiểu Và Lỗi Thường Gặp</h2>
+                    <p class="text-xs text-slate-400">Bí quyết tối ưu điểm số và checklist trước khi nộp bài</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-rose-300 flex items-center space-x-2">
+                        <i class="fa-solid fa-lightbulb text-amber-400"></i><span>Mẹo Vàng Làm Bài</span>
+                    </h3>
+                    <ul class="list-disc list-inside space-y-2 text-xs text-slate-300">
+                        <li><strong>Đọc lướt 2 lượt:</strong> Lượt 1 nắm cốt truyện, nhân vật, bước ngoặt; lượt 2 gạch chân từ khóa, ngôi kể, chi tiết nghệ thuật.</li>
+                        <li><strong>Gạch chân động từ lệnh hỏi:</strong> "Nêu/xác định" (trả lời ngắn gọn), "chỉ ra" (đưa dẫn chứng), "phân tích/lý giải" (phải có luận điểm và chứng minh).</li>
+                        <li><strong>Công thức tác dụng:</strong> Hình thức nghệ thuật → Nội dung phản ánh → Hiệu quả đối với nhân vật và chủ đề.</li>
+                        <li><strong>Quản lí thời gian tham khảo:</strong> 5 phút đọc đề, 25–30 phút hoàn thành 6 câu đọc hiểu, để trọn vẹn 50–55 phút cho bài viết văn nghị luận.</li>
+                    </ul>
+                </div>
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-rose-300 flex items-center space-x-2">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-400"></i><span>Lỗi Cần Tránh</span>
+                    </h3>
+                    <ul class="list-disc list-inside space-y-2 text-xs text-slate-300">
+                        <li><strong>Đánh đồng tác giả với nhân vật:</strong> Tuyệt đối không suy diễn "tác giả kể chuyện đời mình" khi văn bản là truyện ngắn hư cấu (trừ kí/hồi ký).</li>
+                        <li><strong>Diễn đạt sáo rỗng:</strong> Dùng chung chung "làm câu văn hay hơn", "tăng sức gợi hình gợi cảm" mà không chỉ ra cụ thể nó gợi hình gì.</li>
+                        <li><strong>Lan man ở câu nhận biết:</strong> Đề hỏi một ý nhưng viết dài thành nửa trang giấy gây mất thời gian.</li>
+                        <li><strong>Bài học vận dụng hời hợt:</strong> Nêu thông điệp chung chung như "phải cố gắng học tập" thay vì bài học ứng xử cụ thể gắn với ngữ liệu.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- MỤC 5: DÀN Ý BÀI NGHỊ LUẬN VĂN HỌC -->
+        <section id="muc5" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl print-card">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 font-bold text-lg border border-rose-500/20">V</div>
+                <div>
+                    <h2 class="text-xl font-bold text-rose-400 uppercase tracking-wider">Dàn Ý Bài Nghị Luận Văn Học Về Đặc Sắc Nghệ Thuật Kể Chuyện</h2>
+                    <p class="text-xs text-slate-400">Bám sát chuẩn đặc tả và cấu trúc bài văn 3 phần</p>
+                </div>
+            </div>
+            <div class="space-y-6 text-sm">
+                <!-- Mở bài -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-2">
+                    <h3 class="font-bold text-rose-300">A. MỞ BÀI</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        • Dẫn dắt bằng nhận định lý luận văn học phù hợp.<br>
+                        • Giới thiệu tác giả, tác phẩm/đoạn trích và vấn đề nghị luận: đặc sắc nghệ thuật kể chuyện.<br>
+                        • Khung tham khảo: <em>"Một tác phẩm truyện gây ấn tượng không chỉ bởi câu chuyện được kể mà còn bởi cách nhà văn tổ chức lời kể và hình tượng. Trong [tác phẩm] của [tác giả], nghệ thuật kể chuyện thể hiện nổi bật qua [2–3 phương diện], qua đó khắc họa sâu sắc [nhân vật/chủ đề]."</em>
+                    </p>
+                </div>
+                <!-- Thân bài -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-3">
+                    <h3 class="font-bold text-rose-300">B. THÂN BÀI</h3>
+                    <div class="space-y-3 text-xs text-slate-300">
+                        <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700/60">
+                            <strong class="text-slate-200">1. Khái quát ngắn gọn:</strong> Bối cảnh đoạn trích, vị trí đoạn trích và nêu luận đề nghệ thuật.
+                        </div>
+                        <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700/60">
+                            <strong class="text-slate-200">2. Luận điểm 1 (Phương diện nghệ thuật thứ nhất - VD: Ngôi kể / Điểm nhìn):</strong> Gọi tên thủ pháp → Trích dẫn chi tiết → Phân tích cách vận hành → Nêu hiệu quả đối với nhân vật và mạch truyện.
+                        </div>
+                        <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700/60">
+                            <strong class="text-slate-200">3. Luận điểm 2 (Phương diện nghệ thuật thứ hai - VD: Tình huống truyện / Ngôn ngữ / Miêu tả tâm lí):</strong> Phân tích biểu hiện cụ thể và đánh giá tác dụng khắc họa tính cách.
+                        </div>
+                        <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700/60">
+                            <strong class="text-slate-200">4. Luận điểm 3 (Tổng hợp các phương diện bổ trợ - Giọng điệu, chi tiết, không gian/thời gian):</strong> Đánh giá sự thống nhất giữa hình thức nghệ thuật và tư tưởng nội dung.
+                        </div>
+                    </div>
+                </div>
+                <!-- Kết bài -->
+                <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-700/60 space-y-2">
+                    <h3 class="font-bold text-rose-300">C. KẾT BÀI</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        • Khẳng định lại giá trị đặc sắc của nghệ thuật kể chuyện.<br>
+                        • Nêu ý nghĩa của tác phẩm đối với người đọc và văn học dân tộc.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- MỤC 6: KHO LÝ LUẬN VĂN HỌC -->
+        <section id="muc6" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl print-card">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 font-bold text-lg border border-rose-500/20">VI</div>
+                <div>
+                    <h2 class="text-xl font-bold text-rose-400 uppercase tracking-wider">Kho Lý Luận Văn Học Phù Hợp Và Cách Dùng</h2>
+                    <p class="text-xs text-slate-400">Các nhận định khái quát, tự biên soạn an toàn, không gán sai tên tác giả</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 italic">
+                    "Giá trị của truyện không chỉ nằm ở câu chuyện được kể mà còn ở cách nhà văn tổ chức lời kể, điểm nhìn và chi tiết."
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 italic">
+                    "Ngôi kể và điểm nhìn vừa tổ chức thông tin tự sự, vừa định hướng cách người đọc tiếp cận nhân vật và sự kiện."
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 italic">
+                    "Một chi tiết nghệ thuật có thể nhỏ về dung lượng nhưng giàu sức gợi, góp phần mở ra chiều sâu tâm lí và ý nghĩa tác phẩm."
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 italic">
+                    "Nội dung và hình thức nghệ thuật gắn bó mật thiết; cách kể quyết định cách người đọc cảm nhận thấu đáo điều được kể."
+                </div>
+            </div>
+        </section>
+
+        <!-- MỤC 7: CÂU NỐI VÀ CÂU CHUYỂN ĐOẠN -->
+        <section id="muc7" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl print-card">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 font-bold text-lg border border-rose-500/20">VII</div>
+                <div>
+                    <h2 class="text-xl font-bold text-rose-400 uppercase tracking-wider">Câu Nối Và Câu Chuyển Đoạn Gợi Ý</h2>
+                    <p class="text-xs text-slate-400">Giúp bài viết mạch lạc, liên kết chặt chẽ giữa các luận điểm</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 space-y-2">
+                    <strong class="text-rose-300">Từ Mở bài sang Thân bài:</strong>
+                    <p class="italic">"Để thấy rõ dấu ấn nghệ thuật ấy, trước hết cần chú ý đến..."</p>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 space-y-2">
+                    <strong class="text-rose-300">Chuyển giữa các luận điểm:</strong>
+                    <p class="italic">"Không chỉ thành công ở..., tác giả còn cho thấy sự tinh tế trong..."</p>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 space-y-2">
+                    <strong class="text-rose-300">Từ dẫn chứng sang phân tích:</strong>
+                    <p class="italic">"Chi tiết này không xuất hiện ngẫu nhiên, bởi..."</p>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 space-y-2">
+                    <strong class="text-rose-300">Từ nghệ thuật sang nội dung:</strong>
+                    <p class="italic">"Nhờ sự kết hợp sắc bén ấy, nhân vật hiện lên chân thực..."</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- MỤC 8: THẺ TỰ LUYỆN / ÔN NHANH -->
+        <section id="muc8" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl print-card">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 font-bold text-lg border border-rose-500/20">VIII</div>
+                <div>
+                    <h2 class="text-xl font-bold text-rose-400 uppercase tracking-wider">Thẻ Tự Luyện / Ôn Nhanh Kiến Thức</h2>
+                    <p class="text-xs text-slate-400">Kiểm tra nhanh mức độ nắm vững kiến thức trọng tâm</p>
+                </div>
+            </div>
+            <div class="space-y-4 text-sm">
+                <!-- Câu hỏi 1 -->
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 space-y-2">
+                    <p class="font-medium text-slate-200 text-xs md:text-sm">Q1: Ngôi kể thứ nhất và ngôi kể thứ ba khác nhau cơ bản ở điểm nào?</p>
+                    <button onclick="toggleAnswer('ans1')" class="text-xs bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 px-3 py-1 rounded border border-rose-500/30 transition-colors">Xem đáp án</button>
+                    <div id="ans1" class="hidden mt-2 p-3 bg-slate-800 rounded text-xs text-slate-300 border border-slate-700">
+                        <strong>Đáp án:</strong> Ngôi thứ nhất người kể xưng "tôi" trực tiếp tham gia câu chuyện (giới hạn điểm nhìn, tăng tính chủ quan, chân thực); ngôi thứ ba người kể giấu mình, gọi tên nhân vật (linh hoạt, bao quát rộng hơn không gian sự việc).
+                    </div>
+                </div>
+                <!-- Câu hỏi 2 -->
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 space-y-2">
+                    <p class="font-medium text-slate-200 text-xs md:text-sm">Q2: Khi phân tích tác dụng của một chi tiết nghệ thuật trong đọc hiểu cần đảm bảo cấu trúc ý nào?</p>
+                    <button onclick="toggleAnswer('ans2')" class="text-xs bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 px-3 py-1 rounded border border-rose-500/30 transition-colors">Xem đáp án</button>
+                    <div id="ans2" class="hidden mt-2 p-3 bg-slate-800 rounded text-xs text-slate-300 border border-slate-700">
+                        <strong>Đáp án:</strong> Cần trích dẫn rõ chi tiết, nêu ngữ cảnh xuất hiện, phân tích ý nghĩa trực tiếp (khắc họa tâm lí, thúc đẩy cốt truyện) và ý nghĩa khái quát đối với chủ đề tác phẩm.
+                    </div>
+                </div>
+                <!-- Câu hỏi 3 -->
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 space-y-2">
+                    <p class="font-medium text-slate-200 text-xs md:text-sm">Q3: 9 phương diện nghệ thuật kể chuyện cần ghi nhớ trong phần Viết gồm những gì?</p>
+                    <button onclick="toggleAnswer('ans3')" class="text-xs bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 px-3 py-1 rounded border border-rose-500/30 transition-colors">Xem đáp án</button>
+                    <div id="ans3" class="hidden mt-2 p-3 bg-slate-800 rounded text-xs text-slate-300 border border-slate-700">
+                        <strong>Đáp án:</strong> (1) Ngôi kể, (2) Điểm nhìn, (3) Ngôn ngữ, (4) Tình huống truyện, (5) Miêu tả nhân vật, (6) Giọng điệu, (7) Biện pháp tu từ, (8) Không gian/thời gian nghệ thuật, (9) Chi tiết nghệ thuật.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MỤC 9: THAM KHẢO VÀ GHI CHÚ NGUỒN -->
+        <section id="muc9" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl print-card">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 font-bold text-lg border border-rose-500/20">IX</div>
+                <div>
+                    <h2 class="text-xl font-bold text-rose-400 uppercase tracking-wider">Tham Khảo Và Ghi Chú Nguồn</h2>
+                    <p class="text-xs text-slate-400">Các nguồn tài liệu bổ trợ phương pháp học tập</p>
+                </div>
+            </div>
+            <ul class="list-disc list-inside space-y-2 text-xs text-slate-300">
+                <li><a href="https://www.hocvancungricky.com/blog/huong-dan-tra-loi-cau-hoi-doc-hieu-truyen-ngan-chi-tiet/" target="_blank" class="text-rose-400 hover:underline">Hướng dẫn trả lời câu hỏi đọc hiểu truyện ngắn chi tiết – Học Văn Cùng Ricky</a></li>
+                <li><a href="https://nghengu.vn/tho-van-hoc/van-11-kntt-3859.html" target="_blank" class="text-rose-400 hover:underline">Ngữ văn 11: Kiến thức trọng tâm nửa đầu học kì I – Nghệ Ngữ</a></li>
+                <li><a href="https://vanvn.vn/ban-ve-tinh-ly-luan-trong-cac-bai-giang-cua-thay-va-bai-viet-cua-tro-hien-nay/" target="_blank" class="text-rose-400 hover:underline">Bàn về tính lý luận trong các bài giảng – Hội Nhà văn Việt Nam</a></li>
+                <li><a href="https://github.com/MinhTruk/bakhi" target="_blank" class="text-rose-400 hover:underline">Repository GitHub BAKHI</a> • <a href="https://minhtruk.github.io/bakhi/" target="_blank" class="text-rose-400 hover:underline">Website BAKHI</a></li>
+            </ul>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-800 bg-slate-900/90 py-6 text-center text-xs text-slate-400 mt-12">
+        <p>Ôn tập GK1 • Ngữ văn 11 • Repository: MinhTruk/bakhi</p>
+    </footer>
+
+    <!-- SCRIPT TƯƠNG TÁC NHỎ -->
+    <script>
+        function toggleAnswer(id) {
+            const el = document.getElementById(id);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
