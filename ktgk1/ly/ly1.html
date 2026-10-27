@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ôn Tập Vật Lí 11 - Giữa Học Kỳ I | BAKHI</title>
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          300: '#fcd34d',
+          400: '#fbbf24',
+          500: '#f59e0b',
+          600: '#d97706',
+          700: '#b45309',
+          900: '#78350f',
+          950: '#451a03'
+        }
+      }
+    }
+  }
+}
+</script>
+
+<!-- Font Awesome icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- KaTeX for rendering mathematical formulas -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+<style>
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #1e293b; }
+  ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+  .fade-in { animation: fadeIn 0.25s ease-in-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .opt { transition: all 0.15s; }
+  .opt:not(:disabled):hover { border-color: #f59e0b; background: rgba(245, 158, 11, 0.08); }
+  .katex-display { margin: 0.5em 0 !important; overflow-x: auto; overflow-y: hidden; }
+</style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col selection:bg-brand-500 selection:text-white">
+
+<!-- HEADER -->
+<header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-md">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="flex flex-col md:flex-row items-center justify-between py-3 gap-3">
+      <div class="flex items-center gap-2 w-full md:w-auto">
+        <a id="btn-back-subject" href="indexly.html" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs sm:text-sm font-medium transition border border-slate-700 flex items-center gap-1.5" title="Quay về trang môn học">
+          <i class="fa-solid fa-arrow-left"></i><span>Môn học</span>
+        </a>
+        <a id="btn-back-home" href="/bakhi/" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs sm:text-sm font-medium transition border border-slate-700 flex items-center gap-1.5" title="Về trang chủ BAKHI">
+          <i class="fa-solid fa-house text-brand-500"></i>
+          <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">BAKHI</span>
+        </a>
+        <div class="relative ml-auto md:ml-2">
+          <button id="btn-shuffle" onclick="toggleShuffleMenu()" class="px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white text-xs sm:text-sm font-semibold transition border border-indigo-500/40 flex items-center gap-1.5" title="Xáo trộn nội dung">
+            <i class="fa-solid fa-shuffle"></i><span>Xáo trộn</span><i class="fa-solid fa-chevron-down text-[10px]"></i>
+          </button>
+          <!-- Shuffle menu dropdown -->
+          <div id="shuffle-menu" class="hidden absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-50 p-2 space-y-1">
+            <button onclick="shuffleModeContent('questions')" class="w-full text-left px-3 py-2 text-xs hover:bg-slate-800 rounded-lg text-slate-200 transition">Xáo trộn câu hỏi</button>
+            <button onclick="shuffleModeContent('options')" class="w-full text-left px-3 py-2 text-xs hover:bg-slate-800 rounded-lg text-slate-200 transition">Xáo trộn đáp án</button>
+            <button onclick="shuffleModeContent('all')" class="w-full text-left px-3 py-2 text-xs hover:bg-indigo-600/30 font-semibold text-indigo-300 rounded-lg transition">Xáo trộn tất cả</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center md:text-left flex-1 md:ml-4">
+        <h1 class="text-base sm:text-lg font-bold text-white flex items-center justify-center md:justify-start gap-2">
+          <i class="fa-solid fa-atom text-brand-500"></i>
+          <span>Vật lí 11</span>
+          <span class="text-xs font-normal px-2 py-0.5 rounded bg-brand-900/60 text-brand-300 border border-brand-700/50">Giữa HK1</span>
+        </h1>
+        <p class="text-xs text-slate-400 hidden sm:block">Ôn tập kiểm tra giữa học kì I · Hệ thống BAKHI</p>
+      </div>
+
+      <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700/60 w-full md:w-auto">
+        <button id="tab-matrix" onclick="switchPage('matrix')" class="flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-table-cells"></i><span>Ma trận</span>
+        </button>
+        <button id="tab-practice" onclick="switchPage('practice')" class="flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-pen-to-square"></i><span>Câu hỏi</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress header bar (shown in practice) -->
+    <div id="header-progress" class="hidden py-2 border-t border-slate-800/80">
+      <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <span id="progress-text">Tiến độ: 0/0</span>
+        <span id="score-text" class="text-brand-400 font-medium">Chính xác: 0%</span>
+      </div>
+      <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+        <div id="progress-bar" class="bg-gradient-to-r from-amber-500 to-orange-500 h-full w-0 transition-all duration-300"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
+
+<!-- ============ PAGE 1: MA TRẬN & TỔNG QUAN ÔN TẬP ============ -->
+<section id="page-matrix" class="space-y-6 fade-in">
+  <!-- Banner -->
+  <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-amber-950/40 p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+    <div class="absolute right-0 top-0 bottom-0 opacity-10 flex items-center pr-10 pointer-events-none">
+      <i class="fa-solid fa-wave-square text-9xl text-brand-400"></i>
+    </div>
+    <div class="relative z-10 space-y-2">
+      <span class="text-xs font-semibold uppercase tracking-wider text-brand-400 bg-brand-950/80 px-2.5 py-1 rounded-md border border-brand-700/50">Ma trận &amp; Đặc tả kiến thức</span>
+      <h2 class="text-xl sm:text-2xl font-bold text-white">Ôn Tập Vật Lí 11 – Đề Cương Giữa Học Kỳ I</h2>
+      <p class="text-slate-300 text-sm max-w-2xl">
+        Chủ đề chính: <strong>Dao động điều hòa</strong> &amp; <strong>Dao động tắt dần, dao động cưỡng bức, cộng hưởng</strong>.
+      </p>
+    </div>
+  </div>
+
+  <!-- Summary Info Cards -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+      <span class="text-xs text-slate-400 block mb-1">Môn học</span>
+      <span class="text-base font-bold text-amber-400 flex items-center gap-1.5"><i class="fa-solid fa-atom"></i> Vật lí 11</span>
+    </div>
+    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+      <span class="text-xs text-slate-400 block mb-1">Chủ đề chính</span>
+      <span class="text-base font-bold text-slate-100">Dao động</span>
+    </div>
+    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+      <span class="text-xs text-slate-400 block mb-1">Phạm vi kiến thức</span>
+      <span class="text-xs font-semibold text-slate-300">Bài 1, 2, 3, 4, 5, 6 (SGK Cánh Diều)</span>
+    </div>
+    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+      <span class="text-xs text-slate-400 block mb-1">Các hình thức</span>
+      <span class="text-xs font-semibold text-indigo-300">TN, Đúng/Sai, Ngắn, Tự luận</span>
+    </div>
+  </div>
+
+  <!-- Action Quick Nav -->
+  <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 p-4 rounded-2xl border border-slate-800">
+    <div class="flex flex-wrap gap-2">
+      <button onclick="scrollToId('sec-matrix-table')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition">
+        <i class="fa-solid fa-table mr-1"></i> Bảng Ma Trận
+      </button>
+      <button onclick="scrollToId('sec-formulas')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition">
+        <i class="fa-solid fa-square-root-variable mr-1"></i> Ôn Công Thức
+      </button>
+      <button onclick="scrollToId('sec-tips')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition">
+        <i class="fa-solid fa-lightbulb mr-1"></i> Chú Ý Làm Bài
+      </button>
+      <button onclick="scrollToId('sec-checklist')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition">
+        <i class="fa-solid fa-check-double mr-1"></i> Checklist Ôn Tập
+      </button>
+    </div>
+    <button onclick="switchPage('practice')" class="px-5 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow transition flex items-center gap-2">
+      <span>Bắt đầu luyện tập</span> <i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </div>
+
+  <!-- BẢNG MA TRẬN ĐẶC TẢ -->
+  <div id="sec-matrix-table" class="bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden">
+    <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+      <h3 class="font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-table-cells text-brand-400"></i> Bảng Ma Trận &amp; Đặc Tả Đề Khảo Sát Giữa HK1
+      </h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs sm:text-sm text-slate-300">
+        <thead class="bg-slate-900 text-slate-400 uppercase text-[11px] border-b border-slate-800">
+          <tr>
+            <th class="p-3">Nội dung</th>
+            <th class="p-3">Đơn vị kiến thức</th>
+            <th class="p-3 text-center">Nhận biết</th>
+            <th class="p-3 text-center">Thông hiểu</th>
+            <th class="p-3 text-center">Vận dụng</th>
+            <th class="p-3">Câu tương ứng trong đề</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/80">
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3 font-semibold text-white" rowspan="3">Chủ đề 1: Dao động điều hòa</td>
+            <td class="p-3">Mô tả dao động điều hòa (Biên độ, chu kì, tần số, tần số góc, độ lệch pha)</td>
+            <td class="p-3 text-center text-emerald-400"><i class="fa-solid fa-check"></i></td>
+            <td class="p-3 text-center text-amber-400"><i class="fa-solid fa-check"></i></td>
+            <td class="p-3 text-center text-slate-600">-</td>
+            <td class="p-3 text-xs">Phần I: C1-10; Phần II: Bài 1a,b; Phần III: Bài 1a,b</td>
+          </tr>
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3">Phương trình li độ, vận tốc, gia tốc &amp; Đồ thị li độ - thời gian</td>
+            <td class="p-3 text-center text-emerald-400"><i class="fa-solid fa-check"></i></td>
+            <td class="p-3 text-center text-amber-400"><i class="fa-solid fa-check"></i></td>
+            <td class="p-3 text-center text-purple-400"><i class="fa-solid fa-check"></i></td>
+            <td class="p-3 text-xs">Phần I: C11-20, C21-23; Phần II: Bài 1c,d; Phần III: Bài 3</td>
+          </tr>
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3">Năng lượng trong dao động điều hòa (Động năng, thế năng, cơ năng)</td>
+            <td class="p-3 text-center text-emerald-400"><i class="fa-solid fa-check"></i></td>
+            <td class="p-3 text-center text-amber-400"><i class="fa-solid fa-check"></i></td>
+            <td class="p-3 text-center text-purple-400"><i class="fa-solid fa-check"></i></td>
+            <td class="p-3 text-xs">Phần I: C24-29; Phần II: Bài 2; Phần III: Bài 2, 4</td>
+          </tr>
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3 font-semibold text-white">Chủ đề 2: Dao động tắt dần &amp; Cộng hưởng</td>
+            <td class="p-3">Dao động tắt dần, dao động cưỡng bức, hiện tượng cộng hưởng &amp; ứng dụng</td>
+            <td class="p-3 text-center text-emerald-400"><i class="fa-solid fa-check"></i></td>
+            <td class="p-3 text-center text-amber-400"><i class="fa-solid fa-check"></i></td>
+            <td class="p-3 text-center text-slate-600">-</td>
+            <td class="p-3 text-xs">Phần I: C18, C26; Phần IV: Bài tự luận 1-3</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CẦN NẮM VỮNG: TỔNG HỢP CÔNG THỨC -->
+  <div id="sec-formulas" class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <h3 class="font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-square-root-variable text-brand-400"></i> Cần Nắm Vững – Công Thức &amp; Đại Lượng Trọng Tâm
+      </h3>
+      <span class="text-xs text-slate-400">Ký hiệu &amp; đơn vị chuẩn</span>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-2">
+        <h4 class="text-xs font-bold uppercase text-amber-400 tracking-wider">1. Các Đại Lượng Cơ Bản</h4>
+        <ul class="text-xs text-slate-300 space-y-1.5">
+          <li>• Phương trình li độ: <span class="math-tex">\(x = A\cos(\omega t + \varphi)\)</span></li>
+          <li>• Biên độ <span class="math-tex">\(A > 0\)</span> (m hoặc cm)</li>
+          <li>• Chu kì <span class="math-tex">\(T = \frac{2\pi}{\omega} = \frac{1}{f}\)</span> (s)</li>
+          <li>• Tần số <span class="math-tex">\(f = \frac{\omega}{2\pi}\)</span> (Hz)</li>
+          <li>• Pha ban đầu <span class="math-tex">\(\varphi\)</span> (rad)</li>
+        </ul>
+      </div>
+
+      <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-2">
+        <h4 class="text-xs font-bold uppercase text-amber-400 tracking-wider">2. Vận Tốc &amp; Gia Tốc</h4>
+        <ul class="text-xs text-slate-300 space-y-1.5">
+          <li>• Vận tốc: <span class="math-tex">\(v = x' = -\omega A\sin(\omega t + \varphi)\)</span></li>
+          <li>• <span class="math-tex">\(v_{\max} = \omega A\)</span> (khi qua VTCB)</li>
+          <li>• Gia tốc: <span class="math-tex">\(a = v' = -\omega^2 x\)</span></li>
+          <li>• <span class="math-tex">\(a_{\max} = \omega^2 A\)</span> (khi ở vị trí biên)</li>
+          <li>• Vận tốc sớm pha <span class="math-tex">\(\pi/2\)</span> so với li độ; Gia tốc ngược pha với li độ.</li>
+        </ul>
+      </div>
+
+      <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-2">
+        <h4 class="text-xs font-bold uppercase text-amber-400 tracking-wider">3. Năng Lượng Dao Động</h4>
+        <ul class="text-xs text-slate-300 space-y-1.5">
+          <li>• Thế năng: <span class="math-tex">\(W_t = \frac{1}{2} m \omega^2 x^2\)</span></li>
+          <li>• Động năng: <span class="math-tex">\(W_d = \frac{1}{2} m v^2\)</span></li>
+          <li>• Cơ năng: <span class="math-tex">\(W = W_d + W_t = \frac{1}{2} m \omega^2 A^2 = \text{const}\)</span></li>
+          <li>• Động năng &amp; thế năng biến thiên với chu kì <span class="math-tex">\(T' = T/2\)</span>, tần số <span class="math-tex">\(f' = 2f\)</span>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHÚ Ý KHI LÀM BÀI -->
+  <div id="sec-tips" class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 space-y-3">
+    <h3 class="font-bold text-white flex items-center gap-2">
+      <i class="fa-solid fa-lightbulb text-brand-400"></i> Chú Ý Quan Trọng Khi Làm Bài
+    </h3>
+    <div class="grid sm:grid-cols-2 gap-3 text-xs text-slate-300">
+      <div class="bg-slate-950/50 p-3 rounded-lg border border-slate-800/80 flex items-start gap-2">
+        <i class="fa-solid fa-circle-exclamation text-amber-400 mt-0.5"></i>
+        <span><strong>Đơn vị:</strong> Đổi li độ <span class="math-tex">\(x, A\)</span> ra mét (<span class="math-tex">\(\text{m}\)</span>) khi tính năng lượng Joules (<span class="math-tex">\(\text{J}\)</span>). Đổi tần số ra <span class="math-tex">\(\text{Hz}\)</span>, thời gian ra giây (<span class="math-tex">\(\text{s}\)</span>).</span>
+      </div>
+      <div class="bg-slate-950/50 p-3 rounded-lg border border-slate-800/80 flex items-start gap-2">
+        <i class="fa-solid fa-circle-exclamation text-amber-400 mt-0.5"></i>
+        <span><strong>Đồ thị:</strong> Đọc kỹ trục tung (đơn vị <span class="math-tex">\(\text{cm}, \text{m/s}, \text{J}\)</span> hay <span class="math-tex">\(\text{mJ}\)</span>) và trục hoành (thời gian <span class="math-tex">\(\text{s}\)</span> hay <span class="math-tex">\(\text{ms}\)</span>).</span>
+      </div>
+      <div class="bg-slate-950/50 p-3 rounded-lg border border-slate-800/80 flex items-start gap-2">
+        <i class="fa-solid fa-circle-exclamation text-amber-400 mt-0.5"></i>
+        <span><strong>Câu Đúng / Sai:</strong> Đánh giá độc lập từng mệnh đề a, b, c, d. Không lấy kết quả câu này gượng ép câu khác.</span>
+      </div>
+      <div class="bg-slate-950/50 p-3 rounded-lg border border-slate-800/80 flex items-start gap-2">
+        <i class="fa-solid fa-circle-exclamation text-amber-400 mt-0.5"></i>
+        <span><strong>Trả lời ngắn:</strong> Nhập số thập phân dùng dấu chấm (ví dụ: <code class="bg-slate-800 px-1 rounded text-amber-300">0.5</code> hoặc <code class="bg-slate-800 px-1 rounded text-amber-300">0,5</code>).</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECKLIST ÔN TẬP -->
+  <div id="sec-checklist" class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 space-y-3">
+    <h3 class="font-bold text-white flex items-center gap-2">
+      <i class="fa-solid fa-list-check text-brand-400"></i> Checklist Đánh Giá Mức Độ Sẵn Sàng
+    </h3>
+    <p class="text-xs text-slate-400">Đánh dấu các mục bạn đã nắm chắc (tự động lưu tiến độ):</p>
+    <div id="checklist-container" class="grid sm:grid-cols-2 gap-2 text-xs">
+      <!-- Generated via JS -->
+    </div>
+  </div>
+
+  <!-- Bottom Action -->
+  <div class="flex justify-center py-4">
+    <button onclick="switchPage('practice')" class="px-8 py-3.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-xl shadow-lg transition transform hover:-translate-y-0.5 flex items-center gap-2">
+      <span>Bắt đầu làm bài luyện tập ngay</span> <i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </div>
+</section>
+
+<!-- ============ PAGE 2: CÂU HỎI & HỆ THỐNG LUYỆN TẬP ============ -->
+<section id="page-practice" class="hidden space-y-5 fade-in">
+  <!-- Mode selector bar -->
+  <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 p-3 rounded-2xl border border-slate-800">
+    <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+        <button id="subtab-mcq" onclick="switchPracticeMode('mcq')" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-list-check"></i><span>Trắc nghiệm (29)</span>
+        </button>
+        <button id="subtab-tf" onclick="switchPracticeMode('tf')" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-half-stroke"></i><span>Đúng - Sai (2 bài)</span>
+        </button>
+        <button id="subtab-sa" onclick="switchPracticeMode('sa')" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-keyboard"></i><span>Trả lời ngắn (4 bài)</span>
+        </button>
+        <button id="subtab-essay" onclick="switchPracticeMode('essay')" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-pen-nib"></i><span>Tự luận (3 bài)</span>
+        </button>
+      </div>
+
+      <button onclick="resetCurrentMode()" class="px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 hover:text-white rounded-xl border border-rose-500/40 text-xs font-semibold transition flex items-center gap-1">
+        <i class="fa-solid fa-rotate-right"></i> Làm lại
+      </button>
+      <button onclick="switchPage('matrix')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold transition flex items-center gap-1">
+        <i class="fa-solid fa-table-cells"></i> Ma trận
+      </button>
+    </div>
+  </div>
+
+  <!-- Quiz card container -->
+  <div id="quiz-area" class="space-y-4"></div>
+
+  <!-- RESULT MCQ -->
+  <div id="result-mcq" class="hidden bg-slate-900/90 p-6 rounded-2xl border border-slate-800 shadow-2xl space-y-6 fade-in">
+    <div class="text-center space-y-2">
+      <div class="inline-flex p-3 rounded-full bg-emerald-500/20 text-emerald-400 text-3xl"><i class="fa-solid fa-trophy"></i></div>
+      <h3 class="text-2xl font-bold text-white">Hoàn Thành Trắc Nghiệm Nhiều Lựa Chọn!</h3>
+      <p id="res-mcq-msg" class="text-slate-300 text-sm"></p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Số câu đúng</span><span id="res-mcq-correct" class="text-xl font-bold text-emerald-400"></span></div>
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Số câu sai</span><span id="res-mcq-wrong" class="text-xl font-bold text-rose-400"></span></div>
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Tỉ lệ đúng</span><span id="res-mcq-pct" class="text-xl font-bold text-brand-400"></span></div>
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Điểm (thang 10)</span><span id="res-mcq-score" class="text-xl font-bold text-white"></span></div>
+    </div>
+    <div id="res-mcq-wrong-wrap" class="space-y-2 hidden">
+      <h4 class="text-sm font-bold text-slate-200">Danh sách các câu làm chưa chính xác:</h4>
+      <div id="res-mcq-wrong-list" class="space-y-2"></div>
+    </div>
+    <div class="flex flex-col sm:flex-row justify-center gap-4 pt-4 border-t border-slate-800">
+      <button onclick="shuffleModeContent('all')" class="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2"><i class="fa-solid fa-shuffle"></i> Xáo trộn &amp; làm lại</button>
+      <button onclick="resetCurrentMode()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold rounded-xl border border-slate-700 transition flex items-center justify-center gap-2"><i class="fa-solid fa-rotate-right"></i> Làm lại từ đầu</button>
+      <button onclick="switchPracticeMode('tf')" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow transition flex items-center justify-center gap-2">Sang Đúng - Sai <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- RESULT TRUE/FALSE -->
+  <div id="result-tf" class="hidden bg-slate-900/90 p-6 rounded-2xl border border-slate-800 shadow-2xl space-y-6 fade-in">
+    <div class="text-center space-y-2">
+      <div class="inline-flex p-3 rounded-full bg-indigo-500/20 text-indigo-400 text-3xl"><i class="fa-solid fa-award"></i></div>
+      <h3 class="text-2xl font-bold text-white">Hoàn Thành Phần Đúng – Sai!</h3>
+      <p id="res-tf-msg" class="text-slate-300 text-sm"></p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Số mệnh đề đúng</span><span id="res-tf-correct" class="text-xl font-bold text-emerald-400"></span></div>
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Số mệnh đề sai</span><span id="res-tf-wrong" class="text-xl font-bold text-rose-400"></span></div>
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Tỉ lệ chính xác</span><span id="res-tf-pct" class="text-xl font-bold text-brand-400"></span></div>
+    </div>
+    <div id="res-tf-wrong-wrap" class="space-y-2 hidden">
+      <h4 class="text-sm font-bold text-slate-200">Các mệnh đề làm chưa đúng:</h4>
+      <div id="res-tf-wrong-list" class="space-y-2"></div>
+    </div>
+    <div class="flex flex-col sm:flex-row justify-center gap-4 pt-4 border-t border-slate-800">
+      <button onclick="resetCurrentMode()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold rounded-xl border border-slate-700 transition flex items-center justify-center gap-2"><i class="fa-solid fa-rotate-right"></i> Làm lại phần này</button>
+      <button onclick="switchPracticeMode('sa')" class="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl shadow transition flex items-center justify-center gap-2">Sang Trả Lời Ngắn <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="bg-slate-950 border-t border-slate-800/80 py-6 mt-10 text-xs text-slate-400">
+  <div class="max-w-6xl mx-auto px-4 text-center space-y-1">
+    <p class="font-medium text-slate-300">Nền tảng ôn tập trực tuyến BAKHI — Môn Vật Lí 11</p>
+    <p>Đề cương &amp; Đặc tả kiểm tra giữa học kì I. Tự động chấm điểm, lưu tiến độ và hiển thị công thức chuẩn KaTeX.</p>
+  </div>
+</footer>
+
+<!-- SCRIPT LOGIC -->
+<script>
+/* ==========================================================================
+   1. CẤU HÌNH HÌNH Ảnh (RAW GitHub URLs)
+   Hướng dẫn: Bạn dán đường dẫn trực tiếp (RAW URL) từ GitHub vào các trường tương ứng bên dưới.
+   Nếu để rỗng "", hệ thống sẽ hiển thị ô Placeholder thông báo chờ ảnh.
+   ========================================================================== */
+const IMAGE_URLS = {
+  // Ảnh dùng chung cho Trắc nghiệm câu 21, 22, 23 (Đồ thị li độ - thời gian)
+  mcq_21_23: "https://raw.githubusercontent.com/MinhTruk/bakhi/refs/heads/main/images/21-23.jpeg",
+  // Ảnh dùng chung cho Trắc nghiệm câu 24, 25 (Đồ thị động năng - thế năng theo li độ)
+  mcq_24_25: "https://raw.githubusercontent.com/MinhTruk/bakhi/refs/heads/main/images/24-25.jpeg",
+  // Ảnh dùng chung cho Trắc nghiệm câu 28, 29 (Đồ thị động năng - thế năng theo thời gian)
+  mcq_28_29: "https://raw.githubusercontent.com/MinhTruk/bakhi/refs/heads/main/images/28-29.jpeg",
+  // Ảnh riêng cho Bài 2 Đúng/Sai (Đồ thị xích đu)
+  true_false_2: "https://raw.githubusercontent.com/MinhTruk/bakhi/refs/heads/main/images/2ds.jpeg",
+  // Ảnh riêng cho Bài 2 Trả lời ngắn (Đồ thị con lắc đơn)
+  short_answer_2: "https://raw.githubusercontent.com/MinhTruk/bakhi/refs/heads/main/images/2tln.jpeg",
+  // Ảnh riêng cho Bài 3 Trả lời ngắn (Đồ thị x(t))
+  short_answer_3: "https://raw.githubusercontent.com/MinhTruk/bakhi/refs/heads/main/images/3tln.jpeg",
+  // Ảnh riêng cho Bài 4 Trả lời ngắn (Đồ thị năng lượng)
+  short_answer_4: "https://raw.githubusercontent.com/MinhTruk/bakhi/refs/heads/main/images/4tln.jpeg"
+};
+
+/* ===== CẤU HÌNH LIÊN KẾT BÊN NGOÀI ===== */
+const CONFIG = {
+  subjectIndexUrl: "indexsu.html",
+  homeUrl: "/bakhi/"
+};
+
+document.getElementById('btn-back-subject').href = CONFIG.subjectIndexUrl;
+document.getElementById('btn-back-home').href = CONFIG.homeUrl;
+
+/* ==========================================================================
+   2. BANK CÂU HỎI VẬT LÍ 11
+   ========================================================================== */
+
+// PHẦN I: TRẮC NGHIỆM NHIỀU LỰA CHỌN (1 - 29)
+const MCQ_BANK = [
+  {
+    id: 1, originalNumber: 1, section: "I",
+    question: "Một vật dao động điều hòa theo phương trình $x = A\\cos(\\omega t + \\varphi)$. Đại lượng $A$ được gọi là",
+    options: ["li độ của dao động.", "biên độ của dao động.", "tần số góc của dao động.", "pha ban đầu của dao động."],
+    correctAnswer: 1,
+    explanation: "Trong phương trình $x = A\\cos(\\omega t + \\varphi)$, $A$ là đại lượng luôn dương đại diện cho li độ cực đại (biên độ dao động)."
+  },
+  {
+    id: 2, originalNumber: 2, section: "I",
+    question: "Chu kì dao động điều hòa là",
+    options: ["số dao động toàn phần vật thực hiện được trong 1 giây.", "khoảng thời gian để vật thực hiện được một dao động toàn phần.", "khoảng thời gian ngắn nhất để li độ của vật trở lại vị trí ban đầu.", "khoảng thời gian để vật đi từ biên này sang biên kia."],
+    correctAnswer: 1,
+    explanation: "Chu kì $T$ là khoảng thời gian để vật thực hiện được một dao động toàn phần."
+  },
+  {
+    id: 3, originalNumber: 3, section: "I",
+    question: "Một vật dao động điều hòa có tần số $f$. Tần số góc $\\omega$ của dao động được tính bằng công thức",
+    options: ["\\(\\omega = 2\\pi f\\)", "\\(\\omega = \\frac{2\\pi}{f}\\)", "\\(\\omega = \\frac{f}{2\\pi}\\)", "\\(\\omega = \\pi f\\)"],
+    correctAnswer: 0,
+    explanation: "Mối liên hệ giữa tần số góc $\\omega$ và tần số $f$ là $\\omega = 2\\pi f$."
+  },
+  {
+    id: 4, originalNumber: 4, section: "I",
+    question: "Li độ $x$ của vật dao động điều hòa biến thiên điều hòa theo thời gian với tần số $f$. Vận tốc $v$ của vật biến thiên điều hòa với tần số là",
+    options: ["\\(f\\)", "\\(2f\\)", "\\(f/2\\)", "\\(4f\\)"],
+    correctAnswer: 0,
+    explanation: "Li độ, vận tốc và gia tốc trong dao động điều hòa đều biến thiên cùng chu kì $T$ và tần số $f$."
+  },
+  {
+    id: 5, originalNumber: 5, section: "I",
+    question: "Trong dao động điều hòa của một vật, vận tốc cực đại $v_{\\max}$ liên hệ với biên độ $A$ và tần số góc $\\omega$ theo công thức",
+    options: ["\\(v_{\\max} = \\omega A\\)", "\\(v_{\\max} = \\omega^2 A\\)", "\\(v_{\\max} = \\frac{\\omega}{A}\\)", "\\(v_{\\max} = \\omega A^2\\)"],
+    correctAnswer: 0,
+    explanation: "Vận tốc cực đại $v_{\\max} = \\omega A$ đạt được khi vật đi qua vị trí cân bằng."
+  },
+  {
+    id: 6, originalNumber: 6, section: "I",
+    question: "Gia tốc của một vật dao động điều hòa liên hệ với li độ $x$ theo công thức",
+    options: ["\\(a = \\omega^2 x\\)", "\\(a = -\\omega^2 x\\)", "\\(a = -\\omega x\\)", "\\(a = \\omega x^2\\)"],
+    correctAnswer: 1,
+    explanation: "Gia tốc $a = x'' = -\\omega^2 x$."
+  },
+  {
+    id: 7, originalNumber: 7, section: "I",
+    question: "Vận tốc của vật dao động điều hòa biến thiên",
+    options: ["cùng pha với li độ.", "ngược pha với li độ.", "sớm pha \\(\\pi/2\\) so với li độ.", "trễ pha \\(\\pi/2\\) so với li độ."],
+    correctAnswer: 2,
+    explanation: "Vận tốc $v = -\\omega A \\sin(\\omega t + \\varphi) = \\omega A \\cos(\\omega t + \\varphi + \\pi/2)$ nên sớm pha $\\pi/2$ so với li độ $x$."
+  },
+  {
+    id: 8, originalNumber: 8, section: "I",
+    question: "Véc-tơ gia tốc của vật dao động điều hòa luôn",
+    options: ["hướng về vị trí cân bằng và có độ lớn tỉ lệ thuận với độ lớn li độ.", "hướng ra xa vị trí cân bằng.", "cùng hướng với véc-tơ vận tốc.", "có độ lớn không đổi theo thời gian."],
+    correctAnswer: 0,
+    explanation: "Vì $a = -\\omega^2 x$, dấu âm thể hiện véc-tơ gia tốc luôn hướng về VTCB và $|a| = \\omega^2 |x|$."
+  },
+  {
+    id: 9, originalNumber: 9, section: "I",
+    question: "Khi vật dao động điều hòa đi qua vị trí cân bằng thì",
+    options: ["vận tốc bằng 0, gia tốc cực đại.", "vận tốc cực đại, gia tốc bằng 0.", "vận tốc cực đại, gia tốc cực đại.", "vận tốc bằng 0, gia tốc bằng 0."],
+    correctAnswer: 1,
+    explanation: "Tại VTCB ($x=0$), độ lớn vận tốc đạt cực đại $|v| = v_{\\max} = \\omega A$, gia tốc $a = -\\omega^2 x = 0$."
+  },
+  {
+    id: 10, originalNumber: 10, section: "I",
+    question: "Hình chiếu của một chuyển động tròn đều lên một đường kính là một",
+    options: ["chuyển động thẳng đều.", "chuyển động biến đổi đều.", "dao động điều hòa.", "chuyển động tròn đều."],
+    correctAnswer: 2,
+    explanation: "Hình chiếu của chuyển động tròn đều lên một đường kính bất kì là một dao động điều hòa."
+  },
+  {
+    id: 11, originalNumber: 11, section: "I",
+    question: "Một chất điểm dao động điều hòa có phương trình $x = 5\\cos(4\\pi t + \\pi/3)$ cm. Biên độ dao động của chất điểm là",
+    options: ["\\(5\\text{ cm}\\)", "\\(4\\pi\\text{ cm}\\)", "\\(\\pi/3\\text{ cm}\\)", "\\(10\\text{ cm}\\)"],
+    correctAnswer: 0,
+    explanation: "So sánh với phương trình chuẩn $x = A\\cos(\\omega t + \\varphi)$, biên độ $A = 5\\text{ cm}$."
+  },
+  {
+    id: 12, originalNumber: 12, section: "I",
+    question: "Con lắc dao động điều hòa với chu kì $T = 0,5\\text{ s}$. Tần số dao động của con lắc là",
+    options: ["\\(2\\text{ Hz}\\)", "\\(0,5\\text{ Hz}\\)", "\\(\\pi\\text{ Hz}\\)", "\\(4\\text{ Hz}\\)"],
+    correctAnswer: 0,
+    explanation: "$f = \\frac{1}{T} = \\frac{1}{0,5} = 2\\text{ Hz}$."
+  },
+  {
+    id: 13, originalNumber: 13, section: "I",
+    question: "Một vật dao động điều hòa theo phương trình $x = 6\\cos(10t - \\pi/6)$ cm. Tần số góc của dao động là",
+    options: ["\\(10\\text{ rad/s}\\)", "\\(6\\text{ rad/s}\\)", "\\(-\\pi/6\\text{ rad/s}\\)", "\\(10\\pi\\text{ rad/s}\\)"],
+    correctAnswer: 0,
+    explanation: "Tần số góc $\\omega$ đứng trước biến thời gian $t$, suy ra $\\omega = 10\\text{ rad/s}$."
+  },
+  {
+    id: 14, originalNumber: 14, section: "I",
+    question: "Vật dao động điều hòa có phương trình $x = 4\\cos(2\\pi t + \\pi/2)$ cm. Vận tốc cực đại của vật là",
+    options: ["\\(8\\pi\\text{ cm/s}\\)", "\\(4\\pi\\text{ cm/s}\\)", "\\(2\\pi\\text{ cm/s}\\)", "\\(8\\text{ cm/s}\\)"],
+    correctAnswer: 0,
+    explanation: "$v_{\\max} = \\omega A = 2\\pi \\cdot 4 = 8\\pi\\text{ cm/s}$."
+  },
+  {
+    id: 15, originalNumber: 15, section: "I",
+    question: "Một chất điểm dao động có phương trình $x = 10\\cos(2t)$ cm. Gia tốc cực đại của chất điểm là",
+    options: ["\\(40\\text{ cm/s}^2\\)", "\\(20\\text{ cm/s}^2\\)", "\\(10\\text{ cm/s}^2\\)", "\\(80\\text{ cm/s}^2\\)"],
+    correctAnswer: 0,
+    explanation: "$a_{\\max} = \\omega^2 A = 2^2 \\cdot 10 = 40\\text{ cm/s}^2$."
+  },
+  {
+    id: 16, originalNumber: 16, section: "I",
+    question: "Vật dao động điều hòa có $A = 8\\text{ cm}$, chu kì $T = 2\\text{ s}$. Quãng đường vật đi được trong 1 chu kì là",
+    options: ["\\(16\\text{ cm}\\)", "\\(32\\text{ cm}\\)", "\\(8\\text{ cm}\\)", "\\(24\\text{ cm}\\)"],
+    correctAnswer: 1,
+    explanation: "Trong 1 chu kì $T$, quãng đường vật đi được luôn là $S = 4A = 4 \\cdot 8 = 32\\text{ cm}$."
+  },
+  {
+    id: 17, originalNumber: 17, section: "I",
+    question: "Một vật dao động điều hòa khi qua vị trí cân bằng có vận tốc $v = 20\\text{ cm/s}$, khi đến vị trí biên có gia tốc $a = 200\\text{ cm/s}^2$. Tần số góc của dao động là",
+    options: ["\\(10\\text{ rad/s}\\)", "\\(20\\text{ rad/s}\\)", "\\(5\\text{ rad/s}\\)", "\\(2\\text{ rad/s}\\)"],
+    correctAnswer: 0,
+    explanation: "Ta có $v_{\\max} = \\omega A = 20\\text{ cm/s}$ và $a_{\\max} = \\omega^2 A = 200\\text{ cm/s}^2$. Tỉ số $a_{\\max}/v_{\\max} = \\omega = 200/20 = 10\\text{ rad/s}$."
+  },
+  {
+    id: 18, originalNumber: 18, section: "I",
+    question: "Một vật dao động tắt dần có các đại lượng nào sau đây giảm liên tục theo thời gian?",
+    options: ["Biên độ và cơ năng.", "Gia tốc và vận tốc.", "Li độ và chu kì.", "Thế năng và động năng."],
+    correctAnswer: 0,
+    explanation: "Dao động tắt dần do ma sát làm cơ năng tiêu hao dần, dẫn đến biên độ $A$ và cơ năng $W$ giảm liên tục theo thời gian."
+  },
+  {
+    id: 19, originalNumber: 18, section: "I", // Đánh số lặp 18 theo tài liệu gốc
+    question: "Pha ban đầu $\\varphi$ cho phép xác định",
+    options: ["trạng thái dao động của vật ở thời điểm ban đầu $t = 0$.", "biên độ dao động của vật.", "chu kì dao động của vật.", "tần số dao động của vật."],
+    correctAnswer: 0,
+    explanation: "Pha ban đầu $\\varphi$ xác định li độ và chiều chuyển động (trạng thái dao động) của vật tại thời điểm $t = 0$."
+  },
+  {
+    id: 20, originalNumber: 19, section: "I",
+    question: "Độ lệch pha giữa hai dao động điều hòa cùng tần số $\\Delta\\varphi = (2k + 1)\\pi$ (với $k \\in \\mathbb{Z}$) cho biết hai dao động đó",
+    options: ["cùng pha.", "ngược pha.", "vuông pha.", "lệch pha $\\pi/4$."],
+    correctAnswer: 1,
+    explanation: "Độ lệch pha là một số lẻ lần $\\pi$ tương ứng với hai dao động ngược pha."
+  },
+  {
+    id: 21, originalNumber: 21, section: "I",
+    imageKey: "mcq_21_23",
+    question: "<strong>(Dùng chung hình 21–23)</strong> Cho đồ thị li độ - thời gian của một chất điểm dao động điều hòa. Biên độ dao động của chất điểm là",
+    options: ["\\(4\\text{ cm}\\)", "\\(8\\text{ cm}\\)", "\\(-4\\text{ cm}\\)", "\\(2\\text{ cm}\\)"],
+    correctAnswer: 0,
+    explanation: "Đọc giá trị đỉnh cực đại trên đồ thị $x(t)$, ta có biên độ $A = 4\\text{ cm}$."
+  },
+  {
+    id: 22, originalNumber: 22, section: "I",
+    imageKey: "mcq_21_23",
+    question: "<strong>(Dùng chung hình 21–23)</strong> Dựa vào đồ thị li độ - thời gian, chu kì dao động $T$ của chất điểm là",
+    options: ["\\(2\\text{ s}\\)", "\\(1\\text{ s}\\)", "\\(0,5\\text{ s}\\)", "\\(4\\text{ s}\\)"],
+    correctAnswer: 0,
+    explanation: "Thời gian để đồ thị lặp lại trạng thái cũ (1 chu kì toàn phần) là $T = 2\\text{ s}$."
+  },
+  {
+    id: 23, originalNumber: 23, section: "I",
+    imageKey: "mcq_21_23",
+    question: "<strong>(Dùng chung hình 21–23)</strong> Phương trình li độ dao động của chất điểm biểu diễn bởi đồ thị là",
+    options: ["\\(x = 4\\cos(\\pi t)\\text{ cm}\\)", "\\(x = 4\\cos(2\\pi t + \\pi/2)\\text{ cm}\\)", "\\(x = 4\\cos(\\pi t - \\pi/2)\\text{ cm}\\)", "\\(x = 4\\cos(2\\pi t)\\text{ cm}\\)"],
+    correctAnswer: 0,
+    explanation: "Ta có $A = 4\\text{ cm}$, $\\omega = 2\\pi/T = 2\\pi/2 = \\pi\\text{ rad/s}$. Tại $t=0$, $x=A=4\\text{ cm} \\Rightarrow \\varphi = 0$. Phương trình là $x = 4\\cos(\\pi t)\\text{ cm}$."
+  },
+  {
+    id: 24, originalNumber: 24, section: "I",
+    imageKey: "mcq_24_25",
+    question: "<strong>(Dùng chung hình 24–25)</strong> Cho đồ thị động năng $W_d$ và thế năng $W_t$ theo li độ $x$. Cơ năng của vật dao động là",
+    options: ["\\(80\\text{ mJ}\\)", "\\(40\\text{ mJ}\\)", "\\(160\\text{ mJ}\\)", "\\(20\\text{ mJ}\\)"],
+    correctAnswer: 0,
+    explanation: "Đỉnh cực đại của thế năng hoặc động năng trên đồ thị ứng với cơ năng $W = 80\\text{ mJ}$."
+  },
+  {
+    id: 25, originalNumber: 25, section: "I",
+    imageKey: "mcq_24_25",
+    question: "<strong>(Dùng chung hình 24–25)</strong> Tại vị trí li độ $x = A/2$, tỉ số giữa động năng và thế năng là",
+    options: ["\\(3\\)", "\\(1/3\\)", "\\(1\\)", "\\(2\\)"],
+    correctAnswer: 0,
+    explanation: "Khi $x = A/2 \\Rightarrow W_t = W/4 \\Rightarrow W_d = 3W/4$. Tỉ số $W_d/W_t = 3$."
+  },
+  {
+    id: 26, originalNumber: 26, section: "I",
+    question: "Hiện tượng cộng hưởng xảy ra khi",
+    options: ["tần số lực cưỡng bức bằng tần số riêng của hệ.", "lực ma sát của môi trường rất lớn.", "tần số lực cưỡng bức rất bé.", "biên độ dao động giảm nhanh theo thời gian."],
+    correctAnswer: 0,
+    explanation: "Hiện tượng cộng hưởng xảy ra khi tần số của ngoại lực cưỡng bức $f$ bằng tần số riêng $f_0$ của hệ dao động."
+  },
+  {
+    id: 27, originalNumber: 27, section: "I",
+    question: "Một con lắc lò xo gồm vật nặng $m = 200\\text{ g}$ dao động với phương trình $x = 5\\cos(10t)$ cm. Cơ năng của con lắc là",
+    options: ["\\(0,025\\text{ J}\\)", "\\(250\\text{ J}\\)", "\\(0,25\\text{ J}\\)", "\\(2,5\\text{ J}\\)"],
+    correctAnswer: 0,
+    explanation: "Đổi $m = 0,2\\text{ kg}$, $A = 0,05\\text{ m}$, $\\omega = 10\\text{ rad/s}$. Cơ năng $W = \\frac{1}{2} m \\omega^2 A^2 = \\frac{1}{2} \\cdot 0,2 \\cdot 10^2 \\cdot (0,05)^2 = 0,025\\text{ J}$."
+  },
+  {
+    id: 28, originalNumber: 28, section: "I",
+    imageKey: "mcq_28_29",
+    question: "<strong>(Dùng chung hình 28–29)</strong> Cho đồ thị sự phụ thuộc của động năng và thế năng vào thời gian. Chu kì biến thiên của động năng là",
+    options: ["\\(0,1\\text{ s}\\)", "\\(0,2\\text{ s}\\)", "\\(0,4\\text{ s}\\)", "\\(0,05\\text{ s}\\)"],
+    correctAnswer: 0,
+    explanation: "Từ đồ thị, thời gian giữa hai lần động năng đạt cực đại liên tiếp là $T' = 0,1\\text{ s}$."
+  },
+  {
+    id: 29, originalNumber: 29, section: "I",
+    imageKey: "mcq_28_29",
+    question: "<strong>(Dùng chung hình 28–29)</strong> Chu kì dao động điều hòa của vật (chu kì của li độ) là",
+    options: ["\\(0,2\\text{ s}\\)", "\\(0,1\\text{ s}\\)", "\\(0,4\\text{ s}\\)", "\\(0,05\\text{ s}\\)"],
+    correctAnswer: 0,
+    explanation: "Chu kì dao động của vật $T = 2 T' = 2 \\cdot 0,1 = 0,2\\text{ s}$."
+  }
+];
+
+// PHẦN II: TRẮC NGHIỆM ĐÚNG - SAI (2 Bài)
+const TF_BANK = [
+  {
+    id: 1, originalNumber: 1, section: "II",
+    title: "Bài 1: Pit-tông trong động cơ ô tô",
+    passage: "Pit-tông bên trong động cơ của một ô tô dao động trên một đoạn thẳng dài $20\\text{ cm}$. Động cơ hoạt động với tốc độ $2400\\text{ vòng/phút}$. Giả sử chuyển động của pit-tông là dao động điều hòa với phương trình có dạng $x = A\\cos(\\omega t + \\varphi)$, chọn gốc thời gian $t = 0$ lúc pit-tông qua vị trí cân bằng theo chiều dương.",
+    imageKey: null,
+    statements: [
+      { id: "1a", label: "a", text: "Biên độ dao động của pit-tông là $A = 10\\text{ cm}$.", answer: true, explanation: "Chiều dài quỹ đạo $L = 20\\text{ cm} \\Rightarrow A = L/2 = 10\\text{ cm}$." },
+      { id: "1b", label: "b", text: "Tần số góc của dao động là $\\omega = 80\\pi\\text{ rad/s}$.", answer: true, explanation: "Tần số $f = 2400/60 = 40\\text{ Hz} \\Rightarrow \\omega = 2\\pi f = 80\\pi\\text{ rad/s}$." },
+      { id: "1c", label: "c", text: "Pha ban đầu của dao động là $\\varphi = \\pi/2\\text{ rad}$.", answer: false, explanation: "Tại $t=0$, $x=0$ và đi theo chiều dương $\\Rightarrow \\sin\\varphi < 0 \\Rightarrow \\varphi = -\\pi/2\\text{ rad}$." },
+      { id: "1d", label: "d", text: "Tốc độ cực đại của pit-tông là $v_{\\max} = 8\\pi\\text{ m/s}$.", answer: true, explanation: "$v_{\\max} = \\omega A = 80\\pi \\cdot 0,1\\text{ m} = 8\\pi\\text{ m/s}$." }
+    ]
+  },
+  {
+    id: 2, originalNumber: 2, section: "II",
+    title: "Bài 2: Đồ thị năng lượng của xích đu",
+    passage: "Một em bé đang chơi xích đu. Đồ thị bên biểu diễn sự thay đổi của động năng $W_d$ và thế năng $W_t$ của xích đu theo li độ $x$. Biết khối lượng tổng cộng của em bé và ghế xích đu là $m = 20\\text{ kg}$.",
+    imageKey: "true_false_2",
+    statements: [
+      { id: "2a", label: "a", text: "Cơ năng của xích đu là $100\\text{ J}$.", answer: true, explanation: "Nhìn vào đỉnh cực đại của động năng hoặc thế năng trên đồ thị, $W = 100\\text{ J}$." },
+      { id: "2b", label: "b", text: "Biên độ dao động của xích đu là $0,5\\text{ m}$.", answer: true, explanation: "Tại vị trí $W_d = 0$, thế năng $W_t = W = 100\\text{ J}$ ứng với li độ biên $x = A = 0,5\\text{ m}$." },
+      { id: "2c", label: "c", text: "Tần số góc dao động của xích đu là $\\omega = 4\\sqrt{5}\\text{ rad/s}$.", answer: false, explanation: "Ta có $W = \\frac{1}{2} m \\omega^2 A^2 \\Rightarrow 100 = \\frac{1}{2} \\cdot 20 \\cdot \\omega^2 \\cdot (0,5)^2 \\Rightarrow \\omega = 2\\sqrt{10}\\text{ rad/s}$." },
+      { id: "2d", label: "d", text: "Khi li độ $x = 0,25\\text{ m}$, động năng của xích đu bằng $75\\text{ J}$.", answer: true, explanation: "Khi $x = A/2 = 0,25\\text{ m} \\Rightarrow W_t = W/4 = 25\\text{ J} \\Rightarrow W_d = W - W_t = 100 - 25 = 75\\text{ J}$." }
+    ]
+  }
+];
+
+// PHẦN III: CÂU HỎI TRẢ LỜI NGẮN (4 Bài)
+const SHORT_ANSWER_BANK = [
+  {
+    id: 1, originalNumber: 1, section: "III",
+    title: "Bài 1: Tính toán các đại lượng cơ bản",
+    passage: "Một vật dao động điều hòa có phương trình $x = 8\\cos(5\\pi t - \\pi/3)$ cm (với $x$ tính bằng cm, $t$ tính bằng giây).",
+    subQuestions: [
+      {
+        id: "sa_1_a", label: "a",
+        question: "Biên độ dao động $A$ của vật là bao nhiêu cm?",
+        correctAnswers: ["8", "8cm", "8 cm"],
+        explanation: "Phương trình chuẩn $x = A\\cos(\\omega t + \\varphi) \\Rightarrow A = 8\\text{ cm}$."
+      },
+      {
+        id: "sa_1_b", label: "b",
+        question: "Tính chu kì dao động $T$ của vật (tính theo giây)?",
+        correctAnswers: ["0.4", "0,4", "0.4s", "0.4 s"],
+        explanation: "$T = \\frac{2\\pi}{\\omega} = \\frac{2\\pi}{5\\pi} = 0,4\\text{ s}$."
+      },
+      {
+        id: "sa_1_c", label: "c",
+        question: "Tính tốc độ cực đại $v_{\\max}$ của vật theo cm/s (lấy $\\pi \\approx 3.14$)?",
+        correctAnswers: ["125.6", "125,6"],
+        explanation: "$v_{\\max} = \\omega A = 5\\pi \\cdot 8 = 40\\pi \\approx 40 \\cdot 3.14 = 125,6\\text{ cm/s}$."
+      }
+    ]
+  },
+  {
+    id: 2, originalNumber: 2, section: "III",
+    title: "Bài 2: Đồ thị động năng theo li độ",
+    passage: "Cho đồ thị biểu diễn sự phụ thuộc của động năng vào li độ của một con lắc đơn dao động điều hòa khối lượng $m = 100\\text{ g}$.",
+    imageKey: "short_answer_2",
+    subQuestions: [
+      {
+        id: "sa_2_a", label: "a",
+        question: "Cơ năng dao động của con lắc là bao nhiêu mJ?",
+        correctAnswers: ["50", "50mJ", "50 mJ"],
+        explanation: "Cơ năng bằng động năng cực đại trên đồ thị $W = W_{d\\max} = 50\\text{ mJ}$."
+      },
+      {
+        id: "sa_2_b", label: "b",
+        question: "Tính tốc độ của vật khi đi qua vị trí cân bằng theo m/s?",
+        correctAnswers: ["1", "1m/s", "1 m/s"],
+        explanation: "Đổi $m = 0,1\\text{ kg}, W = 0,05\\text{ J}$. Ta có $W = \\frac{1}{2} m v_{\\max}^2 \\Rightarrow v_{\\max} = \\sqrt{\\frac{2W}{m}} = \\sqrt{\\frac{2 \\cdot 0,05}{0,1}} = 1\\text{ m/s}$."
+      }
+    ]
+  },
+  {
+    id: 3, originalNumber: 3, section: "III",
+    title: "Bài 3: Đọc đồ thị $x(t)$",
+    passage: "Xét đồ thị li độ - thời gian $x(t)$ của một chất điểm dao động điều hòa như hình vẽ.",
+    imageKey: "short_answer_3",
+    subQuestions: [
+      {
+        id: "sa_3_a", label: "a",
+        question: "Xác định chu kì dao động $T$ từ đồ thị (đơn vị: giây)?",
+        correctAnswers: ["1.2", "1,2", "1.2s"],
+        explanation: "Khoảng thời gian từ một đỉnh cực đại đến đỉnh cực đại tiếp theo trên đồ thị là $1,2\\text{ s}$."
+      },
+      {
+        id: "sa_3_b", label: "b",
+        question: "Xác định pha ban đầu $\\varphi$ của dao động (đơn vị: rad, viết dưới dạng bội số của $\\pi$ hoặc giá trị thập phân như 0 hoặc 3.14)?",
+        correctAnswers: ["0", "0 rad"],
+        explanation: "Tại $t=0$, li độ vật ở đỉnh cực đại $x=A \\Rightarrow \\cos\\varphi = 1 \\Rightarrow \\varphi = 0$."
+      }
+    ]
+  },
+  {
+    id: 4, originalNumber: 4, section: "III",
+    title: "Bài 4: Đồ thị năng lượng theo thời gian",
+    passage: "Hình vẽ là đồ thị biến thiên động năng và thế năng của một con lắc lò xo theo thời gian.",
+    imageKey: "short_answer_4",
+    subQuestions: [
+      {
+        id: "sa_4_a", label: "a",
+        question: "Tần số dao động của con lắc bằng bao nhiêu Hz?",
+        correctAnswers: ["2.5", "2,5", "2.5Hz"],
+        explanation: "Chu kì biến thiên năng lượng $T' = 0,2\\text{ s} \\Rightarrow T = 2T' = 0,4\\text{ s} \\Rightarrow f = 1/T = 2,5\\text{ Hz}$."
+      }
+    ]
+  }
+];
+
+// PHẦN IV: BÀI TẬP TỰ LUẬN (3 Bài)
+const ESSAY_BANK = [
+  {
+    id: 1, originalNumber: 1, section: "IV",
+    title: "Bài 1: Lập phương trình dao động điều hòa",
+    problem: "Một vật nặng khối lượng $m = 250\\text{ g}$ treo vào lò xo nhẹ có độ cứng $k = 100\\text{ N/m}$. Kéo vật xuống dưới vị trí cân bằng một đoạn $4\\text{ cm}$ rồi truyền cho vật vận tốc $40\\sqrt{3}\\text{ cm/s}$ hướng thẳng đứng xuống dưới. Chọn gốc tọa độ tại VTCB, trục $Ox$ hướng thẳng đứng xuống dưới, gốc thời gian $t = 0$ là lúc truyền vận tốc.\n1. Tính tần số góc $\\omega$ và biên độ dao động $A$.\n2. Viết phương trình dao động điều hòa của vật.",
+    hints: "• Sử dụng công thức $\\omega = \\sqrt{\\frac{k}{m}}$.\n• Sử dụng công thức độc lập thời gian $A = \\sqrt{x^2 + \\frac{v^2}{\\omega^2}}$.\n• Tìm $\\varphi$ từ $x_0 = A\\cos\\varphi$ và $v_0 = -\\omega A \\sin\\varphi > 0$.",
+    solution: "<strong>Lời giải chi tiết:</strong><br>" +
+      "1) Tần số góc: $\\omega = \\sqrt{\\frac{k}{m}} = \\sqrt{\\frac{100}{0,25}} = 20\\text{ rad/s}$.<br>" +
+      "Tại $t=0$: $x_0 = 4\\text{ cm}$, $v_0 = 40\\sqrt{3}\\text{ cm/s}$.<br>" +
+      "Biên độ dao động: $A = \\sqrt{x_0^2 + \\left(\\frac{v_0}{\\omega}\\right)^2} = \\sqrt{4^2 + \\left(\\frac{40\\sqrt{3}}{20}\\right)^2} = \\sqrt{16 + 12} = \\sqrt{28} = 8\\text{ cm}$.<br><br>" +
+      "2) Pha ban đầu $\\varphi$:<br>" +
+      "$\\begin{cases} \\cos\\varphi = \\frac{x_0}{A} = \\frac{4}{8} = \\frac{1}{2} \\\\ v_0 > 0 \\Rightarrow \\sin\\varphi < 0 \\end{cases} \\Rightarrow \\varphi = -\\frac{\\pi}{3}\\text{ rad}$.<br>" +
+      "Vậy phương trình dao động là: $x = 8\\cos\\left(20t - \\frac{\\pi}{3}\\right)\\text{ cm}$."
+  },
+  {
+    id: 2, originalNumber: 2, section: "IV",
+    title: "Bài 2: Hiện tượng cộng hưởng trong đời sống",
+    problem: "Một người xách một xô nước đi trên đường, mỗi bước đi dài $50\\text{ cm}$. Chu kì dao động riêng của nước trong xô là $1\\text{ s}$. Hỏi người đó đi với tốc độ bao nhiêu thì nước trong xô bị sóng sánh mạnh nhất?",
+    hints: "Nước trong xô bị sóng sánh mạnh nhất khi xảy ra hiện tượng cộng hưởng, tức là chu kì của bước đi bằng chu kì dao động riêng của nước ($T = T_0 = 1\\text{ s}$).",
+    solution: "<strong>Lời giải chi tiết:</strong><br>" +
+      "Để nước trong xô bị sóng sánh mạnh nhất, thời gian người đó đi hết 1 bước phải đúng bằng chu kì dao động riêng của nước trong xô (điều kiện cộng hưởng).<br>" +
+      "Ta có: $T_{\\text{đi}} = T_0 = 1\\text{ s}$.<br>" +
+      "Tốc độ di chuyển của người đó là:<br>" +
+      "$v = \\frac{s}{T_{\\text{đi}}} = \\frac{0,5\\text{ m}}{1\\text{ s}} = 0,5\\text{ m/s} = 1,8\\text{ km/h}$.<br>" +
+      "Vậy khi đi với tốc độ $1,8\\text{ km/h}$ thì nước trong xô sẽ bị sóng sánh mạnh nhất."
+  },
+  {
+    id: 3, originalNumber: 3, section: "IV",
+    title: "Bài 3: Phân tích sự chuyển hóa năng lượng",
+    problem: "Một vật có khối lượng $m = 400\\text{ g}$ dao động điều hòa. Đồ thị thế năng $W_t$ theo thời gian $t$ có dạng đường hình sin với thế năng cực đại $W_{t\\max} = 80\\text{ mJ}$ và chu kì biến thiên của thế năng $T' = 0,2\\text{ s}$.\n1. Tính chu kì $T$ và cơ năng $W$ của vật.\n2. Tính vận tốc cực đại $v_{\\max}$ của vật.",
+    hints: "• Chu kì của thế năng $T' = T/2 \\Rightarrow T = 2T'$.\n• Cơ năng $W = W_{t\\max}$.\n• Sử dụng $W = \\frac{1}{2} m v_{\\max}^2$.",
+    solution: "<strong>Lời giải chi tiết:</strong><br>" +
+      "1) Chu kì dao động của vật là: $T = 2T' = 2 \\cdot 0,2 = 0,4\\text{ s}$.<br>" +
+      "Cơ năng của vật bằng thế năng cực đại: $W = W_{t\\max} = 80\\text{ mJ} = 0,08\\text{ J}$.<br><br>" +
+      "2) Đổi $m = 400\\text{ g} = 0,4\\text{ kg}$.<br>" +
+      "Áp dụng công thức cơ năng theo vận tốc cực đại:<br>" +
+      "$W = \\frac{1}{2} m v_{\\max}^2 \\Rightarrow v_{\\max} = \\sqrt{\\frac{2W}{m}} = \\sqrt{\\frac{2 \\cdot 0,08}{0,4}} = \\sqrt{0,4} \\approx 0,632\\text{ m/s} = 63,2\\text{ cm/s}$."
+  }
+];
+
+/* ==========================================================================
+   3. STATE MANAGEMENT & LOCAL STORAGE
+   ========================================================================== */
+let state = {
+  activePage: 'matrix', // 'matrix' | 'practice'
+  practiceMode: 'mcq',  // 'mcq' | 'tf' | 'sa' | 'essay'
+  
+  // MCQ state
+  mcqQuestions: [...MCQ_BANK],
+  mcqIndex: 0,
+  mcqAnswers: {}, // id -> chosenOptionIndex
+  
+  // True/False state
+  tfQuestions: [...TF_BANK],
+  tfArticleIndex: 0,
+  tfStatementIndex: 0,
+  tfAnswers: {}, // statementId -> boolean (user selected true/false)
+  
+  // Short Answer state
+  saQuestions: [...SHORT_ANSWER_BANK],
+  saArticleIndex: 0,
+  saSubIndex: 0,
+  saAnswers: {}, // subId -> string (user input)
+  saChecked: {}, // subId -> boolean
+  
+  // Essay state
+  essayQuestions: [...ESSAY_BANK],
+  essayIndex: 0,
+  essayReviewed: {}, // id -> boolean
+  essayShowHint: {}, // id -> boolean
+  essayShowSol: {},  // id -> boolean
+
+  // Checklist state
+  checklist: {}
+};
+
+// Load saved progress
+function loadProgress() {
+  try {
+    const saved = localStorage.getItem('bakhi_ly11_progress');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.mcqAnswers) state.mcqAnswers = parsed.mcqAnswers;
+      if (parsed.tfAnswers) state.tfAnswers = parsed.tfAnswers;
+      if (parsed.saAnswers) state.saAnswers = parsed.saAnswers;
+      if (parsed.saChecked) state.saChecked = parsed.saChecked;
+      if (parsed.essayReviewed) state.essayReviewed = parsed.essayReviewed;
+      if (parsed.checklist) state.checklist = parsed.checklist;
+    }
+  } catch(e) { console.error(e); }
+}
+
+function saveProgress() {
+  try {
+    const dataToSave = {
+      mcqAnswers: state.mcqAnswers,
+      tfAnswers: state.tfAnswers,
+      saAnswers: state.saAnswers,
+      saChecked: state.saChecked,
+      essayReviewed: state.essayReviewed,
+      checklist: state.checklist
+    };
+    localStorage.setItem('bakhi_ly11_progress', JSON.stringify(dataToSave));
+  } catch(e) { console.error(e); }
+}
+
+/* ==========================================================================
+   4. RENDER MATHEMATICS (KaTeX Helper)
+   ========================================================================== */
+function renderMath(element) {
+  if (window.renderMathInElement) {
+    renderMathInElement(element || document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '\\[', right: '\\]', display: true}
+      ],
+      throwOnError: false
+    });
+  }
+}
+
+/* Helper to render image block or image placeholder */
+function renderImageBlock(imageKey, altText) {
+  if (!imageKey) return '';
+  const url = IMAGE_URLS[imageKey];
+  if (url && url.trim() !== '') {
+    return `
+      <div class="my-3 text-center">
+        <img src="${url}" alt="${altText || 'Đồ thị Vật lí'}" class="max-h-64 mx-auto rounded-lg border border-slate-700 object-contain bg-slate-950 p-2" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\\'p-3 rounded bg-rose-950/50 border border-rose-800 text-rose-300 text-xs\\'>Không thể tải hình ảnh từ URL GitHub. Vui lòng kiểm tra lại cấu hình.</div>';">
+      </div>
+    `;
+  } else {
+    return `
+      <div class="my-3 p-4 rounded-xl border border-dashed border-amber-600/50 bg-amber-950/20 text-amber-300 text-xs text-center space-y-1">
+        <div class="font-semibold flex items-center justify-center gap-1.5"><i class="fa-solid fa-image"></i> Vùng ảnh: ${imageKey}</div>
+        <div class="text-slate-400">Chưa thêm link ảnh – hãy dán URL RAW GitHub vào cấu hình <code class="bg-slate-900 px-1 py-0.5 rounded text-amber-400">IMAGE_URLS.${imageKey}</code> trong code HTML.</div>
+      </div>
+    `;
+  }
+}
+
+/* ==========================================================================
+   5. NAVIGATION & PAGE SWITCHING
+   ========================================================================== */
+function switchPage(page) {
+  state.activePage = page;
+  const pageMatrix = document.getElementById('page-matrix');
+  const pagePractice = document.getElementById('page-practice');
+  const tabMatrix = document.getElementById('tab-matrix');
+  const tabPractice = document.getElementById('tab-practice');
+  const headerProgress = document.getElementById('header-progress');
+
+  if (page === 'matrix') {
+    pageMatrix.classList.remove('hidden');
+    pagePractice.classList.add('hidden');
+    tabMatrix.className = 'flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 bg-brand-500 text-slate-950 shadow';
+    tabPractice.className = 'flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 text-slate-400 hover:text-white';
+    headerProgress.classList.add('hidden');
+    renderChecklist();
+  } else {
+    pageMatrix.classList.add('hidden');
+    pagePractice.classList.remove('hidden');
+    tabPractice.className = 'flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 bg-brand-500 text-slate-950 shadow';
+    tabMatrix.className = 'flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 text-slate-400 hover:text-white';
+    headerProgress.classList.remove('hidden');
+    renderCurrentPracticeMode();
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function switchPracticeMode(mode) {
+  state.practiceMode = mode;
+  document.getElementById('result-mcq').classList.add('hidden');
+  document.getElementById('result-tf').classList.add('hidden');
+  
+  ['mcq', 'tf', 'sa', 'essay'].forEach(m => {
+    const btn = document.getElementById(`subtab-${m}`);
+    if (btn) {
+      if (m === mode) {
+        btn.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 bg-brand-500 text-slate-950 shadow';
+      } else {
+        btn.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 text-slate-400 hover:text-white';
+      }
+    }
+  });
+
+  renderCurrentPracticeMode();
+}
+
+function renderCurrentPracticeMode() {
+  const container = document.getElementById('quiz-area');
+  container.innerHTML = '';
+
+  if (state.practiceMode === 'mcq') {
+    renderMCQ(container);
+  } else if (state.practiceMode === 'tf') {
+    renderTF(container);
+  } else if (state.practiceMode === 'sa') {
+    renderSA(container);
+  } else if (state.practiceMode === 'essay') {
+    renderEssay(container);
+  }
+
+  renderMath(container);
+}
+
+/* ==========================================================================
+   6. MODE 1: TRẮC NGHIỆM (MCQ)
+   ========================================================================== */
+function renderMCQ(container) {
+  const qList = state.mcqQuestions;
+  const idx = state.mcqIndex;
+  const total = qList.length;
+
+  if (idx >= total) {
+    showMCQResults();
+    return;
+  }
+
+  const q = qList[idx];
+  const chosenOpt = state.mcqAnswers[q.id];
+  const isAnswered = chosenOpt !== undefined;
+
+  // Update progress bar
+  const answeredCount = Object.keys(state.mcqAnswers).length;
+  document.getElementById('progress-text').innerText = `Trắc nghiệm: Câu ${idx + 1}/${total} (Đã làm ${answeredCount})`;
+  const correctCount = Object.keys(state.mcqAnswers).filter(id => {
+    const item = state.mcqQuestions.find(x => x.id == id);
+    return item && state.mcqAnswers[id] === item.correctAnswer;
+  }).length;
+  const pct = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+  document.getElementById('score-text').innerText = `Chính xác: ${pct}%`;
+  document.getElementById('progress-bar').style.width = `${((idx + 1) / total) * 100}%`;
+
+  let html = `
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-5 fade-in">
+      <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
+        <span class="font-bold text-amber-400">Câu ${idx + 1} / ${total} <span class="text-slate-500 font-normal">(Mã gốc #${q.originalNumber})</span></span>
+        <span>Phần I – Trắc nghiệm</span>
+      </div>
+
+      <div class="text-sm sm:text-base text-slate-100 font-medium leading-relaxed">
+        ${q.question}
+      </div>
+
+      ${renderImageBlock(q.imageKey, `Hình vẽ câu ${q.originalNumber}`)}
+
+      <div class="grid grid-cols-1 gap-2.5 pt-2">
+  `;
+
+  const optLabels = ['A', 'B', 'C', 'D'];
+  q.options.forEach((optText, oIdx) => {
+    let btnStyle = "bg-slate-950/80 border-slate-800 text-slate-200 opt";
+    let icon = `<span class="w-6 h-6 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 mr-3">${optLabels[oIdx]}</span>`;
+
+    if (isAnswered) {
+      if (oIdx === q.correctAnswer) {
+        btnStyle = "bg-emerald-950/80 border-emerald-500 text-emerald-200 font-semibold";
+        icon = `<span class="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold mr-3"><i class="fa-solid fa-check"></i></span>`;
+      } else if (oIdx === chosenOpt) {
+        btnStyle = "bg-rose-950/80 border-rose-500 text-rose-200";
+        icon = `<span class="w-6 h-6 rounded-lg bg-rose-600 text-white flex items-center justify-center text-xs font-bold mr-3"><i class="fa-solid fa-xmark"></i></span>`;
+      } else {
+        btnStyle = "bg-slate-950/40 border-slate-800/40 text-slate-500 opacity-60";
+      }
+    }
+
+    html += `
+      <button onclick="selectMCQOption(${q.id}, ${oIdx})" ${isAnswered ? 'disabled' : ''} class="w-full text-left p-3.5 rounded-xl border ${btnStyle} flex items-center transition">
+        ${icon}
+        <span class="flex-1 text-xs sm:text-sm">${optText}</span>
+      </button>
+    `;
+  });
+
+  html += `</div>`;
+
+  if (isAnswered) {
+    const isCorrect = chosenOpt === q.correctAnswer;
+    html += `
+      <div class="p-4 rounded-xl border ${isCorrect ? 'bg-emerald-950/30 border-emerald-800/50 text-emerald-300' : 'bg-rose-950/30 border-rose-800/50 text-rose-300'} space-y-1 text-xs sm:text-sm fade-in">
+        <div class="font-bold flex items-center gap-2">
+          <i class="fa-solid ${isCorrect ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-rose-400'}"></i>
+          <span>${isCorrect ? 'Chính xác!' : 'Chưa đúng!'}</span>
+        </div>
+        ${q.explanation ? `<div class="text-slate-300 mt-1 text-xs leading-relaxed"><strong>Giải thích:</strong> ${q.explanation}</div>` : ''}
+      </div>
+    `;
+  }
+
+  // Navigation buttons
+  html += `
+    <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+      <button onclick="navMCQ(-1)" ${idx === 0 ? 'disabled' : ''} class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-xs font-semibold text-slate-200 transition">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Câu trước
+      </button>
+
+      <span class="text-xs text-slate-500">${idx + 1} / ${total}</span>
+
+      ${isAnswered ? `
+        <button onclick="navMCQ(1)" class="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold text-xs shadow transition flex items-center gap-1.5">
+          <span>${idx === total - 1 ? 'Xem kết quả' : 'Câu tiếp theo'}</span> <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      ` : `
+        <button disabled class="px-5 py-2 rounded-xl bg-slate-800 text-slate-500 text-xs font-bold cursor-not-allowed">
+          Chọn đáp án để tiếp tục
+        </button>
+      `}
+    </div>
+  </div>`;
+
+  container.innerHTML = html;
+}
+
+function selectMCQOption(qId, oIdx) {
+  state.mcqAnswers[qId] = oIdx;
+  saveProgress();
+  renderCurrentPracticeMode();
+}
+
+function navMCQ(dir) {
+  state.mcqIndex += dir;
+  if (state.mcqIndex >= state.mcqQuestions.length) {
+    showMCQResults();
+    return;
+  }
+  renderCurrentPracticeMode();
+}
+
+function showMCQResults() {
+  const container = document.getElementById('quiz-area');
+  container.innerHTML = '';
+  const resDiv = document.getElementById('result-mcq');
+  resDiv.classList.remove('hidden');
+
+  const total = state.mcqQuestions.length;
+  let correct = 0;
+  let wrongList = [];
+
+  state.mcqQuestions.forEach((q, i) => {
+    const ans = state.mcqAnswers[q.id];
+    if (ans === q.correctAnswer) {
+      correct++;
+    } else {
+      wrongList.push({ q, chosen: ans, num: i + 1 });
+    }
+  });
+
+  const pct = Math.round((correct / total) * 100);
+  const score = ((correct / total) * 10).toFixed(1);
+
+  document.getElementById('res-mcq-msg').innerText = `Bạn đã hoàn thành ${Object.keys(state.mcqAnswers).length}/${total} câu hỏi trắc nghiệm!`;
+  document.getElementById('res-mcq-correct').innerText = correct;
+  document.getElementById('res-mcq-wrong').innerText = total - correct;
+  document.getElementById('res-mcq-pct').innerText = `${pct}%`;
+  document.getElementById('res-mcq-score').innerText = `${score} / 10`;
+
+  const wrongWrap = document.getElementById('res-mcq-wrong-wrap');
+  const wrongListDiv = document.getElementById('res-mcq-wrong-list');
+  wrongListDiv.innerHTML = '';
+
+  if (wrongList.length > 0) {
+    wrongWrap.classList.remove('hidden');
+    wrongList.forEach(item => {
+      const q = item.q;
+      const optLabels = ['A', 'B', 'C', 'D'];
+      wrongListDiv.innerHTML += `
+        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1">
+          <div class="font-bold text-amber-400">Câu ${item.num}: ${q.question}</div>
+          <div class="text-rose-400">Đáp án bạn chọn: ${item.chosen !== undefined ? optLabels[item.chosen] + '. ' + q.options[item.chosen] : 'Chưa chọn'}</div>
+          <div class="text-emerald-400 font-semibold">Đáp án đúng: ${optLabels[q.correctAnswer]}. ${q.options[q.correctAnswer]}</div>
+        </div>
+      `;
+    });
+  } else {
+    wrongWrap.classList.add('hidden');
+  }
+
+  renderMath(resDiv);
+}
+
+/* ==========================================================================
+   7. MODE 2: ĐÚNG - SAI (TF) - LÀM TỪNG MỆNH ĐỀ
+   ========================================================================== */
+function renderTF(container) {
+  const articles = state.tfQuestions;
+  const aIdx = state.tfArticleIndex;
+  
+  if (aIdx >= articles.length) {
+    showTFResults();
+    return;
+  }
+
+  const art = articles[aIdx];
+  const stmIdx = state.tfStatementIndex;
+  const stm = art.statements[stmIdx];
+  const totalStmInArt = art.statements.length;
+
+  const chosenAns = state.tfAnswers[stm.id];
+  const isAnswered = chosenAns !== undefined;
+
+  // Header progress
+  document.getElementById('progress-text').innerText = `Đúng-Sai: ${art.title} · Mệnh đề ${stmIdx + 1}/${totalStmInArt}`;
+  document.getElementById('progress-bar').style.width = `${((stmIdx + 1) / totalStmInArt) * 100}%`;
+
+  let html = `
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-5 fade-in">
+      <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
+        <span class="font-bold text-amber-400">${art.title}</span>
+        <span>Mệnh đề ${stmIdx + 1} / ${totalStmInArt}</span>
+      </div>
+
+      <!-- Passage -->
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 text-xs sm:text-sm text-slate-300 leading-relaxed space-y-2">
+        <div class="font-semibold text-amber-300 flex items-center gap-1.5"><i class="fa-solid fa-file-lines"></i> Dữ kiện bài tập:</div>
+        <div>${art.passage}</div>
+      </div>
+
+      ${renderImageBlock(art.imageKey, art.title)}
+
+      <!-- Statement Question -->
+      <div class="p-4 bg-slate-950/60 rounded-xl border border-slate-800 space-y-3">
+        <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">
+          Mệnh đề (${stm.label})
+        </span>
+        <div class="text-sm sm:text-base font-medium text-slate-100 leading-relaxed">
+          ${stm.text}
+        </div>
+      </div>
+
+      <!-- Option buttons -->
+      <div class="grid grid-cols-2 gap-4 pt-2">
+  `;
+
+  // True Button
+  let btnTrueClass = "bg-slate-950 border-slate-800 text-slate-200 hover:border-emerald-500 hover:bg-emerald-950/20";
+  if (isAnswered) {
+    if (stm.answer === true) {
+      btnTrueClass = "bg-emerald-950/80 border-emerald-500 text-emerald-200 font-bold ring-2 ring-emerald-500/50";
+    } else if (chosenAns === true) {
+      btnTrueClass = "bg-rose-950/80 border-rose-500 text-rose-200 opacity-60";
+    } else {
+      btnTrueClass = "bg-slate-950 border-slate-800/40 text-slate-600 opacity-40";
+    }
+  }
+
+  // False Button
+  let btnFalseClass = "bg-slate-950 border-slate-800 text-slate-200 hover:border-rose-500 hover:bg-rose-950/20";
+  if (isAnswered) {
+    if (stm.answer === false) {
+      btnFalseClass = "bg-emerald-950/80 border-emerald-500 text-emerald-200 font-bold ring-2 ring-emerald-500/50";
+    } else if (chosenAns === false) {
+      btnFalseClass = "bg-rose-950/80 border-rose-500 text-rose-200 opacity-60";
+    } else {
+      btnFalseClass = "bg-slate-950 border-slate-800/40 text-slate-600 opacity-40";
+    }
+  }
+
+  html += `
+    <button onclick="selectTFAnswer('${stm.id}', true)" ${isAnswered ? 'disabled' : ''} class="p-4 rounded-xl border ${btnTrueClass} text-center transition flex flex-col items-center justify-center gap-1">
+      <i class="fa-solid fa-check text-lg"></i>
+      <span class="text-sm">ĐÚNG</span>
+    </button>
+
+    <button onclick="selectTFAnswer('${stm.id}', false)" ${isAnswered ? 'disabled' : ''} class="p-4 rounded-xl border ${btnFalseClass} text-center transition flex flex-col items-center justify-center gap-1">
+      <i class="fa-solid fa-xmark text-lg"></i>
+      <span class="text-sm">SAI</span>
+    </button>
+  </div>`;
+
+  if (isAnswered) {
+    const isCorrect = chosenAns === stm.answer;
+    html += `
+      <div class="p-4 rounded-xl border ${isCorrect ? 'bg-emerald-950/30 border-emerald-800/50 text-emerald-300' : 'bg-rose-950/30 border-rose-800/50 text-rose-300'} text-xs sm:text-sm space-y-1 fade-in">
+        <div class="font-bold flex items-center gap-2">
+          <i class="fa-solid ${isCorrect ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-rose-400'}"></i>
+          <span>${isCorrect ? 'Chính xác!' : 'Chưa đúng!'} Mệnh đề này là: ${stm.answer ? 'ĐÚNG' : 'SAI'}</span>
+        </div>
+        ${stm.explanation ? `<div class="text-slate-300 mt-1 text-xs"><strong>Giải thích:</strong> ${stm.explanation}</div>` : ''}
+      </div>
+    `;
+  }
+
+  // Navigation
+  html += `
+    <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+      <button onclick="navTF(-1)" ${aIdx === 0 && stmIdx === 0 ? 'disabled' : ''} class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-xs font-semibold text-slate-200 transition">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Mệnh đề trước
+      </button>
+
+      <span class="text-xs text-slate-500">Mệnh đề ${stmIdx + 1}/${totalStmInArt}</span>
+
+      ${isAnswered ? `
+        <button onclick="navTF(1)" class="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold text-xs shadow transition flex items-center gap-1.5">
+          <span>${stmIdx === totalStmInArt - 1 && aIdx === articles.length - 1 ? 'Xem kết quả' : 'Mệnh đề tiếp'}</span> <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      ` : `
+        <button disabled class="px-5 py-2 rounded-xl bg-slate-800 text-slate-500 text-xs font-bold cursor-not-allowed">
+          Chọn Đúng hoặc Sai để tiếp tục
+        </button>
+      `}
+    </div>
+  </div>`;
+
+  container.innerHTML = html;
+}
+
+function selectTFAnswer(stmId, ansBool) {
+  state.tfAnswers[stmId] = ansBool;
+  saveProgress();
+  renderCurrentPracticeMode();
+}
+
+function navTF(dir) {
+  const art = state.tfQuestions[state.tfArticleIndex];
+  state.tfStatementIndex += dir;
+
+  if (state.tfStatementIndex < 0) {
+    if (state.tfArticleIndex > 0) {
+      state.tfArticleIndex--;
+      state.tfStatementIndex = state.tfQuestions[state.tfArticleIndex].statements.length - 1;
+    } else {
+      state.tfStatementIndex = 0;
+    }
+  } else if (state.tfStatementIndex >= art.statements.length) {
+    if (state.tfArticleIndex < state.tfQuestions.length - 1) {
+      state.tfArticleIndex++;
+      state.tfStatementIndex = 0;
+    } else {
+      showTFResults();
+      return;
+    }
+  }
+  renderCurrentPracticeMode();
+}
+
+function showTFResults() {
+  const container = document.getElementById('quiz-area');
+  container.innerHTML = '';
+  const resDiv = document.getElementById('result-tf');
+  resDiv.classList.remove('hidden');
+
+  let totalStm = 0;
+  let correctCount = 0;
+  let wrongList = [];
+
+  state.tfQuestions.forEach(art => {
+    art.statements.forEach(stm => {
+      totalStm++;
+      const userAns = state.tfAnswers[stm.id];
+      if (userAns === stm.answer) {
+        correctCount++;
+      } else {
+        wrongList.push({ art, stm, userAns });
+      }
+    });
+  });
+
+  const pct = Math.round((correctCount / totalStm) * 100);
+
+  document.getElementById('res-tf-msg').innerText = `Bạn đã hoàn thành tất cả ${totalStm} mệnh đề Đúng – Sai!`;
+  document.getElementById('res-tf-correct').innerText = correctCount;
+  document.getElementById('res-tf-wrong').innerText = totalStm - correctCount;
+  document.getElementById('res-tf-pct').innerText = `${pct}%`;
+
+  const wrongWrap = document.getElementById('res-tf-wrong-wrap');
+  const wrongListDiv = document.getElementById('res-tf-wrong-list');
+  wrongListDiv.innerHTML = '';
+
+  if (wrongList.length > 0) {
+    wrongWrap.classList.remove('hidden');
+    wrongList.forEach(item => {
+      wrongListDiv.innerHTML += `
+        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1">
+          <div class="font-bold text-amber-400">${item.art.title} – Mệnh đề (${item.stm.label}): ${item.stm.text}</div>
+          <div class="text-rose-400">Bạn chọn: ${item.userAns !== undefined ? (item.userAns ? 'ĐÚNG' : 'SAI') : 'Chưa chọn'}</div>
+          <div class="text-emerald-400 font-semibold">Đáp án chính xác: ${item.stm.answer ? 'ĐÚNG' : 'SAI'}</div>
+          ${item.stm.explanation ? `<div class="text-slate-400 mt-0.5"><strong>Giải thích:</strong> ${item.stm.explanation}</div>` : ''}
+        </div>
+      `;
+    });
+  } else {
+    wrongWrap.classList.add('hidden');
+  }
+
+  renderMath(resDiv);
+}
+
+/* ==========================================================================
+   8. MODE 3: TRẢ LỜI NGẮN (SHORT ANSWER)
+   ========================================================================== */
+function renderSA(container) {
+  const articles = state.saQuestions;
+  const aIdx = state.saArticleIndex;
+
+  if (aIdx >= articles.length) {
+    state.saArticleIndex = articles.length - 1;
+  }
+
+  const art = articles[aIdx];
+  const subIdx = state.saSubIndex;
+  const sub = art.subQuestions[subIdx];
+  const totalSubInArt = art.subQuestions.length;
+
+  const currentVal = state.saAnswers[sub.id] || '';
+  const isChecked = state.saChecked[sub.id] || false;
+
+  // Progress text
+  document.getElementById('progress-text').innerText = `Trả lời ngắn: ${art.title} · Ý ${subIdx + 1}/${totalSubInArt}`;
+  document.getElementById('progress-bar').style.width = `${((aIdx + 1) / articles.length) * 100}%`;
+
+  let html = `
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-5 fade-in">
+      <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
+        <span class="font-bold text-amber-400">${art.title} (Bài ${aIdx + 1}/${articles.length})</span>
+        <span>Ý (${sub.label}) - ${subIdx + 1}/${totalSubInArt}</span>
+      </div>
+
+      <!-- Passage -->
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 text-xs sm:text-sm text-slate-300 leading-relaxed">
+        ${art.passage}
+      </div>
+
+      ${renderImageBlock(art.imageKey, art.title)}
+
+      <!-- Subquestion -->
+      <div class="space-y-3 pt-2">
+        <div class="text-sm sm:text-base font-semibold text-slate-100 flex items-start gap-2">
+          <span class="px-2 py-0.5 rounded bg-brand-950 text-brand-300 border border-brand-700/50 text-xs">Ý (${sub.label})</span>
+          <span>${sub.question}</span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <input type="text" id="input-sa-${sub.id}" value="${currentVal}" placeholder="Nhập câu trả lời/kết quả tính toán..." class="flex-1 px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500 transition">
+          <button onclick="checkSAAnswer('${sub.id}')" class="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-calculator"></i> Kiểm tra
+          </button>
+        </div>
+      </div>
+  `;
+
+  if (isChecked) {
+    const isCorrect = checkSAIsCorrect(currentVal, sub.correctAnswers);
+    html += `
+      <div class="p-4 rounded-xl border ${isCorrect ? 'bg-emerald-950/30 border-emerald-800/50 text-emerald-300' : 'bg-amber-950/30 border-amber-800/50 text-amber-300'} text-xs sm:text-sm space-y-2 fade-in">
+        <div class="font-bold flex items-center gap-2">
+          <i class="fa-solid ${isCorrect ? 'fa-circle-check text-emerald-400' : 'fa-lightbulb text-amber-400'}"></i>
+          <span>${isCorrect ? 'Kết quả chính xác!' : 'Đáp án tham khảo:'}</span>
+        </div>
+        <div class="text-slate-200">
+          <strong>Các dạng đáp án hợp lệ:</strong> <code class="bg-slate-900 px-2 py-0.5 rounded text-amber-300">${sub.correctAnswers.join(' / ')}</code>
+        </div>
+        ${sub.explanation ? `<div class="text-slate-300 text-xs border-t border-slate-800/80 pt-2 mt-1"><strong>Lời giải chi tiết:</strong> ${sub.explanation}</div>` : ''}
+      </div>
+    `;
+  }
+
+  // Navigation
+  html += `
+    <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+      <button onclick="navSA(-1)" ${aIdx === 0 && subIdx === 0 ? 'disabled' : ''} class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-xs font-semibold text-slate-200 transition">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Ý trước
+      </button>
+
+      <span class="text-xs text-slate-500">Bài ${aIdx + 1}/${articles.length} · Ý ${subIdx + 1}/${totalSubInArt}</span>
+
+      <button onclick="navSA(1)" class="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold text-xs shadow transition flex items-center gap-1.5">
+        <span>${subIdx === totalSubInArt - 1 && aIdx === articles.length - 1 ? 'Hoàn thành' : 'Ý tiếp theo'}</span> <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>`;
+
+  container.innerHTML = html;
+}
+
+function checkSAAnswer(subId) {
+  const input = document.getElementById(`input-sa-${subId}`);
+  if (input) {
+    state.saAnswers[subId] = input.value.trim();
+  }
+  state.saChecked[subId] = true;
+  saveProgress();
+  renderCurrentPracticeMode();
+}
+
+function checkSAIsCorrect(val, acceptedList) {
+  if (!val) return false;
+  const cleanVal = val.toLowerCase().replace(/\s+/g, '').replace(',', '.');
+  return acceptedList.some(acc => {
+    const cleanAcc = acc.toLowerCase().replace(/\s+/g, '').replace(',', '.');
+    return cleanVal === cleanAcc;
+  });
+}
+
+function navSA(dir) {
+  const art = state.saQuestions[state.saArticleIndex];
+  state.saSubIndex += dir;
+
+  if (state.saSubIndex < 0) {
+    if (state.saArticleIndex > 0) {
+      state.saArticleIndex--;
+      state.saSubIndex = state.saQuestions[state.saArticleIndex].subQuestions.length - 1;
+    } else {
+      state.saSubIndex = 0;
+    }
+  } else if (state.saSubIndex >= art.subQuestions.length) {
+    if (state.saArticleIndex < state.saQuestions.length - 1) {
+      state.saArticleIndex++;
+      state.saSubIndex = 0;
+    } else {
+      switchPracticeMode('essay');
+      return;
+    }
+  }
+  renderCurrentPracticeMode();
+}
+
+/* ==========================================================================
+   9. MODE 4: TỰ LUẬN (ESSAY)
+   ========================================================================== */
+function renderEssay(container) {
+  const list = state.essayQuestions;
+  const idx = state.essayIndex;
+  const q = list[idx];
+
+  const isReviewed = state.essayReviewed[q.id] || false;
+  const showHint = state.essayShowHint[q.id] || false;
+  const showSol = state.essayShowSol[q.id] || false;
+
+  document.getElementById('progress-text').innerText = `Tự luận: Bài ${idx + 1}/${list.length}`;
+  document.getElementById('progress-bar').style.width = `${((idx + 1) / list.length) * 100}%`;
+
+  let html = `
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-5 fade-in">
+      <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
+        <span class="font-bold text-amber-400">${q.title}</span>
+        <span>Phần IV – Tự luận (Bài ${idx + 1}/${list.length})</span>
+      </div>
+
+      <!-- Problem description -->
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-sm sm:text-base text-slate-100 font-medium leading-relaxed whitespace-pre-line">
+        ${q.problem}
+      </div>
+
+      <!-- Interactive toggle buttons -->
+      <div class="flex flex-wrap items-center gap-3 pt-2">
+        <button onclick="toggleEssayHint(${q.id})" class="px-4 py-2 bg-indigo-950 hover:bg-indigo-900 text-indigo-300 rounded-xl border border-indigo-800 text-xs font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-lightbulb"></i> <span>${showHint ? 'Ẩn gợi ý' : 'Xem gợi ý'}</span>
+        </button>
+
+        <button onclick="toggleEssaySol(${q.id})" class="px-4 py-2 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 rounded-xl border border-emerald-800 text-xs font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-check"></i> <span>${showSol ? 'Ẩn lời giải' : 'Xem lời giải chi tiết'}</span>
+        </button>
+
+        <button onclick="toggleEssayReviewed(${q.id})" class="ml-auto px-4 py-2 ${isReviewed ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'} rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-check"></i> <span>${isReviewed ? 'Đã ôn tập' : 'Đánh dấu đã ôn'}</span>
+        </button>
+      </div>
+
+      <!-- Hint box -->
+      ${showHint ? `
+        <div class="p-4 rounded-xl bg-indigo-950/30 border border-indigo-800/50 text-indigo-200 text-xs sm:text-sm space-y-1 fade-in">
+          <div class="font-bold flex items-center gap-1.5 text-indigo-400"><i class="fa-solid fa-lightbulb"></i> Gợi ý định hướng:</div>
+          <div class="whitespace-pre-line leading-relaxed">${q.hints}</div>
+        </div>
+      ` : ''}
+
+      <!-- Solution box -->
+      ${showSol ? `
+        <div class="p-4 rounded-xl bg-emerald-950/30 border border-emerald-800/50 text-emerald-200 text-xs sm:text-sm space-y-2 fade-in">
+          <div class="font-bold flex items-center gap-1.5 text-emerald-400"><i class="fa-solid fa-circle-check"></i> Hướng dẫn giải chi tiết:</div>
+          <div class="leading-relaxed border-t border-emerald-900/50 pt-2 text-slate-200">${q.solution}</div>
+        </div>
+      ` : ''}
+
+      <!-- Navigation -->
+      <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+        <button onclick="navEssay(-1)" ${idx === 0 ? 'disabled' : ''} class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-xs font-semibold text-slate-200 transition">
+          <i class="fa-solid fa-arrow-left mr-1"></i> Bài trước
+        </button>
+
+        <span class="text-xs text-slate-500">Bài ${idx + 1} / ${list.length}</span>
+
+        <button onclick="navEssay(1)" ${idx === list.length - 1 ? 'disabled' : ''} class="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 disabled:opacity-30 text-slate-950 font-bold text-xs shadow transition flex items-center gap-1.5">
+          <span>Bài tiếp theo</span> <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+function toggleEssayHint(qId) {
+  state.essayShowHint[qId] = !state.essayShowHint[qId];
+  renderCurrentPracticeMode();
+}
+
+function toggleEssaySol(qId) {
+  state.essayShowSol[qId] = !state.essayShowSol[qId];
+  renderCurrentPracticeMode();
+}
+
+function toggleEssayReviewed(qId) {
+  state.essayReviewed[qId] = !state.essayReviewed[qId];
+  saveProgress();
+  renderCurrentPracticeMode();
+}
+
+function navEssay(dir) {
+  state.essayIndex += dir;
+  if (state.essayIndex < 0) state.essayIndex = 0;
+  if (state.essayIndex >= state.essayQuestions.length) state.essayIndex = state.essayQuestions.length - 1;
+  renderCurrentPracticeMode();
+}
+
+/* ==========================================================================
+   10. CHỨC NĂNG XÁO TRỘN (SHUFFLE)
+   ========================================================================== */
+function toggleShuffleMenu() {
+  const menu = document.getElementById('shuffle-menu');
+  menu.classList.toggle('hidden');
+}
+
+// Close shuffle menu on outside click
+document.addEventListener('click', function(e) {
+  const btn = document.getElementById('btn-shuffle');
+  const menu = document.getElementById('shuffle-menu');
+  if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) {
+    menu.classList.add('hidden');
+  }
+});
+
+function shuffleArray(arr) {
+  const newArr = [...arr];
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+  }
+  return newArr;
+}
+
+function shuffleModeContent(type) {
+  document.getElementById('shuffle-menu').classList.add('hidden');
+
+  if (state.practiceMode === 'mcq') {
+    if (type === 'questions' || type === 'all') {
+      state.mcqQuestions = shuffleArray(state.mcqQuestions);
+      state.mcqIndex = 0;
+    }
+    if (type === 'options' || type === 'all') {
+      state.mcqQuestions.forEach(q => {
+        const correctOptText = q.options[q.correctAnswer];
+        q.options = shuffleArray(q.options);
+        q.correctAnswer = q.options.indexOf(correctOptText);
+      });
+    }
+  } else if (state.practiceMode === 'tf') {
+    if (type === 'questions' || type === 'all') {
+      state.tfQuestions = shuffleArray(state.tfQuestions);
+      state.tfArticleIndex = 0;
+      state.tfStatementIndex = 0;
+    }
+    if (type === 'options' || type === 'all') {
+      state.tfQuestions.forEach(art => {
+        art.statements = shuffleArray(art.statements);
+      });
+    }
+  } else if (state.practiceMode === 'sa') {
+    state.saQuestions = shuffleArray(state.saQuestions);
+    state.saArticleIndex = 0;
+    state.saSubIndex = 0;
+  } else if (state.practiceMode === 'essay') {
+    state.essayQuestions = shuffleArray(state.essayQuestions);
+    state.essayIndex = 0;
+  }
+
+  if (state.activePage === 'matrix') {
+    switchPage('practice');
+  } else {
+    renderCurrentPracticeMode();
+  }
+}
+
+function resetCurrentMode() {
+  if (confirm("Bạn có chắc chắn muốn làm lại chế độ này từ đầu?")) {
+    if (state.practiceMode === 'mcq') {
+      state.mcqAnswers = {};
+      state.mcqIndex = 0;
+    } else if (state.practiceMode === 'tf') {
+      state.tfAnswers = {};
+      state.tfArticleIndex = 0;
+      state.tfStatementIndex = 0;
+    } else if (state.practiceMode === 'sa') {
+      state.saAnswers = {};
+      state.saChecked = {};
+      state.saArticleIndex = 0;
+      state.saSubIndex = 0;
+    } else if (state.practiceMode === 'essay') {
+      state.essayReviewed = {};
+      state.essayIndex = 0;
+    }
+    saveProgress();
+    renderCurrentPracticeMode();
+  }
+}
+
+/* ==========================================================================
+   11. CHECKLIST ÔN TẬP TRANG MA TRẬN
+   ========================================================================== */
+const CHECKLIST_ITEMS = [
+  { id: 'c1', label: 'Tôi hiểu các đại lượng dao động điều hòa ($A, \\omega, T, f, \\varphi$)' },
+  { id: 'c2', label: 'Tôi biết cách đọc và phân tích đồ thị li độ - thời gian $x(t)$' },
+  { id: 'c3', label: 'Tôi viết được phương trình vận tốc và gia tốc từ phương trình li độ' },
+  { id: 'c4', label: 'Tôi phân biệt được động năng, thế năng và sự bảo toàn cơ năng' },
+  { id: 'c5', label: 'Tôi hiểu rõ hiện tượng dao động tắt dần, cưỡng bức và cộng hưởng' },
+  { id: 'c6', label: 'Tôi đã hoàn thành lượt luyện tập trắc nghiệm nhiều lựa chọn' },
+  { id: 'c7', label: 'Tôi đã làm xong các bài tập Đúng - Sai và Trả lời ngắn' }
+];
+
+function renderChecklist() {
+  const container = document.getElementById('checklist-container');
+  if (!container) return;
+  container.innerHTML = '';
+
+  CHECKLIST_ITEMS.forEach(item => {
+    const isChecked = state.checklist[item.id] || false;
+    container.innerHTML += `
+      <label class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-950/60 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+        <input type="checkbox" onchange="toggleChecklist('${item.id}')" ${isChecked ? 'checked' : ''} class="w-4 h-4 rounded border-slate-700 text-amber-500 focus:ring-amber-500 focus:ring-offset-slate-900 bg-slate-900">
+        <span class="${isChecked ? 'line-through text-slate-500' : 'text-slate-200'}">${item.label}</span>
+      </label>
+    `;
+  });
+
+  renderMath(container);
+}
+
+function toggleChecklist(id) {
+  state.checklist[id] = !state.checklist[id];
+  saveProgress();
+  renderChecklist();
+}
+
+/* Helper scroll */
+function scrollToId(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ==========================================================================
+   12. INITIALIZATION
+   ========================================================================== */
+window.addEventListener('DOMContentLoaded', () => {
+  loadProgress();
+  renderChecklist();
+  
+  // Initialize KaTeX render on page load
+  setTimeout(() => {
+    renderMath();
+  }, 100);
+});
+</script>
+</body>
+</html>
