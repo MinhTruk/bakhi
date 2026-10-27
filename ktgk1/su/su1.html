@@ -36,7 +36,7 @@ tailwind.config = {
           <i class="fa-solid fa-house text-brand-500"></i>
           <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">BAKHI</span>
         </a>
-        <button onclick="shuffleAndRestart()" class="ml-auto md:ml-2 px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white text-xs sm:text-sm font-semibold transition border border-indigo-500/40 flex items-center gap-1.5" title="Xáo trộn câu hỏi và đáp án">
+        <button onclick="shuffleCurrentMode()" class="ml-auto md:ml-2 px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white text-xs sm:text-sm font-semibold transition border border-indigo-500/40 flex items-center gap-1.5" title="Xáo trộn câu hỏi">
           <i class="fa-solid fa-shuffle"></i><span>Xáo trộn</span>
         </button>
       </div>
@@ -47,7 +47,7 @@ tailwind.config = {
           <span>Lịch sử 11</span>
           <span class="text-xs font-normal px-2 py-0.5 rounded bg-brand-900/60 text-brand-300 border border-brand-700/50">Giữa HK1</span>
         </h1>
-        <p class="text-xs text-slate-400 hidden sm:block">Trường THPT Huỳnh Ngọc Huệ · Bài 1 – Bài 4</p>
+        <p class="text-xs text-slate-400 hidden sm:block">Trường THPT Huỳnh Ngọc Huệ · Ôn Tập Kiểm Tra Giữa Kì 1</p>
       </div>
 
       <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700/60 w-full md:w-auto">
@@ -62,7 +62,7 @@ tailwind.config = {
 
     <div id="header-progress" class="hidden py-2 border-t border-slate-800/80">
       <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-        <span id="progress-text">Câu 1/25</span>
+        <span id="progress-text">Tiến độ: 0/50</span>
         <span id="score-text" class="text-brand-400 font-medium">Đúng: 0</span>
       </div>
       <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
@@ -74,7 +74,7 @@ tailwind.config = {
 
 <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
 
-<!-- ============ PAGE 1: MA TRẬN ============ -->
+<!-- ============ PAGE 1: MA TRẬN (GIỮ NGUYÊN NỘI DUNG VÀ SỐ LIỆU MA TRẬN CŨ) ============ -->
 <section id="page-matrix" class="space-y-6 fade-in">
   <div class="bg-gradient-to-r from-slate-800 via-slate-800/90 to-amber-950/40 p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
     <div class="absolute right-0 top-0 bottom-0 opacity-10 flex items-center pr-10 pointer-events-none"><i class="fa-solid fa-scroll text-9xl text-brand-400"></i></div>
@@ -171,44 +171,74 @@ tailwind.config = {
   </div>
 </section>
 
-<!-- ============ PAGE 2: CÂU HỎI ============ -->
+<!-- ============ PAGE 2: CÂU HỎI (HỖ TRỢ TRẮC NGHIỆM VÀ ĐÚNG-SAI) ============ -->
 <section id="page-practice" class="hidden space-y-5 fade-in">
   <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-800/80 p-3 rounded-2xl border border-slate-700/60">
     <div class="flex items-center gap-2 flex-wrap">
-      <button onclick="shuffleAndRestart()" class="px-3.5 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white rounded-xl border border-indigo-500/40 text-xs sm:text-sm font-semibold transition flex items-center gap-2"><i class="fa-solid fa-shuffle"></i>Xáo trộn</button>
-      <button onclick="restart(false)" class="px-3.5 py-2 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 hover:text-white rounded-xl border border-rose-500/40 text-xs sm:text-sm font-semibold transition flex items-center gap-2"><i class="fa-solid fa-rotate-right"></i>Làm lại</button>
-      <button onclick="switchPage('matrix')" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2"><i class="fa-solid fa-table-cells"></i>Xem ma trận</button>
+      <!-- Sub-tabs selection -->
+      <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-700/60">
+        <button id="subtab-mcq" onclick="switchMode('mcq')" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-list-check"></i><span>Trắc nghiệm (50)</span>
+        </button>
+        <button id="subtab-tf" onclick="switchMode('tf')" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-half-stroke"></i><span>Đúng – Sai (8 câu/32 ý)</span>
+        </button>
+      </div>
+
+      <button onclick="shuffleCurrentMode()" class="px-3.5 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white rounded-xl border border-indigo-500/40 text-xs sm:text-sm font-semibold transition flex items-center gap-1.5"><i class="fa-solid fa-shuffle"></i>Xáo trộn</button>
+      <button onclick="resetCurrentMode()" class="px-3.5 py-1.5 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 hover:text-white rounded-xl border border-rose-500/40 text-xs sm:text-sm font-semibold transition flex items-center gap-1.5"><i class="fa-solid fa-rotate-right"></i>Làm lại</button>
+      <button onclick="switchPage('matrix')" class="px-3.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5"><i class="fa-solid fa-table-cells"></i>Xem ma trận</button>
     </div>
-    <span class="hidden sm:block text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700/50">Phím tắt: A B C D chọn · Enter / → câu tiếp</span>
+    <span id="shortcut-hint" class="hidden sm:block text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700/50">Phím tắt: A B C D chọn · Enter / → câu tiếp</span>
   </div>
 
   <div id="quiz-area" class="space-y-4"></div>
 
-  <!-- RESULT -->
-  <div id="result" class="hidden bg-slate-800/90 p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-6 fade-in">
+  <!-- RESULT MCQ -->
+  <div id="result-mcq" class="hidden bg-slate-800/90 p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-6 fade-in">
     <div class="text-center space-y-2">
       <div class="inline-flex p-3 rounded-full bg-emerald-500/20 text-emerald-400 text-3xl"><i class="fa-solid fa-trophy"></i></div>
-      <h3 class="text-2xl font-bold text-white">Hoàn thành bài làm!</h3>
-      <p id="res-msg" class="text-slate-300 text-sm"></p>
+      <h3 class="text-2xl font-bold text-white">Hoàn thành Phần I – Trắc nghiệm!</h3>
+      <p id="res-mcq-msg" class="text-slate-300 text-sm"></p>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Số câu đúng</span><span id="res-correct" class="text-xl font-bold text-emerald-400"></span></div>
-      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Số câu sai</span><span id="res-wrong" class="text-xl font-bold text-rose-400"></span></div>
-      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Tỉ lệ đúng</span><span id="res-pct" class="text-xl font-bold text-brand-400"></span></div>
-      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Điểm (thang 10)</span><span id="res-score" class="text-xl font-bold text-white"></span></div>
+      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Số câu đúng</span><span id="res-mcq-correct" class="text-xl font-bold text-emerald-400"></span></div>
+      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Số câu sai</span><span id="res-mcq-wrong" class="text-xl font-bold text-rose-400"></span></div>
+      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Tỉ lệ đúng</span><span id="res-mcq-pct" class="text-xl font-bold text-brand-400"></span></div>
+      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Điểm quy đổi (thang 10)</span><span id="res-mcq-score" class="text-xl font-bold text-white"></span></div>
     </div>
-    <div class="space-y-2">
-      <h4 class="text-sm font-bold text-slate-200">Kết quả theo từng bài:</h4>
-      <div id="res-lessons" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
-    </div>
-    <div id="res-wrong-wrap" class="space-y-2 hidden">
-      <h4 class="text-sm font-bold text-slate-200">Các câu làm sai (nhấn để xem lại đáp án):</h4>
-      <div id="res-wrong-list" class="space-y-2"></div>
+    <div id="res-mcq-wrong-wrap" class="space-y-2 hidden">
+      <h4 class="text-sm font-bold text-slate-200">Các câu làm sai (nhấn để xem lại đáp án & giải thích):</h4>
+      <div id="res-mcq-wrong-list" class="space-y-2"></div>
     </div>
     <div class="flex flex-col sm:flex-row justify-center gap-4 pt-4 border-t border-slate-700">
-      <button onclick="shuffleAndRestart()" class="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2"><i class="fa-solid fa-shuffle"></i>Làm lại &amp; xáo trộn</button>
-      <button onclick="restart(false)" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-100 font-semibold rounded-xl border border-slate-600 transition flex items-center justify-center gap-2"><i class="fa-solid fa-rotate-right"></i>Làm lại (giữ thứ tự)</button>
-      <button onclick="switchPage('matrix')" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-100 font-semibold rounded-xl border border-slate-600 transition flex items-center justify-center gap-2"><i class="fa-solid fa-table-cells"></i>Xem lại ma trận</button>
+      <button onclick="shuffleCurrentMode()" class="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2"><i class="fa-solid fa-shuffle"></i>Làm lại &amp; xáo trộn</button>
+      <button onclick="resetCurrentMode()" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-100 font-semibold rounded-xl border border-slate-600 transition flex items-center justify-center gap-2"><i class="fa-solid fa-rotate-right"></i>Làm lại (giữ thứ tự)</button>
+      <button onclick="switchMode('tf')" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow transition flex items-center justify-center gap-2"><i class="fa-solid fa-circle-half-stroke"></i>Sang phần Đúng – Sai</button>
+    </div>
+  </div>
+
+  <!-- RESULT TF -->
+  <div id="result-tf" class="hidden bg-slate-800/90 p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-6 fade-in">
+    <div class="text-center space-y-2">
+      <div class="inline-flex p-3 rounded-full bg-indigo-500/20 text-indigo-400 text-3xl"><i class="fa-solid fa-award"></i></div>
+      <h3 class="text-2xl font-bold text-white">Hoàn thành Phần II – Đúng / Sai!</h3>
+      <p id="res-tf-msg" class="text-slate-300 text-sm"></p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Số mệnh đề đúng</span><span id="res-tf-correct" class="text-xl font-bold text-emerald-400"></span></div>
+      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Số mệnh đề sai</span><span id="res-tf-wrong" class="text-xl font-bold text-rose-400"></span></div>
+      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Tỉ lệ đúng</span><span id="res-tf-pct" class="text-xl font-bold text-brand-400"></span></div>
+      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 block">Điểm quy đổi (thang 10 tham khảo)</span><span id="res-tf-score" class="text-xl font-bold text-white"></span></div>
+    </div>
+    <div id="res-tf-wrong-wrap" class="space-y-2 hidden">
+      <h4 class="text-sm font-bold text-slate-200">Các mệnh đề làm sai (nhấn để xem lại tư liệu & giải thích):</h4>
+      <div id="res-tf-wrong-list" class="space-y-2"></div>
+    </div>
+    <div class="flex flex-col sm:flex-row justify-center gap-4 pt-4 border-t border-slate-700">
+      <button onclick="shuffleCurrentMode()" class="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2"><i class="fa-solid fa-shuffle"></i>Làm lại &amp; xáo trộn</button>
+      <button onclick="resetCurrentMode()" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-100 font-semibold rounded-xl border border-slate-600 transition flex items-center justify-center gap-2"><i class="fa-solid fa-rotate-right"></i>Làm lại (giữ thứ tự)</button>
+      <button onclick="switchMode('mcq')" class="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl shadow transition flex items-center justify-center gap-2"><i class="fa-solid fa-list-check"></i>Về phần Trắc nghiệm</button>
     </div>
   </div>
 </section>
@@ -217,20 +247,20 @@ tailwind.config = {
 <footer class="bg-slate-950 border-t border-slate-800/80 py-6 mt-10 text-xs text-slate-400">
   <div class="max-w-6xl mx-auto px-4 text-center space-y-1">
     <p class="font-medium text-slate-300">Nền tảng ôn tập trực tuyến BAKHI — Trường THPT Huỳnh Ngọc Huệ</p>
-    <p>Môn Lịch sử 11 — Giữa học kì I. Bộ câu hỏi gồm 25 câu trắc nghiệm.</p>
+    <p>Môn Lịch sử 11 — Giữa học kì I. Bộ câu hỏi gồm 50 câu trắc nghiệm và 8 câu Đúng – Sai (32 mệnh đề).</p>
   </div>
 </footer>
 
 <script>
-/* ===== CẤU HÌNH LIÊN KẾT — sửa lại cho đúng đường dẫn trên website ===== */
+/* ===== CẤU HÌNH LIÊN KẾT ===== */
 const CONFIG = {
-  subjectIndexUrl: "indexsu.html", // trang index của môn Lịch sử 11
-  homeUrl: "/bakhi/"                       // trang chủ BAKHI
+  subjectIndexUrl: "indexsu.html", 
+  homeUrl: "/bakhi/"                       
 };
 document.getElementById('btn-back-subject').href = CONFIG.subjectIndexUrl;
 document.getElementById('btn-back-home').href = CONFIG.homeUrl;
 
-/* ===== DỮ LIỆU MA TRẬN ===== */
+/* ===== DỮ LIỆU MA TRẬN BẢO TOÀN TỪ FILE GỐC ===== */
 const LESSONS = {
   1: { name: "Bài 1: Một số vấn đề chung về cách mạng tư sản", topic: "Chủ đề 1: Cách mạng tư sản và sự phát triển của chủ nghĩa tư bản",
        row: [3,1,2,1,"","1,0","3 câu TN + 1 ĐS (4 ý) + 1 TL","2,75 đ","27,5%"],
@@ -254,86 +284,174 @@ const LESSONS = {
                vd:["Có ý thức trân trọng thành tựu của CNXH; đánh giá được những thách thức, triển vọng của CNXH ở Trung Quốc, Việt Nam trong bối cảnh hiện nay."] } }
 };
 
-/* ===== NGÂN HÀNG CÂU HỎI (l = bài, a = chỉ số đáp án đúng 0..3) ===== */
-const BANK = [
-{l:1,q:"Tại sao Cách mạng Pháp 1789 được coi là cuộc cách mạng tư sản triệt để nhất?",
- o:["Do giai cấp công nhân lãnh đạo và lật đổ hoàn toàn chủ nghĩa tư bản","Xác lập chế độ quân chủ lập hiến ngay từ khi bắt đầu nổ ra","Giải quyết được vấn đề ruộng đất cho nông dân và xóa bỏ đặc quyền phong kiến","Không gây ra đổ máu và nhận được sự ủng hộ của tất cả các vua chúa châu Âu"],a:2,
- e:"Cách mạng Pháp 1789 là cuộc cách mạng tư sản triệt để nhất vì đã lật đổ chế độ phong kiến, xóa bỏ các đặc quyền phong kiến và giải quyết vấn đề ruộng đất cho nông dân (đặc biệt dưới thời Gia-cô-banh). Giai cấp tư sản (không phải công nhân) lãnh đạo; cách mạng gây nhiều đổ máu và bị các vua chúa châu Âu can thiệp, chống phá."},
-{l:1,q:"Văn kiện nào sau đây được coi là bản tuyên ngôn độc lập đầu tiên của nhân loại khẳng định quyền con người?",
- o:["Tuyên ngôn Nhân quyền và Dân quyền (Pháp)","Tuyên ngôn Độc lập (Mỹ)","Hiến pháp năm 1791 của Pháp","Sắc lệnh về ruộng đất của Nga"],a:1,
- e:"Tuyên ngôn Độc lập của Mỹ (1776) là bản tuyên ngôn độc lập đầu tiên của nhân loại, lần đầu khẳng định quyền con người: mọi người sinh ra đều bình đẳng, có quyền sống, quyền tự do và mưu cầu hạnh phúc. Tuyên ngôn Nhân quyền và Dân quyền của Pháp ra đời sau (1789) và không phải là tuyên ngôn độc lập."},
-{l:1,q:"Tiền đề tư tưởng của Cách mạng tư sản Pháp cuối thế kỷ XVIII là gì?",
- o:["Thuyết kinh tế học cổ điển Anh","Chủ nghĩa xã hội không tưởng","Triết học Ánh sáng","Chủ nghĩa Mác - Lênin"],a:2,
- e:"Triết học Ánh sáng (Mông-tex-ki-ơ, Vôn-te, Rút-xô…) phê phán chế độ phong kiến, tôn giáo và đề cao tự do, bình đẳng, dân chủ, chuẩn bị về tư tưởng cho Cách mạng Pháp. Chủ nghĩa Mác – Lênin ra đời sau (giữa thế kỷ XIX)."},
-{l:1,q:"Cuộc Duy tân Minh Trị (1868) ở Nhật Bản có tính chất là một cuộc",
- o:["cách mạng vô sản triệt để","cuộc cải cách phong kiến tiến bộ","cách mạng tư sản không triệt để","cuộc khởi nghĩa nông dân điển hình"],a:2,
- e:"Duy tân Minh Trị thực chất là một cuộc cách mạng tư sản không triệt để: mở đường cho chủ nghĩa tư bản phát triển nhưng vẫn giữ lại nhiều yếu tố phong kiến, quyền lực chủ yếu thuộc tầng lớp quý tộc tư sản hóa và Thiên hoàng."},
-{l:2,q:"Thách thức lớn nhất mà chủ nghĩa tư bản hiện đại đang phải đối mặt là gì?",
- o:["Sự thiếu hụt trầm trọng về lực lượng lao động trí tuệ","Các cuộc khủng hoảng kinh tế, chính trị, xã hội có tính hệ thống","Sự phát triển quá nhanh của các công nghệ xanh","Việc tất cả các quốc gia trên thế giới đều chuyển sang CNXH"],a:1,
- e:"Thách thức lớn của CNTB hiện đại là các cuộc khủng hoảng mang tính hệ thống (kinh tế, tài chính, chính trị, xã hội), bất bình đẳng giàu nghèo, mâu thuẫn giữa lao động và tư bản. Các phương án còn lại không đúng với thực tế."},
-{l:2,q:"Thế nào là chủ nghĩa tư bản hiện đại?",
- o:["Giai đoạn chủ nghĩa tư bản phát triển sau Chiến tranh thế giới thứ hai đến nay","Giai đoạn chủ nghĩa tư bản khi mới hình thành ở thế kỷ XVI","Giai đoạn chủ nghĩa tư bản tự do cạnh tranh ở thế kỷ XVIII","Giai đoạn chủ nghĩa tư bản bị khủng hoảng trầm trọng và sụp đổ"],a:0,
- e:"Chủ nghĩa tư bản hiện đại là giai đoạn phát triển của CNTB từ sau Chiến tranh thế giới thứ hai đến nay, gắn với cuộc cách mạng khoa học – kỹ thuật, toàn cầu hóa và sự điều chỉnh của nhà nước tư sản. Giai đoạn hình thành (thế kỷ XVI) và tự do cạnh tranh (XVIII – XIX) là các giai đoạn trước."},
-{l:2,q:"Đặc điểm nổi bật của chủ nghĩa tư bản từ cuối thế kỷ XIX đến đầu thế kỷ XX là gì?",
- o:["Sự ra đời của các công trường thủ công","Chuyển từ tự do cạnh tranh sang giai đoạn độc quyền","Sự suy yếu hoàn toàn của các tập đoàn tài chính","Xóa bỏ tình trạng phân hóa giàu nghèo trong xã hội"],a:1,
- e:"Cuối thế kỷ XIX – đầu thế kỷ XX, CNTB chuyển từ tự do cạnh tranh sang giai đoạn độc quyền (chủ nghĩa đế quốc), với sự xuất hiện của các tổ chức độc quyền và sự thống trị của tư bản tài chính. Công trường thủ công xuất hiện từ giai đoạn sớm hơn."},
-{l:4,q:"Hiện nay, những quốc gia nào vẫn đang kiên trì con đường đi lên chủ nghĩa xã hội?",
- o:["Nga, Ba Lan, Hung-ga-ri, Đức","Việt Nam, Trung Quốc, Lào, Cu-ba","Việt Nam, Anh, Pháp, Hoa Kỳ","Triều Tiên, Nhật Bản, Hàn Quốc, Ấn Độ"],a:1,
- e:"Sau năm 1991, các nước vẫn kiên trì con đường xã hội chủ nghĩa là Việt Nam, Trung Quốc, Lào và Cu-ba (cùng với một số nước tiến hành cải cách, đổi mới). Các nước Đông Âu và Nga đã từ bỏ mô hình xã hội chủ nghĩa; Anh, Pháp, Mỹ, Nhật… là các nước tư bản."},
-{l:1,q:"Mục tiêu chung của các cuộc cách mạng tư sản thời cận đại là gì?",
- o:["Lật đổ chế độ phong kiến, thực dân, mở đường cho chủ nghĩa tư bản phát triển","Xóa bỏ triệt để mọi bất bình đẳng trong xã hội và giải phóng nông dân","Thiết lập chế độ xã hội chủ nghĩa và quyền làm chủ của giai cấp công nhân","Mở rộng lãnh thổ và tìm kiếm thị trường tiêu thụ ở các nước phương Đông"],a:0,
- e:"Các cuộc cách mạng tư sản có chung mục tiêu lật đổ chế độ phong kiến (hoặc ách thống trị thực dân, như ở Bắc Mỹ), xác lập quan hệ sản xuất tư bản chủ nghĩa, mở đường cho CNTB phát triển. Xóa bỏ mọi bất bình đẳng, xây dựng CNXH không phải là mục tiêu của cách mạng tư sản."},
-{l:2,q:"Các tổ chức độc quyền ở Mỹ thường được gọi là gì?",
- o:["Cac-ten","Xanh-đi-ca","Tờ-rớt","Công-xooc-xi-om"],a:2,
- e:"Tên gọi tổ chức độc quyền khác nhau tùy nước: ở Đức là Cac-ten và Xanh-đi-ca (Pháp), còn ở Mỹ là Tờ-rớt (trust), điển hình như Tờ-rớt dầu mỏ, thép, đường sắt."},
-{l:4,q:"Thắng lợi của cuộc cách mạng nào sau đây đã mở rộng không gian của chủ nghĩa xã hội sang khu vực Mỹ Latinh?",
- o:["Cách mạng Trung Quốc (1949)","Cách mạng Cuba (1959)","Cách mạng Lào (1975)","Cách mạng Việt Nam (1945)"],a:1,
- e:"Cách mạng Cu-ba thắng lợi năm 1959 (do Phi-đen Ca-xtơ-rô lãnh đạo) đã đưa Cu-ba trở thành nước xã hội chủ nghĩa đầu tiên ở Mỹ Latinh. Cách mạng Trung Quốc, Lào, Việt Nam thuộc khu vực châu Á."},
-{l:1,q:"Giai cấp nào đóng vai trò lãnh đạo trong cuộc Cách mạng tư sản Anh thế kỷ XVII?",
- o:["Giai cấp công nhân và nông dân","Giai cấp tư sản và Quý tộc mới","Tầng lớp trí thức và tăng lữ giáo hội","Giai cấp tư sản và đại địa chủ phong kiến"],a:1,
- e:"Cách mạng tư sản Anh do liên minh giai cấp tư sản và quý tộc mới (quý tộc tư sản hóa) lãnh đạo; lực lượng chủ yếu là quần chúng nhân dân (nông dân, thợ thủ công…). Đại địa chủ phong kiến và tăng lữ thuộc lực lượng bảo thủ, đứng về phía vua."},
-{l:2,q:"Ý nào không phải là đặc điểm của chủ nghĩa đế quốc?",
- o:["Sự xuất hiện của các tổ chức độc quyền","Sự thống trị của tư bản tài chính","Đẩy mạnh xuất khẩu tư bản ra nước ngoài","Ưu tiên phát triển kinh tế nông nghiệp gia đình"],a:3,
- e:"Đặc điểm của chủ nghĩa đế quốc: các tổ chức độc quyền giữ vai trò quyết định; tư bản tài chính thống trị; xuất khẩu tư bản; các liên minh độc quyền phân chia thế giới; các cường quốc chia nhau thuộc địa. Ưu tiên kinh tế nông nghiệp gia đình không phải là đặc điểm của chủ nghĩa đế quốc."},
-{l:4,q:"Sau Chiến tranh thế giới thứ hai, chủ nghĩa xã hội đã lan rộng sang khu vực nào sau đây?",
- o:["Tây Âu và Bắc Mỹ","Đông Âu và một số nước châu Á","Châu Úc và Nam Cực","Bắc Phi và Trung Đông"],a:1,
- e:"Sau năm 1945, chủ nghĩa xã hội vượt ra khỏi phạm vi một nước và hình thành hệ thống thế giới: ở Đông Âu (Ba Lan, Tiệp Khắc, Hung-ga-ri, Đông Đức…) và một số nước châu Á (Trung Quốc, Triều Tiên, Việt Nam, Mông Cổ…)."},
-{l:3,q:"Liên bang Cộng hòa xã hội chủ nghĩa Xô viết (Liên Xô) được thành lập vào năm nào?",
- o:["1917","1918","1922","1924"],a:2,
- e:"Ngày 30-12-1922, Đại hội Xô viết toàn Liên bang họp, tuyên bố thành lập Liên bang Cộng hòa xã hội chủ nghĩa Xô viết (Liên Xô) gồm 4 nước cộng hòa ban đầu: Nga, Ngoại Cáp-ca-dơ, U-crai-na, Bê-lô-rút-xi-a. Năm 1917 là năm Cách mạng tháng Mười; năm 1924 là năm Hiến pháp đầu tiên của Liên Xô được thông qua."},
-{l:1,q:"Điểm giống nhau cơ bản giữa cuộc Cách mạng tư sản Anh và cuộc Chiến tranh giành độc lập ở Bắc Mỹ là gì?",
- o:["Đều do giai cấp tư sản lãnh đạo","Đều lật đổ chế độ quân chủ chuyên chế trong nước","Đều giải phóng dân tộc khỏi sự đô hộ của nước ngoài","Đều dẫn đến sự ra đời của chế độ cộng hòa ngay lập tức"],a:0,
- e:"Cả hai cuộc cách mạng đều do giai cấp tư sản (cùng liên minh với quý tộc mới/chủ nô) lãnh đạo nhằm mở đường cho CNTB phát triển. Chỉ Cách mạng Anh lật đổ quân chủ chuyên chế; chỉ chiến tranh Bắc Mỹ là giải phóng dân tộc khỏi thực dân Anh; Anh sau cách mạng là quân chủ lập hiến chứ không phải cộng hòa."},
-{l:1,q:"Sự kiện nào được coi là đỉnh cao của phong trào cách mạng tư sản Pháp cuối thế kỷ XVIII?",
- o:["Phái Lập hiến nắm chính quyền","Phái Gi-rông-đanh lên nắm quyền","Nền chuyên chính dân chủ cách mạng Gia-cô-banh","Napoleon Bonaparte đảo chính thành công"],a:2,
- e:"Nền chuyên chính dân chủ cách mạng Gia-cô-banh (1793 – 1794) do Rô-be-xpie đứng đầu là đỉnh cao của cách mạng: đàn áp thế lực phản cách mạng, chia ruộng đất cho nông dân, ban hành nhiều chính sách tiến bộ. Phái Lập hiến và Gi-rông-đanh thuộc giai đoạn trước, còn Napoleon đảo chính (1799) chấm dứt cách mạng."},
-{l:4,q:"Nội dung nào sau đây phản ánh đúng triển vọng của chủ nghĩa xã hội hiện nay?",
- o:["Chủ nghĩa xã hội chắc chắn sẽ biến mất hoàn toàn trên thế giới","Chủ nghĩa xã hội tiếp tục điều chỉnh, cải cách để phát triển","Chủ nghĩa xã hội quay lại áp dụng mô hình cũ trước năm 1991","Các nước xã hội chủ nghĩa sẽ từ bỏ vai trò lãnh đạo của Đảng Cộng sản"],a:1,
- e:"Các nước xã hội chủ nghĩa hiện nay tiếp tục cải cách, đổi mới, điều chỉnh mô hình cho phù hợp điều kiện mới (như Việt Nam, Trung Quốc, Lào, Cu-ba) để phát triển, giữ vững vai trò lãnh đạo của Đảng Cộng sản. CNXH không biến mất và cũng không quay lại mô hình cũ trước 1991 (mô hình tập trung, quan liêu, bao cấp)."},
-{l:4,q:"Trọng tâm của công cuộc cải cách mở cửa ở Trung Quốc từ năm 1978 là gì?",
- o:["Lấy cải cách chính trị làm trung tâm","Lấy phát triển kinh tế làm trung tâm","Tập trung xây dựng nền văn hóa thuần túy","Quốc hữu hóa toàn bộ tư liệu sản xuất"],a:1,
- e:"Từ tháng 12-1978, Trung Quốc tiến hành cải cách, mở cửa với đường lối lấy phát triển kinh tế làm trung tâm, kiên trì bốn nguyên tắc cơ bản, chuyển từ kinh tế kế hoạch hóa tập trung sang kinh tế thị trường xã hội chủ nghĩa, mở cửa với bên ngoài."},
-{l:3,q:"Cách mạng tháng Mười Nga năm 1917 đã",
- o:["giúp giai cấp tư sản Nga nắm quyền lực tuyệt đối","thiết lập nhà nước xã hội chủ nghĩa đầu tiên trên thế giới","đưa Nga trở thành một nước quân chủ lập hiến","kết thúc sự tồn tại của các đảng cộng sản ở châu Âu"],a:1,
- e:"Cách mạng tháng Mười Nga 1917 do Đảng Bôn-sê-vích đứng đầu là V. I. Lê-nin lãnh đạo đã lật đổ Chính phủ lâm thời tư sản, thiết lập nhà nước công – nông, mở ra thời đại mới: nhà nước xã hội chủ nghĩa đầu tiên trên thế giới."},
-{l:3,q:"Ý nghĩa quan trọng nhất của việc thành lập Liên bang Xô viết (1922) là gì?",
- o:["Chấm dứt hoàn toàn sự can thiệp của các nước đế quốc","Tăng cường sức mạnh để bảo vệ và xây dựng chủ nghĩa xã hội","Hoàn thành cuộc cách mạng dân chủ tư sản kiểu mới","Thiết lập sự thống trị của giai cấp tư sản Nga trên toàn liên bang"],a:1,
- e:"Việc các nước cộng hòa Xô viết liên hiệp thành một nhà nước thống nhất đã tăng cường sức mạnh về kinh tế, quốc phòng, chính trị để bảo vệ thành quả cách mạng và xây dựng chủ nghĩa xã hội, đồng thời thể hiện giải pháp đúng đắn cho vấn đề dân tộc (bình đẳng, tự nguyện, đoàn kết)."},
-{l:4,q:"Một trong những nguyên nhân khách quan dẫn đến sự sụp đổ của mô hình chủ nghĩa xã hội ở Đông Âu và Liên Xô là gì?",
- o:["Do sự chống phá của các thế lực thù địch trong và ngoài nước","Do trình độ dân trí của người dân quá thấp","Do thiếu tài nguyên thiên nhiên để phát triển kinh tế","Do không nhận được sự viện trợ của các nước phương Tây"],a:0,
- e:"Nguyên nhân khách quan là sự chống phá của các thế lực thù địch trong và ngoài nước (chiến lược “diễn biến hòa bình” của đế quốc). Nguyên nhân chủ quan gồm sai lầm trong đường lối, mô hình tập trung quan liêu bao cấp, chậm cải cách, một số lãnh đạo mắc sai lầm nghiêm trọng. Dân trí thấp hay thiếu tài nguyên không phải là nguyên nhân (Liên Xô rất giàu tài nguyên)."},
-{l:2,q:"Cuộc cách mạng công nghiệp lần thứ nhất bắt đầu sớm nhất ở quốc gia nào?",
- o:["Pháp","Đức","Anh","Mỹ"],a:2,
- e:"Cách mạng công nghiệp lần thứ nhất bắt đầu từ nước Anh vào khoảng giữa thế kỷ XVIII, nhờ Anh sớm hoàn thành cách mạng tư sản (thế kỷ XVII), có thuộc địa rộng lớn và nguồn nhân công, vốn, nguyên liệu dồi dào; sau đó lan sang Pháp, Đức, Mỹ."},
-{l:2,q:"Một trong những tiềm năng của chủ nghĩa tư bản hiện đại là gì?",
- o:["Không còn xảy ra các cuộc khủng hoảng kinh tế","Có khả năng tự điều chỉnh và thích nghi để tồn tại","Xóa bỏ hoàn toàn mâu thuẫn giữa tư bản và lao động","Xác lập quyền sở hữu tập thể về tư liệu sản xuất"],a:1,
- e:"CNTB hiện đại còn tiềm năng nhờ khả năng tự điều chỉnh, thích nghi (ứng dụng thành tựu khoa học – công nghệ, nhà nước can thiệp vào kinh tế, điều chỉnh quan hệ sản xuất). Tuy nhiên khủng hoảng và mâu thuẫn tư bản – lao động vẫn tồn tại; chế độ sở hữu tư nhân vẫn là cơ sở."},
-{l:4,q:"Sự kiện nào đánh dấu sự xác lập của chủ nghĩa xã hội trên phạm vi thế giới?",
- o:["Thắng lợi của Cách mạng tháng Mười Nga năm 1917","Sự ra đời của Liên bang Cộng hòa xã hội chủ nghĩa Xô viết (1922)","Sự hình thành hệ thống các nước xã hội chủ nghĩa sau Chiến tranh thế giới thứ hai","Sự sụp đổ của chế độ phong kiến ở các nước châu Á"],a:2,
- e:"Cách mạng tháng Mười (1917) đưa CNXH từ lý luận thành hiện thực ở một nước; sau Chiến tranh thế giới thứ hai, CNXH vượt ra khỏi phạm vi một nước và hình thành hệ thống thế giới gồm Liên Xô, các nước Đông Âu và một số nước châu Á, châu Mỹ Latinh, đánh dấu sự xác lập của CNXH trên phạm vi thế giới."}
+/* ===== DỮ LIỆU MA TRẬN THỐNG KÊ CỐ ĐỊNH TỪ FILE GỐC ===== */
+const MATRIX_COUNT_MAP = { 1: 3, 2: 3, 3: 3, 4: 3 };
+
+/* ===== 50 CÂU TRẮC NGHIỆM PHẦN I TỪ DOCX ===== */
+const MCQ_BANK = [
+  { id: 1, l: 1, question: "Theo Vôn-te, một trong những điều kiện cần thiết để xây dựng xã hội có trật tự là", options: ["xóa bỏ quyền tư hữu.", "bảo vệ quyền tư hữu.", "mở rộng quyền quý tộc.", "củng cố quyền thần quyền."], answerIndex: 1, explanation: "Vôn-te (tư tưởng Ánh sáng Pháp) coi quyền tư hữu là quyền tự nhiên và cần thiết để bảo vệ trật tự, tự do của cá nhân trong xã hội." },
+  { id: 2, l: 1, question: "Theo G. G. Rút-xô, mô hình chính trị cần được thiết lập thay cho nền quân chủ là", options: ["chế độ phong kiến.", "chế độ thần quyền.", "chế độ cộng hòa.", "chế độ quân chủ."], answerIndex: 2, explanation: "G. G. Rút-xô phản đối chế độ quân chủ chuyên chế và đề xuất mô hình chế độ cộng hòa dựa trên chủ quyền thuộc về nhân dân (Khế ước xã hội)." },
+  { id: 3, l: 1, question: "Đời sống của công nhân Pháp trước khi cuộc cách mạng tư sản bùng nổ vào cuối thế kỉ XVIII được thể hiện qua tình trạng", options: ["địa vị xã hội cao, giữ vai trò quan trọng trong bộ máy chính quyền.", "được nhà nước bảo vệ quyền lợi và tham gia quản lý các công xưởng.", "ngày làm việc kéo dài, tiền lương thấp và điều kiện sống khó khăn.", "thời gian lao động ngắn, tiền lương cao và đời sống tương đối ổn định."], answerIndex: 2, explanation: "Trước cách mạng, giai cấp công nhân và quần chúng lao động Pháp bị bóc lột nặng nề, làm việc 14-16 giờ/ngày, lương thấp, sống cực khổ." },
+  { id: 4, l: 1, question: "Sự phát triển của nền kinh tế làm biến đổi xã hội ở Tây Âu và Bắc Mỹ, xuất hiện các giai cấp, tầng lớp mới đại diện cho phương thức sản xuất", options: ["phong kiến.", "xã hội chủ nghĩa.", "tư bản chủ nghĩa.", "chiếm hữu nô lệ."], answerIndex: 2, explanation: "Sự phát triển công thương nghiệp làm xuất hiện giai cấp tư sản và công nhân, đại diện cho phương thức sản xuất tư bản chủ nghĩa." },
+  { id: 5, l: 1, question: "Tình hình kinh tế của 13 thuộc địa Anh ở Bắc Mĩ vào giữa thế kỉ XVIII có điểm nào nổi bật?", options: ["Bị phương thức sản xuất chiếm hữu nô lệ chi phối.", "Không có tồn tại mầm mống của chủ nghĩa tư bản.", "Kinh tế phát triển theo con đường tư bản chủ nghĩa.", "Miền bắc chủ yếu phát triển kinh tế thương nghiệp."], answerIndex: 2, explanation: "Đến giữa thế kỉ XVIII, nền kinh tế của 13 thuộc địa Bắc Mĩ phát triển mạnh theo con đường tư bản chủ nghĩa (công nghiệp ở miền Bắc, đồn điền ở miền Nam)." },
+  { id: 6, l: 1, question: "Trước năm 1640, vị trí của ngành khai thác than ở Anh được thể hiện qua", options: ["sản lượng chỉ đáp ứng các nhu cầu sử dụng trong phạm vi nước Anh.", "sản lượng chiếm khoảng bốn phần năm sản lượng than của châu Âu.", "sản lượng chiếm khoảng một nửa sản lượng than của toàn thế giới.", "sản lượng chiếm tỉ lệ thấp hơn nhiều so với các nước Tây Âu khác."], answerIndex: 1, explanation: "Vào đầu thế kỉ XVII (trước năm 1640), ngành khai thác than ở Anh phát triển rất mạnh, chiếm khoảng 4/5 tổng sản lượng than của toàn châu Âu." },
+  { id: 7, l: 1, question: "Nửa sau thế kỉ XIX, hầu hết các cuộc cách mạng tư sản ở châu Âu đã", options: ["hoàn toàn thất bại.", "giành được thắng lợi.", "giải phóng dân tộc.", "xóa bỏ nền cộng hòa."], answerIndex: 1, explanation: "Trong nửa sau thế kỉ XIX, các cuộc cách mạng tư sản, thống nhất đất nước (ở Đức, Ý) và cải cách (ở Nga, Nhật) đều đã giành được thắng lợi, đưa CNTB phát triển." },
+  { id: 8, l: 1, question: "Nhiệm vụ dân tộc của các cuộc cách mạng tư sản trong khoảng thế kỉ XVI đến cuối thế kỉ XVIII chủ yếu nhằm", options: ["củng cố quyền lực nhà vua và mở rộng đặc quyền quý tộc.", "xóa bỏ tình trạng phong kiến cát cứ hoặc giải phóng dân tộc.", "xóa bỏ chế độ quân chủ chuyên chế và xác lập nền dân chủ.", "xây dựng xã hội bình đẳng và xóa bỏ mọi hình thức tư hữu."], answerIndex: 1, explanation: "Nhiệm vụ dân tộc của CMTS bao gồm lật đổ ách thống trị ngoại xâm (giải phóng dân tộc) hoặc xóa bỏ tình trạng chia cắt, phong kiến cát cứ để thống nhất thị trường dân tộc." },
+  { id: 9, l: 1, question: "Kết quả chung của các cuộc cách mạng tư sản trong khoảng thế kỉ XVI đến cuối thế kỉ XVIII là", options: ["củng cố chế độ phong kiến và mở rộng quyền lực giai cấp quý tộc.", "lật đổ chế độ cũ hoặc giành độc lập, mở đường cho tư bản phát triển.", "xóa bỏ hoàn toàn sự phân hóa giai cấp và thiết lập xã hội bình đẳng.", "thiết lập chế độ xã hội chủ nghĩa và giải quyết triệt để vấn đề dân tộc."], answerIndex: 1, explanation: "Kết quả chung của các cuộc CMTS thời cận đại là lật đổ chế độ phong kiến chuyên chế hoặc ách đô hộ thực dân, thành lập nhà nước tư sản, mở đường cho CNTB phát triển." },
+  { id: 10, l: 1, question: "Cách mạng tư sản Anh thế kỉ XVII thực hiện nhiệm vụ dân chủ chủ yếu thông qua việc", options: ["đấu tranh xóa bỏ tình trạng phân tán lãnh thổ.", "đấu tranh chống chế độ phong kiến chuyên chế.", "đấu tranh chống ách thống trị của thực dân Anh.", "đấu tranh thống nhất lại các lãnh địa phong kiến."], answerIndex: 1, explanation: "Nhiệm vụ dân chủ của CMTS Anh là lật đổ chế độ phong kiến chuyên chế của nhà Xi-măng (Sác-lơ I), đem lại quyền lực cho Nghị viện đại diện cho tư sản và quý tộc mới." },
+  { id: 11, l: 1, question: "Chính sách cai trị của nhà nước phong kiến và thực dân trong trong khoảng thế kỉ XVI đến cuối thế kỉ XVIII trở thành tiền đề của cách mạng tư sản vì", options: ["thúc đẩy giai cấp tư sản củng cố quyền lực của nhà nước phong kiến.", "làm xuất hiện nhu cầu đấu tranh xóa bỏ những áp bức và rào cản cũ.", "tạo điều kiện để chế độ phong kiến thích ứng với sự phát triển xã hội.", "làm mâu thuẫn giữa các lực lượng xã hội từng bước giải quyết triệt để."], answerIndex: 1, explanation: "Các chính sách áp bách, kìm hãm kinh tế và xã hội của chính quyền phong kiến/thực dân làm bùng nổ mâu thuẫn gay gắt, đặt ra nhu cầu tất yếu phải lật đổ rào cản đó." },
+  { id: 12, l: 1, question: "Nội dung nào sau đây là mục tiêu của cuộc cách mạng tư sản Pháp cuối thế kỉ XVIII?", options: ["Xóa bỏ ách thống trị của Anh, giành độc lập dân tộc.", "Lật đổ chế độ phong kiến do vua Sác-lơ I đứng đầu.", "Lật đổ chế độ quân chủ do vua Lu-i XVI đứng đầu.", "Thiết lập chính quyền của giai cấp tư sản và chủ nô."], answerIndex: 2, explanation: "Mục tiêu trực tiếp của Cách mạng Pháp 1789 là lật đổ chế độ quân chủ chuyên chế phong kiến do vua Lu-i XVI đứng đầu, mở đường cho CNTB phát triển." },
+  { id: 13, l: 1, question: "Một trong những nhiệm vụ dân tộc của các cuộc cách mạng tư sản trong khoảng thế kỉ XVI đến cuối thế kỉ XVIII là", options: ["mở đường cho chủ nghĩa xã hội phát triển.", "đòi quyền tự do chính trị cho người dân.", "hình thành thị trường dân tộc thống nhất.", "xóa bỏ hoàn toàn chế độ quân chủ lập hiến."], answerIndex: 2, explanation: "Thống nhất thị trường dân tộc, xóa bỏ rào cản thuế quan nội địa là một nội dung quan trọng thuộc nhiệm vụ dân tộc của các cuộc cách mạng tư sản." },
+  { id: 14, l: 1, question: "Việc nhiều trung tâm công nghiệp hình thành ở miền Bắc và miền Trung 13 thuộc địa Anh từ giữa thế kỉ XVII đến giữa thế kỉ XVIII chứng tỏ", options: ["nền kinh tế thuộc địa hoàn toàn phụ thuộc vào sản xuất nông nghiệp.", "quan hệ sản xuất phong kiến giữ vai trò chủ đạo trong các thuộc địa.", "chính quyền Anh đã tạo điều kiện để công nghiệp thuộc địa phát triển.", "kinh tế công trường thủ công ở thuộc địa có bước phát triển đáng kể."], answerIndex: 3, explanation: "Sự hình thành nhiều trung tâm công nghiệp chứng tỏ kinh tế công trường thủ công (tư bản chủ nghĩa) ở 13 thuộc địa đã phát triển mạnh mẽ." },
+  { id: 15, l: 1, question: "Sự xuất hiện của giai cấp tư sản trong xã hội Tây Âu và Bắc Mĩ trong khoảng thế kỉ XVI đến cuối thế kỉ XVIII có một trong những hệ quả nào sau đây?", options: ["Tạo ra lực lượng kinh tế – xã hội mới, có thực lực với nhu cầu thay đổi chế độ cũ.", "Khẳng định vị trí trung tâm của quý tộc phong kiến trong nền kinh tế truyền thống.", "Chứng minh sự gắn bó mật thiết giữa giáo hội Cơ đốc với việc phát triển kinh tế.", "Buộc giai cấp tư sản phụ thuộc hoàn toàn vào quyền lực, đặc quyền của hoàng gia."], answerIndex: 0, explanation: "Giai cấp tư sản lớn mạnh về kinh tế nhưng không có quyền lực chính trị, tạo thành lực lượng xã hội mới lãnh đạo cuộc đấu tranh thay đổi chế độ phong kiến cũ." },
+  { id: 16, l: 2, question: "Yếu tố nào sau đây đưa đến sự chuyển biến của chủ nghĩa tư bản từ giai đoạn tự do cạnh tranh sang giai đoạn độc quyền?", options: ["Sự hình thành và phát triển của những tổ chức liên kết đa khu vực trên toàn cầu.", "Sự sáp nhập của các công ty độc quyền và sự ra đời các tổ chức tín dụng quốc tế.", "Sự hình thành và phát triển của các trung tâm kinh tế - tài chính lớn trên thế giới.", "Sự phát triển của lực lượng sản xuất dưới tác động của tiến bộ khoa học kỹ thuật."], answerIndex: 3, explanation: "Tiến bộ KH-KT làm lực lượng sản xuất phát triển mạnh, thúc đẩy quá trình tập trung sản xuất và tập trung tư bản, dẫn tới sự ra đời của các tổ chức độc quyền." },
+  { id: 17, l: 2, question: "Vấn đề chênh lệch giàu nghèo trong xã hội các nước tư bản hiện nay cho thấy", options: ["chủ nghĩa tư bản đã giải quyết triệt để vấn đề bình đẳng xã hội.", "chủ nghĩa tư bản vẫn phải đối mặt với những mâu thuẫn xã hội.", "không còn sự phân hóa về tài sản giữa các giai cấp trong xã hội.", "sự phát triển kinh tế luôn đồng nghĩa với bình đẳng về thu nhập."], answerIndex: 1, explanation: "Sự gia tăng khoảng cách giàu nghèo minh chứng rằng CNTB hiện đại vẫn chứa đựng những bất bình đẳng và mâu thuẫn xã hội mang tính bản chất." },
+  { id: 18, l: 2, question: "Trong cuối thế kỉ XIX đến đầu thế kỉ XX, sự phát triển mạnh của chủ nghĩa tư bản dẫn tới yêu cầu nào đối với các nước tư sản?", options: ["Tăng cường việc thành lập các liên minh quân sự và chính trị.", "Mở rộng thị trường, tìm kiếm nguyên liệu và nhân công giá rẻ.", "Thúc đẩy giáo dục, khoa học, công nghệ trong nước phát triển.", "Chỉ tập trung đầu tư vào kinh tế nông nghiệp và thương nghiệp."], answerIndex: 1, explanation: "Sản xuất quy mô lớn ở giai đoạn độc quyền đòi hỏi nguồn nguyên liệu dồi dào, thị trường tiêu thụ rộng lớn và nhân công giá rẻ, thúc đẩy việc đẩy mạnh xâm lược thuộc địa." },
+  { id: 19, l: 2, question: "Nội dung nào sau đây là thách thức mà chủ nghĩa tư bản hiện đại phải đối mặt?", options: ["Sự chênh lệch giàu nghèo, bất bình đẳng trong xã hội.", "Sự phát triển mạnh mẽ của khoa học – công nghệ.", "Sự sáp nhập của các công ty độc quyền lũng đoạn.", "Sự vươn lên mạnh mẽ của các nước đang phát triển."], answerIndex: 0, explanation: "Bất bình đẳng, phân hóa giàu nghèo và các khủng hoảng kinh tế – xã hội chu kỳ là những thách thức cốt lõi của CNTB hiện đại." },
+  { id: 20, l: 2, question: "Chủ nghĩa đế quốc ra đời trong khoảng cuối thế kỉ XIX đến đầu thế kỉ XX là hệ quả trực tiếp của quá trình", options: ["toàn cầu hóa.", "hợp tác kinh tế.", "xâm lược thuộc địa.", "giao lưu buôn bán."], answerIndex: 2, explanation: "Sự kết hợp giữa các tập đoàn độc quyền tài chính với việc đẩy mạnh xâm lược, thiết lập hệ thống thuộc địa trên toàn cầu đã hình thành chủ nghĩa đế quốc." },
+  { id: 21, l: 2, question: "Nửa sau thế kỉ XIX, cách mạng tư sản bùng nổ dưới nhiều hình thức khác nhau nhằm", options: ["mở đường cho chủ nghĩa tư bản phát triển.", "củng cố chế độ quân chủ chuyên chế.", "thiết lập nền quân chủ chuyên chế cao độ.", "khôi phục quyền lực giáo hội Cơ đốc giáo."], answerIndex: 0, explanation: "Dù dưới nhiều hình thức (cải cách, đấu tranh thống nhất, nội chiến...), mục tiêu chung vẫn là xóa bỏ chướng ngại phong kiến, mở đường cho CNTB." },
+  { id: 22, l: 2, question: "Nội dung nào sau đây phản ánh đúng quá trình chuyển biến của chủ nghĩa tư bản trong khoảng cuối thế kỉ XIX đến đầu thế kỉ XX?", options: ["Từ cạnh tranh tự do sang độc quyền, gắn với sự tập trung sản xuất và tư bản.", "Từ sản xuất lớn sang sản xuất nhỏ, từ độc quyền sang cạnh tranh tự do.", "Từ công nghiệp hóa sang thủ công nghiệp, gắn với sự phân tán tư bản.", "Từ độc quyền sang cạnh tranh tự do, gắn với sự phát triển của xí nghiệp nhỏ."], answerIndex: 0, explanation: "Cuối thế kỉ XIX - đầu thế kỉ XX, CNTB chuyển từ giai đoạn tự do cạnh tranh sang giai đoạn độc quyền (chủ nghĩa đế quốc)." },
+  { id: 23, l: 1, question: "Với thắng lợi của Cách mạng tư sản Hà Lan, Anh, chủ nghĩa tư bản được xác lập trước hết ở", options: ["các nước châu Âu.", "các nước châu Mỹ.", "các nước châu Á.", "các nước châu Phi."], answerIndex: 0, explanation: "Cách mạng tư sản Hà Lan (thế kỉ XVI) và Anh (thế kỉ XVII) diễn ra tại châu Âu, xác lập chế độ tư bản chủ nghĩa đầu tiên ở châu lục này." },
+  { id: 24, l: 2, question: "Trong quá trình mở rộng xâm lược từ thế kỉ XVI đến đầu thế kỉ XX, các nước đế quốc tập trung thiết lập thuộc địa chủ yếu ở khu vực nào sau đây?", options: ["Châu Âu, châu Đại Dương và vùng Bắc Cực", "Châu Á, châu Phi và khu vực Mỹ La-tinh", "Châu Âu, châu Phi và vùng Trung Đông", "Châu Mỹ, châu Úc và khu vực Đông Bắc Á."], answerIndex: 1, explanation: "Châu Á, châu Phi và Mỹ La-tinh là những khu vực giàu tài nguyên, đông dân cư và trở thành đối tượng xâm lược, biến thành thuộc địa chủ yếu của các nước đế quốc." },
+  { id: 25, l: 2, question: "Một trong những biểu hiện mới của chủ nghĩa tư bản hiện đại so với giai đoạn trước là", options: ["sự kết hợp giữa các tổ chức độc quyền tư nhân với nhà nước tư sản.", "sự thay thế hoàn toàn các tổ chức độc quyền tư nhân bằng nhà nước.", "sự kết hợp giữa sức mạnh kinh tế và sức mạnh chính trị.", "sự chấm dứt vai trò điều tiết kinh tế của nhà nước tư sản."], answerIndex: 0, explanation: "Đặc điểm nổi bật của CNTB hiện đại là sự xuất hiện của chủ nghĩa độc quyền nhà nước - sự kết hợp chặt chẽ giữa sức mạnh của các tổ chức độc quyền tư nhân với bộ máy nhà nước tư sản." },
+  { id: 26, l: 2, question: "Cơ sở chủ yếu tạo nên sức sản xuất phát triển cao của chủ nghĩa tư bản hiện đại là", options: ["mở rộng hệ thống thuộc địa trên toàn thế giới.", "áp dụng tiến bộ cách mạng khoa học – công nghệ.", "sự mở rộng quy mô nền sản xuất thủ công nghiệp.", "sự phát triển của quan hệ sản xuất phong kiến."], answerIndex: 1, explanation: "Ứng dụng các thành tựu của cuộc cách mạng khoa học - công nghệ hiện đại là động lực cốt lõi gia tăng năng suất và sức sản xuất của CNTB hiện nay." },
+  { id: 27, l: 2, question: "Thắng lợi của cuộc Cách mạng Tân Hợi năm 1911 tạo điều kiện cho chủ nghĩa tư bản phát triển ở Trung Quốc vì", options: ["đưa Trung Quốc trở thành nước tư bản phát triển.", "thủ thủ tiêu hoàn toàn giai cấp địa chủ phong kiến.", "chấm dứt chế độ quân chủ chuyên chế tồn tại.", "giải phóng hoàn toàn khỏi sự xâm lược của Pháp."], answerIndex: 2, explanation: "Cách mạng Tân Hợi 1911 lật đổ triều đại Thanh, chấm dứt chế độ quân chủ chuyên chế tồn tại hơn 2000 năm, mở đường cho CNTB phát triển ở Trung Quốc." },
+  { id: 28, l: 2, question: "Sự kiện nào sau đây mở đầu cho quá trình chuyển biến của Nhật Bản từ một nước phong kiến, lạc hậu sang tư bản chủ nghĩa?", options: ["Chiến tranh Nga – Nhật (1905 – 1907).", "Cuộc Duy tân Minh Trị (1868).", "Cách mạng tháng Mười Nga (1917).", "Cách mạng Tân Hợi (1911)."], answerIndex: 1, explanation: "Cuộc Duy tân Minh Trị bắt đầu từ năm 1868 đã đưa Nhật Bản cải cách toàn diện, chuyển sang phát triển theo con đường tư bản chủ nghĩa." },
+  { id: 29, l: 2, question: "Sự thành lập các quốc gia tư sản ở Mỹ La-tinh nửa đầu thế kỉ XIX phản ánh", options: ["sự suy yếu của phong trào đấu tranh giành độc lập dân tộc.", "sự phục hồi của chế độ phong kiến tại các thuộc địa.", "sự hình thành hệ thống thuộc địa mới của các nước Tây Âu.", "sự mở rộng của chủ nghĩa tư bản ra ngoài châu Âu."], answerIndex: 3, explanation: "Các phong trào giải phóng dân tộc ở Mỹ La-tinh lật đổ ách thống trị Thực dân Tây Ban Nha, Bồ Đào Nha và thành lập các quốc gia tư sản, thể hiện sự mở rộng của CNTB ra ngoài châu Âu." },
+  { id: 30, l: 1, question: "Nửa sau thế kỉ XVII, chủ nghĩa tư bản được xác lập ở các quốc gia nào sau đây?", options: ["Hà Lan và Anh.", "Anh và Pháp.", "Pháp và Bắc Mỹ.", "Hà Lan và Đức."], answerIndex: 0, explanation: "Hà Lan (sau cách mạng thế kỉ XVI) và Anh (sau cách mạng 1642-1689) là những quốc gia đầu tiên xác lập chế độ tư bản chủ nghĩa." },
+  { id: 31, l: 3, question: "Người đứng đầu Chính quyền Xô viết được thành lập sau Cách mạng tháng Mười Nga là", options: ["Ni-cô-lai II.", "Xta-lin.", "Lê-nin.", "Tơ-rốt-xki."], answerIndex: 2, explanation: "V. I. Lê-nin đứng đầu Hội đồng Ủy viên Nhân dân (Chính phủ Xô viết) được thành lập tại Đại hội Xô viết toàn Nga lần thứ hai." },
+  { id: 32, l: 3, question: "Sau khi thành lập, Liên Xô trở thành", options: ["biểu tượng và chỗ dựa của phong trào cách mạng quốc tế.", "trung tâm kinh tế và tài chính lớn nhất trên toàn thế giới.", "đối tác kinh tế chủ yếu của các quốc gia tư bản châu Âu.", "quốc gia có hệ thống thuộc địa rộng thứ hai trên thế giới."], answerIndex: 0, explanation: "Sự tồn tại và phát triển của Liên Xô trở thành chỗ dựa tinh thần, vật chất vững chắc cho phong trào cách mạng và giải phóng dân tộc trên toàn thế giới." },
+  { id: 33, l: 3, question: "Văn kiện nào sau đây cùng với Tuyên ngôn thành lập Liên Xô được Đại hội lần thứ nhất các Xô viết toàn Liên bang thông qua?", options: ["Sắc lệnh Hòa bình.", "Hiến pháp Liên Xô.", "Hiệp ước Liên bang.", "Sắc lệnh Ruộng đất."], answerIndex: 2, explanation: "Ngày 30-12-1922, Đại hội Xô viết toàn Liên bang lần thứ nhất đã thông qua hai văn kiện lịch sử: Bản Tuyên ngôn thành lập và Bản Hiệp ước Liên bang." },
+  { id: 34, l: 3, question: "Ngay sau khi V. I. Lê-nin qua đời, người tiếp tục lãnh đạo công cuộc xây dựng và bảo vệ đất nước Liên Xô là", options: ["Kê-rên-xki.", "Ni-cô-lai II.", "Tơ-rốt-xki.", "Xta-lin."], answerIndex: 3, explanation: "Sau khi Lê-nin từ thế (1924), J. Xta-lin (Stalin) trở thành lãnh đạo tối cao của Đảng và Nhà nước Liên Xô, tiếp tục sự nghiệp xây dựng chủ nghĩa xã hội." },
+  { id: 35, l: 3, question: "Nội dung nào sau đây không phản ánh đúng tư tưởng chỉ đạo của Lê-nin trong việc thành lập Liên bang Cộng hoà xã hội chủ nghĩa Xô viết?", options: ["Đề cao vấn đề quyền dân tộc tự quyết của các dân tộc.", "Dùng bạo lực để xây dựng nền chuyên chính vô sản.", "Xây dựng một cộng đồng anh em giữa các dân tộc.", "Coi trọng sự bình đẳng về mọi mặt giữa các dân tộc."], answerIndex: 1, explanation: "Tư tưởng chỉ đạo của Lê-nin khi thành lập Liên Xô là sự bình đẳng, tự nguyện, giúp đỡ lẫn nhau và quyền tự quyết của các dân tộc, không phải 'dùng bạo lực cưỡng ép'." },
+  { id: 36, l: 3, question: "Sau Cách mạng tháng Mười Nga, nhiệm vụ hàng đầu của chính quyền Xô viết là", options: ["giải quyết triệt để mọi mâu thuẫn trong lòng chế độ phong kiến.", "củng cố và mở rộng hệ thống xã hội chủ nghĩa trên toàn thế giới.", "tiến hành công nghiệp hóa, hiện đại hóa, hội nhập kinh tế quốc tế.", "đập tan bộ máy nhà nước cũ và xây dựng bộ máy nhà nước mới."], answerIndex: 3, explanation: "Ngay sau khi giành chính quyền, nhiệm vụ ưu tiên số 1 của giai cấp vô sản là đập tan bộ máy nhà nước cũ của tư sản/bảng chủ và thiết lập bộ máy nhà nước Xô viết mới." },
+  { id: 37, l: 3, question: "Sự ra đời của Hiến pháp Liên Xô năm 1924 góp phần", options: ["đưa Liên Xô thành một nhà nước tư bản chủ nghĩa.", "củng cố cơ cấu tổ chức của Nhà nước Liên bang.", "thúc đẩy sự khôi phục chế độ quân chủ chuyên chế.", "làm suy yếu sự liên kết giữa các nước Cộng hòa."], answerIndex: 1, explanation: "Hiến pháp 1924 đã thể chế hóa và hoàn thiện cơ cấu tổ chức, phân định quyền hạn bộ máy nhà nước Liên bang Xô viết." },
+  { id: 38, l: 3, question: "Nội dung nào sau đây phản ánh đúng ý nghĩa trong nước của sự ra đời Liên Xô?", options: ["Thúc đẩy phát triển kinh tế, xã hội và tăng cường vị thế của Liên Xô.", "Góp phần cổ vũ phong trào giải phóng dân tộc ở các nước thuộc địa.", "Trở thành biểu tượng và chỗ dựa cho cách mạng thế giới.", "Tạo tiền đề cho sự hình thành hệ thống xã hội chủ nghĩa."], answerIndex: 0, explanation: "Việc hợp nhất thành Liên Xô tạo sức mạnh tổng hợp thúc đẩy kinh tế, xã hội, quốc phòng và nâng cao vị thế của các dân tộc Xô viết (ý nghĩa trong nước)." },
+  { id: 39, l: 3, question: "Việc thành lập Liên Xô đã mở ra con đường giải quyết vấn đề dân tộc trên đất nước Xô viết dựa trên", options: ["sự viện trợ của các nước tư bản chủ nghĩa.", "nguyên tắc bình đẳng và giúp đỡ lẫn nhau.", "sự phân biệt giữa các dân tộc.", "sự thống trị của dân tộc đa số."], answerIndex: 1, explanation: "Liên Xô được xây dựng trên nguyên tắc bình đẳng, đoàn kết, tự nguyện và giúp đỡ lẫn nhau cùng tiến bộ giữa các dân tộc." },
+  { id: 40, l: 3, question: "Nội dung nào sau đây phản ánh đúng sự thay đổi của Liên Xô từ năm 1922 đến năm 1940?", options: ["Từ một nhà nước liên bang chuyển thành nhà nước đơn nhất.", "Từ 15 nước cộng hòa thu hẹp xuống còn 4 nước cộng hòa.", "Từ 4 nước cộng hòa đã phát triển thành 15 nước cộng hòa.", "Từ một nước cộng hòa chuyển thành nhiều quốc gia độc lập."], answerIndex: 2, explanation: "Khi mới thành lập (1922) Liên Xô gồm 4 nước Cộng hòa (Nga, Bê-lô-rút-xi-a, U-crai-na, Ngoại Cáp-ca-dơ). Đến năm 1940 đã mở rộng thành 15 nước Cộng hòa thành viên." },
+  { id: 41, l: 3, question: "Năm 1922, quốc gia nào sau đây phát triển theo con đường xã hội chủ nghĩa?", options: ["Nhật Bản.", "Việt Nam.", "Liên Xô.", "Hàn Quốc."], answerIndex: 2, explanation: "Năm 1922, Liên bang Xô viết (Liên Xô) chính thức thành lập và là quốc gia duy nhất đi theo con đường XHCN giai đoạn đó." },
+  { id: 42, l: 3, question: "Việc các nước Cộng hòa Xô viết đoàn kết, giúp đỡ nhau trong cuộc chiến đấu chống thù trong, giặc ngoài (1918 – 1921) đã", options: ["dẫn đến sự phục hồi của chế độ quân chủ lập hiến ở nước Nga.", "tạo cơ sở cho sự liên kết chặt chẽ hơn giữa các nước cộng hòa.", "làm cho các quốc gia cộng hòa tách khỏi chính quyền Xô viết.", "tạo điều kiện cho các nước tư bản mở rộng ảnh hưởng ở Nga."], answerIndex: 1, explanation: "Thực tiễn sát cánh bảo vệ chính quyền Xô viết trong những năm 1918-1921 đã thắt chặt tình đoàn kết và tạo tiền đề thực tế để các nước hợp nhất thành Liên Xô." },
+  { id: 43, l: 3, question: "Năm 1922, Đại hội lần thứ nhất các Xô viết toàn Liên bang thông qua", options: ["Tuyên ngôn thành lập Cộng hòa xã hội chủ nghĩa Xô viết.", "Báo cáo chính trị và báo cáo sửa đổi điều lệ Đảng Cộng sản.", "Cương lĩnh xây dựng đất nước tiến lên chủ nghĩa xã hội.", "Hiến pháp đầu tiên của Cộng hòa xã hội chủ nghĩa Xô viết."], answerIndex: 0, explanation: "Đại hội Xô viết toàn Liên bang lần I (12/1922) đã thông qua Tuyên ngôn thành lập và Hiệp ước Liên bang Xô viết." },
+  { id: 44, l: 3, question: "Sự ra đời của Liên bang Cộng hòa xã hội chủ nghĩa Xô viết không có ý nghĩa nào sau đây đối với nhân dân Liên Xô?", options: ["Góp phần tăng cường vị thế, vai trò của Liên Xô trên trường quốc tế.", "Làm cho chủ nghĩa xã hội phát triển trở thành hệ thống trên thế giới.", "Thể hiện sức mạnh đoàn kết, giúp đỡ nhau giữa các dân tộc Xô viết.", "Phù hợp với các lợi ích chung của các dân tộc trên đất nước Xô viết."], answerIndex: 1, explanation: "CNXH trở thành hệ thống thế giới chỉ diễn ra sau Chiến tranh thế giới thứ hai (khi các nước Đông Âu, Châu Á đi lên CNXH), không phải ý nghĩa trực tiếp năm 1922." },
+  { id: 45, l: 3, question: "Một trong những nội dung quan trọng của Hiến pháp Liên Xô năm 1924 là", options: ["xác lập chế độ quân chủ chuyên chế liên bang.", "trao toàn bộ quyền lực cho các nước Cộng hòa.", "xóa bỏ cơ cấu tổ chức của các cơ quan nhà nước Liên bang.", "phân định quyền hạn giữa Liên bang và các nước Cộng hòa."], answerIndex: 3, explanation: "Hiến pháp 1924 quy định rõ chức năng, thẩm quyền quản lý của các cơ quan trung ương Liên bang và thẩm quyền của chính quyền các nước Cộng hòa thành viên." },
+  { id: 46, l: 4, question: "Miền Bắc Việt Nam tiến lên xây dựng chủ nghĩa xã hội sau thắng lợi của", options: ["cuộc kháng chiến chống thực dân Pháp năm 1954.", "quá trình thống nhất hai miền Nam – Bắc năm 1976.", "cuộc kháng chiến chống Mĩ và tay sai năm 1975.", "Hiệp định Pari về Việt Nam được kí kết năm 1973."], answerIndex: 0, explanation: "Sau thắng lợi của cuộc kháng chiến chống Pháp (1954), Miền Bắc hoàn thành cách mạng dân chủ nhân dân và bước vào thời kỳ quá độ tiến lên CNXH." },
+  { id: 47, l: 4, question: "Miền Nam Việt Nam tiến lên xây dựng chủ nghĩa xã hội sau thắng lợi của", options: ["cuộc kháng chiến chống thực dân Pháp năm 1954.", "quá trình thống nhất hai miền Nam – Bắc năm 1976.", "cuộc kháng chiến chống Mĩ và tay sai năm 1975.", "Hiệp định Pari về Việt Nam được kí kết năm 1973."], answerIndex: 2, explanation: "Sau khi giải phóng hoàn toàn Miền Nam (1975) và thống nhất đất nước về mặt nhà nước (1976), cả nước cùng tiến lên xây dựng CNXH." },
+  { id: 48, l: 4, question: "Sau Chiến tranh thế giới thứ hai, chủ nghĩa xã hội từ phạm vi một nước đã", options: ["trở thành một hệ thống trên thế giới.", "trở thành siêu cường số một thế giới.", "bị xoá bỏ hoàn toàn trên thế giới.", "lan rộng sang các nước ở Tây Âu."], answerIndex: 0, explanation: "Sau 1945, với việc các nước Đông Âu, Trung Quốc, Việt Nam, Triều Tiên... đi theo đường lối XHCN, CNXH đã phát triển từ phạm vi 1 nước (Liên Xô) trở thành hệ thống thế giới." },
+  { id: 49, l: 4, question: "Nguyên nhân cơ bản dẫn tới sự khủng hoảng và sụp đổ của chủ nghĩa xã hội ở Liên Xô và các nước Đông Âu là do", options: ["tiến hành cải tổ muộn, gặp khó khăn khi tiến hành cải tổ.", "không tiến hành cách mạng khoa học – kĩ thuật hiện đại.", "đường lối lãnh đạo mang tính chủ quan, duy ý chí.", "sự chống phá của các thế lực thù địch ở trong nước."], answerIndex: 2, explanation: "Nguyên nhân chủ quan và sâu xa nhất là đường lối lãnh đạo duy ý chí, mô hình kinh tế tập trung bao cấp xơ cứng, chậm sửa đổi và mắc sai lầm nghiêm trọng trong cải tổ." },
+  { id: 50, l: 4, question: "Nguyên nhân khách quan dẫn đến sự khủng hoảng và sụp đổ của chế độ xã hội chủ nghĩa ở Liên Xô và Đông Âu là", options: ["sự chống phá của các thế lực thù địch.", "chưa bắt kịp sự phát triển khoa học – kĩ thuật.", "thiếu dân chủ và công bằng xã hội.", "phạm phải nhiều sai lầm khi cải tổ."], answerIndex: 0, explanation: "Chiến lược 'diễn biến hòa bình' và hoạt động chống phá kiên trì, tinh vi của các thế lực thù địch bên ngoài/bên trong là nguyên nhân khách quan trực tiếp tác động." }
 ];
 
-/* ===== RENDER MA TRẬN ===== */
+/* ===== 8 CÂU ĐÚNG-SAI PHẦN II TỪ DOCX (32 MỆNH ĐỀ) ===== */
+const TF_BANK = [
+  {
+    id: 1, l: 1,
+    passage: "“Điều 1: Con người sinh ra đều có quyền tự do và bình đẳng. Những sự phân biệt xã hội chỉ có thể dựa trên lợi ích chung.\nĐiều 17: Sở hữu quyền là quyền bất khả xâm phạm và thiêng liêng, không ai có thể bị truất quyền đó trừ phi khi nào do sự cần thiết chung được xác nhận một cách hợp pháp đòi hỏi rõ ràng phải làm như vậy, nhưng với điều kiện phải bồi thường công bằng và được thực hiện ngay trước đó”.",
+    source: "(Trần Văn Trị: Cách mạng Pháp 1789, Nxb. Giáo dục, Hà Nội, 1989, tr. 19-21)",
+    statements: [
+      { label: "a", text: "Tuyên ngôn Nhân quyền và Dân quyền (1789) mang tính chất tiến bộ sâu sắc, đề cao quyền tự nhiên của con người và xóa bỏ sự bất bình đẳng trong xã hội.", answer: true, explanation: "Tuyên ngôn khẳng định con người sinh ra tự do và bình đẳng về quyền lợi, thể hiện tư tưởng tiến bộ chống lại đặc quyền phong kiến." },
+      { label: "b", text: "Bản Tuyên ngôn Nhân quyền và Dân quyền (1789) không đề cao quyền tư hữu cá nhân vì đó là biểu hiện tiêu biểu của sự phân biệt giàu – nghèo trong xã hội.", answer: false, explanation: "Điều 17 nêu rõ 'Sở hữu quyền là quyền bất khả xâm phạm và thiêng liêng', chứng tỏ Tuyên ngôn bảo vệ mạnh mẽ quyền tư hữu của giai cấp tư sản." },
+      { label: "c", text: "Để hợp pháp hóa và bảo vệ tuyệt đối chế độ tư hữu tư bản chủ nghĩa, giai cấp tư sản Pháp khẳng định “sở hữu quyền là quyền bất khả xâm phạm và thiêng liêng”.", answer: true, explanation: "Đây là điều khoản quan trọng nhất nhằm củng cố và bảo vệ nền tảng kinh tế tư bản chủ nghĩa của giai cấp tư sản Pháp." },
+      { label: "d", text: "Đoạn tư liệu trên đề cập đến các nội dung trong “Tuyên ngôn Nhân quyền và Dân quyền” (1789) — một văn kiện tiêu biểu của Cách mạng Pháp 1789.", answer: true, explanation: "Các trích dẫn Điều 1 và Điều 17 thuộc văn bản Tuyên ngôn Nhân quyền và Dân quyền do Quốc hội Hiến pháp Pháp thông qua năm 1789." }
+    ]
+  },
+  {
+    id: 2, l: 1,
+    passage: "“Cuộc cách mạng tư sản Anh là một sự kiện quan trọng trong lịch sử thế giới. Bằng lực lượng của quần chúng, nó đã đập tan nền quân chủ phong kiến, thiết lập chế độ tư bản chủ nghĩa, mở đường cho sức sản xuất mới phát triển. Trong cuộc đấu tranh quyết liệt với thế lực phong kiến phản động, giai cấp tư sản đã giành được thắng lợi”.",
+    source: "(Vũ Dương Ninh, Nguyễn Văn Hồng: Lịch sử thế giới cận đại, Nxb. Giáo dục, Hà Nội, 1998, tr.29)",
+    statements: [
+      { label: "a", text: "Đoạn tư liệu cho thấy cuộc Cách mạng tư sản Anh đã lật đổ nền thống trị của chế độ quân chủ lập hiến, mở đường cho chủ nghĩa tư bản và phương thức sản xuất mới phát triển.", answer: false, explanation: "Cách mạng Anh lật đổ chế độ quân chủ phong kiến chuyên chế chứ không phải quân chủ lập hiến. Chế độ quân chủ lập hiến chính là sản phẩm được thiết lập sau cách mạng (1689)." },
+      { label: "b", text: "Việc cách mạng tư sản Anh thắng lợi “bằng lực lượng của quần chúng” cho thấy quần chúng nhân dân là động lực chủ yếu đóng vai trò quyết định thắng lợi của cách mạng.", answer: true, explanation: "Quần chúng nhân dân (nông dân, thợ thủ công, binh lính) là lực lượng trực tiếp tham gia chiến đấu, đập tan quân đội nhà vua." },
+      { label: "c", text: "Với thắng lợi của cuộc Cách mạng tư sản Anh vào thế kỉ XVII, giai cấp tư sản đã xóa bỏ hoàn toàn tàn dư phong kiến và giải quyết triệt để ruộng đất cho giai cấp nông dân.", answer: false, explanation: "Cách mạng Anh là cuộc cách mạng không triệt để: vẫn giữ lại ngôi vua, không chia ruộng đất cho nông dân mà còn tiếp tục rào đất bóc lột." },
+      { label: "d", text: "Cách mạng tư sản Anh là “sự kiện quan trọng trong lịch sử thế giới” vì thiết lập chế độ cộng hòa, xóa bỏ chế độ quân chủ nghị viện nhằm đáp ứng lợi ích của giai cấp tư sản.", answer: false, explanation: "Cách mạng Anh cuối cùng thiết lập thể chế Quân chủ nghị viện (quân chủ lập hiến) chứ không duy trì chế độ cộng hòa." }
+    ]
+  },
+  {
+    id: 3, l: 2,
+    passage: "“- Sự tập trung sản xuất và tư bản đạt tới một mức độ phát triển cao khiến nó tạo ra những tổ chức độc quyền có một vai trò quyết định trong sinh hoạt kinh tế.\n- Sự hợp nhất tư bản ngân hàng với tư bản công nghiệp và trên cơ sở “tư bản tài chính” đó, xuất hiện một bọn đầu sỏ tài chính.\n- Việc xuất khẩu tư bản, khác với việc xuất khẩu hàng hoá, đã có một ý nghĩa quan trọng đặc biệt.\n- Sự hình thành những liên minh độc quyền quốc tế của bọn tư bản chia nhau thế giới.\n- Việc các cường quốc tư bản chủ nghĩa lớn nhất đã chia nhau xong đất đai trên thế giới.”",
+    source: "(V. I. Lê-nin: Toàn tập, Tập 27, Nxb. Sự thật, Hà Nội, 1961, tr.402)",
+    statements: [
+      { label: "a", text: "“Sự hình thành những liên minh độc quyền quốc tế” có ý nghĩa quan trọng đối với chủ nghĩa tư bản, xóa bỏ sự phát triển không đồng đều giữa các nước.", answer: false, explanation: "Sự phát triển không đồng đều là quy luật tuyệt đối của CNTB, các liên minh độc quyền không xóa bỏ được quy luật này mà càng làm tăng cạnh tranh gay gắt." },
+      { label: "b", text: "“Sự hình thành những liên minh độc quyền quốc tế” là một trong những nguyên nhân trực tiếp làm bùng nổ của Cuộc chiến tranh thế giới thứ nhất.", answer: true, explanation: "Sự tranh giành thị trường, thuộc địa và ảnh hưởng giữa các khối liên minh độc quyền đế quốc chính là nguyên nhân dẫn đến Chiến tranh thế giới thứ nhất." },
+      { label: "c", text: "Để thu về nguồn lợi nhuận siêu ngạch vượt trội so với chỉ xuất khẩu hàng hóa, các cường quốc tư bản chủ nghĩa đặc biệt chú ý xuất khẩu tư bản.", answer: true, explanation: "Xuất khẩu tư bản (đầu tư vốn, mở nhà máy, cho vay) mang lại lợi nhuận cao hơn nhiều so với xuất khẩu hàng hóa thông thường." },
+      { label: "d", text: "Việc các cường quốc tư bản “chia nhau xong đất đai trên thế giới” cho thấy mâu thuẫn về vấn đề thuộc địa và thị trường đã được giải quyết xong.", answer: false, explanation: "Chia xong đất đai đồng nghĩa với việc hết thuộc địa tự do, làm bùng nổ mâu thuẫn giữa các nước đế quốc già (nhiều thuộc địa) và đế quốc trẻ (ít thuộc địa) đòi chia lại thế giới." }
+    ]
+  },
+  {
+    id: 4, l: 2,
+    passage: "“Điều quan trọng là chủ nghĩa tư bản không thể tồn tại và phát triển được nếu không thường xuyên mở rộng phạm vi thống trị của nó, không khai phá những xứ sở mới và lôi cuốn các xứ sở không phải tư bản chủ nghĩa vào cơn lốc kinh tế thế giới”.",
+    source: "(V.I. Lênin: Toàn tập, Tập 3, Nxb. Chính trị quốc gia, Hà Nội, 2005, tr. 751)",
+    statements: [
+      { label: "a", text: "Đoạn tư liệu trên phản ánh quá trình phát triển của chủ nghĩa tư bản từ giai đoạn cổ điển sang giai đoạn hiện đại trong khoảng cuối thế kỉ XIX - đầu thế kỉ XX.", answer: true, explanation: "Trích đoạn mô tả bản chất xâm lược, mở rộng thị trường thuộc địa toàn cầu của các nước đế quốc chủ nghĩa." },
+      { label: "b", text: "Việc chủ nghĩa tư bản lôi cuốn các xứ sở mới vào “cơn lốc kinh tế thế giới” thể hiện tác động tích cực của quá trình xâm lược thuộc địa của các nước đế quốc.", answer: false, explanation: "Sự lôi cuốn này mang tính cưỡng ép, bóc lột thuộc địa cực kỳ dã man, biến các nước chậm phát triển thành phụ thuộc chứ không phải đóng góp tích cực." },
+      { label: "c", text: "Nhu cầu “thường xuyên mở rộng phạm vi thống trị” của các nước tư bản chủ nghĩa là nguyên nhân sâu xa dẫn đến các cuộc chiến tranh phân chia lại thế giới.", answer: true, explanation: "Nhu cầu xâm chiếm thị trường, thuộc địa để mở rộng phạm vi thống trị dẫn tới các cuộc tranh chấp và chiến tranh thế giới bùng nổ." },
+      { label: "d", text: "Các nước tư bản chủ nghĩa “thường xuyên mở rộng phạm vi thống trị” vào cuối thế kỉ XIX - đầu thế kỉ XX nhằm xóa bỏ quyền tư hữu và tối đa hóa lợi nhuận.", answer: false, explanation: "Mục đích mở rộng thống trị là tối đa hóa lợi nhuận tư bản và củng cố quyền tư hữu, chứ không phải xóa bỏ tư hữu." }
+    ]
+  },
+  {
+    id: 5, l: 3,
+    passage: "“Từ những yêu cầu cấp thiết và những tiền đề sẵn có, trên cơ sở tự nguyện, chiều ngày 30-12-1922, Đại hội lần thứ nhất các Xô viết toàn Liên bang được tiến hành tại Nhà hát lớn của Thủ đô Matxcơva với sự tham gia của 2.215 đại biểu. Đại hội đã nhất trí thông qua bản Tuyên ngôn thành lập Liên bang Cộng hòa Xã hội Chủ nghĩa Xô viết (gọi tắt là Liên Xô) và bản Hiệp ước Liên bang.\nTháng 1-1924, Hiến pháp đầu tiên của Liên bang cộng hòa Xã hội Chủ nghĩa Xô Viết được thông qua khẳng định về mặt pháp lí Nhà nước Liên bang Xô viết.”",
+    source: "(Đỗ Thanh Bình (Chủ biên): Lịch sử thế giới hiện đại, Quyển 1, Nxb. Đại học Sư phạm, Hà Nội, 2012, tr.47-48)",
+    statements: [
+      { label: "a", text: "Việc thành lập Liên bang Cộng hòa xã hội chủ nghĩa Xô viết vào ngày 30/12/1922 được thực hiện dựa trên nguyên tắc bình đẳng và hoàn toàn tự nguyện giữa các nước cộng hòa.", answer: true, explanation: "Nguyên tắc nền tảng được Lê-nin đề ra khi lập Liên Xô là sự tự nguyện, bình đẳng và tôn trọng quyền tự quyết của các dân tộc." },
+      { label: "b", text: "Sự kiện thông qua bản Tuyên ngôn và Hiệp ước Liên bang ngày 30/12/1922 là mốc đánh dấu hoàn tất toàn bộ tiến trình hiến định và pháp lý hóa tổ chức Nhà nước Liên bang Xô viết.", answer: false, explanation: "Tiến trình pháp lý hóa cơ tổ chức nhà nước hoàn tất khi Hiến pháp đầu tiên được thông qua vào tháng 1/1924." },
+      { label: "c", text: "Việc thông qua bản Hiến pháp đầu tiên vào tháng 1/1924 khẳng định Nhà nước Liên Xô đã hoàn thành thời kỳ quá độ, tiến lên giai đoạn phát triển cao nhất của chủ nghĩa cộng sản.", answer: false, explanation: "Năm 1924 Liên Xô chỉ mới ở giai đoạn đầu xây dựng CNXH (thời kỳ quá độ), chưa hoàn thành xây dựng CNXH hay chủ nghĩa cộng sản." },
+      { label: "d", text: "Đại hội lần thứ nhất các Xô viết toàn Liên bang ra đời cuối năm 1922 vì giai cấp tư sản Nga dùng vũ lực cưỡng ép sáp nhập và xóa bỏ quyền tự trị của các nước Cộng hòa thành viên.", answer: false, explanation: "Liên Xô thành lập do giai cấp vô sản lãnh đạo, dựa trên sự liên minh tự nguyện của các Xô viết công - nông, không phải tư sản dùng bạo lực cưỡng ép." }
+    ]
+  },
+  {
+    id: 6, l: 3,
+    passage: "Tại Đại hội Xô viết toàn Nga lần thứ hai, Lê-nin nhấn mạnh: “Bây giờ đây, ở nước Nga, chúng ta cần phải đặt hết tâm trí vào việc xây dựng một nhà nước vô sản xã hội chủ nghĩa”.",
+    source: "(Lê-nin: Toàn tập, Tập 35, Nxb. Chính trị quốc gia, 2006, tr. 3)",
+    statements: [
+      { label: "a", text: "Tuyên bố của V.I. Lênin được đưa ra ngay sau cuộc khởi nghĩa vũ trang tại Pê-tơ-rô-grát giành thắng lợi, đánh dấu việc lật đổ Chính phủ tư sản lâm thời và thiết lập Chính quyền Xô viết.", answer: true, explanation: "Đại hội Xô viết toàn Nga II khai mạc đêm 25-10-1917 ngay khi Khởi nghĩa Pê-tơ-rô-grát thành công lật đổ Chính phủ lâm thời." },
+      { label: "b", text: "Lời nhấn mạnh của Lênin cho thấy nhiệm vụ trọng tâm hàng đầu của những người Bolshevik sau khi giành chính quyền là tiếp tục phát động chiến tranh đế quốc ra toàn khu vực châu Âu.", answer: false, explanation: "Nhiệm vụ trọng tâm là xây dựng nhà nước vô sản và hòa bình cho nhân dân, không phải phát động chiến tranh đế quốc." },
+      { label: "c", text: "Việc xây dựng “nhà nước vô sản xã hội chủ nghĩa” phản ánh bản chất nhà nước kiểu mới của giai cấp công nhân và nhân dân lao động ngay sau thắng lợi của Cách mạng tháng Mười Nga.", answer: true, explanation: "Nhà nước Xô viết là nhà nước chuyên chính vô sản đầu tiên, bảo vệ lợi ích của quần chúng lao động." },
+      { label: "d", text: "Việc Lênin khẳng định phải “đặt hết tâm trí vào việc xây dựng một nhà nước vô sản xã hội chủ nghĩa” cho thấy bước chuyển từ cách mạng dân chủ tư sản sang cách mạng xã hội chủ nghĩa.", answer: true, explanation: "Cách mạng tháng Mười đã chuyển từ giai đoạn cách mạng dân chủ tư sản (tháng 2/1917) sang cách mạng xã hội chủ nghĩa." }
+    ]
+  },
+  {
+    id: 7, l: 2,
+    passage: "“Theo thống kê của cơ quan ngân sách Quốc hội Mĩ, trong những năm đầu thế kỉ XXI, thu nhập của nhóm hộ gia đình có thu nhập cao nhất chiếm tới 53,5% tổng thu nhập của cả nước. Tính riêng 1% nhóm giàu nhất chiếm 16,3% tổng thu nhập cả nước. Khoảng 60% hộ gia đình có thu nhập thấp nhất chỉ chiếm 10% tổng thu nhập toàn quốc.”",
+    source: "(Trần Thị Vinh, Chủ nghĩa tư bản: Lịch sử thăng trầm 120 năm, NXB Chính trị quốc gia Sự thật, 2020)",
+    statements: [
+      { label: "a", text: "Nhờ những điều chỉnh kinh tế vĩ mô, chủ nghĩa tư bản ngày nay đã xóa bỏ hoàn toàn bản chất bóc lột giá trị thặng dư.", answer: false, explanation: "Bản chất bóc lột giá trị thặng dư vẫn tồn tại nguyên vẹn trong CNTB hiện đại." },
+      { label: "b", text: "Sự phân hóa giàu nghèo và bất bình đẳng xã hội là một trong những thách thức nghiêm trọng của chủ nghĩa tư bản hiện đại.", answer: true, explanation: "Số liệu chênh lệch thu nhập cực lớn minh chứng bất bình đẳng xã hội là vấn nạn nhức nhối của CNTB hiện đại." },
+      { label: "c", text: "Đoạn trích phản ánh tình trạng phân hóa giàu nghèo sâu sắc trong lòng xã hội nước Mỹ hiện đại.", answer: true, explanation: "Các con số thống kê thực tế về thu nhập ở Mỹ cho thấy sự phân hóa giàu nghèo rất rõ rệt." },
+      { label: "d", text: "Số liệu thống kê trong đoạn tư liệu là minh chứng cho giai đoạn chủ nghĩa tư bản độc quyền cuối thế kỉ XIX đầu thế kỉ XX.", answer: false, explanation: "Đoạn văn nêu rõ số liệu thuộc 'những năm đầu thế kỉ XXI' (chủ nghĩa tư bản hiện đại), không phải cuối XIX đầu XX." }
+    ]
+  },
+  {
+    id: 8, l: 4,
+    passage: "“Thắng lợi của Hồng quân Liên Xô trong việc tiêu diệt chủ nghĩa phát xít ở Châu Âu tạo điều kiện thuận lợi cho nhân dân các nước Đông Âu nổi dậy giành chính quyền, thành lập nhà nước dân chủ nhân dân. Sau khi thành lập chính quyền dân chủ nhân dân, các nước Đông Âu hoàn thành việc thực hiện nhiệm vụ của cách mạng dân chủ nhân dân: tiến hành cải cách ruộng đất, quốc hữu hoá các nhà máy, xí nghiệp của tư bản, thực hiện các quyền tự do, dân chủ...”",
+    source: "(Trích SGK Lịch sử 12, Bộ sách Kết nối tri thức với cuộc sống)",
+    statements: [
+      { label: "a", text: "Khi chiến tranh thế giới thứ hai đang diễn ra quyết liệt thì các nước Đông Âu đã có ý tưởng thành lập nhà nước dân chủ nhân dân.", answer: true, explanation: "Trong quá trình kháng chiến chống phát xít, lực lượng cách mạng các nước Đông Âu đã định hướng thành lập chính quyền dân chủ nhân dân." },
+      { label: "b", text: "Việc tiêu diệt chủ nghĩa phát xít của Hồng quân Liên Xô là điều kiện khách quan dẫn đến thành công của các nước Đông Âu trong công cuộc cải cách ruộng đất.", answer: true, explanation: "Chiến thắng của Liên Xô tạo điều kiện thuận lợi bên ngoài (khách quan) cho cách mạng Đông Âu giành chính quyền và cải cách." },
+      { label: "c", text: "Quốc hữu hoá các nhà máy, xí nghiệp của tư bản là một trong các nhiệm vụ của cuộc cách mạng dân chủ nhân dân ở Đông Âu.", answer: true, explanation: "Đoạn tư liệu khẳng định quốc hữu hóa nhà máy của tư bản là một nhiệm vụ trọng tâm đã hoàn thành." },
+      { label: "d", text: "Thể chế nhà nước dân chủ nhân dân của các nước Đông Âu được thành lập sau chiến tranh thế giới thứ hai.", answer: true, explanation: "Trong các năm 1944-1945 và những năm đầu sau thế chiến 2, chuỗi nhà nước dân chủ nhân dân Đông Âu đã ra đời." }
+    ]
+  }
+];
+
+/* ===== TRẠNG THÁI ỨNG DỤNG ===== */
+let currentMode = 'mcq'; // 'mcq' hoặc 'tf'
+
+// Trạng thái Trắc nghiệm MCQ
+let mcqQuiz = [];
+let mcqCur = 0;
+let mcqAnswered = false;
+let mcqResults = [];
+let mcqCorrect = 0;
+
+// Trạng thái Đúng-Sai TF
+let tfQuiz = [];
+let tfCurQuestion = 0;  // 0..7
+let tfCurStatement = 0; // 0..3
+let tfAnswered = false;
+let tfResults = [];     // 8 elements, each is array of 4: {pick: bool, ok: bool}
+let tfCorrectCount = 0; // total correct out of 32
+
+/* ===== RENDER TRANG MA TRẬN ===== */
 (function renderMatrix(){
   let h = "";
   for (const k of [1,2,3,4]) {
@@ -351,16 +469,17 @@ const BANK = [
       <td class="p-3">${r[8]}</td></tr>`;
   }
   document.getElementById('matrix-body').innerHTML = h;
-  // fix header col: NB(a,b) shown under TN-ĐS; rows hold [TN, NB(a)/(a,b), TH, VD, TL-TH, TL-VD]
+
   let s = "";
   for (const k of [1,2,3,4]) {
-    const L = LESSONS[k], c = BANK.filter(x=>x.l===k).length;
+    const L = LESSONS[k];
+    const c = MATRIX_COUNT_MAP[k] || 3;
     const li = a => a.map(t=>`<li>${t}</li>`).join("");
     s += `<details class="bg-slate-900/50 rounded-xl border border-slate-700/60 group">
       <summary class="cursor-pointer p-4 flex items-start justify-between gap-3 list-none">
         <div><span class="text-xs text-brand-400 font-semibold">${L.topic}</span>
         <p class="font-semibold text-white mt-0.5">${L.name}</p></div>
-        <span class="shrink-0 text-xs bg-slate-800 border border-slate-700 rounded-full px-2.5 py-1 text-slate-300">${c} câu trong bộ đề</span>
+        <span class="shrink-0 text-xs bg-slate-800 border border-slate-700 rounded-full px-2.5 py-1 text-slate-300">${c} câu trong ma trận</span>
       </summary>
       <div class="px-4 pb-4 space-y-3 text-sm text-slate-300 border-t border-slate-700/50 pt-3">
         <div><b class="text-emerald-400">Nhận biết:</b><ul class="list-disc ml-5 mt-1 space-y-0.5">${li(L.spec.nb)}</ul></div>
@@ -370,169 +489,478 @@ const BANK = [
   }
   document.getElementById('spec-list').innerHTML = s;
 })();
+
 let allOpen = false;
 function toggleAll(){ allOpen=!allOpen; document.querySelectorAll('#spec-list details').forEach(d=>d.open=allOpen); }
 
-/* ===== TRẠNG THÁI BÀI LÀM ===== */
-let quiz = [];     // danh sách câu đã (có thể) xáo trộn: {l,q,o[],a,e}
-let cur = 0, answered = false, results = []; // results[i] = {pick, ok}
-let correctCount = 0;
-
-function clone(){ return BANK.map(x=>({l:x.l,q:x.q,e:x.e,o:x.o.map((t,i)=>({t,ok:i===x.a}))})); }
-function shuffleArr(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
-
-function buildQuiz(shuffle){
-  quiz = clone();
-  if (shuffle){ shuffleArr(quiz); quiz.forEach(x=>shuffleArr(x.o)); }
-  quiz.forEach(x=>x.a = x.o.findIndex(o=>o.ok));
-  cur = 0; answered = false; correctCount = 0; results = new Array(quiz.length).fill(null);
+/* ===== HÀM KHỞI TẠO DỮ LIỆU CHẾ ĐỘ ===== */
+function cloneMCQ(){
+  return MCQ_BANK.map(x=>({
+    id: x.id, l: x.l, q: x.question, e: x.explanation,
+    o: x.options.map((t,i)=>({t, ok: i===x.answerIndex}))
+  }));
 }
-function restart(shuffle){
-  buildQuiz(shuffle);
-  document.getElementById('result').classList.add('hidden');
-  document.getElementById('quiz-area').classList.remove('hidden');
-  switchPage('practice', true);
-  renderQ();
-}
-function shuffleAndRestart(){
-  if (results.some(r=>r) && !document.getElementById('result').classList.contains('hidden')===false) {
-    if(!confirm('Xáo trộn sẽ làm lại bài từ đầu. Bạn có chắc không?')) return;
+
+function shuffleArray(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
   }
-  restart(true);
+  return a;
 }
 
-/* ===== HIỂN THỊ CÂU HỎI ===== */
+function initMCQ(shuffle){
+  mcqQuiz = cloneMCQ();
+  if (shuffle){
+    shuffleArray(mcqQuiz);
+    mcqQuiz.forEach(x => shuffleArray(x.o));
+  }
+  mcqQuiz.forEach(x => x.a = x.o.findIndex(o => o.ok));
+  mcqCur = 0; mcqAnswered = false; mcqCorrect = 0;
+  mcqResults = new Array(mcqQuiz.length).fill(null);
+}
+
+function initTF(shuffle){
+  tfQuiz = JSON.parse(JSON.stringify(TF_BANK));
+  if (shuffle){
+    shuffleArray(tfQuiz);
+  }
+  tfCurQuestion = 0;
+  tfCurStatement = 0;
+  tfAnswered = false;
+  tfCorrectCount = 0;
+  tfResults = Array.from({length: tfQuiz.length}, () => new Array(4).fill(null));
+}
+
+/* ===== LOGIC THAO TÁC / CHUYỂN ĐỔI ===== */
+function switchMode(mode){
+  currentMode = mode;
+  const isMcq = mode === 'mcq';
+  const onCls = "bg-brand-600 text-white shadow";
+  const offCls = "text-slate-400 hover:text-white";
+  const base = "px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 ";
+  
+  document.getElementById('subtab-mcq').className = base + (isMcq ? onCls : offCls);
+  document.getElementById('subtab-tf').className = base + (!isMcq ? onCls : offCls);
+  document.getElementById('shortcut-hint').textContent = isMcq ? "Phím tắt: A B C D chọn · Enter / → câu tiếp" : "Mục Đúng - Sai: Chọn Đúng / Sai từng mệnh đề";
+
+  document.getElementById('result-mcq').classList.add('hidden');
+  document.getElementById('result-tf').classList.add('hidden');
+  document.getElementById('quiz-area').classList.remove('hidden');
+
+  if (isMcq) {
+    if (mcqResults.filter(r=>r).length === mcqQuiz.length && mcqQuiz.length > 0) {
+      showMCQResult();
+    } else {
+      renderMCQ();
+    }
+  } else {
+    const totalDone = tfResults.reduce((acc, qRes) => acc + qRes.filter(r=>r).length, 0);
+    if (totalDone === 32) {
+      showTFResult();
+    } else {
+      renderTF();
+    }
+  }
+}
+
+function resetCurrentMode(){
+  if (currentMode === 'mcq') {
+    initMCQ(false);
+    document.getElementById('result-mcq').classList.add('hidden');
+    document.getElementById('quiz-area').classList.remove('hidden');
+    renderMCQ();
+  } else {
+    initTF(false);
+    document.getElementById('result-tf').classList.add('hidden');
+    document.getElementById('quiz-area').classList.remove('hidden');
+    renderTF();
+  }
+}
+
+function shuffleCurrentMode(){
+  if (currentMode === 'mcq') {
+    if (mcqResults.some(r=>r) && document.getElementById('result-mcq').classList.contains('hidden')) {
+      if(!confirm('Xáo trộn sẽ reset phần Trắc nghiệm đang làm. Bạn chắc chắn chứ?')) return;
+    }
+    initMCQ(true);
+    document.getElementById('result-mcq').classList.add('hidden');
+    document.getElementById('quiz-area').classList.remove('hidden');
+    renderMCQ();
+  } else {
+    if (tfResults.some(q=>q.some(r=>r)) && document.getElementById('result-tf').classList.contains('hidden')) {
+      if(!confirm('Xáo trộn sẽ reset 8 câu Đúng – Sai. Bạn chắc chắn chứ?')) return;
+    }
+    initTF(true);
+    document.getElementById('result-tf').classList.add('hidden');
+    document.getElementById('quiz-area').classList.remove('hidden');
+    renderTF();
+  }
+}
+
+/* ===== RENDER & XỬ LÝ TRẮC NGHIỆM (MCQ) ===== */
 const LET = ['A','B','C','D'];
-function renderQ(){
-  const x = quiz[cur]; answered = false;
-  const opts = x.o.map((o,i)=>`
-    <button class="opt w-full text-left flex items-start gap-3 p-3.5 rounded-xl border border-slate-700 bg-slate-900/60" data-i="${i}" onclick="pick(${i})">
+
+function renderMCQ(){
+  const x = mcqQuiz[mcqCur];
+  const answeredRes = mcqResults[mcqCur];
+  mcqAnswered = !!answeredRes;
+
+  const opts = x.o.map((o,i)=>{
+    let extraCls = "border-slate-700 bg-slate-900/60";
+    let iconHtml = "";
+    if (mcqAnswered) {
+      if (i === x.a) {
+        extraCls = "border-emerald-500 bg-emerald-900/30";
+        iconHtml = '<i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>';
+      } else if (i === answeredRes.pick) {
+        extraCls = "border-rose-500 bg-rose-900/30";
+        iconHtml = '<i class="fa-solid fa-circle-xmark text-rose-400 text-lg"></i>';
+      } else {
+        extraCls += " opacity-60";
+      }
+    }
+    return `<button class="opt w-full text-left flex items-start gap-3 p-3.5 rounded-xl border ${extraCls}" data-i="${i}" ${mcqAnswered?'disabled':''} onclick="pickMCQ(${i})">
       <span class="shrink-0 w-8 h-8 rounded-lg bg-slate-800 border border-slate-600 flex items-center justify-center text-sm font-bold">${LET[i]}</span>
       <span class="pt-1 text-sm sm:text-base">${o.t}</span>
-      <span class="ml-auto pt-1.5 icon"></span>
-    </button>`).join('');
+      <span class="ml-auto pt-1.5 icon">${iconHtml}</span>
+    </button>`;
+  }).join('');
+
+  let explainHtml = "";
+  if (mcqAnswered) {
+    const ok = answeredRes.ok;
+    explainHtml = `<div class="fade-in p-4 rounded-xl border ${ok?"bg-emerald-950/40 border-emerald-700/50":"bg-rose-950/40 border-rose-700/50"}">
+      <p class="font-bold ${ok?'text-emerald-400':'text-rose-400'} mb-1">${ok?'<i class="fa-solid fa-check mr-1"></i>Chính xác!':'<i class="fa-solid fa-xmark mr-1"></i>Chưa đúng — đáp án đúng là '+LET[x.a]+'.'}</p>
+      <p class="text-sm text-slate-200 leading-relaxed"><b class="text-brand-300">Giải thích:</b> ${x.e}</p>
+    </div>`;
+  }
+
   document.getElementById('quiz-area').innerHTML = `
     <div class="fade-in space-y-4">
-      <div class="flex flex-wrap gap-1.5" id="dots">${quiz.map((_,i)=>dot(i)).join('')}</div>
+      <div class="flex flex-wrap gap-1.5" id="dots">${mcqQuiz.map((_,i)=>dotMCQ(i)).join('')}</div>
       <div class="bg-slate-800/90 p-5 sm:p-6 rounded-2xl border border-slate-700/80 shadow-xl space-y-5">
         <div class="flex items-center justify-between text-xs">
-          <span class="px-2.5 py-1 rounded-md bg-brand-950/80 text-brand-300 border border-brand-700/50 font-semibold">Câu ${cur+1} / ${quiz.length}</span>
-          <span class="text-slate-400 text-right">${LESSONS[x.l].name.split(':')[0]}</span>
+          <span class="px-2.5 py-1 rounded-md bg-brand-950/80 text-brand-300 border border-brand-700/50 font-semibold">Câu Trắc Nghiệm ${mcqCur+1} / ${mcqQuiz.length}</span>
+          <span class="text-slate-400 text-right">${LESSONS[x.l]?LESSONS[x.l].name.split(':')[0]:'Lịch sử 11'}</span>
         </div>
         <h3 class="text-base sm:text-lg font-semibold text-white leading-relaxed">${x.q}</h3>
         <div class="space-y-2.5" id="opts">${opts}</div>
-        <div id="explain" class="hidden"></div>
+        <div id="explain" class="${mcqAnswered?'':'hidden'}">${explainHtml}</div>
       </div>
       <div class="flex justify-end">
-        <button id="btn-next" onclick="next()" disabled class="px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-semibold transition shadow-md disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
-          <span>${cur===quiz.length-1?'Xem kết quả':'Câu tiếp theo'}</span><i class="fa-solid fa-arrow-right"></i>
+        <button id="btn-next" onclick="nextMCQ()" ${!mcqAnswered?'disabled':''} class="px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-semibold transition shadow-md disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
+          <span>${mcqCur===mcqQuiz.length-1?'Xem kết quả':'Câu tiếp theo'}</span><i class="fa-solid fa-arrow-right"></i>
         </button>
       </div>
     </div>`;
-  updateHeader();
+  updateHeaderMCQ();
 }
-function dot(i){
-  const r = results[i];
+
+function dotMCQ(i){
+  const r = mcqResults[i];
   let cls = "bg-slate-800 text-slate-400 border-slate-700";
   if (r) cls = r.ok ? "bg-emerald-600/30 text-emerald-300 border-emerald-500/50" : "bg-rose-600/30 text-rose-300 border-rose-500/50";
-  if (i===cur) cls += " ring-2 ring-brand-500";
+  if (i===mcqCur) cls += " ring-2 ring-brand-500";
   return `<span class="w-7 h-7 rounded-md border text-xs font-semibold flex items-center justify-center ${cls}">${i+1}</span>`;
 }
 
-function pick(i){
-  if (answered) return;
-  answered = true;
-  const x = quiz[cur], ok = i===x.a;
-  results[cur] = {pick:i, ok}; if (ok) correctCount++;
-  document.querySelectorAll('#opts .opt').forEach((b,j)=>{
-    b.disabled = true; b.classList.remove('hover:border-amber-500');
-    const ic = b.querySelector('.icon');
-    if (j===x.a){ b.className = b.className.replace('border-slate-700','border-emerald-500').replace('bg-slate-900/60','bg-emerald-900/30'); ic.innerHTML='<i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>'; }
-    else if (j===i){ b.className = b.className.replace('border-slate-700','border-rose-500').replace('bg-slate-900/60','bg-rose-900/30'); ic.innerHTML='<i class="fa-solid fa-circle-xmark text-rose-400 text-lg"></i>'; }
-    else b.classList.add('opacity-60');
-  });
-  const ex = document.getElementById('explain');
-  ex.className = "fade-in p-4 rounded-xl border " + (ok?"bg-emerald-950/40 border-emerald-700/50":"bg-rose-950/40 border-rose-700/50");
-  ex.innerHTML = `<p class="font-bold ${ok?'text-emerald-400':'text-rose-400'} mb-1">${ok?'<i class="fa-solid fa-check mr-1"></i>Chính xác!':'<i class="fa-solid fa-xmark mr-1"></i>Chưa đúng — đáp án đúng là '+LET[x.a]+'.'}</p>
-    <p class="text-sm text-slate-200 leading-relaxed"><b class="text-brand-300">Giải thích:</b> ${x.e}</p>`;
-  document.getElementById('btn-next').disabled = false;
-  document.getElementById('dots').innerHTML = quiz.map((_,k)=>dot(k)).join('');
-  updateHeader();
-}
-function next(){
-  if (!answered) return;
-  if (cur < quiz.length-1){ cur++; renderQ(); window.scrollTo({top:0,behavior:'smooth'}); }
-  else showResult();
-}
-function updateHeader(){
-  const done = results.filter(r=>r).length;
-  document.getElementById('progress-text').textContent = `Đã làm ${done}/${quiz.length} câu`;
-  document.getElementById('score-text').textContent = `Đúng: ${correctCount}`;
-  document.getElementById('progress-bar').style.width = (done/quiz.length*100)+'%';
+function pickMCQ(i){
+  if (mcqAnswered) return;
+  mcqAnswered = true;
+  const x = mcqQuiz[mcqCur], ok = (i === x.a);
+  mcqResults[mcqCur] = {pick: i, ok};
+  if (ok) mcqCorrect++;
+
+  renderMCQ();
 }
 
-/* ===== KẾT QUẢ ===== */
-function showResult(){
+function nextMCQ(){
+  if (!mcqAnswered) return;
+  if (mcqCur < mcqQuiz.length-1){
+    mcqCur++;
+    renderMCQ();
+    window.scrollTo({top:0,behavior:'smooth'});
+  } else {
+    showMCQResult();
+  }
+}
+
+function updateHeaderMCQ(){
+  const done = mcqResults.filter(r=>r).length;
+  document.getElementById('progress-text').textContent = `Trắc nghiệm: Đã làm ${done}/${mcqQuiz.length} câu`;
+  document.getElementById('score-text').textContent = `Đúng: ${mcqCorrect}`;
+  document.getElementById('progress-bar').style.width = (done/mcqQuiz.length*100)+'%';
+}
+
+function showMCQResult(){
   document.getElementById('quiz-area').classList.add('hidden');
-  const R = document.getElementById('result'); R.classList.remove('hidden');
-  const n = quiz.length, wrong = n-correctCount, pct = Math.round(correctCount/n*100);
-  document.getElementById('res-correct').textContent = `${correctCount} / ${n}`;
-  document.getElementById('res-wrong').textContent = wrong;
-  document.getElementById('res-pct').textContent = pct+'%';
-  document.getElementById('res-score').textContent = (correctCount/n*10).toFixed(1).replace('.',',');
-  document.getElementById('res-msg').textContent = pct>=80 ? 'Xuất sắc! Bạn nắm rất chắc kiến thức.' : pct>=50 ? 'Khá tốt! Hãy xem lại các câu sai để chắc hơn.' : 'Cần ôn thêm. Hãy xem lại ma trận và làm lại nhé!';
-  // theo bài
-  const st = {1:[0,0],2:[0,0],3:[0,0],4:[0,0]};
-  quiz.forEach((x,i)=>{ st[x.l][1]++; if(results[i].ok) st[x.l][0]++; });
-  document.getElementById('res-lessons').innerHTML = [1,2,3,4].map(k=>{
-    const [c,t]=st[k], p=t?Math.round(c/t*100):0, col = p>=80?'bg-emerald-500':p>=50?'bg-amber-500':'bg-rose-500';
-    return `<div class="bg-slate-900/70 p-3 rounded-xl border border-slate-700">
-      <div class="flex justify-between text-xs mb-1.5"><span class="text-slate-200 font-medium">${LESSONS[k].name.split(':')[0]}</span><span class="text-slate-400">${c}/${t} câu</span></div>
-      <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="${col} h-full" style="width:${p}%"></div></div></div>`;
-  }).join('');
-  // câu sai
-  const wl = quiz.map((x,i)=>({x,i,r:results[i]})).filter(o=>!o.r.ok);
-  document.getElementById('res-wrong-wrap').classList.toggle('hidden', wl.length===0);
-  document.getElementById('res-wrong-list').innerHTML = wl.map(o=>`
+  const R = document.getElementById('result-mcq'); R.classList.remove('hidden');
+  const n = mcqQuiz.length, wrong = n - mcqCorrect, pct = Math.round(mcqCorrect/n*100);
+  document.getElementById('res-mcq-correct').textContent = `${mcqCorrect} / ${n}`;
+  document.getElementById('res-mcq-wrong').textContent = wrong;
+  document.getElementById('res-mcq-pct').textContent = pct+'%';
+  document.getElementById('res-mcq-score').textContent = (mcqCorrect/n*10).toFixed(1).replace('.',',');
+  document.getElementById('res-mcq-msg').textContent = pct>=80 ? 'Xuất sắc! Bạn nắm rất chắc kiến thức Trắc nghiệm.' : pct>=50 ? 'Khá tốt! Hãy xem lại các câu sai để hoàn thiện hơn.' : 'Cần ôn tập kỹ hơn. Hãy xem lại ma trận và giải thích chi tiết.';
+
+  const wl = mcqQuiz.map((x,i)=>({x,i,r:mcqResults[i]})).filter(o=>o.r && !o.r.ok);
+  document.getElementById('res-mcq-wrong-wrap').classList.toggle('hidden', wl.length===0);
+  document.getElementById('res-mcq-wrong-list').innerHTML = wl.map(o=>`
     <details class="bg-slate-900/60 border border-slate-700 rounded-xl">
       <summary class="cursor-pointer p-3 text-sm text-slate-200"><b class="text-rose-400">Câu ${o.i+1}.</b> ${o.x.q}</summary>
       <div class="px-3 pb-3 text-sm space-y-1 border-t border-slate-700/50 pt-2">
-        <p class="text-rose-300">Bạn chọn: ${LET[o.r.pick]}. ${o.x.o[o.r.pick].t}</p>
+        <p class="text-rose-300">Lựa chọn của bạn: ${LET[o.r.pick]}. ${o.x.o[o.r.pick].t}</p>
         <p class="text-emerald-300">Đáp án đúng: ${LET[o.x.a]}. ${o.x.o[o.x.a].t}</p>
         <p class="text-slate-300"><b class="text-brand-300">Giải thích:</b> ${o.x.e}</p>
       </div></details>`).join('');
-  document.getElementById('progress-text').textContent = `Hoàn thành ${n}/${n} câu`;
+
+  document.getElementById('progress-text').textContent = `Hoàn thành Trắc nghiệm ${n}/${n} câu`;
   document.getElementById('progress-bar').style.width = '100%';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-/* ===== CHUYỂN TRANG ===== */
+/* ===== RENDER & XỬ LÝ ĐÚNG - SAI (TF) ===== */
+function renderTF(){
+  const qObj = tfQuiz[tfCurQuestion];
+  const stmtObj = qObj.statements[tfCurStatement];
+  const curRes = tfResults[tfCurQuestion][tfCurStatement];
+  tfAnswered = !!curRes;
+
+  let feedbackHtml = "";
+  if (tfAnswered) {
+    const ok = curRes.ok;
+    const ansText = stmtObj.answer ? "ĐÚNG" : "SAI";
+    feedbackHtml = `<div class="fade-in p-4 rounded-xl border ${ok?"bg-emerald-950/40 border-emerald-700/50":"bg-rose-950/40 border-rose-700/50"} space-y-1">
+      <p class="font-bold ${ok?'text-emerald-400':'text-rose-400'} flex items-center gap-2">
+        ${ok?'<i class="fa-solid fa-circle-check text-lg"></i> Chính xác!':'<i class="fa-solid fa-circle-xmark text-lg"></i> Chưa đúng — Đáp án chuẩn là: '+ansText}
+      </p>
+      <p class="text-sm text-slate-200 leading-relaxed pt-1"><b class="text-brand-300">Giải thích mệnh đề (${stmtObj.label}):</b> ${stmtObj.explanation}</p>
+    </div>`;
+  }
+
+  // nút next
+  let nextBtnText = `Ý tiếp theo (${tfCurStatement < 3 ? qObj.statements[tfCurStatement+1].label : 'câu tiếp'})`;
+  if (tfCurStatement === 3) {
+    if (tfCurQuestion === tfQuiz.length - 1) nextBtnText = "Xem kết quả Đúng – Sai";
+    else nextBtnText = "Câu Đúng – Sai tiếp theo";
+  }
+
+  // summary small count for current 4 statements
+  const doneStmtsInQ = tfResults[tfCurQuestion].filter(r=>r);
+  const correctStmtsInQ = doneStmtsInQ.filter(r=>r.ok).length;
+  let qSummaryHtml = "";
+  if (doneStmtsInQ.length === 4) {
+    qSummaryHtml = `<div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-700/40 text-center text-xs font-semibold text-indigo-300">
+      <i class="fa-solid fa-square-check mr-1.5"></i>Hoàn thành câu này: ${correctStmtsInQ}/4 ý đúng
+    </div>`;
+  }
+
+  document.getElementById('quiz-area').innerHTML = `
+    <div class="fade-in space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 text-xs">
+        <div class="flex gap-1.5">${tfQuiz.map((_, i) => dotTFQuestion(i)).join('')}</div>
+        <span class="text-slate-300 font-semibold">Câu Đúng – Sai ${tfCurQuestion+1} / ${tfQuiz.length}</span>
+      </div>
+
+      <div class="bg-slate-800/90 p-5 sm:p-6 rounded-2xl border border-slate-700/80 shadow-xl space-y-4">
+        <div class="space-y-2 border-b border-slate-700/70 pb-4">
+          <div class="flex items-center justify-between text-xs">
+            <span class="px-2.5 py-1 rounded-md bg-indigo-950/80 text-indigo-300 border border-indigo-700/50 font-semibold">Tư liệu câu ${tfCurQuestion+1}</span>
+            <span class="text-slate-400">${LESSONS[qObj.l]?LESSONS[qObj.l].name.split(':')[0]:'Lịch sử 11'}</span>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-700/70 text-sm leading-relaxed text-slate-200 font-sans not-italic space-y-2">
+            <p>${qObj.passage.replace(/\n/g, '<br>')}</p>
+            ${qObj.source ? `<p class="text-xs text-slate-400 font-sans not-italic text-right mt-1">${qObj.source}</p>` : ''}
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wide text-brand-400 bg-brand-950/80 px-2.5 py-1 rounded border border-brand-700/50">Mệnh đề ${stmtObj.label} (${tfCurStatement+1}/4 ý)</span>
+            <div class="flex gap-1">${qObj.statements.map((s, idx) => dotTFStatement(idx)).join('')}</div>
+          </div>
+          <p class="text-base font-semibold text-white leading-relaxed p-3 rounded-xl bg-slate-900/50 border border-slate-700/50">
+            <span class="text-brand-400 font-bold mr-1.5">${stmtObj.label})</span>${stmtObj.text}
+          </p>
+
+          <div class="grid grid-cols-2 gap-4 pt-1">
+            <button onclick="pickTF(true)" ${tfAnswered?'disabled':''} class="py-3 px-4 rounded-xl font-bold border transition flex items-center justify-center gap-2 ${tfAnswered ? (stmtObj.answer === true ? 'bg-emerald-600 border-emerald-400 text-white' : (curRes && curRes.pick===true ? 'bg-rose-600 border-rose-400 text-white opacity-60' : 'bg-slate-800 border-slate-700 opacity-40')) : 'bg-slate-800 hover:bg-emerald-600/20 border-slate-700 hover:border-emerald-500 text-emerald-400'}">
+              <i class="fa-solid fa-circle-check"></i><span>ĐÚNG</span>
+            </button>
+            <button onclick="pickTF(false)" ${tfAnswered?'disabled':''} class="py-3 px-4 rounded-xl font-bold border transition flex items-center justify-center gap-2 ${tfAnswered ? (stmtObj.answer === false ? 'bg-emerald-600 border-emerald-400 text-white' : (curRes && curRes.pick===false ? 'bg-rose-600 border-rose-400 text-white opacity-60' : 'bg-slate-800 border-slate-700 opacity-40')) : 'bg-slate-800 hover:bg-rose-600/20 border-slate-700 hover:border-rose-500 text-rose-400'}">
+              <i class="fa-solid fa-circle-xmark"></i><span>SAI</span>
+            </button>
+          </div>
+        </div>
+
+        ${feedbackHtml}
+        ${qSummaryHtml}
+      </div>
+
+      <div class="flex justify-between items-center">
+        <button onclick="prevTF()" ${tfCurQuestion===0 && tfCurStatement===0?'disabled':''} class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition disabled:opacity-30 disabled:cursor-not-allowed">
+          <i class="fa-solid fa-arrow-left mr-1"></i>Ý trước
+        </button>
+        <button id="btn-next-tf" onclick="nextTF()" ${!tfAnswered?'disabled':''} class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition shadow-md disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
+          <span>${nextBtnText}</span><i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>`;
+  updateHeaderTF();
+}
+
+function dotTFQuestion(i){
+  const resList = tfResults[i];
+  const doneCount = resList.filter(r=>r).length;
+  let cls = "bg-slate-800 text-slate-400 border-slate-700";
+  if (doneCount === 4) {
+    const allOk = resList.every(r=>r.ok);
+    cls = allOk ? "bg-emerald-600/30 text-emerald-300 border-emerald-500/50" : "bg-amber-600/30 text-amber-300 border-amber-500/50";
+  } else if (doneCount > 0) {
+    cls = "bg-indigo-900/40 text-indigo-300 border-indigo-700/50";
+  }
+  if (i === tfCurQuestion) cls += " ring-2 ring-indigo-500";
+  return `<span onclick="jumpTFQuestion(${i})" class="w-7 h-7 rounded-md border text-xs font-semibold flex items-center justify-center cursor-pointer ${cls}">${i+1}</span>`;
+}
+
+function dotTFStatement(idx){
+  const r = tfResults[tfCurQuestion][idx];
+  let cls = "bg-slate-800 text-slate-400 border-slate-700";
+  if (r) cls = r.ok ? "bg-emerald-600/30 text-emerald-300 border-emerald-500/50" : "bg-rose-600/30 text-rose-300 border-rose-500/50";
+  if (idx === tfCurStatement) cls += " ring-2 ring-brand-500";
+  const labels = ['a','b','c','d'];
+  return `<span class="w-6 h-6 rounded border text-xs font-bold flex items-center justify-center ${cls}">${labels[idx]}</span>`;
+}
+
+function pickTF(val){
+  if (tfAnswered) return;
+  tfAnswered = true;
+  const stmtObj = tfQuiz[tfCurQuestion].statements[tfCurStatement];
+  const ok = (val === stmtObj.answer);
+  tfResults[tfCurQuestion][tfCurStatement] = {pick: val, ok};
+  if (ok) tfCorrectCount++;
+
+  renderTF();
+}
+
+function nextTF(){
+  if (!tfAnswered) return;
+  if (tfCurStatement < 3) {
+    tfCurStatement++;
+    renderTF();
+  } else if (tfCurQuestion < tfQuiz.length - 1) {
+    tfCurQuestion++;
+    tfCurStatement = 0;
+    renderTF();
+    window.scrollTo({top:0,behavior:'smooth'});
+  } else {
+    showTFResult();
+  }
+}
+
+function prevTF(){
+  if (tfCurStatement > 0) {
+    tfCurStatement--;
+    renderTF();
+  } else if (tfCurQuestion > 0) {
+    tfCurQuestion--;
+    tfCurStatement = 3;
+    renderTF();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+
+function jumpTFQuestion(qIdx){
+  tfCurQuestion = qIdx;
+  tfCurStatement = 0;
+  renderTF();
+}
+
+function updateHeaderTF(){
+  const totalDone = tfResults.reduce((acc, qRes) => acc + qRes.filter(r=>r).length, 0);
+  document.getElementById('progress-text').textContent = `Đúng – Sai: Đã làm ${totalDone}/32 ý (${tfCurQuestion+1}/8 câu)`;
+  document.getElementById('score-text').textContent = `Ý đúng: ${tfCorrectCount}`;
+  document.getElementById('progress-bar').style.width = (totalDone/32*100)+'%';
+}
+
+function showTFResult(){
+  document.getElementById('quiz-area').classList.add('hidden');
+  const R = document.getElementById('result-tf'); R.classList.remove('hidden');
+  const totalStmts = 32;
+  const wrong = totalStmts - tfCorrectCount;
+  const pct = Math.round(tfCorrectCount / totalStmts * 100);
+  const score10 = (tfCorrectCount / totalStmts * 10).toFixed(1).replace('.',',');
+
+  document.getElementById('res-tf-correct').textContent = `${tfCorrectCount} / ${totalStmts}`;
+  document.getElementById('res-tf-wrong').textContent = wrong;
+  document.getElementById('res-tf-pct').textContent = pct+'%';
+  document.getElementById('res-tf-score').textContent = score10;
+  document.getElementById('res-tf-msg').textContent = pct>=80 ? 'Xuất sắc! Bạn phân tích tư liệu và chọn mệnh đề rất chuẩn xác.' : pct>=50 ? 'Khá tốt! Hãy rà soát lại các mệnh đề sai để nắm vững kiến thức.' : 'Cần ôn thêm kiến thức lịch sử và đọc kĩ tư liệu trước khi chọn!';
+
+  // Gather wrong items
+  let wrongList = [];
+  tfQuiz.forEach((qObj, qIdx) => {
+    qObj.statements.forEach((sObj, sIdx) => {
+      const r = tfResults[qIdx][sIdx];
+      if (r && !r.ok) {
+        wrongList.push({ qObj, qIdx, sObj, sIdx, r });
+      }
+    });
+  });
+
+  document.getElementById('res-tf-wrong-wrap').classList.toggle('hidden', wrongList.length===0);
+  document.getElementById('res-tf-wrong-list').innerHTML = wrongList.map(item => `
+    <details class="bg-slate-900/60 border border-slate-700 rounded-xl">
+      <summary class="cursor-pointer p-3 text-sm text-slate-200">
+        <b class="text-rose-400">Câu ${item.qIdx+1} – Ý ${item.sObj.label})</b> ${item.sObj.text}
+      </summary>
+      <div class="px-3 pb-3 text-sm space-y-2 border-t border-slate-700/50 pt-2">
+        <div class="p-2.5 rounded bg-slate-950 text-xs italic text-slate-300 font-serif border border-slate-800">${item.qObj.passage}</div>
+        <p class="text-rose-300">Lựa chọn của bạn: <b>${item.r.pick?'ĐÚNG':'SAI'}</b></p>
+        <p class="text-emerald-300">Đáp án đúng: <b>${item.sObj.answer?'ĐÚNG':'SAI'}</b></p>
+        <p class="text-slate-300"><b class="text-brand-300">Giải thích:</b> ${item.sObj.explanation}</p>
+      </div></details>`).join('');
+
+  document.getElementById('progress-text').textContent = `Hoàn thành Đúng – Sai 32/32 ý`;
+  document.getElementById('progress-bar').style.width = '100%';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ===== CHUYỂN TRANG GỐC ===== */
 function switchPage(p, keep){
   const m = p==='matrix';
   document.getElementById('page-matrix').classList.toggle('hidden', !m);
   document.getElementById('page-practice').classList.toggle('hidden', m);
   document.getElementById('header-progress').classList.toggle('hidden', m);
+  
   const on = "bg-brand-600 text-white shadow", off = "text-slate-400 hover:text-white";
   const base = "flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 ";
   document.getElementById('tab-matrix').className = base + (m?on:off);
   document.getElementById('tab-practice').className = base + (m?off:on);
-  if (!m && !keep && quiz.length===0){ restart(false); }
+  
+  if (!m && !keep) {
+    switchMode(currentMode);
+  }
   window.scrollTo({top:0});
 }
 
-/* ===== PHÍM TẮT ===== */
+/* ===== XỬ LÝ PHÍM TẮT ===== */
 document.addEventListener('keydown', e=>{
   if (document.getElementById('page-practice').classList.contains('hidden')) return;
   if (document.getElementById('quiz-area').classList.contains('hidden')) return;
-  const k = e.key.toUpperCase();
-  if (['A','B','C','D'].includes(k)) pick(LET.indexOf(k));
-  else if (e.key==='Enter' || e.key==='ArrowRight') next();
+  
+  if (currentMode === 'mcq') {
+    const k = e.key.toUpperCase();
+    if (['A','B','C','D'].includes(k)) pickMCQ(LET.indexOf(k));
+    else if (e.key==='Enter' || e.key==='ArrowRight') nextMCQ();
+  } else if (currentMode === 'tf') {
+    if (e.key==='Enter' || e.key==='ArrowRight') nextTF();
+  }
 });
 
-
-/* ===== KHỞI TẠO ===== */
-buildQuiz(false);
-renderQ(); // Hiển thị câu hỏi ngay từ đầu
+/* ===== KHỞI TẠO NỀN TẢNG ===== */
+initMCQ(false);
+initTF(false);
 switchPage('matrix');
 </script>
 </body>
