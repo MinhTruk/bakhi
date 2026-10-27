@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ôn Tập Toán 11 - Giữa Học Kỳ I | BAKHI</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: { extend: { colors: { brand: { 300:'#fcd34d', 400:'#fbbf24', 500:'#f59e0b', 600:'#d97706', 700:'#b45309', 900:'#78350f', 950:'#451a03' } } } }
+}
+</script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- KaTeX cho công thức toán học -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathSafely(document.body);"></script>
+<style>
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:#1e293b}
+  ::-webkit-scrollbar-thumb{background:#475569;border-radius:4px}
+  .fade-in{animation:fadeIn .25s ease-in-out}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  .opt{transition:all .15s}
+  .opt:not(:disabled):hover{border-color:#f59e0b;background:rgba(245,158,11,.08)}
+</style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col selection:bg-brand-500 selection:text-white">
+
+<!-- HEADER -->
+<header class="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 shadow-md">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="flex flex-col md:flex-row items-center justify-between py-3 gap-3">
+      <div class="flex items-center gap-2 w-full md:w-auto">
+        <a id="btn-back-subject" href="#" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs sm:text-sm font-medium transition border border-slate-800 flex items-center gap-1.5" title="Quay về trang môn học">
+          <i class="fa-solid fa-arrow-left"></i><span>Môn học</span>
+        </a>
+        <a id="btn-back-home" href="#" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs sm:text-sm font-medium transition border border-slate-800 flex items-center gap-1.5" title="Về trang chủ BAKHI">
+          <i class="fa-solid fa-house text-brand-500"></i>
+          <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">BAKHI</span>
+        </a>
+        <button onclick="shuffleCurrentMode()" class="ml-auto md:ml-2 px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white text-xs sm:text-sm font-semibold transition border border-indigo-500/40 flex items-center gap-1.5" title="Xáo trộn câu hỏi">
+          <i class="fa-solid fa-shuffle"></i><span>Xáo trộn</span>
+        </button>
+      </div>
+
+      <div class="text-center md:text-left flex-1 md:ml-4">
+        <h1 class="text-base sm:text-lg font-bold text-white flex items-center justify-center md:justify-start gap-2">
+          <i class="fa-solid fa-square-root-variable text-brand-500"></i>
+          <span>Toán 11</span>
+          <span class="text-xs font-normal px-2 py-0.5 rounded bg-brand-950 text-brand-300 border border-brand-700/50">Giữa HK1</span>
+        </h1>
+        <p class="text-xs text-slate-400 hidden sm:block">Trường THPT Huỳnh Ngọc Huệ · Ôn Tập Kiểm Tra Giữa Kì 1 (Năm học 2026-2027)</p>
+      </div>
+
+      <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-800 w-full md:w-auto">
+        <button id="tab-matrix" onclick="switchPage('matrix')" class="flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-table-cells"></i><span>Ma trận</span>
+        </button>
+        <button id="tab-practice" onclick="switchPage('practice')" class="flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-pen-to-square"></i><span>Câu hỏi</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="header-progress" class="hidden py-2 border-t border-slate-800/80">
+      <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <span id="progress-text">Tiến độ: 0/12</span>
+        <span id="score-text" class="text-brand-400 font-medium">Đúng: 0</span>
+      </div>
+      <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
+        <div id="progress-bar" class="bg-gradient-to-r from-amber-500 to-orange-500 h-full w-0 transition-all duration-300"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
+
+<!-- ============ PAGE 1: MA TRẬN & ĐẶC TẢ ============ -->
+<section id="page-matrix" class="space-y-6 fade-in">
+  <div class="bg-gradient-to-r from-slate-900 via-slate-900/90 to-amber-950/40 p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+    <div class="absolute right-0 top-0 bottom-0 opacity-10 flex items-center pr-10 pointer-events-none"><i class="fa-solid fa-calculator text-9xl text-brand-400"></i></div>
+    <div class="relative z-10">
+      <span class="text-xs font-semibold uppercase tracking-wider text-brand-400 bg-brand-950 px-2.5 py-1 rounded-md border border-brand-700/50">Ma trận – Đặc tả giữa kì I (Năm học 2026-2027)</span>
+      <h2 class="text-xl sm:text-2xl font-bold text-white mt-2">Ma Trận Đề Kiểm Tra Môn Toán Lớp 11</h2>
+      <p class="text-slate-300 text-sm mt-1 max-w-2xl">Thời gian làm bài: 90 phút · Hình thức: Trắc nghiệm khách quan & Tự luận · Trường THPT Huỳnh Ngọc Huệ.</p>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800"><span class="text-xs text-slate-400 block">Thời gian</span><span class="text-lg font-bold">90 phút</span></div>
+    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800"><span class="text-xs text-slate-400 block">Tổng điểm</span><span class="text-lg font-bold text-brand-400">10,0 điểm</span></div>
+    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800"><span class="text-xs text-slate-400 block">Cấu trúc</span><span class="text-lg font-bold text-indigo-400">12 TN + 4 ĐS + 4 TLN + 3 TL</span></div>
+    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800"><span class="text-xs text-slate-400 block">Nhận biết (30%)</span><span class="text-lg font-bold text-emerald-400">3,0 điểm</span></div>
+    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800"><span class="text-xs text-slate-400 block">Thông hiểu (40%)</span><span class="text-lg font-bold text-amber-400">4,0 điểm</span></div>
+    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800"><span class="text-xs text-slate-400 block">Vận dụng (30%)</span><span class="text-lg font-bold text-purple-400">3,0 điểm</span></div>
+  </div>
+
+  <!-- Structure summary table -->
+  <div class="bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden">
+    <div class="p-4 border-b border-slate-800"><h3 class="font-bold text-white flex items-center gap-2"><i class="fa-solid fa-list-check text-brand-400"></i>Cấu trúc đề thi giữa kì I</h3></div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs sm:text-sm text-slate-300">
+        <thead class="bg-slate-950 text-slate-400 uppercase text-xs border-b border-slate-800">
+          <tr><th class="p-3">Phần</th><th class="p-3">Số lượng câu hỏi</th><th class="p-3">Điểm số</th><th class="p-3">Định dạng</th></tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60">
+          <tr><td class="p-3 font-semibold text-white">Phần 1. Trắc nghiệm nhiều lựa chọn</td><td class="p-3">12 câu</td><td class="p-3">3,0 điểm (0,25 đ/câu)</td><td class="p-3">Chọn 01 phương án đúng nhất (A, B, C, D)</td></tr>
+          <tr><td class="p-3 font-semibold text-white">Phần 2. Trắc nghiệm đúng – sai</td><td class="p-3">4 câu (16 lệnh hỏi ý a, b, c, d)</td><td class="p-3">4,0 điểm</td><td class="p-3">Đánh giá đúng/sai từng mệnh đề độc lập</td></tr>
+          <tr><td class="p-3 font-semibold text-white">Phần 3. Trả lời ngắn</td><td class="p-3">4 câu</td><td class="p-3">1,0 điểm</td><td class="p-3">Tính toán và điền đáp án ngắn gọn</td></tr>
+          <tr><td class="p-3 font-semibold text-white">Phần 4. Tự luận</td><td class="p-3">3 bài</td><td class="p-3">2,0 điểm</td><td class="p-3">Trình bày lời giải chi tiết (Phương trình lượng giác, Cấp số, Thống kê)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Matrix details -->
+  <div class="bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden">
+    <div class="p-4 border-b border-slate-800"><h3 class="font-bold text-white flex items-center gap-2"><i class="fa-solid fa-table text-brand-400"></i>Bảng ma trận nội dung kiến thức</h3></div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-center text-xs sm:text-sm text-slate-300 min-w-[900px]">
+        <thead class="bg-slate-950 text-slate-400 text-xs border-b border-slate-800">
+          <tr>
+            <th class="p-3 text-left min-w-[240px]">Chủ đề / Nội dung kiến thức</th>
+            <th class="p-2 border-l border-slate-800">Trắc nghiệm nhiều lựa chọn</th>
+            <th class="p-2 border-l border-slate-800">Đúng – Sai (ý)</th>
+            <th class="p-2 border-l border-slate-800">Trả lời ngắn</th>
+            <th class="p-2 border-l border-slate-800">Tự luận</th>
+            <th class="p-3 border-l border-slate-800">Tổng điểm</th>
+            <th class="p-3 border-l border-slate-800">Tỉ lệ %</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60 text-left">
+          <tr>
+            <td class="p-3 font-medium text-white">1. Hàm số lượng giác và phương trình lượng giác</td>
+            <td class="p-3 text-center">8 câu (2,0đ)</td>
+            <td class="p-3 text-center">2 câu (8 ý - 2,0đ)</td>
+            <td class="p-3 text-center">2 câu (0,5đ)</td>
+            <td class="p-3 text-center">1 bài (1,0đ)</td>
+            <td class="p-3 text-center font-bold text-brand-400">5,5 đ</td>
+            <td class="p-3 text-center">55,0%</td>
+          </tr>
+          <tr>
+            <td class="p-3 font-medium text-white">2. Dãy số. Cấp số cộng. Cấp số nhân</td>
+            <td class="p-3 text-center">2 câu (0,5đ)</td>
+            <td class="p-3 text-center">1 câu (4 ý - 1,0đ)</td>
+            <td class="p-3 text-center">1 câu (0,25đ)</td>
+            <td class="p-3 text-center">1 bài (1,0đ)</td>
+            <td class="p-3 text-center font-bold text-brand-400">2,75 đ</td>
+            <td class="p-2 text-center">27,5%</td>
+          </tr>
+          <tr>
+            <td class="p-3 font-medium text-white">3. Các số đặc trưng đo xu thế trung tâm mẫu số liệu ghép nhóm</td>
+            <td class="p-3 text-center">2 câu (0,5đ)</td>
+            <td class="p-3 text-center">1 câu (4 ý - 1,0đ)</td>
+            <td class="p-3 text-center">1 câu (0,25đ)</td>
+            <td class="p-3 text-center">1 bài (0,5đ)</td>
+            <td class="p-3 text-center font-bold text-brand-400">1,75 đ</td>
+            <td class="p-3 text-center">17,5%</td>
+          </tr>
+        </tbody>
+        <tfoot class="bg-slate-950 font-bold text-white border-t-2 border-slate-700 text-center">
+          <tr>
+            <td class="p-3 text-left">TỔNG CỘNG</td>
+            <td class="p-3">12 câu (3,0đ)</td>
+            <td class="p-3">4 câu (4,0đ)</td>
+            <td class="p-3">4 câu (1,0đ)</td>
+            <td class="p-3">3 bài (2,0đ)</td>
+            <td class="p-3 text-brand-400">10,0 đ</td>
+            <td class="p-3">100%</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- Formula reference card -->
+  <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-3">
+    <h3 class="font-bold text-white flex items-center gap-2"><FileCode class="fa-solid fa-book-bookmark text-brand-400"></FileCode>Tóm tắt công thức trọng tâm Toán 11</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-slate-300">
+      <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 space-y-1">
+        <b class="text-brand-400 block">1. Phương trình lượng giác cơ bản</b>
+        <p>$\sin x = m \iff \begin{cases} x = \alpha + k2\pi \\ x = \pi - \alpha + k2\pi \end{cases}$</p>
+        <p>$\cos x = m \iff x = \pm \alpha + k2\pi$</p>
+        <p>$\tan x = m \iff x = \alpha + k\pi$</p>
+      </div>
+      <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 space-y-1">
+        <b class="text-brand-400 block">2. Công thức cộng & nhân đôi</b>
+        <p>$\sin(a\pm b) = \sin a \cos b \pm \cos a \sin b$</p>
+        <p>$\cos(a\pm b) = \cos a \cos b \mp \sin a \sin b$</p>
+        <p>$\sin 2a = 2\sin a \cos a$</p>
+        <p>$\cos 2a = \cos^2 a - \sin^2 a = 2\cos^2 a - 1$</p>
+      </div>
+      <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 space-y-1">
+        <b class="text-brand-400 block">3. Cấp số cộng & Cấp số nhân</b>
+        <p>CSC: $u_n = u_1 + (n-1)d$</p>
+        <p>Tổng $n$ số hạng CSC: $S_n = \frac{n[2u_1 + (n-1)d]}{2}$</p>
+        <p>CSN: $u_n = u_1 \cdot q^{n-1}$</p>
+        <p>Tổng $n$ số hạng CSN: $S_n = \frac{u_1(1-q^n)}{1-q}$</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Study checklist -->
+  <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-3">
+    <h3 class="font-bold text-white flex items-center gap-2"><i class="fa-solid fa-square-check text-brand-400"></i>Checklist ôn tập giữa kì I</h3>
+    <div id="checklist-box" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+      <label class="flex items-center gap-2.5 p-2.5 bg-slate-950/50 rounded-xl border border-slate-800 cursor-pointer hover:bg-slate-900"><input type="checkbox" class="chk rounded bg-slate-900 border-slate-700 text-brand-500 focus:ring-0 w-4 h-4"> Ôn tập giá trị lượng giác và công thức biến đổi</label>
+      <label class="flex items-center gap-2.5 p-2.5 bg-slate-950/50 rounded-xl border border-slate-800 cursor-pointer hover:bg-slate-900"><input type="checkbox" class="chk rounded bg-slate-900 border-slate-700 text-brand-500 focus:ring-0 w-4 h-4"> Thành thạo giải phương trình lượng giác cơ bản</label>
+      <label class="flex items-center gap-2.5 p-2.5 bg-slate-950/50 rounded-xl border border-slate-800 cursor-pointer hover:bg-slate-900"><input type="checkbox" class="chk rounded bg-slate-900 border-slate-700 text-brand-500 focus:ring-0 w-4 h-4"> Nắm vững tính chất dãy số, Cấp số cộng và Cấp số nhân</label>
+      <label class="flex items-center gap-2.5 p-2.5 bg-slate-950/50 rounded-xl border border-slate-800 cursor-pointer hover:bg-slate-900"><input type="checkbox" class="chk rounded bg-slate-900 border-slate-700 text-brand-500 focus:ring-0 w-4 h-4"> Tính toán thành thạo các số đặc trưng mẫu số liệu ghép nhóm</label>
+    </div>
+  </div>
+
+  <div class="flex justify-center py-2">
+    <button onclick="switchPage('practice')" class="px-8 py-3.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-xl shadow-lg transition transform hover:-translate-y-0.5 flex items-center gap-2">
+      <span>Bắt đầu luyện tập câu hỏi</span><i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </div>
+</section>
+
+<!-- ============ PAGE 2: CÂU HỎI LUYỆN TẬP ============ -->
+<section id="page-practice" class="hidden space-y-5 fade-in">
+  <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Sub-tabs selection -->
+      <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+        <button id="subtab-mcq" onclick="switchMode('mcq')" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-list-check"></i><span>Trắc nghiệm (12)</span>
+        </button>
+        <button id="subtab-tf" onclick="switchMode('tf')" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-half-stroke"></i><span>Đúng – Sai (2 câu/8 ý)</span>
+        </button>
+        <button id="subtab-short" onclick="switchMode('short')" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-pen"></i><span>Trả lời ngắn (4)</span>
+        </button>
+        <button id="subtab-essay" onclick="switchMode('essay')" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-book-open"></i><span>Tự luận (3)</span>
+        </button>
+      </div>
+
+      <button onclick="shuffleCurrentMode()" class="px-3.5 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white rounded-xl border border-indigo-500/40 text-xs sm:text-sm font-semibold transition flex items-center gap-1.5"><i class="fa-solid fa-shuffle"></i>Xáo trộn</button>
+      <button onclick="resetCurrentMode()" class="px-3.5 py-1.5 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 hover:text-white rounded-xl border border-rose-500/40 text-xs sm:text-sm font-semibold transition flex items-center gap-1.5"><i class="fa-solid fa-rotate-right"></i>Làm lại</button>
+      <button onclick="switchPage('matrix')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5"><i class="fa-solid fa-table-cells"></i>Xem ma trận</button>
+    </div>
+    <span id="shortcut-hint" class="hidden sm:block text-xs text-slate-400 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">Phím tắt: A B C D chọn · Enter / → câu tiếp</span>
+  </div>
+
+  <div id="quiz-area" class="space-y-4"></div>
+
+  <!-- RESULT MCQ -->
+  <div id="result-mcq" class="hidden bg-slate-900/90 p-6 rounded-2xl border border-slate-800 shadow-2xl space-y-6 fade-in">
+    <div class="text-center space-y-2">
+      <div class="inline-flex p-3 rounded-full bg-emerald-500/20 text-emerald-400 text-3xl"><i class="fa-solid fa-trophy"></i></div>
+      <h3 class="text-2xl font-bold text-white">Hoàn thành Phần Trắc Nghiệm Nhiều Lựa Chọn!</h3>
+      <p id="res-mcq-msg" class="text-slate-300 text-sm"></p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Số câu đúng</span><span id="res-mcq-correct" class="text-xl font-bold text-emerald-400"></span></div>
+      <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Số câu sai</span><span id="res-mcq-wrong" class="text-xl font-bold text-rose-400"></span></div>
+      <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Tỉ lệ đúng</span><span id="res-mcq-pct" class="text-xl font-bold text-brand-400"></span></div>
+      <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Điểm quy đổi (thang 3đ)</span><span id="res-mcq-score" class="text-xl font-bold text-white"></span></div>
+    </div>
+    <div id="res-mcq-wrong-wrap" class="space-y-2 hidden">
+      <h4 class="text-sm font-bold text-slate-200">Các câu làm sai (nhấn để xem lại đáp án & giải thích):</h4>
+      <div id="res-mcq-wrong-list" class="space-y-2"></div>
+    </div>
+    <div class="flex flex-col sm:flex-row justify-center gap-4 pt-4 border-t border-slate-800">
+      <button onclick="shuffleCurrentMode()" class="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2"><i class="fa-solid fa-shuffle"></i>Làm lại &amp; xáo trộn</button>
+      <button onclick="resetCurrentMode()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold rounded-xl border border-slate-700 transition flex items-center justify-center gap-2"><i class="fa-solid fa-rotate-right"></i>Làm lại (giữ thứ tự)</button>
+      <button onclick="switchMode('tf')" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow transition flex items-center justify-center gap-2"><i class="fa-solid fa-circle-half-stroke"></i>Sang phần Đúng – Sai</button>
+    </div>
+  </div>
+
+  <!-- RESULT TF -->
+  <div id="result-tf" class="hidden bg-slate-900/90 p-6 rounded-2xl border border-slate-800 shadow-2xl space-y-6 fade-in">
+    <div class="text-center space-y-2">
+      <div class="inline-flex p-3 rounded-full bg-indigo-500/20 text-indigo-400 text-3xl"><i class="fa-solid fa-award"></i></div>
+      <h3 class="text-2xl font-bold text-white">Hoàn thành Phần Đúng – Sai!</h3>
+      <p id="res-tf-msg" class="text-slate-300 text-sm"></p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Số ý đúng</span><span id="res-tf-correct" class="text-xl font-bold text-emerald-400"></span></div>
+      <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Số ý sai</span><span id="res-tf-wrong" class="text-xl font-bold text-rose-400"></span></div>
+      <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Tỉ lệ đúng</span><span id="res-tf-pct" class="text-xl font-bold text-brand-400"></span></div>
+      <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-center"><span class="text-xs text-slate-400 block">Điểm quy đổi (thang 4đ)</span><span id="res-tf-score" class="text-xl font-bold text-white"></span></div>
+    </div>
+    <div id="res-tf-wrong-wrap" class="space-y-2 hidden">
+      <h4 class="text-sm font-bold text-slate-200">Các mệnh đề làm sai:</h4>
+      <div id="res-tf-wrong-list" class="space-y-2"></div>
+    </div>
+    <div class="flex flex-col sm:flex-row justify-center gap-4 pt-4 border-t border-slate-800">
+      <button onclick="shuffleCurrentMode()" class="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2"><i class="fa-solid fa-shuffle"></i>Làm lại &amp; xáo trộn</button>
+      <button onclick="resetCurrentMode()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold rounded-xl border border-slate-700 transition flex items-center justify-center gap-2"><i class="fa-solid fa-rotate-right"></i>Làm lại</button>
+      <button onclick="switchMode('short')" class="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl shadow transition flex items-center justify-center gap-2"><i class="fa-solid fa-pen"></i>Sang Trả lời ngắn</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="bg-slate-950 border-t border-slate-800/80 py-6 mt-10 text-xs text-slate-400">
+  <div class="max-w-6xl mx-auto px-4 text-center space-y-1">
+    <p class="font-medium text-slate-300">Nền tảng ôn tập trực tuyến BAKHI — Trường THPT Huỳnh Ngọc Huệ</p>
+    <p>Môn Toán 11 — Giữa học kì I (Năm học 2026-2027). Hệ thống ôn luyện trắc nghiệm, đúng sai, trả lời ngắn và tự luận.</p>
+  </div>
+</footer>
+
+<script>
+/* ===== CẤU HÌNH LIÊN KẾT ===== */
+const CONFIG = {
+  subjectIndexUrl: "indextoan.html", 
+  homeUrl: "/bakhi/"                       
+};
+
+/* ===== HIỂN THỊ CÔNG THỨC TOÁN ===== */
+const MATH_RENDER_OPTIONS = {
+  delimiters: [
+    { left: "$$", right: "$$", display: true },
+    { left: "$", right: "$", display: false },
+    { left: "\\(", right: "\\)", display: false },
+    { left: "\\[", right: "\\]", display: true },
+    { left: "\\begin{equation}", right: "\\end{equation}", display: true },
+    { left: "\\begin{align}", right: "\\end{align}", display: true }
+  ],
+  throwOnError: false,
+  strict: "ignore",
+  ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+};
+
+function renderMathSafely(element) {
+  if (!element || typeof window.renderMathInElement !== "function") return;
+  try {
+    window.renderMathInElement(element, MATH_RENDER_OPTIONS);
+  } catch (error) {
+    console.warn("Không thể hiển thị một số công thức toán học:", error);
+  }
+}
+
+document.getElementById('btn-back-subject').href = CONFIG.subjectIndexUrl;
+document.getElementById('btn-back-home').href = CONFIG.homeUrl;
+
+/* ===== DỮ LIỆU 12 CÂU TRẮC NGHIỆM PHẦN 1 (ĐỀ 1) ===== */
+const MCQ_BANK = [
+  {
+    id: 1,
+    question: "Đo cân nặng (tính bằng kg) của một số học sinh lớp 11A trong một trường THPT ta thu được kết quả:\n\n" +
+              "| Cân nặng (kg) | [40,5;45,5) | [45,5;50,5) | [50,5;55,5) | [55,5;60,5) | [60,5;65,5) | [65,5;70,5) |\n" +
+              "| Số học sinh | 10 | 7 | 16 | 4 | 2 | 3 |\n\n" +
+              "Số học sinh có cân nặng từ 45,5 kg tới dưới 55,5 kg là:",
+    options: ["23.", "7.", "16.", "33."],
+    answerIndex: 0,
+    explanation: "Số học sinh có cân nặng từ 45,5 kg tới dưới 55,5 kg bao gồm nhóm [45,5; 50,5) (7 học sinh) và nhóm [50,5; 55,5) (16 học sinh). Tổng số học sinh là: 7 + 16 = 23."
+  },
+  {
+    id: 2,
+    question: "Trong các dãy số sau, dãy số nào không là dãy số tăng?",
+    options: ["1; 3; 5; 7; ...", "1; 1; 1; 1; ...", "2; 4; 6; 8; ...", "$\\frac{1}{2}; 1; \\frac{3}{2}; 2; ...$"],
+    answerIndex: 1,
+    explanation: "Dãy số $1; 1; 1; 1; ...$ có các số hạng bằng nhau ($u_{n+1} = u_n$), do đó đây là dãy số không đổi, không phải là dãy số tăng."
+  },
+  {
+    id: 3,
+    question: "Số lượng người đi xem một bộ phim mới theo độ tuổi trong một rạp chiếu phim (sau 1 giờ đầu công chiếu):\n\n" +
+              "| Độ tuổi | [10;20) | [20;30) | [30;40) | [40;50) | [50;60) |\n" +
+              "| Số người | 6 | 12 | 16 | 7 | 2 |\n\n" +
+              "Khẳng định nào sau đây là đúng?",
+    options: [
+      "Giá trị đại diện nhóm [50;60) là 60.",
+      "Tổng số người đi xem phim là 33.",
+      "Giá trị đại diện nhóm [50;60) là 2.",
+      "Tổng số người đi xem phim là 43."
+    ],
+    answerIndex: 3,
+    explanation: "Tổng số người đi xem phim là tổng tần số các nhóm: $6 + 12 + 16 + 7 + 2 = 43$ người."
+  },
+  {
+    id: 4,
+    question: "Trong mẫu số liệu ghép nhóm, số đặc trưng nào sau đây chia mẫu số liệu thành hai phần, mỗi phần chứa 50% giá trị?",
+    options: ["Mốt.", "Số trung vị.", "Số trung bình.", "Tứ phân vị."],
+    answerIndex: 1,
+    explanation: "Số trung vị (median) của mẫu số liệu ghép nhóm là giá trị chia mẫu số liệu thành hai phần, mỗi phần chứa 50% số liệu."
+  },
+  {
+    id: 5,
+    question: "Phương trình $\\cos x = \\cos \\alpha$ có nghiệm là:",
+    options: [
+      "$x = \\alpha + k2\\pi \\quad (k \\in \\mathbb{Z})$",
+      "$x = -\\alpha + k2\\pi \\quad (k \\in \\mathbb{Z})$",
+      "$x = \\pm \\alpha + k\\pi \\quad (k \\in \\mathbb{Z})$",
+      "$x = \\pm \\alpha + k2\\pi \\quad (k \\in \\mathbb{Z})$"
+    ],
+    answerIndex: 3,
+    explanation: "Phương trình lượng giác cơ bản $\\cos x = \\cos \\alpha$ có các họ nghiệm là $x = \\pm \\alpha + k2\\pi$ ($k \\in \\mathbb{Z}$)."
+  },
+  {
+    id: 6,
+    question: "Trong các dãy số sau, dãy số nào không phải cấp số cộng?",
+    options: [
+      "$\\frac{1}{2}; \\frac{3}{2}; \\frac{5}{2}; \\frac{7}{2}; \\frac{9}{2}$",
+      "3; 1; -1; -2; -4",
+      "1; 4; 7; 10; 13",
+      "8; 6; 4; 2; 0"
+    ],
+    answerIndex: 1,
+    explanation: "Dãy $3; 1; -1; -2; -4$ không phải cấp số cộng vì hiệu giữa các số hạng liên tiếp không hằng định ($1 - 3 = -2$, nhưng $-2 - (-1) = -1 \\neq -2$)."
+  },
+  {
+    id: 7,
+    question: "Cho góc $\\alpha$ thoả mãn $\\pi < \\alpha < \\frac{3\\pi}{2}$. Khẳng định nào sau đây là đúng?",
+    options: [
+      "$\\sin \\alpha > 0, \\tan \\alpha > 0$",
+      "$\\sin \\alpha < 0, \\tan \\alpha > 0$",
+      "$\\sin \\alpha < 0, \\tan \\alpha < 0$",
+      "$\\sin \\alpha > 0, \\tan \\alpha < 0$"
+    ],
+    answerIndex: 1,
+    explanation: "Với $\\pi < \\alpha < \\frac{3\\pi}{2}$ (góc thuộc góc phần tư thứ III), ta có $\\sin \\alpha < 0$, $\\cos \\alpha < 0$ và $\\tan \\alpha = \\frac{\\sin \\alpha}{\\cos \\alpha} > 0$."
+  },
+  {
+    id: 8,
+    question: "Công thức nào sau đây là đúng?",
+    options: [
+      "$\\sin(a+b) = \\sin a \\cos b - \\cos a \\sin b$",
+      "$\\sin(a+b) = \\sin a \\cos b + \\cos a \\sin b$",
+      "$\\cos(a+b) = \\cos a \\cos b + \\sin a \\sin b$",
+      "$\\cos(a+b) = \\sin a \\cos b - \\sin a \\sin b$"
+    ],
+    answerIndex: 1,
+    explanation: "Theo công thức cộng lượng giác, $\\sin(a+b) = \\sin a \\cos b + \\cos a \\sin b$."
+  },
+  {
+    id: 9,
+    question: "Trong các số sau, dãy số nào là một cấp số nhân?",
+    options: [
+      "0; 3; 9; 27; 81",
+      "1; -2; -4; -8; -16",
+      "1; -3; 9; -27; 81",
+      "1; -3; -6; -9; -12"
+    ],
+    answerIndex: 2,
+    explanation: "Dãy $1; -3; 9; -27; 81$ là cấp số nhân với số hạng đầu $u_1 = 1$ và công bội $q = -3$ ($u_{n} = u_{n-1} \\cdot (-3)$)."
+  },
+  {
+    id: 10,
+    question: "Khẳng định nào sau đây là đúng?",
+    options: [
+      "$\\sin x = 1 \\iff x = \\frac{\\pi}{2} + k2\\pi \\quad (k \\in \\mathbb{Z})$",
+      "$\\sin x = 1 \\iff x = \\frac{3\\pi}{2} + k2\\pi \\quad (k \\in \\mathbb{Z})$",
+      "$\\sin x = 0 \\iff x = k2\\pi \\quad (k \\in \\mathbb{Z})$",
+      "$\\cos x = 0 \\iff x = \\frac{\\pi}{2} + k2\\pi \\quad (k \\in \\mathbb{Z})$"
+    ],
+    answerIndex: 0,
+    explanation: "Phương trình đặc biệt $\\sin x = 1$ có nghiệm là $x = \\frac{\\pi}{2} + k2\\pi$ ($k \\in \\mathbb{Z}$)."
+  },
+  {
+    id: 11,
+    question: "Tập xác định của hàm số $y = \\tan x$ là:",
+    options: [
+      "$D = \\mathbb{R} \\setminus \\{k\\pi, k \\in \\mathbb{Z}\\}$",
+      "$D = \\mathbb{R}$",
+      "$D = \\mathbb{R} \\setminus \\{\\frac{\\pi}{2} + k2\\pi, k \\in \\mathbb{Z}\\}$",
+      "$D = \\mathbb{R} \\setminus \\{\\frac{\\pi}{2} + k\\pi, k \\in \\mathbb{Z}\\}$"
+    ],
+    answerIndex: 3,
+    explanation: "Hàm số $y = \\tan x = \\frac{\\sin x}{\\cos x}$ xác định khi $\\cos x \\neq 0 \\iff x \\neq \\frac{\\pi}{2} + k\\pi$ ($k \\in \\mathbb{Z}$)."
+  },
+  {
+    id: 12,
+    question: "Cho góc $\\alpha = (Ox, OM)$ với điểm $M\\left(-\\frac{1}{2}; \\frac{\\sqrt{3}}{2}\\right)$ trên đường tròn đơn vị. Giá trị lượng giác của $\\sin \\alpha$ là:",
+    options: [
+      "$\\sin \\alpha = -\\frac{1}{2}$",
+      "$\\sin \\alpha = \\frac{\\sqrt{3}}{2}$",
+      "$\\sin \\alpha = -1$",
+      "$\\sin \\alpha = -\\frac{1}{\\sqrt{3}}$"
+    ],
+    answerIndex: 1,
+    explanation: "Tung độ của điểm $M$ trên đường tròn lượng đơn vị chính là $\\sin \\alpha$. Do đó $\\sin \\alpha = y_M = \\frac{\\sqrt{3}}{2}$."
+  }
+];
+
+/* ===== DỮ LIỆU 2 CÂU ĐÚNG - SAI PHẦN 2 (8 MỆNH ĐỀ) ===== */
+const TF_BANK = [
+  {
+    id: 1,
+    passage: "Cho dãy số $(u_n)$ xác định bởi: $\\begin{cases} u_1 = -2 \\\\ u_n = 3u_{n-1} \\end{cases} (n \\in \\mathbb{N}, n \\ge 2)$.",
+    statements: [
+      { label: "a", text: "Số hạng thứ 3 của dãy số là $u_3 = 18$.", answer: false, explanation: "Ta có $u_1 = -2$, $u_2 = 3u_1 = -6$, $u_3 = 3u_2 = -18 \\neq 18$. Mệnh đề sai." },
+      { label: "b", text: "Số hạng đầu của dãy số là $-2$.", answer: true, explanation: "Theo đề bài, $u_1 = -2$. Mệnh đề đúng." },
+      { label: "c", text: "118098 là số hạng thứ 11 của dãy số đã cho.", answer: false, explanation: "Số hạng tổng quát $u_n = u_1 \\cdot q^{n-1} = -2 \\cdot 3^{n-1}$. Với $n=11$, $u_{11} = -2 \\cdot 3^{10} = -118098 \\neq 118098$. Mệnh đề sai." },
+      { label: "d", text: "Dãy số đã cho là cấp số nhân có công bội $q = 3$.", answer: true, explanation: "Vì $u_n = 3u_{n-1}$ nên đây là cấp số nhân với $u_1 = -2$ và công bội $q = 3$. Mệnh đề đúng." }
+    ]
+  },
+  {
+    id: 2,
+    passage: "Cho hàm số $y = \\cos x - \\frac{\\sqrt{3}}{2}$.",
+    statements: [
+      { label: "a", text: "Hàm số đã cho có tập xác định $D = \\mathbb{R} \\setminus \\{\\frac{\\sqrt{3}}{2}\\}$.", answer: false, explanation: "Hàm số lượng giác cơ bản có tập xác định $D = \\mathbb{R}$. Mệnh đề sai." },
+      { label: "b", text: "Hàm số đã cho là hàm số tuần hoàn với chu kì $2\\pi$.", answer: true, explanation: "Hàm số $y = \\cos x$ tuần hoàn với chu kì $2\\pi$, do đó hàm số $y = \\cos x - \\frac{\\sqrt{3}}{2}$ cũng tuần hoàn với chu kì $2\\pi$. Mệnh đề đúng." },
+      { label: "c", text: "Phương trình $\\cos x - \\frac{\\sqrt{3}}{2} = 0$ tương đương với phương trình $\\cos x = \\cos \\frac{\\pi}{6}$.", answer: true, explanation: "Vì $\\cos \\frac{\\pi}{6} = \\frac{\\sqrt{3}}{2}$ nên phương trình viết lại là $\\cos x = \\cos \\frac{\\pi}{6}$. Mệnh đề đúng." },
+      { label: "d", text: "$\\cos x - \\frac{\\sqrt{3}}{2} = \\cos x - \\cos \\frac{\\pi}{6} = 2 \\sin \\frac{x+\\frac{\\pi}{6}}{2} \\sin \\frac{x-\\frac{\\pi}{6}}{2}$.", answer: false, explanation: "Theo công thức hiệu biến thành tích: $\\cos a - \\cos b = -2 \\sin \\frac{a+b}{2} \\sin \\frac{a-b}{2}$. Công thức đề bài thiếu dấu trừ. Mệnh đề sai." }
+    ]
+  }
+];
+
+/* ===== TRẠNG THÁI ỨNG DỤNG ===== */
+let currentMode = 'mcq';
+
+// MCQ State
+let mcqQuiz = [];
+let mcqCur = 0;
+let mcqAnswered = false;
+let mcqResults = [];
+let mcqCorrect = 0;
+
+// TF State
+let tfQuiz = [];
+let tfCurQuestion = 0;
+let tfCurStatement = 0;
+let tfAnswered = false;
+let tfResults = [];
+let tfCorrectCount = 0;
+
+/* ===== RENDER TRANG MA TRẬN & CHECKLIST ===== */
+(function initMatrixChecklist(){
+  const saved = localStorage.getItem('bakhi_toan11_checklist');
+  if(saved){
+    const arr = JSON.parse(saved);
+    document.querySelectorAll('.chk').forEach((chk, i) => {
+      chk.checked = !!arr[i];
+    });
+  }
+  document.querySelectorAll('.chk').forEach((chk, i) => {
+    chk.addEventListener('change', () => {
+      const state = Array.from(document.querySelectorAll('.chk')).map(c => c.checked);
+      localStorage.setItem('bakhi_toan11_checklist', JSON.stringify(state));
+    });
+  });
+})();
+
+/* ===== KHỞI TẠO DỮ LIỆU CHẾ ĐỘ ===== */
+function cloneMCQ(){
+  return MCQ_BANK.map(x=>({
+    id: x.id, q: x.question, e: x.explanation,
+    o: x.options.map((t,i)=>({t, ok: i===x.answerIndex}))
+  }));
+}
+
+function shuffleArray(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function initMCQ(shuffle){
+  mcqQuiz = cloneMCQ();
+  if (shuffle){
+    shuffleArray(mcqQuiz);
+    mcqQuiz.forEach(x => shuffleArray(x.o));
+  }
+  mcqQuiz.forEach(x => x.a = x.o.findIndex(o => o.ok));
+  mcqCur = 0; mcqAnswered = false; mcqCorrect = 0;
+  mcqResults = new Array(mcqQuiz.length).fill(null);
+}
+
+function initTF(shuffle){
+  tfQuiz = JSON.parse(JSON.stringify(TF_BANK));
+  if (shuffle){
+    shuffleArray(tfQuiz);
+  }
+  tfCurQuestion = 0;
+  tfCurStatement = 0;
+  tfAnswered = false;
+  tfCorrectCount = 0;
+  tfResults = Array.from({length: tfQuiz.length}, () => new Array(4).fill(null));
+}
+
+/* ===== CHUYỂN ĐỔI CHẾ ĐỘ & TRANG ===== */
+function switchMode(mode){
+  currentMode = mode;
+  const isMcq = mode === 'mcq';
+  const isTf = mode === 'tf';
+  
+  const onCls = "bg-brand-600 text-white shadow";
+  const offCls = "text-slate-400 hover:text-white";
+  const base = "px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 ";
+  
+  document.getElementById('subtab-mcq').className = base + (isMcq ? onCls : offCls);
+  document.getElementById('subtab-tf').className = base + (isTf ? onCls : offCls);
+  document.getElementById('subtab-short').className = base + (mode==='short' ? onCls : offCls);
+  document.getElementById('subtab-essay').className = base + (mode==='essay' ? onCls : offCls);
+
+  document.getElementById('result-mcq').classList.add('hidden');
+  document.getElementById('result-tf').classList.add('hidden');
+  document.getElementById('quiz-area').classList.remove('hidden');
+
+  if (isMcq) {
+    if (mcqResults.filter(r=>r).length === mcqQuiz.length && mcqQuiz.length > 0) {
+      showMCQResult();
+    } else {
+      renderMCQ();
+    }
+  } else if (isTf) {
+    const totalDone = tfResults.reduce((acc, qRes) => acc + qRes.filter(r=>r).length, 0);
+    if (totalDone === 8) {
+      showTFResult();
+    } else {
+      renderTF();
+    }
+  } else if (mode === 'short') {
+    renderShortNotice();
+  } else if (mode === 'essay') {
+    renderEssayNotice();
+  }
+}
+
+function resetCurrentMode(){
+  if (currentMode === 'mcq') {
+    initMCQ(false);
+    document.getElementById('result-mcq').classList.add('hidden');
+    document.getElementById('quiz-area').classList.remove('hidden');
+    renderMCQ();
+  } else if (currentMode === 'tf') {
+    initTF(false);
+    document.getElementById('result-tf').classList.add('hidden');
+    document.getElementById('quiz-area').classList.remove('hidden');
+    renderTF();
+  } else {
+    alert("Đã làm mới chế độ.");
+  }
+}
+
+function shuffleCurrentMode(){
+  if (currentMode === 'mcq') {
+    if (mcqResults.some(r=>r) && document.getElementById('result-mcq').classList.contains('hidden')) {
+      if(!confirm('Xáo trộn sẽ reset phần Trắc nghiệm đang làm. Bạn chắc chắn chứ?')) return;
+    }
+    initMCQ(true);
+    document.getElementById('result-mcq').classList.add('hidden');
+    document.getElementById('quiz-area').classList.remove('hidden');
+    renderMCQ();
+  } else if (currentMode === 'tf') {
+    if (tfResults.some(q=>q.some(r=>r)) && document.getElementById('result-tf').classList.contains('hidden')) {
+      if(!confirm('Xáo trộn sẽ reset phần Đúng – Sai. Bạn chắc chắn chứ?')) return;
+    }
+    initTF(true);
+    document.getElementById('result-tf').classList.add('hidden');
+    document.getElementById('quiz-area').classList.remove('hidden');
+    renderTF();
+  } else {
+    alert("Chức năng xáo trộn áp dụng cho Trắc nghiệm và Đúng - Sai.");
+  }
+}
+
+/* ===== RENDER TRẮC NGHIỆM (MCQ) ===== */
+const LET = ['A','B','C','D'];
+
+function renderMCQ(){
+  const x = mcqQuiz[mcqCur];
+  const answeredRes = mcqResults[mcqCur];
+  mcqAnswered = !!answeredRes;
+
+  const opts = x.o.map((o,i)=>{
+    let extraCls = "border-slate-800 bg-slate-900/60";
+    let iconHtml = "";
+    if (mcqAnswered) {
+      if (i === x.a) {
+        extraCls = "border-emerald-500 bg-emerald-950/40";
+        iconHtml = '<i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>';
+      } else if (i === answeredRes.pick) {
+        extraCls = "border-rose-500 bg-rose-950/40";
+        iconHtml = '<i class="fa-solid fa-circle-xmark text-rose-400 text-lg"></i>';
+      } else {
+        extraCls += " opacity-60";
+      }
+    }
+    return `<button class="opt w-full text-left flex items-start gap-3 p-3.5 rounded-xl border ${extraCls}" data-i="${i}" ${mcqAnswered?'disabled':''} onclick="pickMCQ(${i})">
+      <span class="shrink-0 w-8 h-8 rounded-lg bg-slate-950 border border-slate-700 flex items-center justify-center text-sm font-bold">${LET[i]}</span>
+      <span class="pt-1 text-sm sm:text-base">${o.t}</span>
+      <span class="ml-auto pt-1.5">${iconHtml}</span>
+    </button>`;
+  }).join('');
+
+  let explainHtml = "";
+  if (mcqAnswered) {
+    const ok = answeredRes.ok;
+    explainHtml = `<div class="fade-in p-4 rounded-xl border ${ok?"bg-emerald-950/40 border-emerald-700/50":"bg-rose-950/40 border-rose-700/50"}">
+      <p class="font-bold ${ok?'text-emerald-400':'text-rose-400'} mb-1">${ok?'<i class="fa-solid fa-check mr-1"></i>Chính xác!':'<i class="fa-solid fa-xmark mr-1"></i>Chưa đúng — đáp án đúng là '+LET[x.a]+'.'}</p>
+      <p class="text-sm text-slate-200 leading-relaxed"><b class="text-brand-300">Giải thích:</b> ${x.e}</p>
+    </div>`;
+  }
+
+  document.getElementById('quiz-area').innerHTML = `
+    <div class="fade-in space-y-4">
+      <div class="flex flex-wrap gap-1.5">${mcqQuiz.map((_,i)=>dotMCQ(i)).join('')}</div>
+      <div class="bg-slate-900/90 p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-xl space-y-5">
+        <div class="flex items-center justify-between text-xs">
+          <span class="px-2.5 py-1 rounded-md bg-brand-950 text-brand-300 border border-brand-700/50 font-semibold">Câu Trắc Nghiệm ${mcqCur+1} / ${mcqQuiz.length}</span>
+          <span class="text-slate-400">Phần 1. Trắc nghiệm nhiều lựa chọn</span>
+        </div>
+        <div class="text-base sm:text-lg font-semibold text-white leading-relaxed whitespace-pre-line">${x.q}</div>
+        <div class="space-y-2.5">${opts}</div>
+        <div id="explain" class="${mcqAnswered?'':'hidden'}">${explainHtml}</div>
+      </div>
+      <div class="flex justify-end">
+        <button id="btn-next" onclick="nextMCQ()" ${!mcqAnswered?'disabled':''} class="px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-semibold transition shadow-md disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
+          <span>${mcqCur===mcqQuiz.length-1?'Xem kết quả':'Câu tiếp theo'}</span><i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>`;
+  updateHeaderMCQ();
+  renderMathSafely(document.getElementById('quiz-area'));
+}
+
+function dotMCQ(i){
+  const r = mcqResults[i];
+  let cls = "bg-slate-900 text-slate-400 border-slate-800";
+  if (r) cls = r.ok ? "bg-emerald-600/30 text-emerald-300 border-emerald-500/50" : "bg-rose-600/30 text-rose-300 border-rose-500/50";
+  if (i===mcqCur) cls += " ring-2 ring-brand-500";
+  return `<span class="w-7 h-7 rounded-md border text-xs font-semibold flex items-center justify-center ${cls}">${i+1}</span>`;
+}
+
+function pickMCQ(i){
+  if (mcqAnswered) return;
+  mcqAnswered = true;
+  const x = mcqQuiz[mcqCur], ok = (i === x.a);
+  mcqResults[mcqCur] = {pick: i, ok};
+  if (ok) mcqCorrect++;
+  renderMCQ();
+}
+
+function nextMCQ(){
+  if (!mcqAnswered) return;
+  if (mcqCur < mcqQuiz.length-1){
+    mcqCur++;
+    renderMCQ();
+    window.scrollTo({top:0,behavior:'smooth'});
+  } else {
+    showMCQResult();
+  }
+}
+
+function updateHeaderMCQ(){
+  const done = mcqResults.filter(r=>r).length;
+  document.getElementById('progress-text').textContent = `Trắc nghiệm: Đã làm ${done}/${mcqQuiz.length} câu`;
+  document.getElementById('score-text').textContent = `Đúng: ${mcqCorrect}`;
+  document.getElementById('progress-bar').style.width = (done/mcqQuiz.length*100)+'%';
+}
+
+function showMCQResult(){
+  document.getElementById('quiz-area').classList.add('hidden');
+  const R = document.getElementById('result-mcq'); R.classList.remove('hidden');
+  const n = mcqQuiz.length, wrong = n - mcqCorrect, pct = Math.round(mcqCorrect/n*100);
+  document.getElementById('res-mcq-correct').textContent = `${mcqCorrect} / ${n}`;
+  document.getElementById('res-mcq-wrong').textContent = wrong;
+  document.getElementById('res-mcq-pct').textContent = pct+'%';
+  document.getElementById('res-mcq-score').textContent = (mcqCorrect/n*3).toFixed(2).replace('.',',') + ' đ';
+  document.getElementById('res-mcq-msg').textContent = pct>=80 ? 'Xuất sắc! Bạn nắm rất chắc kiến thức trắc nghiệm Toán 11.' : pct>=50 ? 'Khá tốt! Hãy ôn lại các câu sai để đạt điểm tối đa.' : 'Cần ôn tập thêm lý thuyết và công thức cơ bản.';
+
+  const wl = mcqQuiz.map((x,i)=>({x,i,r:mcqResults[i]})).filter(o=>o.r && !o.r.ok);
+  document.getElementById('res-mcq-wrong-wrap').classList.toggle('hidden', wl.length===0);
+  document.getElementById('res-mcq-wrong-list').innerHTML = wl.map(o=>`
+    <details class="bg-slate-950/60 border border-slate-800 rounded-xl">
+      <summary class="cursor-pointer p-3 text-sm text-slate-200"><b class="text-rose-400">Câu ${o.i+1}.</b> ${o.x.q.substring(0,60)}...</summary>
+      <div class="px-3 pb-3 text-sm space-y-1 border-t border-slate-800 pt-2">
+        <p class="text-rose-300">Lựa chọn của bạn: ${LET[o.r.pick]}. ${o.x.o[o.r.pick].t}</p>
+        <p class="text-emerald-300">Đáp án đúng: ${LET[o.x.a]}. ${o.x.o[o.x.a].t}</p>
+        <p class="text-slate-300"><b class="text-brand-300">Giải thích:</b> ${o.x.e}</p>
+      </div></details>`).join('');
+
+  document.getElementById('progress-text').textContent = `Hoàn thành Trắc nghiệm ${n}/${n} câu`;
+  document.getElementById('progress-bar').style.width = '100%';
+  window.scrollTo({top:0,behavior:'smooth'});
+  renderMathSafely(R);
+}
+
+/* ===== RENDER ĐÚNG - SAI (TF) ===== */
+function renderTF(){
+  const qObj = tfQuiz[tfCurQuestion];
+  const stmtObj = qObj.statements[tfCurStatement];
+  const curRes = tfResults[tfCurQuestion][tfCurStatement];
+  tfAnswered = !!curRes;
+
+  let feedbackHtml = "";
+  if (tfAnswered) {
+    const ok = curRes.ok;
+    const ansText = stmtObj.answer ? "ĐÚNG" : "SAI";
+    feedbackHtml = `<div class="fade-in p-4 rounded-xl border ${ok?"bg-emerald-950/40 border-emerald-700/50":"bg-rose-950/40 border-rose-700/50"} space-y-1">
+      <p class="font-bold ${ok?'text-emerald-400':'text-rose-400'} flex items-center gap-2">
+        ${ok?'<i class="fa-solid fa-circle-check text-lg"></i> Chính xác!':'<i class="fa-solid fa-circle-xmark text-lg"></i> Chưa đúng — Đáp án chuẩn là: '+ansText}
+      </p>
+      <p class="text-sm text-slate-200 leading-relaxed pt-1"><b class="text-brand-300">Giải thích:</b> ${stmtObj.explanation}</p>
+    </div>`;
+  }
+
+  let nextBtnText = `Ý tiếp theo (${tfCurStatement < 3 ? qObj.statements[tfCurStatement+1].label : 'câu tiếp'})`;
+  if (tfCurStatement === 3) {
+    if (tfCurQuestion === tfQuiz.length - 1) nextBtnText = "Xem kết quả Đúng – Sai";
+    else nextBtnText = "Câu Đúng – Sai tiếp theo";
+  }
+
+  const doneStmtsInQ = tfResults[tfCurQuestion].filter(r=>r);
+  const correctStmtsInQ = doneStmtsInQ.filter(r=>r.ok).length;
+  let qSummaryHtml = "";
+  if (doneStmtsInQ.length === 4) {
+    qSummaryHtml = `<div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-700/40 text-center text-xs font-semibold text-indigo-300">
+      <i class="fa-solid fa-square-check mr-1.5"></i>Hoàn thành câu này: ${correctStmtsInQ}/4 ý đúng
+    </div>`;
+  }
+
+  document.getElementById('quiz-area').innerHTML = `
+    <div class="fade-in space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-3 rounded-xl border border-slate-800 text-xs">
+        <div class="flex gap-1.5">${tfQuiz.map((_, i) => dotTFQuestion(i)).join('')}</div>
+        <span class="text-slate-300 font-semibold">Câu Đúng – Sai ${tfCurQuestion+1} / ${tfQuiz.length}</span>
+      </div>
+
+      <div class="bg-slate-900/90 p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+        <div class="space-y-2 border-b border-slate-800 pb-4">
+          <div class="flex items-center justify-between text-xs">
+            <span class="px-2.5 py-1 rounded-md bg-indigo-950 text-indigo-300 border border-indigo-700/50 font-semibold">Dữ kiện câu ${tfCurQuestion+1}</span>
+            <span class="text-slate-400">Phần 2. Trắc nghiệm Đúng - Sai</span>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-sm leading-relaxed text-slate-200 font-sans">
+            <p>${qObj.passage}</p>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wide text-brand-400 bg-brand-950 px-2.5 py-1 rounded border border-brand-700/50">Mệnh đề ${stmtObj.label} (${tfCurStatement+1}/4 ý)</span>
+            <div class="flex gap-1">${qObj.statements.map((s, idx) => dotTFStatement(idx)).join('')}</div>
+          </div>
+          <p class="text-base font-semibold text-white leading-relaxed p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-brand-400 font-bold mr-1.5">${stmtObj.label})</span>${stmtObj.text}
+          </p>
+
+          <div class="grid grid-cols-2 gap-4 pt-1">
+            <button onclick="pickTF(true)" ${tfAnswered?'disabled':''} class="py-3 px-4 rounded-xl font-bold border transition flex items-center justify-center gap-2 ${tfAnswered ? (stmtObj.answer === true ? 'bg-emerald-600 border-emerald-400 text-white' : (curRes && curRes.pick===true ? 'bg-rose-600 border-rose-400 text-white opacity-60' : 'bg-slate-900 border-slate-800 opacity-40')) : 'bg-slate-900 hover:bg-emerald-600/20 border-slate-800 hover:border-emerald-500 text-emerald-400'}">
+              <i class="fa-solid fa-circle-check"></i><span>ĐÚNG</span>
+            </button>
+            <button onclick="pickTF(false)" ${tfAnswered?'disabled':''} class="py-3 px-4 rounded-xl font-bold border transition flex items-center justify-center gap-2 ${tfAnswered ? (stmtObj.answer === false ? 'bg-emerald-600 border-emerald-400 text-white' : (curRes && curRes.pick===false ? 'bg-rose-600 border-rose-400 text-white opacity-60' : 'bg-slate-900 border-slate-800 opacity-40')) : 'bg-slate-900 hover:bg-rose-600/20 border-slate-800 hover:border-rose-500 text-rose-400'}">
+              <i class="fa-solid fa-circle-xmark"></i><span>SAI</span>
+            </button>
+          </div>
+        </div>
+
+        ${feedbackHtml}
+        ${qSummaryHtml}
+      </div>
+
+      <div class="flex justify-between items-center">
+        <button onclick="prevTF()" ${tfCurQuestion===0 && tfCurStatement===0?'disabled':''} class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold border border-slate-800 transition disabled:opacity-30">
+          <i class="fa-solid fa-arrow-left mr-1"></i>Ý trước
+        </button>
+        <button id="btn-next-tf" onclick="nextTF()" ${!tfAnswered?'disabled':''} class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition shadow-md disabled:opacity-40 flex items-center gap-2">
+          <span>${nextBtnText}</span><i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>`;
+  updateHeaderTF();
+  renderMathSafely(document.getElementById('quiz-area'));
+}
+
+function dotTFQuestion(i){
+  const resList = tfResults[i];
+  const doneCount = resList.filter(r=>r).length;
+  let cls = "bg-slate-900 text-slate-400 border-slate-800";
+  if (doneCount === 4) {
+    const allOk = resList.every(r=>r.ok);
+    cls = allOk ? "bg-emerald-600/30 text-emerald-300 border-emerald-500/50" : "bg-amber-600/30 text-amber-300 border-amber-500/50";
+  } else if (doneCount > 0) {
+    cls = "bg-indigo-950 text-indigo-300 border-indigo-700/50";
+  }
+  if (i === tfCurQuestion) cls += " ring-2 ring-indigo-500";
+  return `<span onclick="jumpTFQuestion(${i})" class="w-7 h-7 rounded-md border text-xs font-semibold flex items-center justify-center cursor-pointer ${cls}">${i+1}</span>`;
+}
+
+function dotTFStatement(idx){
+  const r = tfResults[tfCurQuestion][idx];
+  let cls = "bg-slate-900 text-slate-400 border-slate-800";
+  if (r) cls = r.ok ? "bg-emerald-600/30 text-emerald-300 border-emerald-500/50" : "bg-rose-600/30 text-rose-300 border-rose-500/50";
+  if (idx === tfCurStatement) cls += " ring-2 ring-brand-500";
+  const labels = ['a','b','c','d'];
+  return `<span class="w-6 h-6 rounded border text-xs font-bold flex items-center justify-center ${cls}">${labels[idx]}</span>`;
+}
+
+function pickTF(val){
+  if (tfAnswered) return;
+  tfAnswered = true;
+  const stmtObj = tfQuiz[tfCurQuestion].statements[tfCurStatement];
+  const ok = (val === stmtObj.answer);
+  tfResults[tfCurQuestion][tfCurStatement] = {pick: val, ok};
+  if (ok) tfCorrectCount++;
+  renderTF();
+}
+
+function nextTF(){
+  if (!tfAnswered) return;
+  if (tfCurStatement < 3) {
+    tfCurStatement++;
+    renderTF();
+  } else if (tfCurQuestion < tfQuiz.length - 1) {
+    tfCurQuestion++;
+    tfCurStatement = 0;
+    renderTF();
+    window.scrollTo({top:0,behavior:'smooth'});
+  } else {
+    showTFResult();
+  }
+}
+
+function prevTF(){
+  if (tfCurStatement > 0) {
+    tfCurStatement--;
+    renderTF();
+  } else if (tfCurQuestion > 0) {
+    tfCurQuestion--;
+    tfCurStatement = 3;
+    renderTF();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+
+function jumpTFQuestion(qIdx){
+  tfCurQuestion = qIdx;
+  tfCurStatement = 0;
+  renderTF();
+}
+
+function updateHeaderTF(){
+  const totalDone = tfResults.reduce((acc, qRes) => acc + qRes.filter(r=>r).length, 0);
+  document.getElementById('progress-text').textContent = `Đúng – Sai: Đã làm ${totalDone}/8 ý (${tfCurQuestion+1}/2 câu)`;
+  document.getElementById('score-text').textContent = `Ý đúng: ${tfCorrectCount}`;
+  document.getElementById('progress-bar').style.width = (totalDone/8*100)+'%';
+}
+
+function showTFResult(){
+  document.getElementById('quiz-area').classList.add('hidden');
+  const R = document.getElementById('result-tf'); R.classList.remove('hidden');
+  const totalStmts = 8;
+  const wrong = totalStmts - tfCorrectCount;
+  const pct = Math.round(tfCorrectCount / totalStmts * 100);
+  const score10 = (tfCorrectCount / totalStmts * 4).toFixed(2).replace('.',',') + ' đ';
+
+  document.getElementById('res-tf-correct').textContent = `${tfCorrectCount} / ${totalStmts}`;
+  document.getElementById('res-tf-wrong').textContent = wrong;
+  document.getElementById('res-tf-pct').textContent = pct+'%';
+  document.getElementById('res-tf-score').textContent = score10;
+  document.getElementById('res-tf-msg').textContent = pct>=80 ? 'Xuất sắc! Bạn phân tích mệnh đề Đúng/Sai rất chuẩn xác.' : 'Khá tốt! Hãy rà soát lại các ý làm sai.';
+
+  let wrongList = [];
+  tfQuiz.forEach((qObj, qIdx) => {
+    qObj.statements.forEach((sObj, sIdx) => {
+      const r = tfResults[qIdx][sIdx];
+      if (r && !r.ok) {
+        wrongList.push({ qObj, qIdx, sObj, sIdx, r });
+      }
+    });
+  });
+
+  document.getElementById('res-tf-wrong-wrap').classList.toggle('hidden', wrongList.length===0);
+  document.getElementById('res-tf-wrong-list').innerHTML = wrongList.map(item => `
+    <details class="bg-slate-950/60 border border-slate-800 rounded-xl">
+      <summary class="cursor-pointer p-3 text-sm text-slate-200">
+        <b class="text-rose-400">Câu ${item.qIdx+1} – Ý ${item.sObj.label})</b> ${item.sObj.text}
+      </summary>
+      <div class="px-3 pb-3 text-sm space-y-2 border-t border-slate-800 pt-2">
+        <p class="text-rose-300">Lựa chọn của bạn: <b>${item.r.pick?'ĐÚNG':'SAI'}</b></p>
+        <p class="text-emerald-300">Đáp án chuẩn: <b>${item.sObj.answer?'ĐÚNG':'SAI'}</b></p>
+        <p class="text-slate-300"><b class="text-brand-300">Giải thích:</b> ${item.sObj.explanation}</p>
+      </div></details>`).join('');
+
+  document.getElementById('progress-text').textContent = `Hoàn thành Đúng – Sai 8/8 ý`;
+  document.getElementById('progress-bar').style.width = '100%';
+  window.scrollTo({top:0,behavior:'smooth'});
+  renderMathSafely(R);
+}
+
+/* ===== PHẦN 3 & 4 (TRẢ LỜI NGẮN & TỰ LUẬN) ===== */
+function renderShortNotice(){
+  document.getElementById('quiz-area').innerHTML = `
+    <div class="bg-slate-900/90 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 fade-in">
+      <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-pen text-brand-400"></i>Phần 3. Trả lời ngắn (4 câu)</h3>
+      <p class="text-sm text-slate-300 leading-relaxed">Phần này gồm 4 câu hỏi tự luận ngắn yêu cầu điền kết quả tính toán thực tế (bài toán tài chính, dãy số, hình học lượng giác, v.v.).</p>
+      <div class="space-y-3 pt-2">
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+          <b>Câu 1:</b> Bài toán tài chính gửi ngân hàng định kì và lãi kép tăng giá nhà sau 5 năm. <br><i>Đáp án tham khảo:</i> ~ 4,12 triệu đồng.
+        </div>
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+          <b>Câu 2:</b> Cho $u_n = \\frac{an-7}{2n+8}$. Xác định $a$ để $u_{12} = \\frac{49}{8}$. <br><i>Giải:</i> $u_{12} = \\frac{12a-7}{32} = \\frac{49}{8} \\implies 12a-7 = 196 \\implies a = 16,92$ (hoặc $\\frac{203}{12}$).
+        </div>
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+          <b>Câu 3:</b> Bánh xe đạp đường kính 50cm, vận tốc 12 km/h, trong 21 giây quay được bao nhiêu vòng? <br><i>Giải:</i> Quãng đường $S = 70$m, chu vi $C = 0,5\\pi$m $\\implies N \\approx 45$ vòng.
+        </div>
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+          <b>Câu 4:</b> Cho $\\sin \\alpha = \\frac{3}{4}$ ($0 < \\alpha < \\frac{\\pi}{2}$). Tính biểu thức $\\sin(\\alpha + \\frac{\\pi}{4})$.
+        </div>
+      </div>
+    </div>`;
+  renderMathSafely(document.getElementById('quiz-area'));
+}
+
+function renderEssayNotice(){
+  document.getElementById('quiz-area').innerHTML = `
+    <div class="bg-slate-900/90 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 fade-in">
+      <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-book-open text-brand-400"></i>Phần 4. Tự luận (3 bài)</h3>
+      <p class="text-sm text-slate-300">Hệ thống các bài tập tự luận trọng tâm bám sát đề kiểm tra giữa kì I môn Toán 11:</p>
+      <div class="space-y-4 pt-2">
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+          <b class="text-brand-400">Bài 1 (1,0 điểm):</b> Giải phương trình lượng giác: $\\sin\\left(x + \\frac{2\\pi}{5}\\right) - \\cos 2x = 0$.
+          <div class="text-xs text-slate-400 pt-1"><i>Hướng dẫn:</i> Đưa về dạng $\\sin\\left(x + \\frac{2\\pi}{5}\\right) = \\sin\\left(\\frac{\\pi}{2} - 2x\\right)$ để giải các họ nghiệm.</div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+          <b class="text-brand-400">Bài 2 (1,5 điểm):</b> 
+          <p>a) Cho cấp số cộng $(u_n)$ thỏa $\\begin{cases} u_1 + u_4 = 8 \\\\ u_3 - u_2 = 2 \\end{cases}$. Tính tổng 50 số hạng đầu $S_{50}$.</p>
+          <p class="pt-1">b) Bài toán thực tế chạy bộ rèn luyện sức khỏe (Cấp số cộng với $u_1 = 900$, $d = 300$).</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+          <b class="text-brand-400">Bài 3 (0,5 điểm):</b> Cho mẫu số liệu ghép nhóm về chiều cao học sinh nữ khối 11. Yêu cầu tính chiều cao trung bình và xác định nhóm tần số lớn nhất.
+        </div>
+      </div>
+    </div>`;
+  renderMathSafely(document.getElementById('quiz-area'));
+}
+
+/* ===== CHUYỂN TRANG GỐC ===== */
+function switchPage(p){
+  const m = p==='matrix';
+  document.getElementById('page-matrix').classList.toggle('hidden', !m);
+  document.getElementById('page-practice').classList.toggle('hidden', m);
+  document.getElementById('header-progress').classList.toggle('hidden', m);
+  
+  const on = "bg-brand-600 text-white shadow", off = "text-slate-400 hover:text-white";
+  const base = "flex-1 md:flex-initial px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 ";
+  document.getElementById('tab-matrix').className = base + (m?on:off);
+  document.getElementById('tab-practice').className = base + (m?off:on);
+  
+  if (!m) {
+    switchMode(currentMode);
+  }
+  window.scrollTo({top:0});
+}
+
+/* ===== PHÍM TẮT ===== */
+document.addEventListener('keydown', e=>{
+  if (document.getElementById('page-practice').classList.contains('hidden')) return;
+  if (document.getElementById('quiz-area').classList.contains('hidden')) return;
+  
+  if (currentMode === 'mcq') {
+    const k = e.key.toUpperCase();
+    if (['A','B','C','D'].includes(k)) pickMCQ(LET.indexOf(k));
+    else if (e.key==='Enter' || e.key==='ArrowRight') nextMCQ();
+  } else if (currentMode === 'tf') {
+    if (e.key==='Enter' || e.key==='ArrowRight') nextTF();
+  }
+});
+
+/* ===== KHỞI TẠO ỨNG DỤNG ===== */
+initMCQ(false);
+initTF(false);
+switchPage('matrix');
+</script>
+</body>
+</html>
