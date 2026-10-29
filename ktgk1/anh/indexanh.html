@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ma trận GKI – Tiếng Anh 11 | BAKHI</title>
+<style>
+:root{--bg:#f5f7fb;--c:#fff;--t:#1b2433;--m:#5b6678;--p:#2563eb;--b:#dbe2ee}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1520;--c:#18202e;--t:#e8edf6;--m:#9aa7bd;--p:#6b9bff;--b:#2a3649}}
+:root[data-theme=dark]{--bg:#0f1520;--c:#18202e;--t:#e8edf6;--m:#9aa7bd;--p:#6b9bff;--b:#2a3649}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:16px/1.6 system-ui,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--c);border-bottom:1px solid var(--b);display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 16px}
+header b{font-size:18px;color:var(--p)}header span{color:var(--m);margin-right:auto}
+.btn,header a{border:1px solid var(--b);background:var(--c);color:var(--t);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:14px;cursor:pointer}
+.btn:hover,header a:hover,header a.on{background:var(--p);color:#fff;border-color:var(--p)}.btn:focus-visible,a:focus-visible{outline:3px solid var(--p)}
+main{max-width:1000px;margin:auto;padding:16px}.card{background:var(--c);border:1px solid var(--b);border-radius:12px;padding:16px;margin:14px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.k{text-align:center}.k b{display:block;font-size:26px;color:var(--p)}
+.sc{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}th,td{border:1px solid var(--b);padding:6px 8px;text-align:center}td:nth-child(-n+3),th:nth-child(-n+3){text-align:left}th{background:var(--bg)}
+.bar{height:22px;border-radius:6px;background:var(--p);color:#fff;font-size:13px;padding:0 8px;margin:6px 0;line-height:22px;transition:width .6s}
+details{border-top:1px solid var(--b);padding:8px 0}summary{cursor:pointer;font-weight:600}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<header><b>BAKHI</b><span>Tiếng Anh 11</span>
+<a href="/bakhi/">Quay lại BAKHI</a><a href="/bakhi/">Trang chủ</a><a class="on" href="index.html">Ma trận</a><a href="anh11.html">Luyện tập</a>
+<button class="btn" id="th">Sáng/Tối</button></header>
+<main>
+<h1>Ma trận &amp; đặc tả giữa học kì I – Tiếng Anh 11 Global Success</h1>
+<p>Năm học 2026–2027 · Sở GD&amp;ĐT TP Đà Nẵng – THPT Huỳnh Ngọc Huệ</p>
+<div class="card grid">
+<div class="k"><b>60'</b>Thời gian</div><div class="k"><b>10</b>Tổng điểm</div><div class="k"><b>40</b>Tổng số câu</div>
+<div class="k"><b>80% / 20%</b>Trắc nghiệm / Tự luận</div></div>
+<div class="card"><h2>Tỉ trọng bốn nhóm kĩ năng</h2>
+<div class="bar" style="width:25%">Listening 25%</div><div class="bar" style="width:25%">Language 25%</div><div class="bar" style="width:25%">Reading 25%</div><div class="bar" style="width:25%">Writing 25%</div></div>
+<div class="card"><h2>Ma trận chi tiết</h2><p>K = Knowledge (Nhận biết) · U = Understanding (Thông hiểu) · A = Application (Vận dụng). Số câu theo đúng bảng ma trận gốc.</p>
+<div class="sc"><table id="mt"><thead><tr><th>Kĩ năng</th><th>Phần</th><th>Nội dung kiểm tra</th><th>K</th><th>U</th><th>A</th><th>Tổng</th><th>Tỉ lệ</th></tr></thead><tbody></tbody></table></div>
+<p><small>(*) Writing 3: một bài luận khoảng 100–120 từ, chiếm 10% (ma trận ghi “X”, không quy ra số câu). Writing 2 là câu tự luận. Dòng tổng trong tài liệu gốc: K 14 · U 14 · A 12 = 40 câu; trắc nghiệm 80%, tự luận 20%; điểm K 3,5 · U 3,5 · A 3,0.</small></p></div>
+<div class="card"><h2>Kiến thức cần ôn theo nhóm</h2><div id="ex"></div></div>
+<p><a class="btn" href="anh11.html">Bắt đầu luyện tập</a> <button class="btn" onclick="document.getElementById('mt').scrollIntoView({behavior:'smooth'})">Xem toàn bộ ma trận</button></p>
+</main>
+<script>
+const CONFIG={homeUrl:"/bakhi/",practiceUrl:"anh11.html"};
+const matrixData=[
+["Listening","Listening 1","Multiple Choice – chủ đề Unit 1–2",3,1,1,"12,5%"],
+["","Listening 2","True or False – chủ đề Unit 1–2",2,2,1,"12,5%"],
+["Language","Language 1","Pronunciation – trọng âm từ 2 âm tiết / 3 âm tiết",1,1,0,"5%"],
+["","Language 2","Vocabulary & Grammar (Unit 1–3)",4,2,0,"15%"],
+["","Language 3","Synonym & Antonym",0,1,1,"5%"],
+["Reading","Reading 1","Cloze text",2,2,1,"12,5%"],
+["","Reading 2","Reading comprehension (ý chính, chi tiết, đại từ, từ vựng, T/F/NM)",1,2,2,"12,5%"],
+["Writing","Writing 1","Ordering – sắp xếp hội thoại",1,1,0,"5%"],
+["","Writing 2","Sentence transformation (tự luận)","–","2*","2*","10%"],
+["","Writing 3","Essay 100–120 từ (*)","–","–","X","10%"]];
+document.querySelector("#mt tbody").innerHTML=matrixData.map((r,i)=>{const s=[3,4,5].reduce((a,j)=>a+(parseInt(r[j])||0),0);return "<tr>"+r.slice(0,6).map(c=>"<td>"+c+"</td>").join("")+"<td>"+(i==9?"1 bài":s)+"</td><td>"+r[6]+"</td></tr>"}).join("");
+const info=[["Listening","Nghe hiểu thông tin, xác định chi tiết, hiểu hội thoại về Unit 1–2 (sức khoẻ, thế hệ/gia đình). Dạng: Multiple Choice, True/False."],
+["Language","Trọng âm từ 2–3 âm tiết; nghĩa của từ; từ loại; Simple Past; modal verbs; linking verbs + adj; collocations; đồng/trái nghĩa; liên từ."],
+["Reading","Cloze: từ loại, đại từ quan hệ, nghĩa của từ, giới từ. Đọc hiểu: ý chính, chi tiết, tham chiếu đại từ, từ vựng, True/False/Not Mentioned, hướng dẫn/chỉ dẫn."],
+["Writing","Sắp xếp hội thoại; viết lại câu (modal verbs, Past Simple → Present Perfect, đưa ra lời đề nghị); luận nêu ý kiến đồng ý/không đồng ý (Unit 2)."]];
+document.getElementById("ex").innerHTML=info.map(x=>`<details><summary>${x[0]}</summary><p>${x[1]}</p></details>`).join("");
+const R=document.documentElement,t=localStorage.getItem("b11theme");if(t)R.dataset.theme=t;
+document.getElementById("th").onclick=()=>{const d=R.dataset.theme=="dark"||(!R.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches)?"light":"dark";R.dataset.theme=d;localStorage.setItem("b11theme",d)};
+</script></body></html>
