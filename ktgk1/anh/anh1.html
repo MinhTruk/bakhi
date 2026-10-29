@@ -33,7 +33,7 @@ input[type=text],textarea{width:100%;font:inherit;padding:8px;border:1px solid v
 <button class="btn pr" id="vb">Dịch từ vựng</button>
 <div class="modal" id="md"><div class="mb" id="mbx"></div></div>
 <script>
-const CONFIG={homeUrl:"/bakhi/",subjectIndexUrl:"index.html",
+const CONFIG={homeUrl:"/bakhi/",subjectIndexUrl:"indexanh.html",
  listening:{listening1:{audioUrl:"https://github.com/MinhTruk/bakhi/raw/refs/heads/main/images/anh/full%20p1.mp3",maxPlays:2},listening2:{audioUrl:"https://github.com/MinhTruk/bakhi/raw/refs/heads/main/images/anh/full%20p2.mp3",maxPlays:2}}};
 const LS="b11_v1";
 let S=JSON.parse(localStorage.getItem(LS)||"null")||{ans:{},txt:{},chk:{},ex:{},vm:{},ord:{},tab:"Listening",ls:{listening1:{p:0,ip:0},listening2:{p:0,ip:0}},vmode:"core"};
@@ -157,6 +157,184 @@ const essay={prompt:"Some people say that teenagers should follow their parents'
 // vocab: [en, ipa, từ loại, nghĩa, cụm đi kèm, nơi xuất hiện, core]
 const vocabularyData=[
 ["benefit from","","v","hưởng lợi từ","benefit from sth","Reading – Cloze 9",1],["infectious disease","","n","bệnh truyền nhiễm","infectious diseases","Reading – Cloze 10",1],["in season","","phr","đúng mùa, đang vào mùa","fruit in season","Reading – Cloze 11",1],["look forward to","","phr v","mong chờ","look forward to + V-ing","Reading – Cloze 13",1],["equivalent","","adj/n","tương đương","the equivalent of","Reading 2 – Text 1",1],["manageable","","adj","có thể xoay xở/kiểm soát","","Reading 2 – Text 1",1],["marital breakdown","","n","đổ vỡ hôn nhân","","Reading 2 – Text 1",1],["non-custodial parent","","n","cha/mẹ không nuôi con","","Reading 2 – Text 1",1],["life expectancy","","n","tuổi thọ","","Language 17; Reading",1],["generation gap","","n","khoảng cách thế hệ","bridge the generation gap","Language 12",1],["come into conflict","","phr","xung đột, bất đồng","come into conflict over","Language 12",1],["follow in one's footsteps","","phr","nối nghiệp/theo bước ai","","Language 12, 26",1],["puberty","","n","tuổi dậy thì","","Reading – Text 2",1],["readjustment","","n","sự điều chỉnh lại","","Reading – Text 2",1],["willing","","adj","sẵn lòng","be present and willing","Reading – Text 2",1],["ingredient","","n","thành phần (thực phẩm)","list of ingredients","Language 10, 24",1],["traffic congestion","","n","tắc nghẽn giao thông","","Language 8",1],["traffic jam","","n","kẹt xe","heavy traffic jams","Language 27",1],["a range of","","phr","nhiều loại","a range of + N số nhiều","Language 9",1],["sustainable","","adj","bền vững","","Language 25",1],["adapt to","","v","thích nghi với","","Language 20",1],["keep fit","","phr","giữ dáng, khoẻ mạnh","work out at the gym","Language 11",1],["social norm","","n","chuẩn mực xã hội","follow social norms","Language 18",1],["nutrient","","n","chất dinh dưỡng","","Listening 1",1],["concentrate","","v","tập trung","","Listening 1",1],["housing problem","","n","vấn đề nhà ở","","Language 21",1],
+["balanced diet","","n","chế độ ăn cân bằng","a balanced and healthy diet","Reading – Cloze; Listening 1",1],
+["daily routine","","n","thói quen/sinh hoạt hằng ngày","change daily routines","Listening 1",1],
+["eating habits","","n","thói quen ăn uống","","Listening 1",1],
+["sugary","","adj","nhiều đường","sugary drinks/desserts","Listening 1",1],
+["consumption","","n","sự tiêu thụ","reduce consumption of","Listening 1",1],
+["fibre","","n","chất xơ","","Listening 1",1],
+["muscle strength","","n","sức mạnh cơ bắp","","Listening 1",1],
+["overall health","","n","sức khoẻ tổng thể","improve overall health","Listening 1",1],
+["skin care product","","n","sản phẩm chăm sóc da","","Listening 1",1],
+["complain about","","phr v","phàn nàn về","","Listening 2; Reading – Text 2",1],
+["appearance","","n","ngoại hình, vẻ bề ngoài","","Listening 2",1],
+["eyesight","","n","thị lực","","Listening 2",1],
+["limit screen time","","phr","hạn chế thời gian dùng màn hình","","Listening 2; Writing 2",1],
+["gender role","","n","vai trò giới","","Listening 2",1],
+["nuclear family","","n","gia đình hạt nhân (cha mẹ và con)","","Listening 2",1],
+["extended family","","n","gia đình nhiều thế hệ","","Unit 2",1],
+["minor things","","n","những chuyện nhỏ nhặt","argue about minor things","Listening 2",1],
+["respect the elderly","","phr","tôn trọng người lớn tuổi","","Language 16; Listening 2",1],
+["housework","","n","việc nhà","share housework","Reading 2 – Text 1",1],
+["childcare","","n","việc chăm sóc con","share childcare equally","Reading 2 – Text 1",1],
+["hands-on","","adj","trực tiếp tham gia, tích cực","hands-on fathers","Reading 2 – Text 1",1],
+["nurturing","","n","sự nuôi dưỡng","","Reading 2 – Text 1",1],
+["expressive","","adj","giàu cảm xúc, biểu đạt tốt","","Reading 2 – Text 1",1],
+["impoverished","","adj","nghèo khó","","Reading 2 – Text 1",1],
+["incapacitated","","adj","mất khả năng lao động","incapacitated by illness","Reading 2 – Text 1",1],
+["unpaid care","","n","sự chăm sóc không lương","","Reading 2 – Text 1",1],
+["remarkable grace","","phr","sự cao thượng, đáng khen","","Reading 2 – Text 1",1],
+["minimize conflict","","phr","giảm thiểu xung đột","","Reading 2 – Text 1",1],
+["family bonds","","n","sự gắn kết gia đình","maintain family bonds","Reading 2 – Text 1",1],
+["stay in touch","","phr","giữ liên lạc","stay in touch with sb","Reading 2 – Text 1",1],
+["stepfamily","","n","gia đình có cha/mẹ kế","","Reading 2 – Text 1",1],
+["family dynamic","","n","mối quan hệ/động lực trong gia đình","","Reading 2 – Text 2",1],
+["mixed emotions","","n","cảm xúc lẫn lộn","","Reading 2 – Text 2",1],
+["identity","","n","bản sắc, cá tính riêng","develop their own identity","Reading 2 – Text 2",1],
+["take on responsibilities","","phr","đảm nhận trách nhiệm","","Reading 2 – Text 2",1],
+["flexibility","","n","sự linh hoạt","","Reading 2 – Text 2",1],
+["distraction","","n","sự xao nhãng","overcome distractions","Reading 2 – Text 2",1],
+["quality time","","n","thời gian chất lượng bên nhau","spend quality time together","Reading 2 – Text 2",1],
+["tricky","","adj","khó xử, phức tạp","","Reading 2 – Text 2",1],
+["disguise","","v","che giấu, ngụy trang","disguise in sauces","Reading – Cloze",1],
+["mince / minced","","n/adj","thịt băm / đã băm","","Reading – Cloze",0],
+["serve","","n","khẩu phần","five serves of vegetables","Reading – Cloze 12",1],
+["freshness","","n","độ tươi","","Reading – Cloze",0],
+["vitamins and minerals","","n","vitamin và khoáng chất","","Reading – Cloze",1],
+["active lifestyle","","n","lối sống năng động","","Reading – Cloze",1],
+["urban area","","n","khu vực đô thị","","Language 9",1],
+["green space","","n","không gian xanh","","Language 25",1],
+["affordable","","adj","giá phải chăng","affordable options","Language 21",1],
+["severe","","adj","nghiêm trọng, gay gắt","","Language 21",1],
+["public transport","","n","giao thông công cộng","","Language 13",1],
+["air pollution","","n","ô nhiễm không khí","","Language 13",1],
+["work out","","phr v","tập thể dục","work out at the gym","Language 11",1],
+["aggressive","","adj","hung hăng, hiếu chiến","aggressive behaviour","Language 6",1],
+["Gen Z","","n","thế hệ Gen Z","","Language 20",1],
+["creative","","adj","sáng tạo","","Language 20",0],
+["adventurous","","adj","thích mạo hiểm","","Language 20",1],
+["force sb to do sth","","phr","ép ai làm gì","","Language 26",1],
+["modern","","adj","hiện đại, cởi mở","","Language 26",0],
+["open-minded","","adj","cởi mở, dễ chấp nhận","","Language 3",1],
+["fair","","adj","công bằng","","Language 3",0],
+["borrow","","v","mượn","","Language 15",0],
+["expect a call","","phr","đang chờ một cuộc gọi","","Language 15",0],
+["sound + adj","","phr","nghe có vẻ...","sounds great","Language 14",1],
+["suggest + V-ing","","phr","gợi ý làm gì","","Writing 2",1],
+["permission","","n","sự cho phép","ask for permission","Writing 2",1],
+["behave rudely","","phr","cư xử thô lỗ","","Writing 2",1],
+["join a club","","phr","tham gia câu lạc bộ","","Writing 2",0],
+["healthy diet","","adj+n","chế độ ăn lành mạnh","","Unit 1",1],
+["junk food","","n","đồ ăn vặt kém dinh dưỡng","","Unit 1",1],
+["fast food","","n","đồ ăn nhanh","eat too much fast food","Writing 2",1],
+["fresh fruit","","n","trái cây tươi","","Listening 1",0],
+["vegetable","","n","rau củ","","Reading – Cloze",0],
+["protein","","n","chất đạm","","Listening 1",1],
+["calcium","","n","canxi","","Listening 1",1],
+["bone","","n","xương","stronger bones","Listening 1",1],
+["memory","","n","trí nhớ","improve memory","Listening 1",1],
+["sleeping schedule","","n","lịch ngủ","","Listening 1",1],
+["exercise program","","n","chương trình tập luyện","","Listening 1",1],
+["replace","","v","thay thế","cannot replace exercise","Listening 1",1],
+["improve","","v","cải thiện","","Listening 1",0],
+["reduce","","v","giảm","reduce traffic congestion","Language 8",0],
+["necessary","","adj","cần thiết","It is necessary for sb to do sth","Writing 2",0],
+["vitamin","","n","vitamin","","Reading – Cloze",0],
+["mineral","","n","khoáng chất","","Reading – Cloze",1],
+["protect against","","phr v","bảo vệ khỏi","","Reading – Cloze 10",1],
+["active","","adj","năng động, tích cực","","Reading – Cloze",0],
+["lifestyle","","n","lối sống","","Reading – Cloze",1],
+["at least","","phr","ít nhất","","Reading – Cloze 12",0],
+["in case","","conj","trong trường hợp, nếu như","","Reading – Cloze 13",1],
+["be creative with","","phr","sáng tạo với","","Reading – Cloze",1],
+["curry","","n","món cà ri","","Reading – Cloze",0],
+["sauce","","n","nước sốt","","Reading – Cloze",0],
+["spouse","","n","vợ/chồng","","Reading 2 – Text 1",1],
+["halve","","v","giảm một nửa","the gap has been halved","Reading 2 – Text 1",1],
+["involvement","","n","sự tham gia","","Reading 2 – Text 1",1],
+["relationship","","n","mối quan hệ","","Reading 2 – Text 1",0],
+["raise","","v","nuôi dạy","raise sons","Reading 2 – Text 1",1],
+["do well in school","","phr","học tốt","","Reading 2 – Text 1",1],
+["population","","n","dân số","","Reading 2 – Text 1",1],
+["estimate","","v","ước tính","It is estimated that","Reading 2 – Text 1",1],
+["aging relative","","n","người thân lớn tuổi","","Reading 2 – Text 1",1],
+["divorce","","n/v","ly hôn","divorce rates","Reading 2 – Text 1",1],
+["serious problem","","n","vấn đề nghiêm trọng","","Reading 2 – Text 1",0],
+["exhibit problems","","phr","bộc lộ/xuất hiện vấn đề","","Reading 2 – Text 1",1],
+["decade","","n","thập kỷ","earlier decades","Reading 2 – Text 1",1],
+["child-support","","n","tiền cấp dưỡng nuôi con","","Reading 2 – Text 1",1],
+["supportive","","adj","biết giúp đỡ, ủng hộ","supportive adults","Reading 2 – Text 1",1],
+["maximize","","v","tối đa hoá","","Reading 2 – Text 1",1],
+["minimize","","v","giảm thiểu","","Reading 2 – Text 1",1],
+["comparable","","adj","tương đương, có thể so sánh","","Reading 2 – Text 1",1],
+["maintain","","v","duy trì","","Reading 2 – Text 1",1],
+["mature","","v","trưởng thành","","Reading 2 – Text 2",1],
+["test the relationship","","phr","thử thách mối quan hệ","","Reading 2 – Text 2",1],
+["challenging","","adj","đầy thử thách","","Reading 2 – Text 2",0],
+["huge influence","","n","ảnh hưởng lớn","have an influence on","Reading 2 – Text 2",1],
+["separate from","","phr v","tách khỏi","","Reading 2 – Text 2",1],
+["adapt","","v","thích nghi, điều chỉnh","","Reading 2 – Text 2",1],
+["contribution","","n","sự đóng góp","make a contribution to","Reading 2 – Text 2",1],
+["expectation","","n","kì vọng","","Reading 2 – Text 2",1],
+["resist","","v","chống lại, phản kháng","","Reading 2 – Text 2",1],
+["constant communication","","n","giao tiếp liên tục","","Reading 2 – Text 2",1],
+["avoid conflict","","phr","tránh xung đột","","Reading 2 – Text 2",1],
+["preprogrammed","","adj","được lập trình sẵn (bản năng)","","Reading 2 – Text 2",1],
+["present","","adj","có mặt, hiện diện","","Reading 2 – Text 2",0],
+["conflict","","n","xung đột","","Reading 2 – Text 2",0],
+["curfew","","n","giờ giới nghiêm","","Unit 2",1],
+["allowance","","n","tiền tiêu vặt","","Unit 2",1],
+["generation","","n","thế hệ","","Unit 2",0],
+["belief","","n","niềm tin, quan điểm","","Listening 2",1],
+["viewpoint","","n","quan điểm","","Unit 2",1],
+["opinion","","n","ý kiến","","Writing 3",0],
+["argue","","v","tranh cãi","","Listening 2",0],
+["get along with","","phr v","hòa thuận với","","Unit 2",1],
+["look up to","","phr v","ngưỡng mộ, kính trọng","","Unit 2",1],
+["look after","","phr v","chăm sóc","","Unit 2",1],
+["generation gap issue","","n","vấn đề khác biệt thế hệ","","Unit 2",0],
+["strict parents","","n","cha mẹ nghiêm khắc","","Unit 2",0],
+["under pressure","","phr","chịu áp lực","","Unit 2",1],
+["independent","","adj","độc lập","","Unit 2",1],
+["career","","n","nghề nghiệp","","Writing 3",1],
+["advice","","n","lời khuyên (không đếm được)","give advice about","Listening 2",1],
+["screen time","","n","thời gian nhìn màn hình","","Listening 2",1],
+["electronic device","","n","thiết bị điện tử","","Listening 2",1],
+["smart city","","n","thành phố thông minh","","Language 9; Unit 3",1],
+["urban","","adj","thuộc đô thị","","Unit 3",1],
+["rooftop farming","","n","trồng trọt trên mái nhà","","Language 21; Unit 3",1],
+["traffic","","n","giao thông","","Language 8",0],
+["transportation","","n","phương tiện/hệ thống giao thông","","Language 8",1],
+["public services","","n","dịch vụ công","","Unit 3",1],
+["renewable energy","","n","năng lượng tái tạo","","Unit 3",1],
+["solar power","","n","năng lượng mặt trời","","Unit 3",1],
+["residents","","n","cư dân","","Language 21",1],
+["efficient","","adj","hiệu quả","","Language 25",1],
+["polluted","","adj","bị ô nhiễm","","Language 25",0],
+["popular","","adj","phổ biến","","Language 25",0],
+["plants and animals","","n","động thực vật","","Language 25",0],
+["environmentally friendly","","adj","thân thiện môi trường","","Unit 3",1],
+["green activities","","n","hoạt động xanh","","Language 14",1],
+["reduce pollution","","phr","giảm ô nhiễm","","Unit 3",1],
+["overpopulation","","n","dân số quá đông","","Unit 3",1],
+["unemployment","","n","thất nghiệp","","Unit 3",1],
+["cost of living","","n","chi phí sinh hoạt","","Unit 3",1],
+["affordable housing","","n","nhà ở giá phải chăng","","Language 21",1],
+["convenient","","adj","tiện lợi","","Language 22",1],
+["excellent","","adj","xuất sắc","","Language 22",0],
+["volunteer","","v/n","tình nguyện (viên)","","Pronunciation 17",1],
+["recommend","","v","giới thiệu, khuyên","","Pronunciation 26",1],
+["entertain","","v","giải trí","","Pronunciation 26",1],
+["celebrate","","v","kỷ niệm, ăn mừng","","Pronunciation 26",0],
+["pollution","","n","ô nhiễm","","Pronunciation 19",0],
+["discovery","","n","sự khám phá","","Pronunciation 27",1],
+["confident","","adj","tự tin","","Pronunciation 29",1],
+["last time","","phr","lần cuối","","Writing 2",0],
+["for + khoảng thời gian","","phr","trong (bao lâu)","for two months","Writing 2",0],
+["since + mốc thời gian","","phr","kể từ khi","since July","Writing 2",0],
+["design a poster","","phr","thiết kế áp phích","","Writing 2",0],
+["birthday party","","n","tiệc sinh nhật","","Writing 2",0],
+["reading club","","n","câu lạc bộ đọc sách","","Writing 2",0],
 ["should","","modal","nên","","Reading – Cloze 12",0],["strict","","adj","nghiêm khắc","appear strict","Language 3",0],["remain","","v","vẫn, giữ nguyên","remain calm","Language 4",0],["behaviour","","n","hành vi","","Language 6",0],["healthy","","adj","khoẻ mạnh","","Language 11",0],["cause","","n","nguyên nhân","","Language 13",0]];
 // ---------- TIỆN ÍCH ----------
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
@@ -178,14 +356,17 @@ function lisBlock(b,i){const st=S.ls[b.k],c=CONFIG.listening[b.k],no=/THAY_LINK/
  <div class="pl"><audio id="au-${b.k}" src="${no?"":c.audioUrl}" preload="none"></audio>
  <button class="btn pr" id="pb-${b.k}" ${lockedNow(b.k)||no?"disabled":""}>▶ Play</button><div class="prog"><i id="pg-${b.k}"></i></div><b id="ct-${b.k}">${st.p}/${c.maxPlays}</b></div>
  ${no?'<div class="lock">Chưa gắn file nghe (sửa CONFIG.listening.'+b.k+'.audioUrl)</div>':""}
- ${lockedNow(b.k)?`<div class="lock">Bạn đã sử dụng hết ${c.maxPlays} lượt nghe của phần này (hoặc phiên nghe trước đã bắt đầu). <button class="btn" data-rl="${b.k}">Làm lại bài nghe này</button></div>`:""}
+ ${lockedNow(b.k)?`<div class="lock">Bạn đã sử dụng hết ${c.maxPlays} lượt nghe của phần này. <button class="btn" data-rl="${b.k}">Làm lại bài nghe này</button></div>`:""}
  </div>`+qs.map(q=>qcard(q,false)).join("")}
-function bindAudio(){LB.forEach(b=>{const a=$("#au-"+b.k),btn=$("#pb-"+b.k);if(!a)return;const st=S.ls[b.k],mx=CONFIG.listening[b.k].maxPlays;
+function bindAudio(){LB.forEach(b=>{const a=$("#au-"+b.k),btn=$("#pb-"+b.k);if(!a)return;const st=S.ls[b.k],mx=CONFIG.listening[b.k].maxPlays;let acc=0,last=0,counted=false;
  btn.onclick=()=>{if(lockedNow(b.k))return askReset(b.k);if(a.paused)a.play().catch(()=>{});else a.pause()};
- a.onplay=()=>{if(lockedNow(b.k)){a.pause();return}if(!st.ip){if(st.p>=mx){a.pause();lock(b.k);return}st.ip=1;st.p++;save();$("#ct-"+b.k).textContent=st.p+"/"+mx}btn.textContent="⏸ Pause"};
+ a.onplay=()=>{if(lockedNow(b.k)){a.pause();return}btn.textContent="⏸ Pause"};
  a.onpause=()=>{if(!a.ended)btn.textContent="▶ Play"};
- a.ontimeupdate=()=>{$("#pg-"+b.k).style.width=(a.currentTime/(a.duration||1)*100)+"%"};
- a.onended=()=>{st.ip=0;save();if(st.p>=mx)lock(b.k);else btn.textContent="▶ Play"}})}
+ a.onseeking=()=>{last=a.currentTime};
+ // Chỉ tính 1 lượt khi tổng thời gian nghe thật (không tính tua) vượt 50% độ dài bài
+ a.ontimeupdate=()=>{const t=a.currentTime,d=t-last;if(d>0&&d<1.5)acc+=d;last=t;$("#pg-"+b.k).style.width=(t/(a.duration||1)*100)+"%";
+  if(!counted&&a.duration&&acc>a.duration*0.5){counted=true;st.p++;save();$("#ct-"+b.k).textContent=st.p+"/"+mx}};
+ a.onended=()=>{const was=counted;acc=0;last=0;counted=false;if(was&&st.p>=mx)lock(b.k);else btn.textContent="▶ Play"}})}
 function lock(k){S.ls[k].locked=1;S.ls[k].ip=0;save();render()}
 function askReset(k){modal(`<h3>Bạn sẽ phải làm lại từ đầu, bạn chắc chứ?</h3><p>Bài nghe: ${k=="listening1"?"Listening 1":"Listening 2"}. Câu trả lời và lượt nghe của bài này sẽ bị xoá; các phần khác giữ nguyên.</p><button class="btn" id="mc">Hủy</button> <button class="btn pr" id="mo">Đồng ý, làm lại</button>`);$("#mc").onclick=closeM;$("#mo").onclick=()=>{listeningQuestions.filter(LB.find(b=>b.k==k).f).forEach(q=>delete S.ans[q[0]]);S.ls[k]={p:0,ip:0};save();closeM();render()}}
 // ---------- RENDER ----------
@@ -236,8 +417,9 @@ function vocab(){const q=(S.vq||"").toLowerCase(),core=S.vmode=="core",f=S.vf||"
  document.querySelectorAll("[data-cp]").forEach(b=>b.onclick=()=>navigator.clipboard&&navigator.clipboard.writeText(b.dataset.cp))}
 $("#vb").onclick=vocab;$("#md").onclick=e=>{if(e.target.id=="md")closeM()};
 // ---------- KHỞI ĐỘNG ----------
-// F5 không cấp thêm lượt: nếu đã có lượt nghe được dùng thì khóa khi tải lại
-Object.keys(S.ls).forEach(k=>{if(S.ls[k].p>0){S.ls[k].locked=1;S.ls[k].ip=0}});save();
+// F5 không cấp thêm lượt: lượt đã tính (nghe >50%) được lưu; chỉ khóa khi đã dùng đủ lượt
+if(!S.v){S.v=2;S.ls={listening1:{p:0,ip:0},listening2:{p:0,ip:0}}}
+Object.keys(S.ls).forEach(k=>{S.ls[k].locked=S.ls[k].p>=CONFIG.listening[k].maxPlays?1:0;S.ls[k].ip=0});save();
 const RT=document.documentElement,tm=localStorage.getItem("b11theme");if(tm)RT.dataset.theme=tm;
 $("#th").onclick=()=>{const d=RT.dataset.theme=="dark"||(!RT.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches)?"light":"dark";RT.dataset.theme=d;localStorage.setItem("b11theme",d)};
 render();
