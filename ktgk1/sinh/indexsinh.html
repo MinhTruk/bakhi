@@ -1,7 +1,787 @@
-Meh lười làm (part 2)
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Tập Giữa HK1 – Sinh học 11 - BAKHI</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Lexend', sans-serif; }
+        sub, sup { line-height: 0; }
+        .fade { animation: fade .25s ease; }
+        @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .fade { animation: none; } * { transition: none !important; } }
+        textarea { resize: vertical; }
+        .scroll-x::-webkit-scrollbar { height: 0; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
 
-<a href="https://docs.google.com/document/d/1ZOvUJpSZhU-RAqL0nCft9Hjr1sTWTBUK/edit?usp=drive_link&ouid=114484165028243968796&rtpof=true&sd=true">
-    Sinh soạn (Shoutout to Thiện)
-</a>
+    <!-- Header (giữ nguyên phong cách các trang BAKHI) -->
+    <header class="w-full border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <a href="/bakhi/" class="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700/80 border border-slate-700 px-3 py-2 rounded-xl transition-all">
+                    <i class="fa-solid fa-arrow-left text-xs"></i><span>Quay lại</span>
+                </a>
+                <a href="/bakhi/" class="flex items-center gap-2 text-sm font-medium text-indigo-400 hover:text-indigo-300 bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-800/50 px-3 py-2 rounded-xl transition-all">
+                    <i class="fa-solid fa-house text-xs"></i><span>Trang chủ BAKHI</span>
+                </a>
+            </div>
+            <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3 py-1.5 rounded-full text-xs font-medium text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Portal Sinh học 11</span>
+            </div>
+        </div>
+    </header>
 
-chấm hết và bố lết đi ôn
+    <main id="app" class="flex-1 max-w-5xl w-full mx-auto px-4 py-6 md:py-8 space-y-5"></main>
+    <div id="modal"></div>
+    <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[70] pointer-events-none"></div>
+
+    <footer class="w-full py-6 text-center border-t border-slate-800/80 text-slate-500 text-xs bg-slate-900/50">
+        <p class="mb-2">
+            <a href="https://docs.google.com/document/d/1ZOvUJpSZhU-RAqL0nCft9Hjr1sTWTBUK/edit?usp=drive_link&amp;ouid=114484165028243968796&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors">
+                <i class="fa-solid fa-link text-[10px]"></i><span>Tài liệu tham khảo (Soạn sinh - Credit: Thiện)</span><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            </a>
+        </p>
+        <p>&copy; 2026 BAKHI Portal. Hệ thống hỗ trợ học tập Sinh học 11.</p>
+    </footer>
+
+<script>
+/* =====================================================================
+   CẤU HÌNH
+   ===================================================================== */
+const SUBJECT_HOME = 'indexsinh.html';   // trang chủ môn học – đổi nếu repo đặt tên khác
+const STORE_KEY = 'bakhi_sinh11_gk1_v2';
+const MAXPT = { mcq: 5, tf: 2, sa: 1, es: 2 };
+const SECS = [
+    { id: 'mcq', name: 'Trắc nghiệm',   icon: 'fa-list-check',     n: 25, title: 'Phần I – Trắc nghiệm nhiều lựa chọn' },
+    { id: 'tf',  name: 'Đúng/Sai',      icon: 'fa-scale-balanced', n: 4,  title: 'Phần II – Trắc nghiệm đúng/sai' },
+    { id: 'sa',  name: 'Trả lời ngắn',  icon: 'fa-pen',            n: 5,  title: 'Phần III – Trả lời ngắn' },
+    { id: 'es',  name: 'Tự luận',       icon: 'fa-file-lines',     n: 3,  title: 'Phần IV – Tự luận' }
+];
+const SEC_IDS = SECS.map(s => s.id);
+const N = Object.fromEntries(SECS.map(s => [s.id, s.n]));
+
+/* =====================================================================
+   MA TRẬN – lấy từ file "SOẠN SINH GIỮA KỲ 1"
+   lv: NB = Nhận biết, TH = Thông hiểu, VD = Vận dụng (suy ra từ động từ yêu cầu trong file soạn)
+   ===================================================================== */
+const MATRIX = {
+ 'I.1':   { lv:'NB', t:'Nêu được các dấu hiệu đặc trưng của trao đổi chất và chuyển hóa năng lượng' },
+ 'I.2':   { lv:'NB', t:'Lấy được ví dụ minh họa (sinh vật đại diện) cho các phương thức trao đổi chất và chuyển hóa năng lượng' },
+ 'I.3':   { lv:'NB', t:'Nêu được khái niệm dinh dưỡng ở thực vật' },
+ 'I.4':   { lv:'NB', t:'Nêu được cơ chế hoạt động của khí khổng' },
+ 'I.5':   { lv:'NB', t:'Nêu được sự vận chuyển các chất trong cây theo dòng mạch gỗ và dòng mạch rây (chất được vận chuyển)' },
+ 'I.6':   { lv:'NB', t:'Nêu được vai trò sinh lí của một số nguyên tố khoáng đa lượng và vi lượng đối với thực vật (Ca, Fe, S, Cl)' },
+ 'I.7':   { lv:'NB', t:'Phát biểu được khái niệm quang hợp ở thực vật' },
+ 'I.8':   { lv:'NB', t:'Nêu được các sản phẩm của quá trình biến đổi năng lượng ánh sáng thành năng lượng hóa học (sản phẩm pha sáng)' },
+ 'I.9':   { lv:'NB', t:'Nêu được thực vật đại diện cho các con đường đồng hóa carbon trong quang hợp (C3, C4, CAM)' },
+ 'I.10':  { lv:'TH', t:'Trình bày được vai trò của quá trình thoát hơi nước ở lá' },
+ 'I.11':  { lv:'TH', t:'Trình bày được con đường hô hấp hiếu khí ở thực vật (vị trí diễn ra các giai đoạn)' },
+ 'I.12':  { lv:'TH', t:'Trình bày các con đường đồng hóa carbon trong quang hợp (C3, C4, CAM: chất nhận CO₂, tế bào tham gia)' },
+ 'II.1ab':{ lv:'NB', t:'Nhận biết được các con đường vận chuyển nước và khoáng từ lông hút vào mạch gỗ của rễ' },
+ 'II.1cd':{ lv:'TH', t:'Phân tích được sự vận chuyển nước và khoáng từ lông hút vào mạch gỗ của rễ' },
+ 'II.2ab':{ lv:'NB', t:'Nhận biết được ảnh hưởng của các điều kiện ngoại cảnh đến quang hợp (ánh sáng)' },
+ 'II.2cd':{ lv:'TH', t:'Phân tích được ảnh hưởng của các điều kiện ngoại cảnh đến quang hợp (ánh sáng)' },
+ 'III.1': { lv:'NB', t:'Xác định được số sản phẩm tạo ra trong các giai đoạn của hô hấp hiếu khí' },
+ 'III.2': { lv:'TH', t:'Trình bày được vai trò của hệ sắc tố trong quang hợp' },
+ 'III.3': { lv:'NB', t:'Xác định được các nguyên tố khoáng đa lượng và vi lượng ở thực vật' },
+ 'III.4': { lv:'TH', t:'Hiểu được cơ chế hấp thụ nước và khoáng ở tế bào lông hút của rễ' },
+ 'IV.1':  { lv:'VD', t:'Vận dụng kiến thức về trao đổi nước và khoáng ở thực vật để giải thích một số hiện tượng thực tế' },
+ 'IV.2':  { lv:'VD', t:'Vận dụng hiểu biết về quang hợp để giải thích một số biện pháp kĩ thuật và công nghệ nâng cao năng suất cây trồng' }
+};
+const LV = { NB:['Nhận biết','bg-sky-500/15 text-sky-300 border-sky-500/30'], TH:['Thông hiểu','bg-amber-500/15 text-amber-300 border-amber-500/30'], VD:['Vận dụng','bg-rose-500/15 text-rose-300 border-rose-500/30'] };
+
+/* =====================================================================
+   DỮ LIỆU CÂU HỎI (không chứa đáp án) – nguồn: "Đề ôn tập Sinh 11 Giữa kì I"
+   ===================================================================== */
+const mc = (q, o, m) => ({ q, o, m });
+const QUESTIONS = {
+mcq: [
+ mc('Dấu hiệu đặc trưng của quá trình trao đổi chất và chuyển hóa năng lượng ở sinh vật là gì?',
+    ['Tiếp nhận chất, biến đổi chất kèm chuyển hóa năng lượng, thải chất và điều hòa.','Chỉ tiếp nhận chất dinh dưỡng từ môi trường.','Chỉ tổng hợp các chất hữu cơ trong tế bào.','Chỉ thải các chất dư thừa ra môi trường.'],'I.1'),
+ mc('Ví dụ nào sau đây thể hiện phương thức dinh dưỡng tự dưỡng?',
+    ['Động vật lấy thức ăn từ môi trường.','Cây lấy nước và chất khoáng để thực hiện quang hợp.','Nấm hấp thụ chất hữu cơ có sẵn.','Động vật ăn thực vật.'],'I.2'),
+ mc('Dinh dưỡng ở thực vật được hiểu là quá trình nào?',
+    ['Hấp thụ nước, chất khoáng và đồng hóa chúng thành chất sống của cơ thể.','Chỉ hấp thụ khí oxygen từ môi trường.','Phân giải chất hữu cơ để giải phóng năng lượng.','Thải toàn bộ nước ra ngoài cơ thể.'],'I.3'),
+ mc('Khi tế bào khí khổng trương nước, hiện tượng nào xảy ra?',
+    ['Khí khổng đóng lại, nước thoát ra ít.','Khí khổng mở ra, nước thoát ra nhiều.','Khí khổng không thay đổi.','Lá ngừng trao đổi khí.'],'I.4'),
+ mc('Khi tế bào khí khổng mất nước, khí khổng thường:',
+    ['Mở rộng hơn.','Đóng lại, làm nước thoát ra ngoài ít hơn.','Tăng cường thoát hơi nước.','Chuyển thành mạch gỗ.'],'I.4'),
+ mc('Dòng mạch gỗ vận chuyển chủ yếu những chất nào?',
+    ['Đường sucrose.','Nước, chất khoáng và một số chất hòa tan.','Chỉ các amino acid.','Chỉ các chất hữu cơ dự trữ.'],'I.5'),
+ mc('Chất được vận chuyển chủ yếu trong dòng mạch rây theo tài liệu ôn tập là:',
+    ['Nước.','Ion khoáng.','Đường sucrose.','Oxygen.'],'I.5'),
+ mc('Calcium (Ca) có vai trò nào đối với thực vật?',
+    ['Là thành phần cấu tạo tế bào, hoạt hóa enzyme thủy phân ATP và phospholipid.','Là thành phần của cytochrome.','Là thành phần cấu tạo protein và coenzyme.','Chỉ tham gia cân bằng nước.'],'I.6'),
+ mc('Iron (Fe) có vai trò nào sau đây?',
+    ['Tham gia quang phân li nước và cân bằng nước.','Là thành phần của cytochrome, hoạt hóa enzyme tổng hợp diệp lục.','Là thành phần cấu tạo protein và coenzyme.','Là thành phần chính của thành tế bào.'],'I.6'),
+ mc('Sulfur (S) có vai trò nổi bật nào?',
+    ['Thành phần cấu tạo protein và coenzyme.','Tham gia trực tiếp tạo oxygen ở pha sáng.','Là thành phần của cytochrome.','Điều khiển đóng mở khí khổng.'],'I.6'),
+ mc('Chlorine (Cl) tham gia vào quá trình nào?',
+    ['Đường phân.','Quang phân li nước trong quang hợp và cân bằng nước trong cây.','Tạo đường sucrose ở mạch rây.','Chu trình Krebs.'],'I.6'),
+ mc('Quang hợp ở thực vật là quá trình:',
+    ['Lục lạp sử dụng năng lượng ánh sáng để chuyển CO<sub>2</sub> và nước thành hợp chất hữu cơ, đồng thời giải phóng O<sub>2</sub>.','Ti thể phân giải glucose để tạo ATP.','Rễ hấp thụ nước và ion khoáng.','Lá hấp thụ oxygen và thải carbon dioxide.'],'I.7'),
+ mc('Sản phẩm của pha sáng được nêu trong tài liệu là:',
+    ['Glucose, CO<sub>2</sub> và nước.','O<sub>2</sub>, ATP và NADPH.','Pyruvate, ATP và NADH.','Sucrose, O<sub>2</sub> và CO<sub>2</sub>.'],'I.8'),
+ mc('Loài cây nào sau đây thuộc nhóm thực vật C4?',
+    ['Lúa.','Khoai.','Mía.','Dứa.'],'I.9'),
+ mc('Loài cây nào sau đây thuộc nhóm thực vật CAM?',
+    ['Sắn.','Cao lương.','Rau dền.','Xương rồng.'],'I.9'),
+ mc('Điểm bù ánh sáng là cường độ ánh sáng tại đó:',
+    ['Quang hợp đạt cường độ cao nhất.','Cường độ quang hợp bằng cường độ hô hấp.','Cây ngừng hô hấp.','Khí khổng đóng hoàn toàn.'],'II.2ab'),
+ mc('Điểm bão hòa ánh sáng là cường độ ánh sáng tại đó:',
+    ['Cường độ quang hợp đạt cao nhất.','Cường độ hô hấp bằng không.','Cây không cần nước.','Quang hợp bằng không.'],'II.2ab'),
+ mc('Thực vật chủ yếu quang hợp hiệu quả ở hai miền ánh sáng nào theo tài liệu?',
+    ['Vàng và lục.','Đỏ và xanh tím.','Da cam và lục.','Vàng và da cam.'],'II.2cd'),
+ mc('Giai đoạn đường phân trong hô hấp hiếu khí diễn ra ở đâu?',
+    ['Chất nền ti thể.','Màng trong ti thể.','Tế bào chất.','Nhân tế bào.'],'I.11'),
+ mc('Chuỗi truyền electron trong hô hấp hiếu khí diễn ra ở đâu?',
+    ['Tế bào chất.','Màng trong ti thể.','Chất nền ti thể.','Màng sinh chất.'],'I.11'),
+ mc('Thoát hơi nước ở lá là động lực đầu trên, có vai trò nào sau đây?',
+    ['Là nơi tổng hợp ATP và NADPH.','Là động lực chính để tổng hợp đường sucrose ở mạch rây.','Giúp dòng nước và các chất di chuyển theo một chiều trong cây.','Giúp rễ hấp thụ khí oxygen.'],'I.10'),
+ mc('Nhờ thoát hơi nước mà khí khổng mở ra, điều này có ý nghĩa gì đối với quang hợp?',
+    ['CO<sub>2</sub> khuếch tán vào lá, cung cấp nguyên liệu cho quang hợp.','O<sub>2</sub> được lá hấp thụ để tạo ATP.','Nước được giữ lại hoàn toàn trong lá.','Chất khoáng được vận chuyển theo mạch rây.'],'I.10'),
+ mc('Vai trò của thoát hơi nước đối với nhiệt độ của lá là:',
+    ['Làm tăng nhiệt độ của lá.','Không ảnh hưởng đến nhiệt độ của lá.','Chỉ giúp lá giữ nước.','Giúp hạ nhiệt độ cho lá để lá không bị cháy.'],'I.10'),
+ mc('Chất nhận CO<sub>2</sub> trong con đường C3 là:',
+    ['P.E.P.','Ribulose 1,5 diphosphate (RuBP).','Pyruvate.','NADPH.'],'I.12'),
+ mc('Con đường C4 có sự tham gia của những tế bào nào?',
+    ['Chỉ tế bào thịt lá (tế bào mô giậu).','Chỉ tế bào bao bó mạch.','Tế bào thịt lá (mô giậu) và tế bào bao bó mạch.','Tế bào mạch gỗ và tế bào mạch rây.'],'I.12')
+],
+tf: [
+ { q:'Về con đường vận chuyển nước và chất khoáng từ lông hút vào mạch gỗ:',
+   items:['Con đường gian bào vận chuyển nước và chất khoáng qua thành tế bào và khoảng không gian giữa các tế bào.',
+          'Con đường gian bào có tốc độ nhanh và bị chắn bởi đai Caspary.',
+          'Con đường tế bào chất di chuyển qua tế bào chất của các tế bào nhờ cầu sinh chất.',
+          'Con đường tế bào chất có tốc độ nhanh hơn con đường gian bào và bị đai Caspary chắn lại.'],
+   m:['II.1ab','II.1ab','II.1ab','II.1ab'] },
+ { q:'Về sự hấp thụ nước và khoáng ở rễ:',
+   items:['Sự hấp thụ nước và khoáng ở thực vật trên cạn chủ yếu diễn ra ở rễ thông qua tế bào lông hút.',
+          'Nước đi từ đất vào tế bào lông hút theo cơ chế thẩm thấu.',
+          'Hấp thụ khoáng thụ động cần năng lượng để vận chuyển ion.',
+          'Hấp thụ khoáng chủ động có thể vận chuyển chất khoáng từ nơi có nồng độ thấp đến nơi có nồng độ cao.'],
+   m:['II.1cd','III.4','III.4','III.4'] },
+ { q:'Về ảnh hưởng của ánh sáng đến quang hợp:',
+   items:['Ánh sáng là điều kiện cơ bản để cây tiến hành quang hợp.',
+          'Cây ưa bóng có điểm bù ánh sáng thấp hơn cây ưa sáng.',
+          'Điểm bão hòa ánh sáng là cường độ ánh sáng mà tại đó cường độ quang hợp đạt cao nhất.',
+          'Ánh sáng đỏ thúc đẩy sự hình thành amino acid và protein, còn ánh sáng xanh tím thúc đẩy carbohydrate.'],
+   m:['II.2ab','II.2ab','II.2ab','II.2cd'] },
+ { q:'Về hô hấp hiếu khí ở thực vật:',
+   items:['Đường phân diễn ra ở tế bào chất.',
+          'Oxi hóa pyruvic acid và chu trình Krebs diễn ra ở chất nền ti thể.',
+          'Chuỗi truyền electron diễn ra ở màng trong ti thể.',
+          'Chuỗi truyền electron tạo ra 2 ATP và 8 NADH theo tài liệu ôn tập.'],
+   m:['I.11','I.11','I.11','III.1'] }
+],
+sa: [
+ { q:'Trong giai đoạn đường phân, từ 1 phân tử glucose tạo ra những sản phẩm nào và số lượng mỗi sản phẩm là bao nhiêu?', m:'III.1' },
+ { q:'Ở giai đoạn oxi hóa pyruvic acid và chu trình Krebs, tài liệu ôn tập nêu số lượng ATP, NADH, FADH<sub>2</sub> và CO<sub>2</sub> được tạo ra là bao nhiêu?', m:'III.1' },
+ { q:'Kể tên hai nhóm sắc tố chính ở cây xanh và nêu vai trò của hệ sắc tố trong quang hợp.', m:'III.2' },
+ { q:'Phân loại các nguyên tố sau thành nhóm đa lượng và vi lượng: N, Ca, P, K, S, Mg, Cl, Fe, Mn, Mo, Zn.', m:'III.3' },
+ { q:'Nêu cơ chế hấp thụ nước ở tế bào lông hút và phân biệt cơ chế hấp thụ khoáng thụ động với chủ động.', m:'III.4' }
+],
+es: [
+ { q:'Khi rễ cây bị ngập úng trong thời gian dài, cây trồng có biểu hiện như thế nào? Giải thích.', m:['IV.1'] },
+ { q:'Trong trồng trọt, muốn tăng năng suất và chất lượng cây trồng như khoai tây, khoai lang, sắn dây, mía, củ cải đường,… thông qua quang hợp, cần áp dụng các biện pháp kĩ thuật nào?', m:['IV.2'] },
+ { q:'Bón quá nhiều phân bón làm cây héo, chết? Giải thích.', m:['IV.1'] }
+]
+};
+
+/* =====================================================================
+   ĐÁP ÁN, GIẢI THÍCH, TIÊU CHÍ CHẤM (tách riêng khỏi dữ liệu câu hỏi)
+   Nguồn: "SOẠN SINH GIỮA KỲ 1"
+   ===================================================================== */
+const norm = s => String(s).toLowerCase()
+    .replace(/[₀-₉]/g, c => String(c.charCodeAt(0) - 0x2080))
+    .replace(/→|⇒|=>|-->/g, ' -> ')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd')
+    .replace(/\s+/g, ' ');
+const rx = (...res) => n => res.some(r => r.test(n));
+const num = (k, name) => rx(
+    new RegExp('\\b' + k + '\\s*(phan tu\\s*)?(acid\\s*|axit\\s*)?' + name),
+    new RegExp(name + '\\w*\\s*(acid|axit)?\\s*[:=(x\\-]?\\s*' + k + '(?!\\d)'));
+const ordered = (...ts) => n => { let p = -1; for (const t of ts) { const i = n.indexOf(t, p + 1); if (i < 0) return false; p = i; } return true; };
+const MACRO = ['n','ca','p','k','s','mg'], MICRO = ['cl','fe','mn','mo','zn'];
+function groupElems(n, kw) {
+    const a = n.indexOf(kw); if (a < 0) return null;
+    const all = MACRO.concat(MICRO);
+    const toSet = s => new Set(s.match(/[a-z]+/g) || []);
+    const others = ['da luong', 'vi luong'].filter(x => x !== kw);
+    const nextKw = others.map(x => n.indexOf(x)).filter(i => i > a);
+    let endA = nextKw.length ? Math.min(...nextKw) : n.length;
+    const sep = n.slice(a + kw.length).search(/[.;]/);
+    if (sep >= 0) endA = Math.min(endA, a + kw.length + sep);
+    let set = toSet(n.slice(a + kw.length, endA));
+    if (!all.some(e => set.has(e))) {            // viết kiểu "N, Ca, ... là đa lượng"
+        const before = others.map(x => { const i = n.indexOf(x); return i >= 0 && i < a ? i + x.length : 0; });
+        set = toSet(n.slice(Math.max(0, ...before), a));
+    }
+    return set;
+}
+function segOf(n, kw, other) {                      // đoạn văn bản thuộc về từ khóa kw
+    const a = n.indexOf(kw); if (a < 0) return '';
+    const b = n.indexOf(other, a);
+    return n.slice(a, b > a ? b : n.length);
+}
+const KEY = {
+mcq: [
+ { a:0, e:'Theo tài liệu, trao đổi chất và chuyển hóa năng lượng gồm: tiếp nhận các chất từ môi trường; biến đổi các chất kèm chuyển hóa năng lượng (đồng hóa và dị hóa); thải các chất không sử dụng, dư thừa, độc hại ra môi trường; và điều hòa.' },
+ { a:1, e:'Cây lấy nước, khoáng để quang hợp là phương thức <b>tự dưỡng</b>. Các phương án còn lại là lấy thức ăn/chất hữu cơ có sẵn (dị dưỡng).' },
+ { a:0, e:'Dinh dưỡng ở thực vật là quá trình hấp thụ nước, chất khoáng và đồng hóa chúng thành chất sống của cơ thể thực vật.' },
+ { a:1, e:'Khi tế bào khí khổng <b>trương nước</b> thì khí khổng <b>mở ra</b>, nước thoát ra ngoài nhiều.' },
+ { a:1, e:'Khi tế bào khí khổng <b>mất nước</b> thì khí khổng <b>đóng lại</b>, nước thoát ra ngoài ít.' },
+ { a:1, e:'Dòng mạch gỗ vận chuyển nước, chất khoáng và một số chất hòa tan. Đường sucrose thuộc dòng mạch rây.' },
+ { a:2, e:'Dòng mạch rây vận chuyển chủ yếu đường <b>sucrose</b>.' },
+ { a:0, e:'Ca là thành phần cấu tạo tế bào, hoạt hóa enzyme thủy phân ATP và phospholipid. (B là Fe, C là S.)' },
+ { a:1, e:'Fe là thành phần của cytochrome, hoạt hóa các enzyme của quá trình tổng hợp diệp lục. (A là Cl, C là S.)' },
+ { a:0, e:'S là thành phần cấu tạo protein và coenzyme.' },
+ { a:1, e:'Cl tham gia quá trình quang phân li nước trong quang hợp và cân bằng nước trong cây.' },
+ { a:0, e:'Quang hợp ở thực vật là quá trình lục lạp hấp thụ và sử dụng năng lượng ánh sáng để chuyển hóa CO<sub>2</sub> và nước thành hợp chất hữu cơ C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>, đồng thời giải phóng O<sub>2</sub>.' },
+ { a:1, e:'Sản phẩm pha sáng: O<sub>2</sub>, ATP, NADPH.' },
+ { a:2, e:'Thực vật C4: mía, kê, cao lương, cỏ gấu, rau dền. (Lúa, khoai, sắn là C3; dứa là CAM.)' },
+ { a:3, e:'Thực vật CAM: dứa, xương rồng, thuốc bỏng. (Sắn là C3; cao lương, rau dền là C4.)' },
+ { a:1, e:'Điểm bù ánh sáng là cường độ ánh sáng mà tại đó cường độ quang hợp bằng cường độ hô hấp.' },
+ { a:0, e:'Điểm bão hòa ánh sáng là cường độ ánh sáng mà tại đó cường độ quang hợp đạt cao nhất.' },
+ { a:1, e:'Thực vật chủ yếu quang hợp ở hai miền ánh sáng: <b>xanh tím</b> và <b>đỏ</b>.' },
+ { a:2, e:'Đường phân diễn ra ở <b>tế bào chất</b>.' },
+ { a:1, e:'Chuỗi truyền electron diễn ra ở <b>màng trong ti thể</b>.' },
+ { a:2, e:'Thoát hơi nước là động lực đầu trên để dòng nước và các chất đi theo một chiều trong cây.' },
+ { a:0, e:'Nhờ thoát hơi nước mà khí khổng mở ra cho CO<sub>2</sub> khuếch tán vào, cung cấp nguyên liệu cho quá trình quang hợp.' },
+ { a:3, e:'Thoát hơi nước giúp hạ nhiệt độ cho lá để lá không bị cháy.' },
+ { a:1, e:'Con đường C3: chất nhận CO<sub>2</sub> là Ribulose 1,5 diphosphate (RuBP). (P.E.P là chất nhận CO<sub>2</sub> ở con đường C4 và CAM.)' },
+ { a:2, e:'Con đường C4: tế bào thịt lá (mô giậu) và tế bào bao bó mạch tham gia. (C3 và CAM chỉ có tế bào thịt lá/mô giậu.)' }
+],
+tf: [
+ { a:[true,true,true,false], e:[
+   'Đúng. Con đường gian bào: nước và khoáng di chuyển qua thành tế bào dọc theo khoảng không gian giữa các tế bào.',
+   'Đúng. Con đường gian bào có tốc độ nhanh, bị chắn bởi đai Caspary, kiểm soát được lượng chất đi vào mạch gỗ.',
+   'Đúng. Con đường tế bào chất: qua tế bào chất của các lớp tế bào trong rễ thông qua cầu sinh chất.',
+   'Sai. Con đường tế bào chất có tốc độ <b>chậm</b> và <b>không bị</b> đai Caspary chắn; nó kiểm soát được loại chất đi vào mạch gỗ.'] },
+ { a:[true,true,false,true], e:[
+   'Đúng. Sự hấp thụ nước và khoáng ở thực vật trên cạn chủ yếu diễn ra ở rễ thông qua tế bào lông hút.',
+   'Đúng. Dịch tế bào lông hút ưu trương so với dịch đất nên nước di chuyển từ đất vào tế bào lông hút (thẩm thấu).',
+   'Sai. Hấp thụ khoáng thụ động <b>không cần năng lượng</b> (chất khoáng đi từ đất nồng độ cao → rễ nồng độ thấp).',
+   'Đúng. Hấp thụ khoáng chủ động đi từ nơi nồng độ thấp → nồng độ cao và cần năng lượng.'] },
+ { a:[true,true,true,false], e:[
+   'Đúng. Ánh sáng là điều kiện cơ bản để cây tiến hành quang hợp.',
+   'Đúng. Cây ưa bóng có điểm bù ánh sáng thấp hơn cây ưa sáng.',
+   'Đúng. Điểm bão hòa ánh sáng là cường độ ánh sáng mà tại đó cường độ quang hợp đạt cao nhất.',
+   'Sai. Phát biểu bị đảo: ánh sáng <b>đỏ</b> thúc đẩy hình thành <b>carbohydrate</b>; ánh sáng <b>xanh tím</b> kích thích tổng hợp <b>amino acid, protein</b>.'] },
+ { a:[true,true,true,false], e:[
+   'Đúng. Đường phân diễn ra ở tế bào chất.',
+   'Đúng. Oxi hóa pyruvic acid và chu trình Krebs diễn ra ở chất nền ti thể.',
+   'Đúng. Chuỗi truyền electron diễn ra ở màng trong ti thể.',
+   'Sai. Chuỗi truyền electron tạo ra <b>26–28 ATP và 6 H<sub>2</sub>O</b>. Còn 2 ATP, 8 NADH (cùng 2 FADH<sub>2</sub>, 6 CO<sub>2</sub>) là sản phẩm của oxi hóa pyruvic acid và chu trình Krebs.'] }
+],
+sa: [
+ { ref:'Đường phân tạo ra: <b>2 pyruvate</b> (pyruvic acid), <b>2 ATP</b> và <b>2 NADH</b>.',
+   note:'Cần nêu đủ cả tên sản phẩm lẫn số lượng của từng sản phẩm.',
+   c:[ { t:'2 pyruvate (pyruvic acid)', f:num('(2|hai)','pyruv') },
+       { t:'2 ATP', f:num('(2|hai)','atp') },
+       { t:'2 NADH', f:num('(2|hai)','nadh') } ] },
+ { ref:'Giai đoạn oxi hóa pyruvic acid và chu trình Krebs tạo ra: <b>2 ATP, 8 NADH, 2 FADH<sub>2</sub>, 6 CO<sub>2</sub></b>.',
+   note:'Đây là số liệu theo tài liệu ôn tập. Chú ý phân biệt với giai đoạn đường phân (2 pyruvate, 2 ATP, 2 NADH) và chuỗi truyền electron (26–28 ATP, 6 H<sub>2</sub>O).',
+   c:[ { t:'2 ATP', f:num('(2|hai)','atp') },
+       { t:'8 NADH', f:num('(8|tam)','nadh') },
+       { t:'2 FADH<sub>2</sub>', f:num('(2|hai)','fadh2') },
+       { t:'6 CO<sub>2</sub>', f:num('(6|sau)','co2') } ] },
+ { ref:'Hai nhóm sắc tố chính: <b>diệp lục (chlorophyll)</b> và <b>carotenoid</b>.<br>Vai trò: tiếp nhận năng lượng ánh sáng (quang năng) và chuyển hóa thành hóa năng (ATP và NADPH).',
+   note:'Cần đủ hai ý: tên hai nhóm sắc tố và vai trò (tiếp nhận quang năng, chuyển thành hóa năng).',
+   c:[ { t:'Diệp lục (chlorophyll)', f:rx(/diep luc/,/chlorophyll/,/clorophin/) },
+       { t:'Carotenoid', f:rx(/carotenoi/,/caroten/) },
+       { t:'Vai trò: tiếp nhận năng lượng ánh sáng (quang năng)', f:rx(/(tiep nhan|hap thu|thu nhan)[^.;]*(nang luong|quang nang|anh sang)/) },
+       { t:'Vai trò: chuyển hóa thành hóa năng (ATP và NADPH)', f:rx(/(chuyen|bien doi)[^.;]*(hoa nang|atp|nadph|nang luong hoa hoc)/) } ] },
+ { ref:'<b>Đa lượng:</b> N, Ca, P, K, S, Mg.<br><b>Vi lượng:</b> Cl, Fe, Mn, Mo, Zn.',
+   note:'Theo tài liệu, Cl thuộc nhóm vi lượng.',
+   c:[ { t:'Đa lượng: N, Ca, P, K, S, Mg', f:n => { const s = groupElems(n,'da luong'); return !!s && MACRO.every(e => s.has(e)) && !MICRO.some(e => s.has(e)); } },
+       { t:'Vi lượng: Cl, Fe, Mn, Mo, Zn', f:n => { const s = groupElems(n,'vi luong'); return !!s && MICRO.every(e => s.has(e)) && !MACRO.some(e => s.has(e)); } } ] },
+ { ref:'<b>Hấp thụ nước</b> theo cơ chế thẩm thấu: dịch tế bào biểu bì lông hút ưu trương so với dịch đất → nước di chuyển từ đất vào tế bào lông hút.<br><b>Khoáng thụ động:</b> chất khoáng đi từ đất (nồng độ cao) → rễ (nồng độ thấp), không cần năng lượng.<br><b>Khoáng chủ động:</b> chất khoáng đi từ đất (nồng độ thấp) → rễ (nồng độ cao), cần năng lượng. VD: Ca<sup>2+</sup> trong đất 0,2% nhưng trong tế bào lông hút 0,5% thì được vận chuyển vào theo cơ chế chủ động.',
+   note:'Có thể diễn đạt khác miễn đủ các ý: thẩm thấu, chiều vận chuyển theo nồng độ và yêu cầu năng lượng của mỗi cơ chế.',
+   c:[ { t:'Nước được hấp thụ theo cơ chế thẩm thấu', f:rx(/tham thau/) },
+       { t:'Dịch tế bào lông hút ưu trương so với dịch đất → nước đi từ đất vào tế bào', f:rx(/uu truong/,/nong do[^.;]*cao hon/,/nuoc[^.;]*dat[^.;]*vao/) },
+       { t:'Khoáng thụ động: từ nồng độ cao → thấp, không cần năng lượng', f:n => { const s = segOf(n, 'thu dong', 'chu dong'); return !!s && (/khong (can|ton|dung) nang luong/.test(s) || /cao[\s)\]]*(den|sang|vao|toi|->)[^.;]{0,30}thap/.test(s)); } },
+       { t:'Khoáng chủ động: từ nồng độ thấp → cao, cần năng lượng', f:n => { const s = segOf(n, 'chu dong', 'thu dong'); return !!s && (/(can|ton|dung) nang luong/.test(s.replace(/khong (can|ton|dung) nang luong/g, '')) || /thap[\s)\]]*(den|sang|vao|toi|->)[^.;]{0,30}cao/.test(s)); } } ] }
+],
+es: [
+ { ref:'<b>Biểu hiện:</b> lá héo, bắt đầu vàng và rụng dần; rễ bị thối hỏng; cây chết dần.<br><b>Giải thích:</b> khi đất bị ngập úng, các khe đất bị phủ kín bởi nước mà hàm lượng oxygen trong nước rất thấp nên không đủ cung cấp cho rễ cây thực hiện hô hấp → quá trình hô hấp ở rễ diễn ra yếu (hoặc diễn ra theo con đường hô hấp kị khí) khiến tế bào lông hút thiếu năng lượng để hấp thụ chủ động các chất khoáng cần thiết → trong tế bào có nồng độ chất tan thấp thì áp suất thẩm thấu của tế bào thấp → nước không thẩm thấu vào tế bào lông hút của rễ → cây bị mất cân bằng nước dẫn đến lá có biểu hiện héo, thậm chí là chết.',
+   c:[ { t:'Biểu hiện: lá héo, vàng, rụng dần; rễ thối hỏng; cây chết dần (nêu được ít nhất 2 biểu hiện)', p:0.15, f:n => [/heo/,/vang/,/rung/,/thoi/,/chet/].filter(r => r.test(n)).length >= 2 },
+       { t:'Đất ngập úng → hàm lượng oxygen thấp → rễ hô hấp yếu (hoặc hô hấp kị khí)', p:0.15, f:n => /oxy|oxi|thieu o/.test(n) && /ho hap/.test(n) },
+       { t:'Tế bào lông hút thiếu năng lượng → không hấp thụ chủ động được chất khoáng', p:0.15, f:n => /nang luong/.test(n) && /(chu dong|khoang)/.test(n) },
+       { t:'Nồng độ chất tan trong tế bào thấp → áp suất thẩm thấu thấp → nước không thẩm thấu vào tế bào lông hút', p:0.15, f:rx(/ap suat tham thau/,/nong do chat tan/,/khong tham thau/) },
+       { t:'Cây mất cân bằng nước → lá héo, thậm chí chết', p:0.1, f:rx(/mat can bang nuoc/,/thieu nuoc/,/khong (hut|hap thu) duoc nuoc/) } ] },
+ { ref:'Cần áp dụng các biện pháp kĩ thuật như: <b>chọn giống thích hợp</b>, <b>bón phân hợp lí</b>, <b>cung cấp đầy đủ nước</b> cho cây trồng, <b>gieo trồng đúng thời vụ</b>, <b>phòng trừ sâu bệnh hại</b>,…',
+   c:[ { t:'Chọn giống thích hợp', p:0.12, f:rx(/giong/) },
+       { t:'Bón phân hợp lí', p:0.12, f:rx(/bon phan/) },
+       { t:'Cung cấp đầy đủ nước cho cây trồng', p:0.12, f:rx(/(cung cap|tuoi|bo sung|du|day du) nuoc/,/nuoc day du/) },
+       { t:'Gieo trồng đúng thời vụ', p:0.12, f:rx(/thoi vu/) },
+       { t:'Phòng trừ sâu bệnh hại', p:0.12, f:rx(/sau benh/,/phong tru/) } ] },
+ { ref:'<b>Phân bón là nguồn ion khoáng:</b> khi tan trong nước, phân bón (NH<sub>4</sub>NO<sub>3</sub>, KCl, super lân…) phân li thành các ion (NH<sub>4</sub><sup>+</sup>, NO<sub>3</sub><sup>−</sup>, K<sup>+</sup>, Cl<sup>−</sup>…) làm tăng nồng độ chất tan trong dung dịch đất.<br><b>Cơ chế gây hại:</b> nếu bón quá liều → nồng độ dung dịch đất tăng cao đột ngột, vượt xa nồng độ chất tan trong tế bào lông hút → thế nước của đất trở nên rất thấp.<br>Nước từ tế bào rễ bị kéo ào ạt ra ngoài đất theo gradient nồng độ (hiện tượng phản co nguyên sinh – tế bào chất tách khỏi vách tế bào). Rễ mất nước mạnh → mất khả năng hút nước và khoáng → rễ bị hư hại, chết.<br>⇒ Phải bón phân <b>đúng liều lượng, đúng thời điểm, chia làm nhiều lần</b> và <b>tưới nước sau khi bón</b> để pha loãng dung dịch đất, tránh làm nồng độ đất tăng quá cao.',
+   c:[ { t:'Phân bón tan, phân li thành ion → tăng nồng độ chất tan trong dung dịch đất', p:0.15, f:n => /phan bon/.test(n) && /(ion|phan li|nong do|tan)/.test(n) },
+       { t:'Bón quá liều → nồng độ dung dịch đất cao hơn trong tế bào lông hút → thế nước của đất rất thấp', p:0.15, f:rx(/the nuoc/,/uu truong/,/nong do[^.;]*(cao|tang|vuot)/) },
+       { t:'Nước từ tế bào rễ bị kéo ra ngoài đất (phản co nguyên sinh)', p:0.15, f:rx(/phan co nguyen sinh/,/nuoc[^.;]*(ra ngoai|ra khoi|bi hut ra|bi keo ra)/) },
+       { t:'Rễ mất nước, mất khả năng hút nước và khoáng → hư hại, cây héo, chết', p:0.1, f:rx(/re[^.;]*(mat nuoc|mat kha nang|hu hai|chet)/,/mat kha nang hut/,/cay[^.;]*(heo|chet)/) },
+       { t:'Cách bón: đúng liều lượng, đúng thời điểm, chia nhiều lần, tưới nước sau khi bón (nêu được ít nhất 2 ý)', p:0.15, f:n => [/dung lieu|lieu luong|vua du|dung luong/,/thoi diem|dung luc|dung giai doan/,/nhieu lan|chia/,/tuoi nuoc/].filter(r => r.test(n)).length >= 2 } ] }
+]
+};
+
+/* =====================================================================
+   TRẠNG THÁI & LƯU TRỮ
+   ===================================================================== */
+const range = n => [...Array(n).keys()];
+function shuf(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function applyOrder() {
+    if (S.shuffleOn) {
+        S.order = { mcq: shuf(range(25)), tf: shuf(range(4)), sa: shuf(range(5)), es: shuf(range(3)) };
+        S.optOrder = range(25).map(() => shuf([0, 1, 2, 3]));
+    } else {
+        S.order = { mcq: range(25), tf: range(4), sa: range(5), es: range(3) };
+        S.optOrder = range(25).map(() => [0, 1, 2, 3]);
+    }
+}
+function freshAnswers() { return { mcq: {}, tf: {}, sa: {}, es: {} }; }
+function load() {
+    try {
+        const r = JSON.parse(localStorage.getItem(STORE_KEY));
+        if (r && r.v === 1 && r.s && r.s.order) return r.s;
+    } catch (e) {}
+    const s = { answers: freshAnswers(), order: null, optOrder: null, shuffleOn: false, submitted: false, review: false,
+                section: 'mcq', cur: { mcq: 0, tf: 0, sa: 0, es: 0 }, manual: {} };
+    return s;
+}
+let S = load();
+if (!S.order) applyOrder();
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, s: S })); } catch (e) {} }
+
+/* =====================================================================
+   TIỆN ÍCH
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const r3 = x => Math.round(x * 1000) / 1000;
+const fmt = x => (Math.round(x * 100) / 100).toString().replace('.', ',');
+function toast(msg) {
+    const el = $('#toast');
+    el.innerHTML = `<div class="fade bg-slate-800 border border-slate-600 text-slate-100 text-sm px-4 py-2.5 rounded-xl shadow-xl">${msg}</div>`;
+    clearTimeout(toast.t); toast.t = setTimeout(() => el.innerHTML = '', 2600);
+}
+let pendingOk = null;
+function openModal(html, wide) {
+    $('#modal').innerHTML = `<div data-act="mclose" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm fade">
+      <div class="w-full ${wide ? 'max-w-4xl' : 'max-w-md'} max-h-[88vh] overflow-auto rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">${html}</div></div>`;
+}
+function closeModal() { $('#modal').innerHTML = ''; pendingOk = null; }
+function ask(title, msg, okLabel, cb, danger) {
+    pendingOk = cb;
+    openModal(`<h3 class="text-lg font-bold text-white mb-2">${title}</h3><p class="text-sm text-slate-400 leading-relaxed mb-5">${msg}</p>
+      <div class="flex justify-end gap-2">
+        <button data-act="mclose2" class="px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300">Hủy</button>
+        <button data-act="mok" class="px-4 py-2 rounded-xl text-sm font-semibold text-white ${danger ? 'bg-rose-600 hover:bg-rose-500' : 'bg-indigo-600 hover:bg-indigo-500'}">${okLabel}</button>
+      </div>`);
+}
+
+/* =====================================================================
+   TIẾN ĐỘ
+   ===================================================================== */
+function answeredCount(sec) {
+    const A = S.answers[sec];
+    if (sec === 'mcq') return Object.keys(A).length;
+    if (sec === 'tf') return range(4).filter(i => range(4).every(k => A[i + '-' + k] !== undefined)).length;
+    return Object.keys(A).filter(i => (A[i] || '').trim()).length;
+}
+const totalAnswered = () => SECS.reduce((a, s) => a + answeredCount(s.id), 0);
+function isDone(sec, qi) {
+    const A = S.answers[sec];
+    if (sec === 'mcq') return A[qi] !== undefined;
+    if (sec === 'tf') return range(4).every(k => A[qi + '-' + k] !== undefined);
+    return !!(A[qi] || '').trim();
+}
+
+/* =====================================================================
+   CHẤM ĐIỂM
+   ===================================================================== */
+function critMet(type, qi, j) {
+    const text = S.answers[type][qi] || '';
+    if (!text.trim()) return false;
+    const k = `${type}-${qi}-${j}`;
+    if (S.manual[k] !== undefined) return S.manual[k];
+    try { return !!KEY[type][qi].c[j].f(norm(text)); } catch (e) { return false; }
+}
+function grade() {
+    const G = { mcq: { items: [] }, tf: { items: [] }, sa: { items: [] }, es: { items: [] } };
+    S.order.mcq.forEach((qi, pos) => {
+        const sel = S.answers.mcq[qi];
+        const st = sel === undefined ? 'blank' : (sel === KEY.mcq[qi].a ? 'ok' : 'bad');
+        G.mcq.items.push({ sec: 'mcq', pos, qi, st, score: st === 'ok' ? 0.2 : 0, max: 0.2 });
+    });
+    S.order.tf.forEach((qi, pos) => {
+        const res = range(4).map(k => { const v = S.answers.tf[qi + '-' + k]; return v === undefined ? 'blank' : (v === KEY.tf[qi].a[k] ? 'ok' : 'bad'); });
+        const okc = res.filter(x => x === 'ok').length;
+        const st = okc === 4 ? 'ok' : (res.every(x => x === 'blank') ? 'blank' : 'bad');
+        G.tf.items.push({ sec: 'tf', pos, qi, st, res, score: okc * 0.125, max: 0.5 });
+    });
+    ['sa', 'es'].forEach(sec => {
+        S.order[sec].forEach((qi, pos) => {
+            const cs = KEY[sec][qi].c, text = (S.answers[sec][qi] || '').trim();
+            const met = cs.map((c, j) => critMet(sec, qi, j));
+            const mx = sec === 'sa' ? 0.2 : cs.reduce((a, c) => a + c.p, 0);
+            let score = 0;
+            if (sec === 'sa') score = mx * met.filter(Boolean).length / cs.length;
+            else cs.forEach((c, j) => { if (met[j]) score += c.p; });
+            const st = !text ? 'blank' : (met.every(Boolean) ? 'ok' : 'bad');
+            G[sec].items.push({ sec, pos, qi, st, met, score: r3(score), max: r3(mx) });
+        });
+    });
+    let total = 0, ok = 0, bad = 0, blank = 0;
+    SECS.forEach(s => {
+        const g = G[s.id];
+        g.score = r3(g.items.reduce((a, i) => a + i.score, 0));
+        g.max = MAXPT[s.id];
+        g.ok = g.items.filter(i => i.st === 'ok').length;
+        g.bad = g.items.filter(i => i.st === 'bad').length;
+        g.blank = g.items.filter(i => i.st === 'blank').length;
+        total += g.score; ok += g.ok; bad += g.bad; blank += g.blank;
+    });
+    G.total = r3(total); G.ok = ok; G.bad = bad; G.blank = blank;
+    return G;
+}
+
+/* =====================================================================
+   GIAO DIỆN – LÀM BÀI
+   ===================================================================== */
+function renderTest(anim = true) {
+    $('#app').innerHTML = `<div id="top"></div><div id="tabs"></div><div id="card"></div><div id="foot"></div><div id="nav"></div><div id="subm"></div>`;
+    renderTop(); renderTabs(); renderCard(anim); renderFoot(); renderNav(); renderSubmit();
+}
+function renderTop() {
+    const done = totalAnswered(), pct = Math.round(done / 37 * 100);
+    $('#top').innerHTML = `
+    <section class="rounded-2xl border border-slate-800 bg-slate-800/40 p-5">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <div class="text-xs font-medium text-emerald-400 mb-1">Sinh học 11 · Năm học 2026–2027</div>
+          <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Đề ôn tập Giữa kì I</h1>
+        </div>
+      </div>
+      <div class="mt-4">
+        <div class="flex justify-between text-xs text-slate-400 mb-1.5"><span>Tiến độ hoàn thành</span><span class="font-medium text-slate-200">${done}/37 câu</span></div>
+        <div class="h-2 bg-slate-700/70 rounded-full overflow-hidden"><div class="h-2 rounded-full bg-gradient-to-r from-indigo-500 to-emerald-400 transition-all duration-300" style="width:${pct}%"></div></div>
+      </div>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button data-act="matrix" class="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700/80 border border-slate-700 px-3 py-2 rounded-xl transition-all"><i class="fa-solid fa-table-list text-xs text-indigo-400"></i>Ma trận đề</button>
+        <button data-act="shuf-toggle" aria-pressed="${S.shuffleOn}" class="flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-xl border transition-all ${S.shuffleOn ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/40' : 'text-slate-300 bg-slate-800 border-slate-700 hover:bg-slate-700/80'}"><i class="fa-solid fa-shuffle text-xs"></i>Xáo trộn: ${S.shuffleOn ? 'Bật' : 'Tắt'}</button>
+        ${S.shuffleOn ? `<button data-act="shuf-again" class="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700/80 border border-slate-700 px-3 py-2 rounded-xl transition-all"><i class="fa-solid fa-rotate text-xs"></i>Xáo trộn lại</button>` : ''}
+        <button data-act="restart" class="flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-rose-300 bg-slate-800 hover:bg-slate-700/80 border border-slate-700 px-3 py-2 rounded-xl transition-all ml-auto"><i class="fa-solid fa-trash-can text-xs"></i>Làm lại</button>
+      </div>
+    </section>`;
+}
+function renderTabs() {
+    $('#tabs').innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-2">` + SECS.map(s => {
+        const on = S.section === s.id, d = answeredCount(s.id);
+        return `<button data-act="tab" data-sec="${s.id}" class="flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-all ${on ? 'bg-indigo-600/20 border-indigo-400/70 text-white' : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:border-slate-500'}">
+          <span class="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center ${on ? 'bg-indigo-500/30 text-indigo-200' : 'bg-slate-700/50 text-slate-400'}"><i class="fa-solid ${s.icon}"></i></span>
+          <span class="min-w-0"><span class="block text-sm font-semibold truncate">${s.name}</span><span class="block text-xs ${d === s.n ? 'text-emerald-400' : 'text-slate-500'}">${d}/${s.n} câu</span></span></button>`;
+    }).join('') + `</div>`;
+}
+function renderCard(anim = true) {
+    const sec = S.section, sd = SECS.find(s => s.id === sec), pos = S.cur[sec], qi = S.order[sec][pos];
+    let body = '';
+    if (sec === 'mcq') {
+        const q = QUESTIONS.mcq[qi], sel = S.answers.mcq[qi], k = KEY.mcq[qi], done = sel !== undefined;
+        body = `<p class="text-base md:text-lg font-medium text-white leading-relaxed mb-1">${q.q}</p>
+          <p class="text-xs text-slate-500 mb-4">Chọn một đáp án — kết quả và giải thích hiện ngay sau khi chọn.</p><div class="space-y-2.5">` +
+            S.optOrder[qi].map((oi, i) => {
+                let cls = 'border-slate-700 bg-slate-900/50 text-slate-200 hover:border-indigo-500/60 hover:bg-slate-800', badge = 'bg-slate-700/60 text-slate-300', ic = '';
+                if (done) {
+                    if (oi === k.a) { cls = 'border-emerald-500/60 bg-emerald-500/10 text-emerald-100'; badge = 'bg-emerald-500 text-white'; ic = '<i class="fa-solid fa-check text-emerald-400 mt-1"></i>'; }
+                    else if (oi === sel) { cls = 'border-rose-500/60 bg-rose-500/10 text-rose-100'; badge = 'bg-rose-500 text-white'; ic = '<i class="fa-solid fa-xmark text-rose-400 mt-1"></i>'; }
+                    else { cls = 'border-slate-800 bg-slate-900/30 text-slate-500'; }
+                }
+                return `<button ${done ? 'disabled' : `data-act="pick" data-oi="${oi}"`} class="w-full text-left flex gap-3 items-start rounded-xl border px-4 py-3 transition-all ${cls} ${done ? 'cursor-default' : ''}">
+                  <span class="w-7 h-7 shrink-0 rounded-lg flex items-center justify-center text-sm font-semibold ${badge}">${'ABCD'[i]}</span>
+                  <span class="flex-1 pt-0.5 leading-relaxed">${q.o[oi]}</span>${ic}</button>`;
+            }).join('') + `</div>` +
+            (done ? `<div class="fade mt-4 rounded-xl border ${sel === k.a ? 'border-emerald-500/40 bg-emerald-500/10' : 'border-rose-500/40 bg-rose-500/10'} p-4">
+              <div class="font-semibold ${sel === k.a ? 'text-emerald-300' : 'text-rose-300'}">${sel === k.a ? '<i class="fa-solid fa-circle-check mr-1.5"></i>Chính xác!' : `<i class="fa-solid fa-circle-xmark mr-1.5"></i>Chưa đúng — đáp án đúng là ${'ABCD'[S.optOrder[qi].indexOf(k.a)]}.`}</div>
+              <div class="text-sm text-slate-200 leading-relaxed mt-1.5"><b class="text-indigo-300">Giải thích:</b> ${k.e}</div></div>` : '');
+    } else if (sec === 'tf') {
+        const q = QUESTIONS.tf[qi], kk = KEY.tf[qi];
+        body = `<p class="text-base md:text-lg font-medium text-white leading-relaxed mb-1">${q.q}</p>
+          <p class="text-xs text-slate-500 mb-4">Chọn Đúng hoặc Sai cho từng ý a, b, c, d — kết quả và giải thích hiện ngay sau mỗi lần chọn.</p><div class="space-y-3">` +
+            q.items.map((t, k) => {
+                const v = S.answers.tf[qi + '-' + k], done = v !== undefined, right = kk.a[k], ok = v === right;
+                const btn = (val, label, on) => {
+                    if (!done) return `<button data-act="tf" data-k="${k}" data-v="${val}" class="px-4 py-1.5 rounded-lg text-sm font-semibold border border-slate-600 bg-slate-800 text-slate-300 hover:border-slate-400 transition-all">${label}</button>`;
+                    const cls = val === v ? (ok ? 'border-emerald-400 bg-emerald-500/20 text-emerald-200' : 'border-rose-400 bg-rose-500/20 text-rose-200') : 'border-slate-800 bg-slate-900/30 text-slate-600';
+                    return `<button disabled class="px-4 py-1.5 rounded-lg text-sm font-semibold border cursor-default ${cls}">${label}</button>`;
+                };
+                return `<div class="rounded-xl border ${!done ? 'border-slate-700' : ok ? 'border-emerald-500/40' : 'border-rose-500/40'} bg-slate-900/50 p-4">
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div class="flex gap-3 flex-1"><b class="text-indigo-300 w-5 shrink-0">${'abcd'[k]})</b><span class="leading-relaxed text-slate-100">${t}</span></div>
+                    <div class="flex gap-2 shrink-0 sm:ml-3">${btn(true, 'Đúng')}${btn(false, 'Sai')}</div></div>
+                  ${done ? `<div class="fade mt-3 ml-8 text-sm leading-relaxed ${ok ? 'text-emerald-200' : 'text-rose-200'}">
+                    <b>${ok ? '<i class="fa-solid fa-circle-check mr-1"></i>Bạn chọn đúng.' : '<i class="fa-solid fa-circle-xmark mr-1"></i>Bạn chọn chưa đúng.'}</b>
+                    <span class="text-slate-300"> ${kk.e[k]}</span></div>` : ''}</div>`;
+            }).join('') + `</div>`;
+    } else {
+        const q = QUESTIONS[sec][qi], val = S.answers[sec][qi] || '';
+        body = `<p class="text-base md:text-lg font-medium text-white leading-relaxed mb-4">${q.q}</p>
+          <textarea data-ta="${sec}" data-i="${qi}" rows="${sec === 'sa' ? 6 : 12}" placeholder="${sec === 'sa' ? 'Nhập câu trả lời của bạn…' : 'Trình bày bài làm của bạn…'}"
+            class="w-full rounded-xl border border-slate-700 bg-slate-900/70 text-slate-100 placeholder-slate-500 p-4 leading-relaxed focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400">${esc(val)}</textarea>
+          <p class="text-xs text-slate-500 mt-2">Nội dung được lưu tự động. Có thể xuống dòng và quay lại sửa bất cứ lúc nào trước khi nộp.</p>`;
+    }
+    $('#card').innerHTML = `<section class="${anim ? 'fade' : ''} rounded-2xl border border-slate-800 bg-slate-800/50 p-5 md:p-7">
+      <div class="flex items-center justify-between mb-4 gap-3">
+        <span class="text-xs font-semibold text-indigo-300 bg-indigo-500/10 border border-indigo-500/30 px-2.5 py-1 rounded-full">${sd.title}</span>
+        <span class="text-sm font-medium text-slate-400">Câu ${pos + 1}/${sd.n}</span></div>${body}</section>`;
+}
+function renderFoot() {
+    const sec = S.section, i = SEC_IDS.indexOf(sec), first = i === 0 && S.cur[sec] === 0, last = i === 3 && S.cur[sec] === N[sec] - 1;
+    const nextLabel = S.cur[sec] === N[sec] - 1 && i < 3 ? 'Sang phần ' + SECS[i + 1].name : 'Câu tiếp theo';
+    $('#foot').innerHTML = `<div class="flex items-center justify-between gap-3">
+      <button data-act="prev" ${first ? 'disabled' : ''} class="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed"><i class="fa-solid fa-arrow-left text-xs"></i>Câu trước</button>
+      ${last ? '' : `<button data-act="next" class="flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl text-white bg-gradient-to-br from-indigo-600 to-blue-700 hover:from-indigo-500 hover:to-blue-600 border border-indigo-400/30 transition-all">${nextLabel}<i class="fa-solid fa-arrow-right text-xs"></i></button>`}</div>`;
+}
+function renderNav() {
+    const sec = S.section, n = N[sec];
+    $('#nav').innerHTML = `<div class="rounded-2xl border border-slate-800 bg-slate-800/30 p-4"><div class="text-xs text-slate-500 mb-2.5">Danh sách câu · ${SECS.find(s => s.id === sec).name}</div><div class="flex flex-wrap gap-2">` +
+        range(n).map(pos => {
+            const qi = S.order[sec][pos], cur = pos === S.cur[sec], d = isDone(sec, qi);
+            let cl = 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500';
+            if (d) {
+                const good = sec === 'mcq' ? S.answers.mcq[qi] === KEY.mcq[qi].a : sec === 'tf' ? range(4).every(j => S.answers.tf[qi + '-' + j] === KEY.tf[qi].a[j]) : true;
+                cl = good ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-200' : 'bg-rose-500/20 border-rose-500/50 text-rose-200';
+            }
+            return `<button data-act="goto" data-i="${pos}" class="w-10 h-10 rounded-lg text-sm font-semibold border transition-all ${cur ? 'ring-2 ring-indigo-400 ' : ''}${cl}">${pos + 1}</button>`;
+        }).join('') + `</div></div>`;
+}
+function renderSubmit() {
+    $('#subm').innerHTML = `<button data-act="submit" class="w-full flex items-center justify-center gap-2 text-base font-semibold px-5 py-3.5 rounded-2xl text-white bg-emerald-600 hover:bg-emerald-500 border border-emerald-400/30 shadow-lg hover:shadow-emerald-500/20 transition-all"><i class="fa-solid fa-paper-plane"></i>Nộp bài</button>`;
+}
+function refreshChrome() { renderTop(); renderTabs(); renderNav(); }
+
+/* =====================================================================
+   GIAO DIỆN – KẾT QUẢ
+   ===================================================================== */
+const stBadge = (st, partial) => ({
+    ok:   '<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">' + (partial ? 'Đủ ý' : 'Đúng') + '</span>',
+    bad:  '<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30">' + (partial ? 'Chưa đủ ý' : 'Sai') + '</span>',
+    blank:'<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-600/30 text-slate-300 border border-slate-500/40">Chưa trả lời</span>'
+}[st]);
+function rvHead(it, label) {
+    const orig = S.shuffleOn ? `<span class="text-xs text-slate-500">(câu gốc ${it.qi + 1})</span>` : '';
+    return `<div class="flex items-center justify-between gap-2 mb-3 flex-wrap"><div class="flex items-center gap-2"><b class="text-white">${label} ${it.pos + 1}</b>${orig}</div>
+      <div class="flex items-center gap-2"><span class="text-xs text-slate-400 tabular-nums">${fmt(it.score)}/${fmt(it.max)} đ</span>${stBadge(it.st, it.sec === 'sa' || it.sec === 'es' || it.sec === 'tf')}</div></div>`;
+}
+const expBox = html => `<div class="mt-3 rounded-xl bg-indigo-500/10 border border-indigo-500/25 p-3.5 text-sm text-slate-200 leading-relaxed"><b class="text-indigo-300"><i class="fa-regular fa-lightbulb mr-1"></i>Giải thích:</b> ${html}</div>`;
+function rvMCQ(it) {
+    const q = QUESTIONS.mcq[it.qi], k = KEY.mcq[it.qi], sel = S.answers.mcq[it.qi];
+    const opts = S.optOrder[it.qi].map((oi, i) => {
+        let cls = 'border-slate-700 bg-slate-900/40 text-slate-300', ic = '', tag = '';
+        if (oi === k.a) { cls = 'border-emerald-500/60 bg-emerald-500/10 text-emerald-100'; ic = '<i class="fa-solid fa-check text-emerald-400"></i>'; }
+        else if (oi === sel) { cls = 'border-rose-500/60 bg-rose-500/10 text-rose-100'; ic = '<i class="fa-solid fa-xmark text-rose-400"></i>'; }
+        if (oi === sel) tag = '<span class="text-xs text-slate-400 ml-1">(bạn chọn)</span>';
+        return `<div class="flex gap-3 items-start rounded-xl border px-4 py-2.5 ${cls}"><b class="w-5 shrink-0">${'ABCD'[i]}.</b><span class="flex-1">${q.o[oi]}${tag}</span>${ic}</div>`;
+    }).join('');
+    return `${rvHead(it, 'Câu')}<p class="text-slate-100 font-medium leading-relaxed mb-3">${q.q}</p><div class="space-y-2">${opts}</div>${expBox(k.e)}`;
+}
+function rvTF(it) {
+    const q = QUESTIONS.tf[it.qi], k = KEY.tf[it.qi];
+    const rows = q.items.map((t, j) => {
+        const v = S.answers.tf[it.qi + '-' + j], right = k.a[j], st = it.res[j];
+        const lab = x => x === undefined ? 'Chưa chọn' : (x ? 'Đúng' : 'Sai');
+        return `<div class="rounded-xl border ${st === 'ok' ? 'border-emerald-500/40 bg-emerald-500/5' : st === 'bad' ? 'border-rose-500/40 bg-rose-500/5' : 'border-slate-700 bg-slate-900/40'} p-3.5">
+          <div class="flex gap-2"><b class="text-indigo-300 w-5 shrink-0">${'abcd'[j]})</b><span class="flex-1 text-slate-100 leading-relaxed">${t}</span></div>
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 ml-7 text-xs">
+            <span class="text-slate-400">Bạn chọn: <b class="${st === 'ok' ? 'text-emerald-300' : st === 'bad' ? 'text-rose-300' : 'text-slate-300'}">${lab(v)}</b></span>
+            <span class="text-slate-400">Đáp án: <b class="text-emerald-300">${lab(right)}</b></span></div>
+          <p class="ml-7 mt-2 text-sm text-slate-300 leading-relaxed">${k.e[j]}</p></div>`;
+    }).join('');
+    return `${rvHead(it, 'Câu')}<p class="text-slate-100 font-medium leading-relaxed mb-3">${q.q}</p><div class="space-y-2.5">${rows}</div>`;
+}
+function rvText(it) {
+    const sec = it.sec, q = QUESTIONS[sec][it.qi], k = KEY[sec][it.qi], text = (S.answers[sec][it.qi] || '').trim();
+    const crit = k.c.map((c, j) => {
+        const key = `${sec}-${it.qi}-${j}`;
+        return `<label class="flex gap-3 items-start rounded-lg px-3 py-2 ${it.met[j] ? 'bg-emerald-500/10' : 'bg-slate-900/40'} ${text ? 'cursor-pointer' : 'opacity-60'}">
+          <input type="checkbox" data-act="crit" data-k="${key}" ${it.met[j] ? 'checked' : ''} ${text ? '' : 'disabled'} class="mt-1 accent-emerald-500">
+          <span class="flex-1 text-sm text-slate-200 leading-relaxed">${c.t}</span>${c.p ? `<span class="text-xs text-slate-400 tabular-nums shrink-0">${fmt(c.p)} đ</span>` : ''}</label>`;
+    }).join('');
+    return `${rvHead(it, 'Câu')}<p class="text-slate-100 font-medium leading-relaxed mb-3">${q.q}</p>
+      <div class="rounded-xl border border-slate-700 bg-slate-900/50 p-3.5 mb-3"><div class="text-xs text-slate-400 mb-1.5">Bài làm của bạn</div>
+        ${text ? `<div class="text-sm text-slate-100 whitespace-pre-wrap leading-relaxed">${esc(text)}</div>` : '<div class="text-sm text-slate-500 italic">Chưa trả lời</div>'}</div>
+      <div class="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3.5 mb-3"><div class="text-xs text-emerald-300 mb-1.5 font-semibold">${sec === 'sa' ? 'Đáp án tham khảo' : 'Đáp án tham khảo / dàn ý chấm điểm'}</div>
+        <div class="text-sm text-slate-100 leading-relaxed">${k.ref}</div></div>
+      <div class="text-xs text-slate-400 mb-1.5">${sec === 'sa' ? 'Các ý cần có' : 'Các ý cần có và điểm thành phần'} — hệ thống tự nhận diện theo từ khóa; nếu bạn diễn đạt khác nhưng đúng ý, hãy tự tích/bỏ tích để điểm được cập nhật.</div>
+      <div class="space-y-1.5">${crit}</div>${k.note ? expBox(k.note) : ''}`;
+}
+function reviewList(G, all) {
+    let html = '', count = 0;
+    SECS.forEach(s => {
+        const items = G[s.id].items.filter(i => all || i.st !== 'ok');
+        if (!items.length) return;
+        count += items.length;
+        html += `<h3 class="text-sm font-semibold text-indigo-300 mt-6 mb-3">${s.title}</h3><div class="space-y-4">` +
+            items.map(it => `<article class="rounded-2xl border border-slate-800 bg-slate-800/50 p-5">${s.id === 'mcq' ? rvMCQ(it) : s.id === 'tf' ? rvTF(it) : rvText(it)}</article>`).join('') + `</div>`;
+    });
+    return { html, count };
+}
+function weakTopics(G) {
+    const u = {};
+    const add = (k, label) => { (u[k] = u[k] || []).push(label); };
+    G.mcq.items.forEach(i => { if (i.st !== 'ok') add(QUESTIONS.mcq[i.qi].m, `TN ${i.pos + 1}`); });
+    G.tf.items.forEach(i => i.res.forEach((r, j) => { if (r !== 'ok') add(QUESTIONS.tf[i.qi].m[j], `Đ/S ${i.pos + 1}${'abcd'[j]}`); }));
+    G.sa.items.forEach(i => { if (i.st !== 'ok') add(QUESTIONS.sa[i.qi].m, `TLN ${i.pos + 1}`); });
+    G.es.items.forEach(i => { if (i.st !== 'ok') QUESTIONS.es[i.qi].m.forEach(k => add(k, `TL ${i.pos + 1}`)); });
+    return Object.entries(u).sort((a, b) => b[1].length - a[1].length);
+}
+function renderResult() {
+    const G = grade(), tot = G.total;
+    const msg = tot >= 8 ? ['Rất tốt! Bạn nắm vững kiến thức.', 'text-emerald-300'] : tot >= 6.5 ? ['Khá tốt, ôn thêm vài chỗ là chắc.', 'text-sky-300'] : tot >= 5 ? ['Đạt yêu cầu, cần củng cố thêm.', 'text-amber-300'] : ['Cần ôn lại các phần bên dưới.', 'text-rose-300'];
+    const weak = weakTopics(G);
+    const rv = reviewList(G, S.review);
+    const stat = (n, label, cls) => `<div class="rounded-xl border border-slate-700 bg-slate-900/50 p-3 text-center"><div class="text-2xl font-bold ${cls}">${n}</div><div class="text-xs text-slate-400 mt-0.5">${label}</div></div>`;
+    $('#app').innerHTML = `
+    <section class="fade rounded-2xl border border-slate-800 bg-slate-800/40 p-5 md:p-7">
+      <div class="text-xs font-medium text-emerald-400 mb-1">Sinh học 11 · Giữa kì I · Kết quả</div>
+      <div class="flex flex-wrap items-center gap-6">
+        <div class="w-32 h-32 rounded-full border-4 border-indigo-400/60 bg-indigo-500/10 flex flex-col items-center justify-center shrink-0">
+          <div class="text-4xl font-extrabold text-white tabular-nums">${fmt(tot)}</div><div class="text-xs text-slate-400">/ 10 điểm</div></div>
+        <div class="flex-1 min-w-[220px]"><h1 class="text-xl md:text-2xl font-bold ${msg[1]} mb-3">${msg[0]}</h1>
+          <div class="grid grid-cols-3 gap-2">${stat(G.ok, 'Câu đúng / đủ ý', 'text-emerald-300')}${stat(G.bad, 'Câu sai / thiếu ý', 'text-rose-300')}${stat(G.blank, 'Chưa trả lời', 'text-slate-300')}</div></div>
+      </div>
+      <p class="text-xs text-slate-500 mt-4 leading-relaxed">Thang điểm do trang ôn tập thiết lập (không phải thang điểm nguyên bản của tài liệu). Phần Trả lời ngắn và Tự luận được nhận diện theo ý chính; bạn có thể tự điều chỉnh ở phần xem lại bên dưới.</p>
+    </section>
+
+    <section class="rounded-2xl border border-slate-800 bg-slate-800/40 p-5 md:p-6">
+      <h2 class="font-bold text-white mb-4">Điểm từng phần</h2>
+      <div class="space-y-4">` + SECS.map(s => {
+        const g = G[s.id], pct = Math.round(g.score / g.max * 100);
+        return `<div><div class="flex flex-wrap justify-between gap-2 text-sm mb-1.5"><span class="text-slate-200 font-medium">${s.title}</span>
+          <span class="text-slate-400"><span class="text-emerald-300">${g.ok} đúng</span> · <span class="text-rose-300">${g.bad} sai</span> · ${g.blank} trống · <b class="text-white tabular-nums">${fmt(g.score)}/${g.max} đ</b></span></div>
+          <div class="h-2 bg-slate-700/70 rounded-full overflow-hidden"><div class="h-2 rounded-full bg-gradient-to-r from-indigo-500 to-emerald-400" style="width:${pct}%"></div></div></div>`;
+    }).join('') + `</div></section>
+
+    <section class="rounded-2xl border border-slate-800 bg-slate-800/40 p-5 md:p-6">
+      <h2 class="font-bold text-white mb-1">Gợi ý nội dung cần ôn lại</h2>
+      <p class="text-xs text-slate-500 mb-4">Theo ma trận trong file soạn, sắp xếp theo số câu/ý bị mất điểm.</p>` +
+      (weak.length ? `<div class="space-y-2">` + weak.map(([k, labs]) => `<div class="rounded-xl border border-slate-700 bg-slate-900/50 p-3.5">
+          <div class="flex flex-wrap items-center gap-2 mb-1"><span class="text-xs px-2 py-0.5 rounded-full border ${LV[MATRIX[k].lv][1]}">${LV[MATRIX[k].lv][0]}</span><span class="text-xs text-slate-500">${labs.join(', ')}</span></div>
+          <div class="text-sm text-slate-200 leading-relaxed">${MATRIX[k].t}</div></div>`).join('') + `</div>`
+        : `<div class="text-sm text-emerald-300"><i class="fa-solid fa-circle-check mr-1"></i>Bạn trả lời đúng toàn bộ — không có nội dung cần ôn lại.</div>`) + `
+    </section>
+
+    <section class="flex flex-wrap gap-2">
+      <button data-act="review" class="flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl text-white bg-gradient-to-br from-indigo-600 to-blue-700 hover:from-indigo-500 hover:to-blue-600 border border-indigo-400/30 transition-all"><i class="fa-solid fa-eye text-xs"></i>${S.review ? 'Chỉ xem câu làm sai' : 'Xem lại toàn bộ đáp án'}</button>
+      <button data-act="restart" class="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700/80 transition-all"><i class="fa-solid fa-rotate-left text-xs"></i>Làm lại bài</button>
+      <button data-act="newtest" class="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition-all"><i class="fa-solid fa-shuffle text-xs"></i>Xáo trộn và làm đề mới</button>
+      <button data-act="matrix" class="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700/80 transition-all"><i class="fa-solid fa-table-list text-xs text-indigo-400"></i>Ma trận đề</button>
+      <a href="${SUBJECT_HOME}" class="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border border-indigo-800/50 bg-indigo-950/40 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/50 transition-all"><i class="fa-solid fa-house text-xs"></i>Trang chủ môn học</a>
+    </section>
+
+    <section><h2 class="font-bold text-white text-lg">${S.review ? 'Toàn bộ đáp án và giải thích' : `Danh sách câu làm sai (${rv.count})`}</h2>
+      ${rv.count ? rv.html : '<div class="mt-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5 text-sm text-emerald-300">Không có câu nào sai. Bấm “Xem lại toàn bộ đáp án” để đọc giải thích.</div>'}
+    </section>`;
+}
+
+/* =====================================================================
+   MA TRẬN ĐỀ
+   ===================================================================== */
+function openMatrix() {
+    const u = {};
+    const add = (k, l) => { (u[k] = u[k] || []).push(l); };
+    QUESTIONS.mcq.forEach((q, i) => add(q.m, 'TN ' + (i + 1)));
+    QUESTIONS.tf.forEach((q, i) => q.m.forEach((k, j) => add(k, `Đ/S ${i + 1}${'abcd'[j]}`)));
+    QUESTIONS.sa.forEach((q, i) => add(q.m, 'TLN ' + (i + 1)));
+    QUESTIONS.es.forEach((q, i) => q.m.forEach(k => add(k, 'TL ' + (i + 1))));
+    const cnt = { NB: 0, TH: 0, VD: 0 };
+    Object.entries(u).forEach(([k, l]) => cnt[MATRIX[k].lv] += l.length);
+    const order = Object.keys(MATRIX);
+    const rows = order.map(k => {
+        const l = u[k], m = MATRIX[k];
+        return `<tr class="border-t border-slate-800 ${l ? '' : 'opacity-60'}"><td class="py-2.5 pr-3 align-top text-slate-400 whitespace-nowrap">${k}</td>
+          <td class="py-2.5 pr-3 align-top text-slate-200 leading-relaxed">${m.t}</td>
+          <td class="py-2.5 pr-3 align-top"><span class="text-xs px-2 py-0.5 rounded-full border whitespace-nowrap ${LV[m.lv][1]}">${LV[m.lv][0]}</span></td>
+          <td class="py-2.5 align-top text-slate-300">${l ? l.join(', ') : '<span class="text-slate-500 italic">Chưa có câu trong đề</span>'}</td></tr>`;
+    }).join('');
+    openModal(`<div class="flex items-start justify-between gap-3 mb-3"><div><h3 class="text-lg font-bold text-white">Ma trận đề ôn tập Sinh học 11 – Giữa kì I</h3>
+      <p class="text-xs text-slate-500 mt-1">Yêu cầu cần đạt lấy từ file “SOẠN SINH GIỮA KỲ 1”. Mức độ suy ra từ động từ yêu cầu (nêu/phát biểu/xác định → nhận biết; trình bày/phân tích/hiểu → thông hiểu; vận dụng → vận dụng). Số câu theo đề gốc (TN: trắc nghiệm, Đ/S: đúng/sai, TLN: trả lời ngắn, TL: tự luận).</p></div>
+      <button data-act="mclose2" class="w-8 h-8 shrink-0 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="flex flex-wrap gap-2 mb-3 text-xs"><span class="px-2.5 py-1 rounded-full border ${LV.NB[1]}">Nhận biết: ${cnt.NB}</span><span class="px-2.5 py-1 rounded-full border ${LV.TH[1]}">Thông hiểu: ${cnt.TH}</span><span class="px-2.5 py-1 rounded-full border ${LV.VD[1]}">Vận dụng: ${cnt.VD}</span><span class="text-slate-500 self-center">(đếm theo câu / ý đúng-sai / câu tự luận)</span></div>
+      <div class="overflow-x-auto"><table class="w-full text-sm min-w-[620px]"><thead><tr class="text-left text-xs text-slate-500"><th class="pb-2 pr-3 font-medium">Mục (file soạn)</th><th class="pb-2 pr-3 font-medium">Yêu cầu cần đạt</th><th class="pb-2 pr-3 font-medium">Mức độ</th><th class="pb-2 font-medium">Câu trong đề</th></tr></thead><tbody>${rows}</tbody></table></div>`, true);
+}
+
+/* =====================================================================
+   HÀNH ĐỘNG
+   ===================================================================== */
+function submitNow() {
+    S.submitted = true; S.review = false; save();
+    renderResult(); window.scrollTo({ top: 0 });
+}
+function resetAnswers() { S.answers = freshAnswers(); S.manual = {}; S.submitted = false; S.review = false; S.section = 'mcq'; S.cur = { mcq: 0, tf: 0, sa: 0, es: 0 }; }
+function go(delta) {
+    const sec = S.section, i = SEC_IDS.indexOf(sec);
+    if (delta > 0) { if (S.cur[sec] < N[sec] - 1) S.cur[sec]++; else if (i < 3) S.section = SEC_IDS[i + 1]; }
+    else { if (S.cur[sec] > 0) S.cur[sec]--; else if (i > 0) { S.section = SEC_IDS[i - 1]; S.cur[S.section] = N[S.section] - 1; } }
+    save(); renderTest(true);
+}
+document.addEventListener('click', e => {
+    const el = e.target.closest('[data-act]'); if (!el) return;
+    const act = el.dataset.act, sec = S.section;
+    if (act === 'mclose') { if (e.target === el) closeModal(); return; }
+    if (act === 'mclose2') return closeModal();
+    if (act === 'mok') { const cb = pendingOk; closeModal(); if (cb) cb(); return; }
+    if (act === 'matrix') return openMatrix();
+    if (act === 'crit') return; // xử lý ở sự kiện change
+    if (act === 'review') { S.review = !S.review; save(); const y = window.scrollY; renderResult(); window.scrollTo({ top: y }); return; }
+    if (act === 'restart') return ask('Làm lại bài?', 'Toàn bộ câu trả lời sẽ bị xóa để làm lại từ đầu. Thứ tự câu hiện tại được giữ nguyên.', 'Làm lại', () => { resetAnswers(); save(); renderTest(true); window.scrollTo({ top: 0 }); toast('Đã bắt đầu làm lại'); }, true);
+    if (act === 'newtest') return ask('Xáo trộn và làm đề mới?', 'Câu trả lời hiện tại sẽ bị xóa, thứ tự câu và phương án A/B/C/D được xáo trộn lại.', 'Làm đề mới', () => { resetAnswers(); S.shuffleOn = true; applyOrder(); save(); renderTest(true); window.scrollTo({ top: 0 }); toast('Đã tạo đề mới'); }, true);
+    if (S.submitted) return;
+    if (act === 'tab') { S.section = el.dataset.sec; save(); return renderTest(true); }
+    if (act === 'goto') { S.cur[sec] = +el.dataset.i; save(); renderCard(true); renderFoot(); renderNav(); return; }
+    if (act === 'prev') return go(-1);
+    if (act === 'next') return go(1);
+    if (act === 'pick') {
+        const qi = S.order.mcq[S.cur.mcq], oi = +el.dataset.oi;
+        if (S.answers.mcq[qi] !== undefined) return;
+        S.answers.mcq[qi] = oi; save(); renderCard(false); refreshChrome(); return;
+    }
+    if (act === 'tf') {
+        const qi = S.order.tf[S.cur.tf], key = qi + '-' + el.dataset.k, v = el.dataset.v === 'true';
+        if (S.answers.tf[key] !== undefined) return;
+        S.answers.tf[key] = v;
+        save(); renderCard(false); refreshChrome(); return;
+    }
+    if (act === 'shuf-toggle') { S.shuffleOn = !S.shuffleOn; applyOrder(); save(); renderTest(true); toast(S.shuffleOn ? 'Đã bật xáo trộn – câu trả lời được giữ nguyên' : 'Đã tắt xáo trộn – trở về thứ tự gốc'); return; }
+    if (act === 'shuf-again') { applyOrder(); save(); renderTest(true); toast('Đã xáo trộn lại'); return; }
+    if (act === 'submit') {
+        const left = 37 - totalAnswered();
+        return ask('Nộp bài?', left > 0 ? `Bạn còn <b class="text-amber-300">${left}</b> câu chưa hoàn thành. Sau khi nộp sẽ không thể sửa đáp án.` : 'Bạn đã hoàn thành tất cả các câu. Sau khi nộp sẽ không thể sửa đáp án.', 'Nộp bài', () => submitNow());
+    }
+});
+document.addEventListener('input', e => {
+    const ta = e.target.closest('textarea[data-ta]'); if (!ta || S.submitted) return;
+    S.answers[ta.dataset.ta][ta.dataset.i] = ta.value; save(); renderTop(); renderTabs(); renderNav();
+});
+document.addEventListener('change', e => {
+    const cb = e.target.closest('input[data-act="crit"]'); if (!cb) return;
+    S.manual[cb.dataset.k] = cb.checked; save();
+    const y = window.scrollY; renderResult(); window.scrollTo({ top: y });
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* =====================================================================
+   KHỞI ĐỘNG
+   ===================================================================== */
+if (S.submitted) renderResult(); else { renderTest(true); if (totalAnswered() > 0) toast('Đã khôi phục bài làm đang dở'); }
+</script>
+</body>
+</html>
