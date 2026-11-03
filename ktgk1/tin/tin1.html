@@ -20,7 +20,7 @@
                             700: '#1d4ed8',
                             800: '#1e40af',
                             900: '#1e3a8a',
-                            dark: '#0f172a'
+                            300: '#93c5fd', 400: '#60a5fa', 950: '#172554', dark: '#0f172a'
                         }
                     }
                 }
@@ -51,6 +51,45 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        :root { --ease: cubic-bezier(.22,1,.36,1); }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+        @keyframes fadeOnly { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideR { from { opacity: 0; transform: translateX(36px); } to { opacity: 1; transform: none; } }
+        @keyframes slideL { from { opacity: 0; transform: translateX(-36px); } to { opacity: 1; transform: none; } }
+        @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.04); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%,100% { transform: translateX(0); } 20%,60% { transform: translateX(-7px); } 40%,80% { transform: translateX(7px); } }
+        @keyframes floaty { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-12px) rotate(5deg); } }
+        @keyframes gradShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(24px) scale(.95); } to { opacity: 1; transform: none; } }
+        @keyframes toastOut { to { opacity: 0; transform: translateY(12px) scale(.95); } }
+        @keyframes confetti { to { transform: translateY(110vh) rotate(720deg); opacity: .2; } }
+        @keyframes trophy { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.1); } }
+        .fade-in { animation: fadeUp .45s var(--ease) both; }
+        .anim-up { animation: fadeUp .55s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms); }
+        .row-in { animation: fadeOnly .5s ease both; animation-delay: calc(var(--i, 0) * 45ms); }
+        .slide-r { animation: slideR .35s var(--ease) both; }
+        .slide-l { animation: slideL .35s var(--ease) both; }
+        .opt-in { animation: fadeUp .4s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms); }
+        .anim-pop { animation: pop .45s var(--ease); }
+        .anim-shake { animation: shake .45s ease; }
+        .banner-anim { background-size: 220% 220%; animation: gradShift 14s ease infinite; }
+        .float-icon { animation: floaty 6s ease-in-out infinite; }
+        .trophy-anim { animation: trophy 1.6s ease-in-out infinite; }
+        .lift { transition: transform .25s var(--ease), box-shadow .25s ease, border-color .25s ease; }
+        .lift:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -10px rgba(59,130,246,.35); border-color: rgba(96,165,250,.5); }
+        .bar-fill { width: 0; transition: width 1.2s var(--ease); }
+        .collapsible { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s var(--ease); }
+        .collapsible.open { grid-template-rows: 1fr; }
+        .collapsible > div { overflow: hidden; min-height: 0; }
+        .fa-chevron-down { transition: transform .3s var(--ease); }
+        button:not(:disabled):active { transform: scale(.97); }
+        #mc-dots-nav button:hover { transform: translateY(-2px) scale(1.1); }
+        #matrix-grid tbody tr { transition: background-color .2s ease; }
+        #matrix-grid tbody tr:hover { background-color: rgba(51,65,85,.45); }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
         }
     </style>
 </head>
@@ -111,7 +150,7 @@
             <!-- Global Practice Progress Bar (Visible in practice mode) -->
             <div id="header-progress-container" class="hidden py-2 border-t border-slate-800/80">
                 <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-                    <span id="progress-text-summary">Tiến độ bài làm: 0/36 câu (0%)</span>
+                    <span id="progress-text-summary">Tiến độ bài làm: 0/32 câu (0%)</span>
                     <span id="score-text-summary" class="text-brand-400 font-medium">Đúng: 0 câu</span>
                 </div>
                 <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
@@ -127,9 +166,9 @@
         <!-- ================= PAGE 1: MA TRẬN ĐỀ KIỂM TRA ================= -->
         <section id="page-matrix" class="space-y-6 fade-in">
             <!-- Header Banner -->
-            <div class="bg-gradient-to-r from-slate-800 via-slate-800/90 to-brand-950/40 p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+            <div class="bg-gradient-to-r from-slate-800 via-slate-800/90 to-brand-950/40 banner-anim p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
                 <div class="absolute right-0 top-0 bottom-0 opacity-10 flex items-center pr-10 pointer-events-none">
-                    <i class="fa-solid fa-chart-pie text-9xl text-brand-400"></i>
+                    <i class="fa-solid fa-chart-pie text-9xl text-brand-400 float-icon"></i>
                 </div>
                 <div class="relative z-10">
                     <span class="text-xs font-semibold uppercase tracking-wider text-brand-400 bg-brand-950/80 px-2.5 py-1 rounded-md border border-brand-800/50">Cấu trúc chuẩn Bộ GD&ĐT</span>
@@ -140,31 +179,31 @@
 
             <!-- Overview Stat Cards -->
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow lift">
                     <span class="text-xs text-slate-400 block">Thời gian</span>
-                    <span class="text-lg font-bold text-slate-100">45 phút</span>
+                    <span class="text-lg font-bold text-slate-100"><span class="count" data-to="45">45</span> phút</span>
                 </div>
-                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow lift">
                     <span class="text-xs text-slate-400 block">Thang điểm</span>
-                    <span class="text-lg font-bold text-brand-400">10,0 điểm</span>
+                    <span class="text-lg font-bold text-brand-400"><span class="count" data-to="10" data-dec="1">10,0</span> điểm</span>
                 </div>
-                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow lift">
                     <span class="text-xs text-slate-400 block">Tổng số lệnh hỏi</span>
-                    <span class="text-lg font-bold text-indigo-400">40 lệnh</span>
+                    <span class="text-lg font-bold text-indigo-400"><span class="count" data-to="40">40</span> lệnh</span>
                 </div>
-                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow lift">
                     <span class="text-xs text-slate-400 block">Nhận biết (40%)</span>
-                    <span class="text-lg font-bold text-emerald-400">16 lệnh (4đ)</span>
+                    <span class="text-lg font-bold text-emerald-400"><span class="count" data-to="16">16</span> lệnh (4đ)</span>
                 </div>
-                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow lift">
                     <span class="text-xs text-slate-400 block">Thông hiểu (30%)</span>
-                    <span class="text-lg font-bold text-amber-400">12 lệnh (3đ)</span>
+                    <span class="text-lg font-bold text-amber-400"><span class="count" data-to="12">12</span> lệnh (3đ)</span>
                 </div>
-                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow lift">
                     <span class="text-xs text-slate-400 block">Vận dụng (30%)</span>
-                    <span class="text-lg font-bold text-purple-400">12 lệnh (3đ)</span>
+                    <span class="text-lg font-bold text-purple-400"><span class="count" data-to="12">12</span> lệnh (3đ)</span>
                 </div>
-                <div class="col-span-2 sm:col-span-1 bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow">
+                <div class="col-span-2 sm:col-span-1 bg-slate-800/80 p-4 rounded-xl border border-slate-700/60 shadow lift">
                     <span class="text-xs text-slate-400 block">Phân bố Chủ đề</span>
                     <span class="text-xs font-semibold text-sky-300">CĐ1: 62.5% | CĐ2: 37.5%</span>
                 </div>
@@ -185,7 +224,7 @@
                                 <span>40%</span>
                             </div>
                             <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5 border border-slate-700">
-                                <div class="bg-emerald-500 h-full rounded-full" style="width: 40%"></div>
+                                <div class="bg-emerald-500 h-full rounded-full bar-fill" data-w="40"></div>
                             </div>
                         </div>
                         <div>
@@ -194,7 +233,7 @@
                                 <span>30%</span>
                             </div>
                             <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5 border border-slate-700">
-                                <div class="bg-amber-500 h-full rounded-full" style="width: 30%"></div>
+                                <div class="bg-amber-500 h-full rounded-full bar-fill" data-w="30"></div>
                             </div>
                         </div>
                         <div>
@@ -203,7 +242,7 @@
                                 <span>30%</span>
                             </div>
                             <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5 border border-slate-700">
-                                <div class="bg-purple-500 h-full rounded-full" style="width: 30%"></div>
+                                <div class="bg-purple-500 h-full rounded-full bar-fill" data-w="30"></div>
                             </div>
                         </div>
                     </div>
@@ -222,7 +261,7 @@
                                 <span>62.5% (6.25 điểm)</span>
                             </div>
                             <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5 border border-slate-700">
-                                <div class="bg-sky-500 h-full rounded-full" style="width: 62.5%"></div>
+                                <div class="bg-sky-500 h-full rounded-full bar-fill" data-w="62.5"></div>
                             </div>
                         </div>
                         <div>
@@ -231,42 +270,35 @@
                                 <span>37.5% (3.75 điểm)</span>
                             </div>
                             <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5 border border-slate-700">
-                                <div class="bg-indigo-500 h-full rounded-full" style="width: 37.5%"></div>
+                                <div class="bg-indigo-500 h-full rounded-full bar-fill" data-w="37.5"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Detailed Matrix Table -->
+            <!-- Khung ma trận -->
             <div class="bg-slate-800/60 rounded-2xl border border-slate-700/60 shadow overflow-hidden">
                 <div class="p-4 border-b border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <h3 class="text-base font-bold text-white flex items-center gap-2">
                         <i class="fa-solid fa-table text-brand-400"></i>
-                        <span>Bảng Ma Trận Chi Tiết Từng Bài Học</span>
+                        <span>Khung Ma Trận Đề Kiểm Tra Giữa Học Kì I</span>
                     </h3>
-                    <span class="text-xs text-slate-400">Nhấn vào từng bài để xem chi tiết yêu cầu kiến thức</span>
+                    <span class="text-xs text-slate-400">TNKQ = trắc nghiệm nhiều lựa chọn · Đ/S = đúng/sai · TL = tự luận</span>
                 </div>
+                <div class="overflow-x-auto"><div id="matrix-grid-wrap"></div></div>
+            </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs sm:text-sm text-slate-300">
-                        <thead class="bg-slate-900/80 text-slate-400 font-semibold uppercase text-xs border-b border-slate-700">
-                            <tr>
-                                <th class="p-3.5 min-w-[200px]">Bài học</th>
-                                <th class="p-3.5 text-center">Trắc nghiệm nhiều lựa chọn</th>
-                                <th class="p-3.5 text-center">Trắc nghiệm Đúng / Sai</th>
-                                <th class="p-3.5 text-center">Tự luận</th>
-                                <th class="p-3.5 text-center">Số lệnh</th>
-                                <th class="p-3.5 text-center">Điểm số</th>
-                                <th class="p-3.5 text-center">Tỉ lệ</th>
-                                <th class="p-3.5 text-center">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="matrix-table-body" class="divide-y divide-slate-700/50">
-                            <!-- Populated dynamically via JS -->
-                        </tbody>
-                    </table>
+            <!-- Bản đặc tả -->
+            <div class="bg-slate-800/60 rounded-2xl border border-slate-700/60 shadow overflow-hidden">
+                <div class="p-4 border-b border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-brand-400"></i>
+                        <span>Bản Đặc Tả Kĩ Thuật Đề Kiểm Tra</span>
+                    </h3>
+                    <span class="text-xs text-slate-400">Nhấn vào từng bài để xem yêu cầu cần đạt theo mức độ</span>
                 </div>
+                <div id="spec-list" class="p-4 space-y-3"></div>
             </div>
 
             <!-- Content Outline / Focal Points Accordion -->
@@ -326,16 +358,16 @@
             <!-- Navigation Tabs for Question Types -->
             <div class="flex border-b border-slate-800 overflow-x-auto gap-2 text-sm font-medium">
                 <button id="p-tab-mc" onclick="switchPracticeSection('mc')" class="px-4 py-2.5 text-brand-400 border-b-2 border-brand-500 font-bold whitespace-nowrap flex items-center gap-2">
-                    <span>Phần I: Trắc nghiệm (12)</span>
-                    <span id="badge-mc-count" class="px-2 py-0.5 text-xs bg-slate-800 text-slate-300 rounded-full">0/12</span>
+                    <span>Phần I: Trắc nghiệm (24)</span>
+                    <span id="badge-mc-count" class="px-2 py-0.5 text-xs bg-slate-800 text-slate-300 rounded-full">0/24</span>
                 </button>
                 <button id="p-tab-tf" onclick="switchPracticeSection('tf')" class="px-4 py-2.5 text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap flex items-center gap-2">
-                    <span>Phần II: Đúng - Sai (4 câu - 16 ý)</span>
-                    <span id="badge-tf-count" class="px-2 py-0.5 text-xs bg-slate-800 text-slate-300 rounded-full">0/16</span>
+                    <span>Phần II: Đúng - Sai (8 câu - 32 ý)</span>
+                    <span id="badge-tf-count" class="px-2 py-0.5 text-xs bg-slate-800 text-slate-300 rounded-full">0/32</span>
                 </button>
                 <button id="p-tab-es" onclick="switchPracticeSection('es')" class="px-4 py-2.5 text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap flex items-center gap-2">
-                    <span>Phần III: Tự luận tình huống (3 câu - 8 ý)</span>
-                    <span id="badge-es-count" class="px-2 py-0.5 text-xs bg-slate-800 text-slate-300 rounded-full">0/8</span>
+                    <span>Phần III: Tự luận (6 câu - 12 ý)</span>
+                    <span id="badge-es-count" class="px-2 py-0.5 text-xs bg-slate-800 text-slate-300 rounded-full">0/12</span>
                 </button>
             </div>
 
@@ -388,7 +420,7 @@
             <div id="summary-card" class="hidden bg-slate-800/90 p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-6">
                 <div class="text-center space-y-2">
                     <div class="inline-flex p-3 rounded-full bg-emerald-500/20 text-emerald-400 text-3xl mb-2">
-                        <i class="fa-solid fa-trophy"></i>
+                        <i class="fa-solid fa-trophy trophy-anim"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-white">Hoàn Thành Bài Luyện Tập!</h3>
                     <p class="text-slate-300 text-sm">Dưới đây là kết quả chi tiết dựa trên thang điểm đề thi giữa kỳ.</p>
@@ -398,24 +430,24 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center">
                         <span class="text-xs text-slate-400 block">Số lệnh đã làm</span>
-                        <span id="sum-total-answered" class="text-xl font-bold text-white">0 / 36</span>
+                        <span id="sum-total-answered" class="text-xl font-bold text-white">0 / 32</span>
                     </div>
                     <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center">
                         <span class="text-xs text-slate-400 block">Trắc nghiệm Đúng</span>
-                        <span id="sum-mc-correct" class="text-xl font-bold text-emerald-400">0 / 12</span>
+                        <span id="sum-mc-correct" class="text-xl font-bold text-emerald-400">0 / 24</span>
                     </div>
                     <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center">
                         <span class="text-xs text-slate-400 block">Đúng / Sai đạt</span>
-                        <span id="sum-tf-correct" class="text-xl font-bold text-emerald-400">0 / 16</span>
+                        <span id="sum-tf-correct" class="text-xl font-bold text-emerald-400">0 / 32</span>
                     </div>
                     <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center">
                         <span class="text-xs text-slate-400 block">Điểm Trắc Nghiệm Ước Tính</span>
-                        <span id="sum-score-estimated" class="text-xl font-bold text-brand-400">0.0 / 7.0</span>
+                        <span id="sum-score-estimated" class="text-xl font-bold text-brand-400">0.0 / 14.0</span>
                     </div>
                 </div>
 
                 <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-700/60 text-xs text-slate-300 space-y-1">
-                    <p>📌 <b>Ghi chú về thang điểm:</b> Điểm trắc nghiệm (Phần I + II) được tính tối đa 7.0 điểm. Phần Tự luận (3.0 điểm) dành cho bạn tự đối chiếu với đáp án chuẩn.</p>
+                    <p>📌 <b>Ghi chú về thang điểm:</b> Mỗi câu/ý trắc nghiệm (Phần I + II) tính 0.25 điểm; với 24 câu TN + 32 ý Đúng - Sai, điểm tối đa là 14.0 (gấp đôi một đề thi thật gồm 7.0 điểm, vì đã gộp cả đề 1111 và đề cương). Phần Tự luận dành cho bạn tự đối chiếu với đáp án chuẩn.</p>
                 </div>
 
                 <!-- Wrong Answers & Weak Lessons Section -->
@@ -446,7 +478,7 @@
     <footer class="bg-slate-950 border-t border-slate-800/80 py-6 mt-10 text-xs text-slate-400">
         <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
             <p class="font-medium text-slate-300">Nền Tảng Ôn Tập Trực Tuyến BAKHI — Trường THPT Huỳnh Ngọc Huệ</p>
-            <p>Môn Tin học 11 — Năm học 2026 - 2027. Thiết kế dựa trên Ma trận & Bản đặc tả chuẩn 40 lệnh hỏi.</p>
+            <p>Môn Tin học 11 — Năm học 2026 - 2027. Thiết kế dựa trên Ma trận & Bản đặc tả chuẩn 40 lệnh hỏi. Ngân hàng câu hỏi luyện tập gồm đề kiểm tra giữa kì I (mã đề 1111) và bộ câu hỏi đề cương ôn tập, kèm đáp án — giải thích.</p>
         </div>
     </footer>
 
@@ -466,379 +498,1217 @@
         document.getElementById('btn-back-home').href = CONFIG.homeUrl;
 
         /**
-         * 1. DATA SOURCE: MATRIX & DETAILED SPECIFICATIONS
+         * 1-3. DATA SOURCE: MA TRẬN + ĐẶC TẢ (theo file Ma-tran-dac-ta-KTGKI-Tin11-B1-B8.docx)
+         * cells = [TN Biết, TN Hiểu, TN VD, Đ/S Biết, Đ/S Hiểu, Đ/S VD, TL Biết, TL Hiểu, TL VD] -> [số lệnh, mã câu] hoặc 0
          */
+        const TOPICS = { 1: { name: "CHỦ ĐỀ 1: MÁY TÍNH VÀ XÃ HỘI TRI THỨC" }, 2: { name: "CHỦ ĐỀ 2: TỔ CHỨC LƯU TRỮ, TÌM KIẾM VÀ TRAO ĐỔI THÔNG TIN" } };
         const MATRIX_DATA = [
-            {
-                lessonId: 1,
-                title: "Bài 1. Hệ điều hành",
-                mc: { nb: 1, th: 1, vd: 0, total: 2 },
-                tf: { nb: 2, th: 1, vd: 1, total: 4 },
-                es: { nb: 0, th: 0, vd: 0, total: 0 },
-                totalCommands: 6,
-                points: 1.50,
-                percentage: "15.0%",
-                outcomes: "Nắm lịch sử HĐH (Windows, LINUX từ UNIX), 5 nhóm chức năng, đặc trưng HĐH di động (cảm biến, kết nối, cá nhân hóa), mối quan hệ giữa phần cứng, HĐH và ứng dụng.",
-                priorityFocus: "5 nhóm chức năng HĐH; Nguồn gốc LINUX; Đặc trưng HĐH di động."
-            },
-            {
-                lessonId: 2,
-                title: "Bài 2. Thực hành sử dụng hệ điều hành",
-                mc: { nb: 1, th: 1, vd: 0, total: 2 },
-                tf: { nb: 0, th: 0, vd: 0, total: 0 },
-                es: { nb: 0, th: 0, vd: 0, total: 0 },
-                totalCommands: 2,
-                points: 0.50,
-                percentage: "5.0%",
-                outcomes: "Thao tác cửa sổ, File Explorer, kiểm tra đĩa, chống phân mảnh đĩa (HDD), so sánh giao diện Windows và Ubuntu.",
-                priorityFocus: "Phím tắt quản lý tệp; Công cụ chống phân mảnh đĩa (HDD)."
-            },
-            {
-                lessonId: 3,
-                title: "Bài 3. Phần mềm nguồn mở và phần mềm chạy trên Internet",
-                mc: { nb: 1, th: 0, vd: 0, total: 1 },
-                tf: { nb: 2, th: 1, vd: 1, total: 4 },
-                es: { nb: 0, th: 0, vd: 0, total: 0 },
-                totalCommands: 5,
-                points: 1.25,
-                percentage: "12.5%",
-                outcomes: "Phân biệt PM thương mại, nguồn mở, miễn phí. Giấy phép GPL, MIT. Đặc điểm Web App (Google Docs, Sheets).",
-                priorityFocus: "Đặc điểm phần mềm nguồn mở; Giấy phép GPL & MIT; Ưu nhược điểm Web App."
-            },
-            {
-                lessonId: 4,
-                title: "Bài 4. Bên trong máy tính",
-                mc: { nb: 1, th: 1, vd: 0, total: 2 },
-                tf: { nb: 0, th: 0, vd: 0, total: 0 },
-                es: { nb: 0, th: 2, vd: 2, total: 4 },
-                totalCommands: 6,
-                points: 1.50,
-                percentage: "15.0%",
-                outcomes: "Bộ phận trong máy (CPU, RAM, HDD/SSD, Mạch logic). Bảng chân lý AND, OR, NOT. Đề xuất nâng cấp cấu hình máy tính.",
-                priorityFocus: "Giải thích máy chậm do RAM/HDD; Bảng chân lý mạch logic; Đề xuất cấu hình nâng cấp SSD/RAM."
-            },
-            {
-                lessonId: 5,
-                title: "Bài 5. Kết nối máy tính với các thiết bị số",
-                mc: { nb: 1, th: 0, vd: 0, total: 1 },
-                tf: { nb: 0, th: 0, vd: 0, total: 0 },
-                es: { nb: 0, th: 2, vd: 2, total: 4 },
-                totalCommands: 5,
-                points: 1.25,
-                percentage: "12.5%",
-                outcomes: "Thông số màn hình (inch, px, Hz), loa, máy in. Cổng USB, HDMI, Bluetooth. Lý do cần cài Driver.",
-                priorityFocus: "Ý nghĩa 27 inch, Full HD, 144Hz; Các bước kết nối màn hình HDMI & loa Bluetooth; Driver."
-            },
-            {
-                lessonId: 6,
-                title: "Bài 6. Lưu trữ và chia sẻ tệp trên Internet",
-                mc: { nb: 1, th: 0, vd: 0, total: 1 },
-                tf: { nb: 2, th: 1, vd: 1, total: 4 },
-                es: { nb: 0, th: 0, vd: 0, total: 0 },
-                totalCommands: 5,
-                points: 1.25,
-                percentage: "12.5%",
-                outcomes: "Khái niệm lưu trữ đám mây (Google Drive), các quyền chia sẻ (Xem, Nhận xét, Chỉnh sửa), ưu/nhược điểm.",
-                priorityFocus: "Quyền chia sẻ Google Drive; Ưu nhược điểm lưu trữ đám mây."
-            },
-            {
-                lessonId: 7,
-                title: "Bài 7. Thực hành tìm kiếm thông tin trên Internet",
-                mc: { nb: 1, th: 0, vd: 0, total: 1 },
-                tf: { nb: 0, th: 0, vd: 0, total: 0 },
-                es: { nb: 0, th: 0, vd: 0, total: 0 },
-                totalCommands: 1,
-                points: 0.25,
-                percentage: "2.5%",
-                outcomes: "Kĩ thuật tìm kiếm nâng cao (filetype:pdf, site:, ngoặc kép), đánh giá độ tin cậy thông tin.",
-                priorityFocus: "Cú pháp tìm kiếm filetype:pdf và từ khóa chính xác."
-            },
-            {
-                lessonId: 8,
-                title: "Bài 8. Thực hành nâng cao sử dụng thư điện tử và mạng xã hội",
-                mc: { nb: 1, th: 0, vd: 0, total: 1 },
-                tf: { nb: 2, th: 1, vd: 1, total: 4 },
-                es: { nb: 0, th: 0, vd: 0, total: 4 },
-                totalCommands: 9,
-                points: 2.25,
-                percentage: "22.5%",
-                outcomes: "Tính năng Gmail (is:important, Nhãn Label, đính kèm), ứng dụng Machine Learning trong Gmail, quy tắc ứng xử MXH.",
-                priorityFocus: "Cú pháp is:important; Tạo Nhãn trong Gmail; Trí tuệ nhân tạo (ML) trong Gmail; Quy tắc ứng xử MXH."
-            }
-        ];
-
-        /**
-         * 2. DATA SOURCE: FOCAL REVIEW NOTES (8 LESSONS)
-         */
+ {
+  "id": 1,
+  "topic": 1,
+  "title": "Bài 1. Hệ điều hành",
+  "cells": [
+   [
+    1,
+    "C1"
+   ],
+   [
+    1,
+    "C2"
+   ],
+   0,
+   [
+    2,
+    "1a, 1b"
+   ],
+   [
+    1,
+    "1c"
+   ],
+   [
+    1,
+    "1d"
+   ],
+   0,
+   0,
+   0
+  ],
+  "spec": {
+   "nb": [
+    "Sơ bộ nắm được lịch sử phát triển của các HĐH thông dụng cho PC (Windows, LINUX có nguồn gốc từ UNIX).",
+    "Nhận biết 5 nhóm chức năng của hệ điều hành máy tính.",
+    "Nhận biết các HĐH phổ biến cho thiết bị di động (iOS, Android)."
+   ],
+   "th": [
+    "Hiểu đặc trưng của HĐH di động: giao diện thân thiện nhờ tích hợp nhiều cảm biến, khả năng kết nối mạng không dây linh hoạt (3G/4G/5G, Wi-Fi, Bluetooth, NFC), tích hợp nhiều tiện ích cá nhân.",
+    "Hiểu mối quan hệ giữa phần cứng, HĐH và phần mềm ứng dụng."
+   ],
+   "vd": [
+    "Đánh giá vai trò điều phối tài nguyên của HĐH; giải thích cơ chế giao tiếp trực quan thông qua công nghệ cảm ứng và trợ lí ảo AI."
+   ]
+  }
+ },
+ {
+  "id": 2,
+  "topic": 1,
+  "title": "Bài 2. Thực hành sử dụng hệ điều hành",
+  "cells": [
+   [
+    1,
+    "C3"
+   ],
+   [
+    1,
+    "C4"
+   ],
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "spec": {
+   "nb": [
+    "Sử dụng được một số chức năng cơ bản của HĐH cho máy tính cá nhân (quản lí tệp, thư mục bằng File Explorer, thao tác cửa sổ).",
+    "Sử dụng được một vài tiện ích cơ bản trên thiết bị di động."
+   ],
+   "th": [
+    "Sử dụng được một vài tiện ích nâng cao hiệu quả sử dụng máy tính cá nhân.",
+    "So sánh được điểm tương đồng và khác biệt về giao diện của HĐH trên máy tính cá nhân và thiết bị di động."
+   ],
+   "vd": []
+  }
+ },
+ {
+  "id": 3,
+  "topic": 1,
+  "title": "Bài 3. Phần mềm nguồn mở & Internet",
+  "cells": [
+   [
+    1,
+    "C5"
+   ],
+   0,
+   0,
+   [
+    2,
+    "2a, 2b"
+   ],
+   [
+    1,
+    "2c"
+   ],
+   [
+    1,
+    "2d"
+   ],
+   0,
+   0,
+   0
+  ],
+  "spec": {
+   "nb": [
+    "Trình bày được khái niệm phần mềm nguồn mở và phần mềm thương mại.",
+    "Nhận biết sự khác nhau cơ bản giữa phần mềm nguồn mở với phần mềm thương mại.",
+    "Biết một số phần mềm chạy trên Internet và lợi ích của chúng (Google Docs, Google Sheets,...)."
+   ],
+   "th": [
+    "Hiểu vai trò của phần mềm nguồn mở và phần mềm thương mại đối với sự phát triển CNTT."
+   ],
+   "vd": [
+    "Lựa chọn loại phần mềm phù hợp với yêu cầu và khả năng khi giải quyết công việc bằng máy tính; nhận xét ưu/nhược điểm của từng loại."
+   ]
+  }
+ },
+ {
+  "id": 4,
+  "topic": 1,
+  "title": "Bài 4. Bên trong máy tính",
+  "cells": [
+   [
+    1,
+    "C6"
+   ],
+   [
+    1,
+    "C7"
+   ],
+   0,
+   0,
+   0,
+   0,
+   0,
+   [
+    2,
+    "TL1a"
+   ],
+   [
+    2,
+    "TL1b"
+   ]
+  ],
+  "spec": {
+   "nb": [
+    "Nhận diện được một số thiết bị trong thân máy: bo mạch chủ, CPU, RAM, ổ cứng, card đồ họa.",
+    "Nắm được chức năng và các thông số hiệu năng cơ bản của chúng."
+   ],
+   "th": [
+    "Nhận biết và giải thích được sơ đồ của các mạch logic AND, OR, NOT trong thực hiện các tính toán nhị phân.",
+    "Giải thích mối quan hệ giữa các thông số hiệu năng (tốc độ CPU, dung lượng RAM) với hiệu suất máy tính."
+   ],
+   "vd": [
+    "Đánh giá chất lượng của máy tính qua những thông số hiệu năng; đề xuất cấu hình phù hợp với nhu cầu sử dụng cụ thể.",
+    "Thực hiện phép cộng các số nhị phân nhiều chữ số"
+   ]
+  }
+ },
+ {
+  "id": 5,
+  "topic": 1,
+  "title": "Bài 5. Kết nối máy tính với thiết bị số",
+  "cells": [
+   [
+    1,
+    "C8"
+   ],
+   [
+    1,
+    "C12"
+   ],
+   0,
+   0,
+   0,
+   0,
+   0,
+   [
+    2,
+    "TL2a"
+   ],
+   [
+    2,
+    "TL2b"
+   ]
+  ],
+  "spec": {
+   "nb": [
+    "Biết một số thông số cơ bản của các thiết bị vào - ra thông dụng (màn hình, máy in, máy ảnh, loa).",
+    "Biết cách kết nối thiết bị số với máy tính qua các cổng USB, HDMI, Bluetooth."
+   ],
+   "th": [
+    "Đọc hiểu và giải thích được một số thông số kĩ thuật cơ bản trong tài liệu thiết bị số.",
+    "Giải thích sự cần thiết phải cài driver khi kết nối thiết bị."
+   ],
+   "vd": [
+    "Tùy chỉnh được một số chức năng cơ bản khi kết nối thiết bị để nâng cao hiệu quả sử dụng; xử lí một số lỗi kết nối thông thường."
+   ]
+  }
+ },
+ {
+  "id": 6,
+  "topic": 2,
+  "title": "Bài 6. Lưu trữ và chia sẻ tệp trên Internet",
+  "cells": [
+   [
+    1,
+    "C9"
+   ],
+   0,
+   0,
+   [
+    2,
+    "3a, 3b"
+   ],
+   [
+    1,
+    "3c"
+   ],
+   [
+    1,
+    "3d"
+   ],
+   0,
+   0,
+   0
+  ],
+  "spec": {
+   "nb": [
+    "Nắm được kiến thức chung về dịch vụ lưu trữ và chia sẻ tệp tin trên Internet (ổ đĩa đám mây: Google Drive, Dropbox).",
+    "Nhận biết các tính năng cơ bản: tải tệp lên, chia sẻ thư mục và tệp với các chế độ quyền khác nhau."
+   ],
+   "th": [
+    "Chỉ ra được ưu điểm và nhược điểm của việc lưu trữ và chia sẻ tệp trên Internet."
+   ],
+   "vd": [
+    "Sử dụng được Google Drive hoặc dịch vụ tương tự để lưu trữ, chia sẻ tệp với quyền phù hợp theo tình huống thực tế."
+   ]
+  }
+ },
+ {
+  "id": 7,
+  "topic": 2,
+  "title": "Bài 7. TH tìm kiếm thông tin trên Internet",
+  "cells": [
+   [
+    1,
+    "C10"
+   ],
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "spec": {
+   "nb": [
+    "Sử dụng được một số kĩ thuật tìm kiếm cơ bản trên Internet: tìm kiếm theo từ khóa, tìm kiếm nâng cao, sử dụng các toán tử tìm kiếm.",
+    "Biết đánh giá độ tin cậy của nguồn thông tin tìm kiếm được."
+   ],
+   "th": [],
+   "vd": []
+  }
+ },
+ {
+  "id": 8,
+  "topic": 2,
+  "title": "Bài 8. TH nâng cao thư điện tử & MXH",
+  "cells": [
+   [
+    1,
+    "C11"
+   ],
+   0,
+   0,
+   [
+    2,
+    "4a, 4b"
+   ],
+   [
+    1,
+    "4c"
+   ],
+   [
+    1,
+    "4d"
+   ],
+   0,
+   0,
+   [
+    4,
+    "TL3"
+   ]
+  ],
+  "spec": {
+   "nb": [
+    "Biết sử dụng một số tính năng nâng cao của thư điện tử: gắn tệp đính kèm, tạo nhóm liên lạc, đặt lịch gửi.",
+    "Nhận biết đặc điểm và mục đích sử dụng một số mạng xã hội phổ biến."
+   ],
+   "th": [
+    "Hiểu quy tắc ứng xử văn minh khi sử dụng thư điện tử và mạng xã hội."
+   ],
+   "vd": [
+    "Thiết lập và cài đặt các quyền liên quan đến trang cá nhân trên Facebook"
+   ]
+  }
+ }
+];
         const FOCAL_NOTES = [
-            { id: 1, title: "Bài 1. Hệ điều hành", text: "• 5 nhóm chức năng: Quản lý phần cứng, Lưu trữ dữ liệu, Môi trường chạy ứng dụng, Giao diện người dùng, Tiện ích nâng cao.<br>• Windows: HĐH thương mại phổ biến nhất.<br>• LINUX: Nguồn gốc từ UNIX, là phần mềm nguồn mở miễn phí.<br>• HĐH di động: Giao diện cảm ứng, tích hợp nhiều cảm biến (GPS, gia tốc), kết nối không dây linh hoạt, tối ưu pin." },
-            { id: 2, title: "Bài 2. Thực hành sử dụng hệ điều hành", text: "• Quản lý tệp với File Explorer (Ctrl+Shift+N tạo thư mục, Shift+Delete xóa hẳn).<br>• Tiện ích nâng cao: Kiểm tra đĩa (Check Disk), Chống phân mảnh đĩa (Defragment - áp dụng cho đĩa từ HDD).<br>• So sánh: Windows, Ubuntu, iOS, Android đều dùng giao diện đồ họa, cửa sổ, biểu tượng." },
-            { id: 3, title: "Bài 3. Phần mềm nguồn mở và Internet", text: "• PM Thương mại: Trả phí bản quyền (MS Office, Photoshop).<br>• PM Nguồn mở: Mở mã nguồn, tự do sửa đổi/phân phối (Linux, LibreOffice, GIMP).<br>• Giấy phép: GPL (bắt buộc tiếp tục mở), MIT (cho phép dùng trong sản phẩm thương mại).<br>• Web App: Google Docs/Sheets (không cần cài đặt, cộng tác tốt, phụ thuộc Internet)." },
-            { id: 4, title: "Bài 4. Bên trong máy tính", text: "• CPU: Bộ điều khiển + Bộ số học & logic (ALU - thực hiện phép tính). Tốc độ (GHz), số nhân.<br>• RAM: Bộ nhớ tạm thời (GB, MHz). Thiếu RAM làm máy chạy chậm khi mở nhiều app.<br>• Mạch logic: AND (chỉ =1 khi cả 2 =1), OR ( ít nhất 1 cái =1), NOT (đảo ngược 0↔1)." },
-            { id: 5, title: "Bài 5. Kết nối máy tính với thiết bị số", text: "• Màn hình: Kích thước (inch), Độ phân giải (px - ví dụ 1920x1080 Full HD), Tần số quét (Hz - số lần làm mới/giây).<br>• Cổng kết nối: HDMI (truyền cả hình và âm thanh HD), USB (phổ biến), Bluetooth (không dây tầm ngắn ~10m).<br>• Driver: Phần mềm giúp HĐH điều khiển thiết bị." },
-            { id: 6, title: "Bài 6. Lưu trữ và chia sẻ tệp trên Internet", text: "• Lưu trữ đám mây: Google Drive, OneDrive, Dropbox.<br>• Chế độ chia sẻ: Chỉ xem | Xem & Nhận xét | Chỉnh sửa (Editor).<br>• Ưu điểm: Truy cập mọi lúc mọi nơi, làm việc nhóm tốt; Nhược điểm: Phụ thuộc Internet, rủi ro bảo mật." },
-            { id: 7, title: "Bài 7. TH tìm kiếm thông tin trên Internet", text: "• Cú pháp nâng cao: filetype:pdf (tìm tệp PDF), site:edu.vn (tìm trong domain), \"từ khóa\" (tìm chính xác).<br>• Đánh giá độ tin cậy: Tác giả, nguồn uy tín (.gov, .edu), ngày xuất bản, đối chiếu nhiều nguồn." },
-            { id: 8, title: "Bài 8. TH nâng cao thư điện tử và mạng xã hội", text: "• Gmail: Tìm thư quan trọng gõ <b>is:important</b>. Phân loại tự động bằng Học máy (Machine Learning).<br>• Nhãn (Label): Một thư có thể gắn nhiều nhãn (khác với Thư mục).<br>• Ứng xử MXH: Kiểm tra thông tin trước khi chia sẻ, tôn trọng riêng tư, không lan truyền fake news." }
-        ];
-
-        /**
-         * 3. DATA SOURCE: QUESTION BANK FROM OUTLINE
-         */
-        // Section I: 12 Multiple Choice Questions
+ {
+  "id": 1,
+  "title": "Bài 1. Hệ điều hành",
+  "text": "• 5 nhóm chức năng của HĐH: quản lí phần cứng, lưu trữ dữ liệu, môi trường chạy ứng dụng, giao diện người dùng, tiện ích.<br>• Lịch sử: giai đoạn đầu dùng giao diện dòng lệnh, giao diện đồ họa xuất hiện sau. Windows 7 ra mắt trước Windows 8. LINUX có nguồn gốc từ UNIX.<br>• HĐH di động (iOS, Android): tích hợp cảm biến, kết nối không dây (3G/4G/5G, Wi-Fi, Bluetooth, NFC), nhiều tiện ích cá nhân.<br>• Mọi thiết bị đa năng đều cần HĐH; cơ chế plug & play giúp nhận thiết bị ngoại vi dễ dàng."
+ },
+ {
+  "id": 2,
+  "title": "Bài 2. Thực hành sử dụng hệ điều hành",
+  "text": "• Quản lí tệp, thư mục bằng <b>File Explorer</b> (Ctrl+Shift+N: tạo thư mục; Shift+Delete: xóa hẳn).<br>• Sửa lỗi đĩa cứng: <b>Check Disk</b>. Chống phân mảnh/tối ưu đĩa áp dụng cho HDD; Disk Cleanup dọn tệp rác.<br>• So sánh HĐH máy tính cá nhân và di động: cùng giao diện đồ họa, khác cách thao tác (chuột – bàn phím so với cảm ứng)."
+ },
+ {
+  "id": 3,
+  "title": "Bài 3. Phần mềm nguồn mở và Internet",
+  "text": "• Phần mềm thương mại: trả phí bản quyền, hướng tới tổ chức/cá nhân chuyên nghiệp, tạo nguồn thu.<br>• Phần mềm nguồn mở: người dùng xem, sửa, phân phối lại mã nguồn; chi phí thấp, chất lượng cao, linh hoạt hơn. Không phải lúc nào cũng bảo mật hơn phần mềm thương mại.<br>• Web App (Google Docs, Sheets): chạy trên trình duyệt, cộng tác tốt, phụ thuộc Internet."
+ },
+ {
+  "id": 4,
+  "title": "Bài 4. Bên trong máy tính",
+  "text": "• CPU gồm bộ điều khiển và <b>bộ số học và logic (ALU)</b> thực hiện mọi phép tính số học, logic; tốc độ đo bằng GHz.<br>• RAM: bộ nhớ trong tạm thời, mất dữ liệu khi tắt máy. ROM: chỉ đọc. SSD/HDD: lưu trữ lâu dài.<br>• Cộng số nhị phân: 0+0=0; 0+1=1; 1+1=10 (viết 0 nhớ 1). Cộng từ phải sang trái rồi đổi sang thập phân bằng tổng các lũy thừa của 2."
+ },
+ {
+  "id": 5,
+  "title": "Bài 5. Kết nối máy tính với thiết bị số",
+  "text": "• Thiết bị vào: chuột, bàn phím… Thiết bị ra: màn hình, máy in, loa.<br>• <b>HDMI</b>: truyền hình ảnh và âm thanh chất lượng cao. <b>USB</b>: sao chép, di chuyển tệp với điện thoại, ổ lưu trữ. Bluetooth: không dây tầm ngắn.<br>• <b>Driver</b>: cần cài khi kết nối thiết bị lần đầu (ví dụ máy in) để HĐH nhận diện và điều khiển thiết bị."
+ },
+ {
+  "id": 6,
+  "title": "Bài 6. Lưu trữ và chia sẻ tệp trên Internet",
+  "text": "• Lưu trữ trực tuyến (Google Drive, OneDrive, Dropbox): tạo thư mục, quản lí, chỉnh sửa tệp trực tuyến.<br>• Chia sẻ thư mục, tệp cho người khác với các quyền: chỉ xem, nhận xét, chỉnh sửa.<br>• Ưu điểm: truy cập mọi lúc mọi nơi, làm việc nhóm. Hạn chế: cần Internet, rủi ro bảo mật khi lộ tài khoản."
+ },
+ {
+  "id": 7,
+  "title": "Bài 7. TH tìm kiếm thông tin trên Internet",
+  "text": "• Tìm bằng từ khóa gõ từ bàn phím hoặc bằng giọng nói (nhấn biểu tượng micro). Dùng dấu <b>ngoặc kép \" \"</b> để tìm chính xác cụm từ (không phải dấu nháy đơn).<br>• Toán tử nâng cao: filetype:pdf, site:edu.vn. Có thể chuyển sang mục Video để tìm video.<br>• Đánh giá độ tin cậy: nguồn uy tín, tác giả, ngày đăng, đối chiếu nhiều nguồn."
+ },
+ {
+  "id": 8,
+  "title": "Bài 8. TH nâng cao thư điện tử và mạng xã hội",
+  "text": "• Gmail: <b>Nhãn (Label)</b> dùng phân loại thư; thư quan trọng được tự động đánh dấu (dấu quan trọng màu vàng), tìm bằng is:important.<br>• Gửi thư cho nhiều người: <b>Cc</b> (bản sao) hoặc <b>Bcc</b> (bản sao ẩn danh).<br>• Tạo Fanpage: Menu → Tạo → Trang → nhập tên, hạng mục, mô tả → Tạo trang → đăng nội dung → quản lí trang.<br>• Ứng xử văn minh trên MXH: kiểm tra thông tin trước khi chia sẻ, tôn trọng riêng tư."
+ }
+];
+        /** NGÂN HÀNG CÂU HỎI — gộp: đề kiểm tra giữa kì I mã đề 1111 + bộ câu hỏi đề cương ôn tập */
         const QUESTIONS_MC = [
-            {
-                id: "mc-1",
-                topic: "Chủ đề 1",
-                lesson: "Bài 1. Hệ điều hành",
-                level: "Nhận biết",
-                question: "Hệ điều hành LINUX có nguồn gốc từ hệ điều hành nào?",
-                options: ["A. DOS", "B. UNIX", "C. Windows", "D. macOS"],
-                correctIndex: 1, // B
-                explanation: "LINUX được phát triển bởi Linus Torvalds dựa trên cấu trúc và nguyên lý của hệ điều hành UNIX (ra đời từ những năm 1970)."
-            },
-            {
-                id: "mc-2",
-                topic: "Chủ đề 1",
-                lesson: "Bài 1. Hệ điều hành",
-                level: "Thông hiểu",
-                question: "Trong 5 nhóm chức năng của hệ điều hành, nhóm nào thể hiện rõ nhất đặc thù của HĐH máy tính cá nhân?",
-                options: ["A. Quản lí thiết bị", "B. Quản lí lưu trữ dữ liệu", "C. Cung cấp môi trường giao tiếp với người dùng", "D. Môi trường chạy ứng dụng"],
-                correctIndex: 2, // C
-                explanation: "Giao diện người dùng đồ họa (GUI) trực quan thân thiện chính là đặc thù quan trọng giúp máy tính cá nhân phổ cập tới mọi người dùng."
-            },
-            {
-                id: "mc-3",
-                topic: "Chủ đề 1",
-                lesson: "Bài 2. Thực hành sử dụng HĐH",
-                level: "Nhận biết",
-                question: "Để quản lí tệp và thư mục trên Windows, người dùng dùng tiện ích nào sau đây?",
-                options: ["A. Task Manager", "B. File Explorer", "C. Control Panel", "D. Device Manager"],
-                correctIndex: 1, // B
-                explanation: "File Explorer là công cụ quản lý tệp, thư mục và các ổ đĩa chuẩn trên hệ điều hành Windows."
-            },
-            {
-                id: "mc-4",
-                topic: "Chủ đề 1",
-                lesson: "Bài 2. Thực hành sử dụng HĐH",
-                level: "Thông hiểu",
-                question: "Hệ điều hành di động khác với HĐH máy tính cá nhân chủ yếu ở điểm nào?",
-                options: ["A. Có thể chạy ứng dụng", "B. Quản lí tệp được", "C. Tích hợp cảm biến, tối ưu cảm ứng và pin", "D. Có giao diện đồ họa"],
-                correctIndex: 2, // C
-                explanation: "HĐH di động được thiết kế đặc thù cho thiết bị nhỏ gọn: giao diện cảm ứng đa điểm, tích hợp cảm biến (GPS, gia tốc) và tối ưu hóa năng lượng pin."
-            },
-            {
-                id: "mc-5",
-                topic: "Chủ đề 1",
-                lesson: "Bài 3. Phần mềm nguồn mở & Internet",
-                level: "Nhận biết",
-                question: "Phần mềm nào sau đây là phần mềm nguồn mở?",
-                options: ["A. Microsoft Word", "B. Adobe Photoshop", "C. LibreOffice", "D. WinRAR"],
-                correctIndex: 2, // C
-                explanation: "LibreOffice là bộ ứng dụng văn phòng nguồn mở hoàn toàn miễn phí; trong khi Word, Photoshop là phần mềm thương mại."
-            },
-            {
-                id: "mc-6",
-                topic: "Chủ đề 1",
-                lesson: "Bài 4. Bên trong máy tính",
-                level: "Nhận biết",
-                question: "Bộ phận nào trong máy tính thực hiện tất cả các phép tính số học và logic?",
-                options: ["A. RAM", "B. ROM", "C. Bộ điều khiển", "D. Bộ số học và logic (trong CPU)"],
-                correctIndex: 3, // D
-                explanation: "Bộ số học và logic (ALU - Arithmetic Logic Unit) nằm bên trong CPU đảm nhận nhiệm vụ tính toán số học và xử lý logic."
-            },
-            {
-                id: "mc-7",
-                topic: "Chủ đề 1",
-                lesson: "Bài 4. Bên trong máy tính",
-                level: "Thông hiểu",
-                question: "Thông số nào sau đây là thông số hiệu năng của RAM?",
-                options: ["A. Tốc độ GHz", "B. Dung lượng GB và tốc độ MHz", "C. Số nhân (Core)", "D. Dung lượng cache"],
-                correctIndex: 1, // B
-                explanation: "Dung lượng (tính bằng GB) và Tốc độ/Bus (tính bằng MHz hoặc MT/s) là hai thông số hiệu năng cốt lõi của bộ nhớ RAM."
-            },
-            {
-                id: "mc-8",
-                topic: "Chủ đề 1",
-                lesson: "Bài 5. Kết nối máy tính với thiết bị số",
-                level: "Nhận biết",
-                question: "Để kết nối màn hình với máy tính và truyền cả âm thanh lẫn hình ảnh HD, loại cổng nào phù hợp nhất?",
-                options: ["A. USB", "B. VGA", "C. HDMI", "D. Audio Jack"],
-                correctIndex: 2, // C
-                explanation: "Cổng HDMI (High-Definition Multimedia Interface) có khả năng truyền tải song song cả tín hiệu video chất lượng cao và âm thanh số."
-            },
-            {
-                id: "mc-9",
-                topic: "Chủ đề 2",
-                lesson: "Bài 6. Lưu trữ và chia sẻ tệp trên Internet",
-                level: "Nhận biết",
-                question: "Dịch vụ lưu trữ và chia sẻ tệp trên Internet còn gọi là gì?",
-                options: ["A. Lưu trữ đĩa cứng", "B. Lưu trữ đám mây", "C. Lưu trữ USB", "D. Lưu trữ ROM"],
-                correctIndex: 1, // B
-                explanation: "Cloud Storage (Lưu trữ đám mây) là thuật ngữ chỉ các dịch vụ lưu trữ dữ liệu trực tuyến qua mạng Internet như Google Drive, OneDrive."
-            },
-            {
-                id: "mc-10",
-                topic: "Chủ đề 2",
-                lesson: "Bài 7. TH tìm kiếm thông tin",
-                level: "Nhận biết",
-                question: "Để tìm tài liệu định dạng PDF trên Google, ta sử dụng cú pháp nào?",
-                options: ["A. type:pdf", "B. format:pdf", "C. filetype:pdf", "D. ext:pdf"],
-                correctIndex: 2, // C
-                explanation: "Toán tử 'filetype:pdf' dùng để lọc kết quả tìm kiếm đúng định dạng tệp tin PDF trên máy tìm kiếm Google."
-            },
-            {
-                id: "mc-11",
-                topic: "Chủ đề 2",
-                lesson: "Bài 8. Thư điện tử & Mạng xã hội",
-                level: "Nhận biết",
-                question: "Trong Gmail, để hiển thị tất cả thư quan trọng, ta gõ vào ô tìm kiếm cú pháp gì?",
-                options: ["A. is:starred", "B. is:important", "C. label:important", "D. mark:important"],
-                correctIndex: 1, // B
-                explanation: "Cú pháp 'is:important' lọc ra toàn bộ các thư điện tử được Gmail hoặc người dùng đánh dấu là quan trọng."
-            },
-            {
-                id: "mc-12",
-                topic: "Chủ đề 2",
-                lesson: "Bài 8. Thư điện tử & Mạng xã hội",
-                level: "Thông hiểu",
-                question: "Phân loại thư điện tử tự động trong Gmail là ứng dụng của công nghệ nào?",
-                options: ["A. Mã hóa dữ liệu", "B. Học máy (Machine Learning)", "C. Lập trình hướng đối tượng", "D. Mạng máy tính"],
-                correctIndex: 1, // B
-                explanation: "Gmail áp dụng thuật toán Học máy (Machine Learning) để phân tích thói quen mở/trả lời thư của người dùng và tự động gắn nhãn quan trọng/thư rác."
-            }
-        ];
-
-        // Section II: 4 True/False Questions (16 Sub-items)
+ {
+  "id": "mc-1",
+  "lesson": "Bài 4. Bên trong máy tính",
+  "level": "Nhận biết",
+  "question": "Bộ phận nào sau đây thực hiện tất cả các phép tính số học và logic trong máy tính?",
+  "options": [
+   "A. Bộ điều khiển.",
+   "B. Bộ nhớ trong.",
+   "C. Bộ số học và logic.",
+   "D. Bộ nhớ ROM."
+  ],
+  "correctIndex": 2,
+  "explanation": "Bộ số học và logic (ALU) trong CPU thực hiện mọi phép tính số học và logic. Bộ điều khiển chỉ điều phối hoạt động, còn bộ nhớ dùng để lưu trữ.",
+  "source": "Đề 1111"
+ },
+ {
+  "id": "mc-2",
+  "lesson": "Bài 4. Bên trong máy tính",
+  "level": "Thông hiểu",
+  "question": "Bộ nhớ nào sau đây có khả năng lưu trữ dữ liệu tạm thời và mất dữ liệu khi tắt máy?",
+  "options": [
+   "A. SSD.",
+   "B. ROM.",
+   "C. RAM.",
+   "D. HDD."
+  ],
+  "correctIndex": 2,
+  "explanation": "RAM là bộ nhớ trong lưu dữ liệu tạm thời khi máy hoạt động và mất dữ liệu khi tắt máy. ROM, SSD, HDD vẫn giữ dữ liệu khi không có điện.",
+  "source": "Đề 1111"
+ },
+ {
+  "id": "mc-3",
+  "lesson": "Bài 5. Kết nối máy tính với thiết bị số",
+  "level": "Nhận biết",
+  "question": "Để kết nối máy in với máy tính, cần phải thực hiện thao tác nào sau đây trong lần đầu sử dụng?",
+  "options": [
+   "A. Tăng tốc độ in.",
+   "B. Cài đặt trình điều khiển của máy in.",
+   "C. Cắm điện máy in.",
+   "D. Tăng độ phân giải của máy in."
+  ],
+  "correctIndex": 1,
+  "explanation": "Lần đầu kết nối, cần cài trình điều khiển (driver) để hệ điều hành nhận diện và điều khiển được máy in.",
+  "source": "Đề 1111"
+ },
+ {
+  "id": "mc-4",
+  "lesson": "Bài 5. Kết nối máy tính với thiết bị số",
+  "level": "Thông hiểu",
+  "question": "Cổng HDMI thường được dùng để:",
+  "options": [
+   "A. Kết nối mạng Internet.",
+   "B. Kết nối máy tính với thiết bị lưu trữ ngoài.",
+   "C. Sạc pin cho thiết bị di động.",
+   "D. Truyền âm thanh và hình ảnh chất lượng cao đến màn hình hoặc tivi."
+  ],
+  "correctIndex": 3,
+  "explanation": "Cổng HDMI truyền đồng thời hình ảnh và âm thanh chất lượng cao tới màn hình, tivi hoặc máy chiếu.",
+  "source": "Đề 1111"
+ },
+ {
+  "id": "mc-5",
+  "lesson": "Bài 8. Thư điện tử & Mạng xã hội",
+  "level": "Nhận biết",
+  "question": "Để sắp xếp phân loại thư trong hộp thư đến thì em sử dụng?",
+  "options": [
+   "A. Dấu sao.",
+   "B. Dấu quan trọng.",
+   "C. Nhãn (Label).",
+   "D. Nhãn (Name)."
+  ],
+  "correctIndex": 2,
+  "explanation": "Nhãn (Label) dùng để phân loại, sắp xếp thư trong hộp thư đến (một thư có thể gắn nhiều nhãn). Dấu sao, dấu quan trọng chỉ để đánh dấu thư.",
+  "source": "Đề 1111"
+ },
+ {
+  "id": "mc-6",
+  "lesson": "Bài 6. Lưu trữ và chia sẻ tệp trên Internet",
+  "level": "Nhận biết",
+  "question": "Tên nơi lưu trữ trực tuyến cho phép người dùng làm công việc gì?",
+  "options": [
+   "A. Chỉ quản lý ổ đĩa.",
+   "B. Chỉ chỉnh sửa trực tuyến.",
+   "C. Trao đổi như một kênh chat.",
+   "D. Tạo thư mục mới, quản lý ổ đĩa, chỉnh sửa trực tuyến."
+  ],
+  "correctIndex": 3,
+  "explanation": "Nơi lưu trữ trực tuyến cho phép tạo thư mục mới, quản lí ổ đĩa và chỉnh sửa tệp trực tuyến — không chỉ làm một việc.",
+  "source": "Đề 1111"
+ },
+ {
+  "id": "mc-7",
+  "lesson": "Bài 5. Kết nối máy tính với thiết bị số",
+  "level": "Thông hiểu",
+  "question": "Phương án nào sau đây là thiết bị vào của máy tính?",
+  "options": [
+   "A. Màn hình.",
+   "B. Máy in.",
+   "C. Loa.",
+   "D. Chuột."
+  ],
+  "correctIndex": 3,
+  "explanation": "Chuột (cùng bàn phím, máy quét…) đưa dữ liệu vào máy tính nên là thiết bị vào. Màn hình, máy in, loa là thiết bị ra.",
+  "source": "Đề 1111"
+ },
+ {
+  "id": "mc-8",
+  "lesson": "Bài 2. Thực hành sử dụng hệ điều hành",
+  "level": "Nhận biết",
+  "question": "Khi gặp sự cố trên đĩa cứng, tiện ích nào được sử dụng để sửa lỗi?",
+  "options": [
+   "A. Check Disk.",
+   "B. Optimize.",
+   "C. Disk Fragment.",
+   "D. Disk Cleanup."
+  ],
+  "correctIndex": 0,
+  "explanation": "Check Disk (Error Checking) dùng để kiểm tra và sửa lỗi trên đĩa cứng. Disk Cleanup dọn tệp rác, còn Optimize/Defragment sắp xếp lại dữ liệu trên đĩa.",
+  "source": "Đề 1111"
+ },
+ {
+  "id": "mc-9",
+  "lesson": "Bài 8. Thư điện tử & Mạng xã hội",
+  "level": "Nhận biết",
+  "question": "Gmail tự động xác định và đánh dấu thư thuộc loại quan trọng bằng?",
+  "options": [
+   "A. Phần mềm đánh dấu.",
+   "B. Chức năng lọc thư.",
+   "C. Dấu quan trọng màu vàng.",
+   "D. Dấu sao màu đỏ."
+  ],
+  "correctIndex": 2,
+  "explanation": "Gmail tự động xác định thư quan trọng và đánh dấu bằng dấu quan trọng màu vàng.",
+  "source": "Đề 1111"
+ },
+ {
+  "id": "mc-10",
+  "lesson": "Bài 2. Thực hành sử dụng hệ điều hành",
+  "level": "Nhận biết",
+  "question": "Tiện ích File Explorer của Windows dùng để làm gì?",
+  "options": [
+   "A. Vẽ hình ảnh.",
+   "B. Quản lý tệp và thư mục.",
+   "C. Quan sát trạng thái hiển thị.",
+   "D. Truy cập nhanh các phần mềm ứng dụng."
+  ],
+  "correctIndex": 1,
+  "explanation": "File Explorer là tiện ích của Windows dùng để quản lí tệp và thư mục.",
+  "source": "Đề 1111"
+ },
+ {
+  "id": "mc-11",
+  "lesson": "Bài 6. Lưu trữ và chia sẻ tệp trên Internet",
+  "level": "Nhận biết",
+  "question": "Ưu điểm của việc lưu trữ thông tin trực tuyến là?",
+  "options": [
+   "A. Không cho phép chia sẻ thư mục, tệp cho người dùng khác.",
+   "B. Thích vào thư mục của ai cũng được.",
+   "C. Cho phép chia sẻ thư mục, tệp cho người dùng khác.",
+   "D. Bán được thông tin cho nhau để kiếm tiền."
+  ],
+  "correctIndex": 2,
+  "explanation": "Ưu điểm của lưu trữ trực tuyến là cho phép chia sẻ thư mục, tệp cho người dùng khác, thuận tiện cho làm việc nhóm.",
+  "source": "Đề 1111"
+ },
+ {
+  "id": "mc-12",
+  "lesson": "Bài 5. Kết nối máy tính với thiết bị số",
+  "level": "Thông hiểu",
+  "question": "Khi kết nối máy tính với điện thoại thông minh qua cáp USB, ta có thể thực hiện được việc nào sau đây?",
+  "options": [
+   "A. Gọi điện thoại từ máy tính.",
+   "B. Cài đặt ứng dụng cho điện thoại mà không cần mạng.",
+   "C. Sao chép, di chuyển tệp giữa hai thiết bị.",
+   "D. Gửi tin nhắn SMS từ máy tính."
+  ],
+  "correctIndex": 2,
+  "explanation": "Kết nối qua cáp USB cho phép sao chép, di chuyển tệp giữa máy tính và điện thoại. Gọi điện, nhắn SMS hay cài ứng dụng không phải chức năng của kết nối này.",
+  "source": "Đề 1111"
+ },
+ {
+  "id": "mc-13",
+  "lesson": "Bài 1. Hệ điều hành",
+  "level": "Nhận biết",
+  "question": "Hệ điều hành LINUX có nguồn gốc từ hệ điều hành nào?",
+  "options": [
+   "A. DOS",
+   "B. UNIX",
+   "C. Windows",
+   "D. macOS"
+  ],
+  "correctIndex": 1,
+  "explanation": "LINUX được phát triển bởi Linus Torvalds dựa trên cấu trúc và nguyên lý của hệ điều hành UNIX (ra đời từ những năm 1970).",
+  "source": "Đề cương"
+ },
+ {
+  "id": "mc-14",
+  "lesson": "Bài 1. Hệ điều hành",
+  "level": "Thông hiểu",
+  "question": "Trong 5 nhóm chức năng của hệ điều hành, nhóm nào thể hiện rõ nhất đặc thù của HĐH máy tính cá nhân?",
+  "options": [
+   "A. Quản lí thiết bị",
+   "B. Quản lí lưu trữ dữ liệu",
+   "C. Cung cấp môi trường giao tiếp với người dùng",
+   "D. Môi trường chạy ứng dụng"
+  ],
+  "correctIndex": 2,
+  "explanation": "Giao diện người dùng đồ họa (GUI) trực quan thân thiện chính là đặc thù quan trọng giúp máy tính cá nhân phổ cập tới mọi người dùng.",
+  "source": "Đề cương"
+ },
+ {
+  "id": "mc-15",
+  "lesson": "Bài 2. Thực hành sử dụng hệ điều hành",
+  "level": "Nhận biết",
+  "question": "Để quản lí tệp và thư mục trên Windows, người dùng dùng tiện ích nào sau đây?",
+  "options": [
+   "A. Task Manager",
+   "B. File Explorer",
+   "C. Control Panel",
+   "D. Device Manager"
+  ],
+  "correctIndex": 1,
+  "explanation": "File Explorer là công cụ quản lý tệp, thư mục và các ổ đĩa chuẩn trên hệ điều hành Windows.",
+  "source": "Đề cương"
+ },
+ {
+  "id": "mc-16",
+  "lesson": "Bài 2. Thực hành sử dụng hệ điều hành",
+  "level": "Thông hiểu",
+  "question": "Hệ điều hành di động khác với HĐH máy tính cá nhân chủ yếu ở điểm nào?",
+  "options": [
+   "A. Có thể chạy ứng dụng",
+   "B. Quản lí tệp được",
+   "C. Tích hợp cảm biến, tối ưu cảm ứng và pin",
+   "D. Có giao diện đồ họa"
+  ],
+  "correctIndex": 2,
+  "explanation": "HĐH di động được thiết kế đặc thù cho thiết bị nhỏ gọn: giao diện cảm ứng đa điểm, tích hợp cảm biến (GPS, gia tốc) và tối ưu hóa năng lượng pin.",
+  "source": "Đề cương"
+ },
+ {
+  "id": "mc-17",
+  "lesson": "Bài 3. Phần mềm nguồn mở & Internet",
+  "level": "Nhận biết",
+  "question": "Phần mềm nào sau đây là phần mềm nguồn mở?",
+  "options": [
+   "A. Microsoft Word",
+   "B. Adobe Photoshop",
+   "C. LibreOffice",
+   "D. WinRAR"
+  ],
+  "correctIndex": 2,
+  "explanation": "LibreOffice là bộ ứng dụng văn phòng nguồn mở hoàn toàn miễn phí; trong khi Word, Photoshop là phần mềm thương mại.",
+  "source": "Đề cương"
+ },
+ {
+  "id": "mc-18",
+  "lesson": "Bài 4. Bên trong máy tính",
+  "level": "Nhận biết",
+  "question": "Bộ phận nào trong máy tính thực hiện tất cả các phép tính số học và logic?",
+  "options": [
+   "A. RAM",
+   "B. ROM",
+   "C. Bộ điều khiển",
+   "D. Bộ số học và logic (trong CPU)"
+  ],
+  "correctIndex": 3,
+  "explanation": "Bộ số học và logic (ALU - Arithmetic Logic Unit) nằm bên trong CPU đảm nhận nhiệm vụ tính toán số học và xử lý logic.",
+  "source": "Đề cương"
+ },
+ {
+  "id": "mc-19",
+  "lesson": "Bài 4. Bên trong máy tính",
+  "level": "Thông hiểu",
+  "question": "Thông số nào sau đây là thông số hiệu năng của RAM?",
+  "options": [
+   "A. Tốc độ GHz",
+   "B. Dung lượng GB và tốc độ MHz",
+   "C. Số nhân (Core)",
+   "D. Dung lượng cache"
+  ],
+  "correctIndex": 1,
+  "explanation": "Dung lượng (tính bằng GB) và Tốc độ/Bus (tính bằng MHz hoặc MT/s) là hai thông số hiệu năng cốt lõi của bộ nhớ RAM.",
+  "source": "Đề cương"
+ },
+ {
+  "id": "mc-20",
+  "lesson": "Bài 5. Kết nối máy tính với thiết bị số",
+  "level": "Nhận biết",
+  "question": "Để kết nối màn hình với máy tính và truyền cả âm thanh lẫn hình ảnh HD, loại cổng nào phù hợp nhất?",
+  "options": [
+   "A. USB",
+   "B. VGA",
+   "C. HDMI",
+   "D. Audio Jack"
+  ],
+  "correctIndex": 2,
+  "explanation": "Cổng HDMI (High-Definition Multimedia Interface) có khả năng truyền tải song song cả tín hiệu video chất lượng cao và âm thanh số.",
+  "source": "Đề cương"
+ },
+ {
+  "id": "mc-21",
+  "lesson": "Bài 6. Lưu trữ và chia sẻ tệp trên Internet",
+  "level": "Nhận biết",
+  "question": "Dịch vụ lưu trữ và chia sẻ tệp trên Internet còn gọi là gì?",
+  "options": [
+   "A. Lưu trữ đĩa cứng",
+   "B. Lưu trữ đám mây",
+   "C. Lưu trữ USB",
+   "D. Lưu trữ ROM"
+  ],
+  "correctIndex": 1,
+  "explanation": "Cloud Storage (Lưu trữ đám mây) là thuật ngữ chỉ các dịch vụ lưu trữ dữ liệu trực tuyến qua mạng Internet như Google Drive, OneDrive.",
+  "source": "Đề cương"
+ },
+ {
+  "id": "mc-22",
+  "lesson": "Bài 7. TH tìm kiếm thông tin trên Internet",
+  "level": "Nhận biết",
+  "question": "Để tìm tài liệu định dạng PDF trên Google, ta sử dụng cú pháp nào?",
+  "options": [
+   "A. type:pdf",
+   "B. format:pdf",
+   "C. filetype:pdf",
+   "D. ext:pdf"
+  ],
+  "correctIndex": 2,
+  "explanation": "Toán tử 'filetype:pdf' dùng để lọc kết quả tìm kiếm đúng định dạng tệp tin PDF trên máy tìm kiếm Google.",
+  "source": "Đề cương"
+ },
+ {
+  "id": "mc-23",
+  "lesson": "Bài 8. TH nâng cao thư điện tử & MXH",
+  "level": "Nhận biết",
+  "question": "Trong Gmail, để hiển thị tất cả thư quan trọng, ta gõ vào ô tìm kiếm cú pháp gì?",
+  "options": [
+   "A. is:starred",
+   "B. is:important",
+   "C. label:important",
+   "D. mark:important"
+  ],
+  "correctIndex": 1,
+  "explanation": "Cú pháp 'is:important' lọc ra toàn bộ các thư điện tử được Gmail hoặc người dùng đánh dấu là quan trọng.",
+  "source": "Đề cương"
+ },
+ {
+  "id": "mc-24",
+  "lesson": "Bài 8. TH nâng cao thư điện tử & MXH",
+  "level": "Thông hiểu",
+  "question": "Phân loại thư điện tử tự động trong Gmail là ứng dụng của công nghệ nào?",
+  "options": [
+   "A. Mã hóa dữ liệu",
+   "B. Học máy (Machine Learning)",
+   "C. Lập trình hướng đối tượng",
+   "D. Mạng máy tính"
+  ],
+  "correctIndex": 1,
+  "explanation": "Gmail áp dụng thuật toán Học máy (Machine Learning) để phân tích thói quen mở/trả lời thư của người dùng và tự động gắn nhãn quan trọng/thư rác.",
+  "source": "Đề cương"
+ }
+];
         const QUESTIONS_TF = [
-            {
-                id: "tf-1",
-                lesson: "Bài 1. Hệ điều hành",
-                title: "Câu 1 (Bài 1 – Hệ điều hành)",
-                items: [
-                    { key: "a", text: "Hệ điều hành Windows là phần mềm thương mại của Microsoft.", correct: true, level: "Nhận biết", exp: "ĐÚNG. Windows là phần mềm có bản quyền thương mại do công ty Microsoft sở hữu và bán quyền sử dụng." },
-                    { key: "b", text: "LINUX có nguồn gốc từ hệ điều hành UNIX và là phần mềm nguồn mở.", correct: true, level: "Nhận biết", exp: "ĐÚNG. LINUX dựa trên UNIX và được mở mã nguồn hoàn toàn theo giấy phép GPL." },
-                    { key: "c", text: "HĐH di động (iOS, Android) không cần tích hợp cảm biến vì giao diện chạm là đủ.", correct: false, level: "Thông hiểu", exp: "SAI. HĐH di động rất cần tích hợp các cảm biến (gia tốc, GPS, con quay hồi chuyển...) để cung cấp tính năng định vị, tự xoay màn hình, đếm bước chân..." },
-                    { key: "d", text: "Hệ điều hành đóng vai trò môi trường trung gian giúp phần mềm ứng dụng khai thác phần cứng.", correct: true, level: "Vận dụng", exp: "ĐÚNG. HĐH điều phối tài nguyên phần cứng để các chương trình ứng dụng chạy ổn định trên đó." }
-                ]
-            },
-            {
-                id: "tf-2",
-                lesson: "Bài 3. Phần mềm nguồn mở & Internet",
-                title: "Câu 2 (Bài 3 – Phần mềm nguồn mở)",
-                items: [
-                    { key: "a", text: "Phần mềm thương mại bắt buộc người dùng phải trả phí mới được sử dụng.", correct: true, level: "Nhận biết", exp: "ĐÚNG. Muốn dùng phần mềm thương mại hợp pháp, người dùng hoặc tổ chức phải mua bản quyền." },
-                    { key: "b", text: "Phần mềm nguồn mở cho phép người dùng xem, sửa đổi và phân phối lại mã nguồn.", correct: true, level: "Nhận biết", exp: "ĐÚNG. Đây chính là nguyên lý cốt lõi của triết lý phần mềm nguồn mở (Open Source)." },
-                    { key: "c", text: "Phần mềm chạy trên Internet như Google Docs cần cài đặt trực tiếp trên máy tính mới dùng được.", correct: false, level: "Thông hiểu", exp: "SAI. Web App chạy trực tiếp trên trình duyệt web, dữ liệu xử lý đám mây nên không cần cài vào máy." },
-                    { key: "d", text: "Giấy phép MIT cho phép dùng mã nguồn mở để phát triển phần mềm thương mại.", correct: true, level: "Vận dụng", exp: "ĐÚNG. Giấy phép MIT rất thông thoáng, cho phép tự do tích hợp mã nguồn vào sản phẩm thương mại." }
-                ]
-            },
-            {
-                id: "tf-3",
-                lesson: "Bài 6. Lưu trữ và chia sẻ tệp trên Internet",
-                title: "Câu 3 (Bài 6 – Lưu trữ đám mây)",
-                items: [
-                    { key: "a", text: "Google Drive là một dịch vụ lưu trữ và chia sẻ tệp tin trên Internet.", correct: true, level: "Nhận biết", exp: "ĐÚNG. Google Drive là dịch vụ đĩa đám mây hàng đầu hiện nay." },
-                    { key: "b", text: "Khi chia sẻ tệp, chủ sở hữu có thể cấp quyền Chỉnh sửa cho người được chia sẻ.", correct: true, level: "Nhận biết", exp: "ĐÚNG. Google Drive cung cấp 3 quyền: Chỉ xem, Xem & nhận xét, Chỉnh sửa (Editor)." },
-                    { key: "c", text: "Lưu trữ đám mây không phụ thuộc vào kết nối Internet, có thể dùng offline hoàn toàn.", correct: false, level: "Thông hiểu", exp: "SAI. Bản chất lưu trữ đám mây đòi hỏi phải có Internet để đồng bộ và chia sẻ dữ liệu trực tuyến." },
-                    { key: "d", text: "Lưu trữ đám mây có rủi ro bảo mật nếu tài khoản người dùng bị xâm phạm.", correct: true, level: "Vận dụng", exp: "ĐÚNG. Nếu bị lộ mật khẩu tài khoản, kẻ xấu có thể truy cập toàn bộ tài liệu trực tuyến." }
-                ]
-            },
-            {
-                id: "tf-4",
-                lesson: "Bài 8. Thư điện tử & Mạng xã hội",
-                title: "Câu 4 (Bài 8 – Thư điện tử & MXH)",
-                items: [
-                    { key: "a", text: "Gmail dùng trí tuệ nhân tạo (Machine Learning) để tự động phân loại thư.", correct: true, level: "Nhận biết", exp: "ĐÚNG. AI/Machine Learning trong Gmail giúp phát hiện thư rác và đánh dấu thư quan trọng." },
-                    { key: "b", text: "Nhãn (Label) trong Gmail hoạt động giống hệt Thư mục (Folder), không có sự khác biệt.", correct: false, level: "Thông hiểu", exp: "SAI. Khác với Thư mục (1 tệp chỉ nằm ở 1 nơi), Nhãn trong Gmail cho phép gắn nhiều nhãn khác nhau cho cùng một thư." },
-                    { key: "c", text: "Quy tắc ứng xử văn minh trên MXH bao gồm việc kiểm tra thông tin trước khi chia sẻ.", correct: true, level: "Vận dụng", exp: "ĐÚNG. Xác minh tính chính xác giúp ngăn chặn lan truyền thông tin sai sự thật (Fake news)." },
-                    { key: "d", text: "Chia sẻ thông tin sai sự thật (fake news) trên mạng xã hội có thể vi phạm pháp luật.", correct: true, level: "Vận dụng", exp: "ĐÚNG. Hành vi tung tin giả bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự theo Luật An ninh mạng." }
-                ]
-            }
-        ];
-
-        // Section III: 3 Essay Situation Questions (8 Sub-items)
+ {
+  "id": "tf-1",
+  "lesson": "Bài 3. Phần mềm nguồn mở & Internet",
+  "title": "[Đề 1111] Câu 1 (Bài 3 – Phần mềm thương mại & nguồn mở)",
+  "stem": "Trong giờ học Tin, giáo viên yêu cầu các nhóm nêu vai trò của phần mềm thương mại và phần mềm nguồn mở trong ngành công nghệ thông tin. Các nhóm đã đưa ra những phát biểu sau:",
+  "items": [
+   {
+    "key": "a",
+    "text": "Phần mềm thương mại chủ yếu dành cho các tổ chức, cá nhân chuyên nghiệp và tạo ra nguồn thu nhập.",
+    "correct": true,
+    "level": "Nhận biết",
+    "exp": "ĐÚNG. Phần mềm thương mại hướng tới tổ chức, cá nhân chuyên nghiệp và tạo nguồn thu cho nhà phát triển."
+   },
+   {
+    "key": "b",
+    "text": "Phần mềm nguồn mở giúp người dùng có nhu cầu chung sử dụng phần mềm chất lượng cao với chi phí thấp.",
+    "correct": true,
+    "level": "Nhận biết",
+    "exp": "ĐÚNG. Phần mềm nguồn mở giúp người dùng có nhu cầu chung dùng phần mềm chất lượng cao với chi phí thấp."
+   },
+   {
+    "key": "c",
+    "text": "Phần mềm thương mại có tính linh hoạt cao hơn phần mềm nguồn mở do đáp ứng được nhu cầu riêng biệt.",
+    "correct": false,
+    "level": "Thông hiểu",
+    "exp": "SAI. Phần mềm nguồn mở mới là loại linh hoạt hơn, vì người dùng có thể xem và sửa mã nguồn để đáp ứng nhu cầu riêng."
+   },
+   {
+    "key": "d",
+    "text": "Phần mềm nguồn mở luôn có tính bảo mật cao hơn phần mềm thương mại vì mã nguồn mở.",
+    "correct": false,
+    "level": "Vận dụng",
+    "exp": "SAI. Mã nguồn mở không đảm bảo luôn bảo mật hơn; mức độ bảo mật còn phụ thuộc cộng đồng phát triển, cách quản lí và cập nhật."
+   }
+  ],
+  "source": "Đề 1111"
+ },
+ {
+  "id": "tf-2",
+  "lesson": "Bài 4. Bên trong máy tính",
+  "title": "[Đề 1111] Câu 2 (Bài 4 – Bên trong máy tính)",
+  "stem": "Các thiết bị bên trong máy tính bao gồm bộ xử lý, bộ nhớ trong, bộ nhớ ngoài và các bảng mạch mở rộng. Chúng được gắn trên bảng mạch chính và đóng vai trò quan trọng trong hoạt động của máy tính.",
+  "items": [
+   {
+    "key": "a",
+    "text": "CPU không cần thiết đối với máy tính.",
+    "correct": false,
+    "level": "Nhận biết",
+    "exp": "SAI. CPU (bộ xử lí trung tâm) là bộ phận bắt buộc; không có CPU máy tính không hoạt động được."
+   },
+   {
+    "key": "b",
+    "text": "ROM có thể ghi dữ liệu mới.",
+    "correct": false,
+    "level": "Nhận biết",
+    "exp": "SAI. ROM là bộ nhớ chỉ đọc, dữ liệu được ghi sẵn khi sản xuất nên không ghi dữ liệu mới như RAM."
+   },
+   {
+    "key": "c",
+    "text": "Bộ xử lý là nơi thực hiện các phép toán và điều khiển toàn bộ máy tính hoạt động.",
+    "correct": true,
+    "level": "Thông hiểu",
+    "exp": "ĐÚNG. Bộ xử lí thực hiện các phép toán và điều khiển toàn bộ hoạt động của máy tính."
+   },
+   {
+    "key": "d",
+    "text": "Tốc độ của bộ xử lý được đo bằng đơn vị MB.",
+    "correct": false,
+    "level": "Vận dụng",
+    "exp": "SAI. Tốc độ bộ xử lí đo bằng GHz. MB là đơn vị đo dung lượng bộ nhớ."
+   }
+  ],
+  "source": "Đề 1111"
+ },
+ {
+  "id": "tf-3",
+  "lesson": "Bài 1. Hệ điều hành",
+  "title": "[Đề 1111] Câu 3 (Bài 1 – Hệ điều hành)",
+  "stem": "Trong giờ Tin học, An và Bình thảo luận về bài “Hệ điều hành máy tính” và đã đưa ra những phát biểu sau:",
+  "items": [
+   {
+    "key": "a",
+    "text": "Windows 7 được phát hành sau Windows 8, mang lại nhiều cải tiến về hiệu suất và bảo mật.",
+    "correct": false,
+    "level": "Nhận biết",
+    "exp": "SAI. Windows 7 ra mắt trước Windows 8 (2009 so với 2012) chứ không phải sau."
+   },
+   {
+    "key": "b",
+    "text": "Trong giai đoạn đầu, các hệ điều hành máy tính cá nhân sử dụng giao diện đồ họa trực quan, dễ sử dụng.",
+    "correct": false,
+    "level": "Nhận biết",
+    "exp": "SAI. Giai đoạn đầu, HĐH máy tính cá nhân dùng giao diện dòng lệnh; giao diện đồ họa trực quan xuất hiện về sau."
+   },
+   {
+    "key": "c",
+    "text": "Thiết bị đa năng như máy tính xách tay hay điện thoại thông minh có thể hoạt động mà không cần hệ điều hành.",
+    "correct": false,
+    "level": "Thông hiểu",
+    "exp": "SAI. Máy tính xách tay, điện thoại thông minh đều cần hệ điều hành để quản lí phần cứng và chạy ứng dụng."
+   },
+   {
+    "key": "d",
+    "text": "Cơ chế plug & play giúp người dùng dễ dàng kết nối các thiết bị ngoại vi như máy in, ổ cứng ngoài mà không cần cài đặt trình điều khiển riêng biệt.",
+    "correct": true,
+    "level": "Vận dụng",
+    "exp": "ĐÚNG. Cơ chế plug & play giúp HĐH tự nhận diện thiết bị ngoại vi (máy in, ổ cứng ngoài…) mà không phải cài trình điều khiển riêng."
+   }
+  ],
+  "source": "Đề 1111"
+ },
+ {
+  "id": "tf-4",
+  "lesson": "Bài 7–8. Tìm kiếm thông tin & Thư điện tử",
+  "title": "[Đề 1111] Câu 4 (Bài 7, 8 – Tìm kiếm thông tin & Thư điện tử)",
+  "stem": "Lan chuẩn bị làm bài tập Tin học. Bạn ấy cần tìm kiếm thông tin trên Internet và trao đổi với nhóm bạn bằng email, mạng xã hội. Lan có những phát biểu sau đây:",
+  "items": [
+   {
+    "key": "a",
+    "text": "Công cụ Google có thể dùng để tìm kiếm thông tin trên Internet.",
+    "correct": true,
+    "level": "Nhận biết",
+    "exp": "ĐÚNG. Google là máy tìm kiếm, dùng để tìm thông tin trên Internet."
+   },
+   {
+    "key": "b",
+    "text": "Tìm kiếm bằng tiếng nói yêu cầu người dùng nhấn vào biểu tượng micro trên công cụ tìm kiếm.",
+    "correct": true,
+    "level": "Nhận biết",
+    "exp": "ĐÚNG. Tìm kiếm bằng tiếng nói: nhấn vào biểu tượng micro trên công cụ tìm kiếm rồi nói từ khóa."
+   },
+   {
+    "key": "c",
+    "text": "Lan sử dụng dấu ‘ ’ khi tìm kiếm thì sẽ tìm được chính xác cụm từ đó.",
+    "correct": false,
+    "level": "Thông hiểu",
+    "exp": "SAI. Muốn tìm chính xác một cụm từ phải dùng dấu ngoặc kép \" \", không phải dấu nháy đơn ‘ ’."
+   },
+   {
+    "key": "d",
+    "text": "Khi gửi thư điện tử cho nhiều người, Lan dùng Cc (Carbon Copy) hoặc Bcc (Blind Carbon Copy) để thuận tiện hơn.",
+    "correct": true,
+    "level": "Vận dụng",
+    "exp": "ĐÚNG. Cc gửi bản sao cho nhiều người; Bcc gửi bản sao ẩn danh (người nhận không thấy nhau), thuận tiện khi gửi thư cho nhiều người."
+   }
+  ],
+  "source": "Đề 1111"
+ },
+ {
+  "id": "tf-5",
+  "lesson": "Bài 1. Hệ điều hành",
+  "title": "[Đề cương] Câu 5 (Bài 1 – Hệ điều hành)",
+  "items": [
+   {
+    "key": "a",
+    "text": "Hệ điều hành Windows là phần mềm thương mại của Microsoft.",
+    "correct": true,
+    "level": "Nhận biết",
+    "exp": "ĐÚNG. Windows là phần mềm có bản quyền thương mại do công ty Microsoft sở hữu và bán quyền sử dụng."
+   },
+   {
+    "key": "b",
+    "text": "LINUX có nguồn gốc từ hệ điều hành UNIX và là phần mềm nguồn mở.",
+    "correct": true,
+    "level": "Nhận biết",
+    "exp": "ĐÚNG. LINUX dựa trên UNIX và được mở mã nguồn hoàn toàn theo giấy phép GPL."
+   },
+   {
+    "key": "c",
+    "text": "HĐH di động (iOS, Android) không cần tích hợp cảm biến vì giao diện chạm là đủ.",
+    "correct": false,
+    "level": "Thông hiểu",
+    "exp": "SAI. HĐH di động rất cần tích hợp các cảm biến (gia tốc, GPS, con quay hồi chuyển...) để cung cấp tính năng định vị, tự xoay màn hình, đếm bước chân..."
+   },
+   {
+    "key": "d",
+    "text": "Hệ điều hành đóng vai trò môi trường trung gian giúp phần mềm ứng dụng khai thác phần cứng.",
+    "correct": true,
+    "level": "Vận dụng",
+    "exp": "ĐÚNG. HĐH điều phối tài nguyên phần cứng để các chương trình ứng dụng chạy ổn định trên đó."
+   }
+  ],
+  "source": "Đề cương",
+  "stem": "Xét tính đúng – sai của các phát biểu sau:"
+ },
+ {
+  "id": "tf-6",
+  "lesson": "Bài 3. Phần mềm nguồn mở & Internet",
+  "title": "[Đề cương] Câu 6 (Bài 3 – Phần mềm nguồn mở)",
+  "items": [
+   {
+    "key": "a",
+    "text": "Phần mềm thương mại bắt buộc người dùng phải trả phí mới được sử dụng.",
+    "correct": true,
+    "level": "Nhận biết",
+    "exp": "ĐÚNG. Muốn dùng phần mềm thương mại hợp pháp, người dùng hoặc tổ chức phải mua bản quyền."
+   },
+   {
+    "key": "b",
+    "text": "Phần mềm nguồn mở cho phép người dùng xem, sửa đổi và phân phối lại mã nguồn.",
+    "correct": true,
+    "level": "Nhận biết",
+    "exp": "ĐÚNG. Đây chính là nguyên lý cốt lõi của triết lý phần mềm nguồn mở (Open Source)."
+   },
+   {
+    "key": "c",
+    "text": "Phần mềm chạy trên Internet như Google Docs cần cài đặt trực tiếp trên máy tính mới dùng được.",
+    "correct": false,
+    "level": "Thông hiểu",
+    "exp": "SAI. Web App chạy trực tiếp trên trình duyệt web, dữ liệu xử lý đám mây nên không cần cài vào máy."
+   },
+   {
+    "key": "d",
+    "text": "Giấy phép MIT cho phép dùng mã nguồn mở để phát triển phần mềm thương mại.",
+    "correct": true,
+    "level": "Vận dụng",
+    "exp": "ĐÚNG. Giấy phép MIT rất thông thoáng, cho phép tự do tích hợp mã nguồn vào sản phẩm thương mại."
+   }
+  ],
+  "source": "Đề cương",
+  "stem": "Xét tính đúng – sai của các phát biểu sau:"
+ },
+ {
+  "id": "tf-7",
+  "lesson": "Bài 6. Lưu trữ và chia sẻ tệp trên Internet",
+  "title": "[Đề cương] Câu 7 (Bài 6 – Lưu trữ đám mây)",
+  "items": [
+   {
+    "key": "a",
+    "text": "Google Drive là một dịch vụ lưu trữ và chia sẻ tệp tin trên Internet.",
+    "correct": true,
+    "level": "Nhận biết",
+    "exp": "ĐÚNG. Google Drive là dịch vụ đĩa đám mây hàng đầu hiện nay."
+   },
+   {
+    "key": "b",
+    "text": "Khi chia sẻ tệp, chủ sở hữu có thể cấp quyền Chỉnh sửa cho người được chia sẻ.",
+    "correct": true,
+    "level": "Nhận biết",
+    "exp": "ĐÚNG. Google Drive cung cấp 3 quyền: Chỉ xem, Xem & nhận xét, Chỉnh sửa (Editor)."
+   },
+   {
+    "key": "c",
+    "text": "Lưu trữ đám mây không phụ thuộc vào kết nối Internet, có thể dùng offline hoàn toàn.",
+    "correct": false,
+    "level": "Thông hiểu",
+    "exp": "SAI. Bản chất lưu trữ đám mây đòi hỏi phải có Internet để đồng bộ và chia sẻ dữ liệu trực tuyến."
+   },
+   {
+    "key": "d",
+    "text": "Lưu trữ đám mây có rủi ro bảo mật nếu tài khoản người dùng bị xâm phạm.",
+    "correct": true,
+    "level": "Vận dụng",
+    "exp": "ĐÚNG. Nếu bị lộ mật khẩu tài khoản, kẻ xấu có thể truy cập toàn bộ tài liệu trực tuyến."
+   }
+  ],
+  "source": "Đề cương",
+  "stem": "Xét tính đúng – sai của các phát biểu sau:"
+ },
+ {
+  "id": "tf-8",
+  "lesson": "Bài 8. TH nâng cao thư điện tử & MXH",
+  "title": "[Đề cương] Câu 8 (Bài 8 – Thư điện tử & MXH)",
+  "items": [
+   {
+    "key": "a",
+    "text": "Gmail dùng trí tuệ nhân tạo (Machine Learning) để tự động phân loại thư.",
+    "correct": true,
+    "level": "Nhận biết",
+    "exp": "ĐÚNG. AI/Machine Learning trong Gmail giúp phát hiện thư rác và đánh dấu thư quan trọng."
+   },
+   {
+    "key": "b",
+    "text": "Nhãn (Label) trong Gmail hoạt động giống hệt Thư mục (Folder), không có sự khác biệt.",
+    "correct": false,
+    "level": "Thông hiểu",
+    "exp": "SAI. Khác với Thư mục (1 tệp chỉ nằm ở 1 nơi), Nhãn trong Gmail cho phép gắn nhiều nhãn khác nhau cho cùng một thư."
+   },
+   {
+    "key": "c",
+    "text": "Quy tắc ứng xử văn minh trên MXH bao gồm việc kiểm tra thông tin trước khi chia sẻ.",
+    "correct": true,
+    "level": "Vận dụng",
+    "exp": "ĐÚNG. Xác minh tính chính xác giúp ngăn chặn lan truyền thông tin sai sự thật (Fake news)."
+   },
+   {
+    "key": "d",
+    "text": "Chia sẻ thông tin sai sự thật (fake news) trên mạng xã hội có thể vi phạm pháp luật.",
+    "correct": true,
+    "level": "Vận dụng",
+    "exp": "ĐÚNG. Hành vi tung tin giả bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự theo Luật An ninh mạng."
+   }
+  ],
+  "source": "Đề cương",
+  "stem": "Xét tính đúng – sai của các phát biểu sau:"
+ }
+];
         const QUESTIONS_ES = [
-            {
-                id: "es-1",
-                lesson: "Bài 4. Bên trong máy tính",
-                title: "Câu 1 (1,0 điểm) — Bài 4: Bên trong máy tính",
-                scenario: "📋 Tình huống: Một máy tính có cấu hình: CPU Core i5 (4 nhân, 2.4 GHz), RAM 4GB, ổ cứng HDD 1TB. Bạn An thấy máy chạy chậm khi mở nhiều ứng dụng cùng lúc.",
-                subQuestions: [
-                    {
-                        key: "a",
-                        level: "Thông hiểu (0,5 điểm)",
-                        question: "a) Giải thích tại sao máy chạy chậm khi mở nhiều ứng dụng?",
-                        modelAnswer: "Nguyên nhân chính là dung lượng RAM 4GB khá hạn chế. Khi mở nhiều ứng dụng cùng lúc, RAM bị quá tải (đầy bộ nhớ), hệ điều hành buộc phải dùng một phần ổ cứng HDD làm 'bộ nhớ ảo' (Virtual Memory). Vì tốc độ đọc/ghi của HDD rất chậm so với RAM nên máy bị giật lag rõ rệt.",
-                        keyChecklist: ["RAM 4GB quá nhỏ", "Tràn bộ nhớ RAM khi mở nhiều ứng dụng", "HĐH phải dùng ổ cứng HDD làm bộ nhớ ảo", "Tốc độ đọc/ghi của HDD rất chậm"]
-                    },
-                    {
-                        key: "b",
-                        level: "Vận dụng (0,5 điểm)",
-                        question: "b) Đề xuất cách nâng cấp để cải thiện tốc độ với chi phí hợp lí nhất?",
-                        modelAnswer: "Giải pháp nâng cấp hiệu quả và tiết kiệm:\n1. Nâng cấp RAM: Lắp thêm 1 thanh RAM 4GB hoặc thay bằng 8GB/16GB để thoải mái đa nhiệm.\n2. Lắp thêm/Thay thế ổ cứng SSD (dung lượng 128GB - 256GB) để cài đặt Hệ điều hành và ứng dụng (SSD có tốc độ nhanh gấp 5-10 lần HDD). HDD 1TB cũ giữ lại làm ổ chứa dữ liệu.",
-                        keyChecklist: ["Nâng cấp RAM lên 8GB hoặc 16GB", "Thay thế hoặc lắp thêm ổ cứng SSD", "Chuyển cài HĐH sang SSD"]
-                    }
-                ]
-            },
-            {
-                id: "es-2",
-                lesson: "Bài 5. Kết nối thiết bị số",
-                title: "Câu 2 (1,0 điểm) — Bài 5: Kết nối thiết bị số",
-                scenario: "📋 Tình huống: Bạn Bình muốn kết nối máy tính với màn hình ngoài 27 inch (Full HD, 144Hz) và loa Bluetooth để có trải nghiệm tốt hơn khi học online.",
-                subQuestions: [
-                    {
-                        key: "a",
-                        level: "Thông hiểu (0,5 điểm)",
-                        question: "a) Giải thích ý nghĩa các thông số kĩ thuật: '27 inch', 'Full HD (1920×1080)', '144Hz'?",
-                        modelAnswer: "• 27 inch: Độ dài đường chéo của màn hình hiển thị (1 inch ≈ 2.54 cm).\n• Full HD (1920×1080): Độ phân giải của màn hình, gồm 1920 điểm ảnh chiều ngang và 1080 điểm ảnh chiều dọc (tổng cộng khoảng 2 triệu điểm ảnh).\n• 144Hz: Tần số quét (tốc độ làm mới), nghĩa là màn hình có khả năng làm mới hình ảnh 144 lần trong một giây, giúp chuyển động mượt mà hơn hẳn màn 60Hz chuẩn.",
-                        keyChecklist: ["27 inch là độ dài đường chéo", "Full HD là độ phân giải 1920x1080 pixel", "144Hz là tần số quét / 144 khung hình/giây"]
-                    },
-                    {
-                        key: "b",
-                        level: "Vận dụng (0,5 điểm)",
-                        question: "b) Nêu cách kết nối màn hình (qua HDMI) và loa Bluetooth với máy tính?",
-                        modelAnswer: "• Kết nối màn hình: Cắm một đầu cáp HDMI vào cổng HDMI trên máy tính, đầu còn lại cắm vào cổng HDMI của màn hình. Mở nguồn màn hình, HĐH Windows sẽ tự nhận dạng và xuất hình ảnh.\n• Kết nối Loa Bluetooth: Bật nguồn loa và kích hoạt chế độ ghép đôi (Pairing) -> Trên máy tính vào Settings -> Bluetooth & devices -> Bật Bluetooth -> Chọn Add device -> Chọn Bluetooth -> Nhấp chọn tên loa Bluetooth để kết nối.",
-                        keyChecklist: ["Kết nối HDMI: Cắm cáp HDMI vào cổng máy tính và màn hình", "Kết nối Loa: Bật Bluetooth máy tính & loa", "Vào Settings -> Bluetooth -> Add device -> Chọn loa"]
-                    }
-                ]
-            },
-            {
-                id: "es-3",
-                lesson: "Bài 8. Thư điện tử & Mạng xã hội",
-                title: "Câu 3 (1,0 điểm) — Bài 8: Thư điện tử & Mạng xã hội",
-                scenario: "📋 Tình huống: Bạn Lan cần tổ chức hộp thư Gmail cho nhóm học tập: phân loại thư theo môn học, đánh dấu thư quan trọng từ giáo viên. Bạn cũng cần chia sẻ tài liệu nhóm qua Google Drive.",
-                subQuestions: [
-                    {
-                        key: "a",
-                        level: "Vận dụng (0,25 điểm)",
-                        question: "a) Nêu các bước tạo Nhãn 'Tin học' trong Gmail?",
-                        modelAnswer: "Bước 1: Đăng nhập Gmail, ở danh mục bên trái nhấp vào nút 'Danh sách mở rộng' (More) -> Chọn 'Tạo nhãn mới' (Create new label).\nBước 2: Nhập tên nhãn là 'Tin học' -> Nhấn 'Tạo' (Create).\nBước 3: Chọn các thư cần phân loại -> Nhấp vào biểu tượng Nhãn -> Tích chọn 'Tin học' -> Nhấn Áp dụng.",
-                        keyChecklist: ["Vào Danh sách mở rộng bên trái Gmail", "Chọn Tạo nhãn mới", "Gõ tên 'Tin học' và nhấn Save/Create"]
-                    },
-                    {
-                        key: "b",
-                        level: "Vận dụng (0,25 điểm)",
-                        question: "b) Làm thế nào để tìm tất cả thư quan trọng từ giáo viên trong Gmail?",
-                        modelAnswer: "Gõ cú pháp 'is:important' vào thanh tìm kiếm ở trên cùng của Gmail rồi nhấn Enter. Để chính xác hơn thư của giáo viên, có thể kết hợp: 'is:important từ_email_giáo_viên'.",
-                        keyChecklist: ["Gõ is:important vào thanh tìm kiếm Gmail"]
-                    },
-                    {
-                        key: "c",
-                        level: "Vận dụng (0,25 điểm)",
-                        question: "c) Để chia sẻ tài liệu nhóm trên Google Drive cho các bạn có thể cùng chỉnh sửa, cần cấp quyền gì?",
-                        modelAnswer: "Cần cấp quyền 'Người chỉnh sửa' (Editor). Thao tác: Nhấp chuột phải vào tệp/thư mục trên Drive -> Chọn 'Chia sẻ' (Share) -> Nhập địa chỉ Gmail của các bạn -> Tại mục phân quyền chọn 'Người chỉnh sửa' (Editor) -> Nhấn Gửi.",
-                        keyChecklist: ["Cấp quyền 'Người chỉnh sửa' (Editor)"]
-                    },
-                    {
-                        key: "d",
-                        level: "Vận dụng (0,25 điểm)",
-                        question: "d) Nêu 2 nguyên tắc ứng xử văn minh cần nhớ khi chia sẻ thông tin nhóm học qua MXH?",
-                        modelAnswer: "1. Kiểm tra tính xác thực của thông tin trước khi đăng tải/chia sẻ, tránh gửi các file nhiễm virus hoặc tin đồn vô căn cứ.\n2. Tôn trọng quyền riêng tư của các bạn: Không tự ý chia sẻ hình ảnh, tin nhắn cá nhân hoặc bài làm của người khác lên mạng xã hội khi chưa được sự đồng ý.",
-                        keyChecklist: ["Kiểm tra tính xác thực thông tin trước khi chia sẻ", "Tôn trọng quyền riêng tư & bản quyền của người khác"]
-                    }
-                ]
-            }
-        ];
+ {
+  "id": "es-1",
+  "lesson": "Bài 4. Bên trong máy tính",
+  "title": "[Đề 1111] Câu 1 (1,0 điểm) — Phép cộng số nhị phân",
+  "scenario": "✍️ Đề bài: Thực hiện phép cộng các số nhị phân có nhiều chữ số sau đây rồi chuyển các số sang hệ thập phân.",
+  "subQuestions": [
+   {
+    "key": "a",
+    "question": "a) 10111001 + 10110011.",
+    "level": "Thông hiểu (0,5 điểm)",
+    "modelAnswer": "10111001 + 10110011 = 101101100\nChuyển sang hệ thập phân: 185 + 179 = 364.\n(Kiểm tra: 101101100₂ = 256 + 64 + 32 + 8 + 4 = 364)",
+    "keyChecklist": [
+     "Kết quả phép cộng: 101101100",
+     "Đổi đúng hai số hạng: 185 và 179",
+     "Kết quả thập phân: 364"
+    ]
+   },
+   {
+    "key": "b",
+    "question": "b) 11101110 + 11010101.",
+    "level": "Vận dụng (0,5 điểm)",
+    "modelAnswer": "11101110 + 11010101 = 111000011\nChuyển sang hệ thập phân: 238 + 213 = 451.\n(Kiểm tra: 111000011₂ = 256 + 128 + 64 + 2 + 1 = 451)",
+    "keyChecklist": [
+     "Kết quả phép cộng: 111000011",
+     "Đổi đúng hai số hạng: 238 và 213",
+     "Kết quả thập phân: 451"
+    ]
+   }
+  ],
+  "source": "Đề 1111"
+ },
+ {
+  "id": "es-2",
+  "lesson": "Bài 8. Thư điện tử & Mạng xã hội",
+  "title": "[Đề 1111] Câu 2 (1,0 điểm) — Tạo Fanpage của lớp",
+  "scenario": "✍️ Đề bài: Em hãy nêu các bước tạo Fanpage của lớp mình để đăng tải các bài viết, ảnh, video và sự kiện của trường, lớp.",
+  "subQuestions": [
+   {
+    "key": "a",
+    "question": "Nêu các bước thực hiện (mỗi bước đúng 0,25 điểm):",
+    "level": "Vận dụng (1,0 điểm)",
+    "modelAnswer": "Bước 1: Đăng nhập vào Facebook. Nháy chuột vào biểu tượng Menu để mở danh sách các lệnh. Trong mục Tạo, chọn Trang.\nBước 2: Tại mục Thông tin về trang, điền đầy đủ: (1) nhập tên trang cần tạo; (2) chọn hạng mục phù hợp trong danh sách; (3) nhập mô tả; (4) chọn Tạo trang để hoàn thành.\nBước 3: Nhập nội dung, hình ảnh, các bài viết cho trang Fanpage vừa tạo và chia sẻ với bạn bè về trang này.\nBước 4: Khám phá các tính năng về quản lí trang để quản lí Fanpage của lớp em.",
+    "keyChecklist": [
+     "Bước 1: Menu → Tạo → Trang",
+     "Bước 2: Nhập tên, chọn hạng mục, nhập mô tả, chọn Tạo trang",
+     "Bước 3: Đăng nội dung, hình ảnh, bài viết và chia sẻ",
+     "Bước 4: Khám phá tính năng quản lí trang"
+    ]
+   }
+  ],
+  "source": "Đề 1111"
+ },
+ {
+  "id": "es-3",
+  "lesson": "Bài 7. Thực hành tìm kiếm thông tin trên Internet",
+  "title": "[Đề 1111] Câu 3 (1,0 điểm) — Tìm hiểu nghề nghiệp bằng video",
+  "scenario": "✍️ Đề bài: Hãy nêu các bước sử dụng máy tìm kiếm để tìm hiểu thông tin về nghề nghiệp mà em mơ ước được làm trong tương lai dưới dạng video.",
+  "subQuestions": [
+   {
+    "key": "a",
+    "question": "Nêu các bước thực hiện (theo thang điểm hướng dẫn chấm):",
+    "level": "Vận dụng (1,0 điểm)",
+    "modelAnswer": "Bước 1: Khởi động công cụ tìm kiếm — mở trình duyệt Internet trên máy tính, gõ địa chỉ URL của máy tìm kiếm (chẳng hạn Google.com).\nBước 2: Tìm kiếm bằng từ khóa nhập từ bàn phím — nhập từ khóa (chẳng hạn “nghề nghiệp em mơ ước” hoặc tên nghề cụ thể) rồi nhấn phím Enter.\nBước 3: Đọc kết quả tìm kiếm, chọn kết quả video phù hợp với nội dung cần tìm hiểu. Nếu chưa được như ý, quay lại bước 2 với từ khóa khác để tìm kiếm hiệu quả hơn.\n(Có thể truy cập mục Video trên trang kết quả hoặc tìm video trên nền tảng chia sẻ video.)",
+    "keyChecklist": [
+     "Mở trình duyệt, truy cập máy tìm kiếm (Google.com)",
+     "Nhập từ khóa về nghề nghiệp bằng bàn phím, nhấn Enter",
+     "Đọc kết quả, chọn video phù hợp",
+     "Thay từ khóa nếu kết quả chưa như ý"
+    ]
+   }
+  ],
+  "source": "Đề 1111"
+ },
+ {
+  "id": "es-4",
+  "lesson": "Bài 4. Bên trong máy tính",
+  "title": "[Đề cương] Câu 4 (1,0 điểm) — Bài 4: Bên trong máy tính",
+  "scenario": "📋 Tình huống: Một máy tính có cấu hình: CPU Core i5 (4 nhân, 2.4 GHz), RAM 4GB, ổ cứng HDD 1TB. Bạn An thấy máy chạy chậm khi mở nhiều ứng dụng cùng lúc.",
+  "subQuestions": [
+   {
+    "key": "a",
+    "level": "Thông hiểu (0,5 điểm)",
+    "question": "a) Giải thích tại sao máy chạy chậm khi mở nhiều ứng dụng?",
+    "modelAnswer": "Nguyên nhân chính là dung lượng RAM 4GB khá hạn chế. Khi mở nhiều ứng dụng cùng lúc, RAM bị quá tải (đầy bộ nhớ), hệ điều hành buộc phải dùng một phần ổ cứng HDD làm 'bộ nhớ ảo' (Virtual Memory). Vì tốc độ đọc/ghi của HDD rất chậm so với RAM nên máy bị giật lag rõ rệt.",
+    "keyChecklist": [
+     "RAM 4GB quá nhỏ",
+     "Tràn bộ nhớ RAM khi mở nhiều ứng dụng",
+     "HĐH phải dùng ổ cứng HDD làm bộ nhớ ảo",
+     "Tốc độ đọc/ghi của HDD rất chậm"
+    ]
+   },
+   {
+    "key": "b",
+    "level": "Vận dụng (0,5 điểm)",
+    "question": "b) Đề xuất cách nâng cấp để cải thiện tốc độ với chi phí hợp lí nhất?",
+    "modelAnswer": "Giải pháp nâng cấp hiệu quả và tiết kiệm:\n1. Nâng cấp RAM: Lắp thêm 1 thanh RAM 4GB hoặc thay bằng 8GB/16GB để thoải mái đa nhiệm.\n2. Lắp thêm/Thay thế ổ cứng SSD (dung lượng 128GB - 256GB) để cài đặt Hệ điều hành và ứng dụng (SSD có tốc độ nhanh gấp 5-10 lần HDD). HDD 1TB cũ giữ lại làm ổ chứa dữ liệu.",
+    "keyChecklist": [
+     "Nâng cấp RAM lên 8GB hoặc 16GB",
+     "Thay thế hoặc lắp thêm ổ cứng SSD",
+     "Chuyển cài HĐH sang SSD"
+    ]
+   }
+  ],
+  "source": "Đề cương"
+ },
+ {
+  "id": "es-5",
+  "lesson": "Bài 5. Kết nối máy tính với thiết bị số",
+  "title": "[Đề cương] Câu 5 (1,0 điểm) — Bài 5: Kết nối thiết bị số",
+  "scenario": "📋 Tình huống: Bạn Bình muốn kết nối máy tính với màn hình ngoài 27 inch (Full HD, 144Hz) và loa Bluetooth để có trải nghiệm tốt hơn khi học online.",
+  "subQuestions": [
+   {
+    "key": "a",
+    "level": "Thông hiểu (0,5 điểm)",
+    "question": "a) Giải thích ý nghĩa các thông số kĩ thuật: '27 inch', 'Full HD (1920×1080)', '144Hz'?",
+    "modelAnswer": "• 27 inch: Độ dài đường chéo của màn hình hiển thị (1 inch ≈ 2.54 cm).\n• Full HD (1920×1080): Độ phân giải của màn hình, gồm 1920 điểm ảnh chiều ngang và 1080 điểm ảnh chiều dọc (tổng cộng khoảng 2 triệu điểm ảnh).\n• 144Hz: Tần số quét (tốc độ làm mới), nghĩa là màn hình có khả năng làm mới hình ảnh 144 lần trong một giây, giúp chuyển động mượt mà hơn hẳn màn 60Hz chuẩn.",
+    "keyChecklist": [
+     "27 inch là độ dài đường chéo",
+     "Full HD là độ phân giải 1920x1080 pixel",
+     "144Hz là tần số quét / 144 khung hình/giây"
+    ]
+   },
+   {
+    "key": "b",
+    "level": "Vận dụng (0,5 điểm)",
+    "question": "b) Nêu cách kết nối màn hình (qua HDMI) và loa Bluetooth với máy tính?",
+    "modelAnswer": "• Kết nối màn hình: Cắm một đầu cáp HDMI vào cổng HDMI trên máy tính, đầu còn lại cắm vào cổng HDMI của màn hình. Mở nguồn màn hình, HĐH Windows sẽ tự nhận dạng và xuất hình ảnh.\n• Kết nối Loa Bluetooth: Bật nguồn loa và kích hoạt chế độ ghép đôi (Pairing) -> Trên máy tính vào Settings -> Bluetooth & devices -> Bật Bluetooth -> Chọn Add device -> Chọn Bluetooth -> Nhấp chọn tên loa Bluetooth để kết nối.",
+    "keyChecklist": [
+     "Kết nối HDMI: Cắm cáp HDMI vào cổng máy tính và màn hình",
+     "Kết nối Loa: Bật Bluetooth máy tính & loa",
+     "Vào Settings -> Bluetooth -> Add device -> Chọn loa"
+    ]
+   }
+  ],
+  "source": "Đề cương"
+ },
+ {
+  "id": "es-6",
+  "lesson": "Bài 8. TH nâng cao thư điện tử & MXH",
+  "title": "[Đề cương] Câu 6 (1,0 điểm) — Bài 8: Thư điện tử & Mạng xã hội",
+  "scenario": "📋 Tình huống: Bạn Lan cần tổ chức hộp thư Gmail cho nhóm học tập: phân loại thư theo môn học, đánh dấu thư quan trọng từ giáo viên. Bạn cũng cần chia sẻ tài liệu nhóm qua Google Drive.",
+  "subQuestions": [
+   {
+    "key": "a",
+    "level": "Vận dụng (0,25 điểm)",
+    "question": "a) Nêu các bước tạo Nhãn 'Tin học' trong Gmail?",
+    "modelAnswer": "Bước 1: Đăng nhập Gmail, ở danh mục bên trái nhấp vào nút 'Danh sách mở rộng' (More) -> Chọn 'Tạo nhãn mới' (Create new label).\nBước 2: Nhập tên nhãn là 'Tin học' -> Nhấn 'Tạo' (Create).\nBước 3: Chọn các thư cần phân loại -> Nhấp vào biểu tượng Nhãn -> Tích chọn 'Tin học' -> Nhấn Áp dụng.",
+    "keyChecklist": [
+     "Vào Danh sách mở rộng bên trái Gmail",
+     "Chọn Tạo nhãn mới",
+     "Gõ tên 'Tin học' và nhấn Save/Create"
+    ]
+   },
+   {
+    "key": "b",
+    "level": "Vận dụng (0,25 điểm)",
+    "question": "b) Làm thế nào để tìm tất cả thư quan trọng từ giáo viên trong Gmail?",
+    "modelAnswer": "Gõ cú pháp 'is:important' vào thanh tìm kiếm ở trên cùng của Gmail rồi nhấn Enter. Để chính xác hơn thư của giáo viên, có thể kết hợp: 'is:important từ_email_giáo_viên'.",
+    "keyChecklist": [
+     "Gõ is:important vào thanh tìm kiếm Gmail"
+    ]
+   },
+   {
+    "key": "c",
+    "level": "Vận dụng (0,25 điểm)",
+    "question": "c) Để chia sẻ tài liệu nhóm trên Google Drive cho các bạn có thể cùng chỉnh sửa, cần cấp quyền gì?",
+    "modelAnswer": "Cần cấp quyền 'Người chỉnh sửa' (Editor). Thao tác: Nhấp chuột phải vào tệp/thư mục trên Drive -> Chọn 'Chia sẻ' (Share) -> Nhập địa chỉ Gmail của các bạn -> Tại mục phân quyền chọn 'Người chỉnh sửa' (Editor) -> Nhấn Gửi.",
+    "keyChecklist": [
+     "Cấp quyền 'Người chỉnh sửa' (Editor)"
+    ]
+   },
+   {
+    "key": "d",
+    "level": "Vận dụng (0,25 điểm)",
+    "question": "d) Nêu 2 nguyên tắc ứng xử văn minh cần nhớ khi chia sẻ thông tin nhóm học qua MXH?",
+    "modelAnswer": "1. Kiểm tra tính xác thực của thông tin trước khi đăng tải/chia sẻ, tránh gửi các file nhiễm virus hoặc tin đồn vô căn cứ.\n2. Tôn trọng quyền riêng tư của các bạn: Không tự ý chia sẻ hình ảnh, tin nhắn cá nhân hoặc bài làm của người khác lên mạng xã hội khi chưa được sự đồng ý.",
+    "keyChecklist": [
+     "Kiểm tra tính xác thực thông tin trước khi chia sẻ",
+     "Tôn trọng quyền riêng tư & bản quyền của người khác"
+    ]
+   }
+  ],
+  "source": "Đề cương"
+ }
+];
+        const ES_TOTAL = QUESTIONS_ES.reduce((a, g) => a + g.subQuestions.length, 0);
+        const MC_TOTAL = QUESTIONS_MC.length;
+        const TF_TOTAL = QUESTIONS_TF.reduce((a, g) => a + g.items.length, 0);
+        const TOTAL_CMDS = MC_TOTAL + TF_TOTAL + ES_TOTAL;
 
         /**
          * 4. STATE MANAGEMENT & APP VARS
@@ -878,7 +1748,7 @@
             document.addEventListener('keydown', handleKeyboardShortcuts);
         });
 
-        function switchPage(page) {
+        function switchPageCore(page) {
             state.currentPage = page;
             const matrixSec = document.getElementById('page-matrix');
             const practiceSec = document.getElementById('page-practice');
@@ -905,7 +1775,7 @@
             }
         }
 
-        function switchPracticeSection(section) {
+        function switchPracticeCore(section) {
             state.currentSection = section;
             const secMC = document.getElementById('section-mc');
             const secTF = document.getElementById('section-tf');
@@ -930,85 +1800,135 @@
         /**
          * 6. PAGE 1: MATRIX TABLE & REVIEW RENDERING
          */
+        const f2 = (x, d = 2) => x.toFixed(d).replace('.', ',');
+        const cn = c => (c ? c[0] : 0);
+        function lessonStats(l) {
+            const c = l.cells.map(cn);
+            return { c, lv: [c[0] + c[3] + c[6], c[1] + c[4] + c[7], c[2] + c[5] + c[8]], total: c.reduce((a, b) => a + b, 0) };
+        }
+        function numCell(c) {
+            return c ? `<td class="p-2 text-center"><div class="font-bold text-slate-100">${c[0]}</div><div class="text-[10px] leading-tight text-slate-500">${c[1]}</div></td>`
+                     : `<td class="p-2 text-center text-slate-600">–</td>`;
+        }
         function renderMatrixTable() {
-            const tbody = document.getElementById('matrix-table-body');
-            tbody.innerHTML = MATRIX_DATA.map(item => `
-                <tr class="hover:bg-slate-800/80 transition">
-                    <td class="p-3.5 font-bold text-white">${item.title}</td>
-                    <td class="p-3.5 text-center">
-                        <span class="inline-block px-2 py-0.5 rounded bg-slate-900 border border-slate-700 font-medium">
-                            ${item.mc.total} câu (${item.mc.nb}NB - ${item.mc.th}TH)
-                        </span>
-                    </td>
-                    <td class="p-3.5 text-center">
-                        <span class="inline-block px-2 py-0.5 rounded bg-slate-900 border border-slate-700 font-medium">
-                            ${item.tf.total > 0 ? `${item.tf.total} lệnh (${item.tf.nb}NB - ${item.tf.th}TH - ${item.tf.vd}VD)` : '0'}
-                        </span>
-                    </td>
-                    <td class="p-3.5 text-center">
-                        <span class="inline-block px-2 py-0.5 rounded bg-slate-900 border border-slate-700 font-medium">
-                            ${item.es.total > 0 ? `${item.es.total} ý (${item.es.th}TH - ${item.es.vd}VD)` : '0'}
-                        </span>
-                    </td>
-                    <td class="p-3.5 text-center font-bold text-indigo-400">${item.totalCommands}</td>
-                    <td class="p-3.5 text-center font-bold text-emerald-400">${item.points.toFixed(2)}đ</td>
-                    <td class="p-3.5 text-center font-semibold text-brand-400">${item.percentage}</td>
-                    <td class="p-3.5 text-center">
-                        <button onclick="toggleMatrixDetail(${item.lessonId})" class="text-xs px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition">
-                            Chi tiết <i id="icon-mat-detail-${item.lessonId}" class="fa-solid fa-chevron-down ml-1"></i>
-                        </button>
-                    </td>
-                </tr>
-                <tr id="row-mat-detail-${item.lessonId}" class="hidden bg-slate-900/90">
-                    <td colspan="8" class="p-4 border-t border-slate-800">
-                        <div class="space-y-2 text-xs">
-                            <p class="text-slate-300">🎯 <b>Yêu cầu kiến thức chuẩn:</b> ${item.outcomes}</p>
-                            <p class="text-amber-300">⚡ <b>Nội dung ưu tiên ôn tập:</b> ${item.priorityFocus}</p>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+            const th = (t, cls = '', extra = '') => `<th ${extra} class="p-2 text-center font-semibold border border-slate-700/60 ${cls}">${t}</th>`;
+            const lv3 = ['text-emerald-400', 'text-amber-400', 'text-purple-400'];
+            const lvNames = ['Biết', 'Hiểu', 'VD'];
+            const sub = (n) => lvNames.map((x, k) => th(x, lv3[k] + ' text-[11px]')).join('');
+            let html = `<table id="matrix-grid" class="w-full text-xs text-slate-300 border-collapse min-w-[1000px]">
+                <thead class="bg-slate-900/80 text-slate-400 uppercase text-[11px]">
+                    <tr>${th('Chủ đề', '', 'rowspan="2"')}${th('Nội dung / Đơn vị kiến thức', 'min-w-[170px]', 'rowspan="2"')}
+                        ${th('Trắc nghiệm nhiều lựa chọn (TNKQ)', 'text-sky-300', 'colspan="3"')}${th('Đúng – Sai (Đ/S)', 'text-indigo-300', 'colspan="3"')}${th('Tự luận (TL)', 'text-amber-300', 'colspan="3"')}
+                        ${th('Tổng số lệnh hỏi', 'text-emerald-300', 'colspan="3"')}${th('Tổng điểm', '', 'rowspan="2"')}${th('Tỉ lệ %', '', 'rowspan="2"')}</tr>
+                    <tr>${[0,1,2,3].map(() => sub()).join('')}</tr>
+                </thead><tbody>`;
+            const T = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+            MATRIX_DATA.forEach((l, idx) => {
+                const st = lessonStats(l); st.c.forEach((v, k) => T[k] += v);
+                const first = idx === 0 || MATRIX_DATA[idx - 1].topic !== l.topic;
+                const span = MATRIX_DATA.filter(x => x.topic === l.topic).length;
+                const tPts = MATRIX_DATA.filter(x => x.topic === l.topic).reduce((a, x) => a + lessonStats(x).total * 0.25, 0);
+                const topicCell = first ? `<td rowspan="${span}" class="p-3 align-middle bg-slate-900/60 border border-slate-700/60"><div class="font-bold text-sky-300 text-[11px] leading-snug">${TOPICS[l.topic].name}</div><div class="text-[11px] text-slate-400 mt-1">${f2(tPts / 10 * 100, 1)}% — ${f2(tPts)} điểm</div></td>` : '';
+                const pts = st.total * 0.25;
+                html += `<tr class="row-in border-b border-slate-700/50" style="--i:${idx}">${topicCell}
+                    <td class="p-2 font-bold text-white">${l.title}</td>
+                    ${l.cells.map(numCell).join('')}
+                    ${st.lv.map((v, k) => `<td class="p-2 text-center font-bold ${lv3[k]}">${v || '–'}</td>`).join('')}
+                    <td class="p-2 text-center font-bold text-emerald-400">${f2(pts)}</td>
+                    <td class="p-2 text-center font-semibold text-brand-400">${f2(pts * 10, 1)}%</td></tr>`;
+            });
+            const TL = [T[0] + T[3] + T[6], T[1] + T[4] + T[7], T[2] + T[5] + T[8]];
+            const all = T.reduce((a, b) => a + b, 0);
+            html += `<tr class="bg-slate-900/80 font-bold border-t-2 border-slate-600"><td colspan="2" class="p-2 text-white">TỔNG SỐ LỆNH HỎI</td>
+                    ${T.map(v => `<td class="p-2 text-center">${v}</td>`).join('')}${TL.map((v, k) => `<td class="p-2 text-center ${lv3[k]}">${v}</td>`).join('')}
+                    <td class="p-2 text-center text-white">${all}</td><td class="p-2 text-center">100%</td></tr>
+                <tr class="bg-slate-900/80 font-bold"><td colspan="2" class="p-2 text-white">TỔNG SỐ ĐIỂM / TỈ LỆ %</td>
+                    ${T.map(v => `<td class="p-2 text-center text-emerald-400">${f2(v * 0.25, 1)}đ</td>`).join('')}${TL.map((v, k) => `<td class="p-2 text-center ${lv3[k]}">${f2(v * 0.25, 1)}đ<div class="text-[10px] font-normal">${v * 2.5}%</div></td>`).join('')}
+                    <td class="p-2 text-center text-white">${f2(all * 0.25, 1)}đ</td><td class="p-2 text-center">100%</td></tr></tbody></table>`;
+            document.getElementById('matrix-grid-wrap').innerHTML = html;
+
+            // ---- Bản đặc tả ----
+            const SPEC = [['nb', 'Nhận biết', 'emerald'], ['th', 'Thông hiểu', 'amber'], ['vd', 'Vận dụng', 'purple']];
+            const TYPES = ['TNKQ', 'Đ/S', 'TL'];
+            document.getElementById('spec-list').innerHTML = MATRIX_DATA.map((l, idx) => {
+                const st = lessonStats(l), pts = st.total * 0.25;
+                const chips = l.cells.map((c, k) => c ? `<span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[11px]">${TYPES[Math.floor(k / 3)]} · ${['Biết', 'Hiểu', 'VD'][k % 3]}: <b class="text-white">${c[1]}</b></span>` : '').join('');
+                const cols = SPEC.map(([k, name, col]) => l.spec[k].length ? `<div class="space-y-1"><p class="font-bold text-${col}-400">${name}</p><ul class="list-disc pl-4 space-y-1">${l.spec[k].map(t => `<li>${t}</li>`).join('')}</ul></div>` : '').join('');
+                return `<div class="anim-up bg-slate-900/70 rounded-xl border border-slate-700/70 overflow-hidden lift" style="--i:${idx}">
+                    <button onclick="toggleMatrixDetail(${l.id})" class="w-full p-3.5 flex flex-wrap items-center justify-between gap-2 text-left">
+                        <span class="font-bold text-slate-100 text-sm">${l.title}</span>
+                        <span class="flex items-center gap-2 text-xs"><span class="text-indigo-300">${st.total} lệnh</span><span class="text-emerald-400 font-semibold">${f2(pts)}đ</span><span class="text-brand-400">${f2(pts * 10, 1)}%</span><i id="icon-mat-detail-${l.id}" class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </button>
+                    <div id="spec-body-${l.id}" class="collapsible"><div><div class="p-4 border-t border-slate-800 bg-slate-950/40 space-y-3 text-xs text-slate-300 leading-relaxed">
+                        <div class="flex flex-wrap gap-1.5">${chips}</div>${cols}</div></div></div></div>`;
+            }).join('');
         }
 
         function toggleMatrixDetail(id) {
-            const row = document.getElementById(`row-mat-detail-${id}`);
-            const icon = document.getElementById(`icon-mat-detail-${id}`);
-            row.classList.toggle('hidden');
-            icon.classList.toggle('rotate-180');
+            document.getElementById(`spec-body-${id}`).classList.toggle('open');
+            document.getElementById(`icon-mat-detail-${id}`).classList.toggle('rotate-180');
         }
 
         function renderFocalPointsAccordion() {
-            const container = document.getElementById('focal-points-accordion');
-            container.innerHTML = FOCAL_NOTES.map(note => `
-                <div class="bg-slate-900/80 rounded-xl border border-slate-700/70 overflow-hidden">
+            document.getElementById('focal-points-accordion').innerHTML = FOCAL_NOTES.map((note, i) => `
+                <div class="anim-up bg-slate-900/80 rounded-xl border border-slate-700/70 overflow-hidden" style="--i:${i}">
                     <button onclick="toggleAccordionNote(${note.id})" class="w-full p-3.5 text-left font-bold text-slate-200 hover:text-white flex items-center justify-between transition">
-                        <span>${note.title}</span>
-                        <i id="acc-icon-${note.id}" class="fa-solid fa-chevron-down text-slate-400"></i>
+                        <span>${note.title}</span><i id="acc-icon-${note.id}" class="fa-solid fa-chevron-down text-slate-400"></i>
                     </button>
-                    <div id="acc-body-${note.id}" class="hidden p-4 border-t border-slate-800 text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-950/40">
-                        ${note.text}
-                    </div>
-                </div>
-            `).join('');
+                    <div id="acc-body-${note.id}" class="collapsible"><div><div class="p-4 border-t border-slate-800 text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-950/40">${note.text}</div></div></div>
+                </div>`).join('');
         }
-
         function toggleAccordionNote(id) {
-            const body = document.getElementById(`acc-body-${id}`);
-            const icon = document.getElementById(`acc-icon-${id}`);
-            body.classList.toggle('hidden');
-            icon.classList.toggle('rotate-180');
+            document.getElementById(`acc-body-${id}`).classList.toggle('open');
+            document.getElementById(`acc-icon-${id}`).classList.toggle('rotate-180');
         }
-
         function toggleAllAccordions() {
-            FOCAL_NOTES.forEach(note => {
-                const body = document.getElementById(`acc-body-${note.id}`);
-                const icon = document.getElementById(`acc-icon-${note.id}`);
-                if (body && icon) {
-                    body.classList.remove('hidden');
-                    icon.classList.add('rotate-180');
-                }
+            const open = FOCAL_NOTES.some(n => !document.getElementById(`acc-body-${n.id}`).classList.contains('open'));
+            FOCAL_NOTES.forEach(n => {
+                document.getElementById(`acc-body-${n.id}`).classList.toggle('open', open);
+                document.getElementById(`acc-icon-${n.id}`).classList.toggle('rotate-180', open);
             });
         }
+
+        /** ANIMATION HELPERS */
+        function countUp(el) {
+            const to = parseFloat(el.dataset.to), dec = +el.dataset.dec || 0, t0 = performance.now();
+            const step = t => { const k = Math.min((t - t0) / 900, 1), e = 1 - Math.pow(1 - k, 3); el.textContent = (to * e).toFixed(dec).replace('.', ','); if (k < 1) requestAnimationFrame(step); };
+            requestAnimationFrame(step);
+        }
+        function playMatrixAnimations() {
+            const bars = document.querySelectorAll('#page-matrix .bar-fill');
+            bars.forEach(b => b.style.width = '0');
+            document.querySelectorAll('#page-matrix .count').forEach(countUp);
+            setTimeout(() => bars.forEach(b => b.style.width = b.dataset.w + '%'), 300);
+        }
+        function staggerChildren(sel) {
+            document.querySelectorAll(sel).forEach((el, i) => { el.classList.add('anim-up'); el.style.setProperty('--i', i); });
+        }
+        function launchConfetti() {
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#a855f7', '#f43f5e'];
+            for (let i = 0; i < 45; i++) {
+                const p = document.createElement('i');
+                p.style.cssText = `position:fixed;top:-14px;left:${Math.random() * 100}vw;width:8px;height:14px;background:${colors[i % 5]};z-index:60;pointer-events:none;border-radius:2px;animation:confetti ${2.2 + Math.random() * 1.8}s ${Math.random() * .6}s ease-in forwards`;
+                document.body.appendChild(p); setTimeout(() => p.remove(), 5000);
+            }
+        }
+        // Wrappers: thêm hiệu ứng chuyển trang / chuyển phần / xáo trộn
+        function switchPage(page) { switchPageCore(page); if (page === 'matrix') playMatrixAnimations(); }
+        function switchPracticeSection(section) {
+            switchPracticeCore(section);
+            const el = document.getElementById('section-' + section);
+            el.classList.remove('fade-in'); void el.offsetWidth; el.classList.add('fade-in');
+        }
+        function shuffleCurrentQuestions() {
+            shuffleCore(); renderActiveMCQuestion(1);
+            staggerChildren('#tf-questions-container > div'); staggerChildren('#es-questions-container > div');
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('#page-matrix > *').forEach((el, i) => { el.classList.add('anim-up'); el.style.setProperty('--i', i); });
+            staggerChildren('#tf-questions-container > div'); staggerChildren('#es-questions-container > div');
+            playMatrixAnimations();
+        });
 
         /**
          * 7. PAGE 2: PRACTICE - MULTIPLE CHOICE LOGIC
@@ -1033,74 +1953,53 @@
             }).join('');
         }
 
-        function renderActiveMCQuestion() {
+        function renderActiveMCQuestion(dir) {
             const q = state.mcQuestions[state.activeMCIndex];
             const card = document.getElementById('mc-question-card');
             const isAnswered = state.mcAnswers.hasOwnProperty(q.id);
             const userChoice = state.mcAnswers[q.id];
+            const fresh = state.justAnswered === q.id; state.justAnswered = null;
 
-            let optionsHTML = q.options.map((opt, optIdx) => {
-                let btnStyle = "w-full text-left p-4 rounded-xl border text-sm font-medium transition flex items-center justify-between ";
+            const optionsHTML = q.options.map((opt, i) => {
+                let cls = "w-full text-left p-4 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center justify-between " + (dir ? "opt-in " : "");
                 let badge = "";
-
                 if (isAnswered) {
-                    if (optIdx === q.correctIndex) {
-                        btnStyle += "bg-emerald-950/80 border-emerald-500 text-emerald-200 font-bold ";
+                    if (i === q.correctIndex) {
+                        cls += "bg-emerald-950/80 border-emerald-500 text-emerald-200 font-bold " + (fresh ? "anim-pop " : "");
                         badge = `<span class="text-xs px-2 py-0.5 rounded bg-emerald-800 text-emerald-100"><i class="fa-solid fa-check mr-1"></i>Đáp án đúng</span>`;
-                    } else if (optIdx === userChoice) {
-                        btnStyle += "bg-rose-950/80 border-rose-500 text-rose-200 font-bold ";
+                    } else if (i === userChoice) {
+                        cls += "bg-rose-950/80 border-rose-500 text-rose-200 font-bold " + (fresh ? "anim-shake " : "");
                         badge = `<span class="text-xs px-2 py-0.5 rounded bg-rose-800 text-rose-100"><i class="fa-solid fa-xmark mr-1"></i>Đã chọn</span>`;
-                    } else {
-                        btnStyle += "bg-slate-900/50 border-slate-800 text-slate-500 opacity-60 ";
-                    }
-                } else {
-                    btnStyle += "bg-slate-900/80 border-slate-700/80 text-slate-200 hover:bg-slate-700 hover:border-brand-500 ";
-                }
-
-                return `
-                    <button ${isAnswered ? 'disabled' : ''} onclick="handleMCAnswer('${q.id}', ${optIdx})" class="${btnStyle}">
-                        <span>${opt}</span>
-                        ${badge}
-                    </button>
-                `;
+                    } else cls += "bg-slate-900/50 border-slate-800 text-slate-500 opacity-60 ";
+                } else cls += "bg-slate-900/80 border-slate-700/80 text-slate-200 hover:bg-slate-700 hover:border-brand-500 hover:translate-x-1 ";
+                return `<button ${isAnswered ? 'disabled' : ''} style="--i:${i}" onclick="handleMCAnswer('${q.id}', ${i})" class="${cls}"><span>${opt}</span>${badge}</button>`;
             }).join('');
 
             let feedbackHTML = "";
             if (isAnswered) {
-                const isCorrect = userChoice === q.correctIndex;
-                feedbackHTML = `
-                    <div class="p-4 rounded-xl border ${isCorrect ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300' : 'bg-rose-950/40 border-rose-800/60 text-rose-300'} space-y-2 fade-in">
-                        <div class="flex items-center gap-2 font-bold text-sm">
-                            <i class="fa-solid ${isCorrect ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-rose-400'}"></i>
-                            <span>${isCorrect ? 'Chính xác!' : 'Chưa chính xác!'}</span>
-                        </div>
-                        <p class="text-xs leading-relaxed text-slate-300"><b>Lời giải:</b> ${q.explanation}</p>
-                    </div>
-                `;
+                const ok = userChoice === q.correctIndex;
+                feedbackHTML = `<div class="p-4 rounded-xl border ${ok ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300' : 'bg-rose-950/40 border-rose-800/60 text-rose-300'} space-y-2 ${fresh ? 'fade-in' : ''}">
+                    <div class="flex items-center gap-2 font-bold text-sm"><i class="fa-solid ${ok ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-rose-400'}"></i><span>${ok ? 'Chính xác!' : 'Chưa chính xác!'}</span></div>
+                    <p class="text-xs leading-relaxed text-slate-300"><b>Lời giải:</b> ${q.explanation}</p></div>`;
             }
 
+            card.classList.remove('slide-r', 'slide-l');
+            if (dir) { void card.offsetWidth; card.classList.add(dir > 0 ? 'slide-r' : 'slide-l'); }
             card.innerHTML = `
                 <div class="flex items-center justify-between text-xs border-b border-slate-700/60 pb-3">
-                    <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-1 rounded bg-brand-950 text-brand-300 border border-brand-800/50 font-bold">Câu ${state.activeMCIndex + 1} / 12</span>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="px-2.5 py-1 rounded bg-brand-950 text-brand-300 border border-brand-800/50 font-bold">Câu ${state.activeMCIndex + 1} / ${state.mcQuestions.length}</span>
+                        <span class="px-2 py-1 rounded bg-indigo-950/60 text-indigo-300 border border-indigo-800/40 font-semibold">${q.source || ''}</span>
                         <span class="px-2 py-1 rounded bg-slate-900 text-slate-400">${q.lesson}</span>
                     </div>
                     <span class="px-2 py-1 rounded bg-slate-900 text-amber-400 border border-amber-900/40 font-medium">${q.level}</span>
                 </div>
-
                 <h3 class="text-base sm:text-lg font-bold text-white leading-snug">${q.question}</h3>
+                <div class="space-y-2.5">${optionsHTML}</div>
+                ${feedbackHTML}`;
 
-                <div class="space-y-2.5">
-                    ${optionsHTML}
-                </div>
-
-                ${feedbackHTML}
-            `;
-
-            // Update Prev/Next buttons
             document.getElementById('btn-mc-prev').disabled = state.activeMCIndex === 0;
             document.getElementById('btn-mc-next').disabled = state.activeMCIndex === state.mcQuestions.length - 1;
-
             renderMCDotsNav();
             updateProgressSummary();
         }
@@ -1108,20 +2007,18 @@
         function handleMCAnswer(qId, selectedOpt) {
             if (state.mcAnswers.hasOwnProperty(qId)) return;
             state.mcAnswers[qId] = selectedOpt;
+            state.justAnswered = qId;
             renderActiveMCQuestion();
         }
-
         function navMCQuestion(dir) {
-            const nextIdx = state.activeMCIndex + dir;
-            if (nextIdx >= 0 && nextIdx < state.mcQuestions.length) {
-                state.activeMCIndex = nextIdx;
-                renderActiveMCQuestion();
-            }
+            const n = state.activeMCIndex + dir;
+            if (n >= 0 && n < state.mcQuestions.length) { state.activeMCIndex = n; renderActiveMCQuestion(dir); }
         }
-
         function jumpToMCQuestion(idx) {
+            const dir = idx > state.activeMCIndex ? 1 : -1;
+            const same = idx === state.activeMCIndex;
             state.activeMCIndex = idx;
-            renderActiveMCQuestion();
+            renderActiveMCQuestion(same ? 0 : dir);
         }
 
         /**
@@ -1162,7 +2059,7 @@
                                 </div>
                             </div>
                             ${isAnswered ? `
-                                <div class="p-2.5 rounded-lg ${isCorrect ? 'bg-emerald-950/30 text-emerald-300' : 'bg-rose-950/30 text-rose-300'} text-xs fade-in">
+                                <div class="p-2.5 rounded-lg ${isCorrect ? 'bg-emerald-950/30 text-emerald-300' : 'bg-rose-950/30 text-rose-300'} text-xs ${state.justTF === itemKey ? 'fade-in' : ''}">
                                     <b>${isCorrect ? '✓ Chính xác!' : '✗ Chưa chính xác! (Đáp án chuẩn: ' + (item.correct ? 'ĐÚNG' : 'SAI') + ')'}</b>
                                     <p class="mt-0.5 text-slate-300">${item.exp}</p>
                                 </div>
@@ -1178,7 +2075,7 @@
                             <span class="text-xs px-2.5 py-0.5 rounded bg-slate-900 text-brand-400 border border-slate-700">${qGroup.lesson}</span>
                         </div>
                         <div class="space-y-3">
-                            ${itemsHTML}
+                            <p class="text-xs sm:text-sm text-slate-300 italic bg-slate-900/80 p-3 rounded-xl border border-slate-800">${qGroup.stem}</p>${itemsHTML}
                         </div>
                     </div>
                 `;
@@ -1188,6 +2085,7 @@
         function handleTFAnswer(itemKey, choice) {
             if (state.tfAnswers.hasOwnProperty(itemKey)) return;
             state.tfAnswers[itemKey] = choice;
+            state.justTF = itemKey;
             renderTFQuestions();
             updateProgressSummary();
         }
@@ -1228,7 +2126,7 @@
                             </div>
 
                             ${isRevealed ? `
-                                <div class="p-4 bg-slate-950/80 rounded-xl border border-brand-800/40 text-xs sm:text-sm space-y-3 fade-in">
+                                <div class="p-4 bg-slate-950/80 rounded-xl border border-brand-800/40 text-xs sm:text-sm space-y-3 ${state.justES === subKey ? 'fade-in' : ''}">
                                     <div class="space-y-1">
                                         <p class="font-bold text-brand-300">💡 Đáp án & Lời giải tham khảo:</p>
                                         <p class="text-slate-200 whitespace-pre-line leading-relaxed">${sub.modelAnswer}</p>
@@ -1267,6 +2165,7 @@
 
         function toggleESReveal(subKey) {
             state.esRevealed[subKey] = !state.esRevealed[subKey];
+            state.justES = subKey;
             renderESQuestions();
             updateProgressSummary();
         }
@@ -1306,18 +2205,18 @@
             });
 
             const totalAnswered = mcAnswered + tfAnswered + esAnswered;
-            const totalCommands = 12 + 16 + 8; // 36 commands in study guide
+            const totalCommands = TOTAL_CMDS;
             const pct = Math.round((totalAnswered / totalCommands) * 100);
 
             // Update Header Progress Bar
             document.getElementById('progress-text-summary').innerText = `Tiến độ bài làm: ${totalAnswered}/${totalCommands} câu (${pct}%)`;
-            document.getElementById('score-text-summary').innerText = `Đúng: ${mcCorrect + tfCorrect} / 28 lệnh TN`;
+            document.getElementById('score-text-summary').innerText = `Đúng: ${mcCorrect + tfCorrect} / ${MC_TOTAL + TF_TOTAL} lệnh TN`;
             document.getElementById('header-progress-bar').style.width = `${pct}%`;
 
             // Update Tab Badges
-            document.getElementById('badge-mc-count').innerText = `${mcAnswered}/12`;
-            document.getElementById('badge-tf-count').innerText = `${tfAnswered}/16`;
-            document.getElementById('badge-es-count').innerText = `${esAnswered}/8`;
+            document.getElementById('badge-mc-count').innerText = `${mcAnswered}/${MC_TOTAL}`;
+            document.getElementById('badge-tf-count').innerText = `${tfAnswered}/${TF_TOTAL}`;
+            document.getElementById('badge-es-count').innerText = `${esAnswered}/${ES_TOTAL}`;
 
             // Check if all completed -> Show summary card
             if (totalAnswered >= totalCommands) {
@@ -1329,18 +2228,18 @@
             const summaryCard = document.getElementById('summary-card');
             summaryCard.classList.remove('hidden');
 
-            document.getElementById('sum-total-answered').innerText = `${mcAnswered + tfAnswered + 8} / 36`;
-            document.getElementById('sum-mc-correct').innerText = `${mcCorrect} / 12`;
-            document.getElementById('sum-tf-correct').innerText = `${tfCorrect} / 16`;
+            document.getElementById('sum-total-answered').innerText = `${mcAnswered + tfAnswered + ES_TOTAL} / ${TOTAL_CMDS}`;
+            document.getElementById('sum-mc-correct').innerText = `${mcCorrect} / ${MC_TOTAL}`;
+            document.getElementById('sum-tf-correct').innerText = `${tfCorrect} / ${TF_TOTAL}`;
 
-            // Score estimation based on Matrix formula (7.0 max for TN)
-            // MC: 12 questions = 3.0 points (0.25 pt each)
-            // TF: 16 items = 4.0 points (0.25 pt each item)
+            // Ước tính điểm TN: 0.25 điểm / câu hoặc ý
+            // MC: mỗi câu 0.25 điểm
+            // TF: mỗi ý 0.25 điểm
             const mcScore = mcCorrect * 0.25;
             const tfScore = tfCorrect * 0.25;
             const estimatedTNScore = (mcScore + tfScore).toFixed(2);
 
-            document.getElementById('sum-score-estimated').innerText = `${estimatedTNScore} / 7.0`;
+            document.getElementById('sum-score-estimated').innerText = `${estimatedTNScore} / ${((MC_TOTAL + TF_TOTAL) * 0.25).toFixed(1)}`;
 
             // Collect Weak Lessons
             const weakLessonsSet = new Set();
@@ -1369,7 +2268,7 @@
                 `).join('');
             }
 
-            summaryCard.scrollIntoView({ behavior: 'smooth' });
+            if (!state.celebrated) { state.celebrated = true; launchConfetti(); summaryCard.scrollIntoView({ behavior: 'smooth' }); }
         }
 
         /**
@@ -1383,7 +2282,7 @@
             return arr;
         }
 
-        function shuffleCurrentQuestions() {
+        function shuffleCore() {
             // Shuffle Section I
             state.mcQuestions = shuffleArray([...QUESTIONS_MC]);
             state.activeMCIndex = 0;
@@ -1411,6 +2310,7 @@
                 state.activeMCIndex = 0;
 
                 document.getElementById('summary-card').classList.add('hidden');
+                state.celebrated = false;
 
                 // Re-shuffle for fresh practice
                 shuffleCurrentQuestions();
@@ -1445,10 +2345,11 @@
 
         function showToast(msg) {
             const toast = document.createElement('div');
-            toast.className = "fixed bottom-5 right-5 z-50 bg-brand-600 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs sm:text-sm font-semibold flex items-center gap-2 border border-brand-400 fade-in";
+            toast.className = "fixed bottom-5 right-5 z-50 bg-brand-600 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs sm:text-sm font-semibold flex items-center gap-2 border border-brand-400";
+            toast.style.animation = 'toastIn .4s var(--ease) both';
             toast.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${msg}</span>`;
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            setTimeout(() => { toast.style.animation = 'toastOut .35s ease forwards'; setTimeout(() => toast.remove(), 350); }, 2600);
         }
     </script>
 </body>
