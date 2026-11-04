@@ -144,9 +144,27 @@
         @keyframes fabIn { from { transform: scale(0) rotate(-90deg); } }
         @keyframes fabRing { from { transform: scale(1); opacity: .8; } to { transform: scale(1.7); opacity: 0; } }
         @keyframes fabPop { 40% { transform: translate(6px,-6px) rotate(25deg) scale(1.3); } }
+        .fps-meter { left: 4.5rem; }
+        body.nocopy { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+        .nocopy input, .nocopy textarea { -webkit-user-select: text; user-select: text; }
+        .nocopy img, .nocopy a { -webkit-user-drag: none; }
+        @media print { body.nocopy { display: none; } }
+        .bgm-btn { position: fixed; left: 1rem; bottom: 1rem; z-index: 45; width: 3rem; height: 3rem; border-radius: 50%; display: grid; place-items: center; color: #fff; cursor: pointer;
+            background: linear-gradient(135deg, #0ea5e9, #6366f1); box-shadow: 0 8px 20px -6px rgba(14,165,233,.7); touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+            transition: transform .2s cubic-bezier(.34,1.56,.64,1); animation: fabIn .6s .75s cubic-bezier(.34,1.56,.64,1) both; }
+        .bgm-btn:active { transform: scale(.86); }
+        .bgm-btn.playing i { animation: bgmBeat 1.2s ease-in-out infinite; }
+        .lite .bgm-btn.playing i { animation: none; }
+        @keyframes bgmBeat { 50% { transform: scale(1.25) rotate(-8deg); } }
+        .bgm-panel { position: fixed; left: 1rem; bottom: 4.75rem; z-index: 45; width: min(18rem, calc(100vw - 2rem)); padding: .75rem; border-radius: 1rem; transform-origin: bottom left;
+            transition: opacity .2s, transform .3s cubic-bezier(.34,1.56,.64,1); }
+        .bgm-panel:not(.open) { opacity: 0; transform: translateY(8px) scale(.9); pointer-events: none; }
+        .bgm-mini { width: 1.9rem; height: 1.9rem; flex-shrink: 0; border-radius: .6rem; display: grid; place-items: center; font-size: .75rem; cursor: pointer; background: rgba(99,102,241,.15); color: #6366f1; transition: transform .15s, background .2s; }
+        .bgm-mini:active { transform: scale(.88); }
+        .bgm-mini.off { background: rgba(244,63,94,.15); color: #f43f5e; }
     </style>
 </head>
-<body id="pageBody" class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative transition-colors duration-300">
+<body id="pageBody" class="nocopy bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative transition-colors duration-300">
 
     <!-- Lớp phủ nền tùy chỉnh -->
     <div id="bgImage" class="fixed inset-0 bg-cover bg-center z-0 pointer-events-none"></div>
@@ -155,6 +173,19 @@
     <div class="nebula" style="top:-20vmax;left:-15vmax"></div>
     <div class="nebula n2" style="bottom:-25vmax;right:-20vmax"></div>
     <canvas id="starCanvas" aria-hidden="true"></canvas>
+    <button id="bgmBtn" class="bgm-btn" onclick="bgmToggle()" aria-label="Nhạc nền" title="Nhạc nền"><i class="fa-solid fa-music"></i></button>
+    <div id="bgmPanel" class="bgm-panel bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xl text-slate-800 dark:text-slate-100">
+        <div class="flex items-center gap-2">
+            <div class="min-w-0 flex-1"><div id="bgmTitle" class="text-xs font-semibold truncate"></div><div id="bgmArtist" class="text-[11px] opacity-70 truncate"></div></div>
+            <button id="bgmPlay" class="bgm-mini" onclick="bgmPlayPause()" aria-label="Phát / tạm dừng"><i class="fa-solid fa-play"></i></button>
+        </div>
+        <div class="flex items-center gap-2 mt-2.5">
+            <span id="bgmCur" class="text-[10px] w-7 opacity-70">0:00</span>
+            <input type="range" id="bgmSeek" min="0" max="1000" value="0" class="flex-1 min-w-0 accent-indigo-600 cursor-pointer" aria-label="Thanh nhạc">
+            <span id="bgmDur" class="text-[10px] w-7 text-right opacity-70">0:00</span>
+            <button id="bgmMute" class="bgm-mini" onclick="bgmMute()" aria-label="Tắt / bật tiếng"><i class="fa-solid fa-volume-high"></i></button>
+        </div>
+    </div>
     <button id="fxFab" class="fx-fab" onclick="__fx.shot()" aria-label="Bắn sao băng nổ" title="Bắn sao băng nổ"><i class="fa-solid fa-meteor"></i></button>
 
     <!-- Toast Notification Container (Thông báo HTML) -->
@@ -847,6 +878,7 @@
             return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
         }
         function setDevUI(on) {
+            guardOn = !on; document.body.classList.toggle('nocopy', !on);
             document.getElementById('devCodeSection').classList.toggle('hidden', on);
             document.getElementById('devPanelBtnContainer').classList.toggle('hidden', !on);
         }
@@ -1164,7 +1196,7 @@
             const DEF = { stars: true, shooters: true, nebula: true, density: 1, freq: 5, clickShot: false, quality: 'auto', palette: 0, speed: 1, tapSpark: true };
             const fx = Object.assign({}, DEF, (() => { try { return JSON.parse(localStorage.getItem('fxCfg')) || {}; } catch (e) { return {}; } })());
             const PAL = [['165,180,252', '196,181,253', '255,255,255'], ['253,224,71', '251,146,60', '255,255,255'], ['248,113,113', '250,204,21', '74,222,128', '56,189,248', '192,132,252']];
-            const NB = 4, root = document.documentElement;
+            const PAL_L = [['79,70,229','124,58,237','2,132,199'],['217,119,6','234,88,12','190,18,60'],['220,38,38','202,138,4','22,163,74','2,132,199','147,51,234']], SC = ['255,255,255','199,210,254','221,214,254'], SC_L = ['79,70,229','147,51,234','2,132,199'], NB = 4, root = document.documentElement;
             let w, h, stars = [], shooters = [], parts = [], rings = [], raf = 0, last = 0, nextShot = 1500, rt, dark = true, lite = false, acc = 0, qk = 1, combo = 0, ct;
             const rnd = (a, b) => a + Math.random() * (b - a);
             const syncTheme = () => { dark = root.classList.contains('dark'); };
@@ -1178,7 +1210,7 @@
                 w = innerWidth; h = innerHeight;
                 cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
                 const n = fx.stars ? Math.min(lite ? 90 : 300, Math.floor(w * h / 9000 * fx.density * qk)) : 0;
-                stars = Array.from({ length: n }, () => ({ x: rnd(0, w), y: rnd(0, h), r: rnd(.4, 1.4), sp: rnd(.6, 2.2), ph: rnd(0, 6.28), dx: rnd(.004, .02), b: 0 }));
+                stars = Array.from({ length: n }, () => ({ x: rnd(0, w), y: rnd(0, h), r: rnd(.4, 1.4), sp: rnd(.6, 2.2), ph: rnd(0, 6.28), dx: rnd(.004, .02), b: 0, c: (Math.random() * 3) | 0 }));
                 if (reduce) draw(0, 0);
             }
             function spawn(o) {
@@ -1188,7 +1220,7 @@
             }
             // Nổ: hạt toả tròn + vòng sóng xung kích
             function boom(x, y, n) {
-                const pal = PAL[fx.palette] || PAL[0]; n = Math.min(n || (lite ? 18 : 34), (lite ? 120 : 260) - parts.length);
+                const P = dark ? PAL : PAL_L, pal = P[fx.palette] || P[0]; n = Math.min(n || (lite ? 18 : 34), (lite ? 120 : 260) - parts.length);
                 for (let i = 0; i < n; i++) { const a = rnd(0, 6.283), v = rnd(60, 340); parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rnd(.5, 1.1), r: rnd(.8, 2.4), c: 'rgb(' + pal[i % pal.length] + ')' }); }
                 if (n > 12) rings.push({ x, y, life: 0, max: .55, c: pal[0] });
                 if (navigator.vibrate && n > 12) navigator.vibrate(12);
@@ -1201,13 +1233,13 @@
                 if (combo >= 5) { combo = 0; for (let i = 0; i < 6; i++) setTimeout(() => spawn({ boom: true }), i * 140); showToast('Mưa sao băng!', 'success'); }
             }
             function draw(t, dt) {
-                const rgb = dark ? '255,255,255' : '99,102,241', k = dark ? 1 : .55;
+                const rgb = dark ? '255,255,255' : '79,70,229', k = dark ? 1 : .9, sc = dark ? SC : SC_L;
                 ctx.clearRect(0, 0, w, h);
                 // Sao: gom theo 4 mức sáng → chỉ 4 lần fill thay vì mỗi sao một lần
                 for (const s of stars) { s.x -= s.dx * dt * fx.speed; if (s.x < 0) s.x += w; s.b = Math.min(NB - 1, ((.5 + .5 * Math.sin(t / 1000 * s.sp + s.ph)) * NB) | 0); }
-                for (let b = 0; b < NB; b++) {
-                    ctx.beginPath(); for (const s of stars) if (s.b === b) { ctx.moveTo(s.x + s.r, s.y); ctx.arc(s.x, s.y, s.r, 0, 6.283); }
-                    ctx.fillStyle = `rgba(${rgb},${(.25 + .75 * (b + .5) / NB) * k})`; ctx.fill();
+                for (let q = 0; q < 3 * NB; q++) { const b = q % NB, ci = (q / NB) | 0;
+                    ctx.beginPath(); for (const s of stars) if (s.b === b && s.c === ci) { ctx.moveTo(s.x + s.r, s.y); ctx.arc(s.x, s.y, s.r, 0, 6.283); }
+                    ctx.fillStyle = `rgba(${sc[ci]},${(.25 + .75 * (b + .5) / NB) * k})`; ctx.fill();
                 }
                 for (let i = shooters.length - 1; i >= 0; i--) {
                     const m = shooters[i]; m.life += dt / 1000;
@@ -1451,6 +1483,44 @@
             if (k === 'm') { e.preventDefault(); __fx.shot(); }
             if (k === 'e') { e.preventDefault(); expandAll(_allOpen = !_allOpen); }
         });
+
+        // ===== Chống copy (Developer đã đăng nhập thì được miễn) =====
+        let guardOn = true;
+        const inField = e => e.target.closest && e.target.closest('input,textarea');
+        ['copy', 'cut', 'contextmenu', 'dragstart', 'selectstart'].forEach(n => document.addEventListener(n, e => { if (guardOn && !inField(e)) e.preventDefault(); }));
+        document.addEventListener('keydown', e => {
+            if (!guardOn) return;
+            const k = e.key.toLowerCase(), m = e.ctrlKey || e.metaKey;
+            if (e.key === 'F12' || (m && (['u', 's', 'p'].includes(k) || (e.shiftKey && ['i', 'j', 'c'].includes(k)))) || (m && ['c', 'x', 'a'].includes(k) && !inField(e))) { e.preventDefault(); showToast('Nội dung được bảo vệ', 'error'); }
+        }, true);
+
+        // ===== Theme music =====
+        const TRACKS = [{ title: 'Dự báo thời tiết hôm nay mưa', artist: 'GREY D', src: 'music/theme.wav' }]; // đổi tên bài, tác giả, đường dẫn tại đây
+        const bgm = new Audio(), $b = id => document.getElementById(id);
+        let bgmStarted = false, bgmSeeking = false;
+        const fmtT = t => isFinite(t) ? Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') : '0:00';
+        bgm.loop = true; bgm.preload = 'none'; bgm.volume = .6; bgm.src = TRACKS[0].src; bgm.muted = localStorage.getItem('bgmMuted') === '1';
+        $b('bgmTitle').textContent = TRACKS[0].title; $b('bgmArtist').textContent = TRACKS[0].artist;
+        function bgmUi() {
+            $b('bgmPlay').firstElementChild.className = 'fa-solid ' + (bgm.paused ? 'fa-play' : 'fa-pause');
+            $b('bgmMute').firstElementChild.className = 'fa-solid ' + (bgm.muted ? 'fa-volume-xmark' : 'fa-volume-high');
+            $b('bgmMute').classList.toggle('off', bgm.muted);
+            $b('bgmBtn').classList.toggle('playing', !bgm.paused && !bgm.muted);
+        }
+        function bgmToggle() {
+            const open = $b('bgmPanel').classList.toggle('open');
+            if (open && !bgmStarted) { bgmStarted = true; bgm.play().catch(() => showToast('Không tải được nhạc (thiếu file ' + TRACKS[0].src + ')', 'error')); }
+        }
+        function bgmPlayPause() { bgmStarted = true; bgm.paused ? bgm.play().catch(() => showToast('Không phát được nhạc', 'error')) : bgm.pause(); }
+        function bgmMute() { bgm.muted = !bgm.muted; localStorage.setItem('bgmMuted', bgm.muted ? '1' : '0'); bgmUi(); }
+        ['play', 'pause'].forEach(n => bgm.addEventListener(n, bgmUi));
+        bgm.addEventListener('loadedmetadata', () => { $b('bgmDur').textContent = fmtT(bgm.duration); });
+        bgm.addEventListener('timeupdate', () => { if (bgmSeeking) return; $b('bgmSeek').value = bgm.duration ? bgm.currentTime / bgm.duration * 1000 : 0; $b('bgmCur').textContent = fmtT(bgm.currentTime); });
+        $b('bgmSeek').addEventListener('pointerdown', () => { bgmSeeking = true; });
+        $b('bgmSeek').addEventListener('input', e => { if (bgm.duration) bgm.currentTime = e.target.value / 1000 * bgm.duration; $b('bgmCur').textContent = fmtT(bgm.currentTime); });
+        ['pointerup', 'change'].forEach(n => $b('bgmSeek').addEventListener(n, () => { bgmSeeking = false; }));
+        document.addEventListener('click', e => { const p = $b('bgmPanel'); if (p.classList.contains('open') && !p.contains(e.target) && !$b('bgmBtn').contains(e.target)) p.classList.remove('open'); });
+        bgmUi();
     </script>
 </body>
 </html>
