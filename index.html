@@ -10,10 +10,12 @@
             darkMode: 'class',
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Lexend', sans-serif; }
         .folder-content {
             max-height: 0;
@@ -45,12 +47,115 @@
         .toast-animate {
             animation: slideIn 0.3s ease-out forwards;
         }
+
+        /* ===== Hiệu năng & hiệu ứng ===== */
+        #starCanvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .nebula { position: fixed; width: 60vmax; height: 60vmax; border-radius: 50%; z-index: 0; pointer-events: none;
+            background: radial-gradient(circle, rgba(99,102,241,.22), transparent 65%); will-change: transform;
+            animation: drift 45s ease-in-out infinite alternate; }
+        .nebula.n2 { background: radial-gradient(circle, rgba(168,85,247,.18), transparent 65%); animation-duration: 60s; animation-direction: alternate-reverse; }
+        html:not(.dark) .nebula { opacity: .45; }
+        @keyframes drift { to { transform: translate3d(8vmax, 5vmax, 0) scale(1.15); } }
+
+        /* Thư mục: grid-rows (mượt, không giới hạn chiều cao) */
+        .folder-content { display: grid; grid-template-rows: 0fr; opacity: 0; max-height: none; overflow: visible;
+            transition: grid-template-rows .35s ease, opacity .3s ease; }
+        .folder-content.open { grid-template-rows: 1fr; opacity: 1; max-height: none; transition: grid-template-rows .4s ease, opacity .3s ease; }
+        .fc-inner { min-height: 0; overflow: hidden; }
+        .folder-content.open .fc-inner a { animation: popIn .35s both; }
+        .fc-inner a:nth-child(2n) { animation-delay: .04s !important; }
+        .fc-inner a:nth-child(3n) { animation-delay: .08s !important; }
+        .fc-inner a:nth-child(5n) { animation-delay: .12s !important; }
+        @keyframes popIn { from { opacity: 0; transform: translateY(8px) scale(.96); } }
+
+        /* Icon */
+        .subj-ico { width: 1.9rem; height: 1.9rem; display: grid; place-items: center; border-radius: .6rem; flex-shrink: 0;
+            background: color-mix(in srgb, currentColor 14%, transparent); transition: transform .25s cubic-bezier(.34,1.56,.64,1), background .2s; }
+        a:hover > .subj-ico { transform: rotate(-8deg) scale(1.15); background: color-mix(in srgb, currentColor 24%, transparent); }
+        .folder-ico { transition: transform .25s cubic-bezier(.34,1.56,.64,1); }
+        .folder-header:hover .folder-ico { transform: scale(1.18) rotate(-6deg); }
+        .logo-glow { box-shadow: 0 8px 20px -6px rgba(99,102,241,.6); animation: float 4s ease-in-out infinite; }
+        @keyframes float { 50% { transform: translateY(-3px); box-shadow: 0 12px 24px -6px rgba(168,85,247,.55); } }
+        .hdr-btn:hover > i, .hdr-btn:hover i { animation: wiggle .5s ease; }
+        @keyframes wiggle { 25% { transform: rotate(-14deg) scale(1.15); } 60% { transform: rotate(10deg) scale(1.1); } }
+        .badge-dot { width: .5rem; height: .5rem; border-radius: 50%; background: #6366f1; margin-left: auto; animation: ping 1.8s ease-out infinite; }
+        @keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(99,102,241,.7); } 80%,100% { box-shadow: 0 0 0 8px rgba(99,102,241,0); } }
+        .hl-card { animation: glow 3s ease-in-out infinite; }
+        @keyframes glow { 50% { box-shadow: 0 0 14px rgba(99,102,241,.35); } }
+
+        /* Tiêu đề shimmer + vào trang */
+        .title-shine { background: linear-gradient(90deg, #4f46e5, #a855f7, #0ea5e9, #4f46e5); background-size: 250% 100%;
+            -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 8s linear infinite; }
+        html.dark .title-shine { background-image: linear-gradient(90deg, #fff, #a5b4fc, #c4b5fd, #fff); }
+        @keyframes shine { to { background-position: 250% 0; } }
+        main > * { animation: fadeUp .6s cubic-bezier(.2,.7,.2,1) both; }
+        main > *:nth-child(2) { animation-delay: .08s; } main > *:nth-child(3) { animation-delay: .16s; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } }
+        #hamburgerDropdown:not(.hidden) { animation: popIn .2s both; transform-origin: top right; }
+        .folder-header { -webkit-tap-highlight-color: transparent; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+        }
+
+        .dv-btn { padding: .5rem .8rem; border-radius: .75rem; font-size: .75rem; font-weight: 600; background: #6366f1; color: #fff; cursor: pointer; transition: filter .15s, transform .15s; }
+        .dv-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .dv-btn.alt { background: rgba(100,116,139,.22); color: inherit; }
+        .dv-tab { padding: .6rem .9rem; font-size: .75rem; font-weight: 600; border-bottom: 2px solid transparent; opacity: .65; cursor: pointer; transition: all .2s; }
+        .dv-tab.on { border-color: #6366f1; color: #6366f1; opacity: 1; }
+        .dv-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .55rem 0; font-size: .8rem; border-bottom: 1px solid rgba(100,116,139,.15); }
+        .dv-pane:not(.hidden) { animation: popIn .25s both; }
+        .no-nebula .nebula { display: none; }
+        /* Hiệu ứng loang tròn khi đổi dark/light */
+        ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+        ::view-transition-old(root) { z-index: 1; } ::view-transition-new(root) { z-index: 2; }
+
+        .dev-path { display: none; }
+        .dev-paths .dev-path { display: block; width: 100%; font-size: 9px; opacity: .55; font-family: monospace; }
+        .dev-paths .fc-inner a { flex-wrap: wrap; }
+        .dev-outline *:not(canvas):not(.nebula) { outline: 1px solid rgba(244,63,94,.35); }
+        .fc-inner > div { grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); }
+        .fps-meter { position: fixed; left: 8px; bottom: 8px; z-index: 70; padding: 3px 8px; border-radius: 8px; font: 600 11px monospace; color: #86efac; background: rgba(2,6,23,.8); pointer-events: none; }
+
+        /* ===== v2: nhẹ cho điện thoại + animation phản hồi thao tác ===== */
+        .fc-inner { contain: layout paint; }
+        .lite .nebula, .lite .logo-glow, .lite .hl-card, .lite .title-shine, .lite .badge-dot { animation: none !important; }
+        #toastContainer { bottom: 5.5rem !important; }
+        .toast-animate { position: relative; overflow: hidden; }
+        .toast-animate::after { content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 3px; background: rgba(255,255,255,.55); transform-origin: left; animation: tbar 3s linear forwards; }
+        @keyframes tbar { to { transform: scaleX(0); } }
+        #dev-panel-modal:not(.hidden), #readme-modal:not(.hidden), #highlight-manager-modal:not(.hidden) { animation: fadeIn .2s both; }
+        #dev-panel-modal:not(.hidden) > div, #readme-modal:not(.hidden) > div, #highlight-manager-modal:not(.hidden) > div { animation: modalIn .35s cubic-bezier(.2,.9,.25,1.1) both; }
+        @keyframes fadeIn { from { opacity: 0; } }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(24px) scale(.94); } }
+        .folder-header { position: relative; overflow: hidden; }
+        .folder-header::after { content: ''; position: absolute; inset: 0; pointer-events: none; transform: translateX(-100%); background: linear-gradient(100deg, transparent 30%, rgba(129,140,248,.16), transparent 70%); }
+        .folder-header:hover::after { transform: translateX(100%); transition: transform .7s ease; }
+        .folder-header:active, .fc-inner a:active { transform: scale(.97); }
+        @media (hover: hover) { .fc-inner a:hover { transform: translateY(-2px); } }
+        .fps-meter { white-space: nowrap; }
+        .fx-fab { position: fixed; right: 1rem; bottom: 1rem; z-index: 45; width: 3rem; height: 3rem; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 1.1rem; cursor: pointer;
+            background: linear-gradient(135deg, #6366f1, #a855f7); box-shadow: 0 8px 20px -6px rgba(99,102,241,.7); touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+            transition: transform .2s cubic-bezier(.34,1.56,.64,1); animation: fabIn .6s .6s cubic-bezier(.34,1.56,.64,1) both; }
+        .fx-fab[hidden] { display: none; }
+        .fx-fab::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(165,180,252,.7); animation: fabRing 2.4s ease-out infinite; }
+        .lite .fx-fab::before { display: none; }
+        .fx-fab:active { transform: scale(.86) rotate(-12deg); }
+        .fx-fab.pop i { animation: fabPop .45s; }
+        @keyframes fabIn { from { transform: scale(0) rotate(-90deg); } }
+        @keyframes fabRing { from { transform: scale(1); opacity: .8; } to { transform: scale(1.7); opacity: 0; } }
+        @keyframes fabPop { 40% { transform: translate(6px,-6px) rotate(25deg) scale(1.3); } }
     </style>
 </head>
-<body id="pageBody" class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative bg-cover bg-center bg-fixed transition-colors duration-300">
+<body id="pageBody" class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative transition-colors duration-300">
 
     <!-- Lớp phủ nền tùy chỉnh -->
-    <div id="bgOverlay" class="absolute inset-0 bg-slate-100/90 dark:bg-slate-900/90 pointer-events-none z-0 transition-colors duration-300"></div>
+    <div id="bgImage" class="fixed inset-0 bg-cover bg-center z-0 pointer-events-none"></div>
+    <div id="bgOverlay" class="fixed inset-0 bg-slate-100/90 dark:bg-slate-900/90 pointer-events-none z-0 transition-colors duration-300"></div>
+    <!-- Bầu trời sao -->
+    <div class="nebula" style="top:-20vmax;left:-15vmax"></div>
+    <div class="nebula n2" style="bottom:-25vmax;right:-20vmax"></div>
+    <canvas id="starCanvas" aria-hidden="true"></canvas>
+    <button id="fxFab" class="fx-fab" onclick="__fx.shot()" aria-label="Bắn sao băng nổ" title="Bắn sao băng nổ"><i class="fa-solid fa-meteor"></i></button>
 
     <!-- Toast Notification Container (Thông báo HTML) -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
@@ -58,10 +163,10 @@
     <div class="relative z-10 flex flex-col min-h-screen justify-between">
         
         <!-- Header -->
-        <header class="w-full bg-white/80 dark:bg-slate-800/80 backdrop-blur border-b border-slate-200 dark:border-slate-700/60 sticky top-0 z-30 transition-colors duration-300">
+        <header class="w-full bg-white/90 dark:bg-slate-800/90 border-b border-slate-200 dark:border-slate-700/60 sticky top-0 z-30 transition-colors duration-300">
             <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div class="p-2.5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-600/30">
+                    <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl text-white logo-glow">
                         <i class="fa-solid fa-folder-tree text-xl"></i>
                     </div>
                     <div>
@@ -72,14 +177,14 @@
                 
                 <div class="flex items-center space-x-3">
                     <!-- Nút Đọc README ra ngoài Header -->
-                    <button onclick="openReadmeModal()" class="px-3.5 py-2 bg-indigo-600/90 hover:bg-indigo-600 border border-indigo-500/50 rounded-xl text-xs font-medium text-white transition flex items-center space-x-2 shadow-md cursor-pointer">
+                    <button onclick="openReadmeModal()" class="hdr-btn px-3.5 py-2 bg-indigo-600/90 hover:bg-indigo-600 border border-indigo-500/50 rounded-xl text-xs font-medium text-white transition flex items-center space-x-2 shadow-md cursor-pointer">
                         <i class="fa-solid fa-book-open"></i>
                         <span class="hidden sm:inline">README.md</span>
                     </button>
 
                     <!-- Menu 3 gạch (Dropdown Menu) -->
                     <div class="relative">
-                        <button onclick="toggleHamburgerMenu()" class="p-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl text-slate-700 dark:text-slate-200 transition cursor-pointer shadow-sm">
+                        <button onclick="toggleHamburgerMenu()" class="hdr-btn p-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl text-slate-700 dark:text-slate-200 transition cursor-pointer shadow-sm">
                             <i class="fa-solid fa-bars text-base"></i>
                         </button>
 
@@ -91,7 +196,7 @@
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                     <i class="fa-solid fa-search text-xs"></i>
                                 </div>
-                                <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Tìm kiếm môn, KTTX, GK1..." class="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition">
+                                <input type="text" id="searchInput" oninput="debouncedSearch(this.value)" placeholder="Tìm kiếm môn, KTTX, GK1..." class="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition">
                             </div>
 
                             <hr class="border-slate-200 dark:border-slate-700">
@@ -99,7 +204,7 @@
                             <!-- Các tùy chọn trong menu -->
                             <div class="space-y-1.5">
                                 <!-- Dark / Light mode toggle -->
-                                <button onclick="toggleDarkMode()" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer">
+                                <button onclick="toggleDarkMode(event)" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer">
                                     <span class="flex items-center space-x-2.5">
                                         <i id="themeIcon" class="fa-solid fa-moon text-indigo-500"></i>
                                         <span>Giao diện Sáng/Tối</span>
@@ -137,10 +242,15 @@
                                 </div>
 
                                 <!-- Nút bật Bảng Quản Lý Highlight (Chỉ hiện khi nhập đúng mã) -->
-                                <div id="devPanelBtnContainer" class="hidden pt-1">
+                                <div id="devPanelBtnContainer" class="hidden pt-1 space-y-1.5">
                                     <button onclick="openHighlightManagerModal()" class="w-full px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-2 cursor-pointer shadow-sm">
-                                        <i class="fa-solid fa-sliders"></i>
-                                        <span>Quản lý Highlight Môn Học</span>
+                                        <i class="fa-solid fa-sliders"></i><span>Quản lý Highlight Môn Học</span>
+                                    </button>
+                                    <button onclick="openDevPanel()" class="w-full px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-2 cursor-pointer shadow-sm">
+                                        <i class="fa-solid fa-terminal"></i><span>Bảng điều khiển Developer</span><kbd class="text-[9px] opacity-70 hidden sm:inline">Ctrl+Shift+D</kbd>
+                                    </button>
+                                    <button onclick="devLogout()" class="w-full px-3 py-1.5 bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-medium transition flex items-center justify-center space-x-2 cursor-pointer">
+                                        <i class="fa-solid fa-right-from-bracket"></i><span>Thoát Developer</span>
                                     </button>
                                 </div>
                             </div>
@@ -154,13 +264,13 @@
         <main class="max-w-6xl w-full mx-auto p-4 md:p-8 flex-grow space-y-8">
             
             <!-- Banner Intro & Custom Background -->
-            <section class="bg-white/70 dark:bg-gradient-to-r dark:from-indigo-950/60 dark:via-slate-800 dark:to-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-6 transition-colors duration-300">
+            <section class="bg-white/70 dark:bg-gradient-to-r dark:from-indigo-950/60 dark:via-slate-800 dark:to-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 transition-colors duration-300">
                 <div>
                     <div class="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-2">
                         <i class="fa-solid fa-cubes"></i>
                         <span>Cấu Trúc Thư Mục Chuẩn Phân Cấp</span>
                     </div>
-                    <h2 class="text-2xl md:text-3xl font-bold mb-2 text-slate-900 dark:text-white">Thư Mục Tài Liệu & Ôn Tập Hàng Kỳ</h2>
+                    <h2 class="title-shine text-2xl md:text-3xl font-bold mb-2">Thư Mục Tài Liệu & Ôn Tập Hàng Kỳ</h2>
                     <p class="text-slate-600 dark:text-slate-300 text-sm max-w-2xl leading-relaxed">
                         Chọn các đợt kiểm tra <b>KTTX (Thường xuyên)</b> hoặc <b>KTGK / KTCK (Định kỳ)</b> để mở thư mục các môn. Bấm vào biểu tượng <b>3 gạch ở góc trên phải</b> để tìm kiếm nhanh, xem Wiki tài liệu hoặc đổi giao diện.
                     </p>
@@ -219,62 +329,62 @@
                     </div>
 
                     <!-- Thư mục KTTX GK1 -->
-                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden shadow-sm">
                         <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-gk1', this)">
                             <span class="flex items-center space-x-3">
                                 <i class="fa-solid fa-chevron-right folder-icon text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                                <i class="fa-solid fa-folder text-amber-400 text-lg"></i>
+                                <i class="fa-solid folder-ico fa-folder text-amber-400 text-lg"></i>
                                 <span class="font-semibold text-slate-800 dark:text-slate-200">KTTX Giữa Kỳ 1 (GK1) - KẾT THÚC</span>
                             </span>
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
-                        <div id="kttx-gk1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk1" data-examkey="kttx/gk1"></div>
+                        <div id="kttx-gk1" class="folder-content ">
+                            <div class="fc-inner"><div class="grid grid-cols-2 gap-2 p-3 border-t border-slate-200 dark:border-slate-700/40" data-path="kttx/gk1" data-examkey="kttx/gk1"></div></div>
                         </div>
                     </div>
 
                     <!-- Thư mục KTTX HK1 -->
-                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden shadow-sm">
                         <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-hk1', this)">
                             <span class="flex items-center space-x-3">
                                 <i class="fa-solid fa-chevron-right folder-icon text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                                <i class="fa-solid fa-folder text-amber-400 text-lg"></i>
+                                <i class="fa-solid folder-ico fa-folder text-amber-400 text-lg"></i>
                                 <span class="font-semibold text-slate-800 dark:text-slate-200">KTTX Học Kỳ 1 (HK1)</span>
                             </span>
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
-                        <div id="kttx-hk1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk1" data-examkey="kttx/hk1"></div>
+                        <div id="kttx-hk1" class="folder-content ">
+                            <div class="fc-inner"><div class="grid grid-cols-2 gap-2 p-3 border-t border-slate-200 dark:border-slate-700/40" data-path="kttx/hk1" data-examkey="kttx/hk1"></div></div>
                         </div>
                     </div>
 
                     <!-- Thư mục KTTX GK2 -->
-                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden shadow-sm">
                         <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-gk2', this)">
                             <span class="flex items-center space-x-3">
                                 <i class="fa-solid fa-chevron-right folder-icon text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                                <i class="fa-solid fa-folder text-amber-400 text-lg"></i>
+                                <i class="fa-solid folder-ico fa-folder text-amber-400 text-lg"></i>
                                 <span class="font-semibold text-slate-800 dark:text-slate-200">KTTX Giữa Kỳ 2 (GK2)</span>
                             </span>
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
-                        <div id="kttx-gk2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/gk2" data-examkey="kttx/gk2"></div>
+                        <div id="kttx-gk2" class="folder-content ">
+                            <div class="fc-inner"><div class="grid grid-cols-2 gap-2 p-3 border-t border-slate-200 dark:border-slate-700/40" data-path="kttx/gk2" data-examkey="kttx/gk2"></div></div>
                         </div>
                     </div>
 
                     <!-- Thư mục KTTX HK2 -->
-                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden shadow-sm">
                         <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-hk2', this)">
                             <span class="flex items-center space-x-3">
                                 <i class="fa-solid fa-chevron-right folder-icon text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                                <i class="fa-solid fa-folder text-amber-400 text-lg"></i>
+                                <i class="fa-solid folder-ico fa-folder text-amber-400 text-lg"></i>
                                 <span class="font-semibold text-slate-800 dark:text-slate-200">KTTX Học Kỳ 2 (HK2)</span>
                             </span>
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
-                        <div id="kttx-hk2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="kttx/hk2" data-examkey="kttx/hk2"></div>
+                        <div id="kttx-hk2" class="folder-content ">
+                            <div class="fc-inner"><div class="grid grid-cols-2 gap-2 p-3 border-t border-slate-200 dark:border-slate-700/40" data-path="kttx/hk2" data-examkey="kttx/hk2"></div></div>
                         </div>
                     </div>
                 </div>
@@ -292,62 +402,62 @@
                     </div>
 
                     <!-- Thư mục KTGK 1 -->
-                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden shadow-sm">
                         <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktgk-1', this)">
                             <span class="flex items-center space-x-3">
                                 <i class="fa-solid fa-chevron-right folder-icon text-emerald-600 dark:text-emerald-400 text-xs"></i>
-                                <i class="fa-solid fa-folder-open text-amber-400 text-lg"></i>
+                                <i class="fa-solid folder-ico fa-folder text-amber-400 text-lg"></i>
                                 <span class="font-semibold text-slate-800 dark:text-slate-200">Kiểm Tra Giữa Kỳ 1 (KTGK 1)</span>
                             </span>
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
-                        <div id="ktgk-1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk1" data-examkey="ktgk1"></div>
+                        <div id="ktgk-1" class="folder-content ">
+                            <div class="fc-inner"><div class="grid grid-cols-2 gap-2 p-3 border-t border-slate-200 dark:border-slate-700/40" data-path="ktgk1" data-examkey="ktgk1"></div></div>
                         </div>
                     </div>
 
                     <!-- Thư mục KTCK 1 -->
-                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden shadow-sm">
                         <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktck-1', this)">
                             <span class="flex items-center space-x-3">
                                 <i class="fa-solid fa-chevron-right folder-icon text-emerald-600 dark:text-emerald-400 text-xs"></i>
-                                <i class="fa-solid fa-folder-open text-amber-400 text-lg"></i>
+                                <i class="fa-solid folder-ico fa-folder text-amber-400 text-lg"></i>
                                 <span class="font-semibold text-slate-800 dark:text-slate-200">Kiểm Tra Cuối Kỳ 1 (KTCK 1)</span>
                             </span>
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
-                        <div id="ktck-1" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck1" data-examkey="ktck1"></div>
+                        <div id="ktck-1" class="folder-content ">
+                            <div class="fc-inner"><div class="grid grid-cols-2 gap-2 p-3 border-t border-slate-200 dark:border-slate-700/40" data-path="ktck1" data-examkey="ktck1"></div></div>
                         </div>
                     </div>
 
                     <!-- Thư mục KTGK 2 -->
-                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden shadow-sm">
                         <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktgk-2', this)">
                             <span class="flex items-center space-x-3">
                                 <i class="fa-solid fa-chevron-right folder-icon text-emerald-600 dark:text-emerald-400 text-xs"></i>
-                                <i class="fa-solid fa-folder-open text-amber-400 text-lg"></i>
+                                <i class="fa-solid folder-ico fa-folder text-amber-400 text-lg"></i>
                                 <span class="font-semibold text-slate-800 dark:text-slate-200">Kiểm Tra Giữa Kỳ 2 (KTGK 2)</span>
                             </span>
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
-                        <div id="ktgk-2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktgk2" data-examkey="ktgk2"></div>
+                        <div id="ktgk-2" class="folder-content ">
+                            <div class="fc-inner"><div class="grid grid-cols-2 gap-2 p-3 border-t border-slate-200 dark:border-slate-700/40" data-path="ktgk2" data-examkey="ktgk2"></div></div>
                         </div>
                     </div>
 
                     <!-- Thư mục KTCK 2 -->
-                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden backdrop-blur-sm shadow-sm">
+                    <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden shadow-sm">
                         <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('ktck-2', this)">
                             <span class="flex items-center space-x-3">
                                 <i class="fa-solid fa-chevron-right folder-icon text-emerald-600 dark:text-emerald-400 text-xs"></i>
-                                <i class="fa-solid fa-folder-open text-amber-400 text-lg"></i>
+                                <i class="fa-solid folder-ico fa-folder text-amber-400 text-lg"></i>
                                 <span class="font-semibold text-slate-800 dark:text-slate-200">Kiểm Tra Cuối Kỳ 2 (KTCK 2)</span>
                             </span>
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
-                        <div id="ktck-2" class="folder-content bg-slate-50/80 dark:bg-slate-900/60 px-4 py-2 border-t border-slate-200 dark:border-slate-700/40">
-                            <div class="grid grid-cols-2 gap-2 my-2" data-path="ktck2" data-examkey="ktck2"></div>
+                        <div id="ktck-2" class="folder-content ">
+                            <div class="fc-inner"><div class="grid grid-cols-2 gap-2 p-3 border-t border-slate-200 dark:border-slate-700/40" data-path="ktck2" data-examkey="ktck2"></div></div>
                         </div>
                     </div>
                 </div>
@@ -356,7 +466,7 @@
         </main>
 
         <!-- Modal Quản Lý Highlight (Developer) -->
-        <div id="highlight-manager-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div id="highlight-manager-modal" class="hidden fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4">
             <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between bg-white/90 dark:bg-slate-800/90 sticky top-0">
                     <div class="flex items-center space-x-2.5">
@@ -391,6 +501,11 @@
                         </div>
                     </div>
 
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="bulkCheck(true)" class="dv-btn alt">Chọn tất cả</button>
+                        <button onclick="bulkCheck(false)" class="dv-btn alt">Bỏ chọn tất cả</button>
+                        <button onclick="bulkCheck(null)" class="dv-btn alt">Đảo chọn</button>
+                    </div>
                     <!-- Danh sách check môn học -->
                     <div id="modalSubjectList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
                         <!-- Render bằng JS -->
@@ -409,8 +524,80 @@
             </div>
         </div>
 
+        <!-- Bảng điều khiển Developer -->
+        <div id="dev-panel-modal" class="hidden fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between">
+                    <div class="flex items-center space-x-2.5"><i class="fa-solid fa-terminal text-indigo-500 text-lg"></i><h3 class="font-bold text-base">Bảng điều khiển Developer</h3></div>
+                    <button onclick="closeDevPanel()" class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <div class="flex border-b border-slate-200 dark:border-slate-700/80 px-3 overflow-x-auto whitespace-nowrap">
+                    <button class="dv-tab on" data-tab="fx" onclick="switchDevTab('fx')"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Hiệu ứng</button>
+                    <button class="dv-tab" data-tab="tools" onclick="switchDevTab('tools')"><i class="fa-solid fa-screwdriver-wrench mr-1.5"></i>Công cụ</button>
+                    <button class="dv-tab" data-tab="data" onclick="switchDevTab('data')"><i class="fa-solid fa-database mr-1.5"></i>Dữ liệu</button>
+                    <button class="dv-tab" data-tab="ui" onclick="switchDevTab('ui')"><i class="fa-solid fa-palette mr-1.5"></i>Giao diện</button>
+                    <button class="dv-tab" data-tab="debug" onclick="switchDevTab('debug')"><i class="fa-solid fa-bug mr-1.5"></i>Debug</button>
+                </div>
+                <div class="p-5 overflow-y-auto flex-grow bg-slate-50 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300">
+                    <div class="dv-pane" data-pane="fx">
+                        <label class="dv-row"><span>Ngôi sao</span><input type="checkbox" class="accent-indigo-600 w-4 h-4" onchange="setFx('stars',this.checked)" id="fxStars"></label>
+                        <label class="dv-row"><span>Sao băng</span><input type="checkbox" class="accent-indigo-600 w-4 h-4" onchange="setFx('shooters',this.checked)" id="fxShooters"></label>
+                        <label class="dv-row"><span>Tinh vân</span><input type="checkbox" class="accent-indigo-600 w-4 h-4" onchange="setFx('nebula',this.checked)" id="fxNebula"></label>
+                        <label class="dv-row"><span>Nhấp đúp nền để bắn sao băng</span><input type="checkbox" class="accent-indigo-600 w-4 h-4" onchange="setFx('clickShot',this.checked)" id="fxClick"></label>
+                        <label class="dv-row"><span>Mật độ sao</span><input type="range" min="0.2" max="2" step="0.1" class="w-40 accent-indigo-600" oninput="setFx('density',+this.value)" id="fxDensity"></label>
+                        <label class="dv-row"><span>Tần suất sao băng</span><input type="range" min="1" max="10" step="1" class="w-40 accent-indigo-600" oninput="setFx('freq',+this.value)" id="fxFreq"></label>
+                        <label class="dv-row"><span>Chất lượng</span><select id="fxQuality" onchange="setFx('quality',this.value)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"><option value="auto">Tự động</option><option value="lite">Nhẹ (tiết kiệm pin)</option><option value="high">Cao</option></select></label>
+                        <label class="dv-row"><span>Màu hiệu ứng nổ</span><select id="fxPalette" onchange="setFx('palette',+this.value)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"><option value="0">Tím xanh</option><option value="1">Vàng cam</option><option value="2">Cầu vồng</option></select></label>
+                        <label class="dv-row"><span>Tốc độ sao</span><input type="range" min="0.2" max="3" step="0.1" class="w-40 accent-indigo-600" oninput="setFx('speed',+this.value)" id="fxSpeed"></label>
+                        <label class="dv-row"><span>Chạm nền tạo tia lửa</span><input type="checkbox" class="accent-indigo-600 w-4 h-4" onchange="setFx('tapSpark',this.checked)" id="fxTap"></label>
+                        <div class="flex flex-wrap gap-2 pt-3"><button class="dv-btn alt" onclick="applyPreset('eco')">Tiết kiệm pin</button><button class="dv-btn alt" onclick="applyPreset('balanced')">Cân bằng</button><button class="dv-btn alt" onclick="applyPreset('max')">Đẹp nhất</button></div>
+                        <div class="flex flex-wrap gap-2 pt-3"><button class="dv-btn" onclick="__fx.shot()"><i class="fa-solid fa-burst mr-1"></i>Sao băng nổ</button><button class="dv-btn" onclick="__fx.spawn()"><i class="fa-solid fa-meteor mr-1"></i>Bắn sao băng</button><button class="dv-btn alt" onclick="resetFx()">Mặc định</button></div>
+                    </div>
+                    <div class="dv-pane hidden" data-pane="tools">
+                        <div id="devStats" class="text-xs mb-3 p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20"></div>
+                        <div class="flex flex-wrap gap-2 mb-4"><button class="dv-btn alt" onclick="expandAll(true)">Mở tất cả thư mục</button><button class="dv-btn alt" onclick="expandAll(false)">Đóng tất cả</button></div>
+                        <button class="dv-btn" onclick="scanLinks()" id="scanBtn"><i class="fa-solid fa-link-slash mr-1"></i>Quét link hỏng</button>
+                        <div id="scanOut" class="mt-3 text-xs space-y-1 max-h-48 overflow-y-auto"></div>
+                        <p class="text-[11px] mt-4 opacity-70 leading-relaxed">Phím tắt: <kbd>Ctrl+Shift+D</kbd> mở bảng · <kbd>Ctrl+Shift+F</kbd> đồng hồ FPS · <kbd>Ctrl+Shift+M</kbd> sao băng nổ · <kbd>Ctrl+Shift+E</kbd> mở/đóng mọi thư mục</p>
+                    </div>
+                    <div class="dv-pane hidden" data-pane="ui">
+                        <label class="dv-row"><span>Cỡ chữ <b id="uiFontVal"></b></span><input type="range" min="80" max="130" step="5" id="uiFont" oninput="setUi('font',+this.value)" class="w-40 accent-indigo-600"></label>
+                        <label class="dv-row"><span>Số cột thẻ môn</span><select id="uiCols" onchange="setUi('cols',+this.value)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"><option>1</option><option>2</option><option>3</option></select></label>
+                        <label class="dv-row"><span>Hiện đường dẫn file trên thẻ</span><input type="checkbox" id="uiPaths" class="accent-indigo-600 w-4 h-4" onchange="setUi('paths',this.checked)"></label>
+                        <label class="dv-row"><span>Viền debug bố cục</span><input type="checkbox" id="uiOutline" class="accent-indigo-600 w-4 h-4" onchange="setUi('outline',this.checked)"></label>
+                        <label class="dv-row"><span>Đồng hồ FPS <kbd class="opacity-60">Ctrl+Shift+F</kbd></span><input type="checkbox" id="uiFps" class="accent-indigo-600 w-4 h-4" onchange="setUi('fps',this.checked)"></label>
+                        <div class="text-xs font-semibold mt-4 mb-2">Ẩn / hiện môn học (chỉ trên máy này)</div>
+                        <div id="uiSubjects" class="grid grid-cols-2 gap-2"></div>
+                        <button class="dv-btn alt mt-3" onclick="resetUi()">Mặc định giao diện</button>
+                    </div>
+                    <div class="dv-pane hidden" data-pane="debug">
+                        <div id="sysInfo" class="text-[11px] font-mono p-3 rounded-xl bg-slate-500/10 mb-3 leading-relaxed break-all"></div>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <button class="dv-btn alt" onclick="showToast('Thông báo thử nghiệm','success')">Toast OK</button>
+                            <button class="dv-btn alt" onclick="showToast('Thông báo lỗi thử','error')">Toast lỗi</button>
+                            <button class="dv-btn" onclick="hardReload()"><i class="fa-solid fa-rotate mr-1"></i>Xóa cache &amp; tải lại</button>
+                        </div>
+                        <div class="text-xs font-semibold mb-1">LocalStorage <span id="storeTotal" class="opacity-60 font-normal"></span></div>
+                        <div id="storeList" class="text-[11px] mb-3 max-h-32 overflow-y-auto"></div>
+                        <div class="flex items-center justify-between mb-1"><span class="text-xs font-semibold">Console</span><span class="space-x-1"><button class="dv-btn alt" onclick="copyLogs()">Copy</button><button class="dv-btn alt" onclick="clearLogs()">Xóa</button></span></div>
+                        <pre id="logOut" class="text-[10px] font-mono p-2 rounded-xl bg-slate-950 text-slate-200 h-36 overflow-auto whitespace-pre-wrap"></pre>
+                        <div class="flex gap-1.5 mt-2"><input id="replIn" placeholder="Chạy JS: subjects, __fx.cfg ..." class="flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-slate-950 text-emerald-300 font-mono text-[11px] outline-none" autocapitalize="off" autocomplete="off" spellcheck="false"><button class="dv-btn" onclick="runRepl()">Chạy</button><button class="dv-btn alt" onclick="copyReport()">Báo cáo</button></div>
+                    </div>
+                    <div class="dv-pane hidden" data-pane="data">
+                        <div class="flex flex-wrap gap-2">
+                            <button class="dv-btn" onclick="exportSettings()"><i class="fa-solid fa-download mr-1"></i>Xuất JSON</button>
+                            <label class="dv-btn alt cursor-pointer"><i class="fa-solid fa-upload mr-1"></i>Nhập JSON<input type="file" accept="application/json" class="hidden" onchange="importSettings(event)"></label>
+                            <button class="dv-btn" onclick="copyDefaultHighlights()"><i class="fa-solid fa-code mr-1"></i>Copy code defaultHighlights</button>
+                            <button class="dv-btn alt" style="color:#e11d48" onclick="resetAll()"><i class="fa-solid fa-trash mr-1"></i>Reset cài đặt</button>
+                        </div>
+                        <p class="text-[11px] mt-3 opacity-70 leading-relaxed">Mỗi lần tải trang, highlight được đồng bộ lại từ <code>defaultHighlights</code> trong file. Muốn lưu cấu hình vĩnh viễn cho mọi người: chỉnh ở "Quản lý Highlight", bấm "Copy code" rồi dán đè vào file.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal Xem README -->
-        <div id="readme-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div id="readme-modal" class="hidden fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4">
             <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between bg-white/90 dark:bg-slate-800/90 sticky top-0">
                     <div class="flex items-center space-x-2.5">
@@ -628,46 +815,63 @@
                 const basePath = container.getAttribute('data-path');
                 const examKey = container.getAttribute('data-examkey');
 
-                container.innerHTML = subjects.map(sub => {
+                container.innerHTML = visibleSubjects().map(sub => {
                     const configKey = `${examKey}/${sub.id}`;
                     const isHighlighted = highlightsMap[configKey] === true;
                     
                     const customStyle = isHighlighted 
-                        ? 'border-indigo-500/80 bg-indigo-50/80 dark:bg-indigo-950/40 ring-1 ring-indigo-500/50 shadow-md' 
+                        ? 'hl-card border-indigo-500/80 bg-indigo-50/80 dark:bg-indigo-950/40 ring-1 ring-indigo-500/50' 
                         : '';
                     const badgeHtml = isHighlighted 
-                        ? '<span class="ml-auto w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>' 
+                        ? '<span class="ml-auto w-2 h-2 rounded-full bg-indigo-500 badge-dot"></span>' 
                         : '';
 
                     return `
                         <a href="${basePath}/${sub.id}/${sub.indexFile}" class="p-2.5 bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/90 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-500/50 rounded-lg flex items-center space-x-2.5 text-xs text-slate-700 dark:text-slate-200 transition group shadow-sm ${customStyle}">
-                            <i class="fa-solid ${sub.icon} text-sm group-hover:scale-110 transition"></i>
-                            <span class="truncate font-medium">${sub.name}</span>
+                            <span class="subj-ico ${sub.color}"><i class="fa-solid ${sub.icon}"></i></span>
+                            <span class="truncate font-medium">${sub.name}</span><span class="dev-path">${basePath}/${sub.id}/${sub.indexFile}</span>
                             ${badgeHtml}
                         </a>
                     `;
                 }).join('');
             });
+            const n = visibleSubjects().length;
+            document.querySelectorAll('.folder-content').forEach(c => { const b = c.previousElementSibling; if (b && b.lastElementChild) b.lastElementChild.textContent = n + ' môn'; });
         }
 
         // --- XỬ LÝ DEVELOPER CODE & MODAL QUẢN LÝ ---
-        function checkDevSession() {
-            if (localStorage.getItem('isDevAuthenticated') === 'true') {
-                document.getElementById('devCodeSection').classList.add('hidden');
-                document.getElementById('devPanelBtnContainer').classList.remove('hidden');
-            }
+        const DEV_SALT = 'bakhi::dev::v1:', DEV_HASH = 'e930b1af1c508f6aed6ad0fd022d4be6de9218f4b4d1249da9cbc4e530779796';
+        async function sha256(t) {
+            if (!(window.crypto && crypto.subtle)) throw new Error('nocrypto');
+            const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
+            return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
         }
-
-        function verifyDevCode() {
-            const inputVal = document.getElementById('devCodeInput').value.trim();
-            if (inputVal === 'reinguyeenx822004') {
-                localStorage.setItem('isDevAuthenticated', 'true');
-                document.getElementById('devCodeSection').classList.add('hidden');
-                document.getElementById('devPanelBtnContainer').classList.remove('hidden');
-                showToast('Xác thực Developer thành công!', 'success');
-            } else {
-                showToast('Mã code không chính xác!', 'error');
-            }
+        function setDevUI(on) {
+            document.getElementById('devCodeSection').classList.toggle('hidden', on);
+            document.getElementById('devPanelBtnContainer').classList.toggle('hidden', !on);
+        }
+        async function checkDevSession() {
+            localStorage.removeItem('isDevAuthenticated');
+            try { setDevUI(localStorage.getItem('devToken') === await sha256(DEV_HASH + ':session')); } catch (e) { setDevUI(false); }
+        }
+        let devFails = 0, devLockUntil = 0;
+        async function verifyDevCode() {
+            if (Date.now() < devLockUntil) { showToast('Thử lại sau ' + Math.ceil((devLockUntil - Date.now()) / 1000) + 's', 'error'); return; }
+            const input = document.getElementById('devCodeInput');
+            try {
+                if (await sha256(DEV_SALT + input.value.trim()) === DEV_HASH) {
+                    localStorage.setItem('devToken', await sha256(DEV_HASH + ':session'));
+                    devFails = 0; input.value = ''; setDevUI(true);
+                    showToast('Xác thực Developer thành công!', 'success');
+                } else {
+                    if (++devFails >= 5) { devLockUntil = Date.now() + 30000; devFails = 0; }
+                    showToast('Mã code không chính xác!', 'error');
+                }
+            } catch (e) { showToast('Cần mở bằng HTTPS để xác thực', 'error'); }
+        }
+        function devLogout() {
+            localStorage.removeItem('devToken'); setDevUI(false); closeDevPanel(); closeHighlightManagerModal();
+            showToast('Đã thoát chế độ Developer', 'success');
         }
 
         function openHighlightManagerModal() {
@@ -754,24 +958,30 @@
             }
         }
 
-        function toggleDarkMode() {
-            const htmlEl = document.documentElement;
-            const themeIcon = document.getElementById('themeIcon');
-            const themeText = document.getElementById('themeText');
-            if (htmlEl.classList.contains('dark')) {
-                htmlEl.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-                themeIcon.className = 'fa-solid fa-sun text-amber-500';
-                themeText.innerText = 'Đang sáng';
-            } else {
-                htmlEl.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-                themeIcon.className = 'fa-solid fa-moon text-indigo-500';
-                themeText.innerText = 'Đang tối';
-            }
-            const savedBg = localStorage.getItem('customBg');
-            const savedOpacity = localStorage.getItem('bgOpacity') || '0.88';
-            if (savedBg) applyBackground(savedBg, savedOpacity);
+        function toggleDarkMode(e) {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            const toDark = !html.classList.contains('dark');
+            const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const apply = () => {
+                html.classList.toggle('dark', toDark);
+                localStorage.setItem('theme', toDark ? 'dark' : 'light');
+                icon.className = toDark ? 'fa-solid fa-moon text-indigo-500' : 'fa-solid fa-sun text-amber-500';
+                document.getElementById('themeText').innerText = toDark ? 'Đang tối' : 'Đang sáng';
+                const savedBg = localStorage.getItem('customBg');
+                if (savedBg) applyBackground(savedBg, localStorage.getItem('bgOpacity') || '0.88');
+            };
+            // Icon xoay đúng 1 vòng
+            if (!reduce) icon.animate([{ transform: 'rotate(0) scale(1)' }, { transform: 'rotate(180deg) scale(1.4)' }, { transform: 'rotate(360deg) scale(1)' }], { duration: 650, easing: 'cubic-bezier(.45,.05,.25,1)' });
+            // Nền loang tròn từ vị trí click
+            if (document.startViewTransition && !reduce) {
+                const r = e && e.currentTarget ? e.currentTarget.getBoundingClientRect() : null;
+                const x = r ? r.left + 22 : innerWidth / 2, y = r ? r.top + r.height / 2 : 0;
+                const rad = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+                document.startViewTransition(apply).ready.then(() => document.documentElement.animate(
+                    { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${rad}px at ${x}px ${y}px)`] },
+                    { duration: 700, easing: 'ease-in-out', pseudoElement: '::view-transition-new(root)' }));
+            } else apply();
         }
 
         // --- TÍNH NĂNG CUSTOM BACKGROUND ---
@@ -789,22 +999,30 @@
         function handleCustomBackground(event) {
             const file = event.target.files[0];
             if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const base64Image = e.target.result;
-                localStorage.setItem('customBg', base64Image);
-                localStorage.setItem('bgOpacity', '0.88');
-                applyBackground(base64Image, '0.88');
+            // Nén ảnh (tối đa 1920px, JPEG 0.8) để nhẹ localStorage & render mượt hơn
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+                const k = Math.min(1, 1920 / Math.max(img.width, img.height));
+                const c = document.createElement('canvas');
+                c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+                c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                URL.revokeObjectURL(url);
+                const data = c.toDataURL('image/jpeg', 0.8);
+                try {
+                    localStorage.setItem('customBg', data);
+                    localStorage.setItem('bgOpacity', '0.88');
+                } catch (e) { showToast('Ảnh quá lớn, không thể lưu!', 'error'); return; }
+                applyBackground(data, '0.88');
                 document.getElementById('removeBgBtn').classList.remove('hidden');
                 document.getElementById('opacityControl').classList.remove('hidden');
                 document.getElementById('opacityRange').value = '0.88';
             };
-            reader.readAsDataURL(file);
+            img.src = url;
         }
 
         function applyBackground(imgUrl, opacity) {
-            const body = document.getElementById('pageBody');
+            const body = document.getElementById('bgImage');
             const overlay = document.getElementById('bgOverlay');
             body.style.backgroundImage = `url('${imgUrl}')`;
             overlay.style.backgroundColor = document.documentElement.classList.contains('dark') 
@@ -821,7 +1039,7 @@
         function removeCustomBackground() {
             localStorage.removeItem('customBg');
             localStorage.removeItem('bgOpacity');
-            const body = document.getElementById('pageBody');
+            const body = document.getElementById('bgImage');
             const overlay = document.getElementById('bgOverlay');
             body.style.backgroundImage = 'none';
             overlay.style.backgroundColor = '';
@@ -851,7 +1069,7 @@
             let matchedResults = [];
 
             examCategories.forEach(cat => {
-                subjects.forEach(sub => {
+                visibleSubjects().forEach(sub => {
                     const searchableText = `${sub.name} ${cat.examType} ${cat.semester}`.toLowerCase();
                     if (searchableText.includes(query)) {
                         matchedResults.push({
@@ -870,7 +1088,7 @@
                 searchResultsList.innerHTML = `
                     <div class="col-span-full py-8 text-center text-slate-500 dark:text-slate-400 text-sm">
                         <i class="fa-solid fa-triangle-exclamation mb-2 text-xl text-amber-500"></i>
-                        <p>Không tìm thấy kết quả phù hợp cho từ khóa "<b>${keyword}</b>"</p>
+                        <p>Không tìm thấy kết quả phù hợp cho từ khóa "<b>${escapeHtml(keyword)}</b>"</p>
                     </div>
                 `;
                 return;
@@ -893,16 +1111,11 @@
         }
 
         function toggleFolder(folderId, btnEl) {
-            const content = document.getElementById(folderId);
-            const isOpen = content.classList.contains('open');
-
-            if (isOpen) {
-                content.classList.remove('open');
-                btnEl.classList.remove('active');
-            } else {
-                content.classList.add('open');
-                btnEl.classList.add('active');
-            }
+            const open = document.getElementById(folderId).classList.toggle('open');
+            btnEl.classList.toggle('active', open);
+            btnEl.setAttribute('aria-expanded', open);
+            const ico = btnEl.querySelector('.folder-ico');
+            if (ico) { ico.classList.toggle('fa-folder-open', open); ico.classList.toggle('fa-folder', !open); }
         }
 
         async function openReadmeModal() {
@@ -911,6 +1124,7 @@
             modal.classList.remove('hidden');
 
             try {
+                await loadMarked();
                 const res = await fetch('./README.md');
                 if (!res.ok) throw new Error("Không thể tải file README.md");
                 const mdText = await res.text();
@@ -928,6 +1142,315 @@
         function closeReadmeModal() {
             document.getElementById('readme-modal').classList.add('hidden');
         }
+
+        // ===== Tiện ích hiệu năng =====
+        const escapeHtml = t => t.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        let _st; const debouncedSearch = v => { clearTimeout(_st); _st = setTimeout(() => handleSearch(v), 150); };
+        let _markedP;
+        function loadMarked() {
+            if (window.marked) return Promise.resolve();
+            return _markedP || (_markedP = new Promise((ok, no) => {
+                const el = document.createElement('script');
+                el.src = 'https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js';
+                el.onload = ok; el.onerror = () => { _markedP = null; no(); };
+                document.head.appendChild(el);
+            }));
+        }
+
+        // ===== Bầu trời sao + sao băng nổ (canvas, tự giảm tải trên máy yếu) =====
+        (function () {
+            const cv = document.getElementById('starCanvas'), ctx = cv.getContext('2d'), fab = document.getElementById('fxFab');
+            const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const DEF = { stars: true, shooters: true, nebula: true, density: 1, freq: 5, clickShot: false, quality: 'auto', palette: 0, speed: 1, tapSpark: true };
+            const fx = Object.assign({}, DEF, (() => { try { return JSON.parse(localStorage.getItem('fxCfg')) || {}; } catch (e) { return {}; } })());
+            const PAL = [['165,180,252', '196,181,253', '255,255,255'], ['253,224,71', '251,146,60', '255,255,255'], ['248,113,113', '250,204,21', '74,222,128', '56,189,248', '192,132,252']];
+            const NB = 4, root = document.documentElement;
+            let w, h, stars = [], shooters = [], parts = [], rings = [], raf = 0, last = 0, nextShot = 1500, rt, dark = true, lite = false, acc = 0, qk = 1, combo = 0, ct;
+            const rnd = (a, b) => a + Math.random() * (b - a);
+            const syncTheme = () => { dark = root.classList.contains('dark'); };
+            new MutationObserver(syncTheme).observe(root, { attributes: true, attributeFilter: ['class'] });
+            const isLite = () => fx.quality === 'lite' || (fx.quality === 'auto' && matchMedia('(pointer:coarse)').matches && ((navigator.hardwareConcurrency || 4) <= 6 || (navigator.deviceMemory || 4) <= 4));
+            if (reduce && fab) fab.hidden = true;
+
+            function resize() {
+                lite = isLite(); root.classList.toggle('lite', lite); syncTheme();
+                const dpr = Math.min(devicePixelRatio || 1, lite ? 1 : 1.5);
+                w = innerWidth; h = innerHeight;
+                cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                const n = fx.stars ? Math.min(lite ? 90 : 300, Math.floor(w * h / 9000 * fx.density * qk)) : 0;
+                stars = Array.from({ length: n }, () => ({ x: rnd(0, w), y: rnd(0, h), r: rnd(.4, 1.4), sp: rnd(.6, 2.2), ph: rnd(0, 6.28), dx: rnd(.004, .02), b: 0 }));
+                if (reduce) draw(0, 0);
+            }
+            function spawn(o) {
+                const ang = rnd(.45, .75), B = o && o.boom;
+                shooters.push({ x: rnd(w * .15, w * 1.05), y: rnd(-20, h * .35), vx: -Math.cos(ang), vy: Math.sin(ang), v: B ? rnd(850, 1100) : rnd(700, 1100), len: rnd(110, 200), life: 0, max: B ? rnd(.55, .85) : rnd(.7, 1.2), boom: !!B });
+                if (!raf) start();
+            }
+            // Nổ: hạt toả tròn + vòng sóng xung kích
+            function boom(x, y, n) {
+                const pal = PAL[fx.palette] || PAL[0]; n = Math.min(n || (lite ? 18 : 34), (lite ? 120 : 260) - parts.length);
+                for (let i = 0; i < n; i++) { const a = rnd(0, 6.283), v = rnd(60, 340); parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rnd(.5, 1.1), r: rnd(.8, 2.4), c: 'rgb(' + pal[i % pal.length] + ')' }); }
+                if (n > 12) rings.push({ x, y, life: 0, max: .55, c: pal[0] });
+                if (navigator.vibrate && n > 12) navigator.vibrate(12);
+                if (!raf) start();
+            }
+            function shot() {
+                if (reduce) return; spawn({ boom: true });
+                combo++; clearTimeout(ct); ct = setTimeout(() => combo = 0, 1400);
+                if (fab) { fab.classList.remove('pop'); void fab.offsetWidth; fab.classList.add('pop'); }
+                if (combo >= 5) { combo = 0; for (let i = 0; i < 6; i++) setTimeout(() => spawn({ boom: true }), i * 140); showToast('Mưa sao băng!', 'success'); }
+            }
+            function draw(t, dt) {
+                const rgb = dark ? '255,255,255' : '99,102,241', k = dark ? 1 : .55;
+                ctx.clearRect(0, 0, w, h);
+                // Sao: gom theo 4 mức sáng → chỉ 4 lần fill thay vì mỗi sao một lần
+                for (const s of stars) { s.x -= s.dx * dt * fx.speed; if (s.x < 0) s.x += w; s.b = Math.min(NB - 1, ((.5 + .5 * Math.sin(t / 1000 * s.sp + s.ph)) * NB) | 0); }
+                for (let b = 0; b < NB; b++) {
+                    ctx.beginPath(); for (const s of stars) if (s.b === b) { ctx.moveTo(s.x + s.r, s.y); ctx.arc(s.x, s.y, s.r, 0, 6.283); }
+                    ctx.fillStyle = `rgba(${rgb},${(.25 + .75 * (b + .5) / NB) * k})`; ctx.fill();
+                }
+                for (let i = shooters.length - 1; i >= 0; i--) {
+                    const m = shooters[i]; m.life += dt / 1000;
+                    m.x += m.vx * m.v * dt / 1000; m.y += m.vy * m.v * dt / 1000;
+                    const a = Math.max(0, 1 - m.life / m.max), tx = m.x - m.vx * m.len, ty = m.y - m.vy * m.len;
+                    const g = ctx.createLinearGradient(m.x, m.y, tx, ty);
+                    g.addColorStop(0, `rgba(${rgb},${a * k})`); g.addColorStop(1, `rgba(${rgb},0)`);
+                    ctx.strokeStyle = g; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+                    ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(tx, ty); ctx.stroke();
+                    ctx.fillStyle = `rgba(${rgb},${a * k * .25})`; ctx.beginPath(); ctx.arc(m.x, m.y, 5, 0, 6.283); ctx.fill(); // quầng sáng thay shadowBlur (rẻ hơn nhiều)
+                    ctx.fillStyle = `rgba(${rgb},${a * k})`; ctx.beginPath(); ctx.arc(m.x, m.y, 1.8, 0, 6.283); ctx.fill();
+                    if (m.life >= m.max) { if (m.boom) boom(m.x, m.y); shooters.splice(i, 1); }
+                }
+                if (parts.length || rings.length) {
+                    if (dark) ctx.globalCompositeOperation = 'lighter';
+                    for (let i = parts.length - 1; i >= 0; i--) {
+                        const p = parts[i]; p.life += dt / 1000; if (p.life >= p.max) { parts.splice(i, 1); continue; }
+                        p.vx *= .985; p.vy = p.vy * .985 + 260 * dt / 1000; p.x += p.vx * dt / 1000; p.y += p.vy * dt / 1000;
+                        ctx.globalAlpha = (1 - p.life / p.max) * k; ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill();
+                    }
+                    ctx.globalAlpha = 1;
+                    for (let i = rings.length - 1; i >= 0; i--) {
+                        const r = rings[i]; r.life += dt / 1000; if (r.life >= r.max) { rings.splice(i, 1); continue; }
+                        const q = r.life / r.max;
+                        ctx.strokeStyle = `rgba(${r.c},${(1 - q) * .8 * k})`; ctx.lineWidth = 3 * (1 - q) + .5;
+                        ctx.beginPath(); ctx.arc(r.x, r.y, 14 + 90 * (1 - (1 - q) * (1 - q)), 0, 6.283); ctx.stroke();
+                    }
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+            }
+            function loop(t) {
+                raf = requestAnimationFrame(loop);
+                const el = t - last, busy = parts.length || shooters.length || rings.length;
+                if (lite && !busy && el < 31) return; // máy yếu: nền tĩnh chạy 30fps, có hiệu ứng thì 60fps
+                const dt = Math.min(50, el); last = t;
+                if (fx.quality === 'auto') { acc = Math.max(0, acc + (el > 26 ? 1 : -.5)); if (acc > 45 && qk > .4) { qk -= .2; acc = 0; resize(); } } // tự giảm số sao khi tụt FPS
+                if ((nextShot -= dt) <= 0 && shooters.length < 3 && fx.shooters) { spawn(); nextShot = rnd(2200, 6000) * 5 / fx.freq; }
+                draw(t, dt);
+            }
+            function start() { if (!reduce && !raf && !document.hidden) { last = performance.now(); raf = requestAnimationFrame(loop); } }
+            function stop() { cancelAnimationFrame(raf); raf = 0; }
+            addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(resize, 200); });
+            document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+            // Chạm vào sao băng đang bay → nổ; chạm nền trống → tia lửa nhỏ
+            addEventListener('pointerdown', e => {
+                if (reduce) return;
+                for (const m of shooters) if (Math.hypot(m.x - e.clientX, m.y - e.clientY) < 48) { m.life = m.max; m.boom = true; return; }
+                if (fx.tapSpark && !e.target.closest('a,button,input,label,select,textarea,section,header,footer,#categoriesTree,#searchResultsSection,#dev-panel-modal,#readme-modal,#highlight-manager-modal')) boom(e.clientX, e.clientY, lite ? 6 : 10);
+            }, { passive: true });
+            window.__fx = {
+                cfg: fx, DEF, spawn, boom, shot,
+                info: () => `★${stars.length} ✦${parts.length} ${lite ? 'lite' : 'full'} q${qk.toFixed(1)}`,
+                save() { localStorage.setItem('fxCfg', JSON.stringify(fx)); document.body.classList.toggle('no-nebula', !fx.nebula); qk = 1; resize(); }
+            };
+            document.body.classList.toggle('no-nebula', !fx.nebula);
+            resize(); start();
+        })();
+
+        // ===== Bảng điều khiển Developer =====
+        const DEV_TABS = ['fx', 'tools', 'data'];
+        function openDevPanel() {
+            document.getElementById('dev-panel-modal').classList.remove('hidden');
+            document.getElementById('hamburgerDropdown').classList.add('hidden');
+            const c = __fx.cfg;
+            fxStars.checked = c.stars; fxShooters.checked = c.shooters; fxNebula.checked = c.nebula; fxClick.checked = !!c.clickShot; fxDensity.value = c.density; fxFreq.value = c.freq; fxQuality.value = c.quality; fxPalette.value = c.palette; fxSpeed.value = c.speed; fxTap.checked = c.tapSpark;
+            refreshDevStats();
+        }
+        function closeDevPanel() { document.getElementById('dev-panel-modal').classList.add('hidden'); }
+        function switchDevTab(t) {
+            document.querySelectorAll('.dv-tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+            document.querySelectorAll('.dv-pane').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== t));
+            if (t === 'tools') refreshDevStats(); if (t === 'debug') renderDebug(); if (t === 'ui') loadUiPane();
+        }
+        function setFx(k, v) { __fx.cfg[k] = v; __fx.save(); }
+        function resetFx() { Object.assign(__fx.cfg, __fx.DEF); __fx.save(); openDevPanel(); showToast('Đã đặt lại hiệu ứng', 'success'); }
+        function refreshDevStats() {
+            const hl = getHighlightsData(), on = Object.values(hl).filter(v => v === true).length;
+            document.getElementById('devStats').innerHTML = `<b>${subjects.length}</b> môn × <b>${examCategories.length}</b> đợt = <b>${subjects.length * examCategories.length}</b> liên kết · <b>${on}</b> mục đang highlight`;
+        }
+        function expandAll(open) {
+            document.querySelectorAll('.folder-content').forEach(c => {
+                if (c.classList.contains('open') !== open) toggleFolder(c.id, c.previousElementSibling);
+            });
+        }
+        function bulkCheck(v) {
+            document.querySelectorAll('.sub-checkbox').forEach(c => { c.checked = v === null ? !c.checked : v; });
+        }
+        async function scanLinks() {
+            const out = document.getElementById('scanOut'), btn = document.getElementById('scanBtn');
+            if (location.protocol === 'file:') { out.innerHTML = '<span class="text-amber-500">Cần chạy trên web server (http/https) để quét.</span>'; return; }
+            const urls = []; examCategories.forEach(c => subjects.forEach(s => urls.push(`${c.path}/${s.id}/${s.indexFile}`)));
+            let done = 0, bad = []; btn.disabled = true; out.innerHTML = '';
+            const queue = urls.slice();
+            const worker = async () => {
+                while (queue.length) {
+                    const u = queue.shift();
+                    try { const r = await fetch(u, { method: 'HEAD', cache: 'no-store' }); if (!r.ok) bad.push(`${u} (${r.status})`); }
+                    catch (e) { bad.push(`${u} (lỗi mạng)`); }
+                    btn.innerHTML = `Đang quét ${++done}/${urls.length}...`;
+                }
+            };
+            await Promise.all(Array.from({ length: 6 }, worker));
+            btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-link-slash mr-1"></i>Quét link hỏng';
+            out.innerHTML = bad.length
+                ? `<div class="text-rose-500 font-semibold">${bad.length}/${urls.length} link hỏng:</div>` + bad.map(b => `<div class="font-mono opacity-80">${escapeHtml(b)}</div>`).join('')
+                : `<div class="text-emerald-500 font-semibold"><i class="fa-solid fa-circle-check mr-1"></i>Tất cả ${urls.length} link đều hoạt động.</div>`;
+        }
+        function exportSettings() {
+            const data = { highlights: getHighlightsData(), fx: __fx.cfg, theme: localStorage.getItem('theme'), bgOpacity: localStorage.getItem('bgOpacity') };
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+            a.download = 'bakhi-settings.json'; a.click(); URL.revokeObjectURL(a.href);
+        }
+        function importSettings(ev) {
+            const f = ev.target.files[0]; if (!f) return;
+            f.text().then(t => {
+                const d = JSON.parse(t);
+                if (d.highlights && typeof d.highlights === 'object') localStorage.setItem('appHighlightsDataMap', JSON.stringify(d.highlights));
+                if (d.fx) { Object.assign(__fx.cfg, d.fx); __fx.save(); }
+                renderSubjectsTree(); refreshDevStats(); showToast('Đã nhập cài đặt', 'success');
+            }).catch(() => showToast('File JSON không hợp lệ', 'error'));
+            ev.target.value = '';
+        }
+        function copyDefaultHighlights() {
+            const hl = getHighlightsData(); let last = '', lines = [];
+            Object.keys(hl).forEach(k => {
+                const grp = k.slice(0, k.lastIndexOf('/'));
+                if (grp !== last) { lines.push(`\n            // ${grp}`); last = grp; }
+                lines.push(`            '${k}': ${hl[k]},`);
+            });
+            const txt = 'const defaultHighlights = {' + lines.join('\n').replace(/,$/, '') + '\n        };';
+            (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(
+                () => showToast('Đã copy code defaultHighlights', 'success'),
+                () => { const t = document.createElement('textarea'); t.value = txt; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); showToast('Đã copy code defaultHighlights', 'success'); });
+        }
+        function resetAll() {
+            if (!confirm('Xóa toàn bộ cài đặt (nền, giao diện, hiệu ứng)? Phiên Developer vẫn giữ.')) return;
+            ['theme', 'customBg', 'bgOpacity', 'fxCfg', 'appHighlightsDataMap'].forEach(k => localStorage.removeItem(k));
+            location.reload();
+        }
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd' && !document.getElementById('devPanelBtnContainer').classList.contains('hidden')) { e.preventDefault(); openDevPanel(); }
+            if (e.key === 'Escape') { closeDevPanel(); closeHighlightManagerModal(); }
+            if (e.key === 'Enter' && e.target.id === 'devCodeInput') verifyDevCode();
+        });
+
+        // ===== Dev: giao diện, ẩn môn, FPS =====
+        const getHidden = () => { try { return JSON.parse(localStorage.getItem('hiddenSubjects')) || []; } catch (e) { return []; } };
+        const visibleSubjects = () => { const h = getHidden(); return subjects.filter(x => !h.includes(x.id)); };
+        const UI_DEF = { font: 100, cols: 2, paths: false, outline: false, fps: false };
+        let uiCfg = Object.assign({}, UI_DEF, (() => { try { return JSON.parse(localStorage.getItem('uiCfg')) || {}; } catch (e) { return {}; } })());
+        let fpsEl, fpsRaf;
+        function toggleFps(on) {
+            cancelAnimationFrame(fpsRaf); if (fpsEl) fpsEl.remove();
+            if (!on) return;
+            fpsEl = Object.assign(document.createElement('div'), { className: 'fps-meter', textContent: '… FPS' }); document.body.appendChild(fpsEl);
+            let f = 0, t = performance.now();
+            const tick = n => { f++; if (n - t >= 500) { fpsEl.textContent = Math.round(f * 1000 / (n - t)) + ' FPS · ' + __fx.info(); f = 0; t = n; } fpsRaf = requestAnimationFrame(tick); };
+            fpsRaf = requestAnimationFrame(tick);
+        }
+        function applyUi() {
+            document.documentElement.style.fontSize = uiCfg.font + '%';
+            document.documentElement.style.setProperty('--cols', uiCfg.cols);
+            document.body.classList.toggle('dev-paths', uiCfg.paths);
+            document.body.classList.toggle('dev-outline', uiCfg.outline);
+            toggleFps(uiCfg.fps);
+        }
+        function setUi(k, v) { uiCfg[k] = v; localStorage.setItem('uiCfg', JSON.stringify(uiCfg)); applyUi(); loadUiPane(); }
+        function resetUi() { uiCfg = Object.assign({}, UI_DEF); localStorage.setItem('uiCfg', JSON.stringify(uiCfg)); localStorage.removeItem('hiddenSubjects'); applyUi(); renderSubjectsTree(); loadUiPane(); }
+        function loadUiPane() {
+            uiFont.value = uiCfg.font; uiFontVal.textContent = uiCfg.font + '%'; uiCols.value = uiCfg.cols;
+            uiPaths.checked = uiCfg.paths; uiOutline.checked = uiCfg.outline; uiFps.checked = uiCfg.fps;
+            const h = getHidden();
+            uiSubjects.innerHTML = subjects.map(x => `<label class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs cursor-pointer"><span><i class="fa-solid ${x.icon} ${x.color} mr-1.5"></i>${x.name}</span><input type="checkbox" class="accent-indigo-600" ${h.includes(x.id) ? '' : 'checked'} onchange="toggleSubject('${x.id}',this.checked)"></label>`).join('');
+        }
+        function toggleSubject(id, visible) {
+            const h = getHidden().filter(x => x !== id); if (!visible) h.push(id);
+            localStorage.setItem('hiddenSubjects', JSON.stringify(h)); renderSubjectsTree(); refreshDevStats();
+        }
+        applyUi();
+
+        // ===== Dev: console, thông tin hệ thống, storage =====
+        const _logs = [];
+        ['log', 'warn', 'error'].forEach(k => {
+            const o = console[k];
+            console[k] = (...a) => {
+                _logs.push(`[${new Date().toLocaleTimeString()}] ${k.toUpperCase()} ` + a.map(x => x instanceof Error ? x.message : typeof x === 'string' ? x : (() => { try { return JSON.stringify(x); } catch (e) { return String(x); } })()).join(' '));
+                if (_logs.length > 150) _logs.shift(); o.apply(console, a);
+            };
+        });
+        addEventListener('error', e => console.error(`${e.message} @${(e.filename || '').split('/').pop()}:${e.lineno}`));
+        addEventListener('unhandledrejection', e => console.error('Promise: ' + ((e.reason && e.reason.message) || e.reason)));
+        function renderDebug() {
+            const nav = performance.getEntriesByType('navigation')[0], c = navigator.connection || {};
+            sysInfo.innerHTML = [
+                `Viewport: ${innerWidth}×${innerHeight} @${devicePixelRatio}x`, `Giao thức: ${location.protocol} · Online: ${navigator.onLine}`,
+                `Mạng: ${c.effectiveType || '?'} · RAM: ${navigator.deviceMemory || '?'}GB · CPU: ${navigator.hardwareConcurrency || '?'} nhân`,
+                `Tải trang: ${nav ? Math.round(nav.loadEventEnd) + 'ms' : '?'} · DOM: ${document.getElementsByTagName('*').length} node`,
+                `Ngôn ngữ: ${navigator.language} · SubtleCrypto: ${!!(window.crypto && crypto.subtle)}`,
+                `Hiệu ứng: ${__fx.info()} · Long task: ${_lt}${performance.memory ? ' · Heap: ' + (performance.memory.usedJSHeapSize / 1048576).toFixed(0) + 'MB' : ''}`].join('<br>');
+            let total = 0;
+            storeList.innerHTML = Object.keys(localStorage).map(k => { const sz = (k.length + localStorage.getItem(k).length) * 2; total += sz;
+                return `<div class="flex justify-between items-center py-0.5 border-b border-slate-500/10"><span class="font-mono truncate">${escapeHtml(k)}</span><span class="shrink-0 ml-2">${(sz / 1024).toFixed(1)}KB <button class="text-rose-500 ml-1 cursor-pointer" onclick="delKey('${escapeHtml(k)}')"><i class="fa-solid fa-trash-can"></i></button></span></div>`; }).join('');
+            storeTotal.textContent = `(${(total / 1024).toFixed(1)}KB)`;
+            logOut.textContent = _logs.join('\n') || '(chưa có log)'; logOut.scrollTop = logOut.scrollHeight;
+        }
+        function delKey(k) { if (k === 'devToken') return devLogout(); localStorage.removeItem(k); renderDebug(); }
+        function clearLogs() { _logs.length = 0; renderDebug(); }
+        function copyLogs() { navigator.clipboard && navigator.clipboard.writeText(_logs.join('\n')).then(() => showToast('Đã copy log', 'success')); }
+        async function hardReload() {
+            try { (await caches.keys()).forEach(k => caches.delete(k)); (await navigator.serviceWorker.getRegistrations()).forEach(r => r.unregister()); } catch (e) {}
+            location.href = location.pathname + '?v=' + Date.now();
+        }
+        document.addEventListener('dblclick', e => {
+            if (window.__fx && __fx.cfg.clickShot && !e.target.closest('a,button,input,label,select,#dev-panel-modal')) for (let i = 0; i < 3; i++) setTimeout(__fx.spawn, i * 120);
+        });
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'f' && !document.getElementById('devPanelBtnContainer').classList.contains('hidden')) { e.preventDefault(); setUi('fps', !uiCfg.fps); }
+        });
+
+        // ===== Dev v2: preset, REPL trên điện thoại, báo cáo lỗi, phím tắt =====
+        let _lt = 0; try { new PerformanceObserver(l => { _lt += l.getEntries().length; }).observe({ entryTypes: ['longtask'] }); } catch (e) {}
+        const FX_PRESETS = { eco: { quality: 'lite', density: .5, freq: 3, nebula: false, speed: .8 }, balanced: { quality: 'auto', density: 1, freq: 5, nebula: true, speed: 1 }, max: { quality: 'high', density: 1.6, freq: 8, nebula: true, speed: 1.2 } };
+        function applyPreset(n) { Object.assign(__fx.cfg, FX_PRESETS[n]); __fx.save(); openDevPanel(); showToast('Đã áp dụng cấu hình hiệu ứng', 'success'); }
+        function runRepl() {
+            const i = document.getElementById('replIn'), c = i.value.trim(); if (!c) return;
+            console.log('> ' + c);
+            try { const r = (0, eval)(c); console.log('← ' + (r !== null && typeof r === 'object' ? JSON.stringify(r) : String(r))); } catch (e) { console.error(e); }
+            i.value = ''; renderDebug();
+        }
+        function copyReport() {
+            renderDebug();
+            const t = ['# Bakhi bug report', new Date().toISOString(), sysInfo.innerText, 'FX ' + JSON.stringify(__fx.cfg), 'UI ' + JSON.stringify(uiCfg), '', '## Console', ..._logs].join('\n');
+            navigator.clipboard && navigator.clipboard.writeText(t).then(() => showToast('Đã copy báo cáo lỗi', 'success'));
+        }
+        let _allOpen = false;
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && e.target.id === 'replIn') return runRepl();
+            if (!e.ctrlKey || !e.shiftKey || document.getElementById('devPanelBtnContainer').classList.contains('hidden')) return;
+            const k = e.key.toLowerCase();
+            if (k === 'm') { e.preventDefault(); __fx.shot(); }
+            if (k === 'e') { e.preventDefault(); expandAll(_allOpen = !_allOpen); }
+        });
     </script>
 </body>
 </html>
