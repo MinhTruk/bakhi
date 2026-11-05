@@ -4,6 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Quản Lý Tài Liệu & Ôn Tập - MinhTruk/bakhi</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236366f1'/><stop offset='1' stop-color='%23a855f7'/></linearGradient></defs><rect width='64' height='64' rx='16' fill='url(%23g)'/><path d='M14 22a4 4 0 0 1 4-4h9l4 5h15a4 4 0 0 1 4 4v19a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4z' fill='%23fff'/></svg>">
+    <script>
+/* BKT-START : hiệu ứng bàn tay kéo khi đổi trang (dùng chung cho mọi trang con) */
+(function(){
+if(window.__bkt)return;
+var D=document,R=D.documentElement,ls=function(k,v){try{return v===undefined?localStorage.getItem(k):localStorage.setItem(k,v)}catch(e){}},
+cfg=Object.assign({on:true,style:'hand',speed:1},(function(){try{return JSON.parse(ls('bktCfg'))||{}}catch(e){return{}}})()),
+reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,last='L',
+HAND='<svg viewBox="0 0 130 120" width="120" height="110"><g stroke="#1e1b4b" stroke-width="5" stroke-linejoin="round" fill="#fff"><rect x="4" y="22" width="60" height="16" rx="8"/><rect x="2" y="42" width="66" height="16" rx="8"/><rect x="4" y="62" width="62" height="16" rx="8"/><rect x="8" y="82" width="52" height="15" rx="7.5"/><rect x="40" y="18" width="56" height="84" rx="26"/><rect x="96" y="30" width="30" height="60" rx="8" fill="#6366f1"/></g></svg>',
+WAVE='<svg viewBox="0 0 70 100" preserveAspectRatio="none"><path d="M70 0C30 8 10 12 28 24S60 40 30 52 10 70 32 80 50 94 70 100Z" fill="#4338ca"/></svg>',
+st=D.createElement('style'),o=D.createElement('div');
+st.textContent='#bkt{position:fixed;inset:0;z-index:2147483000;display:none;overflow:hidden;cursor:progress}#bkt.r .w{transform:scaleX(-1)}#bkt .w,#bkt .p{position:absolute;inset:0}#bkt .p{background:linear-gradient(90deg,#4338ca,#7c3aed 55%,#a855f7)}#bkt .p:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 2px,transparent 2px 36px)}#bkt .e{position:absolute;top:0;bottom:0;left:-69px;width:70px}#bkt .e svg{width:100%;height:100%;display:block}#bkt .h{position:absolute;top:50%;left:-110px;margin-top:-55px;z-index:2;filter:drop-shadow(0 8px 10px rgba(0,0,0,.35))}#bkt.in .h{left:14%}#bkt .t{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:600 1.15rem Lexend,system-ui,sans-serif;text-shadow:0 2px 12px rgba(0,0,0,.35);pointer-events:none}';
+o.id='bkt';o.innerHTML='<div class="w"><div class="p"><div class="e">'+WAVE+'</div><div class="h">'+HAND+'</div></div></div><div class="t"></div>';
+function mount(){if(!o.parentNode)R.appendChild(o);if(!st.parentNode)(D.head||R).appendChild(st)}
+function look(){var on=cfg.style==='hand';o.querySelector('.h').style.display=o.querySelector('.e').style.display=on?'':'none'}
+function play(d,ph,label){mount();last=d;var out=ph==='out',s=cfg.style,ms=(s==='hand'?750:550)*cfg.speed;
+ o.className=(d==='R'?'r ':'')+(out?'in':'');o.style.display='block';look();
+ var p=o.querySelector('.p'),h=o.querySelector('.h');o.querySelector('.t').textContent=out?'':(label||'');
+ var F=s==='hand'?[{transform:'translateX(0)'},{transform:'translateX(calc(-100% - 160px))'}]:s==='iris'?[{clipPath:'circle(75% at 50% 50%)'},{clipPath:'circle(0% at 50% 50%)'}]:[{opacity:1},{opacity:0}];
+ var K=out?F:[s==='hand'?{transform:'translateX(calc(100% + 160px))'}:F[1],F[0]];
+ var w=s==='hand'?h.animate([{transform:'rotate(-9deg) translateY(-10px)'},{transform:'rotate(9deg) translateY(10px)'}],{duration:240*cfg.speed,iterations:1/0,direction:'alternate',easing:'ease-in-out'}):null;
+ var a=p.animate(K,{duration:ms,easing:out?'cubic-bezier(.55,0,.9,.45)':'cubic-bezier(.25,.8,.25,1)',fill:'forwards'});
+ return a.finished.then(function(){w&&w.cancel();if(out){o.style.display='none';a.cancel()}},function(){})}
+function go(u,l,d){if(!cfg.on||reduce){location.href=u;return}var done=0,f=function(){if(done++)return;try{sessionStorage.setItem('bktF',JSON.stringify({d:d,t:Date.now()}))}catch(e){}location.href=u};play(d,'in',l).then(f);setTimeout(f,1800*cfg.speed+400)}
+var F0=null;try{F0=JSON.parse(sessionStorage.getItem('bktF'));sessionStorage.removeItem('bktF')}catch(e){}
+var nv=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];
+if(!reduce&&cfg.on&&((F0&&Date.now()-F0.t<15000)||(nv&&nv.type==='back_forward'))){var d0=F0?F0.d:'R';mount();o.className=(d0==='R'?'r ':'')+'in';o.style.display='block';look();
+ var fire=function(){setTimeout(function(){play(d0,'out')},150)};D.readyState==='complete'?fire():addEventListener('load',fire);
+ setTimeout(function(){o.style.display==='block'&&!o.getAnimations({subtree:true}).length&&play(d0,'out')},5000)}
+addEventListener('pageshow',function(e){if(e.persisted&&o.style.display==='block')play(last,'out')});
+D.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(!a||e.defaultPrevented||e.button||e.ctrlKey||e.metaKey||e.shiftKey||a.target==='_blank'||a.hasAttribute('download')||window.__bktOff||!cfg.on||reduce)return;
+ var u;try{u=new URL(a.href,location.href)}catch(x){return}
+ if(u.origin!==location.origin||/^(mailto|tel|javascript)/.test(a.getAttribute('href'))||(u.pathname===location.pathname&&u.search===location.search))return;
+ e.preventDefault();var home=/\/(index\.html)?$/.test(u.pathname),nm=a.querySelector('.truncate,.font-bold');
+ go(u.href,home?'Trang chủ':((nm||a).textContent||'').trim().split('\n')[0],home?'R':'L')},true);
+window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify(cfg))},test:function(d){d=d||'L';play(d,'in','Thử chuyển trang').then(function(){setTimeout(function(){play(d,'out')},500)})}};
+})();
+/* BKT-END */
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -162,9 +201,13 @@
         .bgm-mini { width: 1.9rem; height: 1.9rem; flex-shrink: 0; border-radius: .6rem; display: grid; place-items: center; font-size: .75rem; cursor: pointer; background: rgba(99,102,241,.15); color: #6366f1; transition: transform .15s, background .2s; }
         .bgm-mini:active { transform: scale(.88); }
         .bgm-mini.off { background: rgba(244,63,94,.15); color: #f43f5e; }
+        .dv-freeze *, .dv-freeze *::before, .dv-freeze *::after { animation-play-state: paused !important; transition: none !important; }
+        html.dv-gray { filter: grayscale(1); }
+        body.dv-grid::after { content: ''; position: fixed; inset: 0; z-index: 9990; pointer-events: none; background: linear-gradient(rgba(244,63,94,.14) 1px, transparent 1px) 0 0/8px 8px, linear-gradient(90deg, rgba(244,63,94,.14) 1px, transparent 1px) 0 0/8px 8px; }
+        .logo-glow { cursor: pointer; }
     </style>
 </head>
-<body id="pageBody" class="nocopy bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative transition-colors duration-300">
+<body id="pageBody" class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative transition-colors duration-300">
 
     <!-- Lớp phủ nền tùy chỉnh -->
     <div id="bgImage" class="fixed inset-0 bg-cover bg-center z-0 pointer-events-none"></div>
@@ -568,6 +611,8 @@
                     <button class="dv-tab" data-tab="data" onclick="switchDevTab('data')"><i class="fa-solid fa-database mr-1.5"></i>Dữ liệu</button>
                     <button class="dv-tab" data-tab="ui" onclick="switchDevTab('ui')"><i class="fa-solid fa-palette mr-1.5"></i>Giao diện</button>
                     <button class="dv-tab" data-tab="debug" onclick="switchDevTab('debug')"><i class="fa-solid fa-bug mr-1.5"></i>Debug</button>
+                    <button class="dv-tab" data-tab="anim" onclick="switchDevTab('anim')"><i class="fa-solid fa-film mr-1.5"></i>Animation</button>
+                    <button class="dv-tab" data-tab="adv" onclick="switchDevTab('adv')"><i class="fa-solid fa-rocket mr-1.5"></i>Nâng cao</button>
                 </div>
                 <div class="p-5 overflow-y-auto flex-grow bg-slate-50 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300">
                     <div class="dv-pane" data-pane="fx">
@@ -589,7 +634,7 @@
                         <div class="flex flex-wrap gap-2 mb-4"><button class="dv-btn alt" onclick="expandAll(true)">Mở tất cả thư mục</button><button class="dv-btn alt" onclick="expandAll(false)">Đóng tất cả</button></div>
                         <button class="dv-btn" onclick="scanLinks()" id="scanBtn"><i class="fa-solid fa-link-slash mr-1"></i>Quét link hỏng</button>
                         <div id="scanOut" class="mt-3 text-xs space-y-1 max-h-48 overflow-y-auto"></div>
-                        <p class="text-[11px] mt-4 opacity-70 leading-relaxed">Phím tắt: <kbd>Ctrl+Shift+D</kbd> mở bảng · <kbd>Ctrl+Shift+F</kbd> đồng hồ FPS · <kbd>Ctrl+Shift+M</kbd> sao băng nổ · <kbd>Ctrl+Shift+E</kbd> mở/đóng mọi thư mục</p>
+                        <p class="text-[11px] mt-4 opacity-70 leading-relaxed">Phím tắt: <kbd>Ctrl+Shift+D</kbd> mở bảng · <kbd>Ctrl+Shift+F</kbd> đồng hồ FPS · <kbd>Ctrl+Shift+M</kbd> sao băng nổ · <kbd>Ctrl+Shift+E</kbd> mở/đóng mọi thư mục · <kbd>Ctrl+K</kbd> command palette</p>
                     </div>
                     <div class="dv-pane hidden" data-pane="ui">
                         <label class="dv-row"><span>Cỡ chữ <b id="uiFontVal"></b></span><input type="range" min="80" max="130" step="5" id="uiFont" oninput="setUi('font',+this.value)" class="w-40 accent-indigo-600"></label>
@@ -613,6 +658,21 @@
                         <div class="flex items-center justify-between mb-1"><span class="text-xs font-semibold">Console</span><span class="space-x-1"><button class="dv-btn alt" onclick="copyLogs()">Copy</button><button class="dv-btn alt" onclick="clearLogs()">Xóa</button></span></div>
                         <pre id="logOut" class="text-[10px] font-mono p-2 rounded-xl bg-slate-950 text-slate-200 h-36 overflow-auto whitespace-pre-wrap"></pre>
                         <div class="flex gap-1.5 mt-2"><input id="replIn" placeholder="Chạy JS: subjects, __fx.cfg ..." class="flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-slate-950 text-emerald-300 font-mono text-[11px] outline-none" autocapitalize="off" autocomplete="off" spellcheck="false"><button class="dv-btn" onclick="runRepl()">Chạy</button><button class="dv-btn alt" onclick="copyReport()">Báo cáo</button></div>
+                    </div>
+                    <div class="dv-pane hidden" data-pane="anim">
+                        <div class="flex items-center gap-3 mb-3"><div id="favPrev" class="w-12 h-12 rounded-xl bg-slate-500/10 grid place-items-center overflow-hidden shrink-0"></div><span class="text-[11px] opacity-70">Logo trên tab trình duyệt (favicon): tự chạy một animation ngẫu nhiên mỗi lần vào tab, và lặp khi bạn rời tab.</span></div>
+                        <label class="dv-row"><span>Animation favicon</span><select id="favMode" onchange="setFav('mode',this.value)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"></select></label>
+                        <label class="dv-row"><span>Bật animation favicon</span><input type="checkbox" id="favOn" class="accent-indigo-600 w-4 h-4" onchange="setFav('on',this.checked)"></label>
+                        <label class="dv-row"><span>Đổi tiêu đề khi rời tab</span><input type="checkbox" id="favTitle" class="accent-indigo-600 w-4 h-4" onchange="setFav('title',this.checked)"></label>
+                        <label class="dv-row"><span>Hiệu ứng chuyển trang</span><select id="bktStyle" onchange="setBkt('style',this.value)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"><option value="hand">Bàn tay kéo</option><option value="iris">Mở vòng tròn</option><option value="fade">Mờ dần</option></select></label>
+                        <label class="dv-row"><span>Bật chuyển trang</span><input type="checkbox" id="bktOn" class="accent-indigo-600 w-4 h-4" onchange="setBkt('on',this.checked)"></label>
+                        <label class="dv-row"><span>Thời lượng ×<b id="bktSpV"></b></span><input type="range" min=".5" max="3" step=".25" id="bktSp" oninput="setBkt('speed',+this.value)" class="w-40 accent-indigo-600"></label>
+                        <div class="flex flex-wrap gap-2 pt-3"><button class="dv-btn" onclick="__fav.play()">Thử favicon</button><button class="dv-btn alt" onclick="__bkt.test('L')">Chuyển trang →</button><button class="dv-btn alt" onclick="__bkt.test('R')">← Quay về</button><button class="dv-btn alt" onclick="logoAnim()">Logo header</button></div>
+                    </div>
+                    <div class="dv-pane hidden" data-pane="adv">
+                        <div id="advList"></div>
+                        <div id="vitals" class="text-[11px] font-mono p-3 rounded-xl bg-slate-500/10 mt-3 leading-relaxed break-all"></div>
+                        <div class="flex flex-wrap gap-2 pt-3"><button class="dv-btn" onclick="vitals()">Làm mới Vitals</button><button class="dv-btn alt" onclick="copyHtml()">Copy HTML trang</button><button class="dv-btn alt" onclick="palette()">Command palette</button></div>
                     </div>
                     <div class="dv-pane hidden" data-pane="data">
                         <div class="flex flex-wrap gap-2">
@@ -878,7 +938,7 @@
             return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
         }
         function setDevUI(on) {
-            guardOn = !on; document.body.classList.toggle('nocopy', !on);
+            guardOn = !on;
             document.getElementById('devCodeSection').classList.toggle('hidden', on);
             document.getElementById('devPanelBtnContainer').classList.toggle('hidden', !on);
         }
@@ -1311,7 +1371,7 @@
         function switchDevTab(t) {
             document.querySelectorAll('.dv-tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
             document.querySelectorAll('.dv-pane').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== t));
-            if (t === 'tools') refreshDevStats(); if (t === 'debug') renderDebug(); if (t === 'ui') loadUiPane();
+            if (t === 'tools') refreshDevStats(); if (t === 'debug') renderDebug(); if (t === 'ui') loadUiPane(); if (t === 'anim') loadAnim(); if (t === 'adv') buildAdv();
         }
         function setFx(k, v) { __fx.cfg[k] = v; __fx.save(); }
         function resetFx() { Object.assign(__fx.cfg, __fx.DEF); __fx.save(); openDevPanel(); showToast('Đã đặt lại hiệu ứng', 'success'); }
@@ -1487,11 +1547,11 @@
         // ===== Chống copy (Developer đã đăng nhập thì được miễn) =====
         let guardOn = true;
         const inField = e => e.target.closest && e.target.closest('input,textarea');
-        ['copy', 'cut', 'contextmenu', 'dragstart', 'selectstart'].forEach(n => document.addEventListener(n, e => { if (guardOn && !inField(e)) e.preventDefault(); }));
+        ['contextmenu', 'dragstart'].forEach(n => document.addEventListener(n, e => { if (guardOn && !inField(e)) e.preventDefault(); }));
         document.addEventListener('keydown', e => {
             if (!guardOn) return;
             const k = e.key.toLowerCase(), m = e.ctrlKey || e.metaKey;
-            if (e.key === 'F12' || (m && (['u', 's', 'p'].includes(k) || (e.shiftKey && ['i', 'j', 'c'].includes(k)))) || (m && ['c', 'x', 'a'].includes(k) && !inField(e))) { e.preventDefault(); showToast('Nội dung được bảo vệ', 'error'); }
+            if (e.key === 'F12' || (m && (['u', 's', 'p'].includes(k) || (e.shiftKey && ['i', 'j', 'c'].includes(k))))) { e.preventDefault(); showToast('Nội dung được bảo vệ', 'error'); }
         }, true);
 
         // ===== Theme music =====
@@ -1521,6 +1581,108 @@
         ['pointerup', 'change'].forEach(n => $b('bgmSeek').addEventListener(n, () => { bgmSeeking = false; }));
         document.addEventListener('click', e => { const p = $b('bgmPanel'); if (p.classList.contains('open') && !p.contains(e.target) && !$b('bgmBtn').contains(e.target)) p.classList.remove('open'); });
         bgmUi();
+
+        // ===== Favicon động: 10 kiểu animation, chạy khi vào tab và lặp khi rời tab =====
+        (function () {
+            const cv = document.createElement('canvas'); cv.width = cv.height = 64; cv.style.cssText = 'width:44px;height:44px';
+            const c = cv.getContext('2d'), link = document.querySelector('link[rel=icon]'), M = Math, S = M.sin, C = M.cos, PI = M.PI;
+            const BG = new Path2D('M16 4h32a12 12 0 0 1 12 12v32a12 12 0 0 1-12 12H16A12 12 0 0 1 4 48V16A12 12 0 0 1 16 4z'), FD = new Path2D('M14 22a4 4 0 0 1 4-4h9l4 5h15a4 4 0 0 1 4 4v19a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4z');
+            const cf = Object.assign({ on: true, mode: 'auto', title: true }, (() => { try { return JSON.parse(localStorage.getItem('favCfg')) || {}; } catch (e) { return {}; } })());
+            const A = { spin: t => ({ sx: C(t * PI * 4) }), bounce: t => ({ dy: -M.abs(S(t * PI * 3)) * 14 * (1 - t) }), pulse: t => ({ s: 1 + .16 * S(t * PI * 6) }), shake: t => ({ r: S(t * PI * 14) * .35 * (1 - t) }),
+                rainbow: t => ({ h: t * 720 }), heartbeat: t => ({ s: 1 + .2 * M.pow(M.max(0, S(t * PI * 8)), 3) }), flip: t => ({ sy: C(t * PI * 2) }), orbit: t => ({ o: t * PI * 4 }),
+                pop: t => ({ s: t < .2 ? t * 5 : 1 + .12 * S((t - .2) * 25) * (1 - t) }), glitch: t => ({ dx: (M.random() - .5) * 10 * (1 - t), h: (M.random() - .5) * 160 }) };
+            function draw(o) {
+                o = o || {}; c.clearRect(0, 0, 64, 64); c.save(); c.translate(32 + (o.dx || 0), 32 + (o.dy || 0)); c.rotate(o.r || 0);
+                c.scale((o.sx == null ? 1 : o.sx) * (o.s || 1), (o.sy == null ? 1 : o.sy) * (o.s || 1)); c.translate(-32, -32);
+                const g = c.createLinearGradient(4, 4, 60, 60), h = o.h || 0; g.addColorStop(0, 'hsl(' + (239 + h) + ',84%,67%)'); g.addColorStop(1, 'hsl(' + (271 + h) + ',91%,62%)');
+                c.fillStyle = g; c.fill(BG); c.fillStyle = '#fff'; c.fill(FD); c.restore();
+                if (o.o != null) for (let i = 0; i < 3; i++) { const a = o.o + i * 2.09; c.fillStyle = ['#fde047', '#38bdf8', '#f472b6'][i]; c.beginPath(); c.arc(32 + 26 * C(a), 32 + 26 * S(a), 6, 0, 7); c.fill(); }
+                link.type = 'image/png'; link.href = cv.toDataURL('image/png');
+            }
+            const names = Object.keys(A); let tm;
+            function play(n) {
+                clearInterval(tm); if (!cf.on) { draw(); return; }
+                n = n && A[n] ? n : (A[cf.mode] ? cf.mode : names[M.random() * names.length | 0]); const t0 = performance.now();
+                tm = setInterval(() => { const t = (performance.now() - t0) / 2400; if (t >= 1) { clearInterval(tm); draw(); if (document.hidden) setTimeout(() => document.hidden && play(), 600); return; } draw(A[n](t)); }, 80);
+            }
+            const T0 = document.title; let tt;
+            document.addEventListener('visibilitychange', () => {
+                clearInterval(tt);
+                if (document.hidden) { if (cf.title) { let f = 0; const L = ['👋 Quay lại nhé!', '📚 Ôn bài thôi nào', '✨ Bakhi nhớ bạn']; tt = setInterval(() => { document.title = f % 2 ? T0 : L[(f >> 1) % 3]; f++; }, 1500); } }
+                else document.title = T0;
+                play();
+            });
+            window.__fav = { cf, cv, names, play };
+            draw(); play();
+        })();
+
+        // ===== Logo header: nhiều animation ngẫu nhiên =====
+        const LK = [[{ transform: 'rotate(-360deg) scale(0)' }, { transform: 'none' }], [{ transform: 'translateY(-60px)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], [{ transform: 'rotateY(360deg)' }, { transform: 'none' }],
+            [{ transform: 'scale(1.8)', filter: 'hue-rotate(180deg)' }, { transform: 'none', filter: 'none' }], [{ transform: 'rotate(-25deg)' }, { transform: 'rotate(18deg)' }, { transform: 'rotate(-10deg)' }, { transform: 'none' }], [{ transform: 'scale(0) rotate(180deg)' }, { transform: 'scale(1.3)' }, { transform: 'none' }]];
+        function logoAnim() { const l = document.querySelector('.logo-glow'); if (l && !matchMedia('(prefers-reduced-motion:reduce)').matches) l.animate(LK[Math.random() * LK.length | 0], { duration: 900, easing: 'cubic-bezier(.34,1.56,.64,1)' }); }
+        document.querySelector('.logo-glow').addEventListener('click', logoAnim); logoAnim();
+
+        // ===== Developer v3: Animation, Inspector, Vitals, Command palette =====
+        function loadAnim() {
+            const f = __fav.cf, b = __bkt.cfg;
+            favMode.innerHTML = '<option value="auto">Ngẫu nhiên</option>' + __fav.names.map(n => `<option value="${n}">${n}</option>`).join('');
+            favMode.value = f.mode; favOn.checked = f.on; favTitle.checked = f.title; bktStyle.value = b.style; bktOn.checked = b.on; bktSp.value = b.speed; bktSpV.textContent = b.speed;
+            document.getElementById('favPrev').appendChild(__fav.cv);
+        }
+        function setFav(k, v) { __fav.cf[k] = v; localStorage.setItem('favCfg', JSON.stringify(__fav.cf)); __fav.play(); }
+        function setBkt(k, v) { __bkt.cfg[k] = v; __bkt.save(); bktSpV.textContent = __bkt.cfg.speed; }
+        const ADV = [['inspect', 'Inspector phần tử (click = copy selector)'], ['bp', 'Badge breakpoint & kích thước'], ['freeze', 'Đóng băng mọi animation'], ['slow', 'Slow-mo animation 0.25×'], ['gray', 'Thang xám (test tương phản)'], ['grid', 'Lưới 8px'], ['rtl', 'Bố cục RTL']];
+        const advOn = {}; let advTm, inspBox, bpEl;
+        const bpUp = () => { if (bpEl) bpEl.textContent = ['base', 'sm', 'md', 'lg', 'xl', '2xl'][[0, 640, 768, 1024, 1280, 1536].filter(x => innerWidth >= x).length - 1] + ' · ' + innerWidth + '×' + innerHeight; };
+        addEventListener('resize', bpUp);
+        function setAdv(k, v) {
+            advOn[k] = v; const R = document.documentElement;
+            if (k === 'freeze') R.classList.toggle('dv-freeze', v); if (k === 'gray') R.classList.toggle('dv-gray', v);
+            if (k === 'grid') document.body.classList.toggle('dv-grid', v); if (k === 'rtl') R.dir = v ? 'rtl' : 'ltr';
+            if (k === 'slow') { clearInterval(advTm); const f = () => document.getAnimations().forEach(a => a.playbackRate = v ? .25 : 1); f(); if (v) advTm = setInterval(f, 300); }
+            if (k === 'bp') { if (bpEl) { bpEl.remove(); bpEl = null; } if (v) { bpEl = Object.assign(document.createElement('div'), { className: 'fps-meter' }); bpEl.style.cssText = 'left:auto;right:8px;bottom:5rem;color:#fde68a'; document.body.appendChild(bpEl); bpUp(); } }
+            if (k === 'inspect') { window.__bktOff = v; if (!v && inspBox) inspBox.style.display = 'none'; }
+        }
+        function buildAdv() {
+            advList.innerHTML = ADV.map(([k, l]) => `<label class="dv-row"><span>${l}</span><input type="checkbox" class="accent-indigo-600 w-4 h-4" ${advOn[k] ? 'checked' : ''} onchange="setAdv('${k}',this.checked)"></label>`).join(''); vitals();
+        }
+        const selOf = el => { const t = el.tagName.toLowerCase(); if (el.id) return t + '#' + el.id; const c = [...el.classList].slice(0, 2); return t + (c.length ? '.' + c.join('.') : ''); };
+        document.addEventListener('pointermove', e => {
+            if (!advOn.inspect) return; const el = e.target;
+            if (!inspBox) { inspBox = document.createElement('div'); inspBox.style.cssText = 'position:fixed;z-index:9995;pointer-events:none;border:2px solid #f43f5e;background:rgba(244,63,94,.12);font:600 10px monospace;color:#fff'; inspBox.innerHTML = '<span style="position:absolute;top:-18px;left:-2px;background:#f43f5e;padding:1px 5px;white-space:nowrap"></span>'; document.body.appendChild(inspBox); }
+            if (el.closest('#dev-panel-modal')) { inspBox.style.display = 'none'; return; }
+            const r = el.getBoundingClientRect(); Object.assign(inspBox.style, { display: 'block', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+            inspBox.firstChild.textContent = selOf(el) + ' ' + Math.round(r.width) + '×' + Math.round(r.height);
+        }, { passive: true });
+        document.addEventListener('click', e => {
+            if (!advOn.inspect || e.target.closest('#dev-panel-modal')) return; e.preventDefault(); e.stopPropagation();
+            navigator.clipboard && navigator.clipboard.writeText(selOf(e.target)).then(() => showToast('Đã copy: ' + selOf(e.target), 'success'));
+        }, true);
+        const vt = { lcp: 0, cls: 0, fcp: 0 };
+        try {
+            new PerformanceObserver(l => { const e = l.getEntries(); vt.lcp = e[e.length - 1].startTime; }).observe({ type: 'largest-contentful-paint', buffered: true });
+            new PerformanceObserver(l => l.getEntries().forEach(e => { if (!e.hadRecentInput) vt.cls += e.value; })).observe({ type: 'layout-shift', buffered: true });
+            new PerformanceObserver(l => l.getEntries().forEach(e => { if (e.name === 'first-contentful-paint') vt.fcp = e.startTime; })).observe({ type: 'paint', buffered: true });
+        } catch (e) {}
+        function vitals() {
+            const n = performance.getEntriesByType('navigation')[0], rs = performance.getEntriesByType('resource').sort((a, b) => (b.transferSize || 0) - (a.transferSize || 0)), tot = rs.reduce((s, r) => s + (r.transferSize || 0), 0);
+            document.getElementById('vitals').innerHTML = `FCP ${vt.fcp | 0}ms · LCP ${vt.lcp | 0}ms · CLS ${vt.cls.toFixed(3)}<br>TTFB ${n ? n.responseStart | 0 : '?'}ms · ${rs.length} tài nguyên · ${(tot / 1024).toFixed(0)}KB<br>` + rs.slice(0, 5).map(r => `${((r.transferSize || 0) / 1024).toFixed(0)}KB ${escapeHtml(r.name.split('/').pop().split('?')[0] || r.name)}`).join('<br>');
+        }
+        function copyHtml() { navigator.clipboard && navigator.clipboard.writeText('<!DOCTYPE html>\n' + document.documentElement.outerHTML).then(() => showToast('Đã copy HTML trang', 'success')); }
+        const CMDS = () => [['Mở/đóng mọi thư mục', () => expandAll(_allOpen = !_allOpen)], ['Sao băng nổ', () => __fx.shot()], ['Thử animation favicon', () => __fav.play()], ['Thử chuyển trang (bàn tay)', () => __bkt.test('L')], ['Animation logo header', logoAnim],
+            ['Đổi giao diện sáng/tối', () => toggleDarkMode()], ['Quét link hỏng', () => { openDevPanel(); switchDevTab('tools'); scanLinks(); }], ['Bật/tắt đồng hồ FPS', () => setUi('fps', !uiCfg.fps)], ['Bật/tắt Inspector', () => setAdv('inspect', !advOn.inspect)],
+            ['Copy HTML trang', copyHtml], ['Xóa cache & tải lại', hardReload], ['Mở bảng điều khiển Developer', openDevPanel]];
+        function palette() {
+            closeDevPanel(); let p = document.getElementById('pal'); if (p) { p.remove(); return; }
+            p = document.createElement('div'); p.id = 'pal'; p.className = 'fixed inset-0 z-[9996] bg-slate-950/70 flex items-start justify-center pt-24 px-4';
+            p.innerHTML = '<div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"><input class="w-full px-4 py-3 bg-transparent outline-none text-sm" placeholder="Gõ lệnh..."><div class="max-h-64 overflow-y-auto text-xs"></div></div>';
+            document.body.appendChild(p); const i = p.querySelector('input'), l = p.querySelector('.max-h-64'), run = f => { p.remove(); f(); };
+            const rd = () => { const q = i.value.toLowerCase(), m = CMDS().filter(c => c[0].toLowerCase().includes(q)); l.innerHTML = ''; m.forEach((c, n) => { const b = document.createElement('button'); b.className = 'w-full text-left px-4 py-2 hover:bg-indigo-500/15 ' + (n ? '' : 'bg-indigo-500/10'); b.textContent = c[0]; b.onclick = () => run(c[1]); l.appendChild(b); }); l._m = m; };
+            i.oninput = rd; rd(); i.focus(); i.onkeydown = e => { if (e.key === 'Escape') p.remove(); if (e.key === 'Enter' && l._m[0]) run(l._m[0][1]); }; p.onclick = e => { if (e.target === p) p.remove(); };
+        }
+        document.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && !document.getElementById('devPanelBtnContainer').classList.contains('hidden')) { e.preventDefault(); palette(); }
+        });
     </script>
 </body>
 </html>
