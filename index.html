@@ -674,7 +674,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                         <div id="storeList" class="text-[11px] mb-3 max-h-32 overflow-y-auto"></div>
                         <div class="flex items-center justify-between mb-1"><span class="text-xs font-semibold">Console</span><span class="space-x-1"><button class="dv-btn alt" onclick="copyLogs()">Copy</button><button class="dv-btn alt" onclick="clearLogs()">Xóa</button></span></div>
                         <pre id="logOut" class="text-[10px] font-mono p-2 rounded-xl bg-slate-950 text-slate-200 h-36 overflow-auto whitespace-pre-wrap"></pre>
-                        <div class="flex gap-1.5 mt-2"><input id="replIn" placeholder="Chạy JS: subjects, __fx.cfg ..." class="flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-slate-950 text-emerald-300 font-mono text-[11px] outline-none" autocapitalize="off" autocomplete="off" spellcheck="false"><button class="dv-btn" onclick="runRepl()">Chạy</button><button class="dv-btn alt" onclick="copyReport()">Báo cáo</button></div>
+                        <div class="flex flex-wrap items-center gap-2 mt-2 text-[11px]"><label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="replOn" class="accent-indigo-600" onchange="toggleRepl(this.checked)">Bật REPL (chạy JS tùy ý)</label><button class="dv-btn alt" onclick="clearReplHist()">Xóa lịch sử lệnh</button><button class="dv-btn alt" onclick="exportErrors()">Xuất lỗi JSON</button><button class="dv-btn alt" onclick="clearErrors()">Xóa lỗi đã lưu</button></div><div class="flex gap-1.5 mt-2"><input id="replIn" disabled placeholder="Chạy JS: subjects, __fx.cfg ..." class="flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-slate-950 text-emerald-300 font-mono text-[11px] outline-none" autocapitalize="off" autocomplete="off" spellcheck="false"><button class="dv-btn" onclick="runRepl()">Chạy</button><button class="dv-btn alt" onclick="copyReport()">Báo cáo</button></div>
                     </div>
                     <div class="dv-pane hidden" data-pane="anim">
                         <div class="flex items-center gap-3 mb-3"><div id="favPrev" class="w-12 h-12 rounded-xl bg-slate-500/10 grid place-items-center overflow-hidden shrink-0"></div><span class="text-[11px] opacity-70">Logo trên tab trình duyệt (favicon): chuyển màu mượt giữa tím và xanh lá nhạt.</span></div>
@@ -694,9 +694,12 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                             <button class="dv-btn" onclick="exportSettings()"><i class="fa-solid fa-download mr-1"></i>Xuất JSON</button>
                             <label class="dv-btn alt cursor-pointer"><i class="fa-solid fa-upload mr-1"></i>Nhập JSON<input type="file" accept="application/json" class="hidden" onchange="importSettings(event)"></label>
                             <button class="dv-btn" onclick="copyDefaultHighlights()"><i class="fa-solid fa-code mr-1"></i>Copy code defaultHighlights</button>
-                            <button class="dv-btn alt" style="color:#e11d48" onclick="resetAll()"><i class="fa-solid fa-trash mr-1"></i>Reset cài đặt</button>
+                            <button class="dv-btn alt" style="color:#e11d48" onclick="resetAll('ui')">Reset UI</button><button class="dv-btn alt" style="color:#e11d48" onclick="resetAll('dev')">Reset Developer</button><button class="dv-btn alt" style="color:#e11d48" onclick="resetAll('all')"><i class="fa-solid fa-trash mr-1"></i>Reset All</button>
                         </div>
-                        <p class="text-[11px] mt-3 opacity-70 leading-relaxed">Mỗi lần tải trang, highlight được đồng bộ lại từ <code>defaultHighlights</code> trong file. Muốn lưu cấu hình vĩnh viễn cho mọi người: chỉnh ở "Quản lý Highlight", bấm "Copy code" rồi dán đè vào file.</p>
+                        <div class="flex flex-wrap gap-2 mt-2"><button class="dv-btn alt" onclick="syncHighlights()">Đồng bộ highlight từ file</button><button class="dv-btn alt" onclick="makeBackupUi()">Tạo sao lưu</button></div>
+                        <p class="text-[11px] mt-3 opacity-70 leading-relaxed">Highlight bạn chỉnh được giữ qua các lần tải trang; key mới trong <code>defaultHighlights</code> được thêm tự động mà không ghi đè. Muốn áp lại mặc định trong file: "Đồng bộ highlight từ file". Hình nền lưu trong IndexedDB nên không nằm trong Xuất JSON/sao lưu.</p>
+                        <div class="text-xs font-semibold mt-4 mb-1">Sao lưu (tối đa 5 bản gần nhất)</div><div id="bkList" class="text-[11px] space-y-1"></div>
+                        <p class="text-[11px] mt-4 opacity-70 leading-relaxed">Bảo mật: khóa Developer chỉ hạn chế giao diện trên site tĩnh, không phải bảo vệ thật. Muốn bảo vệ thật cần xác thực phía server.</p>
                     </div>
                 </div>
             </div>
@@ -886,10 +889,9 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             let iconClass = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
 
             toast.className = `toast-animate pointer-events-auto px-4 py-3 rounded-xl shadow-xl text-white text-xs font-medium flex items-center space-x-2.5 ${bgClass}`;
-            toast.innerHTML = `
-                <i class="fa-solid ${iconClass} text-sm"></i>
-                <span>${message}</span>
-            `;
+            const ic = document.createElement('i'); ic.className = 'fa-solid ' + iconClass + ' text-sm';
+            const tx = document.createElement('span'); tx.textContent = String(message);
+            toast.append(ic, tx);
 
             container.appendChild(toast);
 
@@ -902,16 +904,32 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         }
 
         // Ép buộc đồng bộ hóa để cập nhật code true/false mới nhất từ file
+        const SCHEMA_VER = 2;
+        const BK_KEYS = ['theme', 'bgOpacity', 'fxCfg', 'uiCfg', 'hiddenSubjects', 'favCfg', 'bktCfg', 'appHighlightsDataMap', 'bgmMuted'];
+        function safeParse(s, d) { try { const v = JSON.parse(s); return v == null ? d : v; } catch (e) { return d; } }
+        function isHlMap(o) { return !!o && typeof o === 'object' && !Array.isArray(o) && Object.values(o).every(v => typeof v === 'boolean'); }
+        function makeBackup(label) {
+            try {
+                const l = safeParse(localStorage.getItem('bakhiBackups'), []), snap = {};
+                BK_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v !== null) snap[k] = v; });
+                l.unshift({ t: Date.now(), label, data: snap });
+                localStorage.setItem('bakhiBackups', JSON.stringify(l.slice(0, 5))); return true;
+            } catch (e) { return false; }
+        }
+        // Giữ dữ liệu người dùng; chỉ THÊM key mới từ defaultHighlights; dữ liệu hỏng -> backup rồi khôi phục mặc định
         function initHighlightsStorage() {
-            localStorage.setItem('appHighlightsDataMap', JSON.stringify(defaultHighlights));
+            try {
+                const raw = localStorage.getItem('appHighlightsDataMap');
+                let cur = raw === null ? null : safeParse(raw, null);
+                if (raw !== null && !isHlMap(cur)) { makeBackup('highlight bị hỏng'); cur = null; }
+                localStorage.setItem('appHighlightsDataMap', JSON.stringify(Object.assign({}, defaultHighlights, cur || {})));
+                localStorage.setItem('bakhiSchema', String(SCHEMA_VER));
+            } catch (e) { console.warn('LocalStorage không khả dụng: ' + e.message); }
         }
 
         function getHighlightsData() {
-            try {
-                return JSON.parse(localStorage.getItem('appHighlightsDataMap')) || defaultHighlights;
-            } catch (e) {
-                return defaultHighlights;
-            }
+            try { const v = JSON.parse(localStorage.getItem('appHighlightsDataMap')); return isHlMap(v) ? v : defaultHighlights; }
+            catch (e) { return defaultHighlights; }
         }
 
         function renderSubjectsTree() {
@@ -946,6 +964,8 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         }
 
         // --- XỬ LÝ DEVELOPER CODE & MODAL QUẢN LÝ ---
+        // LƯU Ý: đây chỉ là khóa GIAO DIỆN cho site tĩnh, KHÔNG phải bảo mật thật (hash nằm trong mã nguồn, token nằm ở localStorage).
+        // Muốn bảo vệ thật phải xác thực phía server. Giới hạn nhập sai được lưu ở localStorage (devLock) với thời gian khóa tăng dần.
         const DEV_SALT = 'bakhi::dev::v1:', DEV_HASH = 'e930b1af1c508f6aed6ad0fd022d4be6de9218f4b4d1249da9cbc4e530779796';
         async function sha256(t) {
             if (!(window.crypto && crypto.subtle)) throw new Error('nocrypto');
@@ -961,17 +981,17 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             localStorage.removeItem('isDevAuthenticated');
             try { setDevUI(localStorage.getItem('devToken') === await sha256(DEV_HASH + ':session')); } catch (e) { setDevUI(false); }
         }
-        let devFails = 0, devLockUntil = 0;
+        const lockGet = () => safeParse(localStorage.getItem('devLock'), { f: 0, u: 0, k: 0 }); const lockSet = o => { try { localStorage.setItem('devLock', JSON.stringify(o)); } catch (e) {} };
         async function verifyDevCode() {
-            if (Date.now() < devLockUntil) { showToast('Thử lại sau ' + Math.ceil((devLockUntil - Date.now()) / 1000) + 's', 'error'); return; }
+            const L = lockGet(); if (Date.now() < L.u) { showToast('Thử lại sau ' + Math.ceil((L.u - Date.now()) / 1000) + 's', 'error'); return; }
             const input = document.getElementById('devCodeInput');
             try {
                 if (await sha256(DEV_SALT + input.value.trim()) === DEV_HASH) {
                     localStorage.setItem('devToken', await sha256(DEV_HASH + ':session'));
-                    devFails = 0; input.value = ''; setDevUI(true);
+                    lockSet({ f: 0, u: 0, k: 0 }); input.value = ''; setDevUI(true);
                     showToast('Xác thực Developer thành công!', 'success');
                 } else {
-                    if (++devFails >= 5) { devLockUntil = Date.now() + 30000; devFails = 0; }
+                    const nf = (L.f || 0) + 1, k = L.k || 0; lockSet(nf >= 5 ? { f: 0, u: Date.now() + 30000 * Math.pow(2, Math.min(5, k)), k: k + 1 } : { f: nf, u: 0, k });
                     showToast('Mã code không chính xác!', 'error');
                 }
             } catch (e) { showToast('Cần mở bằng HTTPS để xác thực', 'error'); }
@@ -1075,8 +1095,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 localStorage.setItem('theme', toDark ? 'dark' : 'light');
                 icon.className = toDark ? 'fa-solid fa-moon text-indigo-500' : 'fa-solid fa-sun text-amber-500';
                 document.getElementById('themeText').innerText = toDark ? 'Đang tối' : 'Đang sáng';
-                const savedBg = localStorage.getItem('customBg');
-                if (savedBg) applyBackground(savedBg, localStorage.getItem('bgOpacity') || '0.88');
+                if (_bgUrl) applyBackground(_bgUrl, localStorage.getItem('bgOpacity') || '0.88');
             };
             // Icon xoay đúng 1 vòng
             if (!reduce) icon.animate([{ transform: 'rotate(0) scale(1)' }, { transform: 'rotate(180deg) scale(1.4)' }, { transform: 'rotate(360deg) scale(1)' }], { duration: 650, easing: 'cubic-bezier(.45,.05,.25,1)' });
@@ -1092,38 +1111,43 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         }
 
         // --- TÍNH NĂNG CUSTOM BACKGROUND ---
-        function initCustomBackground() {
-            const savedBg = localStorage.getItem('customBg');
-            const savedOpacity = localStorage.getItem('bgOpacity') || '0.88';
-            if (savedBg) {
-                applyBackground(savedBg, savedOpacity);
-                document.getElementById('removeBgBtn').classList.remove('hidden');
-                document.getElementById('opacityControl').classList.remove('hidden');
-                document.getElementById('opacityRange').value = savedOpacity;
-            }
+        const idb = (m, k, v) => new Promise((ok, no) => {
+            if (!window.indexedDB) return no(new Error('IndexedDB không khả dụng'));
+            const q = indexedDB.open('bakhi', 1); q.onupgradeneeded = () => q.result.createObjectStore('kv'); q.onerror = () => no(q.error);
+            q.onsuccess = () => { const db = q.result, tx = db.transaction('kv', m === 'get' ? 'readonly' : 'readwrite'), s = tx.objectStore('kv'), r = m === 'get' ? s.get(k) : m === 'set' ? s.put(v, k) : s.delete(k);
+                tx.oncomplete = () => { db.close(); ok(r.result); }; tx.onerror = tx.onabort = () => { db.close(); no(tx.error); }; };
+        });
+        const idbGet = k => idb('get', k), idbSet = (k, v) => idb('set', k, v), idbDel = k => idb('del', k);
+        let _bgUrl = null;
+        function showBgUi(op) { document.getElementById('removeBgBtn').classList.remove('hidden'); document.getElementById('opacityControl').classList.remove('hidden'); document.getElementById('opacityRange').value = op; }
+        function setBgBlob(blob, op) {
+            if (_bgUrl) URL.revokeObjectURL(_bgUrl); _bgUrl = URL.createObjectURL(blob);
+            const t = new Image(); t.onload = () => { applyBackground(_bgUrl, op); showBgUi(op); };
+            t.onerror = () => { showToast('Không tải được hình nền, dùng nền mặc định', 'error'); removeCustomBackground(); };
+            t.src = _bgUrl;
+        }
+        async function initCustomBackground() {
+            const op = localStorage.getItem('bgOpacity') || '0.88', legacy = localStorage.getItem('customBg');
+            try {
+                let blob = await idbGet('bg');
+                if (!blob && legacy) { blob = await (await fetch(legacy)).blob(); await idbSet('bg', blob); localStorage.removeItem('customBg'); } // migration từ localStorage
+                if (blob) setBgBlob(blob, op);
+            } catch (e) { if (legacy) { applyBackground(legacy, op); showBgUi(op); } }
         }
 
         function handleCustomBackground(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            // Nén ảnh (tối đa 1920px, JPEG 0.8) để nhẹ localStorage & render mượt hơn
-            const img = new Image();
-            const url = URL.createObjectURL(file);
+            const file = event.target.files[0]; if (!file) return;
+            const img = new Image(), url = URL.createObjectURL(file);
+            img.onerror = () => { URL.revokeObjectURL(url); showToast('Không đọc được ảnh này', 'error'); };
             img.onload = () => {
-                const k = Math.min(1, 1920 / Math.max(img.width, img.height));
-                const c = document.createElement('canvas');
+                const k = Math.min(1, 1920 / Math.max(img.width, img.height)), c = document.createElement('canvas');
                 c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-                c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-                URL.revokeObjectURL(url);
-                const data = c.toDataURL('image/jpeg', 0.8);
-                try {
-                    localStorage.setItem('customBg', data);
-                    localStorage.setItem('bgOpacity', '0.88');
-                } catch (e) { showToast('Ảnh quá lớn, không thể lưu!', 'error'); return; }
-                applyBackground(data, '0.88');
-                document.getElementById('removeBgBtn').classList.remove('hidden');
-                document.getElementById('opacityControl').classList.remove('hidden');
-                document.getElementById('opacityRange').value = '0.88';
+                c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+                c.toBlob(b => {
+                    if (!b) { showToast('Không nén được ảnh', 'error'); return; }
+                    idbSet('bg', b).then(() => { localStorage.setItem('bgOpacity', '0.88'); setBgBlob(b, '0.88'); showToast('Đã lưu hình nền (' + Math.round(b.size / 1024) + 'KB)', 'success'); })
+                        .catch(e => showToast('Không lưu được hình nền: ' + e.message, 'error'));
+                }, 'image/jpeg', 0.8);
             };
             img.src = url;
         }
@@ -1138,26 +1162,19 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         }
 
         function changeOverlayOpacity(val) {
-            localStorage.setItem('bgOpacity', val);
-            const savedBg = localStorage.getItem('customBg');
-            if (savedBg) applyBackground(savedBg, val);
+            localStorage.setItem('bgOpacity', val); if (_bgUrl) applyBackground(_bgUrl, val);
         }
 
         function removeCustomBackground() {
-            localStorage.removeItem('customBg');
-            localStorage.removeItem('bgOpacity');
-            const body = document.getElementById('bgImage');
-            const overlay = document.getElementById('bgOverlay');
-            body.style.backgroundImage = 'none';
-            overlay.style.backgroundColor = '';
-            document.getElementById('removeBgBtn').classList.add('hidden');
-            document.getElementById('opacityControl').classList.add('hidden');
-            document.getElementById('bgInput').value = '';
+            idbDel('bg').catch(() => {}); try { localStorage.removeItem('customBg'); localStorage.removeItem('bgOpacity'); } catch (e) {}
+            if (_bgUrl) { URL.revokeObjectURL(_bgUrl); _bgUrl = null; }
+            document.getElementById('bgImage').style.backgroundImage = 'none'; document.getElementById('bgOverlay').style.backgroundColor = '';
+            document.getElementById('removeBgBtn').classList.add('hidden'); document.getElementById('opacityControl').classList.add('hidden'); document.getElementById('bgInput').value = '';
         }
 
         // --- TÍNH NĂNG TÌM KIẾM ---
         function handleSearch(keyword) {
-            const query = keyword.trim().toLowerCase();
+            const query = norm(keyword.trim());
             const searchSection = document.getElementById('searchResultsSection');
             const searchResultsList = document.getElementById('searchResultsList');
             const searchCount = document.getElementById('searchCount');
@@ -1173,12 +1190,12 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             searchSection.classList.remove('hidden');
             categoriesTree.classList.add('hidden');
 
-            let matchedResults = [];
+            let matchedResults = []; const words = query.split(/\s+/).filter(Boolean);
 
             examCategories.forEach(cat => {
                 visibleSubjects().forEach(sub => {
-                    const searchableText = `${sub.name} ${cat.examType} ${cat.semester}`.toLowerCase();
-                    if (searchableText.includes(query)) {
+                    const searchableText = norm(`${sub.name} ${cat.examType} ${cat.semester} ${cat.path} ${sub.id} ${sub.indexFile}`);
+                    if (words.every(w => searchableText.includes(w))) {
                         matchedResults.push({
                             subject: sub,
                             examType: cat.examType,
@@ -1208,8 +1225,8 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                             <i class="fa-solid ${item.subject.icon} ${item.subject.color} text-base"></i>
                         </div>
                         <div class="truncate">
-                            <div class="font-bold text-slate-900 dark:text-slate-100 truncate">${item.subject.name} - ${item.examType} - ${item.semester}</div>
-                            <div class="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">${item.url}</div>
+                            <div class="font-bold text-slate-900 dark:text-slate-100 truncate">${hlText(item.subject.name + ' - ' + item.examType + ' - ' + item.semester, words)}</div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">${hlText(item.url, words)}</div>
                         </div>
                     </div>
                     <i class="fa-solid fa-arrow-right text-slate-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition ml-2"></i>
@@ -1235,7 +1252,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 const res = await fetch('./README.md');
                 if (!res.ok) throw new Error("Không thể tải file README.md");
                 const mdText = await res.text();
-                contentEl.innerHTML = marked.parse(mdText);
+                contentEl.innerHTML = sanitizeHtml(marked.parse(mdText));
             } catch (err) {
                 contentEl.innerHTML = `
                     <div class="p-4 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-300 rounded-xl text-sm">
@@ -1250,6 +1267,36 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             document.getElementById('readme-modal').classList.add('hidden');
         }
 
+        // ===== Tiện ích v4 =====
+        const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+        const nrm1 = s => Array.from(s, c => norm(c) || c).join('');
+        function hlText(txt, words) {
+            const n = nrm1(txt), m = new Array(txt.length).fill(false);
+            words.forEach(w => { let i = w ? n.indexOf(w) : -1; while (i > -1) { for (let j = i; j < i + w.length; j++) m[j] = true; i = n.indexOf(w, i + 1); } });
+            let o = '', on = false;
+            for (let i = 0; i < txt.length; i++) { if (m[i] !== on) { o += on ? '</mark>' : '<mark class="bg-amber-300/60 text-inherit rounded px-0.5">'; on = m[i]; } o += escapeHtml(txt[i]); }
+            return o + (on ? '</mark>' : '');
+        }
+        function sanitizeHtml(h) {
+            const t = document.createElement('template'); t.innerHTML = h;
+            t.content.querySelectorAll('script,style,iframe,object,embed,link,meta,form,base').forEach(n => n.remove());
+            t.content.querySelectorAll('*').forEach(n => {
+                [...n.attributes].forEach(a => { const nm = a.name.toLowerCase(), v = a.value.replace(/[\s\u0000-\u001f]/g, '').toLowerCase();
+                    if (nm.startsWith('on') || nm === 'srcdoc' || (['href', 'src', 'xlink:href', 'action', 'formaction'].includes(nm) && /^(javascript|data|vbscript):/.test(v))) n.removeAttribute(a.name); });
+                if (n.tagName === 'A' && n.target === '_blank') n.rel = 'noopener noreferrer';
+            });
+            return t.innerHTML;
+        }
+        function uniqSel(el) {
+            const q = id => document.querySelectorAll('#' + CSS.escape(id)).length === 1, p = []; let n = el;
+            while (n && n.nodeType === 1 && n !== document.documentElement) {
+                if (n.id && q(n.id)) { p.unshift('#' + CSS.escape(n.id)); break; }
+                let s = n.tagName.toLowerCase(); const sib = n.parentElement ? [...n.parentElement.children].filter(c => c.tagName === n.tagName) : [];
+                if (sib.length > 1) s += ':nth-of-type(' + (sib.indexOf(n) + 1) + ')';
+                p.unshift(s); n = n.parentElement;
+            }
+            return p.join(' > ');
+        }
         // ===== Tiện ích hiệu năng =====
         const escapeHtml = t => t.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         let _st; const debouncedSearch = v => { clearTimeout(_st); _st = setTimeout(() => handleSearch(v), 150); };
@@ -1386,7 +1433,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         function switchDevTab(t) {
             document.querySelectorAll('.dv-tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
             document.querySelectorAll('.dv-pane').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== t));
-            if (t === 'tools') refreshDevStats(); if (t === 'debug') renderDebug(); if (t === 'ui') loadUiPane(); if (t === 'anim') loadAnim(); if (t === 'adv') buildAdv();
+            if (t === 'tools') refreshDevStats(); if (t === 'debug') renderDebug(); if (t === 'ui') loadUiPane(); if (t === 'anim') loadAnim(); if (t === 'adv') buildAdv(); if (t === 'data') renderBackups();
         }
         function setFx(k, v) { __fx.cfg[k] = v; __fx.save(); }
         function resetFx() { Object.assign(__fx.cfg, __fx.DEF); __fx.save(); openDevPanel(); showToast('Đã đặt lại hiệu ứng', 'success'); }
@@ -1422,21 +1469,44 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 ? `<div class="text-rose-500 font-semibold">${bad.length}/${urls.length} link hỏng:</div>` + bad.map(b => `<div class="font-mono opacity-80">${escapeHtml(b)}</div>`).join('')
                 : `<div class="text-emerald-500 font-semibold"><i class="fa-solid fa-circle-check mr-1"></i>Tất cả ${urls.length} link đều hoạt động.</div>`;
         }
+        function dlJson(n, o) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(o, null, 2)], { type: 'application/json' })); a.download = n; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }
         function exportSettings() {
-            const data = { highlights: getHighlightsData(), fx: __fx.cfg, theme: localStorage.getItem('theme'), bgOpacity: localStorage.getItem('bgOpacity') };
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
-            a.download = 'bakhi-settings.json'; a.click(); URL.revokeObjectURL(a.href);
+            dlJson('bakhi-settings.json', { app: 'bakhi', version: SCHEMA_VER, exportedAt: new Date().toISOString(), highlights: getHighlightsData(), fx: __fx.cfg, ui: uiCfg, hiddenSubjects: getHidden(), fav: __fav.cf, bkt: __bkt.cfg, theme: localStorage.getItem('theme'), bgOpacity: localStorage.getItem('bgOpacity') });
+        }
+        const FX_SCHEMA = { stars: 'b', shooters: 'b', nebula: 'b', clickShot: 'b', tapSpark: 'b', density: [.2, 2], freq: [1, 10], speed: [.2, 3], palette: [0, 2], quality: ['auto', 'lite', 'high'] };
+        function validFx(o) {
+            if (!o || typeof o !== 'object' || Array.isArray(o)) return null; const r = {};
+            for (const k in o) { const s = FX_SCHEMA[k], v = o[k]; if (!s) continue;
+                if (s === 'b') { if (typeof v !== 'boolean') return null; } else if (typeof s[0] === 'string') { if (!s.includes(v)) return null; } else if (typeof v !== 'number' || !isFinite(v) || v < s[0] || v > s[1]) return null;
+                r[k] = v; }
+            return r;
+        }
+        function validHl(o) {
+            if (!isHlMap(o)) return null; const ids = subjects.map(s => s.id), r = {};
+            for (const k in o) { const p = k.split('/'), id = p.pop(); if (examCategories.some(c => c.key === p.join('/')) && ids.includes(id)) r[k] = o[k]; }
+            return r;
         }
         function importSettings(ev) {
-            const f = ev.target.files[0]; if (!f) return;
+            const f = ev.target.files[0]; ev.target.value = ''; if (!f) return;
+            if (f.size > 200 * 1024) { showToast('File quá lớn (tối đa 200KB)', 'error'); return; }
             f.text().then(t => {
-                const d = JSON.parse(t);
-                if (d.highlights && typeof d.highlights === 'object') localStorage.setItem('appHighlightsDataMap', JSON.stringify(d.highlights));
-                if (d.fx) { Object.assign(__fx.cfg, d.fx); __fx.save(); }
-                renderSubjectsTree(); refreshDevStats(); showToast('Đã nhập cài đặt', 'success');
-            }).catch(() => showToast('File JSON không hợp lệ', 'error'));
-            ev.target.value = '';
+                const d = JSON.parse(t), isObj = x => !!x && typeof x === 'object' && !Array.isArray(x), num = (v, a, b) => typeof v === 'number' && isFinite(v) && v >= a && v <= b;
+                if (!isObj(d) || (d.app && d.app !== 'bakhi') || (d.version || 1) > SCHEMA_VER) throw new Error('sai định dạng hoặc phiên bản mới hơn');
+                const o = {}, bad = [];
+                if ('highlights' in d) { const v = validHl(d.highlights); v ? o.appHighlightsDataMap = Object.assign({}, getHighlightsData(), v) : bad.push('highlights'); }
+                if ('fx' in d) { const v = validFx(d.fx); v ? o.fxCfg = Object.assign({}, __fx.cfg, v) : bad.push('fx'); }
+                if ('ui' in d) { const u = d.ui; if (isObj(u) && num(u.font, 80, 130) && [1, 2, 3].includes(u.cols) && ['paths', 'outline', 'fps'].every(k => typeof u[k] === 'boolean')) o.uiCfg = { font: u.font, cols: u.cols, paths: u.paths, outline: u.outline, fps: u.fps }; else bad.push('ui'); }
+                if ('hiddenSubjects' in d) { const h = d.hiddenSubjects; Array.isArray(h) && h.every(x => subjects.some(s => s.id === x)) ? o.hiddenSubjects = [...new Set(h)] : bad.push('hiddenSubjects'); }
+                if ('fav' in d) { isObj(d.fav) && typeof d.fav.on === 'boolean' ? o.favCfg = { on: d.fav.on } : bad.push('fav'); }
+                if ('bkt' in d) { const b = d.bkt; isObj(b) && typeof b.on === 'boolean' && ['hand', 'iris', 'fade'].includes(b.style) && num(b.speed, .5, 3) ? o.bktCfg = { on: b.on, style: b.style, speed: b.speed } : bad.push('bkt'); }
+                if (d.theme != null) { ['dark', 'light'].includes(d.theme) ? o.theme = d.theme : bad.push('theme'); }
+                if (d.bgOpacity != null) { num(+d.bgOpacity, .5, .98) ? o.bgOpacity = String(+d.bgOpacity) : bad.push('bgOpacity'); }
+                if (bad.length) throw new Error('dữ liệu không hợp lệ: ' + bad.join(', '));
+                if (!Object.keys(o).length) throw new Error('không có cấu hình nào được hỗ trợ');
+                makeBackup('trước khi nhập file');
+                Object.keys(o).forEach(k => localStorage.setItem(k, typeof o[k] === 'string' ? o[k] : JSON.stringify(o[k])));
+                showToast('Đã nhập cài đặt (đã sao lưu bản cũ), đang tải lại...', 'success'); setTimeout(() => location.reload(), 700);
+            }).catch(e => showToast('Nhập thất bại: ' + e.message, 'error'));
         }
         function copyDefaultHighlights() {
             const hl = getHighlightsData(); let last = '', lines = [];
@@ -1450,14 +1520,43 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 () => showToast('Đã copy code defaultHighlights', 'success'),
                 () => { const t = document.createElement('textarea'); t.value = txt; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); showToast('Đã copy code defaultHighlights', 'success'); });
         }
-        function resetAll() {
-            if (!confirm('Xóa toàn bộ cài đặt (nền, giao diện, hiệu ứng)? Phiên Developer vẫn giữ.')) return;
-            ['theme', 'customBg', 'bgOpacity', 'fxCfg', 'appHighlightsDataMap'].forEach(k => localStorage.removeItem(k));
+        const RESET_SETS = { ui: ['uiCfg', 'hiddenSubjects', 'theme', 'bgOpacity', 'bgmMuted'], dev: ['fxCfg', 'favCfg', 'bktCfg', 'bakhiErrors'] };
+        RESET_SETS.all = [...RESET_SETS.ui, ...RESET_SETS.dev, 'appHighlightsDataMap'];
+        function resetAll(w) {
+            w = RESET_SETS[w] ? w : 'all'; const keys = RESET_SETS[w], bg = w !== 'dev';
+            if (!confirm('Sẽ xóa (' + w.toUpperCase() + '):\n• ' + keys.join('\n• ') + (bg ? '\n• hình nền tùy chỉnh' : '') + '\n\nKhông xóa: phiên Developer, danh sách sao lưu. Tự động sao lưu trước khi xóa. Tiếp tục?')) return;
+            makeBackup('trước reset ' + w);
+            keys.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+            (bg ? idbDel('bg').catch(() => {}) : Promise.resolve()).then(() => { try { localStorage.removeItem('customBg'); } catch (e) {} location.reload(); });
+        }
+        function syncHighlights() {
+            if (!confirm('Ghi đè TOÀN BỘ highlight hiện tại bằng defaultHighlights trong file? (có sao lưu trước)')) return;
+            makeBackup('trước khi đồng bộ highlight'); localStorage.setItem('appHighlightsDataMap', JSON.stringify(defaultHighlights)); renderSubjectsTree(); refreshDevStats(); showToast('Đã đồng bộ highlight từ file', 'success');
+        }
+        function makeBackupUi() { showToast(makeBackup('thủ công') ? 'Đã tạo sao lưu' : 'Không sao lưu được (hết dung lượng?)', makeBackup === null ? 'error' : 'success'); renderBackups(); }
+        function renderBackups() {
+            const box = document.getElementById('bkList'); if (!box) return; box.textContent = '';
+            const l = safeParse(localStorage.getItem('bakhiBackups'), []);
+            if (!l.length) { box.textContent = '(chưa có bản sao lưu)'; return; }
+            l.forEach((b, i) => {
+                const r = document.createElement('div'); r.className = 'flex items-center justify-between gap-2';
+                const s = document.createElement('span'); s.className = 'truncate'; s.textContent = new Date(b.t).toLocaleString() + ' · ' + b.label;
+                const x = document.createElement('button'); x.className = 'dv-btn alt'; x.textContent = 'Khôi phục'; x.onclick = () => restoreBackup(i);
+                const d = document.createElement('button'); d.className = 'dv-btn alt'; d.textContent = 'Xóa'; d.onclick = () => { const a = safeParse(localStorage.getItem('bakhiBackups'), []); a.splice(i, 1); localStorage.setItem('bakhiBackups', JSON.stringify(a)); renderBackups(); };
+                r.append(s, x, d); box.appendChild(r);
+            });
+        }
+        function restoreBackup(i) {
+            const b = safeParse(localStorage.getItem('bakhiBackups'), [])[i];
+            if (!b || !confirm('Khôi phục bản sao lưu này? Cấu hình hiện tại sẽ được sao lưu trước.')) return;
+            makeBackup('trước khi khôi phục'); BK_KEYS.forEach(k => localStorage.removeItem(k));
+            Object.keys(b.data).forEach(k => { if (BK_KEYS.includes(k)) localStorage.setItem(k, b.data[k]); });
             location.reload();
         }
         document.addEventListener('keydown', e => {
             if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd' && !document.getElementById('devPanelBtnContainer').classList.contains('hidden')) { e.preventDefault(); openDevPanel(); }
-            if (e.key === 'Escape') { closeDevPanel(); closeHighlightManagerModal(); }
+            if (e.key === 'Escape') { closeDevPanel(); closeHighlightManagerModal(); closeReadmeModal(); }
+            if ((e.ctrlKey || e.metaKey) && e.key === '/') { e.preventDefault(); const dd = document.getElementById('hamburgerDropdown'); dd.classList.remove('hidden'); document.getElementById('searchInput').focus(); }
             if (e.key === 'Enter' && e.target.id === 'devCodeInput') verifyDevCode();
         });
 
@@ -1472,7 +1571,8 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             if (!on) return;
             fpsEl = Object.assign(document.createElement('div'), { className: 'fps-meter', textContent: '… FPS' }); document.body.appendChild(fpsEl);
             let f = 0, t = performance.now();
-            const tick = n => { f++; if (n - t >= 500) { fpsEl.textContent = Math.round(f * 1000 / (n - t)) + ' FPS · ' + __fx.info(); f = 0; t = n; } fpsRaf = requestAnimationFrame(tick); };
+            const tick = n => { f++; if (n - t >= 500) { fpsEl.textContent = Math.round(f * 1000 / (n - t)) + ' FPS · ' + __fx.info(); f = 0; t = n; } if (!document.hidden) fpsRaf = requestAnimationFrame(tick); };
+            document.addEventListener('visibilitychange', function vis() { if (!fpsEl || !fpsEl.isConnected) { document.removeEventListener('visibilitychange', vis); return; } if (!document.hidden) { cancelAnimationFrame(fpsRaf); fpsRaf = requestAnimationFrame(tick); } });
             fpsRaf = requestAnimationFrame(tick);
         }
         function applyUi() {
@@ -1505,8 +1605,25 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 if (_logs.length > 150) _logs.shift(); o.apply(console, a);
             };
         });
-        addEventListener('error', e => console.error(`${e.message} @${(e.filename || '').split('/').pop()}:${e.lineno}`));
-        addEventListener('unhandledrejection', e => console.error('Promise: ' + ((e.reason && e.reason.message) || e.reason)));
+        let _errs = safeParse(localStorage.getItem('bakhiErrors'), []); if (!Array.isArray(_errs)) _errs = [];
+        function trackErr(type, msg, src) {
+            _errs.push({ t: new Date().toISOString(), type, msg: String(msg).slice(0, 300), src: String(src || '').slice(0, 200) });
+            if (_errs.length > 150) _errs.shift(); try { localStorage.setItem('bakhiErrors', JSON.stringify(_errs)); } catch (e) {}
+        }
+        addEventListener('error', e => {
+            if (e.target && e.target !== window) { trackErr('resource', 'Tải lỗi: ' + (e.target.src || e.target.href || e.target.tagName), e.target.tagName); return; }
+            trackErr('js', e.message, (e.filename || '').split('/').pop() + ':' + e.lineno); console.error(`${e.message} @${(e.filename || '').split('/').pop()}:${e.lineno}`);
+        }, true);
+        addEventListener('unhandledrejection', e => { const m = (e.reason && e.reason.message) || e.reason; trackErr('promise', m, ''); console.error('Promise: ' + m); });
+        function exportErrors() { dlJson('bakhi-errors.json', { app: 'bakhi', exportedAt: new Date().toISOString(), ua: navigator.userAgent, count: _errs.length, errors: _errs }); }
+        function clearErrors() { _errs.length = 0; try { localStorage.removeItem('bakhiErrors'); } catch (e) {} showToast('Đã xóa lỗi đã lưu', 'success'); }
+        function copyVal(v) { navigator.clipboard ? navigator.clipboard.writeText(v).then(() => showToast('Đã copy giá trị', 'success')) : showToast('Trình duyệt không hỗ trợ clipboard', 'error'); }
+        function editKey(S, k) {
+            if (k === 'devToken') { showToast('Không sửa token', 'error'); return; }
+            const old = S.getItem(k) || '', v = prompt('Sửa giá trị của ' + k, old); if (v === null) return;
+            if (/^\s*[\[{]/.test(old)) { try { JSON.parse(v); } catch (e) { showToast('JSON không hợp lệ, không lưu', 'error'); return; } }
+            if (!confirm('Ghi đè giá trị của "' + k + '"?')) return; makeBackup('trước khi sửa ' + k); S.setItem(k, v); renderDebug();
+        }
         function renderDebug() {
             const nav = performance.getEntriesByType('navigation')[0], c = navigator.connection || {};
             sysInfo.innerHTML = [
@@ -1515,13 +1632,24 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 `Tải trang: ${nav ? Math.round(nav.loadEventEnd) + 'ms' : '?'} · DOM: ${document.getElementsByTagName('*').length} node`,
                 `Ngôn ngữ: ${navigator.language} · SubtleCrypto: ${!!(window.crypto && crypto.subtle)}`,
                 `Hiệu ứng: ${__fx.info()} · Long task: ${_lt}${performance.memory ? ' · Heap: ' + (performance.memory.usedJSHeapSize / 1048576).toFixed(0) + 'MB' : ''}`].join('<br>');
-            let total = 0;
-            storeList.innerHTML = Object.keys(localStorage).map(k => { const sz = (k.length + localStorage.getItem(k).length) * 2; total += sz;
-                return `<div class="flex justify-between items-center py-0.5 border-b border-slate-500/10"><span class="font-mono truncate">${escapeHtml(k)}</span><span class="shrink-0 ml-2">${(sz / 1024).toFixed(1)}KB <button class="text-rose-500 ml-1 cursor-pointer" onclick="delKey('${escapeHtml(k)}')"><i class="fa-solid fa-trash-can"></i></button></span></div>`; }).join('');
+            let total = 0; storeList.textContent = '';
+            [['local', localStorage], ['session', sessionStorage]].forEach(([n, S]) => {
+                let keys = []; try { keys = Object.keys(S); } catch (e) {}
+                keys.forEach(k => {
+                    const v = S.getItem(k) || '', sz = (k.length + v.length) * 2; if (n === 'local') total += sz;
+                    const r = document.createElement('div'); r.className = 'flex justify-between items-center py-0.5 border-b border-slate-500/10';
+                    const a = document.createElement('span'); a.className = 'font-mono truncate'; a.textContent = (n === 'session' ? '[session] ' : '') + k; a.title = v.slice(0, 200);
+                    const b = document.createElement('span'); b.className = 'shrink-0 ml-2'; b.append((sz / 1024).toFixed(1) + 'KB ');
+                    [['fa-copy', 'Copy', () => copyVal(v)], ['fa-pen', 'Sửa', () => editKey(S, k)], ['fa-trash-can', 'Xóa', () => delKey(k, S)]].forEach(([ic, t, f]) => {
+                        const x = document.createElement('button'); x.className = 'ml-1.5 cursor-pointer ' + (ic === 'fa-trash-can' ? 'text-rose-500' : 'text-indigo-500'); x.title = t; x.innerHTML = '<i class="fa-solid ' + ic + '"></i>'; x.onclick = f; b.appendChild(x); });
+                    r.append(a, b); storeList.appendChild(r);
+                });
+            });
+            if (navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(e => { storeTotal.textContent += ' · Origin: ' + (e.usage / 1048576).toFixed(1) + 'MB'; });
             storeTotal.textContent = `(${(total / 1024).toFixed(1)}KB)`;
             logOut.textContent = _logs.join('\n') || '(chưa có log)'; logOut.scrollTop = logOut.scrollHeight;
         }
-        function delKey(k) { if (k === 'devToken') return devLogout(); localStorage.removeItem(k); renderDebug(); }
+        function delKey(k, S) { S = S || localStorage; if (!confirm('Xóa key "' + k + '"?')) return; if (S === localStorage && k === 'devToken') return devLogout(); S.removeItem(k); renderDebug(); }
         function clearLogs() { _logs.length = 0; renderDebug(); }
         function copyLogs() { navigator.clipboard && navigator.clipboard.writeText(_logs.join('\n')).then(() => showToast('Đã copy log', 'success')); }
         async function hardReload() {
@@ -1539,8 +1667,16 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         let _lt = 0; try { new PerformanceObserver(l => { _lt += l.getEntries().length; }).observe({ entryTypes: ['longtask'] }); } catch (e) {}
         const FX_PRESETS = { eco: { quality: 'lite', density: .5, freq: 3, nebula: false, speed: .8 }, balanced: { quality: 'auto', density: 1, freq: 5, nebula: true, speed: 1 }, max: { quality: 'high', density: 1.6, freq: 8, nebula: true, speed: 1.2 } };
         function applyPreset(n) { Object.assign(__fx.cfg, FX_PRESETS[n]); __fx.save(); openDevPanel(); showToast('Đã áp dụng cấu hình hiệu ứng', 'success'); }
+        let _replOn = false; const _replHist = []; let _replPos = 0;
+        function toggleRepl(v) {
+            if (v && !confirm('REPL chạy JavaScript tùy ý ngay trong trang. Đây KHÔNG phải sandbox: lệnh có thể đọc/sửa/xóa dữ liệu localStorage và token. Chỉ chạy lệnh bạn hiểu rõ. Bật REPL?')) { document.getElementById('replOn').checked = false; return; }
+            _replOn = v; document.getElementById('replIn').disabled = !v;
+        }
+        function clearReplHist() { _replHist.length = 0; _replPos = 0; _logs.length = 0; renderDebug(); }
         function runRepl() {
+            if (!_replOn) { showToast('Hãy bật REPL trước', 'error'); return; }
             const i = document.getElementById('replIn'), c = i.value.trim(); if (!c) return;
+            _replHist.push(c); if (_replHist.length > 50) _replHist.shift(); _replPos = _replHist.length;
             console.log('> ' + c);
             try { const r = (0, eval)(c); console.log('← ' + (r !== null && typeof r === 'object' ? JSON.stringify(r) : String(r))); } catch (e) { console.error(e); }
             i.value = ''; renderDebug();
@@ -1552,6 +1688,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         }
         let _allOpen = false;
         document.addEventListener('keydown', e => {
+            if (e.target.id === 'replIn' && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) { _replPos = Math.max(0, Math.min(_replHist.length, _replPos + (e.key === 'ArrowUp' ? -1 : 1))); e.target.value = _replHist[_replPos] || ''; return; }
             if (e.key === 'Enter' && e.target.id === 'replIn') return runRepl();
             if (!e.ctrlKey || !e.shiftKey || document.getElementById('devPanelBtnContainer').classList.contains('hidden')) return;
             const k = e.key.toLowerCase();
@@ -1613,9 +1750,10 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             }
             let tm;
             function play() {
-                clearInterval(tm); if (!cf.on) { draw(0); return; } const t0 = performance.now();
-                tm = setInterval(() => draw((1 - Math.cos((performance.now() - t0) / 4000 * 2 * Math.PI)) / 2), window.__lowEnd ? 250 : 120);
+                clearInterval(tm); if (!cf.on || matchMedia('(prefers-reduced-motion:reduce)').matches) { draw(0); return; } const t0 = performance.now();
+                tm = setInterval(() => draw((1 - Math.cos((performance.now() - t0) / 4000 * 2 * Math.PI)) / 2), document.hidden ? 1000 : (window.__lowEnd ? 250 : 120));
             }
+            document.addEventListener('visibilitychange', play); // tab ẩn: giảm tần suất favicon xuống 1 lần/giây
             window.__fav = { cf, cv, play };
             draw(0); play();
         })();
@@ -1659,7 +1797,8 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         }, { passive: true });
         document.addEventListener('click', e => {
             if (!advOn.inspect || e.target.closest('#dev-panel-modal')) return; e.preventDefault(); e.stopPropagation();
-            navigator.clipboard && navigator.clipboard.writeText(selOf(e.target)).then(() => showToast('Đã copy: ' + selOf(e.target), 'success'));
+            const sel = uniqSel(e.target); let c = 0; try { c = document.querySelectorAll(sel).length; } catch (x) {}
+            navigator.clipboard && navigator.clipboard.writeText(sel).then(() => showToast('Đã copy (' + c + ' phần tử khớp' + (c === 1 ? '' : ' — KHÔNG duy nhất') + '): ' + sel, c === 1 ? 'success' : 'error'));
         }, true);
         const vt = { lcp: 0, cls: 0, fcp: 0 };
         try {
@@ -1667,9 +1806,11 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             new PerformanceObserver(l => l.getEntries().forEach(e => { if (!e.hadRecentInput) vt.cls += e.value; })).observe({ type: 'layout-shift', buffered: true });
             new PerformanceObserver(l => l.getEntries().forEach(e => { if (e.name === 'first-contentful-paint') vt.fcp = e.startTime; })).observe({ type: 'paint', buffered: true });
         } catch (e) {}
+        const _sup = t => typeof PerformanceObserver !== 'undefined' && (PerformanceObserver.supportedEntryTypes || []).includes(t);
+        const vm = (v, t) => v ? (v | 0) + 'ms' : _sup(t) ? 'đang đo…' : 'không hỗ trợ';
         function vitals() {
             const n = performance.getEntriesByType('navigation')[0], rs = performance.getEntriesByType('resource').sort((a, b) => (b.transferSize || 0) - (a.transferSize || 0)), tot = rs.reduce((s, r) => s + (r.transferSize || 0), 0);
-            document.getElementById('vitals').innerHTML = `FCP ${vt.fcp | 0}ms · LCP ${vt.lcp | 0}ms · CLS ${vt.cls.toFixed(3)}<br>TTFB ${n ? n.responseStart | 0 : '?'}ms · ${rs.length} tài nguyên · ${(tot / 1024).toFixed(0)}KB<br>` + rs.slice(0, 5).map(r => `${((r.transferSize || 0) / 1024).toFixed(0)}KB ${escapeHtml(r.name.split('/').pop().split('?')[0] || r.name)}`).join('<br>');
+            document.getElementById('vitals').innerHTML = `FCP ${vm(vt.fcp, 'paint')} (1 lần) · LCP ${vm(vt.lcp, 'largest-contentful-paint')} (cập nhật đến khi tương tác) · CLS ${_sup('layout-shift') ? vt.cls.toFixed(3) + ' (cộng dồn)' : 'không hỗ trợ'}<br>TTFB ${n ? n.responseStart | 0 : '?'}ms · ${rs.length} tài nguyên · ${(tot / 1024).toFixed(0)}KB<br>` + rs.slice(0, 5).map(r => `${((r.transferSize || 0) / 1024).toFixed(0)}KB ${escapeHtml(r.name.split('/').pop().split('?')[0] || r.name)}`).join('<br>');
         }
         function copyHtml() { navigator.clipboard && navigator.clipboard.writeText('<!DOCTYPE html>\n' + document.documentElement.outerHTML).then(() => showToast('Đã copy HTML trang', 'success')); }
         const CMDS = () => [['Mở/đóng mọi thư mục', () => expandAll(_allOpen = !_allOpen)], ['Sao băng nổ', () => __fx.shot()], ['Thử animation favicon', () => __fav.play()], ['Thử chuyển trang (bàn tay)', () => __bkt.test('L')], ['Animation logo header', logoAnim],
@@ -1683,6 +1824,11 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             const rd = () => { const q = i.value.toLowerCase(), m = CMDS().filter(c => c[0].toLowerCase().includes(q)); l.innerHTML = ''; m.forEach((c, n) => { const b = document.createElement('button'); b.className = 'w-full text-left px-4 py-2 hover:bg-indigo-500/15 ' + (n ? '' : 'bg-indigo-500/10'); b.textContent = c[0]; b.onclick = () => run(c[1]); l.appendChild(b); }); l._m = m; };
             i.oninput = rd; rd(); i.focus(); i.onkeydown = e => { if (e.key === 'Escape') p.remove(); if (e.key === 'Enter' && l._m[0]) run(l._m[0][1]); }; p.onclick = e => { if (e.target === p) p.remove(); };
         }
+        [['readme-modal', closeReadmeModal], ['dev-panel-modal', closeDevPanel], ['highlight-manager-modal', closeHighlightManagerModal]].forEach(([id, fn]) => {
+            const m = document.getElementById(id); m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
+            m.addEventListener('mousedown', e => { if (e.target === m) fn(); });
+            new MutationObserver(() => { if (!m.classList.contains('hidden')) { m._f = document.activeElement; const b = m.querySelector('button'); if (b) b.focus(); } else if (m._f && m._f.focus) { m._f.focus(); m._f = null; } }).observe(m, { attributes: true, attributeFilter: ['class'] });
+        });
         document.addEventListener('keydown', e => {
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && !document.getElementById('devPanelBtnContainer').classList.contains('hidden')) { e.preventDefault(); palette(); }
         });
