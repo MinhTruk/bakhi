@@ -677,10 +677,8 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                         <div class="flex gap-1.5 mt-2"><input id="replIn" placeholder="Chạy JS: subjects, __fx.cfg ..." class="flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-slate-950 text-emerald-300 font-mono text-[11px] outline-none" autocapitalize="off" autocomplete="off" spellcheck="false"><button class="dv-btn" onclick="runRepl()">Chạy</button><button class="dv-btn alt" onclick="copyReport()">Báo cáo</button></div>
                     </div>
                     <div class="dv-pane hidden" data-pane="anim">
-                        <div class="flex items-center gap-3 mb-3"><div id="favPrev" class="w-12 h-12 rounded-xl bg-slate-500/10 grid place-items-center overflow-hidden shrink-0"></div><span class="text-[11px] opacity-70">Logo trên tab trình duyệt (favicon): tự chạy một animation ngẫu nhiên mỗi lần vào tab, và lặp khi bạn rời tab.</span></div>
-                        <label class="dv-row"><span>Animation favicon</span><select id="favMode" onchange="setFav('mode',this.value)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"></select></label>
+                        <div class="flex items-center gap-3 mb-3"><div id="favPrev" class="w-12 h-12 rounded-xl bg-slate-500/10 grid place-items-center overflow-hidden shrink-0"></div><span class="text-[11px] opacity-70">Logo trên tab trình duyệt (favicon): chuyển màu mượt giữa tím và xanh lá nhạt.</span></div>
                         <label class="dv-row"><span>Bật animation favicon</span><input type="checkbox" id="favOn" class="accent-indigo-600 w-4 h-4" onchange="setFav('on',this.checked)"></label>
-                        <label class="dv-row"><span>Đổi tiêu đề khi rời tab</span><input type="checkbox" id="favTitle" class="accent-indigo-600 w-4 h-4" onchange="setFav('title',this.checked)"></label>
                         <label class="dv-row"><span>Hiệu ứng chuyển trang</span><select id="bktStyle" onchange="setBkt('style',this.value)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"><option value="hand">Bàn tay kéo</option><option value="iris">Mở vòng tròn</option><option value="fade">Mờ dần</option></select></label>
                         <label class="dv-row"><span>Bật chuyển trang</span><input type="checkbox" id="bktOn" class="accent-indigo-600 w-4 h-4" onchange="setBkt('on',this.checked)"></label>
                         <label class="dv-row"><span>Thời lượng ×<b id="bktSpV"></b></span><input type="range" min=".5" max="3" step=".25" id="bktSp" oninput="setBkt('speed',+this.value)" class="w-40 accent-indigo-600"></label>
@@ -1599,38 +1597,27 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         document.addEventListener('click', e => { const p = $b('bgmPanel'); if (p.classList.contains('open') && !p.contains(e.target) && !$b('bgmBtn').contains(e.target)) p.classList.remove('open'); });
         bgmUi();
 
-        // ===== Favicon động: 10 kiểu animation, chạy khi vào tab và lặp khi rời tab =====
+        // ===== Favicon: chuyển màu mượt giữa tím và xanh lá nhạt (không xoay, không đổi tiêu đề tab) =====
         (function () {
             const cv = document.createElement('canvas'); cv.width = cv.height = 64; cv.style.cssText = 'width:44px;height:44px';
-            const c = cv.getContext('2d'), link = document.querySelector('link[rel=icon]'), M = Math, S = M.sin, C = M.cos, PI = M.PI;
+            const c = cv.getContext('2d'), link = document.querySelector('link[rel=icon]');
             const BG = new Path2D('M16 4h32a12 12 0 0 1 12 12v32a12 12 0 0 1-12 12H16A12 12 0 0 1 4 48V16A12 12 0 0 1 16 4z'), FD = new Path2D('M14 22a4 4 0 0 1 4-4h9l4 5h15a4 4 0 0 1 4 4v19a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4z');
-            const cf = Object.assign({ on: true, mode: 'auto', title: true }, (() => { try { return JSON.parse(localStorage.getItem('favCfg')) || {}; } catch (e) { return {}; } })());
-            const A = { spin: t => ({ sx: C(t * PI * 4) }), bounce: t => ({ dy: -M.abs(S(t * PI * 3)) * 14 * (1 - t) }), pulse: t => ({ s: 1 + .16 * S(t * PI * 6) }), shake: t => ({ r: S(t * PI * 14) * .35 * (1 - t) }),
-                rainbow: t => ({ h: t * 720 }), heartbeat: t => ({ s: 1 + .2 * M.pow(M.max(0, S(t * PI * 8)), 3) }), flip: t => ({ sy: C(t * PI * 2) }), orbit: t => ({ o: t * PI * 4 }),
-                pop: t => ({ s: t < .2 ? t * 5 : 1 + .12 * S((t - .2) * 25) * (1 - t) }), glitch: t => ({ dx: (M.random() - .5) * 10 * (1 - t), h: (M.random() - .5) * 160 }) };
-            function draw(o) {
-                o = o || {}; c.clearRect(0, 0, 64, 64); c.save(); c.translate(32 + (o.dx || 0), 32 + (o.dy || 0)); c.rotate(o.r || 0);
-                c.scale((o.sx == null ? 1 : o.sx) * (o.s || 1), (o.sy == null ? 1 : o.sy) * (o.s || 1)); c.translate(-32, -32);
-                const g = c.createLinearGradient(4, 4, 60, 60), h = o.h || 0; g.addColorStop(0, 'hsl(' + (239 + h) + ',84%,67%)'); g.addColorStop(1, 'hsl(' + (271 + h) + ',91%,62%)');
-                c.fillStyle = g; c.fill(BG); c.fillStyle = '#fff'; c.fill(FD); c.restore();
-                if (o.o != null) for (let i = 0; i < 3; i++) { const a = o.o + i * 2.09; c.fillStyle = ['#fde047', '#38bdf8', '#f472b6'][i]; c.beginPath(); c.arc(32 + 26 * C(a), 32 + 26 * S(a), 6, 0, 7); c.fill(); }
+            const cf = Object.assign({ on: true }, (() => { try { return JSON.parse(localStorage.getItem('favCfg')) || {}; } catch (e) { return {}; } })());
+            const P = [[139, 92, 246], [192, 132, 252]], G = [[74, 222, 128], [134, 239, 172]];
+            const mix = (x, y, k) => 'rgb(' + x.map((v, i) => Math.round(v + (y[i] - v) * k)).join() + ')';
+            function draw(k) {
+                c.clearRect(0, 0, 64, 64); const g = c.createLinearGradient(4, 4, 60, 60);
+                g.addColorStop(0, mix(P[0], G[0], k)); g.addColorStop(1, mix(P[1], G[1], k));
+                c.fillStyle = g; c.fill(BG); c.fillStyle = '#fff'; c.fill(FD);
                 link.type = 'image/png'; link.href = cv.toDataURL('image/png');
             }
-            const names = Object.keys(A); let tm;
-            function play(n) {
-                clearInterval(tm); if (!cf.on) { draw(); return; }
-                n = n && A[n] ? n : (A[cf.mode] ? cf.mode : names[M.random() * names.length | 0]); const t0 = performance.now();
-                tm = setInterval(() => { const t = (performance.now() - t0) / 2400; if (t >= 1) { clearInterval(tm); draw(); if (document.hidden) setTimeout(() => document.hidden && play(), 600); return; } draw(A[n](t)); }, window.__lowEnd ? 220 : 80);
+            let tm;
+            function play() {
+                clearInterval(tm); if (!cf.on) { draw(0); return; } const t0 = performance.now();
+                tm = setInterval(() => draw((1 - Math.cos((performance.now() - t0) / 4000 * 2 * Math.PI)) / 2), window.__lowEnd ? 250 : 120);
             }
-            const T0 = document.title; let tt;
-            document.addEventListener('visibilitychange', () => {
-                clearInterval(tt);
-                if (document.hidden) { if (cf.title) { let f = 0; const L = ['👋 Quay lại nhé!', '📚 Ôn bài thôi nào', '✨ Bakhi nhớ bạn']; tt = setInterval(() => { document.title = f % 2 ? T0 : L[(f >> 1) % 3]; f++; }, 1500); } }
-                else document.title = T0;
-                play();
-            });
-            window.__fav = { cf, cv, names, play };
-            draw(); play();
+            window.__fav = { cf, cv, play };
+            draw(0); play();
         })();
 
         // ===== Logo header: nhiều animation ngẫu nhiên =====
@@ -1642,8 +1629,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         // ===== Developer v3: Animation, Inspector, Vitals, Command palette =====
         function loadAnim() {
             const f = __fav.cf, b = __bkt.cfg;
-            favMode.innerHTML = '<option value="auto">Ngẫu nhiên</option>' + __fav.names.map(n => `<option value="${n}">${n}</option>`).join('');
-            favMode.value = f.mode; favOn.checked = f.on; favTitle.checked = f.title; bktStyle.value = b.style; bktOn.checked = b.on; bktSp.value = b.speed; bktSpV.textContent = b.speed;
+            favOn.checked = f.on; bktStyle.value = b.style; bktOn.checked = b.on; bktSp.value = b.speed; bktSpV.textContent = b.speed;
             document.getElementById('favPrev').appendChild(__fav.cv);
         }
         function setFav(k, v) { __fav.cf[k] = v; localStorage.setItem('favCfg', JSON.stringify(__fav.cf)); __fav.play(); }
