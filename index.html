@@ -62,6 +62,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+	
     <style>
         body { font-family: 'Lexend', sans-serif; }
         .folder-content {
@@ -222,6 +223,16 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         html.dv-gray { filter: grayscale(1); }
         body.dv-grid::after { content: ''; position: fixed; inset: 0; z-index: 9990; pointer-events: none; background: linear-gradient(rgba(244,63,94,.14) 1px, transparent 1px) 0 0/8px 8px, linear-gradient(90deg, rgba(244,63,94,.14) 1px, transparent 1px) 0 0/8px 8px; }
         .logo-glow { cursor: pointer; }
+        
+        /* Cho phép chọn văn bản trong ô nhập liệu */
+        input,
+        textarea,
+        select,
+        [contenteditable="true"],
+        .allow-select {
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
     </style>
 </head>
 <body id="pageBody" class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative transition-colors duration-300">
@@ -2037,6 +2048,31 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             smDl: () => { const v = $('bkSmOut').value; if (v) dlText('bakhi-sitemap.' + $('bkSm').value, v); },
             cp: k => cp(k === 'sel' ? (sel ? uniqSel(sel) : '') : k === 'xp' ? (sel ? xpath(sel) : '') : k === 'html' ? (sel ? sel.outerHTML : '') : k === 'css' ? cssText() : k === 'gen' ? $('bkGen').textContent : $('bkSmOut').value) };
     })();
+		    // Kiểm tra phần tử có phải ô nhập liệu không
+    function isEditableElement(element) {
+        return !!element.closest(
+            'input, textarea, select, ' +
+            '[contenteditable="true"], ' +
+            '[role="textbox"], .allow-select'
+        );
+    }
+		
+        // Chặn Ctrl + A và Ctrl + C ngoài ô nhập liệu
+		document.addEventListener('keydown', function(e) {
+    		if (!guardOn || isEditableElement(e.target)) return;
+
+    		if ((e.ctrlKey || e.metaKey) &&
+        		['a', 'c'].includes(e.key.toLowerCase())) {
+        		e.preventDefault();
+    		}
+		}, true);
+
+		// Chặn bôi đen văn bản bằng chuột
+		document.addEventListener('selectstart', function(e) {
+    		if (!guardOn || isEditableElement(e.target)) return;
+
+    		e.preventDefault();
+		}, true);
     </script>
 </body>
 </html>
