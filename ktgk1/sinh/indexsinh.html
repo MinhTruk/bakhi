@@ -59,13 +59,13 @@
    CẤU HÌNH
    ===================================================================== */
 const SUBJECT_HOME = 'indexsinh.html';   // trang chủ môn học – đổi nếu repo đặt tên khác
-const STORE_KEY = 'bakhi_sinh11_gk1_v5';
+const STORE_KEY = 'bakhi_sinh11_gk1_v7';
 const MAXPT = { mcq: 5, tf: 2, sa: 1, es: 2 };
 const SECS = [
     { id: 'mcq', name: 'Trắc nghiệm',   icon: 'fa-list-check',     n: 24, title: 'Phần I – Trắc nghiệm nhiều lựa chọn' },
     { id: 'tf',  name: 'Đúng/Sai',      icon: 'fa-scale-balanced', n: 4,  title: 'Phần II – Trắc nghiệm đúng/sai' },
     { id: 'sa',  name: 'Trả lời ngắn',  icon: 'fa-pen',            n: 4,  title: 'Phần III – Trả lời ngắn' },
-    { id: 'es',  name: 'Tự luận',       icon: 'fa-file-lines',     n: 2,  title: 'Phần IV – Tự luận' }
+    { id: 'es',  name: 'Tự luận',       icon: 'fa-file-lines',     n: 3,  title: 'Phần IV – Tự luận' }
 ];
 const SEC_IDS = SECS.map(s => s.id);
 const N = Object.fromEntries(SECS.map(s => [s.id, s.n]));
@@ -184,12 +184,13 @@ tf: [
 sa: [
  {q:'Có bao nhiêu nguyên tố khoáng đa lượng được liệt kê trong tài liệu?',m:'III.3'},
  {q:'Có bao nhiêu nguyên tố khoáng vi lượng được liệt kê trong tài liệu?',m:'III.3'},
- {q:'Tài liệu nêu bao nhiêu cơ chế hấp thụ ion khoáng ở tế bào lông hút (thụ động và chủ động)?',m:'III.4'},
- {q:'Nồng độ khoáng trong tế bào lông hút là 0,2 M, trong đất là 0,1 M. Độ chênh lệch nồng độ giữa hai môi trường là bao nhiêu M? Nhập một số duy nhất.',m:'III.4'}
+ {q:'Tài liệu nêu bao nhiêu cơ chế hấp thụ ion khoáng ở tế bào lông hút?',m:'III.4'},
+ {q:'Nồng độ khoáng trong tế bào lông hút là 0,2 M, trong đất là 0,1 M. Độ chênh lệch nồng độ giữa hai môi trường là bao nhiêu M? Nhập một số duy nhất.',m:'III.4'},
 ],
 es: [
  {q:'Cây bị ngập úng lâu ngày có những biểu hiện như thế nào? Giải thích cơ chế gây ra các biểu hiện đó.',m:['IV.1']},
- {q:'Trình bày các biện pháp nâng cao năng suất cây trồng thông qua việc tăng diện tích bộ lá, cường độ và hiệu quả quang hợp. Giải thích vai trò của CO2, nhiệt độ và ánh sáng.',m:['IV.2']}
+ {q:'Nêu các biện pháp kĩ thuật giúp nâng cao năng suất cây trồng thông qua việc tăng diện tích bộ lá, cường độ và hiệu quả quang hợp.',m:['IV.2']},
+ {q:'Phân tích ảnh hưởng của nồng độ CO₂, nhiệt độ và ánh sáng đến cường độ quang hợp. Nêu ví dụ minh họa.',m:['IV.2']}
 ]
 };
 
@@ -262,25 +263,31 @@ const KEY = {
   {ref:'<b>6</b>',note:'Có 6 nguyên tố khoáng đa lượng: Ca, Mg, N, P, K, S.',c:[{t:'Nhập đúng một số: 6',f:n=>parseOneNumber(n) === 6}]},
   {ref:'<b>5</b>',note:'Có 5 nguyên tố khoáng vi lượng: Cl, Fe, Mn, Mo, Zn.',c:[{t:'Nhập đúng một số: 5',f:n=>parseOneNumber(n) === 5}]},
   {ref:'<b>2</b>',note:'Hai cơ chế được nêu là hấp thụ thụ động và hấp thụ chủ động.',c:[{t:'Nhập đúng một số: 2',f:n=>parseOneNumber(n) === 2}]},
-  {ref:'<b>0.1</b>',note:'Độ chênh lệch là 0,2 − 0,1 = 0,1 M. Có thể nhập 0.1 hoặc 0,1.',c:[{t:'Nhập đúng một số: 0.1',f:n=>parseOneNumber(n) !== null && Math.abs(parseOneNumber(n) - 0.1) < 1e-9}]}
+  {ref:'<b>0.1</b>',note:'Độ chênh lệch là 0,2 − 0,1 = 0,1 M. Có thể nhập 0.1 hoặc 0,1.',c:[{t:'Nhập đúng một số: 0.1',f:n=>parseOneNumber(n) !== null && Math.abs(parseOneNumber(n) - 0.1) < 1e-9}]},
  ],
  es: [
-  {ref:'<b>Biểu hiện:</b> cây héo lá, lá chuyển vàng và rụng dần; rễ bị thối, cây có thể chết.<br><b>Giải thích:</b> ngập úng làm khe đất bị nước phủ kín, oxygen trong nước thấp; rễ thiếu oxygen và chuyển sang hô hấp kị khí (lên men), tạo ít ATP và tích lũy chất độc như ethanol. Khả năng hấp thu chủ động ion khoáng giảm, lông hút tổn thương và chết; rễ không hấp thu đủ nước, khoáng nên cây thiếu nước, héo và có thể chết.',
+  {ref:'<b>Biểu hiện:</b> Lá héo, bắt đầu vàng dần; rễ bị thối hỏng, cây chết dần.<br><b>Giải thích:</b><br>+ Khi ngập nước, oxygen trong đất không thể khuếch tán tới rễ cây; rễ không thể lấy oxygen để thực hiện quá trình hô hấp.<br>+ Nếu quá trình ngập úng kéo dài, thiếu oxygen gây cản trở quá trình hô hấp bình thường của rễ, khiến cây chuyển sang hô hấp kị khí.<br>+ Khi hô hấp kị khí, các chất độc hại sinh ra và tích lũy trong tế bào, làm lông hút bị chết, rễ bị thối hỏng, không thể hấp thu đủ nước và khoáng chất.<br>⇒ Hậu quả là rễ không hút được nước trong khi quá trình thoát hơi nước vẫn diễn ra bình thường, nên cây bị héo và chết. Hiện tượng này gọi là <b>hạn sinh lí</b> (môi trường không thiếu nước nhưng cây không hút được nước).',
    c:[
-    {t:'Nêu biểu hiện: lá héo, vàng, rụng; rễ thối; cây chết',p:0.2,f: n=>[/heo/,/vang/,/rung/,/thoi/,/chet/].filter(r=>r.test(n)).length>=2},
-    {t:'Đất ngập úng làm rễ thiếu oxygen',p:0.15,f:rx(/thieu oxy/,/thieu oxi/,/oxygen[^.;]*(thap|thieu)/)},
-    {t:'Rễ chuyển sang hô hấp kị khí/lên men, tạo ít ATP và ethanol',p:0.2,f:n=>/ho hap/.test(n)&&/(ki khi|len men)/.test(n)&&(/atp/.test(n)||/ethanol/.test(n))},
-    {t:'Giảm hấp thu chủ động ion khoáng; lông hút tổn thương/chết',p:0.2,f:n=>/(chu dong|ion khoang)/.test(n)&&/(long hut|hap thu)/.test(n)},
-    {t:'Rễ không hấp thu đủ nước, khoáng khiến cây thiếu nước, héo hoặc chết',p:0.25,f:n=>/(nuoc|khoang)/.test(n)&&/(heo|chet|thieu nuoc)/.test(n)}
+    {t:'Nêu biểu hiện: lá héo, vàng dần; rễ thối hỏng; cây chết dần',p:0.2,f:n=>[/heo/,/vang/,/thoi/,/chet/].filter(r=>r.test(n)).length>=2},
+    {t:'Ngập nước làm oxygen trong đất không khuếch tán tới rễ; rễ thiếu oxygen để hô hấp',p:0.2,f:n=>/(ngap nuoc|ngap ung)/.test(n)&&/(oxy|oxygen)/.test(n)&&/re/.test(n)},
+    {t:'Ngập úng kéo dài cản trở hô hấp bình thường, khiến rễ hô hấp kị khí',p:0.2,f:n=>/ho hap/.test(n)&&/(ki khi|ky khi)/.test(n)},
+    {t:'Chất độc hại tích lũy làm lông hút chết, rễ thối hỏng và không hấp thu đủ nước, khoáng',p:0.2,f:n=>/(chat doc|doc hai)/.test(n)&&/(long hut|re)/.test(n)&&/(nuoc|khoang)/.test(n)},
+    {t:'Thoát hơi nước vẫn diễn ra, cây héo và chết; đây là hiện tượng hạn sinh lí',p:0.2,f:n=>/(thoat hoi nuoc|thoat nuoc)/.test(n)&&/(han sinh li|heo)/.test(n)}
    ]},
-  {ref:'<b>Biện pháp:</b> bón phân hợp lí; cung cấp đủ nước; gieo trồng đúng thời vụ; sử dụng đèn LED có cường độ và quang phổ phù hợp; có thể trồng rau trong phòng kín dùng đèn LED.<br><b>Giải thích:</b> điều chỉnh CO2 trong nhà kính vì cây sử dụng CO2 cho pha tối; duy trì nhiệt độ tối ưu vì nhiệt độ quá cao hoặc quá thấp làm giảm hoạt tính enzyme quang hợp; chọn thành phần ánh sáng phù hợp, ánh sáng xanh tím hỗ trợ tổng hợp amino acid, protein còn ánh sáng đỏ hỗ trợ tạo carbohydrate.',
+  {ref:'<b>Muốn tăng năng suất và chất lượng cây trồng</b> (như khoai tây, khoai lang, sắn dây, mía, củ cải đường) thông qua quang hợp, cần áp dụng các biện pháp nông học. Ví dụ:<br>+ <b>Bón phân hợp lí:</b> giúp thúc đẩy quá trình vận chuyển sản phẩm đồng hóa về cơ quan dự trữ, làm tăng năng suất cây trồng. Phân bón cũng là yếu tố quan trọng ảnh hưởng đến sự phát triển của bộ lá; diện tích lá lớn giúp nâng cao hiệu suất hấp thụ ánh sáng.<br>+ <b>Cung cấp đủ nước</b> cho cây trồng và gieo trồng đúng thời vụ.<br>+ <b>Chọn tạo giống cây trồng</b> có diện tích lá lớn, cường độ quang hợp và năng suất cao; phòng trừ sâu bệnh cũng góp phần nâng cao năng suất cây trồng.',
    c:[
-    {t:'Nêu các biện pháp: bón phân hợp lí, đủ nước, đúng thời vụ',p:0.25,f:n=>[/bon phan/,/nuoc/,/thoi vu/].filter(r=>r.test(n)).length>=2},
-    {t:'Sử dụng đèn LED/điều chỉnh cường độ và quang phổ ánh sáng phù hợp',p:0.15,f:rx(/led/,/quang pho/,/cuong do anh sang/)},
-    {t:'Điều chỉnh/bổ sung CO2 để cung cấp nguyên liệu quang hợp',p:0.2,f:n=>/co2/.test(n)&&/quang hop/.test(n)},
-    {t:'Duy trì nhiệt độ tối ưu để enzyme quang hợp hoạt động tốt',p:0.2,f:n=>/nhiet do/.test(n)&&/(enzyme|enzim)/.test(n)},
-    {t:'Giải thích vai trò thành phần ánh sáng: xanh tím liên quan amino acid/protein, đỏ liên quan carbohydrate',p:0.2,f:n=>(/xanh tim/.test(n)&&/(amino|protein)/.test(n)&&/do/.test(n)&&/carbohydrate/.test(n))}
+    {t:'Nêu bón phân hợp lí giúp vận chuyển sản phẩm đồng hóa về cơ quan dự trữ, tăng năng suất',p:0.3,f:n=>/bon phan/.test(n)&&/(dong hoa|du tru|nang suat)/.test(n)},
+    {t:'Nêu phân bón ảnh hưởng sự phát triển bộ lá; diện tích lá lớn nâng cao hiệu suất hấp thụ ánh sáng',p:0.25,f:n=>/(bo la|dien tich la)/.test(n)&&/(anh sang|hap thu)/.test(n)},
+    {t:'Cung cấp đủ nước và gieo trồng đúng thời vụ',p:0.2,f:n=>/nuoc/.test(n)&&/thoi vu/.test(n)},
+    {t:'Chọn tạo giống có diện tích lá lớn, cường độ quang hợp và năng suất cao; phòng trừ sâu bệnh',p:0.25,f:n=>/(giong|dien tich la)/.test(n)&&/(quang hop|nang suat)/.test(n)&&/sau benh/.test(n)}
+   ]},
+  {ref:'<b>1. Nồng độ CO₂:</b><br>+ Trong nhà kính, người ta sục thêm khí CO₂ để tăng nồng độ CO₂ trong không khí.<br>+ CO₂ là nguyên liệu của quá trình quang hợp.<br>+ Khi nồng độ CO₂ tăng đến mức thích hợp, cường độ quang hợp tăng, giúp cây sinh trưởng tốt hơn.<br><b>2. Nhiệt độ:</b><br>+ Điều hòa nhiệt độ trong nhà kính để duy trì mức nhiệt độ thích hợp cho cây.<br>+ Nhiệt độ ảnh hưởng đến hoạt động của enzyme xúc tác các phản ứng trong quang hợp.<br>+ Nhiệt độ quá thấp hoặc quá cao đều làm enzyme hoạt động kém, khiến cường độ quang hợp giảm.<br>+ Mỗi loài cây cần nhiệt độ tối ưu khác nhau.<br><b>3. Ánh sáng:</b><br>+ Ánh sáng là nguồn năng lượng cho quá trình quang hợp.<br>+ Ánh sáng xanh và ánh sáng tím được diệp lục hấp thụ mạnh, giúp cây thực hiện quang hợp.<br>+ Ví dụ: sử dụng ánh sáng xanh, tím để chiếu sáng rau diếp cá, góp phần thúc đẩy quá trình quang hợp và sinh trưởng của cây.',
+   c:[
+    {t:'CO₂ là nguyên liệu quang hợp; sục CO₂ trong nhà kính; tăng đến mức thích hợp làm quang hợp tăng',p:0.34,f:n=>/co2/.test(n)&&/nguyen lieu/.test(n)&&/(nha kinh|suc)/.test(n)&&/(thich hop|tang)/.test(n)},
+    {t:'Nhiệt độ ảnh hưởng enzyme; điều chỉnh trong nhà kính; quá cao/thấp làm quang hợp giảm; mỗi loài có nhiệt độ tối ưu',p:0.33,f:n=>/nhiet do/.test(n)&&/enzyme/.test(n)&&/(toi uu|qua thap|qua cao)/.test(n)},
+    {t:'Ánh sáng là nguồn năng lượng; diệp lục hấp thụ mạnh ánh sáng xanh và tím; nêu ví dụ chiếu sáng rau diếp cá',p:0.33,f:n=>/anh sang/.test(n)&&/(nang luong|xanh|tim)/.test(n)&&/(diep luc|rau diep ca)/.test(n)}
    ]}
+
  ]
 };
 
@@ -291,10 +298,10 @@ const range = n => [...Array(n).keys()];
 function shuf(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function applyOrder() {
     if (S.shuffleOn) {
-        S.order = { mcq: shuf(range(24)), tf: shuf(range(4)), sa: shuf(range(4)), es: shuf(range(2)) };
+        S.order = { mcq: shuf(range(24)), tf: shuf(range(4)), sa: shuf(range(4)), es: shuf(range(3)) };
         S.optOrder = range(24).map(() => shuf([0, 1, 2, 3]));
     } else {
-        S.order = { mcq: range(24), tf: range(4), sa: range(4), es: range(2) };
+        S.order = { mcq: range(24), tf: range(4), sa: range(4), es: range(3) };
         S.optOrder = range(24).map(() => [0, 1, 2, 3]);
     }
 }
@@ -303,7 +310,25 @@ function freshConfirmed() { return { sa: {}, es: {} }; }
 function load() {
     try {
         const r = JSON.parse(localStorage.getItem(STORE_KEY));
-        if (r && r.v === 1 && r.s && r.s.order) { const s = r.s; s.confirmed ||= freshConfirmed(); s.confirmed.sa ||= {}; s.confirmed.es ||= {}; return s; }
+        if (r && r.v === 1 && r.s && r.s.order) {
+            const s = r.s;
+            s.confirmed ||= freshConfirmed(); s.confirmed.sa ||= {}; s.confirmed.es ||= {};
+            s.answers ||= freshAnswers(); s.manual ||= {};
+            s.cur ||= { mcq: 0, tf: 0, sa: 0, es: 0 };
+            const sizes = { mcq: 24, tf: 4, sa: 4, es: 3 };
+            const valid = Object.keys(sizes).every(k => Array.isArray(s.order[k]) &&
+                s.order[k].length === sizes[k] && new Set(s.order[k]).size === sizes[k] &&
+                s.order[k].every(x => Number.isInteger(x) && x >= 0 && x < sizes[k]));
+            if (!valid) s.order = null;
+            if (!Array.isArray(s.optOrder) || s.optOrder.length !== 24) s.optOrder = null;
+            if (!SEC_IDS.includes(s.section)) s.section = 'mcq';
+            SEC_IDS.forEach(k => s.cur[k] = Math.max(0, Math.min(N[k]-1, Number(s.cur[k]) || 0)));
+            if (s.order && s.optOrder) return s;
+            const make = n => s.shuffleOn ? shuf(range(n)) : range(n);
+            s.order = { mcq: make(24), tf: make(4), sa: make(4), es: make(3) };
+            s.optOrder = range(24).map(() => s.shuffleOn ? shuf([0,1,2,3]) : [0,1,2,3]);
+            return s;
+        }
     } catch (e) {}
     const s = { answers: freshAnswers(), order: null, optOrder: null, shuffleOn: true, submitted: false, review: false,
                 section: 'mcq', cur: { mcq: 0, tf: 0, sa: 0, es: 0 }, manual: {}, confirmed: freshConfirmed() };
@@ -385,10 +410,10 @@ function grade() {
             const cs = KEY[sec][qi].c, text = (S.answers[sec][qi] || '').trim();
             const confirmed = !!S.confirmed?.[sec]?.[qi];
             const met = cs.map((c, j) => confirmed && critMet(sec, qi, j));
-            const mx = sec === 'sa' ? 0.25 : cs.reduce((a, c) => a + c.p, 0);
+            const mx = sec === 'sa' ? 0.25 : cs.reduce((a, c) => a + c.p, 0) * (2 / 3);
             let score = 0;
             if (sec === 'sa') score = mx * met.filter(Boolean).length / cs.length;
-            else cs.forEach((c, j) => { if (met[j]) score += c.p; });
+            else cs.forEach((c, j) => { if (met[j]) score += c.p * (2 / 3); });
             const st = !text || !confirmed ? 'blank' : (met.every(Boolean) ? 'ok' : 'bad');
             G[sec].items.push({ sec, pos, qi, st, met, score: r3(score), max: r3(mx) });
         });
@@ -415,7 +440,7 @@ function renderTest(anim = true) {
     renderTop(); renderTabs(); renderCard(anim); renderFoot(); renderNav(); renderSubmit();
 }
 function renderTop() {
-    const done = totalAnswered(), pct = Math.round(done / 34 * 100);
+    const done = totalAnswered(), pct = Math.round(done / 35 * 100);
     $('#top').innerHTML = `
     <section class="rounded-2xl border border-slate-800 bg-slate-800/40 p-5">
       <div class="flex flex-wrap items-start justify-between gap-4">
@@ -425,7 +450,7 @@ function renderTop() {
         </div>
       </div>
       <div class="mt-4">
-        <div class="flex justify-between text-xs text-slate-400 mb-1.5"><span>Tiến độ hoàn thành</span><span class="font-medium text-slate-200">${done}/34 câu</span></div>
+        <div class="flex justify-between text-xs text-slate-400 mb-1.5"><span>Tiến độ hoàn thành</span><span class="font-medium text-slate-200">${done}/35 câu</span></div>
         <div class="h-2 bg-slate-700/70 rounded-full overflow-hidden"><div class="h-2 rounded-full bg-gradient-to-r from-indigo-500 to-emerald-400 transition-all duration-300" style="width:${pct}%"></div></div>
       </div>
       <div class="mt-4 flex flex-wrap gap-2">
@@ -450,68 +475,48 @@ function renderCard(anim = true) {
     if (sec === 'mcq') {
         const q = QUESTIONS.mcq[qi], sel = S.answers.mcq[qi], k = KEY.mcq[qi], done = sel !== undefined;
         body = `<p class="text-base md:text-lg font-medium text-white leading-relaxed mb-1">${q.q}</p>
-          <p class="text-xs text-slate-500 mb-4">Chọn một đáp án — kết quả và giải thích hiện ngay sau khi chọn.</p><div class="space-y-2.5">` +
+          <p class="text-xs text-slate-500 mb-4">Chọn một đáp án để xem kết quả và giải thích ngay.</p><div class="space-y-2.5">` +
             S.optOrder[qi].map((oi, i) => {
                 let cls = 'border-slate-700 bg-slate-900/50 text-slate-200 hover:border-indigo-500/60 hover:bg-slate-800', badge = 'bg-slate-700/60 text-slate-300', ic = '';
-                if (done) {
-                    if (oi === k.a) { cls = 'border-emerald-500/60 bg-emerald-500/10 text-emerald-100'; badge = 'bg-emerald-500 text-white'; ic = '<i class="fa-solid fa-check text-emerald-400 mt-1"></i>'; }
-                    else if (oi === sel) { cls = 'border-rose-500/60 bg-rose-500/10 text-rose-100'; badge = 'bg-rose-500 text-white'; ic = '<i class="fa-solid fa-xmark text-rose-400 mt-1"></i>'; }
-                    else { cls = 'border-slate-800 bg-slate-900/30 text-slate-500'; }
-                }
+                if (done && oi === k.a) { cls = 'border-emerald-500/70 bg-emerald-500/10 text-emerald-100'; badge = 'bg-emerald-600 text-white'; ic = '<i class="fa-solid fa-check text-emerald-400"></i>'; } else if (done && oi === sel) { cls = 'border-rose-500/70 bg-rose-500/10 text-rose-100'; badge = 'bg-rose-600 text-white'; ic = '<i class="fa-solid fa-xmark text-rose-400"></i>'; }
                 return `<button ${done ? 'disabled' : `data-act="pick" data-oi="${oi}"`} class="w-full text-left flex gap-3 items-start rounded-xl border px-4 py-3 transition-all ${cls} ${done ? 'cursor-default' : ''}">
                   <span class="w-7 h-7 shrink-0 rounded-lg flex items-center justify-center text-sm font-semibold ${badge}">${'ABCD'[i]}</span>
                   <span class="flex-1 pt-0.5 leading-relaxed">${q.o[oi]}</span>${ic}</button>`;
-            }).join('') + `</div>` +
-            (done ? `<div class="fade mt-4 rounded-xl border ${sel === k.a ? 'border-emerald-500/40 bg-emerald-500/10' : 'border-rose-500/40 bg-rose-500/10'} p-4">
-              <div class="font-semibold ${sel === k.a ? 'text-emerald-300' : 'text-rose-300'}">${sel === k.a ? '<i class="fa-solid fa-circle-check mr-1.5"></i>Chính xác!' : `<i class="fa-solid fa-circle-xmark mr-1.5"></i>Chưa đúng — đáp án đúng là ${'ABCD'[S.optOrder[qi].indexOf(k.a)]}.`}</div>
-              <div class="text-sm text-slate-200 leading-relaxed mt-1.5"><b class="text-indigo-300">Giải thích:</b> ${k.e}</div></div>` : '');
+            }).join('') + `</div>` + (done ? `<div class="mt-3 text-sm font-semibold ${sel === k.a ? 'text-emerald-300' : 'text-rose-300'}">${sel === k.a ? 'Chính xác!' : `Chưa chính xác. Đáp án đúng: ${'ABCD'[S.optOrder[qi].indexOf(k.a)]}. ${q.o[k.a]}`}</div>${expBox(k.e)}` : '');
     } else if (sec === 'tf') {
         const q = QUESTIONS.tf[qi], kk = KEY.tf[qi];
         body = `<p class="text-base md:text-lg font-medium text-white leading-relaxed mb-1">${q.q}</p>
-          <p class="text-xs text-slate-500 mb-4">Chọn Đúng hoặc Sai cho từng ý a, b, c, d — kết quả và giải thích hiện ngay sau mỗi lần chọn.</p><div class="space-y-3">` +
+          <p class="text-xs text-slate-500 mb-4">Chọn Đúng hoặc Sai cho từng ý để xem kết quả và giải thích ngay.</p><div class="space-y-3">` +
             q.items.map((t, k) => {
                 const v = S.answers.tf[qi + '-' + k], done = v !== undefined, right = kk.a[k], ok = v === right;
                 const btn = (val, label, on) => {
                     if (!done) return `<button data-act="tf" data-k="${k}" data-v="${val}" class="px-4 py-1.5 rounded-lg text-sm font-semibold border border-slate-600 bg-slate-800 text-slate-300 hover:border-slate-400 transition-all">${label}</button>`;
-                    const cls = val === v ? (ok ? 'border-emerald-400 bg-emerald-500/20 text-emerald-200' : 'border-rose-400 bg-rose-500/20 text-rose-200') : 'border-slate-800 bg-slate-900/30 text-slate-600';
+                    const cls = val === v ? 'border-indigo-400 bg-indigo-500/20 text-indigo-200' : 'border-slate-800 bg-slate-900/30 text-slate-600';
                     return `<button disabled class="px-4 py-1.5 rounded-lg text-sm font-semibold border cursor-default ${cls}">${label}</button>`;
                 };
-                return `<div class="rounded-xl border ${!done ? 'border-slate-700' : ok ? 'border-emerald-500/40' : 'border-rose-500/40'} bg-slate-900/50 p-4">
+                return `<div class="rounded-xl border ${!done ? 'border-slate-700' : 'border-indigo-500/40'} bg-slate-900/50 p-4">
                   <div class="flex flex-col sm:flex-row sm:items-center gap-3">
                     <div class="flex gap-3 flex-1"><b class="text-indigo-300 w-5 shrink-0">${'abcd'[k]})</b><span class="leading-relaxed text-slate-100">${t}</span></div>
                     <div class="flex gap-2 shrink-0 sm:ml-3">${btn(true, 'Đúng')}${btn(false, 'Sai')}</div></div>
-                  ${done ? `<div class="fade mt-3 ml-8 text-sm leading-relaxed ${ok ? 'text-emerald-200' : 'text-rose-200'}">
-                    <b>${ok ? '<i class="fa-solid fa-circle-check mr-1"></i>Bạn chọn đúng.' : '<i class="fa-solid fa-circle-xmark mr-1"></i>Bạn chọn chưa đúng.'}</b>
-                    <span class="text-slate-300"> ${kk.e[k]}</span></div>` : ''}</div>`;
+                    ${done ? `<div class="mt-3 text-sm ${ok ? 'text-emerald-300' : 'text-rose-300'}"><b>${ok ? 'Chính xác!' : `Chưa chính xác. Đáp án: ${right ? 'Đúng' : 'Sai'}.`}</b></div>${expBox(kk.e[k])}` : ''}
+                  </div>`;
             }).join('') + `</div>`;
     } else if (sec === 'sa') {
         const q = QUESTIONS.sa[qi], val = S.answers.sa[qi] || '', confirmed = !!S.confirmed.sa[qi];
-        const correct = confirmed && KEY.sa[qi].c[0].f(val);
         body = `<p class="text-base md:text-lg font-medium text-white leading-relaxed mb-4">${q.q}</p>
           <label class="block text-xs text-slate-400 mb-2" for="sa-answer">Đáp án của bạn — chỉ nhập một số</label>
-          <input id="sa-answer" data-num="sa" data-i="${qi}" type="text" inputmode="decimal" autocomplete="off" maxlength="16" ${confirmed ? 'disabled' : ''} value="${esc(val)}" placeholder="Ví dụ: 6 hoặc 0.1"
+          <input id="sa-answer" data-num="sa" data-i="${qi}" type="text" inputmode="decimal" autocomplete="off" maxlength="16" value="${esc(val)}" placeholder="Ví dụ: 6 hoặc 0.1"
             class="w-full rounded-xl border border-slate-700 bg-slate-900/70 text-slate-100 placeholder-slate-500 p-4 text-lg focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-70">
           <p class="text-xs text-slate-500 mt-2">Chỉ chấp nhận một số duy nhất. Số thập phân có thể dùng dấu chấm hoặc dấu phẩy.</p>
-          ${confirmed ? `<div class="fade mt-4 rounded-xl border ${correct ? 'border-emerald-500/40 bg-emerald-500/10' : 'border-rose-500/40 bg-rose-500/10'} p-4">
-            <div class="font-semibold ${correct ? 'text-emerald-300' : 'text-rose-300'}">${correct ? '<i class="fa-solid fa-circle-check mr-1.5"></i>Chính xác!' : '<i class="fa-solid fa-circle-xmark mr-1.5"></i>Chưa chính xác.'}</div>
-            <p class="text-sm text-slate-200 mt-1.5">Đáp án đúng: <b class="text-emerald-300">${KEY.sa[qi].ref}</b></p>
-            ${expBox(KEY.sa[qi].note)}</div>` : `<button data-act="confirm-text" data-sec="sa" class="mt-4 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-all"><i class="fa-solid fa-check"></i>Xác nhận và kiểm tra</button>`}`;
+          <button data-act="confirm-text" data-sec="sa" class="mt-4 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-all"><i class="fa-solid fa-check"></i>${confirmed ? 'Đã kiểm tra – Check lại' : 'Xác nhận / Check'}</button>${confirmed ? `<div class="mt-5 rounded-xl border border-slate-700 bg-slate-900/40 p-4">${rvText(grade().sa.items.find(x => x.qi === qi))}</div>` : ''}`;
     } else {
         const q = QUESTIONS.es[qi], val = S.answers.es[qi] || '', confirmed = !!S.confirmed.es[qi];
         const cs = KEY.es[qi].c;
-        const met = cs.map((c, j) => confirmed && critMet('es', qi, j));
-        const earned = cs.reduce((sum, c, j) => sum + (met[j] ? c.p : 0), 0);
-        const max = cs.reduce((sum, c) => sum + c.p, 0);
         body = `<p class="text-base md:text-lg font-medium text-white leading-relaxed mb-4">${q.q}</p>
-          <textarea data-ta="es" data-i="${qi}" rows="12" ${confirmed ? 'disabled' : ''} placeholder="Trình bày bài làm của bạn…"
+          <textarea data-ta="es" data-i="${qi}" rows="12" placeholder="Trình bày bài làm của bạn…"
             class="w-full rounded-xl border border-slate-700 bg-slate-900/70 text-slate-100 placeholder-slate-500 p-4 leading-relaxed focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-70">${esc(val)}</textarea>
           <p class="text-xs text-slate-500 mt-2">Bài làm được lưu tự động. Hệ thống kiểm tra từ khóa và chữ số thông thường, ví dụ CO2, O2, H2O, 0.1; không bắt buộc dùng ký tự số dưới.</p>
-          ${confirmed ? `<div class="fade mt-4 rounded-xl border border-indigo-500/30 bg-indigo-500/5 p-4">
-            <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><b class="${earned === max ? 'text-emerald-300' : 'text-amber-300'}">${earned === max ? 'Đã đạt đủ các ý chính' : 'Đã kiểm tra bài làm'}</b><span class="text-sm font-semibold text-white">${fmt(earned)}/${fmt(max)} điểm</span></div>
-            <div class="space-y-2">${cs.map((c,j) => `<div class="flex gap-2 text-sm ${met[j] ? 'text-emerald-200' : 'text-rose-200'}"><i class="fa-solid ${met[j] ? 'fa-circle-check' : 'fa-circle-xmark'} mt-0.5"></i><span>${c.t}</span></div>`).join('')}</div>
-            ${expBox(KEY.es[qi].note)}
-            <div class="mt-3 text-xs text-slate-400">Đáp án tham khảo / dàn ý: <div class="text-sm text-slate-200 leading-relaxed mt-1">${KEY.es[qi].ref}</div></div>
-          </div>` : `<button data-act="confirm-text" data-sec="es" class="mt-4 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-all"><i class="fa-solid fa-check"></i>Xác nhận và kiểm tra</button>`}`;
+          <button data-act="confirm-text" data-sec="es" class="mt-4 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-all"><i class="fa-solid fa-check"></i>${confirmed ? 'Đã kiểm tra – Check lại' : 'Xác nhận / Check'}</button>${confirmed ? `<div class="mt-5 rounded-xl border border-slate-700 bg-slate-900/40 p-4">${rvText(grade().es.items.find(x => x.qi === qi))}</div>` : ''}`;
 
     }
     $('#card').innerHTML = `<section class="${anim ? 'fade' : ''} rounded-2xl border border-slate-800 bg-slate-800/50 p-5 md:p-7">
@@ -532,10 +537,7 @@ function renderNav() {
         range(n).map(pos => {
             const qi = S.order[sec][pos], cur = pos === S.cur[sec], d = isDone(sec, qi);
             let cl = 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500';
-            if (d) {
-                const good = sec === 'mcq' ? S.answers.mcq[qi] === KEY.mcq[qi].a : sec === 'tf' ? range(4).every(j => S.answers.tf[qi + '-' + j] === KEY.tf[qi].a[j]) : KEY[sec][qi].c.every((c, j) => critMet(sec, qi, j));
-                cl = good ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-200' : 'bg-rose-500/20 border-rose-500/50 text-rose-200';
-            }
+            if (d) cl = 'bg-indigo-500/15 border-indigo-500/40 text-indigo-200';
             return `<button data-act="goto" data-i="${pos}" class="w-10 h-10 rounded-lg text-sm font-semibold border transition-all ${cur ? 'ring-2 ring-indigo-400 ' : ''}${cl}">${pos + 1}</button>`;
         }).join('') + `</div></div>`;
 }
@@ -634,8 +636,7 @@ function renderResult() {
         <div class="flex-1 min-w-[220px]"><h1 class="text-xl md:text-2xl font-bold ${msg[1]} mb-3">${msg[0]}</h1>
           <div class="grid grid-cols-3 gap-2">${stat(G.ok, 'Câu đúng / đủ ý', 'text-emerald-300')}${stat(G.bad, 'Câu sai / thiếu ý', 'text-rose-300')}${stat(G.blank, 'Chưa trả lời', 'text-slate-300')}</div></div>
       </div>
-      <p class="text-xs text-slate-500 mt-4 leading-relaxed">Thang điểm do trang ôn tập thiết lập (không phải thang điểm nguyên bản của tài liệu). Trả lời ngắn được chấm theo một giá trị số duy nhất; tự luận được kiểm tra theo từ khóa và chữ số thông thường sau khi bấm Xác nhận.</p>
-    </section>
+      <p class="ten>
 
     <section class="rounded-2xl border border-slate-800 bg-slate-800/40 p-5 md:p-6">
       <h2 class="font-bold text-white mb-4">Điểm từng phần</h2>
@@ -699,8 +700,9 @@ function openMatrix() {
    HÀNH ĐỘNG
    ===================================================================== */
 function submitNow() {
+    if (S.submitted) return;
     S.submitted = true; S.review = false; save();
-    renderResult(); window.scrollTo({ top: 0 });
+    closeModal(); renderResult(); window.scrollTo({ top: 0 });
 }
 function resetAnswers() { S.answers = freshAnswers(); S.manual = {}; S.confirmed = freshConfirmed(); S.submitted = false; S.review = false; S.section = 'mcq'; S.cur = { mcq: 0, tf: 0, sa: 0, es: 0 }; }
 function go(delta) {
@@ -725,8 +727,7 @@ document.addEventListener('click', e => {
         if (targetSec === 'sa' && parseOneNumber(answer) === null) { toast('Trả lời ngắn chỉ chấp nhận đúng một số, ví dụ 6 hoặc 0.1.'); return; }
         S.confirmed[targetSec][qi] = true; save();
         renderCard(false); renderTop(); renderTabs(); renderNav();
-        const passed = targetSec === 'sa' ? KEY.sa[qi].c[0].f(answer) : KEY.es[qi].c.every((c, j) => critMet('es', qi, j));
-        toast(targetSec === 'sa' ? (passed ? 'Đáp án chính xác!' : 'Đã kiểm tra — xem đáp án và giải thích bên dưới.') : 'Đã kiểm tra bài tự luận — xem từng ý bên dưới.');
+        toast('Đã kiểm tra câu trả lời.');
         return;
     }
     if (act === 'review') { S.review = !S.review; save(); const y = window.scrollY; renderResult(); window.scrollTo({ top: y }); return; }
@@ -751,7 +752,7 @@ document.addEventListener('click', e => {
     if (act === 'shuf-toggle') { S.shuffleOn = !S.shuffleOn; applyOrder(); save(); renderTest(true); toast(S.shuffleOn ? 'Đã bật xáo trộn – câu trả lời được giữ nguyên' : 'Đã tắt xáo trộn – trở về thứ tự gốc'); return; }
     if (act === 'shuf-again') { applyOrder(); save(); renderTest(true); toast('Đã xáo trộn lại'); return; }
     if (act === 'submit') {
-        const left = 34 - totalAnswered();
+        const left = 35 - totalAnswered();
         return ask('Nộp bài?', left > 0 ? `Bạn còn <b class="text-amber-300">${left}</b> câu chưa hoàn thành. Sau khi nộp sẽ không thể sửa đáp án.` : 'Bạn đã hoàn thành tất cả các câu. Sau khi nộp sẽ không thể sửa đáp án.', 'Nộp bài', () => submitNow());
     }
 });
@@ -768,6 +769,8 @@ document.addEventListener('change', e => {
     const y = window.scrollY; renderResult(); window.scrollTo({ top: y });
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+window.addEventListener('pagehide', save);
+window.addEventListener('beforeunload', save);
 
 /* =====================================================================
    KHỞI ĐỘNG
