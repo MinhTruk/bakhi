@@ -617,7 +617,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
 
         <!-- Bảng điều khiển Developer -->
         <div id="dev-panel-modal" class="hidden fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4">
-            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-2xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
                 <div class="px-5 py-3.5 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between">
                     <div class="flex items-center space-x-2.5"><i class="fa-solid fa-terminal text-indigo-500 text-lg"></i><h3 class="font-bold text-base">Bảng điều khiển Developer</h3></div>
                     <button onclick="closeDevPanel()" class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -630,6 +630,10 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                     <button class="dv-tab" data-tab="debug" onclick="switchDevTab('debug')"><i class="fa-solid fa-bug mr-1.5"></i>Debug</button>
                     <button class="dv-tab" data-tab="anim" onclick="switchDevTab('anim')"><i class="fa-solid fa-film mr-1.5"></i>Animation</button>
                     <button class="dv-tab" data-tab="adv" onclick="switchDevTab('adv')"><i class="fa-solid fa-rocket mr-1.5"></i>Nâng cao</button>
+                    <button class="dv-tab" data-tab="insp" onclick="switchDevTab('insp')"><i class="fa-solid fa-magnifying-glass-chart mr-1.5"></i>Kiểm tra</button>
+                    <button class="dv-tab" data-tab="perf" onclick="switchDevTab('perf')"><i class="fa-solid fa-gauge-high mr-1.5"></i>Hiệu năng</button>
+                    <button class="dv-tab" data-tab="studio" onclick="switchDevTab('studio')"><i class="fa-solid fa-paintbrush mr-1.5"></i>Studio</button>
+                    <button class="dv-tab" data-tab="bk" onclick="switchDevTab('bk')"><i class="fa-solid fa-graduation-cap mr-1.5"></i>Bakhi</button>
                 </div>
                 <div class="p-5 overflow-y-auto flex-grow bg-slate-50 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300">
                     <div class="dv-pane" data-pane="fx">
@@ -700,6 +704,54 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                         <p class="text-[11px] mt-3 opacity-70 leading-relaxed">Highlight bạn chỉnh được giữ qua các lần tải trang; key mới trong <code>defaultHighlights</code> được thêm tự động mà không ghi đè. Muốn áp lại mặc định trong file: "Đồng bộ highlight từ file". Hình nền lưu trong IndexedDB nên không nằm trong Xuất JSON/sao lưu.</p>
                         <div class="text-xs font-semibold mt-4 mb-1">Sao lưu (tối đa 5 bản gần nhất)</div><div id="bkList" class="text-[11px] space-y-1"></div>
                         <p class="text-[11px] mt-4 opacity-70 leading-relaxed">Bảo mật: khóa Developer chỉ hạn chế giao diện trên site tĩnh, không phải bảo vệ thật. Muốn bảo vệ thật cần xác thực phía server.</p>
+                    </div>
+                    <div class="dv-pane hidden" data-pane="insp">
+                        <div class="flex flex-wrap gap-2 mb-2"><button class="dv-btn" onclick="DX.pick()"><i class="fa-solid fa-arrow-pointer mr-1"></i>Chọn phần tử</button><button class="dv-btn alt" onclick="DX.cp('sel')">Copy selector</button><button class="dv-btn alt" onclick="DX.cp('xp')">Copy XPath</button><button class="dv-btn alt" onclick="DX.cp('html')">Copy HTML</button><button class="dv-btn alt" onclick="DX.cp('css')">Copy CSS</button></div>
+                        <div id="inInfo" class="text-[11px] font-mono p-3 rounded-xl bg-slate-500/10 mb-3 space-y-0.5"></div>
+                        <div class="text-xs font-semibold mb-1">Box model</div><div id="inBox" class="mb-3"></div>
+                        <div class="flex items-center justify-between mb-1"><span class="text-xs font-semibold">CSS / Layout (computed)</span><input id="inCssQ" oninput="DX.render()" placeholder="Tìm thuộc tính..." class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs w-36"></div>
+                        <div id="inCss" class="text-[11px] font-mono mb-3 max-h-40 overflow-y-auto"></div>
+                        <div class="text-xs font-semibold mb-1">Màu</div>
+                        <div class="flex flex-wrap gap-2 mb-2"><button class="dv-btn alt" onclick="DX.color('color')">Màu chữ</button><button class="dv-btn alt" onclick="DX.color('background-color')">Màu nền</button><button class="dv-btn alt" id="inEye" onclick="DX.eye()">Ống hút</button></div>
+                        <div id="inColors" class="flex flex-wrap gap-1.5 mb-3 text-[10px] font-mono"></div>
+                        <div class="text-xs font-semibold mb-1">DOM</div>
+                        <input id="inDomQ" oninput="DX.domSearch(this.value)" placeholder="Tìm node theo tag, id, class..." class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs w-full mb-2"><div id="inDom" class="text-[11px] font-mono max-h-40 overflow-y-auto"></div>
+                    </div>
+                    <div class="dv-pane hidden" data-pane="perf">
+                        <div class="text-xs font-semibold mb-1">FPS <span id="pfStat" class="font-normal opacity-70"></span></div>
+                        <canvas id="pfCv" width="300" height="60" class="w-full rounded-lg bg-slate-950 mb-1"></canvas>
+                        <div id="pfMem" class="text-[11px] font-mono p-2 rounded-xl bg-slate-500/10 mb-3"></div>
+                        <div class="flex items-center justify-between mb-1"><span class="text-xs font-semibold">Tài nguyên (Performance API)</span><span><select id="rsF" onchange="DX.res()" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"><option value="all">Tất cả</option><option value="js">JS</option><option value="css">CSS</option><option value="img">Image</option><option value="font">Font</option><option value="other">Other</option></select> <button class="dv-btn alt" onclick="DX.res()">Làm mới</button></span></div>
+                        <div id="rsOut" class="text-[11px] font-mono max-h-44 overflow-y-auto mb-1"></div>
+                        <p class="text-[10px] opacity-60 mb-3">Giới hạn: chỉ thấy request mà trình duyệt cho phép; kích thước = 0/? với tài nguyên khác nguồn không cho phép đo. Không thay được tab Network của DevTools.</p>
+                        <div class="flex flex-wrap gap-2 mb-2"><button class="dv-btn" onclick="DX.imgs()">Quét ảnh lỗi</button><button class="dv-btn" id="lnBtn" onclick="DX.links()">Quét liên kết</button></div>
+                        <div id="pfOut" class="text-[11px] font-mono space-y-0.5 max-h-48 overflow-y-auto"></div>
+                    </div>
+                    <div class="dv-pane hidden" data-pane="studio">
+                        <div class="text-xs font-semibold mb-1">CSS Live Editor</div>
+                        <textarea id="stCss" rows="5" spellcheck="false" class="w-full p-2 rounded-xl bg-slate-950 text-sky-300 font-mono text-[11px] outline-none" placeholder="body { font-size: 110%; }"></textarea>
+                        <div id="stErr" class="text-[11px] text-rose-500 min-h-[1rem]"></div>
+                        <div class="flex flex-wrap gap-2 mb-3"><button class="dv-btn" onclick="DX.cssRun()">Chạy thử</button><button class="dv-btn alt" onclick="DX.cssReset()">Reset</button><button class="dv-btn alt" onclick="DX.cssExport()">Export .css</button><select id="stPre" onchange="DX.preset(this.value)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"><option value="">Preset…</option></select></div>
+                        <div class="text-xs font-semibold mb-1">Snippet (HTML / CSS / JS — không bao giờ tự chạy)</div>
+                        <div class="flex flex-wrap gap-2 mb-2"><input id="snN" placeholder="Tên snippet" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs flex-1 min-w-0"><select id="snT" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"><option>css</option><option>html</option><option>js</option></select><button class="dv-btn alt" onclick="DX.snAdd()">Lưu từ ô trên</button></div>
+                        <div class="flex flex-wrap gap-2 mb-2"><input id="snQ" oninput="DX.snList()" placeholder="Tìm snippet..." class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs flex-1 min-w-0"><button class="dv-btn alt" onclick="DX.snExport()">Export</button><label class="dv-btn alt cursor-pointer">Import<input type="file" accept="application/json" class="hidden" onchange="DX.snImport(event)"></label></div>
+                        <div id="snOut" class="text-[11px] space-y-1 mb-3 max-h-32 overflow-y-auto"></div>
+                        <div class="text-xs font-semibold mb-1">Animation</div>
+                        <div class="flex flex-wrap gap-2 mb-2"><button class="dv-btn alt" onclick="DX.an('pause')">Tạm dừng</button><button class="dv-btn alt" onclick="DX.an('play')">Tiếp tục</button><button class="dv-btn alt" onclick="DX.an('reset')">Reset</button><select onchange="DX.an('rate',+this.value)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"><option value="1">1×</option><option value=".5">0.5×</option><option value=".25">0.25×</option><option value="2">2×</option></select><button class="dv-btn alt" onclick="DX.an('list')">Làm mới</button></div>
+                        <div id="anOut" class="text-[11px] font-mono max-h-32 overflow-y-auto mb-2"></div>
+                        <div class="flex flex-wrap gap-2 mb-2"><select id="anPre" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"></select><button class="dv-btn alt" onclick="DX.anPrev()">Xem trước</button><button class="dv-btn alt" onclick="DX.anCopy()">Copy CSS</button></div>
+                        <div id="anBox" class="w-16 h-16 rounded-xl bg-indigo-500/80 mx-auto"></div>
+                    </div>
+                    <div class="dv-pane hidden" data-pane="bk">
+                        <p class="text-[11px] opacity-70 mb-3">Dựa trên danh sách môn/đợt khai báo trong file. Website tĩnh không đọc được thư mục server, nên kiểm tra bằng cách gửi request tới từng đường dẫn.</p>
+                        <div class="text-xs font-semibold mb-1">Link Generator</div>
+                        <div class="flex flex-wrap gap-2 mb-2"><select id="bkCat" onchange="DX.gen()" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"></select><select id="bkSub" onchange="DX.gen()" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"></select><button class="dv-btn alt" onclick="DX.cp('gen')">Copy</button></div>
+                        <div id="bkGen" class="text-[11px] font-mono break-all p-2 rounded-xl bg-slate-500/10 mb-3"></div>
+                        <div class="flex flex-wrap gap-2 mb-2"><button class="dv-btn" id="bkVBtn" onclick="DX.validate()">Folder Validator</button><select id="bkNavCat" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"></select><button class="dv-btn" onclick="DX.nav()">Navigation Tester</button></div>
+                        <div id="bkOut" class="text-[11px] font-mono space-y-0.5 max-h-48 overflow-y-auto mb-3"></div>
+                        <div class="text-xs font-semibold mb-1">Sitemap Generator</div>
+                        <div class="flex flex-wrap gap-2 mb-2"><select id="bkSm" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs"><option value="json">JSON</option><option value="xml">XML</option><option value="html">Danh sách HTML</option></select><label class="text-[11px] flex items-center gap-1"><input type="checkbox" id="bkSmV" class="accent-indigo-600">Chỉ link đã xác minh</label><button class="dv-btn alt" onclick="DX.sitemap()">Tạo</button><button class="dv-btn alt" onclick="DX.cp('sm')">Copy</button><button class="dv-btn alt" onclick="DX.smDl()">Tải</button></div>
+                        <textarea id="bkSmOut" rows="5" readonly class="w-full p-2 rounded-xl bg-slate-950 text-slate-200 font-mono text-[10px] outline-none"></textarea>
                     </div>
                 </div>
             </div>
@@ -973,7 +1025,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
         }
         function setDevUI(on) {
-            guardOn = !on;
+            guardOn = !on; document.body.classList.toggle('nocopy', guardOn);
             document.getElementById('devCodeSection').classList.toggle('hidden', on);
             document.getElementById('devPanelBtnContainer').classList.toggle('hidden', !on);
         }
@@ -1697,7 +1749,9 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         });
 
         // ===== Chống copy (Developer đã đăng nhập thì được miễn) =====
-        let guardOn = true;
+        let guardOn = true; document.body.classList.add('nocopy');
+        // Chống bôi đen/copy cho người xem thường (Developer đã đăng nhập được miễn). Chỉ là rào cản giao diện, không phải bảo vệ tuyệt đối.
+        ['selectstart', 'copy', 'cut'].forEach(n => document.addEventListener(n, e => { if (guardOn && !(e.target.closest ? inField(e) : (e.target.parentElement && inField({ target: e.target.parentElement })))) e.preventDefault(); }));
         const inField = e => e.target.closest && e.target.closest('input,textarea');
         ['contextmenu', 'dragstart'].forEach(n => document.addEventListener(n, e => { if (guardOn && !inField(e)) e.preventDefault(); }));
         document.addEventListener('keydown', e => {
@@ -1815,7 +1869,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         function copyHtml() { navigator.clipboard && navigator.clipboard.writeText('<!DOCTYPE html>\n' + document.documentElement.outerHTML).then(() => showToast('Đã copy HTML trang', 'success')); }
         const CMDS = () => [['Mở/đóng mọi thư mục', () => expandAll(_allOpen = !_allOpen)], ['Sao băng nổ', () => __fx.shot()], ['Thử animation favicon', () => __fav.play()], ['Thử chuyển trang (bàn tay)', () => __bkt.test('L')], ['Animation logo header', logoAnim],
             ['Đổi giao diện sáng/tối', () => toggleDarkMode()], ['Quét link hỏng', () => { openDevPanel(); switchDevTab('tools'); scanLinks(); }], ['Bật/tắt đồng hồ FPS', () => setUi('fps', !uiCfg.fps)], ['Bật/tắt Inspector', () => setAdv('inspect', !advOn.inspect)],
-            ['Copy HTML trang', copyHtml], ['Xóa cache & tải lại', hardReload], ['Bật/tắt chế độ máy yếu (lite)', () => { setFx('quality', __fx.cfg.quality === 'lite' ? 'auto' : 'lite'); showToast('Chế độ: ' + __fx.cfg.quality, 'success'); }], ['Mở bảng điều khiển Developer', openDevPanel]];
+            ['Copy HTML trang', copyHtml], ['Xóa cache & tải lại', hardReload], ['Bật/tắt chế độ máy yếu (lite)', () => { setFx('quality', __fx.cfg.quality === 'lite' ? 'auto' : 'lite'); showToast('Chế độ: ' + __fx.cfg.quality, 'success'); }], ['Mở bảng điều khiển Developer', openDevPanel], ...(window.__cmdExt || [])];
         function palette() {
             closeDevPanel(); let p = document.getElementById('pal'); if (p) { p.remove(); return; }
             p = document.createElement('div'); p.id = 'pal'; p.className = 'fixed inset-0 z-[9996] bg-slate-950/70 flex items-start justify-center pt-24 px-4';
@@ -1832,6 +1886,157 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         document.addEventListener('keydown', e => {
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && !document.getElementById('devPanelBtnContainer').classList.contains('hidden')) { e.preventDefault(); palette(); }
         });
+    </script>
+    <script>
+    /* ===== Developer v5-v8: Inspection, Performance, Studio, Bakhi (module DX) ===== */
+    (function () {
+        const $ = id => document.getElementById(id), el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+        const cp = (t, m) => navigator.clipboard ? navigator.clipboard.writeText(t).then(() => showToast(m || 'Đã copy', 'success'), () => showToast('Không copy được', 'error')) : showToast('Trình duyệt không hỗ trợ clipboard', 'error');
+        const dlText = (n, t, m) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t], { type: m || 'text/plain' })); a.download = n; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
+        const lbl = t => t.tagName.toLowerCase() + (t.id ? '#' + t.id : '') + (typeof t.className === 'string' && t.className.trim() ? '.' + t.className.trim().split(/\s+/).slice(0, 2).join('.') : '');
+        const inDev = n => n && n.closest && n.closest('#dev-panel-modal,#dvPick');
+        const lines = (box, rows) => { box.textContent = ''; rows.forEach(([ok, t]) => box.appendChild(el('div', ok === true ? 'text-emerald-500' : ok === false ? 'text-rose-500' : ok === 'w' ? 'text-amber-500' : 'opacity-80', t))); };
+        async function pool(a, f, n) { const q = a.slice(); await Promise.all(Array.from({ length: n || 6 }, async () => { while (q.length) await f(q.shift()); })); }
+        const declared = () => { const r = []; examCategories.forEach(c => subjects.forEach(s => r.push({ c, s, u: c.path + '/' + s.id + '/' + s.indexFile }))); return r; };
+        const abs = u => new URL(u, location.href).href;
+        const panelOpen = t => !$('dev-panel-modal').classList.contains('hidden') && !document.querySelector('[data-pane=' + t + ']').classList.contains('hidden');
+        let sel = null, picking = false, box;
+
+        // ---------- Element Picker + Inspector ----------
+        function mkBox() { if (box) return; box = el('div'); box.id = 'dvPick'; box.style.cssText = 'position:fixed;z-index:9995;pointer-events:none;border:2px solid #38bdf8;background:rgba(56,189,248,.15);font:600 10px monospace;color:#fff;display:none'; const s = el('span'); s.style.cssText = 'position:absolute;top:-18px;left:-2px;background:#0284c7;padding:1px 5px;white-space:nowrap'; box.appendChild(s); document.body.appendChild(box); }
+        function show(t, txt) { mkBox(); const r = t.getBoundingClientRect(); Object.assign(box.style, { display: 'block', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' }); box.firstChild.textContent = txt || lbl(t); }
+        function pick() { mkBox(); picking = true; window.__bktOff = true; closeDevPanel(); showToast('Di chuột rồi bấm để chọn · Esc để thoát', 'success'); }
+        function pickStop() { picking = false; window.__bktOff = (typeof advOn !== 'undefined' && !!advOn.inspect); if (box) box.style.display = 'none'; }
+        document.addEventListener('pointermove', e => { if (!picking || inDev(e.target)) return; const r = e.target.getBoundingClientRect(); show(e.target, lbl(e.target) + ' ' + Math.round(r.width) + '×' + Math.round(r.height) + ' @' + Math.round(r.left) + ',' + Math.round(r.top)); }, { passive: true });
+        document.addEventListener('click', e => { if (!picking) return; e.preventDefault(); e.stopPropagation(); const t = e.target; pickStop(); sel = t; openDevPanel(); switchDevTab('insp'); }, true);
+        document.addEventListener('keydown', e => { if (picking && e.key === 'Escape') { pickStop(); openDevPanel(); switchDevTab('insp'); } });
+        function locate(t) { if (!t || !t.isConnected) return; closeDevPanel(); t.scrollIntoView({ block: 'center' }); setTimeout(() => { show(t); setTimeout(() => { box.style.display = 'none'; openDevPanel(); }, 1800); }, 250); }
+        function xpath(n) { const p = []; for (; n && n.nodeType === 1; n = n.parentElement) { let i = 1, s = n; while ((s = s.previousElementSibling)) if (s.tagName === n.tagName) i++; p.unshift(n.tagName.toLowerCase() + '[' + i + ']'); } return '/' + p.join('/'); }
+        const PROPS = ['display', 'position', 'z-index', 'width', 'height', 'margin', 'padding', 'border', 'font-family', 'font-size', 'font-weight', 'color', 'background-color', 'flex-direction', 'justify-content', 'align-items', 'gap', 'grid-template-columns', 'overflow', 'opacity'];
+        function cssText() { if (!sel) return ''; const cs = getComputedStyle(sel), q = $('inCssQ').value.trim().toLowerCase(); return uniqSel(sel) + ' {\n' + PROPS.filter(p => p.includes(q)).map(p => '  ' + p + ': ' + cs.getPropertyValue(p) + ';').join('\n') + '\n}'; }
+        function render() {
+            const o = $('inInfo'), bx = $('inBox'), cc = $('inCss'), dm = $('inDom'); [o, bx, cc, dm].forEach(x => x.textContent = '');
+            if (!sel || !sel.isConnected) { o.textContent = 'Chưa chọn phần tử. Bấm "Chọn phần tử".'; return; }
+            const cs = getComputedStyle(sel), r = sel.getBoundingClientRect();
+            [['Tag', sel.tagName.toLowerCase()], ['ID', sel.id || '—'], ['Class', typeof sel.className === 'string' && sel.className ? sel.className : '—'], ['Kích thước', Math.round(r.width) + '×' + Math.round(r.height)], ['Tọa độ', Math.round(r.left) + ', ' + Math.round(r.top)], ['Selector', uniqSel(sel)], ['Text', sel.childElementCount ? '—' : (sel.textContent || '').trim().slice(0, 80) || '—'], ['Thuộc tính', [...sel.attributes].map(a => a.name + '="' + a.value.slice(0, 40) + '"').join(' ') || '—']]
+                .forEach(([k, v]) => { const d = el('div', 'break-all'); d.append(el('b', null, k + ': '), document.createTextNode(v)); o.appendChild(d); });
+            const n = (p, s) => Math.round(parseFloat(cs.getPropertyValue(p + '-' + s)) || 0), side = (p, suf) => ['top', 'right', 'bottom', 'left'].map(s => parseFloat(cs.getPropertyValue(p + '-' + s + (suf || ''))) || 0);
+            const M = side('margin'), B = side('border', '-width'), P = side('padding');
+            const layer = (name, v, bg, inner) => { const d = el('div', 'p-2 rounded-lg text-center text-[10px]'); d.style.background = bg; d.appendChild(el('div', null, name + ' ' + v.map(Math.round).join(' '))); d.appendChild(inner); return d; };
+            const content = el('div', 'py-1 rounded bg-sky-500/50', Math.round(r.width - B[1] - B[3] - P[1] - P[3]) + ' × ' + Math.round(r.height - B[0] - B[2] - P[0] - P[2]));
+            bx.appendChild(layer('margin', M, 'rgba(249,115,22,.3)', layer('border', B, 'rgba(234,179,8,.35)', layer('padding', P, 'rgba(34,197,94,.3)', content))));
+            const q = $('inCssQ').value.trim().toLowerCase(); PROPS.filter(p => p.includes(q)).forEach(p => { const d = el('div', 'flex justify-between gap-2 border-b border-slate-500/10 py-0.5'); d.append(el('span', 'opacity-70', p), el('span', 'break-all text-right', cs.getPropertyValue(p))); cc.appendChild(d); });
+            const path = el('div', 'mb-1'); let a = sel; const anc = []; while (a && a !== document.documentElement && anc.length < 6) { anc.unshift(a); a = a.parentElement; }
+            anc.forEach((x, i) => { const b = el('button', 'text-indigo-500 cursor-pointer', lbl(x)); b.onclick = () => { sel = x; render(); }; path.append(b, document.createTextNode(i < anc.length - 1 ? ' › ' : '')); }); dm.appendChild(path);
+            [...sel.children].slice(0, 30).forEach(c => { const b = el('button', 'block text-left cursor-pointer hover:text-indigo-500', '└ ' + lbl(c)); b.onclick = () => { sel = c; render(); }; dm.appendChild(b); });
+            if (!sel.children.length) dm.appendChild(el('div', 'opacity-60', '(không có phần tử con)'));
+        }
+        function domSearch(v) { const dm = $('inDom'); v = v.trim().toLowerCase(); if (!v) { render(); return; } dm.textContent = ''; let c = 0; for (const n of document.body.querySelectorAll('*')) { if (inDev(n)) continue; if (n.tagName.toLowerCase() === v || n.id.toLowerCase().includes(v) || (typeof n.className === 'string' && n.className.toLowerCase().includes(v))) { const b = el('button', 'block text-left cursor-pointer hover:text-indigo-500 truncate w-full', lbl(n)); b.onclick = () => { sel = n; $('inDomQ').value = ''; render(); }; dm.appendChild(b); if (++c >= 30) break; } } if (!c) dm.textContent = 'Không có node khớp.'; }
+        // ---------- Màu ----------
+        const nums = c => (c.match(/[\d.]+/g) || []).map(Number);
+        const hex = a => '#' + a.slice(0, 3).map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+        function hsl([r, g, b]) { r /= 255; g /= 255; b /= 255; const M = Math.max(r, g, b), m = Math.min(r, g, b), l = (M + m) / 2; let h = 0, s = 0; if (M !== m) { const d = M - m; s = l > .5 ? d / (2 - M - m) : d / (M + m); h = M === r ? (g - b) / d + (g < b ? 6 : 0) : M === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; } return 'hsl(' + Math.round(h) + ', ' + Math.round(s * 100) + '%, ' + Math.round(l * 100) + '%)'; }
+        const colors = () => { const v = safeParse(localStorage.getItem('bakhiColors'), []); return Array.isArray(v) ? v : []; };
+        function addColor(h) { const l = colors().filter(x => x !== h); l.unshift(h); try { localStorage.setItem('bakhiColors', JSON.stringify(l.slice(0, 20))); } catch (e) {} drawColors(); const a = nums(parseHex(h)); cp(h + ' · rgb(' + a.join(', ') + ') · ' + hsl(a), 'Đã copy ' + h); }
+        const parseHex = h => { const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(h); return m ? 'rgb(' + m.slice(1).map(x => parseInt(x, 16)).join(',') + ')' : 'rgb(0,0,0)'; };
+        function drawColors() { const b = $('inColors'); b.textContent = ''; const l = colors(); if (!l.length) { b.textContent = '(chưa lưu màu nào)'; return; } l.forEach(h => { const x = el('button', 'px-1.5 py-1 rounded border border-slate-500/30 cursor-pointer', h); x.style.borderLeft = '12px solid ' + h; x.onclick = () => addColor(h); b.appendChild(x); }); }
+        function color(p) { if (!sel) return showToast('Hãy chọn phần tử trước', 'error'); const a = nums(getComputedStyle(sel).getPropertyValue(p)); if (a.length < 3) return showToast('Không đọc được màu', 'error'); if (a.length > 3 && a[3] === 0) return showToast('Màu trong suốt', 'error'); addColor(hex(a)); }
+        function eye() { if (!window.EyeDropper) return showToast('Trình duyệt không hỗ trợ EyeDropper (dùng Chrome/Edge)', 'error'); closeDevPanel(); new EyeDropper().open().then(r => { openDevPanel(); switchDevTab('insp'); addColor(r.sRGBHex); }, () => { openDevPanel(); switchDevTab('insp'); }); }
+
+        // ---------- Hiệu năng ----------
+        let fr = 0, fT = 0, fRaf = 0, fH = [], memBase = 0;
+        function fpsDraw() {
+            const cv = $('pfCv'), c = cv.getContext('2d'); c.clearRect(0, 0, 300, 60); c.strokeStyle = '#334155'; c.beginPath(); c.moveTo(0, 60 - 30); c.lineTo(300, 30); c.stroke();
+            c.strokeStyle = '#86efac'; c.beginPath(); fH.forEach((f, i) => { const x = i * 300 / 119, y = 60 - Math.min(60, f) * 60 / 60; i ? c.lineTo(x, y) : c.moveTo(x, y); }); c.stroke();
+            if (fH.length) { const cur = fH[fH.length - 1], avg = fH.reduce((a, b) => a + b, 0) / fH.length, mn = Math.min(...fH), mx = Math.max(...fH); $('pfStat').textContent = 'hiện tại ' + cur + ' · TB ' + avg.toFixed(0) + ' · min ' + mn + ' · max ' + mx + ' · ' + (mn >= 45 ? 'ổn định' : 'không ổn định'); }
+        }
+        function memUp() { const m = performance.memory, o = $('pfMem'); if (!m) { o.textContent = 'Trình duyệt không hỗ trợ performance.memory (chỉ Chromium) — không có dữ liệu.'; return; } if (!memBase) memBase = m.usedJSHeapSize; const MB = v => (v / 1048576).toFixed(1) + 'MB'; o.textContent = 'JS Heap: dùng ' + MB(m.usedJSHeapSize) + ' · tổng ' + MB(m.totalJSHeapSize) + ' · giới hạn ' + MB(m.jsHeapSizeLimit) + (m.usedJSHeapSize > memBase * 1.5 && m.usedJSHeapSize - memBase > 20971520 ? ' ⚠ tăng bất thường so với lúc mở' : ''); }
+        function tick(n) { if (!panelOpen('perf') || document.hidden) { fRaf = 0; return; } fr++; if (n - fT >= 500) { fH.push(Math.round(fr * 1000 / (n - fT))); if (fH.length > 120) fH.shift(); fr = 0; fT = n; fpsDraw(); if (fH.length % 4 === 0) memUp(); } fRaf = requestAnimationFrame(tick); }
+        function perfStart() { if (!fRaf) { fT = performance.now(); fr = 0; fRaf = requestAnimationFrame(tick); } memUp(); res(); }
+        document.addEventListener('visibilitychange', () => { if (!document.hidden && panelOpen('perf')) perfStart(); });
+        const rType = e => { const n = e.name.split('?')[0].toLowerCase(), i = e.initiatorType; return /\.m?js$/.test(n) || i === 'script' ? 'js' : /\.css$/.test(n) || i === 'css' ? 'css' : i === 'img' || /\.(png|jpe?g|gif|webp|svg|ico|avif)$/.test(n) ? 'img' : /\.(woff2?|ttf|otf)$/.test(n) ? 'font' : 'other'; };
+        function res() {
+            const all = performance.getEntriesByType('resource'), f = $('rsF').value, cnt = { js: 0, css: 0, img: 0, font: 0, other: 0 }, seen = {}, dup = new Set();
+            all.forEach(e => { cnt[rType(e)]++; if (seen[e.name]) dup.add(e.name); seen[e.name] = 1; });
+            const rows = [[null, 'Tổng ' + all.length + ' · JS ' + cnt.js + ' · CSS ' + cnt.css + ' · ảnh ' + cnt.img + ' · font ' + cnt.font + ' · khác ' + cnt.other + ' · trùng ' + dup.size]];
+            all.filter(e => f === 'all' || rType(e) === f).sort((a, b) => b.duration - a.duration).slice(0, 60).forEach(e => rows.push([e.duration > 500 ? 'w' : null, Math.round(e.duration) + 'ms ' + (e.transferSize ? (e.transferSize / 1024).toFixed(1) + 'KB' : '?KB') + ' [' + rType(e) + '] ' + e.name.replace(location.origin, '') + (dup.has(e.name) ? ' (trùng)' : '') + (e.responseStatus >= 400 ? ' (lỗi ' + e.responseStatus + ')' : '')]));
+            lines($('rsOut'), rows);
+        }
+        function imgs() {
+            const bad = [...document.images].filter(i => i.currentSrc || i.src).filter(i => i.complete && i.naturalWidth === 0), rows = [[bad.length ? false : true, bad.length ? bad.length + ' ảnh lỗi:' : 'Không có ảnh lỗi (' + document.images.length + ' ảnh đã kiểm tra).']];
+            const out = $('pfOut'); lines(out, rows); bad.forEach(i => { const d = el('div', 'flex gap-2 items-center'); d.appendChild(el('span', 'truncate flex-1', (i.currentSrc || i.src) + ' @ ' + uniqSel(i))); [['Xem', () => locate(i)], ['Copy', () => cp(i.currentSrc || i.src)]].forEach(([t, f]) => { const b = el('button', 'dv-btn alt', t); b.onclick = f; d.appendChild(b); }); out.appendChild(d); });
+        }
+        async function links() {
+            const out = $('pfOut'), btn = $('lnBtn'); if (location.protocol === 'file:') { lines(out, [['w', 'Cần chạy trên http/https để kiểm tra.']]); return; }
+            const as = [...document.querySelectorAll('a[href]')].filter(a => !/^(mailto|tel|javascript|#)/.test(a.getAttribute('href'))), cnt = {}, inn = [], ext = new Set();
+            as.forEach(a => { let u; try { u = new URL(a.href); } catch (e) { return; } cnt[u.href] = (cnt[u.href] || 0) + 1; if (u.origin === location.origin) { if (!inn.includes(u.href)) inn.push(u.href); } else ext.add(u.href); });
+            const bad = []; let d = 0; btn.disabled = true;
+            await pool(inn, async u => { try { const r = await fetch(u, { method: 'HEAD', cache: 'no-store' }); if (!r.ok) bad.push(u + ' (' + r.status + ')'); } catch (e) { bad.push(u + ' (lỗi mạng)'); } btn.textContent = 'Đang quét ' + (++d) + '/' + inn.length; });
+            btn.disabled = false; btn.textContent = 'Quét liên kết';
+            const dups = Object.keys(cnt).filter(k => cnt[k] > 1).length;
+            lines(out, [[null, 'Nội bộ: ' + inn.length + ' · Ngoài: ' + ext.size + ' · trùng lặp: ' + dups], [bad.length ? false : true, bad.length ? bad.length + ' link nội bộ hỏng:' : 'Mọi link nội bộ đều hoạt động.'], ...bad.map(b => [false, b]), ['w', 'Link ngoài không kiểm tra được do CORS — không kết luận là hỏng.']]);
+        }
+
+        // ---------- Studio ----------
+        const PRE = { 'Chữ lớn': 'body { font-size: 112%; }', 'Ẩn nền sao': '#starCanvas, .nebula { display: none; }', 'Viền mọi khung': '* { outline: 1px solid rgba(56,189,248,.4); }', 'Bo góc lớn': 'a, button { border-radius: 1rem !important; }' };
+        function cssCheck(s) { let d = 0; for (const c of s) { if (c === '{') d++; if (c === '}') d--; if (d < 0) return 'Thừa dấu }'; } return d ? 'Thiếu ' + d + ' dấu }' : ''; }
+        function cssRun() { const s = $('stCss').value, e = cssCheck(s); $('stErr').textContent = e; if (e) return; let st = $('dv-live'); if (!st) { st = el('style'); st.id = 'dv-live'; document.head.appendChild(st); } st.textContent = s; if (s.trim() && st.sheet && !st.sheet.cssRules.length) $('stErr').textContent = 'Không có rule hợp lệ nào được áp dụng'; }
+        function cssReset() { const st = $('dv-live'); if (st) st.remove(); $('stErr').textContent = ''; }
+        const snips = () => { const v = safeParse(localStorage.getItem('bakhiSnips'), []); return Array.isArray(v) ? v : []; };
+        const snSave = l => { try { localStorage.setItem('bakhiSnips', JSON.stringify(l)); } catch (e) { showToast('Không lưu được snippet', 'error'); } snList(); };
+        function snAdd() { const n = $('snN').value.trim(), c = $('stCss').value; if (!n || !c.trim()) return showToast('Cần tên và nội dung', 'error'); if (c.length > 20000) return showToast('Snippet quá dài (>20KB)', 'error'); snSave([{ n, type: $('snT').value, code: c }, ...snips()].slice(0, 50)); $('snN').value = ''; }
+        function snList() { const o = $('snOut'), q = $('snQ').value.toLowerCase(); o.textContent = ''; const l = snips().map((s, i) => [s, i]).filter(([s]) => (s.n + s.code).toLowerCase().includes(q)); if (!l.length) o.textContent = '(trống)'; l.forEach(([s, i]) => { const r = el('div', 'flex items-center gap-1.5'); r.appendChild(el('span', 'flex-1 truncate', '[' + s.type + '] ' + s.n)); [['Copy', () => cp(s.code)], ['Nạp', () => { $('stCss').value = s.code; }], ['Xóa', () => { if (confirm('Xóa snippet "' + s.n + '"?')) snSave(snips().filter((_, j) => j !== i)); }]].forEach(([t, f]) => { const b = el('button', 'dv-btn alt', t); b.onclick = f; r.appendChild(b); }); o.appendChild(r); }); }
+        function snImport(ev) { const f = ev.target.files[0]; ev.target.value = ''; if (!f || f.size > 300 * 1024) return showToast('File không hợp lệ hoặc quá lớn', 'error'); f.text().then(t => { const a = JSON.parse(t); if (!Array.isArray(a) || !a.every(s => s && typeof s.n === 'string' && ['css', 'html', 'js'].includes(s.type) && typeof s.code === 'string' && s.code.length <= 20000)) throw new Error('cấu trúc sai'); snSave([...a.map(s => ({ n: s.n.slice(0, 80), type: s.type, code: s.code })), ...snips()].slice(0, 50)); showToast('Đã nhập ' + a.length + ' snippet', 'success'); }).catch(e => showToast('Nhập thất bại: ' + e.message, 'error')); }
+        const ANIM = { Fade: [{ opacity: 0 }, { opacity: 1 }], Slide: [{ transform: 'translateX(-30px)', opacity: 0 }, { transform: 'none', opacity: 1 }], Zoom: [{ transform: 'scale(.3)', opacity: 0 }, { transform: 'none', opacity: 1 }], Bounce: [{ transform: 'translateY(0)' }, { transform: 'translateY(-24px)' }, { transform: 'translateY(0)' }], Blur: [{ filter: 'blur(8px)', opacity: 0 }, { filter: 'none', opacity: 1 }], Rotate: [{ transform: 'rotate(-180deg)' }, { transform: 'none' }], Flip: [{ transform: 'rotateY(180deg)' }, { transform: 'none' }] };
+        function an(act, v) {
+            const L = document.getAnimations(), o = $('anOut');
+            if (act === 'pause') L.forEach(a => a.pause()); if (act === 'play') L.forEach(a => a.play()); if (act === 'reset') L.forEach(a => { a.currentTime = 0; }); if (act === 'rate') L.forEach(a => { a.playbackRate = v; });
+            const rows = [[null, L.length + ' animation đang có']]; L.slice(0, 40).forEach(a => rows.push([null, (a.animationName || a.transitionProperty || 'web-animation') + ' · ' + a.playState + ' · ' + (a.effect && a.effect.target ? lbl(a.effect.target) : '?') + (a.effect && a.effect.getTiming ? ' · ' + a.effect.getTiming().duration + 'ms' : '')]));
+            if (sel && sel.isConnected) { const cs = getComputedStyle(sel); rows.push(['w', 'Phần tử đã chọn: name=' + cs.animationName + ' dur=' + cs.animationDuration + ' delay=' + cs.animationDelay + ' timing=' + cs.animationTimingFunction + ' iter=' + cs.animationIterationCount + ' dir=' + cs.animationDirection]); }
+            lines(o, rows);
+        }
+        const anPrev = () => $('anBox').animate(ANIM[$('anPre').value], { duration: 700, easing: 'ease-out' });
+        function anCopy() { const k = $('anPre').value, n = 'dv-' + k.toLowerCase(); cp('@keyframes ' + n + ' {\n' + ANIM[k].map((f, i, a) => '  ' + Math.round(i / (a.length - 1) * 100) + '% { ' + Object.entries(f).map(([p, v]) => p.replace(/[A-Z]/g, m => '-' + m.toLowerCase()) + ': ' + v).join('; ') + '; }').join('\n') + '\n}\n.demo { animation: ' + n + ' .7s ease-out; }'); }
+
+        // ---------- Bakhi ----------
+        let okSet = null;
+        function gen() { const c = examCategories.find(x => x.key === $('bkCat').value), s = subjects.find(x => x.id === $('bkSub').value); $('bkGen').textContent = c && s ? abs(c.path + '/' + s.id + '/' + s.indexFile) : ''; }
+        async function validate() {
+            const b = $('bkVBtn'); if (location.protocol === 'file:') return lines($('bkOut'), [['w', 'Cần chạy trên http/https.']]);
+            const all = declared(), ok = new Set(), bad = []; let d = 0; b.disabled = true;
+            await pool(all, async x => { try { const r = await fetch(x.u, { method: 'HEAD', cache: 'no-store' }); r.ok ? ok.add(x.u) : bad.push(x.u + ' (' + r.status + ') — thiếu file/sai tên'); } catch (e) { bad.push(x.u + ' (lỗi mạng)'); } b.textContent = 'Đang kiểm tra ' + (++d) + '/' + all.length; });
+            b.disabled = false; b.textContent = 'Folder Validator'; okSet = ok;
+            const empty = examCategories.filter(c => !all.some(x => x.c === c && ok.has(x.u))).map(c => c.key), dup = all.length - new Set(all.map(x => x.u)).size;
+            lines($('bkOut'), [[null, ok.size + '/' + all.length + ' đường dẫn tồn tại · trùng đường dẫn: ' + dup], [empty.length ? 'w' : true, empty.length ? 'Danh mục chưa có bài học: ' + empty.join(', ') : 'Mọi danh mục đều có ít nhất 1 trang'], ...bad.map(x => [false, x])]);
+        }
+        async function nav() {
+            const rows = [], add = (ok, t) => rows.push([ok, t]), cat = examCategories.find(c => c.key === $('bkNavCat').value); if (location.protocol === 'file:') return lines($('bkOut'), [['w', 'Cần chạy trên http/https.']]);
+            lines($('bkOut'), [[null, 'Đang kiểm tra…']]);
+            try { const r = await fetch('./index.html', { cache: 'no-store' }); add(r.ok, 'Trang chủ index.html (' + r.status + ')'); } catch (e) { add(false, 'Trang chủ: lỗi mạng'); }
+            add(!!window.__bkt, 'Script chuyển trang (__bkt) hoạt động trên trang chủ');
+            await pool(subjects, async s => { const u = cat.path + '/' + s.id + '/' + s.indexFile; try { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) return add(false, u + ' → ' + r.status); const t = await r.text(), bk = /__bkt|BKT-START/.test(t), back = /href=["'](\.\.\/)+(index\.html)?["']|href=["']\/bakhi\/?(index\.html)?["']|href=["']https?:\/\/minhtruk\.github\.io\/bakhi\/?["']/i.test(t); add(bk && back ? true : 'w', u + ' · script chuyển trang: ' + (bk ? 'có' : 'THIẾU') + ' · link về trang chủ: ' + (back ? 'có' : 'không nhận ra (kiểm tra thủ công)')); } catch (e) { add(false, u + ': lỗi mạng'); } }, 4);
+            lines($('bkOut'), rows);
+        }
+        function sitemap() {
+            let l = declared(); if ($('bkSmV').checked) { if (!okSet) return showToast('Chạy Folder Validator trước', 'error'); l = l.filter(x => okSet.has(x.u)); }
+            const f = $('bkSm').value, items = l.map(x => ({ title: x.s.name + ' - ' + x.c.examType + ' ' + x.c.semester, url: abs(x.u) }));
+            $('bkSmOut').value = f === 'json' ? JSON.stringify({ generatedAt: new Date().toISOString(), verified: $('bkSmV').checked, pages: items }, null, 2)
+                : f === 'xml' ? '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + items.map(i => '  <url><loc>' + escapeHtml(i.url) + '</loc></url>').join('\n') + '\n</urlset>'
+                : '<ul>\n' + items.map(i => '  <li><a href="' + escapeHtml(i.url) + '">' + escapeHtml(i.title) + '</a></li>').join('\n') + '\n</ul>';
+        }
+
+        // ---------- Khởi tạo + nối vào Developer Panel ----------
+        const sw = window.switchDevTab;
+        window.switchDevTab = function (t) { sw(t); if (t === 'insp') { render(); drawColors(); } if (t === 'perf') perfStart(); if (t === 'studio') { snList(); an('list'); } if (t === 'bk') gen(); };
+        Object.keys(PRE).forEach(k => $('stPre').appendChild(Object.assign(el('option', null, k), { value: k }))); Object.keys(ANIM).forEach(k => $('anPre').appendChild(Object.assign(el('option', null, k), { value: k })));
+        examCategories.forEach(c => { [$('bkCat'), $('bkNavCat')].forEach(s => s.appendChild(Object.assign(el('option', null, c.examType + ' ' + c.semester + ' (' + c.path + ')'), { value: c.key }))); });
+        subjects.forEach(s => $('bkSub').appendChild(Object.assign(el('option', null, s.name), { value: s.id })));
+        window.__cmdExt = [['Chọn phần tử (Element Picker)', pick], ['Mở Kiểm tra (DOM/CSS)', () => { openDevPanel(); switchDevTab('insp'); }], ['Mở Hiệu năng', () => { openDevPanel(); switchDevTab('perf'); }], ['Mở CSS Editor', () => { openDevPanel(); switchDevTab('studio'); }], ['Mở Quản lý Bakhi', () => { openDevPanel(); switchDevTab('bk'); }], ['Quét ảnh lỗi', () => { openDevPanel(); switchDevTab('perf'); imgs(); }], ['Quét liên kết', () => { openDevPanel(); switchDevTab('perf'); links(); }], ['Xuất cài đặt JSON', exportSettings]];
+        window.DX = { pick, render, domSearch, color, eye, res, imgs, links, cssRun, cssReset, snAdd, snList, snImport, an, anPrev, anCopy, gen, validate, nav, sitemap,
+            preset: k => { if (PRE[k]) $('stCss').value = PRE[k]; $('stPre').value = ''; }, cssExport: () => dlText('bakhi-custom.css', $('stCss').value, 'text/css'), snExport: () => dlText('bakhi-snippets.json', JSON.stringify(snips(), null, 2), 'application/json'),
+            smDl: () => { const v = $('bkSmOut').value; if (v) dlText('bakhi-sitemap.' + $('bkSm').value, v); },
+            cp: k => cp(k === 'sel' ? (sel ? uniqSel(sel) : '') : k === 'xp' ? (sel ? xpath(sel) : '') : k === 'html' ? (sel ? sel.outerHTML : '') : k === 'css' ? cssText() : k === 'gen' ? $('bkGen').textContent : $('bkSmOut').value) };
+    })();
     </script>
 </body>
 </html>
