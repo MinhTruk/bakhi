@@ -535,6 +535,26 @@ function renderQ(){
   persist();
   $("#quit").onclick=()=>S.mode==="test"?askSubmit():finish(false);
 }
+// Phím tắt khi đang làm bài: A-D chọn đáp án, ArrowRight/Enter sang câu kế.
+document.addEventListener("keydown",e=>{
+  if(!S||S.done||$("#v-quiz").classList.contains("hide"))return;
+  const target=e.target;
+  if(target&&(target.isContentEditable||/INPUT|TEXTAREA|SELECT/.test(target.tagName)))return;
+  const key=e.key.toLowerCase();
+  if(["a","b","c","d"].includes(key)){
+    e.preventDefault();
+    choose("abcd".indexOf(key));
+    return;
+  }
+  if(key==="arrowright"||key==="enter"){
+    // Không kích hoạt phím Enter khi người dùng đang thao tác trực tiếp trên nút.
+    if(target&&target.closest&&target.closest("button"))return;
+    if(S.i<S.items.length-1){
+      e.preventDefault();
+      S.i++;S.dir=1;renderQ();
+    }
+  }
+});
 function choose(p){
   if(immediate()){if(S.ans[S.i]!==undefined)return;S.ans[S.i]=p;const it=S.items[S.i];record(it.id,p===it.order.indexOf(0))}
   else S.ans[S.i]=p;
