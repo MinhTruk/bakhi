@@ -276,10 +276,12 @@ const KEY = {
    ]},
   {ref:'<b>Muốn tăng năng suất và chất lượng cây trồng</b> (như khoai tây, khoai lang, sắn dây, mía, củ cải đường) thông qua quang hợp, cần áp dụng các biện pháp nông học. Ví dụ:<br>+ <b>Bón phân hợp lí:</b> giúp thúc đẩy quá trình vận chuyển sản phẩm đồng hóa về cơ quan dự trữ, làm tăng năng suất cây trồng. Phân bón cũng là yếu tố quan trọng ảnh hưởng đến sự phát triển của bộ lá; diện tích lá lớn giúp nâng cao hiệu suất hấp thụ ánh sáng.<br>+ <b>Cung cấp đủ nước</b> cho cây trồng và gieo trồng đúng thời vụ.<br>+ <b>Chọn tạo giống cây trồng</b> có diện tích lá lớn, cường độ quang hợp và năng suất cao; phòng trừ sâu bệnh cũng góp phần nâng cao năng suất cây trồng.',
    c:[
-    {t:'Nêu bón phân hợp lí giúp vận chuyển sản phẩm đồng hóa về cơ quan dự trữ, tăng năng suất',p:0.3,f:n=>/bon phan/.test(n)&&/(dong hoa|du tru|nang suat)/.test(n)},
-    {t:'Nêu phân bón ảnh hưởng sự phát triển bộ lá; diện tích lá lớn nâng cao hiệu suất hấp thụ ánh sáng',p:0.25,f:n=>/(bo la|dien tich la)/.test(n)&&/(anh sang|hap thu)/.test(n)},
-    {t:'Cung cấp đủ nước và gieo trồng đúng thời vụ',p:0.2,f:n=>/nuoc/.test(n)&&/thoi vu/.test(n)},
-    {t:'Chọn tạo giống có diện tích lá lớn, cường độ quang hợp và năng suất cao; phòng trừ sâu bệnh',p:0.25,f:n=>/(giong|dien tich la)/.test(n)&&/(quang hop|nang suat)/.test(n)&&/sau benh/.test(n)}
+    {t:'Nêu bón phân hợp lí giúp vận chuyển sản phẩm đồng hóa về cơ quan dự trữ, tăng năng suất',p:0.2,f:n=>/bon phan/.test(n)&&/(dong hoa|du tru|nang suat)/.test(n)},
+    {t:'Nêu phân bón ảnh hưởng sự phát triển bộ lá; diện tích lá lớn nâng cao hiệu suất hấp thụ ánh sáng',p:0.2,f:n=>/(bo la|dien tich la)/.test(n)&&/(anh sang|hap thu)/.test(n)},
+    {t:'Cung cấp đủ nước và gieo trồng đúng thời vụ',p:0.15,f:n=>/nuoc/.test(n)&&/thoi vu/.test(n)},
+    {t:'Chọn tạo giống có diện tích lá lớn, cường độ quang hợp và năng suất cao; phòng trừ sâu bệnh',p:0.15,f:n=>/(giong|dien tich la)/.test(n)&&/(quang hop|nang suat)/.test(n)&&/sau benh/.test(n)},
+    {t:'Sử dụng ánh sáng đèn LED thay thế ánh sáng mặt trời, tạo nguồn sáng có cường độ và thành phần quang phổ phù hợp với quá trình quang hợp ở từng loại cây',p:0.15,f:n=>/(den led|led)/.test(n)&&/(anh sang mat troi|mat troi|thay the)/.test(n)&&/(cuong do|quang pho|phu hop)/.test(n)},
+    {t:'Trồng rau trong phòng hoặc phòng kín có sử dụng đèn LED',p:0.15,f:n=>/(trong rau|rau)/.test(n)&&/(phong kin|trong phong|phong)/.test(n)&&/(den led|led)/.test(n)}
    ]},
   {ref:'<b>1. Nồng độ CO₂:</b><br>+ Trong nhà kính, người ta sục thêm khí CO₂ để tăng nồng độ CO₂ trong không khí.<br>+ CO₂ là nguyên liệu của quá trình quang hợp.<br>+ Khi nồng độ CO₂ tăng đến mức thích hợp, cường độ quang hợp tăng, giúp cây sinh trưởng tốt hơn.<br><b>2. Nhiệt độ:</b><br>+ Điều hòa nhiệt độ trong nhà kính để duy trì mức nhiệt độ thích hợp cho cây.<br>+ Nhiệt độ ảnh hưởng đến hoạt động của enzyme xúc tác các phản ứng trong quang hợp.<br>+ Nhiệt độ quá thấp hoặc quá cao đều làm enzyme hoạt động kém, khiến cường độ quang hợp giảm.<br>+ Mỗi loài cây cần nhiệt độ tối ưu khác nhau.<br><b>3. Ánh sáng:</b><br>+ Ánh sáng là nguồn năng lượng cho quá trình quang hợp.<br>+ Ánh sáng xanh và ánh sáng tím được diệp lục hấp thụ mạnh, giúp cây thực hiện quang hợp.<br>+ Ví dụ: sử dụng ánh sáng xanh, tím để chiếu sáng rau diếp cá, góp phần thúc đẩy quá trình quang hợp và sinh trưởng của cây.',
    c:[
@@ -380,6 +382,24 @@ function isDone(sec, qi) {
     if (sec === 'mcq') return A[qi] !== undefined;
     if (sec === 'tf') return range(4).every(k => A[qi + '-' + k] !== undefined);
     return !!(A[qi] || '').trim() && !!S.confirmed?.[sec]?.[qi];
+}
+
+function questionStatus(sec, qi) {
+    const A = S.answers[sec];
+    if (sec === 'mcq') {
+        if (A[qi] === undefined) return 'empty';
+        return A[qi] === KEY.mcq[qi].a ? 'correct' : 'wrong';
+    }
+    if (sec === 'tf') {
+        const vals = range(4).map(k => A[qi + '-' + k]);
+        if (vals.every(v => v === undefined)) return 'empty';
+        if (vals.some(v => v === undefined)) return 'partial';
+        return vals.every((v, k) => v === KEY.tf[qi].a[k]) ? 'correct' : 'wrong';
+    }
+    if (!(A[qi] || '').trim() || !S.confirmed?.[sec]?.[qi]) return 'empty';
+    const checks = KEY[sec][qi].c.map((c, j) => critMet(sec, qi, j));
+    if (checks.every(Boolean)) return 'correct';
+    return checks.some(Boolean) ? 'partial' : 'wrong';
 }
 
 /* =====================================================================
@@ -491,7 +511,9 @@ function renderCard(anim = true) {
                 const v = S.answers.tf[qi + '-' + k], done = v !== undefined, right = kk.a[k], ok = v === right;
                 const btn = (val, label, on) => {
                     if (!done) return `<button data-act="tf" data-k="${k}" data-v="${val}" class="px-4 py-1.5 rounded-lg text-sm font-semibold border border-slate-600 bg-slate-800 text-slate-300 hover:border-slate-400 transition-all">${label}</button>`;
-                    const cls = val === v ? 'border-indigo-400 bg-indigo-500/20 text-indigo-200' : 'border-slate-800 bg-slate-900/30 text-slate-600';
+                    let cls = 'border-slate-800 bg-slate-900/30 text-slate-600';
+                    if (val === right) cls = 'border-emerald-500/70 bg-emerald-500/15 text-emerald-200';
+                    if (val === v && v !== right) cls = 'border-rose-500/70 bg-rose-500/15 text-rose-200';
                     return `<button disabled class="px-4 py-1.5 rounded-lg text-sm font-semibold border cursor-default ${cls}">${label}</button>`;
                 };
                 return `<div class="rounded-xl border ${!done ? 'border-slate-700' : 'border-indigo-500/40'} bg-slate-900/50 p-4">
@@ -536,9 +558,12 @@ function renderNav() {
     $('#nav').innerHTML = `<div class="rounded-2xl border border-slate-800 bg-slate-800/30 p-4"><div class="text-xs text-slate-500 mb-2.5">Danh sách câu · ${SECS.find(s => s.id === sec).name}</div><div class="flex flex-wrap gap-2">` +
         range(n).map(pos => {
             const qi = S.order[sec][pos], cur = pos === S.cur[sec], d = isDone(sec, qi);
+            const status = questionStatus(sec, qi);
             let cl = 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500';
-            if (d) cl = 'bg-indigo-500/15 border-indigo-500/40 text-indigo-200';
-            return `<button data-act="goto" data-i="${pos}" class="w-10 h-10 rounded-lg text-sm font-semibold border transition-all ${cur ? 'ring-2 ring-indigo-400 ' : ''}${cl}">${pos + 1}</button>`;
+            if (status === 'correct') cl = 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300';
+            else if (status === 'wrong') cl = 'bg-rose-500/15 border-rose-500/50 text-rose-300';
+            else if (status === 'partial') cl = 'bg-amber-500/15 border-amber-500/50 text-amber-300';
+            return `<button data-act="goto" data-i="${pos}" title="${status === 'correct' ? 'Đúng' : status === 'wrong' ? 'Sai' : status === 'partial' ? 'Đã làm – còn thiếu/sai ý' : 'Chưa trả lời'}" class="w-10 h-10 rounded-lg text-sm font-semibold border transition-all ${cur ? 'ring-2 ring-indigo-400 ' : ''}${cl}">${pos + 1}</button>`;
         }).join('') + `</div></div>`;
 }
 function renderSubmit() {
