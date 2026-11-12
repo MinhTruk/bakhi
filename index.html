@@ -126,9 +126,15 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         @keyframes float { 50% { transform: translateY(-3px); box-shadow: 0 12px 24px -6px rgba(168,85,247,.55); } }
         .hdr-btn:hover > i, .hdr-btn:hover i { animation: wiggle .5s ease; }
         @keyframes wiggle { 25% { transform: rotate(-14deg) scale(1.15); } 60% { transform: rotate(10deg) scale(1.1); } }
-        .badge-dot { width: .5rem; height: .5rem; border-radius: 50%; background: #6366f1; margin-left: auto; animation: ping 1.8s ease-out infinite; }
-        @keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(99,102,241,.7); } 80%,100% { box-shadow: 0 0 0 8px rgba(99,102,241,0); } }
+        .badge-dot { width: .5rem; height: .5rem; border-radius: 50%; background: #10b981; margin-left: auto; animation: ping 1.8s ease-out infinite; }
+        @keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.7); } 80%,100% { box-shadow: 0 0 0 8px rgba(16,185,129,0); } }
         .hl-card { animation: glow 3s ease-in-out infinite; }
+        /* Thẻ môn đã highlight (true): xanh lá, bấm được */
+        .hl-open { animation: glowOpen 3s ease-in-out infinite; }
+        @keyframes glowOpen { 50% { box-shadow: 0 0 14px rgba(16,185,129,.45); } }
+        /* Thẻ môn chưa highlight (false): đỏ, khóa không cho bấm */
+        .hl-locked { cursor: not-allowed; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .hl-locked .subj-ico { opacity: .7; }
         @keyframes glow { 50% { box-shadow: 0 0 14px rgba(99,102,241,.35); } }
 
         /* Tiêu đề shimmer + vào trang */
@@ -166,7 +172,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
 
         /* ===== v2: nhẹ cho điện thoại + animation phản hồi thao tác ===== */
         .fc-inner { contain: layout paint; }
-        .lite .nebula, .lite .logo-glow, .lite .hl-card, .lite .title-shine, .lite .badge-dot { animation: none !important; }
+        .lite .nebula, .lite .logo-glow, .lite .hl-card, .lite .hl-open, .lite .title-shine, .lite .badge-dot { animation: none !important; }
         .lite .nebula { display: none; }
         .lite main > *, .lite .folder-content.open .fc-inner a, .lite #hamburgerDropdown:not(.hidden), .lite .dv-pane:not(.hidden),
         .lite #dev-panel-modal:not(.hidden), .lite #readme-modal:not(.hidden), .lite #highlight-manager-modal:not(.hidden),
@@ -967,7 +973,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         }
 
         // Ép buộc đồng bộ hóa để cập nhật code true/false mới nhất từ file
-        const SCHEMA_VER = 2;
+        const SCHEMA_VER = 3;
         const BK_KEYS = ['theme', 'bgOpacity', 'fxCfg', 'uiCfg', 'hiddenSubjects', 'favCfg', 'bktCfg', 'appHighlightsDataMap', 'bgmMuted'];
         function safeParse(s, d) { try { const v = JSON.parse(s); return v == null ? d : v; } catch (e) { return d; } }
         function isHlMap(o) { return !!o && typeof o === 'object' && !Array.isArray(o) && Object.values(o).every(v => typeof v === 'boolean'); }
@@ -985,7 +991,11 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 const raw = localStorage.getItem('appHighlightsDataMap');
                 let cur = raw === null ? null : safeParse(raw, null);
                 if (raw !== null && !isHlMap(cur)) { makeBackup('highlight bị hỏng'); cur = null; }
-                localStorage.setItem('appHighlightsDataMap', JSON.stringify(Object.assign({}, defaultHighlights, cur || {})));
+                // Khi file index đổi SCHEMA_VER: cấu hình trong file được ưu tiên để khóa/mở đúng như mã nguồn.
+                // Cùng phiên bản: giữ thay đổi người dùng đã lưu (bảng highlight trong Developer).
+                const sameVer = localStorage.getItem('bakhiSchema') === String(SCHEMA_VER);
+                const merged = sameVer ? Object.assign({}, defaultHighlights, cur || {}) : Object.assign({}, cur || {}, defaultHighlights);
+                localStorage.setItem('appHighlightsDataMap', JSON.stringify(merged));
                 localStorage.setItem('bakhiSchema', String(SCHEMA_VER));
             } catch (e) { console.warn('LocalStorage không khả dụng: ' + e.message); }
         }
@@ -1006,18 +1016,26 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                     const configKey = `${examKey}/${sub.id}`;
                     const isHighlighted = highlightsMap[configKey] === true;
                     
-                    const customStyle = isHighlighted 
-                        ? 'hl-card border-indigo-500/80 bg-indigo-50/80 dark:bg-indigo-950/40 ring-1 ring-indigo-500/50' 
-                        : '';
-                    const badgeHtml = isHighlighted 
-                        ? '<span class="ml-auto w-2 h-2 rounded-full bg-indigo-500 badge-dot"></span>' 
-                        : '';
+                    const cardBase = 'p-2.5 border rounded-lg flex items-center space-x-2.5 text-xs transition group shadow-sm';
+                    const devPath = `<span class="dev-path">${basePath}/${sub.id}/${sub.indexFile}</span>`;
 
-                    return `
-                        <a href="${basePath}/${sub.id}/${sub.indexFile}" class="p-2.5 bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/90 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-500/50 rounded-lg flex items-center space-x-2.5 text-xs text-slate-700 dark:text-slate-200 transition group shadow-sm ${customStyle}">
+                    // Chưa highlight (false): đỏ + khóa. Dùng <div> thay vì <a> nên không có href để bấm vào.
+                    if (!isHighlighted) {
+                        return `
+                        <div class="${cardBase} hl-locked border-rose-400/70 dark:border-rose-500/40 bg-rose-50/70 dark:bg-rose-950/30 text-rose-600 dark:text-rose-300" aria-disabled="true" title="Môn này chưa mở — đang khóa">
                             <span class="subj-ico ${sub.color}"><i class="fa-solid ${sub.icon}"></i></span>
-                            <span class="truncate font-medium">${sub.name}</span><span class="dev-path">${basePath}/${sub.id}/${sub.indexFile}</span>
-                            ${badgeHtml}
+                            <span class="truncate font-medium">${sub.name}</span>${devPath}
+                            <i class="fa-solid fa-lock ml-auto text-[10px]"></i>
+                        </div>
+                    `;
+                    }
+
+                    // Đã highlight (true): xanh lá + mở để bấm vào
+                    return `
+                        <a href="${basePath}/${sub.id}/${sub.indexFile}" class="${cardBase} hl-open border-emerald-500/80 dark:border-emerald-500/60 bg-emerald-50/80 dark:bg-emerald-950/40 ring-1 ring-emerald-500/50 text-slate-700 dark:text-slate-100 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/40 hover:border-emerald-500">
+                            <span class="subj-ico ${sub.color}"><i class="fa-solid ${sub.icon}"></i></span>
+                            <span class="truncate font-medium">${sub.name}</span>${devPath}
+                            <span class="ml-auto w-2 h-2 rounded-full bg-emerald-500 badge-dot"></span>
                         </a>
                     `;
                 }).join('');
@@ -1261,6 +1279,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                     if (words.every(w => searchableText.includes(w))) {
                         matchedResults.push({
                             subject: sub,
+                            key: cat.key,
                             examType: cat.examType,
                             semester: cat.semester,
                             url: `${cat.path}/${sub.id}/${sub.indexFile}`
@@ -1281,10 +1300,29 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 return;
             }
 
-            searchResultsList.innerHTML = matchedResults.map(item => `
-                <a href="${item.url}" class="p-3 bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700/90 border border-slate-200 dark:border-slate-700 hover:border-indigo-500/50 rounded-xl flex items-center justify-between text-xs text-slate-700 dark:text-slate-200 transition group shadow-md">
+            const searchHighlights = getHighlightsData();
+            searchResultsList.innerHTML = matchedResults.map(item => {
+                // Kết quả chưa highlight cũng bị khóa như cây môn học: đỏ, không có href
+                if (searchHighlights[item.key + '/' + item.subject.id] !== true) {
+                    return `
+                <div class="p-3 bg-rose-50/70 dark:bg-rose-950/30 border border-rose-400/70 dark:border-rose-500/40 rounded-xl flex items-center justify-between text-xs text-rose-600 dark:text-rose-300 hl-locked shadow-md" aria-disabled="true" title="Môn này chưa mở — đang khóa">
                     <div class="flex items-center space-x-3 truncate">
-                        <div class="p-2 bg-slate-100 dark:bg-slate-900 rounded-lg group-hover:scale-110 transition">
+                        <div class="p-2 bg-rose-500/10 rounded-lg">
+                            <i class="fa-solid ${item.subject.icon} ${item.subject.color} text-base"></i>
+                        </div>
+                        <div class="truncate">
+                            <div class="font-bold truncate">${hlText(item.subject.name + ' - ' + item.examType + ' - ' + item.semester, words)}</div>
+                            <div class="text-[10px] truncate mt-0.5 opacity-80">${hlText(item.url, words)}</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-lock ml-2"></i>
+                </div>
+            `;
+                }
+                return `
+                <a href="${item.url}" class="p-3 bg-emerald-50/80 dark:bg-emerald-950/30 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/40 border border-emerald-500/60 dark:border-emerald-500/40 hover:border-emerald-500 rounded-xl flex items-center justify-between text-xs text-slate-700 dark:text-slate-100 transition group shadow-md">
+                    <div class="flex items-center space-x-3 truncate">
+                        <div class="p-2 bg-emerald-500/10 rounded-lg group-hover:scale-110 transition">
                             <i class="fa-solid ${item.subject.icon} ${item.subject.color} text-base"></i>
                         </div>
                         <div class="truncate">
@@ -1292,9 +1330,10 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                             <div class="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">${hlText(item.url, words)}</div>
                         </div>
                     </div>
-                    <i class="fa-solid fa-arrow-right text-slate-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition ml-2"></i>
+                    <i class="fa-solid fa-arrow-right text-slate-400 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition ml-2"></i>
                 </a>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function toggleFolder(folderId, btnEl) {
