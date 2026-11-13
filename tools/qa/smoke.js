@@ -31,6 +31,12 @@ function makeDOM(html, url) {
   w.cancelAnimationFrame = (id) => clearTimeout(id);
   w.prompt = () => null;
   w.confirm = () => true;
+  /* jsdom không phát media thật: stub để player không sinh jsdomError. */
+  if (w.HTMLMediaElement) {
+    w.HTMLMediaElement.prototype.play = function () { this.paused = false; try { this.dispatchEvent(new w.Event('play')); } catch (e) {} return Promise.resolve(); };
+    w.HTMLMediaElement.prototype.pause = function () { this.paused = true; try { this.dispatchEvent(new w.Event('pause')); } catch (e) {} };
+    w.HTMLMediaElement.prototype.load = function () { };
+  }
   return { dom, w, errors };
 }
 
@@ -54,6 +60,8 @@ const w = H.w;
 load(w, 'assets/bakhi/bk-core.js');
 load(w, 'assets/bakhi/bk-learn.js');
 load(w, 'assets/bakhi/bk-dev.js');
+load(w, 'assets/bakhi/bk-music.js');
+if (w.BKMusic) w.BKMusic.buildUI();
 
 ok('BK core loaded', !!w.BK && !!w.BK.store);
 ok('BKLearn exposed', !!w.BKLearn);
@@ -154,11 +162,51 @@ const devPanelEl = w.document.getElementById('bkDevPanel');
 ok('dev panel hides on close', devPanelEl.hidden === true && devPanelEl.style.display === 'none');
 ok('dev panel reopens after close', w.BKDev.open(true) === true && devPanelEl.style.display === '');
 const tabButtons = Array.from(w.document.querySelectorAll('#bkDevPanel .bkdev-tab'));
-ok('dev panel has 10 tabs', tabButtons.length === 10, String(tabButtons.length));
+ok('dev panel has 11 tabs', tabButtons.length === 11, String(tabButtons.length));
 tabButtons.forEach((b) => {
   try { b.click(); } catch (e) { failures++; console.log('  FAIL dev tab threw ' + b.textContent + ' :: ' + e.message); }
 });
 ok('dev inspector pane built', !!w.document.querySelector('[data-pane="inspector"] .bkdev-boxmodel'));
+
+/* ---------------- Music player ---------------- */
+console.log('\n[1b] Music player (global)');
+ok('music library has 10 tracks', !!w.BKMusic && w.BKMusic.tracks.length === 10, String(w.BKMusic && w.BKMusic.tracks.length));
+ok('music panel built', !!w.document.querySelector('.bkmusic-panel'));
+ok('music has no autoplay', w.BKMusic.state.playing === false && w.BKMusic.audio().paused === true);
+ok('music fab exists', !!w.document.querySelector('.bkmusic-btn'));
+const mQueue0 = w.BKMusic.state.queue.slice();
+const mCur0 = w.BKMusic.state.queue[w.BKMusic.state.qi];
+w.BKMusic.setShuffle(true);
+ok('shuffle keeps queue size', w.BKMusic.state.queue.length === mQueue0.length, String(w.BKMusic.state.queue.length));
+ok('shuffle keeps current first', w.BKMusic.state.queue[0] === mCur0);
+ok('shuffle has no duplicates', new Set(w.BKMusic.state.queue).size === w.BKMusic.state.queue.length);
+w.BKMusic.setShuffle(false);
+ok('shuffle off restores base', JSON.stringify(w.BKMusic.state.queue) === JSON.stringify(w.BKMusic.state.base));
+ok('shuffle off keeps current', w.BKMusic.state.queue[w.BKMusic.state.qi] === mCur0);
+w.BKMusic.setRepeat(2);
+ok('repeat one set', w.BKMusic.state.repeat === 2);
+w.BKMusic.setRepeat(1);
+ok('repeat all set', w.BKMusic.state.repeat === 1);
+w.BKMusic.setRepeat(0);
+ok('repeat off set', w.BKMusic.state.repeat === 0);
+const qLen = w.BKMusic.state.queue.length;
+w.BKMusic.addToQueue(0);
+ok('add to queue grows queue', w.BKMusic.state.queue.length === qLen + 1, String(w.BKMusic.state.queue.length));
+const qiBefore = w.BKMusic.state.qi;
+w.BKMusic.playNext(2);
+ok('play next inserts after current', w.BKMusic.state.queue[qiBefore + 1] === 2, JSON.stringify(w.BKMusic.state.queue.slice(0, 4)));
+const beforeRemove = w.BKMusic.state.queue.length;
+w.BKMusic.removeAt(beforeRemove - 1);
+ok('remove from queue shrinks queue', w.BKMusic.state.queue.length === beforeRemove - 1, String(w.BKMusic.state.queue.length));
+w.BKMusic.clearQueue();
+ok('clear queue keeps current track', w.BKMusic.state.queue.length === 1 && w.BKMusic.state.queue[0] === mCur0);
+w.BKMusic.loadTrack(0, false);
+ok('load track keeps paused', w.BKMusic.audio().paused === true);
+ok('player renders queue items', w.document.querySelectorAll('.bkmusic-item').length > 0);
+ok('missing lyrics shows notice', (() => { w.BKMusic.open(); const t = w.document.querySelector('.bkmusic-tabs button[data-tab="lyrics"]'); if (t) t.click(); return /chưa có lời/i.test(w.document.querySelector('.bkm-lyrics').textContent); })());
+ok('dev music tab renders', !!w.document.querySelector('[data-pane="music"] .bkdev-table'));
+w.BKMusic.reset();
+ok('music reset restores 10 tracks', w.BKMusic.state.queue.length === 10 && w.BKMusic.state.shuffle === false);
 w.BKDev.inspector.setSelected(w.document.querySelector('header h1'));
 ok('inspector selector computed', w.BKDev.inspector.selectorFor(w.document.querySelector('header h1')).length > 0);
 

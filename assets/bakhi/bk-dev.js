@@ -119,7 +119,8 @@
         { id: 'network', label: 'Network', icon: 'fa-network-wired', build: buildNetwork },
         { id: 'theme', label: 'Theme', icon: 'fa-swatchbook', build: buildTheme },
         { id: 'components', label: 'Components', icon: 'fa-shapes', build: buildComponents },
-        { id: 'backup', label: 'Backup', icon: 'fa-clock-rotate-left', build: buildBackup }
+        { id: 'backup', label: 'Backup', icon: 'fa-clock-rotate-left', build: buildBackup },
+        { id: 'music', label: 'Music', icon: 'fa-music', build: buildMusic }
     ];
 
     function buildPanel() {
@@ -1666,18 +1667,214 @@
     }
 
     /* =====================================================================
+       11. Music (tích hợp Music Player dùng chung)
+       ================================================================== */
+    function buildMusic(pane) {
+        var M = global.BKMusic;
+        pane.appendChild(h4('Music Player'));
+        if (!M) {
+            pane.appendChild(note('Music Player chưa nạp. Tải lại trang hoặc kiểm tra assets/bakhi/bk-music.js.'));
+            return;
+        }
+
+        var status = el('div', 'bkdev-note');
+        var out = el('pre', 'bkdev-out');
+        var listBox = el('div');
+
+        function fmtT(t) { return isFinite(t) ? Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') : '0:00'; }
+
+        function renderStatus() {
+            var s = M.state;
+            var t = M.tracks[s.queue[s.qi]] || {};
+            status.textContent = [
+                'Đang phát: ' + (t.title || '—'),
+                'Queue: ' + s.queue.length + ' bài (vị trí ' + (s.qi + 1) + ')',
+                'Shuffle: ' + (s.shuffle ? 'on' : 'off'),
+                'Repeat: ' + ['off', 'all', 'one'][s.repeat] || 'off',
+                'Âm lượng: ' + Math.round(s.volume * 100) + '%' + (s.muted ? ' (muted)' : ''),
+                'Trạng thái: ' + (s.playing ? 'playing' : 'paused')
+            ].join(' · ');
+        }
+
+        function renderList() {
+            listBox.innerHTML = '';
+            var tbl = el('table', 'bkdev-table');
+            tbl.innerHTML = '<thead><tr><th>#</th><th>Bài hát</th><th>File</th><th></th></tr></thead>';
+            var tb = el('tbody');
+            M.tracks.forEach(function (t, i) {
+                var tr = el('tr');
+                tr.appendChild(el('td', null, String(i + 1)));
+                tr.appendChild(el('td', null, t.title));
+                var fileCell = el('td');
+                var link = el('a', null, t.src.split('/').pop());
+                link.href = t.src;
+                link.target = '_blank';
+                link.rel = 'noopener';
+                fileCell.appendChild(link);
+                tr.appendChild(fileCell);
+                var act = el('td');
+                act.appendChild(btn('Phát', 'bk-btn bk-btn-sm', 'fa-play', function () {
+                    var qi = M.state.queue.indexOf(i);
+                    if (qi < 0) { M.addToQueue(i); qi = M.state.queue.indexOf(i); }
+                    M.loadTrack(qi, true);
+                    renderStatus();
+                }));
+                act.appendChild(btn('Queue', 'bk-btn bk-btn-ghost bk-btn-sm', 'fa-plus', function () {
+                    M.addToQueue(i); renderStatus();
+                }));
+                tr.appendChild(act);
+                tb.appendChild(tr);
+            });
+            tbl.appendChild(tb);
+            listBox.appendChild(tbl);
+        }
+
+        function checkFiles() {
+            out.textContent = 'Đang kiểm tra ' + M.tracks.length + ' file…';
+            var lines = [];
+            var left = M.tracks.length;
+            M.tracks.forEach(function (t) {
+                var probe = new Audio();
+                probe.preload = 'metadata';
+                probe.onloadedmetadata = function () { done(t, 'OK ' + Math.round(probe.duration) + 's'); };
+                probe.onerror = function () { done(t, 'LỖI không tải được'); };
+                function done(track, msg) {
+                    lines.push((msg.indexOf('OK') === 0 ? '✓ ' : '✗ ') + track.title + ' — ' + msg);
+                    probe.src = '';
+                    if (--left === 0) out.textContent = lines.join('\n');
+                }
+                probe.src = t.src;
+            });
+        }
+
+        pane.appendChild(row(
+            btn('Mở Music Player', 'bk-btn', 'fa-music', function () { M.open(); }),
+            btn('Đóng Music Player', '', 'fa-xmark', function () { M.close(); }),
+            btn('Bật / Tắt phát', '', 'fa-play', function () { M.playPause(); renderStatus(); }),
+            btn('Bài kế', '', 'fa-forward-step', function () { M.next(); renderStatus(); }),
+            btn('Bài trước', '', 'fa-backward-step', function () { M.prev(); renderStatus(); }),
+            btn('Shuffle', '', 'fa-shuffle', function () { M.setShuffle(!M.state.shuffle); renderStatus(); }),
+            btn('Repeat', '', 'fa-repeat', function () { M.setRepeat((M.state.repeat + 1) % 3); renderStatus(); }),
+            btn('Reset trạng thái', '', 'fa-rotate-left', function () {
+                BK.ui.confirm({ title: 'Reset Music Player', message: 'Đưa queue, shuffle, repeat và âm lượng về mặc định?', ok: 'Reset', danger: true }).then(function (ok) {
+                    if (!ok) return;
+                    M.reset(); renderStatus();
+                });
+            })
+        ));
+        pane.appendChild(status);
+        pane.appendChild(row(
+            btn('Kiểm tra file nhạc', 'bk-btn', 'fa-circle-check', checkFiles),
+            btn('Xem Queue', '', 'fa-list', function () { M.open(); renderStatus(); })
+        ));
+        pane.appendChild(out);
+
+        pane.appendChild(h4('Thư viện (' + M.tracks.length + ' bài)'));
+        pane.appendChild(listBox);
+        renderList();
+        renderStatus();
+        var t = setInterval(function () {
+            if (!D.body.contains(pane)) { clearInterval(t); return; }
+            renderStatus();
+        }, 1000);
+        pane.appendChild(note('Tab này chỉ đọc trạng thái player dùng chung; mọi thay đổi thực hiện qua Music Player để đồng bộ toàn site.'));
+    }
+
+    /* =====================================================================
        Khởi động
        ================================================================== */
+    var FAB_KEY = 'bk.dev.fab.v1';
+
     function buildFab() {
         if (D.getElementById('bkdevFab')) return;
         var fab = el('button', 'bkdev-fab');
         fab.id = 'bkdevFab';
         fab.type = 'button';
-        fab.title = 'Developer Playground (Ctrl+Shift+G)';
+        fab.title = 'Developer Playground (Ctrl+Shift+G) — kéo để di chuyển, chuột phải để đặt lại vị trí';
         fab.setAttribute('aria-label', 'Mở Developer Playground');
         fab.innerHTML = '<i class="fa-solid fa-screwdriver-wrench"></i>';
-        fab.addEventListener('click', function () { open(); });
         D.body.appendChild(fab);
+        makeFabDraggable(fab);
+    }
+
+    /**
+     * Logo Dev Panel kéo thả tự do bằng Pointer Events (chuột + cảm ứng).
+     * - Vị trí lưu ở localStorage (FAB_KEY).
+     * - Chỉ mở panel khi click KHÔNG kèm thao tác kéo (ngưỡng 5px).
+     * - Không giới hạn trong khung nhìn; chuột phải để đặt lại vị trí mặc định.
+     */
+    function makeFabDraggable(fab) {
+        var pos = read(FAB_KEY, null);
+        var dragging = false, moved = false, sx = 0, sy = 0, ox = 0, oy = 0, pid = null;
+        var suppressClick = false;
+
+        function apply() {
+            if (!pos || typeof pos.x !== 'number' || typeof pos.y !== 'number') return;
+            fab.style.left = pos.x + 'px';
+            fab.style.top = pos.y + 'px';
+            fab.style.bottom = 'auto';
+            fab.style.right = 'auto';
+        }
+        apply();
+
+        fab.style.touchAction = 'none';
+
+        fab.addEventListener('pointerdown', function (e) {
+            if (e.button != null && e.button !== 0) return;
+            dragging = true; moved = false;
+            suppressClick = false;
+            pid = e.pointerId;
+            sx = e.clientX; sy = e.clientY;
+            var r = fab.getBoundingClientRect();
+            ox = r.left; oy = r.top;
+            try { fab.setPointerCapture(pid); } catch (err) { }
+            fab.classList.add('bkdev-fab-drag');
+        });
+
+        fab.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - sx, dy = e.clientY - sy;
+            if (!moved && Math.abs(dx) + Math.abs(dy) < 5) return;
+            moved = true;
+            e.preventDefault();
+            fab.style.left = (ox + dx) + 'px';
+            fab.style.top = (oy + dy) + 'px';
+            fab.style.bottom = 'auto';
+            fab.style.right = 'auto';
+        });
+
+        function end(e) {
+            if (!dragging) return;
+            dragging = false;
+            fab.classList.remove('bkdev-fab-drag');
+            try { if (pid != null) fab.releasePointerCapture(pid); } catch (err) { }
+            pid = null;
+            if (moved) {
+                suppressClick = true;
+                var r = fab.getBoundingClientRect();
+                pos = { x: Math.round(r.left), y: Math.round(r.top) };
+                write(FAB_KEY, pos);
+                /* Trả lại false ngay sau khi click tổng hợp bị chặn. */
+                setTimeout(function () { suppressClick = false; }, 0);
+            }
+            if (e && e.pointerType === 'touch') { /* tránh click giả lập */ }
+        }
+        fab.addEventListener('pointerup', end);
+        fab.addEventListener('pointercancel', end);
+
+        fab.addEventListener('click', function (e) {
+            if (moved || suppressClick) { e.preventDefault(); e.stopPropagation(); moved = false; return; }
+            open();
+        });
+
+        fab.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+            pos = null;
+            try { localStorage.removeItem(FAB_KEY); } catch (err) { }
+            fab.style.left = ''; fab.style.top = '';
+            fab.style.bottom = ''; fab.style.right = '';
+            BK.ui.toast('Đã đặt lại vị trí logo Dev Panel', 'success');
+        });
     }
 
     D.addEventListener('keydown', function (e) {

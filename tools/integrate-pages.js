@@ -36,16 +36,20 @@ function inject(file) {
   const prefix = depth === 0 ? '' : '../'.repeat(depth);
   const isHome = depth === 0 && /^index\.html$/i.test(path.basename(rel));
 
+  // Trang "Coming soon" chỉ cần lớp core (âm nhạc + hiệu ứng), không cần dock học tập.
+  const isComingSoon = /Coming soon/i.test(html);
   const scripts = isHome
     ? [
         `${prefix}assets/bakhi/bk-core.js`,
         `${prefix}assets/bakhi/bk-learn.js`,
         `${prefix}assets/bakhi/bk-dev.js`
       ]
-    : [
-        `${prefix}assets/bakhi/bk-core.js`,
-        `${prefix}assets/bakhi/bk-page.js`
-      ];
+    : isComingSoon
+      ? [`${prefix}assets/bakhi/bk-core.js`]
+      : [
+          `${prefix}assets/bakhi/bk-core.js`,
+          `${prefix}assets/bakhi/bk-page.js`
+        ];
 
   const block = '\n<!-- Bá Khí Learning Platform (chỉ thêm thẻ script, không sửa nội dung) -->\n' +
     scripts.map((src) => `<script src="${src}" defer></script>`).join('\n') + '\n';

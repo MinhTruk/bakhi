@@ -262,3 +262,17 @@
 @media (prefers-reduced-motion: reduce) {
     .bkdev-panel, .bkdev-fab { animation: none !important; }
 }
+
+/* Logo Dev Panel: kéo thả tự do */
+.bkdev-fab {
+    transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+    touch-action: none;
+    cursor: grab;
+}
+.bkdev-fab:hover { transform: translateY(-2px) scale(1.05); }
+.bkdev-fab:active, .bkdev-fab-drag {
+    cursor: grabbing;
+    transform: scale(.94);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, .35);
+}
+.bkdev-fab-drag:hover { transform: scale(.94); }

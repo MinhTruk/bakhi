@@ -1,0 +1,59 @@
+/* Bá Khí — Global Music Player */
+.bkmusic-btn{position:fixed;right:1rem;bottom:5.2rem;z-index:70;width:3rem;height:3rem;border-radius:50%;border:0;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;box-shadow:0 10px 24px -10px rgba(99,102,241,.9);cursor:pointer;display:grid;place-items:center;font-size:1rem;transition:transform .2s}
+.bkmusic-btn:hover{transform:scale(1.06)}
+.bkmusic-panel{position:fixed;right:1rem;bottom:1rem;z-index:71;width:min(360px,calc(100vw-2rem));max-height:78vh;display:none;flex-direction:column;border-radius:1rem;background:rgba(15,23,42,.96);color:#e2e8f0;border:1px solid rgba(148,163,184,.25);box-shadow:0 20px 40px -16px rgba(2,6,23,.9);backdrop-filter:blur(8px);overflow:hidden;font-family:Lexend,system-ui,sans-serif}
+.bkmusic-panel.open{display:flex}
+.bkmusic-head{display:flex;align-items:center;gap:.6rem;padding:.7rem .85rem;border-bottom:1px solid rgba(148,163,184,.15)}
+.bkmusic-art{width:44px;height:44px;border-radius:.6rem;background:linear-gradient(135deg,#6366f1,#a855f7);display:grid;place-items:center;font-size:1.1rem;flex-shrink:0;transition:transform .4s}
+.bkmusic-panel.playing .bkmusic-art{animation:bkmusic-spin 6s linear infinite}
+@keyframes bkmusic-spin{to{transform:rotate(360deg)}}
+.bkmusic-info{min-width:0;flex:1}
+.bkmusic-title{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bkmusic-artist{font-size:.72rem;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bkmusic-controls{display:flex;align-items:center;gap:.35rem;padding:.6rem .85rem}
+.bkmusic-controls button{width:2rem;height:2rem;border-radius:50%;border:0;background:rgba(148,163,184,.12);color:#e2e8f0;cursor:pointer;font-size:.75rem;display:grid;place-items:center}
+.bkmusic-controls button.primary{background:linear-gradient(135deg,#6366f1,#a855f7);width:2.4rem;height:2.4rem}
+.bkmusic-controls button.on{color:#a5b4fc;background:rgba(99,102,241,.25)}
+.bkmusic-progress{padding:0 .85rem .6rem}
+.bkmusic-progress input{width:100%;accent-color:#6366f1}
+.bkmusic-times{display:flex;justify-content:space-between;font-size:.68rem;opacity:.7;margin-top:.15rem}
+.bkmusic-volume{display:flex;align-items:center;gap:.4rem;padding:0 .85rem .6rem}
+.bkmusic-volume input{flex:1;accent-color:#6366f1}
+.bkmusic-tabs{display:flex;gap:.3rem;padding:.4rem .85rem;border-top:1px solid rgba(148,163,184,.15)}
+.bkmusic-tabs button{flex:1;padding:.35rem;border-radius:.5rem;border:0;background:transparent;color:#94a3b8;cursor:pointer;font-size:.72rem}
+.bkmusic-tabs button.on{background:rgba(99,102,241,.2);color:#c7d2fe}
+.bkmusic-body{flex:1;overflow:auto;padding:.6rem .85rem;min-height:120px;max-height:40vh}
+.bkmusic-list{display:flex;flex-direction:column;gap:.35rem}
+.bkmusic-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .5rem;border-radius:.5rem;background:rgba(148,163,184,.06);cursor:pointer;font-size:.78rem}
+.bkmusic-item:hover{background:rgba(99,102,241,.15)}
+.bkmusic-item.active{background:rgba(99,102,241,.25);color:#c7d2fe}
+.bkmusic-item .drag{cursor:grab;opacity:.5}
+.bkmusic-item .rm{margin-left:auto;border:0;background:transparent;color:#94a3b8;cursor:pointer;font-size:.7rem}
+.bkmusic-lyrics{white-space:pre-wrap;font-size:.78rem;line-height:1.6}
+.bkmusic-lyrics .cur{color:#c7d2fe;font-weight:600}
+.bkmusic-empty{opacity:.6;font-size:.78rem;text-align:center;padding:1rem}
+.bkmusic-foot{display:flex;gap:.4rem;padding:.6rem .85rem;border-top:1px solid rgba(148,163,184,.15)}
+.bkmusic-foot button{flex:1;padding:.4rem;border-radius:.5rem;border:0;background:rgba(148,163,184,.12);color:#e2e8f0;cursor:pointer;font-size:.72rem}
+@media(max-width:640px){.bkmusic-panel{right:.5rem;bottom:.5rem;width:calc(100vw-1rem)}}
+.bkmusic-panel [hidden]{display:none !important}
+.bkmusic-x{width:1.6rem;height:1.6rem;border-radius:50%;border:0;background:transparent;color:#94a3b8;cursor:pointer;display:grid;place-items:center}
+.bkmusic-x:hover{background:rgba(148,163,184,.16);color:#e2e8f0}
+.bkmusic-mini{width:1.55rem;height:1.55rem;border-radius:.4rem;border:0;background:rgba(148,163,184,.14);color:#e2e8f0;cursor:pointer;font-size:.7rem;display:grid;place-items:center;flex-shrink:0}
+.bkmusic-mini:hover{background:rgba(99,102,241,.3);color:#c7d2fe}
+.bkmusic-now{font-size:.72rem;color:#a5b4fc;animation:bkmusic-pulse 1.2s ease-in-out infinite}
+@keyframes bkmusic-pulse{0%,100%{opacity:.45;transform:translateY(0)}50%{opacity:1;transform:translateY(-1px)}}
+.bkmusic-item.dragging{opacity:.45;outline:1px dashed rgba(165,180,252,.6)}
+.bkmusic-item .drag{cursor:grab;font-size:.7rem;letter-spacing:-1px}
+.bkmusic-resume{margin:.1rem .85rem .7rem;padding:.45rem .6rem;border-radius:.55rem;border:1px solid rgba(165,180,252,.45);background:rgba(99,102,241,.22);color:#e0e7ff;font-size:.74rem;cursor:pointer;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bkmusic-resume:hover{background:rgba(99,102,241,.35)}
+.bkmusic-btn.bkmusic-fab-playing{animation:bkmusic-ring 1.6s ease-out infinite}
+@keyframes bkmusic-ring{0%{box-shadow:0 0 0 0 rgba(168,85,247,.55),0 10px 24px -10px rgba(99,102,241,.9)}70%{box-shadow:0 0 0 12px rgba(168,85,247,0),0 10px 24px -10px rgba(99,102,241,.9)}100%{box-shadow:0 0 0 0 rgba(168,85,247,0),0 10px 24px -10px rgba(99,102,241,.9)}}
+.bkmusic-controls button.on{color:#a5b4fc;background:rgba(99,102,241,.28)}
+
+/* Ẩn player nhạc cũ của index để tránh 2 hệ nhạc trùng nhau */
+#bgmBtn,#bgmPanel{display:none !important}
+.bkm-lyrics-edit{padding:.2rem 0}
+.bkm-lyr-input{width:100%;border-radius:.5rem;border:1px solid rgba(148,163,184,.3);background:rgba(2,6,23,.55);color:#e2e8f0;font-size:.75rem;line-height:1.5;padding:.5rem;resize:vertical;font-family:inherit}
+.bkm-lyr-actions{display:flex;gap:.4rem;margin-top:.4rem}
+.bkm-lyr-actions button{flex:1;padding:.35rem;border-radius:.45rem;border:0;background:rgba(99,102,241,.25);color:#e0e7ff;cursor:pointer;font-size:.72rem}
+.bkm-lyr-actions button:hover{background:rgba(99,102,241,.4)}

@@ -1166,6 +1166,23 @@
     global.BKCoreLoaded = true;
 })(typeof window !== 'undefined' ? window : this);
 
+/* Music loader: nạp music player dùng chung */
+(function () {
+    try {
+        if (window.BKMusicLoaded) return;
+        window.BKMusicLoaded = true;
+        if (document.querySelector('script[src*="bk-music.js"]')) return;
+        var cur = document.currentScript;
+        var src = 'assets/bakhi/bk-music.js';
+        if (cur && cur.src) { try { src = new URL('bk-music.js', cur.src).href; } catch (e) {} }
+        else if (window.BK && BK.util && BK.util.basePath) { src = BK.util.basePath() + 'assets/bakhi/bk-music.js'; }
+        var s = document.createElement('script');
+        s.src = src;
+        s.async = false;
+        (document.head || document.documentElement).appendChild(s);
+    } catch (e) {}
+})();
+
 /* BKT loader: nạp hiệu ứng bàn tay kéo dùng chung cho mọi trang con */
 (function () {
     try {

@@ -21,7 +21,9 @@ Hướng dẫn cho agent/developer làm việc trong repository này.
 /assets/bakhi/         Lớp nâng cấp 2.0 (mới)
   bk-core.js|css       Kho dữ liệu local-first, UI kit, tìm kiếm, adapter AI/Supabase
   bk-learn.js|css      Trung tâm học tập, ôn tập, ghi chú, đánh dấu, lịch sử, thành tích
-  bk-dev.js|css        Developer Playground 2.0 (10 công cụ)
+  bk-dev.js|css        Developer Playground 2.0 (11 công cụ, tab Music)
+  bk-music.js|css      Music Player dùng chung (thư viện, queue, shuffle, repeat, lyrics)
+  bk-bkt.js            Hiệu ứng chuyển trang "bàn tay kéo" dùng chung
   bk-page.js           Cầu nối cho các trang bài học
 /ktgk1, /kttx, /music  Nội dung giáo dục (HTML tĩnh, mỗi trang tự chứa)
 /studio                Ứng dụng thiết kế poster độc lập (không can thiệp)
