@@ -170,7 +170,9 @@ ok('dev inspector pane built', !!w.document.querySelector('[data-pane="inspector
 
 /* ---------------- Music player ---------------- */
 console.log('\n[1b] Music player (global)');
-ok('music library has 10 tracks', !!w.BKMusic && w.BKMusic.tracks.length === 10, String(w.BKMusic && w.BKMusic.tracks.length));
+ok('music library has 5 tracks', !!w.BKMusic && w.BKMusic.tracks.length === 5, String(w.BKMusic && w.BKMusic.tracks.length));
+ok('music src follows music/<slug>.mp3', !!w.BKMusic && w.BKMusic.tracks.every(function (t) { return /\/music\/[a-z0-9-]+\.mp3$/.test(t.src); }));
+ok('music lyric path follows music/<slug>.txt', !!w.BKMusic && w.BKMusic.tracks.every(function (t) { return /\/music\/[a-z0-9-]+\.txt$/.test(t.lyricSrc); }));
 ok('music panel built', !!w.document.querySelector('.bkmusic-panel'));
 ok('music has no autoplay', w.BKMusic.state.playing === false && w.BKMusic.audio().paused === true);
 ok('music fab exists', !!w.document.querySelector('.bkmusic-btn'));
@@ -206,7 +208,7 @@ ok('player renders queue items', w.document.querySelectorAll('.bkmusic-item').le
 ok('missing lyrics shows notice', (() => { w.BKMusic.open(); const t = w.document.querySelector('.bkmusic-tabs button[data-tab="lyrics"]'); if (t) t.click(); return /chưa có lời/i.test(w.document.querySelector('.bkm-lyrics').textContent); })());
 ok('dev music tab renders', !!w.document.querySelector('[data-pane="music"] .bkdev-table'));
 w.BKMusic.reset();
-ok('music reset restores 10 tracks', w.BKMusic.state.queue.length === 10 && w.BKMusic.state.shuffle === false);
+ok('music reset restores 5 tracks', w.BKMusic.state.queue.length === 5 && w.BKMusic.state.shuffle === false);
 w.BKDev.inspector.setSelected(w.document.querySelector('header h1'));
 ok('inspector selector computed', w.BKDev.inspector.selectorFor(w.document.querySelector('header h1')).length > 0);
 

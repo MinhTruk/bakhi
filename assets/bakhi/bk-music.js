@@ -2,7 +2,7 @@
    Bá Khí — bk-music.js : Music Player dùng chung toàn website
    -------------------------------------------------------------------------
    Kiến trúc (một controller duy nhất cho mỗi trang):
-     - MUSIC LIBRARY  : mảng TRACKS (10 bài EREN)
+     - MUSIC LIBRARY  : mảng LIBRARY (5 bài) + quy ước file music/<slug>.mp3|txt|png
      - QUEUE MANAGER  : baseQueue (thứ tự gốc người dùng) + queue (thứ tự phát)
      - CONTROLLER     : 1 HTMLAudioElement duy nhất, shuffle / repeat / volume
      - STATE          : lưu localStorage (bakhiMusic.v1) — khôi phục sau reload
@@ -48,25 +48,37 @@
     var BP = basePath();
 
     /* ======================= 1. MUSIC LIBRARY ======================= */
-    /* Nguồn: EREN — https://www.youtube.com/channel/UCDjOM0vpsdykW3pWbBIvRDA
-       Các file .wav hiện có là âm thanh placeholder tự tạo (không phải bản thu
-       gốc) để player chạy được ngay. Thay `src` bằng file có giấy phép. */
-    var TRACKS = [
-        { id: 'eren-kiss-me', title: 'KISS ME (ft. Bbynascar, VCC Left Hand)', artist: 'EREN', src: BP + 'music/eren-kiss-me.wav', cover: '', lyrics: [], copyright: 'EREN — placeholder audio, thay bằng file được cấp phép.' },
-        { id: 'eren-ben-anh', title: 'BEN ANH (ft. Lil Liem)', artist: 'EREN', src: BP + 'music/eren-ben-anh.wav', cover: '', lyrics: [], copyright: 'EREN — placeholder audio, thay bằng file được cấp phép.' },
-        { id: 'eren-see-u', title: 'SEE U (ft. SIXTYUPTOWN)', artist: 'EREN', src: BP + 'music/eren-see-u.wav', cover: '', lyrics: [], copyright: 'EREN — placeholder audio, thay bằng file được cấp phép.' },
-        { id: 'eren-sai-lam', title: 'SAI LAM (ft. Bbynascar, Taki, Kidsai)', artist: 'EREN', src: BP + 'music/eren-sai-lam.wav', cover: '', lyrics: [], copyright: 'EREN — placeholder audio, thay bằng file được cấp phép.' },
-        { id: 'eren-quay-ve', title: 'QUAY VE (ft. Bbynascar, Taki)', artist: 'EREN', src: BP + 'music/eren-quay-ve.wav', cover: '', lyrics: [], copyright: 'EREN — placeholder audio, thay bằng file được cấp phép.' },
-        { id: 'eren-mua-dong', title: 'Mua Dong Em Ve (ft. Bbynascar, Taki)', artist: 'EREN', src: BP + 'music/eren-mua-dong-em-ve.wav', cover: '', lyrics: [], copyright: 'EREN — placeholder audio, thay bằng file được cấp phép.' },
-        { id: 'eren-lie', title: 'LIE', artist: 'EREN', src: BP + 'music/eren-lie.wav', cover: '', lyrics: [], copyright: 'EREN — placeholder audio, thay bằng file được cấp phép.' },
-        { id: 'eren-12h', title: '12H (ft. prettyXIX)', artist: 'EREN', src: BP + 'music/eren-12h.wav', cover: '', lyrics: [], copyright: 'EREN — placeholder audio, thay bằng file được cấp phép.' },
-        { id: 'eren-gioi-han', title: 'GIOI HAN (ft. Bbynascar)', artist: 'EREN', src: BP + 'music/eren-gioi-han.wav', cover: '', lyrics: [], copyright: 'EREN — placeholder audio, thay bằng file được cấp phép.' },
-        { id: 'eren-le-loi', title: 'LE LOI', artist: 'EREN', src: BP + 'music/eren-le-loi.wav', cover: '', lyrics: [], copyright: 'EREN — placeholder audio, thay bằng file được cấp phép.' }
+    /* Quy ước file — chỉ cần bỏ file vào /music, không phải sửa code:
+         music/<slug>.mp3   bài hát
+         music/<slug>.txt   lời bài hát (tùy chọn, hỗ trợ [mm:ss] đầu dòng)
+         music/<slug>.png   ảnh bìa (hoặc .jpg / .jpeg / .webp)
+       Các file .mp3 hiện có là bản thu thử tự tạo (12 giây, không phải bản thu
+       gốc) để player chạy được ngay — thay bằng file có giấy phép. */
+    var LIBRARY = [
+        { id: 'gia-nhu', title: 'Giá như', artist: 'xoxad' },
+        { id: 'co-le-anh', title: 'Có lẽ anh', artist: 'fishy' },
+        { id: 'xuong-rong-intro', title: 'Xương rồng (intro)', artist: 'dangrangto' },
+        { id: 'du-bao-thoi-tiet-hom-nay-mua', title: 'Dự báo thời tiết hôm nay mưa', artist: 'GREY D' },
+        { id: 'homesick', title: 'homesick', artist: 'wave to earth' }
     ];
+    var TRACKS = LIBRARY.map(function (s) {
+        return {
+            id: s.id,
+            title: s.title,
+            artist: s.artist,
+            src: BP + 'music/' + s.id + '.mp3',
+            lyricSrc: BP + 'music/' + s.id + '.txt',
+            coverBase: BP + 'music/' + s.id,
+            cover: '',
+            lyrics: [],
+            copyright: 'music/' + s.id + '.mp3 — thay bằng file có giấy phép.'
+        };
+    });
     var ALL = TRACKS.map(function (_, i) { return i; });
 
     /* ======================= 2. STATE ======================= */
-    var KEY = 'bakhiMusic.v1';
+    var KEY = 'bakhiMusic.v2';
+    var FAB_KEY = 'bakhiMusic.fab.v1';
     function defaults() {
         return {
             base: ALL.slice(),            // thứ tự gốc của queue
@@ -316,6 +328,24 @@
     }
 
     /* ======================= 4. RENDER ======================= */
+    function rel(p) { return p.indexOf(BP) === 0 ? p.slice(BP.length) : p; }
+
+    /* Bìa: music/<slug>.png → .jpg → .jpeg → .webp; dò lười và nhớ kết quả. */
+    var COVER_EXT = ['png', 'jpg', 'jpeg', 'webp'];
+    var coverCache = {};
+    function resolveCover(t, done) {
+        if (coverCache[t.id] !== undefined) { done(coverCache[t.id]); return; }
+        var i = 0;
+        (function next() {
+            if (i >= COVER_EXT.length) { coverCache[t.id] = ''; done(''); return; }
+            var url = t.coverBase + '.' + COVER_EXT[i++];
+            var probe = new global.Image();
+            probe.onload = function () { coverCache[t.id] = url; done(url); };
+            probe.onerror = next;
+            probe.src = url;
+        })();
+    }
+
     function syncMeta() {
         var t = curTrack();
         if (!ui.title) return;
@@ -323,13 +353,15 @@
         ui.artist.textContent = t.artist;
         if (ui.art) {
             ui.art.textContent = '♪';
-            if (t.cover) {
+            resolveCover(t, function (url) {
+                if (!ui.art || curTrack().id !== t.id) return;
+                ui.art.innerHTML = '';
+                if (!url) { ui.art.textContent = '♪'; return; }
                 var img = D.createElement('img');
-                img.src = t.cover; img.alt = ''; img.loading = 'lazy';
+                img.src = url; img.alt = ''; img.loading = 'lazy';
                 img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:inherit';
-                ui.art.textContent = '';
                 ui.art.appendChild(img);
-            }
+            });
         }
         if (ui.dur) ui.dur.textContent = '--:--';
         if (ui.seek) ui.seek.value = 0;
@@ -440,11 +472,37 @@
             var m = /^\s*\[(\d{1,2}):(\d{2})\]\s?(.*)$/.exec(line);
             if (m) return { time: Number(m[1]) * 60 + Number(m[2]), text: m[3] };
             return line;
+        }).filter(function (line) {
+            // Dòng bắt đầu bằng # là ghi chú trong file .txt, không hiển thị.
+            var s = (typeof line === 'string' ? line : (line && line.text) || '').trim();
+            if (!s) return false;
+            return s.charAt(0) !== '#';
+        });
+    }
+    /* Lời từ file music/<slug>.txt — tải lười, nhớ kết quả, lỗi không làm hỏng player. */
+    var lyrCache = {};
+    function loadLyricsFile(t) {
+        var c = lyrCache[t.id];
+        if (c && c.state !== 'idle') return;
+        if (typeof global.fetch !== 'function') { lyrCache[t.id] = { state: 'missing' }; return; }
+        lyrCache[t.id] = { state: 'loading' };
+        global.fetch(t.lyricSrc, { cache: 'no-cache' }).then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.text();
+        }).then(function (txt) {
+            lyrCache[t.id] = { state: 'ok', text: txt };
+            if (curTrack().id === t.id) renderLyrics();
+        }).catch(function () {
+            lyrCache[t.id] = { state: 'missing' };
+            if (curTrack().id === t.id) renderLyrics();
         });
     }
     function lyricsOf(t) {
         var own = userLyrics(t.id);
-        return own ? parseLyrics(own) : (t.lyrics || []);
+        if (own) return parseLyrics(own);
+        var c = lyrCache[t.id];
+        if (c && c.state === 'ok') return parseLyrics(c.text);
+        return t.lyrics || [];
     }
 
     function renderLyrics() {
@@ -453,7 +511,12 @@
         var lines = lyricsOf(t);
         ui.lyrics.innerHTML = '';
         if (!lines.length) {
-            ui.lyrics.appendChild(el('div', 'bkmusic-empty', 'Bài này chưa có lời. Có thể bổ sung lyrics hợp pháp trong mảng TRACKS (bk-music.js).'));
+            loadLyricsFile(t);
+            var c = lyrCache[t.id];
+            var msg = (c && c.state === 'loading')
+                ? 'Đang tải lời…'
+                : 'Bài này chưa có lời. Thêm file ' + rel(t.lyricSrc) + ' (mỗi dòng một câu, có thể đặt [mm:ss] ở đầu dòng) hoặc dùng nút "Sửa lời".';
+            ui.lyrics.appendChild(el('div', 'bkmusic-empty', msg));
             return;
         }
         lines.forEach(function (line) {
@@ -529,7 +592,7 @@
             '  <div class="bkm-library bkmusic-list" hidden></div>' +
             '  <div class="bkm-lyrics bkmusic-lyrics" hidden></div>' +
             '  <div class="bkm-lyrics-edit" hidden>' +
-            '    <textarea class="bkm-lyr-input" rows="6" placeholder="Dán lời do bạn có quyền sử dụng. Mỗi dòng một câu; thêm [mm:ss] ở đầu dòng để đồng bộ theo thời gian."></textarea>' +
+            '    <textarea class="bkm-lyr-input" rows="6" placeholder="Dán lời do bạn có quyền sử dụng. Mỗi dòng một câu; thêm [mm:ss] ở đầu dòng để đồng bộ theo thời gian. Lời lưu ở đây sẽ được ưu tiên hơn file music/<slug>.txt."></textarea>' +
             '    <div class="bkm-lyr-actions">' +
             '      <button class="bkm-lyr-save" type="button">Lưu lời</button>' +
             '      <button class="bkm-lyr-clear" type="button">Xoá lời</button>' +
@@ -538,7 +601,7 @@
             '</div>' +
             '<div class="bkmusic-foot">' +
             '  <button class="bkm-lyr-toggle" type="button">Sửa lời</button>' +
-            '  <button class="bkm-addall" type="button">Nạp đủ 10 bài</button>' +
+            '  <button class="bkm-addall" type="button">Nạp đủ ' + TRACKS.length + ' bài</button>' +
             '  <button class="bkm-clear" type="button">Xoá queue</button>' +
             '  <button class="bkm-reset" type="button">Reset</button>' +
             '</div>';
@@ -560,9 +623,78 @@
         ui.shuffle = q('.bkm-shuffle');
         ui.repeat = q('.bkm-repeat');
 
-        fab.addEventListener('click', function () {
+        /* Logo nhạc: mặc định góc trái dưới, kéo thả tự do (chuột + cảm ứng),
+           lưu vị trí; kéo không được kích hoạt mở panel, chuột phải để đặt lại. */
+        function togglePanel() {
             var open = panel.classList.toggle('open');
             fab.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        function clampFab(x, y) {
+            var w = fab.offsetWidth || 48, h = fab.offsetHeight || 48, m = 6;
+            var maxX = Math.max(m, (global.innerWidth || 1024) - w - m);
+            var maxY = Math.max(m, (global.innerHeight || 768) - h - m);
+            return { x: Math.max(m, Math.min(maxX, x)), y: Math.max(m, Math.min(maxY, y)) };
+        }
+        function placeFab(x, y) {
+            var p = clampFab(x, y);
+            fab.style.left = p.x + 'px';
+            fab.style.top = p.y + 'px';
+            fab.style.right = 'auto';
+            fab.style.bottom = 'auto';
+            return p;
+        }
+        var savedPos = null;
+        try { savedPos = JSON.parse(localStorage.getItem(FAB_KEY) || 'null'); } catch (e) { savedPos = null; }
+        if (savedPos && typeof savedPos.x === 'number' && typeof savedPos.y === 'number') placeFab(savedPos.x, savedPos.y);
+
+        var moved = false, dragging = false, suppressClick = false, sx = 0, sy = 0, ox = 0, oy = 0;
+        fab.addEventListener('pointerdown', function (e) {
+            if (e.button != null && e.button !== 0) return;
+            var r = fab.getBoundingClientRect();
+            sx = e.clientX; sy = e.clientY; ox = r.left; oy = r.top;
+            moved = false; dragging = true;
+            try { fab.setPointerCapture(e.pointerId); } catch (err) { }
+            fab.classList.add('bkmusic-fab-drag');
+        });
+        fab.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - sx, dy = e.clientY - sy;
+            if (!moved && Math.abs(dx) + Math.abs(dy) < 5) return;
+            moved = true;
+            if (e.cancelable) e.preventDefault();
+            placeFab(ox + dx, oy + dy);
+        });
+        function endDrag(e) {
+            if (!dragging) return;
+            dragging = false;
+            fab.classList.remove('bkmusic-fab-drag');
+            try { fab.releasePointerCapture(e.pointerId); } catch (err) { }
+            if (!moved) return;
+            var r = fab.getBoundingClientRect();
+            var pos = placeFab(r.left, r.top);
+            try { localStorage.setItem(FAB_KEY, JSON.stringify(pos)); } catch (err) { }
+            suppressClick = true;
+            global.setTimeout(function () { suppressClick = false; }, 0);
+        }
+        fab.addEventListener('pointerup', endDrag);
+        fab.addEventListener('pointercancel', endDrag);
+        fab.addEventListener('click', function (e) {
+            if (moved || suppressClick) {
+                e.preventDefault(); e.stopPropagation();
+                moved = false;
+                return;
+            }
+            togglePanel();
+        });
+        fab.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+            try { localStorage.removeItem(FAB_KEY); } catch (err) { }
+            fab.style.left = ''; fab.style.top = ''; fab.style.right = ''; fab.style.bottom = '';
+        });
+        global.addEventListener('resize', function () {
+            if (!fab.style.left) return;
+            var r = fab.getBoundingClientRect();
+            placeFab(r.left, r.top);
         });
         q('.bkmusic-x').addEventListener('click', function () { panel.classList.remove('open'); fab.setAttribute('aria-expanded', 'false'); });
         ui.play.addEventListener('click', playPause);

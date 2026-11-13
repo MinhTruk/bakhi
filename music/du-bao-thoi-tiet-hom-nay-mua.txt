@@ -1,0 +1,7 @@
+# Lời bài hát: "Dự báo thời tiết hôm nay mưa" — GREY D
+#
+# Chỉ dán lời bạn có quyền sử dụng (hoặc lời do bạn tự viết).
+# Mỗi dòng là một câu. Dòng bắt đầu bằng # là ghi chú, sẽ không hiển thị.
+# Có thể đồng bộ theo thời gian bằng timestamp ở đầu dòng, ví dụ:
+# [00:12] Câu hát đầu tiên
+# [00:19] Câu hát tiếp theo

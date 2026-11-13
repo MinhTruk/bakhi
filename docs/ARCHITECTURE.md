@@ -49,10 +49,13 @@ trang bài học ─────┴──► bk-page.js
   (Ctrl/⌘+K), tìm kiếm toàn cục (`/`), focus mode, xuất/nhập.
 - **bk-dev.js/css** — Developer Playground 2.0: cửa sổ nổi kéo/đổi kích thước, nhớ
   vị trí/kích thước/tab, 11 công cụ (thêm tab Music). Không thay thế panel cũ.
-- **bk-music.js/css** — Music Player dùng chung: thư viện 10 bài, queue (thêm/xoá/
-  kéo thả), shuffle, repeat 3 chế độ, âm lượng, lyrics có timestamp do người dùng
-  tự bổ sung. Trạng thái lưu ở `bakhiMusic.v1`; không autoplay. Do `bk-core.js`
-  nạp trên mọi trang nên chỉ có một audio instance cho mỗi trang.
+- **bk-music.js/css** — Music Player dùng chung: thư viện 5 bài, queue (thêm/xoá/
+  kéo thả), shuffle, repeat 3 chế độ, âm lượng, lyrics có timestamp.
+  Quy ước file (không phải sửa code): `music/<slug>.mp3` (bài hát),
+  `music/<slug>.txt` (lời, dòng `#` là ghi chú), `music/<slug>.png|jpg|webp`
+  (bìa). Trạng thái lưu ở `bakhiMusic.v2`, vị trí logo nhạc ở
+  `bakhiMusic.fab.v1`; không autoplay. Do `bk-core.js` nạp trên mọi trang nên
+  chỉ có một audio instance cho mỗi trang.
 - **bk-page.js** — chỉ chạy trên trang bài học: ghi lịch sử, đọc ngân hàng câu hỏi
   (chỉ đọc), bắt kết quả kiểm tra theo mẫu feedback quen thuộc, dock nhỏ 4 nút.
 
