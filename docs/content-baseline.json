@@ -1,0 +1,790 @@
+{
+  "generatedAt": "2026-11-13T04:04:24.594Z",
+  "algorithm": "sha256(strip(assets/bakhi lines))",
+  "files": {
+    "images/anh/1.html": {
+      "hash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "bytes": 1,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "index.html": {
+      "hash": "04c73e6c8e4601e1a29ac9a4afba9dd826176e3360d533ab8a53982e09fffe7a",
+      "bytes": 196341,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 9,
+        "questionField": 2,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/anh/anh1.html": {
+      "hash": "683bf5398d7a974f75bb036df4ec7479a73d1d8abb64426f463a6ea900ca5d90",
+      "bytes": 80595,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 4,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/anh/indexanh.html": {
+      "hash": "cce8832ef935458cebdc2457fab23e8650da757b8cdc5e710ca34b7e42010d25",
+      "bytes": 6403,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/gdqp/indexqp.html": {
+      "hash": "488cf092ecd671789ca76ed21de772b1182deb82c94f2f06009f679b514b89ae",
+      "bytes": 9357,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/gdqp/qp1.html": {
+      "hash": "523f46a9f762f98dedbe4e488860b10d613632e19a614ac6847db8bbb6fd5791",
+      "bytes": 45731,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 41,
+        "questionField": 41,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/hoa/indexhoa.html": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/ly/congthuc.html": {
+      "hash": "956bb3982f6394cdf10482f23000315458aa0cdc7ff4024ab63b0e6d8afcc6eb",
+      "bytes": 64219,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 5,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/ly/indexly.html": {
+      "hash": "0a3bcc1390109bf3dd067541d3cd76e0fe399b3577285c0f4a66b2d86e52fedd",
+      "bytes": 8309,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/ly/ly1.html": {
+      "hash": "8d53e33f456dabdbc5cd235d61f94c6057238882b5ed6634f9aee37f7685724f",
+      "bytes": 94995,
+      "stats": {
+        "correctAnswer": 29,
+        "correctField": 0,
+        "explanation": 48,
+        "questionField": 49,
+        "optionsArray": 29,
+        "essayBank": 2,
+        "mcqBank": 2,
+        "tfBank": 2
+      }
+    },
+    "ktgk1/sinh/indexsinh.html": {
+      "hash": "7f7b227014eb3f36ff9237ddc2c3fd875613ff27d99d10e9b52fcd82f9824dca",
+      "bytes": 74270,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 15,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/su/indexsu.html": {
+      "hash": "1e03b564ad8fb345dc5caa06f40196f5736ed36b3011d1b0efdcfe309c017215",
+      "bytes": 8374,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/su/su1.html": {
+      "hash": "1e0c5ce30c5edb01a895be0c793775ae524adfd3f6869ca4b5eccec0e631ce9b",
+      "bytes": 146929,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 7,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 6,
+        "tfBank": 6
+      }
+    },
+    "ktgk1/tin/indextin.html": {
+      "hash": "d99f9ffc1815af67e932cf61983e2d498cee1d8d249177956ac09c8a627c01a3",
+      "bytes": 8197,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/tin/tin1.html": {
+      "hash": "068a5a54ea765561cbf3a789113a30b5552818677d0a2172b3af85ebf30bc2a2",
+      "bytes": 124975,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/toan/indextoan.html": {
+      "hash": "573fae2e1cbf4e9ba986acd34a84255b408813063382c902471773b54d7157e6",
+      "bytes": 8321,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/toan/toan1.html": {
+      "hash": "2391bfb961bf1c3eb2e7369952c97d7ef16f9989cc804cb69727e529b8b79703",
+      "bytes": 62590,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 20,
+        "questionField": 13,
+        "optionsArray": 12,
+        "essayBank": 0,
+        "mcqBank": 2,
+        "tfBank": 2
+      }
+    },
+    "ktgk1/van/indexvan.html": {
+      "hash": "32102bce59c17e1e42106ed29ff940e533d5aab6eb8a3daef918aa9fd4768c8c",
+      "bytes": 6382,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/van/matran.html": {
+      "hash": "5aa0d14de8b74c6920be59793aa0abdd6fa3e3f9e2ffa611cdfddb65f0eb90fd",
+      "bytes": 49524,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ktgk1/van/van.html": {
+      "hash": "4c422897fecf4304bb6b5740a8c7a203d9e2b7b9c50accf05635e395fdb9d248",
+      "bytes": 27308,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/anh/gram.html": {
+      "hash": "a0f4d93a721d56071f8622c9e540e776c9c030f278d5b5d957fca8b5c1bc13d3",
+      "bytes": 21968,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 21,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/anh/indexanh.html": {
+      "hash": "382ec345e3ad34355f831d42e847093957651815d2170bfe38f051d3e37dc4e1",
+      "bytes": 5118,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/anh/vocab.html": {
+      "hash": "2c80cdf54e96a43da94015c925a36ba0192b1543ada0136f8d96fed91be5cdb7",
+      "bytes": 21232,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 20,
+        "explanation": 0,
+        "questionField": 21,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/gdqp/indexqp.html": {
+      "hash": "638fdbea10f515b735054aca5a19a5aaf498241ae30f33fbc13d86eb3a79f791",
+      "bytes": 7002,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/gdqp/qp1.html": {
+      "hash": "0e68d15c6e2c56d60768df73e6156118899f6191388da04c4825b62c3545a0eb",
+      "bytes": 24333,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 16,
+        "explanation": 0,
+        "questionField": 16,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/gdqp/qp2.html": {
+      "hash": "0d60f2f45984bc2a1e060182f682c577c403b39d6ec450f73dc3b3b7b9490f36",
+      "bytes": 27950,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 16,
+        "explanation": 0,
+        "questionField": 16,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/gdqp/qp3.html": {
+      "hash": "1915d388f9e5b798487455097b4d0b918bf939057617f56020bcd22313808cd5",
+      "bytes": 21657,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 16,
+        "explanation": 16,
+        "questionField": 16,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/ly/bai_thi_1.html": {
+      "hash": "a415055379f7ac91f972c1aebaf0df4f65cf756960183d00f762a3abd9730501",
+      "bytes": 33076,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 12,
+        "explanation": 45,
+        "questionField": 36,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/ly/bai_thi_2.html": {
+      "hash": "e21381ac96ac8a5a96fd44eab9e2f8dd0c720ac9fee78e04a059ea3e7eb331e6",
+      "bytes": 33053,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 12,
+        "explanation": 45,
+        "questionField": 36,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/ly/congthuc1.html": {
+      "hash": "b9ea0be79831c8494bd5074550e156b3d28f7406e51e80313eee3628074c719d",
+      "bytes": 34912,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 24,
+        "explanation": 79,
+        "questionField": 61,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/ly/congthuc2.html": {
+      "hash": "ff7370e18961dede9a2adef2eb11fc9f2275464bd174d0949095c9623dbb8388",
+      "bytes": 39053,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 24,
+        "explanation": 79,
+        "questionField": 61,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/ly/congthuc3.html": {
+      "hash": "213b985c5ca9fa411bbc5f9d99a3b67aa91ddcd9b826fc456b90f53d5723ed39",
+      "bytes": 39998,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 24,
+        "explanation": 79,
+        "questionField": 61,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/ly/indexly.html": {
+      "hash": "ba3b3f2fac70c3e95fd32b77efbac8e6df04983216bdfe0bcdd24ab5511f104e",
+      "bytes": 16793,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/ly/lythuyet1.html": {
+      "hash": "b09497d887a127e4094949fdb0ffa253bcfd293b810ca9ace57b72f14717dc7d",
+      "bytes": 42226,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 24,
+        "explanation": 79,
+        "questionField": 61,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/ly/lythuyet2.html": {
+      "hash": "283d4fc7c45e0ab7a3a04faf41dfffd3b9aa5ea326aad4e45390d4fd2165cd9c",
+      "bytes": 44871,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 24,
+        "explanation": 79,
+        "questionField": 61,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/ly/lythuyet3.html": {
+      "hash": "a89186b20688abb5af5352b089abfa2a6374e5836ad36de0bf8875cb2fea1663",
+      "bytes": 41418,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 24,
+        "explanation": 79,
+        "questionField": 61,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/sinh/indexsinh.html": {
+      "hash": "616d86e773416b793f292809cea994651e9bd6ba7cb05042e8858ccdcb656250",
+      "bytes": 5789,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/sinh/tuduy.html": {
+      "hash": "34db02e6f4b481d8f60cc87a8307c9cf5eed152af6666b730f6c0ce9848b2e9a",
+      "bytes": 9943,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/su/indexsu.html": {
+      "hash": "9c2ab83cc0530fefa2220a162ddefc8d853653d6babdd00fe20c74d3d6c0b2e2",
+      "bytes": 10011,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/su/su.html": {
+      "hash": "3ad3c3fa2f16e1329085543be138bdb900ef2221aeee0a877de6f48552eedd1d",
+      "bytes": 22192,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 14,
+        "explanation": 0,
+        "questionField": 14,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/su/su2.html": {
+      "hash": "b7be129cf106cdc521c2a5af91fd640b94753db6d80eeddbfa92562f530a0f1b",
+      "bytes": 21930,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 20,
+        "questionField": 20,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/su/su3.html": {
+      "hash": "6282d5b2b25ff74683d410d7a3fe12a4ab19bffb0aa9d5f27b41644f556c561a",
+      "bytes": 21475,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 19,
+        "questionField": 19,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/su/su4.html": {
+      "hash": "744e3c26e8925dd69bae0e2308686f40faee909f8e8238b5f48cf7020a3246e9",
+      "bytes": 16525,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 9,
+        "questionField": 9,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/tin/indextin.html": {
+      "hash": "9fb8aab7a237071d6a91484ffbd3da908f45f0beb2c69f6e67dec7cccae15612",
+      "bytes": 7429,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/tin/tin.html": {
+      "hash": "a6e67baefd8278818c59e9d25ddde1831653dc8d4425228180806c780f1c5356",
+      "bytes": 28736,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 30,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/toan/csc.html": {
+      "hash": "ac0f187e8b8ea81cdb7aa7c0383eaf7e30213fdadb921dce69160cfd47cf2ecd",
+      "bytes": 33793,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 23,
+        "questionField": 23,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/toan/csn.html": {
+      "hash": "7797492d4d085381e062ae013ddee2855ca14afa46eba11d4ad568bb5c5d981e",
+      "bytes": 36997,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 24,
+        "questionField": 24,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/toan/dayso.html": {
+      "hash": "b6b7a81c42afb0f134dafcd7287020f8c8d063f4242626a8ca747c6f114e13e7",
+      "bytes": 32701,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 24,
+        "questionField": 24,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/toan/indextoan.html": {
+      "hash": "c830529a1aa78a7b928370410ad776762b70670f7108f9e567e275f956dc36c0",
+      "bytes": 6525,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/van/indexvan.html": {
+      "hash": "751e7592cd6b59b0b3956861dec0fea91590cf0984f2ea1254bd830660064b00",
+      "bytes": 10269,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/van/pht_tranggiang.html": {
+      "hash": "9271ba7924b3abac1a9076668d244c6df1cf6bab5b3af6d2336b0953dbf2ed02",
+      "bytes": 18182,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/van/van_118.html": {
+      "hash": "8d53ad7795d04eac3fcbadc07ff540bcae6ab65f3c3cb7e01f1662242b3f2376",
+      "bytes": 16310,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "kttx/gk1/van/van_119.html": {
+      "hash": "601a2cbd4226fb68c30338ab327212e38bf5a5e85b60db5385cde386b9fec93d",
+      "bytes": 23788,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "music/1.html": {
+      "hash": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "music/on_tap_dao_dong_dieu_hoa (5).html": {
+      "hash": "41caf302dbff5092d8094a4b4096be6da1ee8c56d3967b605c746e69b77c7207",
+      "bytes": 83234,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 2,
+        "explanation": 0,
+        "questionField": 2,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "studio/index.html": {
+      "hash": "9404a3e86c3c9e4cf0fa139be2e39dfd0af8559343e5e2a8c2270d88b63c383d",
+      "bytes": 53455,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    }
+  }
+}
