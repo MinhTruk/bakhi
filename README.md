@@ -139,7 +139,9 @@ Xem điểm và đáp án để xác định phần kiến thức cần ôn lạ
 | 🎲 Xáo trộn câu hỏi | 🟢 Có |
 | 📱 Giao diện responsive | 🟢 Đang cải thiện |
 | 📊 Thống kê kết quả | 🟢 Đã hoàn thành |
-| 💾 Lưu tiến độ | 🔴 Chưa có kế hoạch |
+| 💾 Lưu tiến độ | 🟢 Đã có (local-first) |
+| 🧠 Trung tâm học tập | 🟢 Đã có |
+| 🛠 Developer Playground 2.0 | 🟢 Đã có |
 
 ---
 
@@ -161,6 +163,100 @@ Xem điểm và đáp án để xác định phần kiến thức cần ôn lạ
 - [ ] Bổ sung thêm đề kiểm tra (Chưa có kế hoạch)
 - [x] Tối ưu giao diện trên điện thoại
 - [ ] Cải thiện hệ thống câu hỏi
+
+---
+
+# 🧠 Nền tảng học tập 2.0
+
+Lớp nâng cấp 2.0 bổ sung trải nghiệm học tập tự nhịp và bộ công cụ phát triển,
+**không thay đổi bất kỳ nội dung giáo dục nào**.
+
+### Trung tâm học tập
+
+Mở bằng nút 🎓 ở góc phải dưới (hoặc `Ctrl/⌘ + K`):
+
+- 📊 **Tổng quan** — số câu đã luyện, đúng/sai, độ chính xác, tiến độ theo môn/chủ đề,
+  hoạt động 14 ngày và 8 tuần, chủ đề hay sai, mốc học tập.
+- 🔁 **Ôn tập** — câu làm sai được lưu tự động; ôn theo nhịp độ dựa trên kết quả
+  (spaced repetition cấu hình được), đánh dấu thành thạo, hẹn ngày ôn, tìm/lọc.
+- 📝 **Ghi chú** — theo môn/câu hỏi, ghim, danh mục, Markdown an toàn, xuất tệp.
+- 🔖 **Đánh dấu** — câu hỏi, bài học, môn học, tài liệu.
+- 🕘 **Lịch sử** — bài đã mở, câu đã luyện/ôn; tìm và xoá từng mục.
+- 🏅 **Thành tích** — 10 mốc dựa trên hoạt động học thật, không streak/điểm danh.
+- ⚙️ **Cài đặt** — focus mode, cỡ chữ, nhịp ôn, AI (tuỳ chọn), Supabase (tuỳ chọn),
+  xuất/nhập dữ liệu.
+
+### Tìm kiếm & phím tắt
+
+| Phím | Tác dụng |
+|---|---|
+| `Ctrl/⌘ + K` | Command palette (lệnh + tìm kiếm) |
+| `/` | Tìm kiếm toàn cục (khi không ở trong ô nhập) |
+| `Esc` | Đóng hộp thoại / thoát focus mode |
+| `← →` | Chuyển câu trong Ôn tập |
+| `A B C D` | Chọn đáp án khi ôn tập |
+| `Ctrl/⌘ + Shift + G` | Developer Playground (sau khi xác thực) |
+
+### Chế độ tập trung
+
+Ẩn bớt điều hướng và hiệu ứng, tăng khoảng đọc, chỉnh cỡ chữ, nền nhẹ tuỳ chọn.
+Không có đồng hồ phiên, không có thời lượng bắt buộc.
+
+### Dữ liệu của bạn
+
+- Lưu cục bộ trong `localStorage` (một key duy nhất `bakhiLearn.v1`, có phiên bản,
+  kiểm tra dữ liệu và tự phục hồi khi hỏng).
+- Xuất/nhập JSON bất cứ lúc nào; nhập dữ liệu **không bao giờ** ghi đè ngân hàng câu hỏi.
+- Không có backend mặc định, không gửi dữ liệu đi đâu.
+
+---
+
+# 🛠 Developer Playground 2.0
+
+Cửa sổ nổi (`Ctrl+Shift+G`, cần mã Developer như bảng điều khiển cũ) với 10 công cụ:
+
+Inspector 2.0 · CSS Studio · Animation Studio · Performance Lab · Storage Manager ·
+Console Pro · Network Monitor · Theme Editor · Component Library · Backup Manager.
+
+Cửa sổ kéo/đổi kích thước được, nhớ vị trí, kích thước và tab. Panel Developer cũ
+(11 tab) vẫn hoạt động nguyên vẹn.
+
+Chi tiết: [docs/FEATURES.md](docs/FEATURES.md) · [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+---
+
+# 🚫 Không phải nền tảng thi cử
+
+Bá Khí **không có** đề thi thử, bài tính giờ, đồng hồ đếm ngược, giới hạn thời gian,
+tự nộp bài, xếp hạng thi hay bất kỳ cơ chế tạo áp lực thời gian nào.
+
+---
+
+# 🧪 Kiểm thử & bảo toàn nội dung
+
+```bash
+# Xác minh nội dung giáo dục không thay đổi (so với baseline)
+node tools/content-integrity.js verify
+
+# Kiểm tra cú pháp JavaScript
+node --check assets/bakhi/bk-core.js
+
+# Smoke test DOM (cần jsdom, cài ngoài repo)
+npm install jsdom --prefix /tmp/bktest --no-save
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/smoke.js
+```
+
+`docs/content-baseline.json` lưu hash của 56 tệp HTML (đã loại đúng khối script do
+nâng cấp chèn). Quy trình và quy ước chi tiết: [AGENTS.md](AGENTS.md).
+
+---
+
+# 📚 Tài liệu
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — kiểm toán, kiến trúc, mô hình dữ liệu, giới hạn
+- [docs/FEATURES.md](docs/FEATURES.md) — danh sách tính năng & trạng thái
+- [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) — đồng bộ tuỳ chọn + RLS
+- [CHANGELOG.md](CHANGELOG.md) — lịch sử thay đổi
 
 ---
 
