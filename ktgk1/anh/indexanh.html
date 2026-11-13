@@ -54,4 +54,8 @@ const info=[["Listening","Nghe hiểu thông tin, xác định chi tiết, hiể
 document.getElementById("ex").innerHTML=info.map(x=>`<details><summary>${x[0]}</summary><p>${x[1]}</p></details>`).join("");
 const R=document.documentElement,t=localStorage.getItem("b11theme");if(t)R.dataset.theme=t;
 document.getElementById("th").onclick=()=>{const d=R.dataset.theme=="dark"||(!R.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches)?"light":"dark";R.dataset.theme=d;localStorage.setItem("b11theme",d)};
-</script></body></html>
+</script>
+<!-- Bá Khí Learning Platform (chỉ thêm thẻ script, không sửa nội dung) -->
+<script src="../../assets/bakhi/bk-core.js" defer></script>
+<script src="../../assets/bakhi/bk-page.js" defer></script>
+</body></html>
