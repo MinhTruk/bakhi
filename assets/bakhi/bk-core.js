@@ -1165,3 +1165,17 @@
 
     global.BKCoreLoaded = true;
 })(typeof window !== 'undefined' ? window : this);
+
+/* BKT loader: nạp hiệu ứng bàn tay kéo dùng chung cho mọi trang con */
+(function () {
+    try {
+        if (window.__bkt || document.querySelector('script[src*="bk-bkt.js"]')) return;
+        var cur = document.currentScript;
+        var src = 'assets/bakhi/bk-bkt.js';
+        if (cur && cur.src) { try { src = new URL('bk-bkt.js', cur.src).href; } catch (e) {} }
+        var s = document.createElement('script');
+        s.src = src;
+        s.async = false;
+        (document.head || document.documentElement).appendChild(s);
+    } catch (e) {}
+})();
