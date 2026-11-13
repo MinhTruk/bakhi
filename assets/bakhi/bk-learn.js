@@ -171,7 +171,13 @@
             body: wrap,
             wide: true,
             className: 'bk-hub-modal',
-            labelledBy: 'bkHubTitle'
+            labelledBy: 'bkHubTitle',
+            onClose: function () {
+                /* Xoá tham chiếu để lần sau mở lại được (trước đây modal cũ bị giữ mãi). */
+                hub.modal = null;
+                hub.root = null;
+                hub.navItems = {};
+            }
         });
         hub.modal.panel.querySelector('.bk-modal-title').id = 'bkHubTitle';
         hub.root = main;

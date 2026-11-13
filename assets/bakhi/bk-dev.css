@@ -42,6 +42,7 @@
     font-family: Lexend, system-ui, sans-serif;
     font-size: 12px;
 }
+.bkdev-panel[hidden] { display: none !important; }
 .bkdev-panel.bkdev-min { height: auto !important; min-height: 0; }
 .bkdev-panel.bkdev-min .bkdev-tabs,
 .bkdev-panel.bkdev-min .bkdev-body,

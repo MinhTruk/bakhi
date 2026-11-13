@@ -102,6 +102,14 @@ clickTab('Ôn tập');
 ok('hub review card rendered', !!w.document.querySelector('.bk-opts .bk-opt'));
 clickTab('Cài đặt');
 ok('hub settings rendered', !!w.document.querySelector('.bk-switch'));
+
+/* Hồi quy: đóng hub bằng X rồi phải mở lại được. */
+const hubCloseBtn = Array.from(w.document.querySelectorAll('.bk-overlay .bk-icon-btn')).pop();
+hubCloseBtn.click();
+w.BKLearn.openHub('overview');
+const hubsAfterClose = w.document.querySelectorAll('.bk-hub');
+ok('hub reopens after close', hubsAfterClose.length >= 2, String(hubsAfterClose.length));
+ok('reopened hub keeps 7 tabs', hubsAfterClose[hubsAfterClose.length - 1].querySelectorAll('.bk-hub-tab').length === 7);
 w.BKLearn.openNote(null);
 ok('note editor opens', !!w.document.querySelector('.bk-textarea'));
 w.document.querySelectorAll('.bk-overlay .bk-icon-btn').forEach((b) => b.click());
@@ -133,6 +141,13 @@ w.BKLearn.toggleFocus(false);
 
 const authed = w.BKDev.open(true);
 ok('dev panel opens (force)', authed === true && !!w.document.getElementById('bkDevPanel'));
+
+/* Hồi quy: nút X phải ẩn panel thật sự và mở lại được. */
+const devCloseBtn = w.document.querySelector('#bkDevPanel .bkdev-hbtn[aria-label="Đóng"]');
+devCloseBtn.click();
+const devPanelEl = w.document.getElementById('bkDevPanel');
+ok('dev panel hides on close', devPanelEl.hidden === true && devPanelEl.style.display === 'none');
+ok('dev panel reopens after close', w.BKDev.open(true) === true && devPanelEl.style.display === '');
 const tabButtons = Array.from(w.document.querySelectorAll('#bkDevPanel .bkdev-tab'));
 ok('dev panel has 10 tabs', tabButtons.length === 10, String(tabButtons.length));
 tabButtons.forEach((b) => {

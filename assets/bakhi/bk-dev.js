@@ -323,6 +323,8 @@
         if (!panel) return;
         picker.stop();
         panel.hidden = true;
+        /* .bkdev-panel đặt display:flex nên thuộc tính hidden không đủ; ẩn bằng inline style. */
+        panel.style.display = 'none';
         if (lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) { } }
     }
     function authorized() {
