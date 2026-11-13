@@ -114,8 +114,8 @@
         gddp: { name: 'GDĐP', icon: 'fa-map-location-dot', color: '#f97316' }
     };
     var EXAMS = {
-        'kttx/gk1': 'KTTX · Giữa kỳ 1', 'kttx/hk1': 'KTTX · Học kỳ 1',
-        'kttx/gk2': 'KTTX · Giữa kỳ 2', 'kttx/hk2': 'KTTX · Học kỳ 2',
+        'kttx/gk1': 'KTTX · Giữa kỳ 1', 'kttx/ck1': 'KTTX · Cuối kỳ 1',
+        'kttx/gk2': 'KTTX · Giữa kỳ 2', 'kttx/ck2': 'KTTX · Cuối kỳ 2',
         ktgk1: 'KTGK · Giữa kỳ 1', ktck1: 'KTCK · Cuối kỳ 1',
         ktgk2: 'KTGK · Giữa kỳ 2', ktck2: 'KTCK · Cuối kỳ 2'
     };

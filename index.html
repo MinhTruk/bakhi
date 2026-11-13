@@ -451,18 +451,18 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                         </div>
                     </div>
 
-                    <!-- Thư mục KTTX HK1 -->
+                    <!-- Thư mục KTTX CK1 -->
                     <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden shadow-sm">
-                        <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-hk1', this)">
+                        <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-ck1', this)">
                             <span class="flex items-center space-x-3">
                                 <i class="fa-solid fa-chevron-right folder-icon text-indigo-600 dark:text-indigo-400 text-xs"></i>
                                 <i class="fa-solid folder-ico fa-folder text-amber-400 text-lg"></i>
-                                <span class="font-semibold text-slate-800 dark:text-slate-200">KTTX Học Kỳ 1 (HK1)</span>
+                                <span class="font-semibold text-slate-800 dark:text-slate-200">KTTX Cuối Kì 1 (CK1)</span>
                             </span>
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
-                        <div id="kttx-hk1" class="folder-content ">
-                            <div class="fc-inner"><div class="grid grid-cols-2 gap-2 p-3 border-t border-slate-200 dark:border-slate-700/40" data-path="kttx/hk1" data-examkey="kttx/hk1"></div></div>
+                        <div id="kttx-ck1" class="folder-content ">
+                            <div class="fc-inner"><div class="grid grid-cols-2 gap-2 p-3 border-t border-slate-200 dark:border-slate-700/40" data-path="kttx/ck1" data-examkey="kttx/ck1"></div></div>
                         </div>
                     </div>
 
@@ -481,18 +481,18 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                         </div>
                     </div>
 
-                    <!-- Thư mục KTTX HK2 -->
+                    <!-- Thư mục KTTX CK2 -->
                     <div class="border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white/60 dark:bg-slate-800/60 overflow-hidden shadow-sm">
-                        <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-hk2', this)">
+                        <button class="folder-header w-full p-4 flex items-center justify-between text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" onclick="toggleFolder('kttx-ck2', this)">
                             <span class="flex items-center space-x-3">
                                 <i class="fa-solid fa-chevron-right folder-icon text-indigo-600 dark:text-indigo-400 text-xs"></i>
                                 <i class="fa-solid folder-ico fa-folder text-amber-400 text-lg"></i>
-                                <span class="font-semibold text-slate-800 dark:text-slate-200">KTTX Học Kỳ 2 (HK2)</span>
+                                <span class="font-semibold text-slate-800 dark:text-slate-200">KTTX Cuối Kì 2 (CK2)</span>
                             </span>
                             <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full">10 môn</span>
                         </button>
-                        <div id="kttx-hk2" class="folder-content ">
-                            <div class="fc-inner"><div class="grid grid-cols-2 gap-2 p-3 border-t border-slate-200 dark:border-slate-700/40" data-path="kttx/hk2" data-examkey="kttx/hk2"></div></div>
+                        <div id="kttx-ck2" class="folder-content ">
+                            <div class="fc-inner"><div class="grid grid-cols-2 gap-2 p-3 border-t border-slate-200 dark:border-slate-700/40" data-path="kttx/ck2" data-examkey="kttx/ck2"></div></div>
                         </div>
                     </div>
                 </div>
@@ -593,9 +593,9 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                             <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Chọn Đợt Kiểm Tra:</label>
                             <select id="selectExamCategory" onchange="renderHighlightManagerUI()" class="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500">
                                 <option value="kttx/gk1">KTTX - Giữa Kỳ 1 (GK1)</option>
-                                <option value="kttx/hk1">KTTX - Học Kỳ 1 (HK1)</option>
+                                <option value="kttx/ck1">KTTX - Cuối Kì 1 (CK1)</option>
                                 <option value="kttx/gk2">KTTX - Giữa Kỳ 2 (GK2)</option>
-                                <option value="kttx/hk2">KTTX - Học Kỳ 2 (HK2)</option>
+                                <option value="kttx/ck2">KTTX - Cuối Kì 2 (CK2)</option>
                                 <option value="ktgk1">KTGK - Giữa Kỳ 1</option>
                                 <option value="ktck1">KTCK - Cuối Kỳ 1</option>
                                 <option value="ktgk2">KTGK - Giữa Kỳ 2</option>
@@ -819,9 +819,9 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
 
         const examCategories = [
             { path: 'kttx/gk1', examType: 'KTTX', semester: 'GK1', key: 'kttx/gk1' },
-            { path: 'kttx/hk1', examType: 'KTTX', semester: 'HK1', key: 'kttx/hk1' },
+            { path: 'kttx/ck1', examType: 'KTTX', semester: 'CK1', key: 'kttx/ck1' },
             { path: 'kttx/gk2', examType: 'KTTX', semester: 'GK2', key: 'kttx/gk2' },
-            { path: 'kttx/hk2', examType: 'KTTX', semester: 'HK2', key: 'kttx/hk2' },
+            { path: 'kttx/ck2', examType: 'KTTX', semester: 'CK2', key: 'kttx/ck2' },
             { path: 'ktgk1', examType: 'KTGK', semester: 'GK1', key: 'ktgk1' },
             { path: 'ktck1', examType: 'KTCK', semester: 'CK1', key: 'ktck1' },
             { path: 'ktgk2', examType: 'KTGK', semester: 'GK2', key: 'ktgk2' },
@@ -847,17 +847,17 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             'kttx/gk1/gdqp': true,
             'kttx/gk1/gddp': false,
 
-            // KTTX Học Kỳ 1
-            'kttx/hk1/su': false,
-            'kttx/hk1/ly': false,
-            'kttx/hk1/van': false,
-            'kttx/hk1/tin': false,
-            'kttx/hk1/sinh': false,
-            'kttx/hk1/toan': false,
-            'kttx/hk1/anh': false,
-            'kttx/hk1/hoa': false,
-            'kttx/hk1/gdqp': false,
-            'kttx/hk1/gddp': false,
+            // KTTX Cuối Kì 1
+            'kttx/ck1/su': false,
+            'kttx/ck1/ly': false,
+            'kttx/ck1/van': false,
+            'kttx/ck1/tin': false,
+            'kttx/ck1/sinh': false,
+            'kttx/ck1/toan': false,
+            'kttx/ck1/anh': false,
+            'kttx/ck1/hoa': false,
+            'kttx/ck1/gdqp': false,
+            'kttx/ck1/gddp': false,
 
 			// KTTX Giữa Kỳ 1
             'kttx/gk2/su': false,
@@ -871,17 +871,17 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             'kttx/gk2/gdqp': false,
             'kttx/gk2/gddp': false,
 
-			// KTTX Học Kỳ 2
-            'kttx/hk2/su': false,
-            'kttx/hk2/ly': false,
-            'kttx/hk2/van': false,
-            'kttx/hk2/tin': false,
-            'kttx/hk2/sinh': false,
-            'kttx/hk2/toan': false,
-            'kttx/hk2/anh': false,
-            'kttx/hk2/hoa': false,
-            'kttx/hk2/gdqp': false,
-            'kttx/hk2/gddp': false,
+			// KTTX Cuối Kì 2
+            'kttx/ck2/su': false,
+            'kttx/ck2/ly': false,
+            'kttx/ck2/van': false,
+            'kttx/ck2/tin': false,
+            'kttx/ck2/sinh': false,
+            'kttx/ck2/toan': false,
+            'kttx/ck2/anh': false,
+            'kttx/ck2/hoa': false,
+            'kttx/ck2/gdqp': false,
+            'kttx/ck2/gddp': false,
 
             // Kiểm Tra Giữa Kỳ 1
             'ktgk1/van': true,
