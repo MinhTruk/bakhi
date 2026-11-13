@@ -562,17 +562,29 @@
     /* ---------------------------------------------------------------------
        Thành tích — chỉ dựa trên hoạt động học thật, không có streak/áp lực
        ------------------------------------------------------------------ */
+    /* Chỉ giữ mốc có hành động rõ ràng trong giao diện và dữ liệu luôn được ghi lại:
+       mở bài học (lịch sử), tạo ghi chú, đánh dấu, đánh dấu thành thạo ở tab Ôn tập.
+       Đã loại các mốc phụ thuộc vào việc trang bài học có tự bắt được câu trả lời hay
+       không (50/100 câu, độ chính xác 80%, ôn đúng 10 lần) — người học không có cách
+       chủ động hoàn thành nếu trang đó không có ngân hàng câu hỏi được nhận diện. */
+    function lessonHistory(s) {
+        return s.history.filter(function (h) { return h.kind === 'lesson' && h.url; });
+    }
+    function lessonUrls(s) { return uniq(lessonHistory(s).map(function (h) { return h.url; })); }
     var ACHIEVEMENTS = [
-        { id: 'first-lesson', name: 'Bài học đầu tiên', icon: 'fa-book-open', desc: 'Mở bài học đầu tiên.', test: function (s) { return s.history.some(function (h) { return h.kind === 'lesson'; }); } },
+        { id: 'first-lesson', name: 'Bài học đầu tiên', icon: 'fa-book-open', desc: 'Mở bài học đầu tiên.', test: function (s) { return lessonHistory(s).length >= 1; } },
+        { id: 'lessons-5', name: '5 bài học', icon: 'fa-book', desc: 'Mở 5 bài học khác nhau.', test: function (s) { return lessonUrls(s).length >= 5; } },
+        { id: 'lessons-15', name: '15 bài học', icon: 'fa-book-open-reader', desc: 'Mở 15 bài học khác nhau.', test: function (s) { return lessonUrls(s).length >= 15; } },
+        { id: 'subjects-3', name: 'Khám phá 3 môn', icon: 'fa-layer-group', desc: 'Mở bài học ở 3 môn trở lên.', test: function (s) { return uniq(lessonHistory(s).map(function (h) { return h.subject; })).length >= 3; } },
         { id: 'first-question', name: 'Câu hỏi đầu tiên', icon: 'fa-circle-question', desc: 'Luyện câu hỏi đầu tiên.', test: function (s) { return s.practice.length >= 1; } },
-        { id: 'q-50', name: '50 câu đã luyện', icon: 'fa-shoe-prints', desc: 'Luyện 50 câu hỏi.', test: function (s) { return s.practice.length >= 50; } },
-        { id: 'q-100', name: '100 câu đã luyện', icon: 'fa-medal', desc: 'Luyện 100 câu hỏi.', test: function (s) { return s.practice.length >= 100; } },
         { id: 'first-note', name: 'Ghi chú đầu tiên', icon: 'fa-pen-nib', desc: 'Tạo ghi chú đầu tiên.', test: function (s) { return s.notes.length >= 1; } },
+        { id: 'notes-5', name: 'Sổ tay 5 ghi chú', icon: 'fa-book', desc: 'Tạo 5 ghi chú học tập.', test: function (s) { return s.notes.length >= 5; } },
+        { id: 'notes-10', name: 'Sổ tay 10 ghi chú', icon: 'fa-book-bookmark', desc: 'Tạo 10 ghi chú học tập.', test: function (s) { return s.notes.length >= 10; } },
         { id: 'first-bookmark', name: 'Đánh dấu đầu tiên', icon: 'fa-bookmark', desc: 'Lưu đánh dấu đầu tiên.', test: function (s) { return s.bookmarks.length >= 1; } },
+        { id: 'bookmarks-5', name: 'Bộ sưu tập 5 đánh dấu', icon: 'fa-folder-open', desc: 'Lưu 5 bài học/ghi chú vào đánh dấu.', test: function (s) { return s.bookmarks.length >= 5; } },
+        { id: 'first-review', name: 'Câu cần ôn đầu tiên', icon: 'fa-rotate', desc: 'Có câu hỏi đầu tiên trong danh sách ôn tập.', test: function (s) { return s.review.length >= 1; } },
         { id: 'first-mastered', name: 'Làm chủ một câu', icon: 'fa-check-double', desc: 'Đánh dấu thành thạo một câu từng sai.', test: function (s) { return s.review.some(function (r) { return r.mastered; }); } },
-        { id: 'accuracy-80', name: 'Chính xác 80%', icon: 'fa-bullseye', desc: 'Đạt độ chính xác từ 80% với ít nhất 20 câu.', test: function (s) { return accuracy(s).total >= 20 && accuracy(s).pct >= 80; } },
-        { id: 'multi-subject', name: 'Học nhiều môn', icon: 'fa-layer-group', desc: 'Luyện tập ở 3 môn trở lên.', test: function (s) { return uniq(s.practice.map(function (p) { return p.subject; })).length >= 3; } },
-        { id: 'review-10', name: 'Ôn tập đều đặn', icon: 'fa-rotate', desc: 'Ôn lại 10 câu từng làm sai.', test: function (s) { return s.review.reduce(function (a, r) { return a + r.history.filter(function (h) { return h.correct; }).length; }, 0) >= 10; } }
+        { id: 'mastered-3', name: 'Làm chủ 3 câu', icon: 'fa-award', desc: 'Đánh dấu thành thạo 3 câu từng làm sai.', test: function (s) { return s.review.filter(function (r) { return r.mastered; }).length >= 3; } }
     ];
     function uniq(a) { return a.filter(function (v, i) { return a.indexOf(v) === i; }); }
 

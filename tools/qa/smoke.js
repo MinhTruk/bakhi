@@ -76,6 +76,11 @@ w.BK.addBookmark({ type: 'lesson', title: 'Vật Lý · Dao động', url: 'ktgk
 ok('note stored', w.BK.store.get().notes.length === 1);
 ok('bookmark stored', w.BK.store.get().bookmarks.length === 1);
 ok('achievements unlocked', Object.keys(w.BK.achievements.unlocked()).length >= 2, JSON.stringify(w.BK.achievements.unlocked()));
+const achIds = w.BK.achievements.list.map((a) => a.id);
+ok('achievements have reachable milestones', ['lessons-5', 'lessons-15', 'subjects-3', 'notes-10', 'first-review'].every((id) => achIds.includes(id)), achIds.join(','));
+ok('impossible achievements removed', !['q-50', 'q-100', 'accuracy-80', 'review-10', 'multi-subject', 'practice-3-days', 'review-5-mastered-history'].some((id) => achIds.includes(id)), achIds.join(','));
+ok('achievement ids unique', new Set(achIds).size === achIds.length, String(achIds.length));
+ok('achievements tab renders new list', (() => { w.BKLearn.openHub('achievements'); const n = w.document.querySelectorAll('.bk-ach').length; w.document.querySelectorAll('.bk-overlay .bk-icon-btn').forEach((b) => b.click()); return n === achIds.length; })(), String(achIds.length));
 
 const found = w.BK.search.all('biên độ');
 ok('search finds practiced question', (found.flat || []).some((r) => /biên độ/i.test(r.title)), JSON.stringify((found.flat || []).map(r => r.category)));

@@ -991,12 +991,17 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 const raw = localStorage.getItem('appHighlightsDataMap');
                 let cur = raw === null ? null : safeParse(raw, null);
                 if (raw !== null && !isHlMap(cur)) { makeBackup('highlight bị hỏng'); cur = null; }
-                // Khi file index đổi SCHEMA_VER: cấu hình trong file được ưu tiên để khóa/mở đúng như mã nguồn.
-                // Cùng phiên bản: giữ thay đổi người dùng đã lưu (bảng highlight trong Developer).
+                // false = KHÓA, true = MỞ. Chữ ký bản đồ giúp thay đổi true/false trong file
+                // được áp dụng ngay lần tải sau; nếu file không đổi thì giữ chỉnh tay ở Developer.
+                const sig = Object.keys(defaultHighlights).sort().map(k => k + ':' + (defaultHighlights[k] ? '1' : '0')).join('|');
+                const sameMap = localStorage.getItem('bakhiHighlightsSig') === sig;
                 const sameVer = localStorage.getItem('bakhiSchema') === String(SCHEMA_VER);
-                const merged = sameVer ? Object.assign({}, defaultHighlights, cur || {}) : Object.assign({}, cur || {}, defaultHighlights);
+                const merged = (sameMap && sameVer)
+                    ? Object.assign({}, defaultHighlights, cur || {})
+                    : Object.assign({}, cur || {}, defaultHighlights);
                 localStorage.setItem('appHighlightsDataMap', JSON.stringify(merged));
                 localStorage.setItem('bakhiSchema', String(SCHEMA_VER));
+                localStorage.setItem('bakhiHighlightsSig', sig);
             } catch (e) { console.warn('LocalStorage không khả dụng: ' + e.message); }
         }
 
