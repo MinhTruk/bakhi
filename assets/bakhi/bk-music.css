@@ -57,3 +57,14 @@
 .bkm-lyr-actions{display:flex;gap:.4rem;margin-top:.4rem}
 .bkm-lyr-actions button{flex:1;padding:.35rem;border-radius:.45rem;border:0;background:rgba(99,102,241,.25);color:#e0e7ff;cursor:pointer;font-size:.72rem}
 .bkm-lyr-actions button:hover{background:rgba(99,102,241,.4)}
+.bk-ic{display:inline-flex;align-items:center;justify-content:center;font-style:normal;line-height:1;pointer-events:none}
+.bk-ic svg{width:1em;height:1em;display:block;fill:currentColor}
+.bkmusic-controls button .bk-ic{font-size:1rem}
+.bkmusic-controls button.primary .bk-ic{font-size:1.15rem}
+.bkmusic-x .bk-ic{font-size:.95rem}
+.bkm-mute .bk-ic{font-size:1rem}
+.bkmusic-btn .bk-ic{font-size:1.1rem}
+.bkm-seek{width:100%;accent-color:#818cf8}
+.bkm-mute{flex:0 0 auto;width:1.9rem;height:1.9rem;border-radius:50%;border:0;background:rgba(148,163,184,.12);color:#e2e8f0;cursor:pointer;display:grid;place-items:center;transition:background .2s,color .2s}
+.bkm-mute:hover{background:rgba(148,163,184,.22)}
+.bkm-mute.on{color:#a5b4fc;background:rgba(99,102,241,.28)}

@@ -18,6 +18,24 @@
     var D = global.document;
     var BK = global.BK;
     if (!D) return;
+
+    /* Icon SVG nội tuyến — không phụ thuộc Font Awesome của từng trang. */
+    function svg(d) {
+        return '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="' + d + '"/></svg>';
+    }
+    var ICONS = {
+        music: svg('M12 3v10.55A4 4 0 1 0 14 17V7h4V3z'),
+        close: svg('M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.3 19.71 2.89 18.3 9.17 12 2.89 5.71 4.3 4.29l6.29 6.3 6.3-6.3z'),
+        shuffle: svg('M17 3h4v4h-2V6.41l-3.29 3.3-1.42-1.42L17.59 5H17zM3 5h4.5l3 3-1.42 1.42L6.79 7H3zm14 12.59 1.29 1.3 1.3-1.3V19h2v4h-4v-2h.41l-1.3-1.3zM3 19h4.5l10-10H21v2h-2.5l-10 10H3z'),
+        prev: svg('M6 5h2v14H6zM20 5v14L9 12z'),
+        next: svg('M16 5h2v14h-2zM4 5l11 7-11 7z'),
+        play: svg('M8 5v14l11-7z'),
+        pause: svg('M7 5h4v14H7zm6 0h4v14h-4z'),
+        repeat: svg('M7 7h9V4l4 4-4 4V9H7a1 1 0 0 0-1 1v3H4V10a3 3 0 0 1 3-3zm10 10H8v3l-4-4 4-4v3h9a1 1 0 0 0 1-1v-3h2v3a3 3 0 0 1-3 3z'),
+        repeat1: svg('M7 7h9V4l4 4-4 4V9H7a1 1 0 0 0-1 1v3H4V10a3 3 0 0 1 3-3zm10 10H8v3l-4-4 4-4v3h9a1 1 0 0 0 1-1v-3h2v3a3 3 0 0 1-3 3zM11 13V8.6l-1.4.8V8l1.6-1h1.1v6z'),
+        volume: svg('M4 9h3l4-4v14l-4-4H4zm11.5-1.4A5 5 0 0 1 15.5 12a5 5 0 0 1-0 4.4v-2.2a3 3 0 0 0 0-4.4zm2.3-2.6A8 8 0 0 1 17.8 12a8 8 0 0 1 0 7v-2.4a5.6 5.6 0 0 0 0-9.2z'),
+        mute: svg('M4 9h3l4-4v14l-4-4H4zm12.3 0L18 10.7 19.7 9 21 10.3 19.3 12 21 13.7 19.7 15 18 13.3 16.3 15 15 13.7 16.7 12 15 10.3z')
+    };
     if (global.BKMusic) return;
 
     var el = (BK && BK.ui && BK.ui.el) ? BK.ui.el : function (tag, cls, text) {
@@ -150,6 +168,7 @@
         if (!audio) return;
         var p = audio.play();
         if (p && p.catch) p.catch(function () {
+            endedFlag = false;
             state.playing = false;
             updatePlayBtn();
             toast('Trình duyệt chặn tự phát — nhấn ▶ để phát', 'info');
@@ -160,7 +179,7 @@
         if (!audio) return;
         if (!audio.src) { loadTrack(state.qi, true); return; }
         if (audio.paused) { state.playing = true; playAudio(); }
-        else { audio.pause(); }
+        else { endedFlag = false; audio.pause(); }
         updatePlayBtn();
         writeState();
     }
@@ -192,7 +211,7 @@
         var b = ui.repeat;
         if (!b) return;
         b.classList.toggle('on', state.repeat !== 0);
-        b.firstElementChild.className = 'fa-solid ' + (state.repeat === 2 ? 'fa-1' : 'fa-repeat');
+        b.firstElementChild.innerHTML = state.repeat === 2 ? ICONS.repeat1 : ICONS.repeat;
         b.title = ['Repeat off', 'Repeat all', 'Repeat one'][state.repeat];
         b.setAttribute('aria-label', b.title);
     }
@@ -312,7 +331,7 @@
                 ui.art.appendChild(img);
             }
         }
-        if (ui.dur) ui.dur.textContent = '0:00';
+        if (ui.dur) ui.dur.textContent = '--:--';
         if (ui.seek) ui.seek.value = 0;
         if (ui.cur) ui.cur.textContent = '0:00';
         if (ui.panel) ui.panel.title = t.title + ' · ' + t.artist;
@@ -320,7 +339,7 @@
 
     function updatePlayBtn() {
         var playing = !!(audio && !audio.paused);
-        if (ui.play) ui.play.firstElementChild.className = 'fa-solid ' + (playing ? 'fa-pause' : 'fa-play');
+        if (ui.play) ui.play.firstElementChild.innerHTML = playing ? ICONS.pause : ICONS.play;
         if (ui.panel) ui.panel.classList.toggle('playing', playing);
         if (ui.fab) ui.fab.classList.toggle('bkmusic-fab-playing', playing);
     }
@@ -471,7 +490,7 @@
 
         var fab = el('button', 'bkmusic-btn');
         fab.type = 'button';
-        fab.innerHTML = '<i class="fa-solid fa-music"></i>';
+        fab.innerHTML = '<i class="bk-ic">' + ICONS.music + '</i>';
         fab.setAttribute('aria-label', 'Music Player');
         fab.title = 'Music Player';
         D.body.appendChild(fab);
@@ -483,21 +502,21 @@
             '<div class="bkmusic-head">' +
             '  <div class="bkmusic-art">♪</div>' +
             '  <div class="bkmusic-info"><div class="bkmusic-title">—</div><div class="bkmusic-artist">—</div></div>' +
-            '  <button class="bkmusic-x" type="button" aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button>' +
+            '  <button class="bkmusic-x" type="button" aria-label="Đóng"><i class="bk-ic">' + ICONS.close + '</i></button>' +
             '</div>' +
             '<div class="bkmusic-controls">' +
-            '  <button class="bkm-shuffle" type="button" title="Shuffle off" aria-label="Shuffle"><i class="fa-solid fa-shuffle"></i></button>' +
-            '  <button class="bkm-prev" type="button" aria-label="Bài trước"><i class="fa-solid fa-backward-step"></i></button>' +
-            '  <button class="bkm-play primary" type="button" aria-label="Phát / tạm dừng"><i class="fa-solid fa-play"></i></button>' +
-            '  <button class="bkm-next" type="button" aria-label="Bài kế"><i class="fa-solid fa-forward-step"></i></button>' +
-            '  <button class="bkm-repeat" type="button" title="Repeat off" aria-label="Repeat"><i class="fa-solid fa-repeat"></i></button>' +
+            '  <button class="bkm-shuffle" type="button" title="Shuffle off" aria-label="Shuffle"><i class="bk-ic">' + ICONS.shuffle + '</i></button>' +
+            '  <button class="bkm-prev" type="button" aria-label="Bài trước"><i class="bk-ic">' + ICONS.prev + '</i></button>' +
+            '  <button class="bkm-play primary" type="button" aria-label="Phát / tạm dừng"><i class="bk-ic">' + ICONS.play + '</i></button>' +
+            '  <button class="bkm-next" type="button" aria-label="Bài kế"><i class="bk-ic">' + ICONS.next + '</i></button>' +
+            '  <button class="bkm-repeat" type="button" title="Repeat off" aria-label="Repeat"><i class="bk-ic">' + ICONS.repeat + '</i></button>' +
             '</div>' +
             '<div class="bkmusic-progress">' +
             '  <input class="bkm-seek" type="range" min="0" max="1000" value="0" aria-label="Tiến trình bài hát">' +
-            '  <div class="bkmusic-times"><span class="bkm-cur">0:00</span><span class="bkm-dur">0:00</span></div>' +
+            '  <div class="bkmusic-times"><span class="bkm-cur">0:00</span><span class="bkm-dur">--:--</span></div>' +
             '</div>' +
             '<div class="bkmusic-volume">' +
-            '  <button class="bkm-mute" type="button" aria-label="Tắt / bật tiếng"><i class="fa-solid fa-volume-high"></i></button>' +
+            '  <button class="bkm-mute" type="button" aria-label="Tắt / bật tiếng"><i class="bk-ic">' + ICONS.volume + '</i></button>' +
             '  <input class="bkm-vol" type="range" min="0" max="100" value="60" aria-label="Âm lượng">' +
             '</div>' +
             '<div class="bkmusic-tabs" role="tablist">' +
@@ -647,7 +666,7 @@
     function updateMute() {
         var b = ui.panel && ui.panel.querySelector('.bkm-mute');
         if (!b) return;
-        b.firstElementChild.className = 'fa-solid ' + (state.muted ? 'fa-volume-xmark' : 'fa-volume-high');
+        b.firstElementChild.innerHTML = state.muted ? ICONS.mute : ICONS.volume;
         b.classList.toggle('on', state.muted);
     }
 
@@ -674,6 +693,7 @@
     /* ======================= 6. AUDIO EVENTS ======================= */
     if (audio) {
         var saveTimer = null;
+        var endedFlag = false;
         audio.addEventListener('timeupdate', function () {
             if (!ui.seek) return;
             if (audio.duration) ui.seek.value = String(audio.currentTime / audio.duration * 1000);
@@ -692,9 +712,19 @@
             restoreTime = 0;
             state.time = audio.currentTime || state.time;
         });
-        audio.addEventListener('ended', function () { state.time = 0; next(false); });
-        audio.addEventListener('play', function () { state.playing = true; updatePlayBtn(); writeState(); });
-        audio.addEventListener('pause', function () { state.playing = false; updatePlayBtn(); writeState(); });
+        audio.addEventListener('ended', function () {
+            state.time = 0;
+            endedFlag = true;
+            if (state.repeat === 2) { try { audio.currentTime = 0; } catch (e) { } playAudio(); return; }
+            var ni = state.qi + 1;
+            if (ni >= state.queue.length) {
+                if (state.repeat !== 1) { state.playing = false; updatePlayBtn(); writeState(); return; }
+                ni = 0;
+            }
+            loadTrack(ni, true);
+        });
+        audio.addEventListener('play', function () { endedFlag = false; state.playing = true; updatePlayBtn(); writeState(); });
+        audio.addEventListener('pause', function () { if (endedFlag) return; state.playing = false; updatePlayBtn(); writeState(); });
         audio.addEventListener('error', function () {
             if (!audio.src) return;
             toast('Không phát được "' + curTrack().title + '" (thiếu hoặc lỗi file)', 'error');
@@ -718,7 +748,7 @@
         close: function () { if (ui.panel) ui.panel.classList.remove('open'); },
         playPause: playPause,
         play: function () { if (audio && audio.paused) playPause(); },
-        pause: function () { if (audio && !audio.paused) audio.pause(); },
+        pause: function () { if (audio && !audio.paused) { endedFlag = false; audio.pause(); } },
         next: function () { next(true); },
         prev: prev,
         loadTrack: loadTrack,
