@@ -368,7 +368,56 @@ setTimeout(() => {
   ok('lesson history recorded', lst.history.some((h) => h.kind === 'lesson'));
   ok('captured question text preserved', (lst.practice[0] || {}).question === 'Biên độ dao động là gì?', JSON.stringify(lst.practice.map((p) => p.question)));
 
-  console.log('\n[3] Corruption recovery');
+  console.log('\n[3] Notifications — CHANGELOG.md → chuông, đã đọc, popup toàn màn hình');
+  const N = makeDOM('<!DOCTYPE html><html lang="vi" class="dark"><body><div id="toastContainer"></div></body></html>', 'https://minhtruk.github.io/bakhi/index.html');
+  const nw = N.w;
+  load(nw, 'assets/bakhi/bk-core.js');
+  load(nw, 'assets/bakhi/bk-notify.js');
+  const fixture = [
+    '# Changelog', '',
+    '## [2.4.0] — 2026-11-14', '',
+    '### Thông báo cập nhật', '',
+    '- **Thêm** chuông thông báo ở góc phải dưới.',
+    '- **Thêm** nút đánh dấu đã đọc tất cả.', '',
+    '## [2.3.0] - 2026-11-13', '',
+    '### Thành tích', '',
+    '- **Thêm** 30 mốc thành tích.', ''
+  ].join('\n');
+  ok('notify module exposed', !!nw.BKNotify && typeof nw.BKNotify.parse === 'function');
+  nw.BKNotify.setSource(fixture);
+  const nitems = nw.BKNotify.items();
+  ok('notify parses each version', nitems.length === 2, String(nitems.length));
+  ok('notify parses date + highlights', nitems[0].version === '2.4.0' && nitems[0].date === '14/11/2026' && nitems[0].count === 2, JSON.stringify({ v: nitems[0].version, d: nitems[0].date, c: nitems[0].count }));
+  ok('notify parses hyphen date separator', nitems[1].version === '2.3.0' && nitems[1].date === '13/11/2026', JSON.stringify(nitems[1]));
+  const bell = nw.document.querySelector('.bknt-bell');
+  const badge = nw.document.querySelector('.bknt-badge');
+  ok('notify bell rendered', !!bell);
+  ok('notify badge shows unread count', badge && badge.textContent === '2', badge && badge.textContent);
+  bell.click();
+  const panel = nw.document.getElementById('bkntPanel');
+  ok('notify panel opens', !!panel && panel.hidden === false && bell.getAttribute('aria-expanded') === 'true');
+  ok('notify panel lists entries', nw.document.querySelectorAll('.bknt-item').length === 2, String(nw.document.querySelectorAll('.bknt-item').length));
+  ok('notify marks unread items', nw.document.querySelectorAll('.bknt-item.unread').length === 2);
+  nw.document.querySelector('.bknt-item').click();
+  const modal = nw.document.querySelector('.bknt-modal');
+  ok('notify opens full-screen article', !!modal && modal.getAttribute('aria-modal') === 'true');
+  ok('notify article renders full markdown', !!modal && /chuông thông báo/.test(modal.textContent) && !!modal.querySelector('.bknt-body strong'));
+  ok('notify article marks read', nw.BKNotify.unread() === 1, String(nw.BKNotify.unread()));
+  const xBtn = modal && modal.querySelector('.bknt-x');
+  ok('notify article has close X', !!xBtn);
+  xBtn.click();
+  ok('notify X closes article', !nw.document.querySelector('.bknt-modal'));
+  nw.BKNotify.openArticle('2.3.0');
+  const esc = new nw.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+  nw.document.dispatchEvent(esc);
+  ok('notify Esc closes article', !nw.document.querySelector('.bknt-modal'));
+  nw.BKNotify.markAll();
+  ok('notify mark all hides badge', nw.document.querySelector('.bknt-badge').hidden === true && nw.BKNotify.unread() === 0);
+  ok('notify read state stores ids', Object.keys(nw.BKNotify.state().read).length === 2, JSON.stringify(nw.BKNotify.state().read));
+  ok('notify read key is separate', !!nw.localStorage.getItem('bakhiNotify.v1') && !nw.localStorage.getItem('bakhiNotify.v1').includes('chuông thông báo'));
+  ok('notify page has no runtime error', N.errors.length === 0, String(N.errors[0] || ''));
+
+  console.log('\n[4] Corruption recovery');
   const C = makeDOM('<!DOCTYPE html><html><body></body></html>', 'https://minhtruk.github.io/bakhi/index.html');
   C.w.localStorage.setItem('bakhiLearn.v1', '{broken json');
   load(C.w, 'assets/bakhi/bk-core.js');

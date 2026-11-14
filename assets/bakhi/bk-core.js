@@ -1331,6 +1331,22 @@
     } catch (e) {}
 })();
 
+/* Notify loader: chuông thông báo cập nhật (CHANGELOG.md) dùng chung cho mọi trang */
+(function () {
+    try {
+        if (window.BKNotifyLoaded) return;
+        if (document.querySelector('script[src*="bk-notify.js"]')) return;
+        var cur = document.currentScript;
+        var src = 'assets/bakhi/bk-notify.js';
+        if (cur && cur.src) { try { src = new URL('bk-notify.js', cur.src).href; } catch (e) {} }
+        else if (window.BK && BK.util && BK.util.basePath) { src = BK.util.basePath() + 'assets/bakhi/bk-notify.js'; }
+        var s = document.createElement('script');
+        s.src = src;
+        s.async = false;
+        (document.head || document.documentElement).appendChild(s);
+    } catch (e) {}
+})();
+
 /* BKT loader: nạp hiệu ứng bàn tay kéo dùng chung cho mọi trang con */
 (function () {
     try {

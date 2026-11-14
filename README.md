@@ -162,6 +162,8 @@ Xem điểm và đáp án để xác định phần kiến thức cần ôn lạ
 - [x] Chuyển động nhẹ khi đổi tab (dev panel, music, trung tâm học tập)
 - [x] Cải thiện trợ năng: phím tắt, ARIA, viền tiêu điểm, giảm chuyển động
 - [x] Bá Khí Studio: soạn thảo kiểu Word + bảng vẽ kiểu Paint, lưu cục bộ, xuất HTML/TXT/PNG
+- [x] Thông báo cập nhật trên mọi trang: mỗi phiên bản trong `CHANGELOG.md` là một thông báo,
+  đánh dấu đã đọc tất cả và đọc đầy đủ trong cửa sổ toàn màn hình
 
 ### 🔨 Đang phát triển
 
@@ -193,6 +195,15 @@ Mở bằng nút 🎓 ở góc phải dưới (hoặc `Ctrl/⌘ + K`):
   có thanh tiến độ từng mốc, bộ lọc, tìm kiếm và thông báo khi mở khoá; không streak/điểm danh.
 - ⚙️ **Cài đặt** — focus mode, cỡ chữ, nhịp ôn, AI (tuỳ chọn), Supabase (tuỳ chọn),
   xuất/nhập dữ liệu.
+
+### Thông báo cập nhật
+
+- 🔔 Chuông ở góc phải dưới, có trên **mọi trang** (trang chủ và trang bài học).
+- Mỗi phiên bản trong [CHANGELOG.md](CHANGELOG.md) là một thông báo, kèm ngày và số thay đổi;
+  badge hiển thị số chưa đọc.
+- **Đánh dấu đã đọc tất cả** trong bảng thông báo; trạng thái lưu ở `bakhiNotify.v1`.
+- Bấm một thông báo để mở **toàn màn hình** với đầy đủ nội dung phiên bản; đóng bằng nút ×,
+  phím `Esc` hoặc bấm nền.
 
 ### Tìm kiếm & phím tắt
 

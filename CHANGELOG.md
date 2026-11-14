@@ -2,6 +2,21 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [2.4.0] — 2026-11-14
+
+### Thông báo cập nhật
+
+- **Thêm** chuông thông báo ở góc phải dưới trên mọi trang: mỗi phiên bản trong
+  `CHANGELOG.md` là một thông báo, có badge số chưa đọc.
+- **Thêm** bảng thông báo với nút **Đánh dấu đã đọc tất cả**, danh sách phiên bản kèm
+  ngày và số thay đổi; trạng thái lưu ở `bakhiNotify.v1`.
+- **Thêm** cửa sổ toàn màn hình khi bấm một thông báo: đầy đủ nội dung phiên bản
+  (Markdown an toàn), nút ×, `Esc` và bấm nền để đóng.
+- **Thêm** `BKNotify` API: `open`/`close`, `openArticle`, `markAll`, `items`, `unread`,
+  `parse`, `setSource`, `refresh`.
+- **Hỗ trợ** đọc `CHANGELOG.md` trực tiếp khi chạy http(s); khi mở `file://` hiện
+  thông báo giải thích thay vì lỗi.
+
 ## [2.3.0] — 2026-11-14
 
 ### Thành tích 30 mốc

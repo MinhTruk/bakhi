@@ -23,6 +23,7 @@ Hướng dẫn cho agent/developer làm việc trong repository này.
   bk-learn.js|css      Trung tâm học tập, ôn tập, ghi chú, đánh dấu, lịch sử, thành tích
   bk-dev.js|css        Developer Playground 2.0 (11 công cụ, tab Music)
   bk-music.js|css      Music Player dùng chung (queue, shuffle, repeat, lyrics)
+  bk-notify.js|css     Chuông thông báo cập nhật (đọc CHANGELOG.md), nạp qua bk-core.js
   music/<slug>.mp3|txt|png  Quy ước file nhạc: bài hát + lời + ảnh bìa
   bk-bkt.js            Hiệu ứng chuyển trang "bàn tay kéo" dùng chung
   bk-page.js           Cầu nối cho các trang bài học

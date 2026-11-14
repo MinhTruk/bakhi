@@ -50,6 +50,11 @@ trang bài học ─────┴──► bk-page.js
     exports,inserts,words}`, `music{plays}`, `ui{palette,searches}`, `backup{exports}`.
     Chỉ là số đếm (0–999999), không chứa nội dung; Studio ghi trực tiếp key này nên
     thành tích nhóm Studio hoạt động dù trang Studio là tệp tĩnh độc lập.
+- **bk-notify.js/css** — chuông thông báo cập nhật nạp tự động qua `bk-core.js` (mọi trang):
+  tải `CHANGELOG.md`, tách mỗi `## [x.y.z] — ngày` thành một thông báo, badge chưa đọc,
+  “Đánh dấu đã đọc tất cả” và cửa sổ toàn màn hình đọc đầy đủ nội dung. Trạng thái ở
+  `bakhiNotify.v1`; API `BKNotify` (`open`, `close`, `openArticle`, `markAll`, `items`,
+  `unread`, `parse`, `setSource`, `refresh`). Không chứa nội dung giáo dục.
 - **bk-learn.js/css** — UI: dock nổi, modal Trung tâm học tập 7 tab, command palette
   (Ctrl/⌘+K), tìm kiếm toàn cục (`/`), focus mode, xuất/nhập.
 - **bk-dev.js/css** — Developer Playground 2.0: cửa sổ nổi kéo/đổi kích thước, nhớ

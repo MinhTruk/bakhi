@@ -122,7 +122,21 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 9 | Tín hiệu bảng lệnh và xuất sao lưu | ✅ | Nhóm Khám phá |
 | 10 | Không lưu nội dung trong tín hiệu, không gửi lên mạng | ✅ | Chỉ `localStorage`, giới hạn 999999 |
 
-## I. Không có trong sản phẩm (theo yêu cầu)
+## I. Thông báo cập nhật (`bk-notify.js`)
+
+| # | Tính năng | Trạng thái | Ghi chú |
+|---|---|---|---|
+| 1 | Chuông nổi ở góc phải dưới trên mọi trang (trang chủ + trang bài học) | ✅ | Nạp qua `bk-core.js`, không cần sửa từng trang |
+| 2 | Mỗi phiên bản `## [x.y.z] — ngày` trong `CHANGELOG.md` là một thông báo | ✅ | Đọc trực tiếp, không nhân bản dữ liệu |
+| 3 | Badge số chưa đọc, chấm “chưa đọc” theo từng mục | ✅ | Ẩn badge khi đã đọc hết |
+| 4 | **Đánh dấu đã đọc tất cả** | ✅ | Lưu ở `bakhiNotify.v1` |
+| 5 | Bấm một thông báo → cửa sổ toàn màn hình đầy đủ nội dung phiên bản | ✅ | Markdown an toàn, tách danh sách đúng |
+| 6 | Nút ×, phím `Esc`, bấm nền để đóng; giữ focus hợp lý | ✅ | `role="dialog"`, `aria-modal`, `aria-labelledby` |
+| 7 | Danh sách có ngày `dd/mm/yyyy`, số thay đổi, tóm tắt 3 dòng | ✅ | Tự gộp dòng xuống của CHANGELOG |
+| 8 | Khi mở bằng `file://` không đọc được changelog → hiện giải thích thay vì lỗi | ✅ | Fallback 1 mục |
+| 9 | API `BKNotify.open/close/openArticle/markAll/items/unread/parse/setSource/refresh` | ✅ | Dùng được cho trang khác |
+
+## J. Không có trong sản phẩm (theo yêu cầu)
 
 Không đề thi thử, không bài tính giờ, không đếm ngược, không giới hạn thời gian,
 không tự nộp bài, không xếp hạng thi, không deadline, không cơ chế tạo áp lực thời gian.
