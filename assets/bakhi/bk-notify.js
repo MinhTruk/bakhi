@@ -16,10 +16,11 @@
     (function () {
         try {
             var p = (global.location && location.pathname) || '';
+            var endsSlash = /\/$/.test(p) || p === '';
             var parts = p.split('/').filter(Boolean);
-            var last = parts[parts.length - 1] || '';
-            var dirs = /^index\.html?$/i.test(last) ? parts.slice(0, -1) : parts;
-            var isHome = (last === '' || /^index\.html?$/i.test(last)) && dirs.length <= 1;
+            var isIndex = parts.length > 0 && /^index\.html?$/i.test(parts[parts.length - 1]);
+            var dirs = isIndex ? parts.slice(0, -1) : parts;
+            var isHome = (endsSlash || isIndex || parts.length === 0 || (parts.length === 1 && !/\./.test(parts[0]))) && dirs.length <= 1;
             if (!isHome) { global.BKNotifyLoaded = true; throw new Error('skip'); }
         } catch (e) { if (e && e.message === 'skip') return; }
     })();
@@ -538,7 +539,7 @@
         if (!D.querySelector('link[data-bk-notify]')) {
             var link = D.createElement('link');
             link.rel = 'stylesheet';
-            link.href = basePath() + 'assets/bakhi/bk-notify.css?v=2.4.2';
+            link.href = basePath() + 'assets/bakhi/bk-notify.css?v=2.4.3';
             link.setAttribute('data-bk-notify', '1');
             (D.head || D.documentElement).appendChild(link);
         }
