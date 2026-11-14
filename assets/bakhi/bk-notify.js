@@ -12,15 +12,14 @@
     var global = typeof window !== 'undefined' ? window : this;
     var D = global.document;
     if (!D || global.BKNotifyLoaded) return;
-    /* Chỉ mount chuông ở trang chủ Bá Khí. */
+    /* Chỉ mount chuông ở trang chủ Bá Khí: index.html ở gốc site. */
     (function () {
         try {
             var p = (global.location && location.pathname) || '';
-            if (/\/studio(\/|$)/i.test(p)) { global.BKNotifyLoaded = true; throw new Error('skip'); }
-            if (/\/(kt|kttx|ktgk|ktck|music)(\/|$)/i.test(p)) { global.BKNotifyLoaded = true; throw new Error('skip'); }
-            var base = p.replace(/\/+$/, '');
-            var last = base.split('/').pop() || '';
-            var isHome = last === '' || /^index\.html?$/i.test(last);
+            var parts = p.split('/').filter(Boolean);
+            var last = parts[parts.length - 1] || '';
+            var dirs = /^index\.html?$/i.test(last) ? parts.slice(0, -1) : parts;
+            var isHome = (last === '' || /^index\.html?$/i.test(last)) && dirs.length <= 1;
             if (!isHome) { global.BKNotifyLoaded = true; throw new Error('skip'); }
         } catch (e) { if (e && e.message === 'skip') return; }
     })();

@@ -2,6 +2,17 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [2.4.2] — 2026-11-14
+
+### Giao diện & thông báo
+
+- **Chỉ giữ** chuông thông báo cập nhật ở trang chủ `index.html`; loại bỏ hoàn toàn
+  khỏi các trang môn, bài học, Studio và Music.
+- **Tự giảm animation** trên máy yếu hoặc khi bật giảm chuyển động: thêm lớp `.lite`
+  toàn cục, tắt hiệu ứng nặng ở toast, modal, overlay và thanh tiến độ.
+- **Loại bỏ** badge “Portal [môn]” trên mọi thiết bị để header các trang môn gọn hơn.
+- **Tinh chỉnh** bố cục mobile cho header, bảng thông báo và các nút điều hướng.
+
 ## [2.4.1] — 2026-11-14
 
 ### Thông báo trên header

@@ -1331,29 +1331,6 @@
     } catch (e) {}
 })();
 
-/* Notify loader: chuông thông báo cập nhật (CHANGELOG.md) — CHỈ ở trang chủ */
-(function () {
-    try {
-        /* Chỉ trang chủ Bá Khí mới có chuông thông báo. */
-        var p = (window.location && location.pathname) || '';
-        if (/\/studio(\/|$)/i.test(p)) return;
-        if (/\/(kt|kttx|ktgk|ktck|music)(\/|$)/i.test(p)) return;
-        var base = p.replace(/\/+$/, '');
-        var last = base.split('/').pop() || '';
-        var isHome = last === '' || /^index\.html?$/i.test(last);
-        if (!isHome) return;
-        if (window.BKNotifyLoaded) return;
-        if (document.querySelector('script[src*="bk-notify.js"]')) return;
-        var cur = document.currentScript;
-        var src = 'assets/bakhi/bk-notify.js';
-        if (cur && cur.src) { try { src = new URL('bk-notify.js', cur.src).href; } catch (e) {} }
-        else if (window.BK && BK.util && BK.util.basePath) { src = BK.util.basePath() + 'assets/bakhi/bk-notify.js'; }
-        var s = document.createElement('script');
-        s.src = src;
-        s.async = false;
-        (document.head || document.documentElement).appendChild(s);
-    } catch (e) {}
-})();
 
 /* Giảm animation cho máy yếu / prefers-reduced-motion: thêm lớp .lite toàn cục */
 (function () {

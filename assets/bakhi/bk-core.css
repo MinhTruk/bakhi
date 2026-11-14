@@ -268,10 +268,8 @@ html.bk-focus.bk-ambient::before { opacity: 1; }
     .bk-modal-wide { max-width: 100%; }
 }
 
-/* Ẩn badge "Portal [môn]" trên mobile để header gọn. */
-@media (max-width: 640px) {
-    .bk-portal-badge { display: none !important; }
-}
+/* Loại bỏ badge "Portal [môn]" trên mọi thiết bị để header gọn. */
+.bk-portal-badge { display: none !important; }
 
 /* Máy yếu / giảm chuyển động: tắt animation nặng. */
 .lite .bk-toast, .lite .bk-overlay, .lite .bk-modal, .lite .bk-spinner { animation: none !important; }
