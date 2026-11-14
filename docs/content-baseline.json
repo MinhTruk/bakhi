@@ -17,8 +17,8 @@
       }
     },
     "index.html": {
-      "hash": "07fbcef2ec8daed654a1ef8bb461c9d9621c9b158846b1a65038d5c71e100878",
-      "bytes": 196906,
+      "hash": "783875a533cf939fa6021235144f9d0da60405f570923cf8077b3c48441a15f2",
+      "bytes": 197302,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -738,34 +738,6 @@
         "correctField": 0,
         "explanation": 0,
         "questionField": 0,
-        "optionsArray": 0,
-        "essayBank": 0,
-        "mcqBank": 0,
-        "tfBank": 0
-      }
-    },
-    "music/1.html": {
-      "hash": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
-      "bytes": 2,
-      "stats": {
-        "correctAnswer": 0,
-        "correctField": 0,
-        "explanation": 0,
-        "questionField": 0,
-        "optionsArray": 0,
-        "essayBank": 0,
-        "mcqBank": 0,
-        "tfBank": 0
-      }
-    },
-    "music/on_tap_dao_dong_dieu_hoa (5).html": {
-      "hash": "41caf302dbff5092d8094a4b4096be6da1ee8c56d3967b605c746e69b77c7207",
-      "bytes": 83234,
-      "stats": {
-        "correctAnswer": 0,
-        "correctField": 2,
-        "explanation": 0,
-        "questionField": 2,
         "optionsArray": 0,
         "essayBank": 0,
         "mcqBank": 0,

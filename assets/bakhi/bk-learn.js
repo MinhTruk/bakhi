@@ -1235,6 +1235,14 @@
         if (global.BKDev && typeof global.BKDev.open === 'function') {
             cmds.push({ label: 'Developer Playground (2.0)', icon: 'fa-screwdriver-wrench', run: function () { global.BKDev.open(); } });
         }
+        cmds.push({
+            label: 'Mở Bá Khí Studio (Word & Paint)',
+            icon: 'fa-pen-ruler',
+            run: function () {
+                var base = (BK && BK.util && BK.util.basePath) ? BK.util.basePath() : '';
+                global.open(base + 'studio/word-paint.html', '_blank', 'noopener');
+            }
+        });
         if (typeof global.palette === 'function') {
             cmds.push({ label: 'Command palette (Developer cũ)', icon: 'fa-terminal', run: function () { global.palette(); } });
         }

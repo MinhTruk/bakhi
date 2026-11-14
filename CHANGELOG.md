@@ -2,6 +2,23 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [2.2.0] — 2026-11-14
+
+### Bá Khí Studio (Word & Paint)
+
+- **Thêm** ứng dụng tĩnh độc lập `studio/word-paint.html`: soạn thảo kiểu Word (định dạng chữ/đoạn,
+  màu, danh sách, canh lề, liên kết, ảnh, đếm từ, in/PDF) kết hợp bảng vẽ kiểu Paint (bút, tẩy,
+  hình khối, mũi tên, chữ, màu, cỡ nét, độ đậm, hoàn tác 8 bước, tải PNG).
+- **Thêm** chèn bản vẽ vào tài liệu, ba chế độ Word/Paint/Chia đôi, nhiều tài liệu, đổi tên,
+  nhân bản, xoá có xác nhận.
+- **Thêm** lưu tự động (`bakhiStudio.v1`), xuất HTML tự chứa, xuất TXT, mở `.html/.txt`, dán an toàn.
+- **Thêm** lối vào từ menu 3 gạch của trang chủ và từ command palette (`Ctrl/⌘ + K`).
+
+### Tinh chỉnh
+
+- **Sửa** thao tác định dạng trong Studio: giữ vùng chọn khi bấm nút và `Ctrl+A` chỉ chọn nội dung trang.
+- **Thêm** tài liệu `docs/STUDIO.md`, cập nhật README, FEATURES, CHANGELOG.
+
 ## [2.1.0] — 2026-11-14
 
 ### Music Player

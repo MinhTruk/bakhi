@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bá Khí Studio — Word &amp; Paint</title>
+<meta name="description" content="Bá Khí Studio: soạn thảo văn bản kiểu Word kết hợp bảng vẽ kiểu Paint, lưu trên thiết bị, xuất HTML/TXT/PNG.">
+<style>
+:root{
+  --bg:#0b1220; --panel:#111c2e; --panel-2:#0f172a;
+  --line:rgba(148,163,184,.22); --ink:#e2e8f0; --muted:#94a3b8;
+  --brand:#6366f1; --brand-2:#a855f7; --ok:#34d399; --warn:#fbbf24; --err:#fb7185;
+  --radius:.7rem; --shadow:0 18px 40px -22px rgba(0,0,0,.9);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);overflow:hidden;
+  font:14px/1.5 Lexend,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  display:flex;flex-direction:column;
+}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid #a5b4fc;outline-offset:2px}
+
+/* ---------- Thanh ứng dụng ---------- */
+.appbar{
+  display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;
+  padding:.45rem .7rem;border-bottom:1px solid var(--line);
+  background:linear-gradient(90deg,#1e1b4b,#0b1220 60%);
+}
+.brand{display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;color:#c7d2fe;font-weight:700;font-size:.82rem;padding:.3rem .5rem;border-radius:.5rem}
+.brand:hover{background:rgba(148,163,184,.14)}
+.brand .dot{width:1.1rem;height:1.1rem;border-radius:.35rem;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:grid;place-items:center;font-size:.6rem;color:#fff}
+.doc-title{flex:1 1 12rem;min-width:8rem}
+.doc-title input{
+  width:100%;background:transparent;border:1px solid transparent;border-radius:.45rem;
+  padding:.28rem .45rem;font-weight:600;color:#f8fafc;
+}
+.doc-title input:hover{border-color:var(--line)}
+.doc-title input:focus{border-color:#818cf8;background:#0b1220;outline:none}
+.modes{display:flex;gap:2px;background:rgba(148,163,184,.12);border-radius:999px;padding:2px}
+.modes button{border:0;background:transparent;border-radius:999px;padding:.28rem .7rem;font-size:.72rem;font-weight:600;color:var(--muted)}
+.modes button[aria-selected="true"]{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff}
+.appbar-actions{display:flex;align-items:center;gap:.4rem;margin-left:auto}
+.save-state{font-size:.66rem;color:var(--muted);min-width:5.5rem;text-align:right}
+.save-state[data-state="error"]{color:var(--err)}
+.btn{
+  border:1px solid var(--line);background:rgba(148,163,184,.12);color:var(--ink);
+  border-radius:.5rem;padding:.32rem .6rem;font-size:.74rem;font-weight:600;
+  display:inline-flex;align-items:center;gap:.35rem;min-height:2rem;
+}
+.btn:hover{background:rgba(148,163,184,.2)}
+.btn.primary{background:linear-gradient(135deg,var(--brand),var(--brand-2));border-color:transparent;color:#fff}
+.menu-wrap{position:relative}
+.menu{
+  position:absolute;right:0;top:calc(100% + .35rem);z-index:40;min-width:13rem;
+  background:var(--panel);border:1px solid var(--line);border-radius:.7rem;box-shadow:var(--shadow);
+  padding:.3rem;display:none;
+}
+.menu.open{display:block}
+.menu button{
+  width:100%;text-align:left;border:0;background:transparent;color:var(--ink);
+  padding:.42rem .55rem;border-radius:.45rem;font-size:.76rem;display:flex;justify-content:space-between;gap:.6rem;
+}
+.menu button:hover{background:rgba(99,102,241,.18)}
+.menu button kbd{font:600 .62rem ui-monospace,monospace;opacity:.6}
+.menu hr{border:0;border-top:1px solid var(--line);margin:.3rem .2rem}
+
+/* ---------- Bố cục ---------- */
+.workspace{flex:1;min-height:0;display:flex;gap:.55rem;padding:.55rem;position:relative}
+.docs{
+  flex:0 0 14rem;display:flex;flex-direction:column;min-height:0;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+}
+.docs-head{display:flex;align-items:center;justify-content:space-between;gap:.4rem;padding:.5rem .6rem;border-bottom:1px solid var(--line);font-size:.72rem;font-weight:700;color:#c7d2fe}
+.docs-head .btn{padding:.1rem .45rem;min-height:1.6rem;font-size:.8rem}
+.doc-list{list-style:none;margin:0;padding:.35rem;overflow:auto;display:flex;flex-direction:column;gap:.25rem}
+.doc-list li{display:flex;align-items:center;gap:.2rem}
+.doc-open{
+  flex:1;min-width:0;text-align:left;border:1px solid transparent;background:transparent;border-radius:.45rem;
+  padding:.38rem .45rem;font-size:.73rem;display:flex;flex-direction:column;gap:.1rem;
+}
+.doc-open:hover{background:rgba(148,163,184,.12)}
+.doc-open[aria-current="true"]{background:rgba(99,102,241,.22);border-color:rgba(129,140,248,.45)}
+.doc-open b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.doc-open small{color:var(--muted);font-size:.6rem}
+.doc-del{border:0;background:transparent;color:var(--muted);border-radius:.35rem;width:1.6rem;height:1.6rem}
+.doc-del:hover{background:rgba(251,113,133,.18);color:#fecdd3}
+
+.editor,.paint{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+body[data-mode="word"] .paint{display:none}
+body[data-mode="paint"] .editor{display:none}
+body[data-mode="split"] .workspace{gap:.5rem}
+body[data-mode="split"] .editor,body[data-mode="split"] .paint{flex:1 1 0}
+
+/* ---------- Ribbon ---------- */
+.ribbon{display:flex;flex-wrap:wrap;align-items:center;gap:.2rem;padding:.35rem .45rem;border-bottom:1px solid var(--line);background:var(--panel-2)}
+.ribbon .sep{width:1px;height:1.4rem;background:var(--line);margin:0 .25rem}
+.tb{
+  border:1px solid transparent;background:transparent;color:var(--ink);border-radius:.4rem;
+  min-width:1.9rem;height:1.9rem;padding:0 .4rem;font-size:.76rem;display:inline-grid;place-items:center;
+}
+.tb:hover{background:rgba(148,163,184,.16)}
+.tb[aria-pressed="true"]{background:rgba(99,102,241,.3);border-color:rgba(129,140,248,.5);color:#e0e7ff}
+.tb b,.tb i{pointer-events:none;font-style:normal}
+.tb .lbl{font-size:.68rem;padding:0 .1rem}
+select.tb{width:auto;padding:0 .3rem;background:var(--panel-2);border-color:var(--line)}
+.swatch{width:1.35rem;height:1.35rem;border-radius:50%;border:1px solid rgba(255,255,255,.35);padding:0}
+.swatch[aria-pressed="true"]{outline:2px solid #a5b4fc;outline-offset:1px}
+input[type="color"].tb{padding:.1rem;width:2rem}
+.range{display:inline-flex;align-items:center;gap:.3rem;font-size:.66rem;color:var(--muted)}
+.range input{width:5.5rem;accent-color:#818cf8}
+
+/* ---------- Trang soạn thảo ---------- */
+.paper-wrap{flex:1;min-height:0;overflow:auto;padding:1rem;display:flex;justify-content:center;background:#0a0f1c}
+.page{
+  width:min(760px,100%);min-height:940px;background:#fff;color:#111827;
+  padding:2.2rem 2.5rem 3rem;border-radius:.35rem;box-shadow:var(--shadow);
+  outline:none;font-size:15px;line-height:1.7;overflow-wrap:break-word;
+}
+.page:empty::before{content:attr(data-placeholder);color:#9ca3af}
+.page h1{font-size:1.7rem;line-height:1.3;margin:.2rem 0 .7rem}
+.page h2{font-size:1.35rem;line-height:1.35;margin:.9rem 0 .5rem}
+.page h3{font-size:1.12rem;line-height:1.4;margin:.8rem 0 .4rem}
+.page blockquote{margin:.7rem 0;padding:.4rem .9rem;border-left:3px solid #6366f1;background:#f5f3ff;color:#3730a3;border-radius:.2rem}
+.page img{max-width:100%;height:auto;border-radius:6px}
+.page a{color:#4338ca}
+.page ul,.page ol{padding-left:1.4rem}
+.page hr{border:0;border-top:1px solid #e5e7eb;margin:1rem 0}
+.page table{border-collapse:collapse;width:100%}
+.page td,.page th{border:1px solid #e5e7eb;padding:.35rem .5rem}
+
+/* ---------- Bảng vẽ ---------- */
+.canvas-wrap{flex:1;min-height:0;display:grid;place-items:center;padding:.7rem;background:#0a0f1c;overflow:auto}
+.board{
+  position:relative;width:100%;max-width:1020px;aspect-ratio:16/9;background:#fff;
+  border-radius:.45rem;box-shadow:var(--shadow);overflow:hidden;
+}
+.board canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+#preview{cursor:crosshair}
+
+/* ---------- Thanh trạng thái ---------- */
+.statusbar{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;padding:.3rem .6rem;border-top:1px solid var(--line);font-size:.64rem;color:var(--muted);background:var(--panel-2)}
+.statusbar .grow{flex:1}
+
+/* ---------- Toast ---------- */
+.toast{
+  position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%) translateY(1rem);
+  background:#111827;color:#f8fafc;border:1px solid var(--line);border-radius:999px;
+  padding:.5rem .95rem;font-size:.76rem;box-shadow:var(--shadow);opacity:0;pointer-events:none;
+  transition:opacity .18s,transform .18s;z-index:80;max-width:min(92vw,32rem);text-align:center;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ---------- Màn hình hẹp ---------- */
+@media (max-width:900px){
+  body{overflow:auto}
+  .workspace{flex-direction:column}
+  .docs{position:fixed;left:.5rem;right:.5rem;top:3.6rem;bottom:3.4rem;z-index:30;display:none;box-shadow:var(--shadow)}
+  .workspace.docs-open .docs{display:flex}
+  .page{min-height:70vh;padding:1.1rem 1.1rem 2rem}
+  .editor,.paint{min-height:60vh}
+  body[data-mode="split"] .workspace{display:flex}
+  .save-state{display:none}
+}
+@media (pointer:coarse){.tb{min-width:2.3rem;height:2.3rem}}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+
+/* ---------- In ---------- */
+@media print{
+  body{overflow:visible;background:#fff;color:#000;display:block}
+  .appbar,.docs,.paint,.ribbon,.statusbar,.toast,.menu{display:none!important}
+  .workspace{display:block;padding:0}
+  .editor{border:0;display:block!important}
+  .paper-wrap{overflow:visible;padding:0;background:#fff;display:block}
+  .page{width:auto;min-height:0;box-shadow:none;border-radius:0;padding:0;font-size:12pt}
+}
+</style>
+</head>
+<body data-mode="word">
+
+<header class="appbar">
+  <a class="brand" href="../index.html" title="Về trang chủ Bá Khí"><span class="dot" aria-hidden="true">✦</span> Bá Khí Studio</a>
+  <div class="doc-title">
+    <input id="docTitle" type="text" value="Tài liệu chưa đặt tên" aria-label="Tên tài liệu" autocomplete="off">
+  </div>
+  <div class="modes" role="tablist" aria-label="Chế độ làm việc">
+    <button id="modeWord" role="tab" data-mode="word" aria-selected="true">Word</button>
+    <button id="modePaint" role="tab" data-mode="paint" aria-selected="false">Paint</button>
+    <button id="modeSplit" role="tab" data-mode="split" aria-selected="false">Chia đôi</button>
+  </div>
+  <div class="appbar-actions">
+    <button class="btn" id="docsToggle" aria-expanded="false" title="Danh sách tài liệu">Tài liệu</button>
+    <span class="save-state" id="saveState" aria-live="polite">Sẵn sàng</span>
+    <div class="menu-wrap">
+      <button class="btn primary" id="fileBtn" aria-expanded="false" aria-controls="fileMenu">Tệp ▾</button>
+      <div class="menu" id="fileMenu" role="menu" aria-label="Tệp">
+        <button type="button" data-act="new" role="menuitem">Tài liệu mới <kbd>Ctrl+N</kbd></button>
+        <button type="button" data-act="save" role="menuitem">Lưu ngay <kbd>Ctrl+S</kbd></button>
+        <button type="button" data-act="duplicate" role="menuitem">Nhân bản tài liệu</button>
+        <hr>
+        <button type="button" data-act="import" role="menuitem">Mở tệp .html / .txt…</button>
+        <button type="button" data-act="exportHtml" role="menuitem">Xuất HTML</button>
+        <button type="button" data-act="exportTxt" role="menuitem">Xuất TXT</button>
+        <button type="button" data-act="print" role="menuitem">In / Lưu PDF <kbd>Ctrl+P</kbd></button>
+        <hr>
+        <button type="button" data-act="reset" role="menuitem">Xoá toàn bộ dữ liệu Studio…</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="workspace" id="workspace">
+  <aside class="docs" aria-label="Danh sách tài liệu">
+    <div class="docs-head"><span>Tài liệu của bạn</span><button class="btn" id="newDoc" title="Tạo tài liệu mới" aria-label="Tạo tài liệu mới">+</button></div>
+    <ul class="doc-list" id="docList"></ul>
+  </aside>
+
+  <section class="editor" aria-label="Soạn thảo văn bản">
+    <div class="ribbon" id="ribbonWord" role="toolbar" aria-label="Định dạng văn bản">
+      <button class="tb" data-cmd="undo" title="Hoàn tác (Ctrl+Z)" aria-label="Hoàn tác"><b>↶</b></button>
+      <button class="tb" data-cmd="redo" title="Làm lại (Ctrl+Shift+Z)" aria-label="Làm lại"><b>↷</b></button>
+      <span class="sep" aria-hidden="true"></span>
+      <select class="tb" id="blockFmt" title="Kiểu đoạn" aria-label="Kiểu đoạn">
+        <option value="p">Đoạn văn</option>
+        <option value="h1">Tiêu đề 1</option>
+        <option value="h2">Tiêu đề 2</option>
+        <option value="h3">Tiêu đề 3</option>
+        <option value="blockquote">Trích dẫn</option>
+      </select>
+      <select class="tb" id="fontSize" title="Cỡ chữ" aria-label="Cỡ chữ">
+        <option value="2">Nhỏ</option>
+        <option value="3" selected>Thường</option>
+        <option value="5">Lớn</option>
+        <option value="6">Rất lớn</option>
+        <option value="7">Khổng lồ</option>
+      </select>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="tb" data-cmd="bold" title="Đậm (Ctrl+B)" aria-label="Đậm" aria-pressed="false"><b>B</b></button>
+      <button class="tb" data-cmd="italic" title="Nghiêng (Ctrl+I)" aria-label="Nghiêng" aria-pressed="false"><b><i>I</i></b></button>
+      <button class="tb" data-cmd="underline" title="Gạch chân (Ctrl+U)" aria-label="Gạch chân" aria-pressed="false"><b><u>U</u></b></button>
+      <button class="tb" data-cmd="strikeThrough" title="Gạch ngang" aria-label="Gạch ngang" aria-pressed="false"><b><s>S</s></b></button>
+      <span class="sep" aria-hidden="true"></span>
+      <input type="color" class="tb" id="foreColor" value="#111827" title="Màu chữ" aria-label="Màu chữ">
+      <input type="color" class="tb" id="hiliteColor" value="#fef08a" title="Màu nền chữ" aria-label="Màu nền chữ">
+      <span class="sep" aria-hidden="true"></span>
+      <button class="tb" data-cmd="insertUnorderedList" title="Danh sách chấm" aria-label="Danh sách chấm" aria-pressed="false"><b>•</b></button>
+      <button class="tb" data-cmd="insertOrderedList" title="Danh sách số" aria-label="Danh sách số" aria-pressed="false"><b>1.</b></button>
+      <button class="tb" data-cmd="justifyLeft" title="Canh trái" aria-label="Canh trái"><b>≡</b></button>
+      <button class="tb" data-cmd="justifyCenter" title="Canh giữa" aria-label="Canh giữa"><b>≡</b></button>
+      <button class="tb" data-cmd="justifyRight" title="Canh phải" aria-label="Canh phải"><b>≡</b></button>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="tb" data-cmd="link" title="Chèn liên kết" aria-label="Chèn liên kết"><b>🔗</b></button>
+      <button class="tb" data-cmd="image" title="Chèn ảnh" aria-label="Chèn ảnh"><b>🖼</b></button>
+      <button class="tb" data-cmd="hr" title="Đường kẻ ngang" aria-label="Đường kẻ ngang"><b>—</b></button>
+      <button class="tb" data-cmd="removeFormat" title="Xoá định dạng" aria-label="Xoá định dạng"><b>⌫</b></button>
+    </div>
+
+    <div class="paper-wrap">
+      <div class="page" id="page" contenteditable="true" role="textbox" aria-multiline="true"
+           spellcheck="true" data-placeholder="Bắt đầu viết ở đây… (Ctrl+B đậm, Ctrl+S lưu)"></div>
+    </div>
+
+    <div class="statusbar">
+      <span id="wordCount">0 từ</span>
+      <span aria-hidden="true">·</span>
+      <span id="charCount">0 ký tự</span>
+      <span class="grow"></span>
+      <span>Lưu tự động trên thiết bị này</span>
+    </div>
+  </section>
+
+  <section class="paint" aria-label="Bảng vẽ">
+    <div class="ribbon" id="ribbonPaint" role="toolbar" aria-label="Công cụ vẽ">
+      <button class="tb" data-tool="brush" title="Bút lông" aria-label="Bút lông" aria-pressed="true"><b>✎</b></button>
+      <button class="tb" data-tool="pencil" title="Bút chì" aria-label="Bút chì" aria-pressed="false"><b>✏</b></button>
+      <button class="tb" data-tool="marker" title="Bút dạ quang" aria-label="Bút dạ quang" aria-pressed="false"><b>▮</b></button>
+      <button class="tb" data-tool="eraser" title="Tẩy" aria-label="Tẩy" aria-pressed="false"><b>⌫</b></button>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="tb" data-tool="line" title="Đường thẳng" aria-label="Đường thẳng" aria-pressed="false"><b>╱</b></button>
+      <button class="tb" data-tool="rect" title="Hình chữ nhật" aria-label="Hình chữ nhật" aria-pressed="false"><b>▭</b></button>
+      <button class="tb" data-tool="ellipse" title="Hình tròn" aria-label="Hình tròn" aria-pressed="false"><b>◯</b></button>
+      <button class="tb" data-tool="arrow" title="Mũi tên" aria-label="Mũi tên" aria-pressed="false"><b>➜</b></button>
+      <button class="tb" data-tool="text" title="Chữ" aria-label="Chèn chữ" aria-pressed="false"><b>T</b></button>
+      <span class="sep" aria-hidden="true"></span>
+      <span id="swatches" style="display:inline-flex;gap:.2rem;align-items:center"></span>
+      <input type="color" class="tb" id="paintColor" value="#111827" title="Màu vẽ" aria-label="Màu vẽ">
+      <span class="sep" aria-hidden="true"></span>
+      <label class="range">Cỡ <input type="range" id="paintSize" min="1" max="64" value="8" aria-label="Cỡ nét"></label>
+      <label class="range">Đậm <input type="range" id="paintAlpha" min="10" max="100" value="100" aria-label="Độ đậm"></label>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="tb" id="paintUndo" title="Hoàn tác nét vẽ" aria-label="Hoàn tác nét vẽ"><b>↶</b></button>
+      <button class="tb" id="paintRedo" title="Làm lại nét vẽ" aria-label="Làm lại nét vẽ"><b>↷</b></button>
+      <button class="tb" id="paintClear" title="Xoá bảng vẽ" aria-label="Xoá bảng vẽ"><b>⌧</b></button>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="btn" id="paintInsert" title="Chèn bản vẽ vào tài liệu">Chèn vào trang</button>
+      <button class="btn" id="paintPng" title="Tải bản vẽ dạng PNG">Tải PNG</button>
+    </div>
+
+    <div class="canvas-wrap">
+      <div class="board">
+        <canvas id="board" width="1200" height="675" aria-label="Bảng vẽ" role="img"></canvas>
+        <canvas id="preview" width="1200" height="675" aria-hidden="true"></canvas>
+      </div>
+    </div>
+
+    <div class="statusbar">
+      <span id="paintInfo">Bút lông · 8px</span>
+      <span class="grow"></span>
+      <span>Vẽ bằng chuột, bút cảm ứng hoặc ngón tay</span>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="sr" id="sr" aria-live="polite"></div>
+<input type="file" id="imgInput" accept="image/*" hidden>
+<input type="file" id="docInput" accept=".html,.htm,.txt,text/plain,text/html" hidden>
+
+<script>
+(function () {
+  'use strict';
+  var D = document;
+  var KEY = 'bakhiStudio.v1';
+  var $ = function (s, r) { return (r || D).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || D).querySelectorAll(s)); };
+
+  var page = $('#page');
+  var titleInput = $('#docTitle');
+  var saveState = $('#saveState');
+  var docList = $('#docList');
+  var toastEl = $('#toast');
+  var sr = $('#sr');
+
+  /* ================= STATE ================= */
+  var S = { v: 1, active: null, mode: 'word', docs: [] };
+
+  function now() { return Date.now(); }
+  function uid() { return 'd' + now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function blankDoc() { return { id: uid(), title: 'Tài liệu chưa đặt tên', html: '', draw: '', updated: now() }; }
+  function fixDoc(d) {
+    d = d && typeof d === 'object' ? d : {};
+    return {
+      id: typeof d.id === 'string' && d.id ? d.id : uid(),
+      title: typeof d.title === 'string' && d.title.trim() ? d.title : 'Tài liệu chưa đặt tên',
+      html: typeof d.html === 'string' ? d.html : '',
+      draw: typeof d.draw === 'string' ? d.draw : '',
+      updated: Number(d.updated) || now()
+    };
+  }
+  function loadState() {
+    var raw = null;
+    try { raw = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { raw = null; }
+    if (raw && Array.isArray(raw.docs) && raw.docs.length) {
+      S.docs = raw.docs.map(fixDoc);
+      S.active = typeof raw.active === 'string' ? raw.active : null;
+      S.mode = (raw.mode === 'paint' || raw.mode === 'split') ? raw.mode : 'word';
+    }
+    if (!S.docs.length) { var d = blankDoc(); S.docs = [d]; S.active = d.id; }
+    if (!docById(S.active)) S.active = S.docs[0].id;
+  }
+  function docById(id) {
+    for (var i = 0; i < S.docs.length; i++) if (S.docs[i].id === id) return S.docs[i];
+    return null;
+  }
+  function doc() { return docById(S.active) || S.docs[0]; }
+
+  /* ================= SAVE ================= */
+  var saveTimer = null;
+  var lastSaved = 0;
+
+  function setSaveState(text, state) {
+    saveState.textContent = text;
+    if (state) saveState.setAttribute('data-state', state);
+    else saveState.removeAttribute('data-state');
+  }
+  function timeLabel(ts) {
+    var d = new Date(ts || now());
+    return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+  function scheduleSave() {
+    setSaveState('Đang lưu…');
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveNow, 500);
+  }
+  function saveNow() {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    var d = doc();
+    d.html = page.innerHTML;
+    d.title = titleInput.value.trim() || 'Tài liệu chưa đặt tên';
+    d.updated = now();
+    try {
+      localStorage.setItem(KEY, JSON.stringify(S));
+      lastSaved = d.updated;
+      setSaveState('Đã lưu ' + timeLabel(d.updated));
+    } catch (e) {
+      setSaveState('Không lưu được (bộ nhớ đầy)', 'error');
+      toast('Bộ nhớ trình duyệt đã đầy — hãy xuất HTML rồi xoá bớt tài liệu/ảnh.', 'error');
+    }
+  }
+  function flush() { if (saveTimer) saveNow(); }
+
+  var tTimer = null;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(tTimer);
+    tTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2600);
+    sr.textContent = msg;
+  }
+
+  /* ================= DOCUMENT LIST ================= */
+  function renderDocs() {
+    docList.innerHTML = '';
+    S.docs.slice().sort(function (a, b) { return b.updated - a.updated; }).forEach(function (d) {
+      var li = D.createElement('li');
+      var open = D.createElement('button');
+      open.type = 'button';
+      open.className = 'doc-open';
+      open.setAttribute('aria-current', d.id === S.active ? 'true' : 'false');
+      var b = D.createElement('b');
+      b.textContent = d.title;
+      var small = D.createElement('small');
+      small.textContent = 'Sửa lúc ' + timeLabel(d.updated);
+      open.appendChild(b); open.appendChild(small);
+      open.addEventListener('click', function () { openDoc(d.id); });
+      open.addEventListener('dblclick', function () { renameDoc(d.id); });
+      var del = D.createElement('button');
+      del.type = 'button';
+      del.className = 'doc-del';
+      del.textContent = '×';
+      del.setAttribute('aria-label', 'Xoá ' + d.title);
+      del.title = 'Xoá tài liệu';
+      del.addEventListener('click', function (e) { e.stopPropagation(); removeDoc(d.id); });
+      li.appendChild(open); li.appendChild(del);
+      docList.appendChild(li);
+    });
+  }
+
+  function openDoc(id) {
+    if (id === S.active) return;
+    flush();
+    S.active = id;
+    var d = doc();
+    titleInput.value = d.title;
+    page.innerHTML = d.html;
+    loadDrawing(d.draw);
+    renderDocs();
+    updateCounts();
+    scheduleSave();
+    $('#workspace').classList.remove('docs-open');
+    $('#docsToggle').setAttribute('aria-expanded', 'false');
+  }
+
+  function newDoc() {
+    flush();
+    var d = blankDoc();
+    S.docs.push(d);
+    S.active = d.id;
+    titleInput.value = d.title;
+    page.innerHTML = '';
+    loadDrawing('');
+    renderDocs();
+    updateCounts();
+    scheduleSave();
+    page.focus();
+    toast('Đã tạo tài liệu mới');
+  }
+
+  function renameDoc(id) {
+    var d = docById(id);
+    if (!d) return;
+    var name = window.prompt('Tên tài liệu:', d.title);
+    if (name == null) return;
+    d.title = name.trim() || d.title;
+    d.updated = now();
+    if (d.id === S.active) titleInput.value = d.title;
+    renderDocs();
+    scheduleSave();
+  }
+
+  function removeDoc(id) {
+    if (S.docs.length <= 1) { toast('Cần giữ lại ít nhất một tài liệu'); return; }
+    var d = docById(id);
+    if (!d) return;
+    if (!window.confirm('Xoá "' + d.title + '"? Thao tác này không hoàn tác được.')) return;
+    S.docs = S.docs.filter(function (x) { return x.id !== id; });
+    if (S.active === id) S.active = S.docs[0].id;
+    var cur = doc();
+    titleInput.value = cur.title;
+    page.innerHTML = cur.html;
+    loadDrawing(cur.draw);
+    renderDocs();
+    updateCounts();
+    scheduleSave();
+    toast('Đã xoá tài liệu');
+  }
+
+  /* ================= EDITOR ================= */
+  var wordCount = $('#wordCount'), charCount = $('#charCount');
+
+  function updateCounts() {
+    var text = (page.innerText || '').replace(/\u00a0/g, ' ').trim();
+    var words = text ? text.split(/\s+/).length : 0;
+    wordCount.textContent = words.toLocaleString('vi-VN') + ' từ';
+    charCount.textContent = text.length.toLocaleString('vi-VN') + ' ký tự';
+  }
+
+  var lastRange = null;
+  function rememberRange() {
+    var s = window.getSelection();
+    if (s && s.rangeCount && s.anchorNode && page.contains(s.anchorNode)) {
+      lastRange = s.getRangeAt(0).cloneRange();
+    }
+  }
+  function restoreRange() {
+    if (!lastRange) return false;
+    var s = window.getSelection();
+    s.removeAllRanges();
+    s.addRange(lastRange);
+    return true;
+  }
+
+  function exec(cmd, value) {
+    var s = window.getSelection();
+    var inside = s && s.rangeCount && s.anchorNode && page.contains(s.anchorNode);
+    if (!inside) restoreRange();
+    page.focus();
+    try { D.execCommand('styleWithCSS', false, true); } catch (e) { }
+    try { D.execCommand(cmd, false, value == null ? null : value); } catch (e) { }
+    rememberRange();
+    syncToolbar();
+    onEditorChange();
+  }
+
+  function syncToolbar() {
+    $$('#ribbonWord .tb[data-cmd]').forEach(function (b) {
+      var cmd = b.getAttribute('data-cmd');
+      var st = false;
+      try { st = D.queryCommandState(cmd); } catch (e) { st = false; }
+      b.setAttribute('aria-pressed', st ? 'true' : 'false');
+    });
+    var sel = window.getSelection();
+    var node = sel && sel.anchorNode;
+    var block = node && node.nodeType === 1 ? node : (node && node.parentElement);
+    var tag = block && block.closest ? block.closest('h1,h2,h3,blockquote,p') : null;
+    if (tag) {
+      var name = tag.tagName.toLowerCase();
+      $('#blockFmt').value = (name === 'p') ? 'p' : name;
+    }
+  }
+
+  function onEditorChange() {
+    updateCounts();
+    scheduleSave();
+  }
+
+  page.addEventListener('input', onEditorChange);
+  page.addEventListener('keyup', function () { syncToolbar(); rememberRange(); });
+  page.addEventListener('mouseup', function () { syncToolbar(); rememberRange(); });
+  /* Ctrl/⌘+A trong trang chỉ chọn nội dung trang (không lan ra cả thanh công cụ). */
+  page.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+      e.preventDefault();
+      var r = D.createRange();
+      r.selectNodeContents(page);
+      var s = window.getSelection();
+      s.removeAllRanges();
+      s.addRange(r);
+      rememberRange();
+      syncToolbar();
+    }
+  });
+  page.addEventListener('focus', function () {
+    try { D.execCommand('styleWithCSS', false, true); } catch (e) { }
+  });
+  D.addEventListener('selectionchange', function () {
+    var sel = D.getSelection();
+    if (sel && sel.anchorNode && page.contains(sel.anchorNode)) { syncToolbar(); rememberRange(); }
+  });
+
+  /* Dán: giữ định dạng cơ bản nhưng bỏ script/thuộc tính nguy hiểm. */
+  function sanitize(html) {
+    var doc = new DOMParser().parseFromString(String(html), 'text/html');
+    $$('script,style,meta,link,iframe,object,embed,form,input,button,textarea', doc).forEach(function (n) { n.remove(); });
+    $$('*', doc).forEach(function (n) {
+      Array.prototype.slice.call(n.attributes).forEach(function (a) {
+        if (/^on/i.test(a.name)) n.removeAttribute(a.name);
+        if ((a.name === 'href' || a.name === 'src') && /^\s*(javascript|data:text\/html)/i.test(a.value)) n.removeAttribute(a.name);
+      });
+    });
+    return doc.body.innerHTML;
+  }
+  page.addEventListener('paste', function (e) {
+    var cd = e.clipboardData;
+    if (!cd) return;
+    var html = cd.getData('text/html');
+    if (!html) return;                          // văn bản thuần: để trình duyệt tự dán
+    e.preventDefault();
+    var clean = sanitize(html);
+    try { D.execCommand('insertHTML', false, clean); } catch (err) { }
+    onEditorChange();
+  });
+
+  /* Chèn HTML tại con trỏ; nếu chưa có con trỏ trong trang thì thêm vào cuối. */
+  function insertAtCaret(html) {
+    page.focus();
+    var sel = window.getSelection();
+    var inside = sel && sel.rangeCount && sel.anchorNode && page.contains(sel.anchorNode);
+    if (!inside) {
+      var r = D.createRange();
+      r.selectNodeContents(page);
+      r.collapse(false);
+      if (sel) { sel.removeAllRanges(); sel.addRange(r); }
+    }
+    var ok = false;
+    try { ok = D.execCommand('insertHTML', false, html); } catch (e) { ok = false; }
+    if (!ok) {
+      var tmp = D.createElement('div');
+      tmp.innerHTML = html;
+      while (tmp.firstChild) page.appendChild(tmp.firstChild);
+    }
+    onEditorChange();
+  }
+
+  /* Ảnh: chặn ảnh quá lớn để không làm hỏng localStorage. */
+  var MAX_IMG = 1200 * 1024;
+  function insertImage(url) {
+    insertAtCaret('<img src="' + url + '" alt="Hình chèn trong tài liệu" style="max-width:100%;height:auto;border-radius:6px;display:block;margin:.6rem 0">');
+  }
+
+  /* Giữ vùng chọn khi bấm nút định dạng (nếu không, bấm nút sẽ làm mất bôi đen). */
+  $$('#ribbonWord button.tb').forEach(function (b) {
+    b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+  });
+
+  $$('#ribbonWord .tb[data-cmd]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var cmd = b.getAttribute('data-cmd');
+      if (cmd === 'link') {
+        var url = window.prompt('Địa chỉ liên kết (http/https):', 'https://');
+        if (!url) return;
+        if (!/^https?:\/\//i.test(url)) { toast('Chỉ hỗ trợ liên kết http hoặc https'); return; }
+        exec('createLink', url);
+        return;
+      }
+      if (cmd === 'image') { $('#imgInput').click(); return; }
+      if (cmd === 'hr') { exec('insertHorizontalRule'); return; }
+      exec(cmd);
+    });
+  });
+
+  $('#blockFmt').addEventListener('change', function () {
+    exec('formatBlock', this.value.toUpperCase());
+  });
+  $('#fontSize').addEventListener('change', function () {
+    exec('fontSize', this.value);
+  });
+  $('#foreColor').addEventListener('input', function () { exec('foreColor', this.value); });
+  $('#hiliteColor').addEventListener('input', function () { exec('hiliteColor', this.value); });
+
+  $('#imgInput').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    this.value = '';
+    if (!f) return;
+    if (f.size > MAX_IMG) { toast('Ảnh lớn hơn 1,2 MB — hãy nén trước khi chèn'); return; }
+    var fr = new FileReader();
+    fr.onload = function () { insertImage(String(fr.result)); };
+    fr.readAsDataURL(f);
+  });
+
+  /* ================= PAINT ================= */
+  var board = $('#board'), preview = $('#preview');
+  var bctx = board.getContext('2d', { willReadFrequently: true });
+  var pctx = preview.getContext('2d');
+  var W = board.width, H = board.height;
+  var PAINT = { tool: 'brush', color: '#111827', size: 8, alpha: 1 };
+  var drawing = false, startPt = null, lastPt = null;
+  var undoStack = [], redoStack = [];
+  var drawDirty = 0;
+
+  function whiteBoard() {
+    bctx.save();
+    bctx.globalAlpha = 1;
+    bctx.globalCompositeOperation = 'source-over';
+    bctx.fillStyle = '#ffffff';
+    bctx.fillRect(0, 0, W, H);
+    bctx.restore();
+  }
+  function loadDrawing(url) {
+    whiteBoard();
+    undoStack.length = 0; redoStack.length = 0;
+    if (!url) { updatePaintInfo(); return; }
+    var img = new Image();
+    img.onload = function () { bctx.drawImage(img, 0, 0, W, H); };
+    img.onerror = function () { whiteBoard(); };
+    img.src = url;
+  }
+  function markDraw() {
+    var d = doc();
+    try { d.draw = board.toDataURL('image/png'); } catch (e) { }
+    drawDirty = 1;
+    scheduleSave();
+  }
+  function updatePaintInfo() {
+    var names = { brush: 'Bút lông', pencil: 'Bút chì', marker: 'Bút dạ', eraser: 'Tẩy', line: 'Đường thẳng', rect: 'Chữ nhật', ellipse: 'Hình tròn', arrow: 'Mũi tên', text: 'Chữ' };
+    $('#paintInfo').textContent = (names[PAINT.tool] || 'Bút') + ' · ' + PAINT.size + 'px · ' + Math.round(PAINT.alpha * 100) + '%';
+  }
+
+  function point(e) {
+    var r = preview.getBoundingClientRect();
+    return {
+      x: (e.clientX - r.left) * (W / (r.width || 1)),
+      y: (e.clientY - r.top) * (H / (r.height || 1))
+    };
+  }
+  function style(ctx, ghost) {
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = PAINT.size;
+    ctx.strokeStyle = PAINT.tool === 'eraser' ? '#ffffff' : PAINT.color;
+    ctx.fillStyle = PAINT.color;
+    ctx.globalAlpha = (PAINT.tool === 'marker' ? 0.35 : 1) * PAINT.alpha * (ghost ? 0.75 : 1);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  function pushUndo() {
+    try {
+      undoStack.push(bctx.getImageData(0, 0, W, H));
+      if (undoStack.length > 8) undoStack.shift();
+      redoStack.length = 0;
+    } catch (e) { }
+  }
+  function drawShape(ctx, a, b, ghost) {
+    style(ctx, ghost);
+    if (PAINT.tool === 'line' || PAINT.tool === 'arrow') {
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      if (PAINT.tool === 'arrow') {
+        var ang = Math.atan2(b.y - a.y, b.x - a.x);
+        var len = Math.max(10, PAINT.size * 2.2);
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x - len * Math.cos(ang - 0.4), b.y - len * Math.sin(ang - 0.4));
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x - len * Math.cos(ang + 0.4), b.y - len * Math.sin(ang + 0.4));
+        ctx.stroke();
+      }
+    } else if (PAINT.tool === 'rect') {
+      ctx.beginPath();
+      ctx.rect(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+      ctx.stroke();
+    } else if (PAINT.tool === 'ellipse') {
+      ctx.beginPath();
+      ctx.ellipse((a.x + b.x) / 2, (a.y + b.y) / 2, Math.abs(b.x - a.x) / 2, Math.abs(b.y - a.y) / 2, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  preview.addEventListener('pointerdown', function (e) {
+    if (e.button != null && e.button !== 0) return;
+    preview.setPointerCapture(e.pointerId);
+    var p = point(e);
+    drawing = true; startPt = p; lastPt = p;
+    pushUndo();
+    if (PAINT.tool === 'text') {
+      var txt = window.prompt('Nội dung chữ:');
+      drawing = false;
+      if (!txt) return;
+      style(bctx);
+      bctx.font = '600 ' + Math.max(14, PAINT.size * 3) + 'px Lexend, system-ui, sans-serif';
+      bctx.textBaseline = 'top';
+      bctx.fillText(txt, p.x, p.y);
+      markDraw();
+      return;
+    }
+    if (PAINT.tool === 'brush' || PAINT.tool === 'pencil' || PAINT.tool === 'marker' || PAINT.tool === 'eraser') {
+      style(bctx);
+      bctx.beginPath();
+      bctx.moveTo(p.x, p.y);
+      bctx.lineTo(p.x + 0.01, p.y + 0.01);
+      bctx.stroke();
+    }
+    if (e.cancelable) e.preventDefault();
+  });
+
+  preview.addEventListener('pointermove', function (e) {
+    if (!drawing) return;
+    var p = point(e);
+    if (PAINT.tool === 'brush' || PAINT.tool === 'pencil' || PAINT.tool === 'marker' || PAINT.tool === 'eraser') {
+      style(bctx);
+      bctx.beginPath();
+      bctx.moveTo(lastPt.x, lastPt.y);
+      bctx.lineTo(p.x, p.y);
+      bctx.stroke();
+      lastPt = p;
+    } else {
+      pctx.clearRect(0, 0, W, H);
+      drawShape(pctx, startPt, p, true);
+    }
+    if (e.cancelable) e.preventDefault();
+  });
+
+  function endStroke(e) {
+    if (!drawing) return;
+    drawing = false;
+    pctx.clearRect(0, 0, W, H);
+    if (PAINT.tool === 'line' || PAINT.tool === 'arrow' || PAINT.tool === 'rect' || PAINT.tool === 'ellipse') {
+      var p = point(e);
+      drawShape(bctx, startPt, p, false);
+    }
+    lastPt = null;
+    markDraw();
+    try { preview.releasePointerCapture(e.pointerId); } catch (err) { }
+  }
+  preview.addEventListener('pointerup', endStroke);
+  preview.addEventListener('pointercancel', endStroke);
+
+  $$('#ribbonPaint .tb[data-tool]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      PAINT.tool = b.getAttribute('data-tool');
+      $$('#ribbonPaint .tb[data-tool]').forEach(function (x) {
+        x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
+      });
+      preview.style.cursor = (PAINT.tool === 'text') ? 'text' : 'crosshair';
+      updatePaintInfo();
+    });
+  });
+
+  var COLORS = ['#111827', '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#ffffff'];
+  var sw = $('#swatches');
+  COLORS.forEach(function (c) {
+    var b = D.createElement('button');
+    b.type = 'button';
+    b.className = 'tb swatch';
+    b.style.background = c;
+    b.setAttribute('aria-label', 'Màu ' + c);
+    b.setAttribute('aria-pressed', c === PAINT.color ? 'true' : 'false');
+    b.setAttribute('data-color', c);
+    b.addEventListener('click', function () { setColor(c); });
+    sw.appendChild(b);
+  });
+  function setColor(c) {
+    PAINT.color = c;
+    $('#paintColor').value = c;
+    $$('#swatches .swatch').forEach(function (x) {
+      x.setAttribute('aria-pressed', x.getAttribute('data-color') === c ? 'true' : 'false');
+    });
+    updatePaintInfo();
+  }
+  $('#paintColor').addEventListener('input', function () { setColor(this.value); });
+  $('#paintSize').addEventListener('input', function () { PAINT.size = Number(this.value); updatePaintInfo(); });
+  $('#paintAlpha').addEventListener('input', function () { PAINT.alpha = Number(this.value) / 100; updatePaintInfo(); });
+
+  $('#paintUndo').addEventListener('click', function () {
+    if (!undoStack.length) { toast('Không còn nét vẽ để hoàn tác'); return; }
+    try {
+      redoStack.push(bctx.getImageData(0, 0, W, H));
+      bctx.putImageData(undoStack.pop(), 0, 0);
+      markDraw();
+    } catch (e) { toast('Không hoàn tác được bản vẽ này'); }
+  });
+  $('#paintRedo').addEventListener('click', function () {
+    if (!redoStack.length) { toast('Không còn nét vẽ để làm lại'); return; }
+    try {
+      undoStack.push(bctx.getImageData(0, 0, W, H));
+      bctx.putImageData(redoStack.pop(), 0, 0);
+      markDraw();
+    } catch (e) { }
+  });
+  $('#paintClear').addEventListener('click', function () {
+    if (!window.confirm('Xoá toàn bộ bản vẽ của tài liệu này?')) return;
+    pushUndo();
+    whiteBoard();
+    markDraw();
+    toast('Đã xoá bảng vẽ');
+  });
+  $('#paintPng').addEventListener('click', function () {
+    var a = D.createElement('a');
+    a.href = board.toDataURL('image/png');
+    a.download = (titleInput.value.trim() || 'ban-ve') + '.png';
+    D.body.appendChild(a); a.click(); a.remove();
+    toast('Đã tải bản vẽ PNG');
+  });
+  $('#paintInsert').addEventListener('click', function () {
+    var url = board.toDataURL('image/png');
+    setMode('split');
+    setTimeout(function () { insertImage(url); }, 60);
+    toast('Đã chèn bản vẽ vào tài liệu');
+  });
+
+  /* ================= MODES ================= */
+  function setMode(m) {
+    if (m !== 'word' && m !== 'paint' && m !== 'split') m = 'word';
+    S.mode = m;
+    D.body.setAttribute('data-mode', m);
+    $$('.modes button').forEach(function (b) {
+      b.setAttribute('aria-selected', b.getAttribute('data-mode') === m ? 'true' : 'false');
+    });
+    if (m !== 'word') { updatePaintInfo(); }
+    scheduleSave();
+  }
+  $$('.modes button').forEach(function (b) {
+    b.addEventListener('click', function () { setMode(b.getAttribute('data-mode')); });
+  });
+
+  /* ================= FILE MENU ================= */
+  var fileBtn = $('#fileBtn'), fileMenu = $('#fileMenu');
+  function closeMenu() { fileMenu.classList.remove('open'); fileBtn.setAttribute('aria-expanded', 'false'); }
+  fileBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var open = !fileMenu.classList.contains('open');
+    fileMenu.classList.toggle('open', open);
+    fileBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  D.addEventListener('click', function (e) {
+    if (!fileMenu.contains(e.target) && e.target !== fileBtn) closeMenu();
+  });
+  D.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+
+  function exportHtml() {
+    var d = doc();
+    var css = 'body{font:15px/1.7 Lexend,system-ui,sans-serif;color:#111827;margin:0;padding:2.2rem 2.5rem;max-width:820px}'
+      + 'img{max-width:100%;height:auto}h1,h2,h3{line-height:1.3}blockquote{border-left:3px solid #6366f1;margin:.7rem 0;padding:.4rem .9rem;background:#f5f3ff;color:#3730a3}'
+      + 'table{border-collapse:collapse;width:100%}td,th{border:1px solid #e5e7eb;padding:.35rem .5rem}a{color:#4338ca}';
+    var html = '<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'
+      + escapeHtml(d.title) + '</title><style>' + css + '</style></head><body>' + d.html + '</body></html>';
+    download((d.title || 'tai-lieu') + '.html', html, 'text/html');
+    toast('Đã xuất HTML');
+  }
+  function exportTxt() {
+    var d = doc();
+    download((d.title || 'tai-lieu') + '.txt', page.innerText.replace(/\n{3,}/g, '\n\n'), 'text/plain');
+    toast('Đã xuất TXT');
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function download(name, text, mime) {
+    var blob = new Blob([text], { type: (mime || 'text/plain') + ';charset=utf-8' });
+    var a = D.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    D.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+  }
+
+  fileMenu.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-act]');
+    if (!b) return;
+    closeMenu();
+    var act = b.getAttribute('data-act');
+    if (act === 'new') newDoc();
+    else if (act === 'save') { saveNow(); toast('Đã lưu'); }
+    else if (act === 'duplicate') {
+      flush();
+      var src = doc();
+      var copy = { id: uid(), title: src.title + ' (bản sao)', html: src.html, draw: src.draw, updated: now() };
+      S.docs.push(copy); S.active = copy.id;
+      titleInput.value = copy.title; page.innerHTML = copy.html; loadDrawing(copy.draw);
+      renderDocs(); updateCounts(); saveNow(); toast('Đã nhân bản tài liệu');
+    }
+    else if (act === 'import') $('#docInput').click();
+    else if (act === 'exportHtml') exportHtml();
+    else if (act === 'exportTxt') exportTxt();
+    else if (act === 'print') { setMode('word'); setTimeout(function () { window.print(); }, 120); }
+    else if (act === 'reset') {
+      if (!window.confirm('Xoá toàn bộ tài liệu Studio trên thiết bị này? Hãy xuất HTML trước nếu cần giữ.')) return;
+      try { localStorage.removeItem(KEY); } catch (err) { }
+      location.reload();
+    }
+  });
+
+  $('#docInput').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    this.value = '';
+    if (!f) return;
+    var fr = new FileReader();
+    fr.onload = function () {
+      var text = String(fr.result || '');
+      var isHtml = /\.html?$/i.test(f.name) || /^\s*<(!doctype|html|body|p|h1|div|span)/i.test(text);
+      var d = doc();
+      if (isHtml) d.html = sanitize(text);
+      else d.html = text.split(/\n{2,}/).map(function (p) {
+        return p.trim() ? '<p>' + escapeHtml(p).replace(/\n/g, '<br>') + '</p>' : '';
+      }).join('');
+      if (!d.title || d.title === 'Tài liệu chưa đặt tên') {
+        d.title = f.name.replace(/\.[^.]+$/, '');
+        titleInput.value = d.title;
+      }
+      page.innerHTML = d.html;
+      d.updated = now();
+      updateCounts(); renderDocs(); saveNow();
+      toast('Đã mở ' + f.name);
+    };
+    fr.readAsText(f);
+  });
+
+  $('#newDoc').addEventListener('click', newDoc);
+
+  $('#docsToggle').addEventListener('click', function () {
+    var ws = $('#workspace');
+    var open = !ws.classList.contains('docs-open');
+    ws.classList.toggle('docs-open', open);
+    this.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  titleInput.addEventListener('input', function () {
+    var d = doc();
+    d.title = this.value.trim() || 'Tài liệu chưa đặt tên';
+    d.updated = now();
+    renderDocs();
+    scheduleSave();
+  });
+  titleInput.addEventListener('blur', function () {
+    if (!this.value.trim()) this.value = 'Tài liệu chưa đặt tên';
+    var d = doc(); d.title = this.value; renderDocs(); saveNow();
+  });
+
+  /* ================= SHORTCUTS ================= */
+  D.addEventListener('keydown', function (e) {
+    var mod = e.ctrlKey || e.metaKey;
+    if (!mod) return;
+    var k = e.key.toLowerCase();
+    if (k === 's') { e.preventDefault(); saveNow(); toast('Đã lưu'); }
+    else if (k === 'n') { e.preventDefault(); newDoc(); }
+    else if (k === 'p') { e.preventDefault(); setMode('word'); setTimeout(function () { window.print(); }, 120); }
+  });
+  window.addEventListener('beforeunload', function () { flush(); });
+
+  /* ================= INIT ================= */
+  loadState();
+  var current = doc();
+  titleInput.value = current.title;
+  page.innerHTML = current.html;
+  setMode(S.mode);
+  whiteBoard();
+  loadDrawing(current.draw);
+  renderDocs();
+  updateCounts();
+  updatePaintInfo();
+  setSaveState('Sẵn sàng');
+  setTimeout(function () { if (!current.html) page.focus(); }, 200);
+})();
+</script>
+</body>
+</html>

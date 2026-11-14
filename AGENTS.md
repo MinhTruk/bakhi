@@ -27,7 +27,7 @@ Hướng dẫn cho agent/developer làm việc trong repository này.
   bk-bkt.js            Hiệu ứng chuyển trang "bàn tay kéo" dùng chung
   bk-page.js           Cầu nối cho các trang bài học
 /ktgk1, /kttx, /music  Nội dung giáo dục (HTML tĩnh, mỗi trang tự chứa)
-/studio                Ứng dụng thiết kế poster độc lập (không can thiệp)
+/studio                poster studio (không can thiệp) + word-paint.html (Word & Paint)
 /tools                 Công cụ kiểm tra (không chạy trên production)
 /docs                  Tài liệu kiến trúc, tính năng, Supabase, baseline nội dung
 ```

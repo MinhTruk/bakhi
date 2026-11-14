@@ -143,6 +143,7 @@ Xem điểm và đáp án để xác định phần kiến thức cần ôn lạ
 | 🧠 Trung tâm học tập | 🟢 Đã có |
 | 🛠 Developer Playground 2.0 | 🟢 Đã có |
 | 🎧 Music Player dùng chung | 🟢 Đã có |
+| 🎨 Bá Khí Studio (Word & Paint) | 🟢 Đã có |
 | ♿ Trợ năng (bàn phím, ARIA, giảm chuyển động) | 🟢 Đang cải thiện |
 
 ---
@@ -160,6 +161,7 @@ Xem điểm và đáp án để xác định phần kiến thức cần ôn lạ
 - [x] Music Player dùng chung (queue, shuffle, repeat, lyrics, bố cục kéo/thu/phóng)
 - [x] Chuyển động nhẹ khi đổi tab (dev panel, music, trung tâm học tập)
 - [x] Cải thiện trợ năng: phím tắt, ARIA, viền tiêu điểm, giảm chuyển động
+- [x] Bá Khí Studio: soạn thảo kiểu Word + bảng vẽ kiểu Paint, lưu cục bộ, xuất HTML/TXT/PNG
 
 ### 🔨 Đang phát triển
 
@@ -241,6 +243,24 @@ phải để đặt lại). Chi tiết: [docs/MUSIC.md](docs/MUSIC.md).
 
 ---
 
+# 🎨 Bá Khí Studio — Word & Paint
+
+Ứng dụng tĩnh độc lập: [studio/word-paint.html](studio/word-paint.html) — mở từ menu 3 gạch
+hoặc `Ctrl/⌘ + K` → “Mở Bá Khí Studio (Word & Paint)”.
+
+- **Word mini**: trang giấy A4, đậm/nghiêng/gạch chân, tiêu đề, danh sách, canh lề, màu chữ,
+  màu nền, liên kết, chèn ảnh, hoàn tác/làm lại, đếm từ, in/lưu PDF.
+- **Paint mini**: bút lông/chì/dạ quang/tẩy, đường thẳng, chữ nhật, hình tròn, mũi tên, chữ,
+  bảng màu, cỡ nét, độ đậm, hoàn tác 8 bước, tải PNG và **chèn bản vẽ vào tài liệu**.
+- **Ba chế độ**: Word · Paint · Chia đôi; nhớ chế độ đang dùng.
+- **Nhiều tài liệu** trong danh sách bên trái, đổi tên, nhân bản, xoá có xác nhận.
+- **Lưu tự động** trên máy (`bakhiStudio.v1`), xuất HTML tự chứa, xuất TXT, mở lại `.html/.txt`.
+- Không backend, không thư viện ngoài, không gửi dữ liệu đi đâu.
+
+Chi tiết & giới hạn: [docs/STUDIO.md](docs/STUDIO.md).
+
+---
+
 # 🛠 Developer Playground 2.0
 
 Cửa sổ nổi (`Ctrl+Shift+G`, cần mã Developer như bảng điều khiển cũ) với 11 công cụ:
@@ -288,6 +308,7 @@ nâng cấp chèn). Quy trình và quy ước chi tiết: [AGENTS.md](AGENTS.md)
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — kiểm toán, kiến trúc, mô hình dữ liệu, giới hạn
 - [docs/FEATURES.md](docs/FEATURES.md) — danh sách tính năng & trạng thái
 - [docs/MUSIC.md](docs/MUSIC.md) — Music Player: quy ước file, phím tắt, bố cục, xử lý sự cố
+- [docs/STUDIO.md](docs/STUDIO.md) — Bá Khí Studio: Word & Paint, lưu trữ, giới hạn
 - [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) — đồng bộ tuỳ chọn + RLS
 - [CHANGELOG.md](CHANGELOG.md) — lịch sử thay đổi
 

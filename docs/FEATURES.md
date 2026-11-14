@@ -37,6 +37,7 @@ Ký hiệu: ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị
 | 10 | Component Library | ✅ | 11 nhóm thành phần có demo + mã mẫu |
 | 11 | Backup Manager | ✅ | Tạo/xem trước/khôi phục/xuất/nhập, kiểm tra phiên bản, xác nhận trước khi khôi phục |
 | 12 | Music (tab) | ✅ | Trạng thái trực tiếp theo sự kiện, mở/phóng to/thu nhỏ/đặt lại bố cục trình phát, kiểm tra file, thư viện 5 bài |
+| 13 | Studio (Word & Paint) | ✅ | Ứng dụng tĩnh độc lập `studio/word-paint.html`, mở từ menu 3 gạch hoặc command palette |
 
 Panel Developer cũ (11 tab `fx/tools/data/ui/debug/anim/adv/insp/perf/studio/bk`) vẫn hoạt động
 nguyên vẹn và mở bằng nút trong menu 3 gạch hoặc lệnh trong palette.
@@ -91,7 +92,22 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 3. AI chỉ tạo nội dung **tham khảo**, luôn gắn nhãn “Nội dung do AI tạo — không phải
    nội dung gốc đã kiểm duyệt”. Không có thao tác nào để AI sửa câu hỏi/đáp án gốc.
 
-## G. Không có trong sản phẩm (theo yêu cầu)
+## G. Bá Khí Studio — Word & Paint (`studio/word-paint.html`)
+
+| # | Tính năng | Trạng thái | Ghi chú |
+|---|---|---|---|
+| 1 | Soạn thảo trang A4: đậm/nghiêng/gạch chân/gạch ngang, tiêu đề 1–3, trích dẫn | ✅ | `execCommand` + `styleWithCSS`, giữ vùng chọn khi bấm nút |
+| 2 | Cỡ chữ, màu chữ, màu nền, danh sách, canh lề, liên kết, chèn ảnh, xoá định dạng | ✅ | Ảnh giới hạn 1,2 MB |
+| 3 | Dán an toàn | ✅ | Bỏ script/iframe/`on*`/`javascript:` |
+| 4 | Bảng vẽ: bút lông/chì/dạ quang/tẩy, đường, chữ nhật, tròn, mũi tên, chữ | ✅ | Canvas 1200×675, hỗ trợ cảm ứng |
+| 5 | Màu tuỳ ý, cỡ nét 1–64, độ đậm 10–100%, hoàn tác 8 bước, tải PNG | ✅ | Ảnh bản vẽ lưu cùng tài liệu |
+| 6 | Chèn bản vẽ vào tài liệu | ✅ | Chuyển sang chế độ chia đôi |
+| 7 | Ba chế độ Word / Paint / Chia đôi | ✅ | Nhớ chế độ |
+| 8 | Nhiều tài liệu: mới, mở, đổi tên, nhân bản, xoá | ✅ | Danh sách bên trái |
+| 9 | Lưu tự động, xuất HTML tự chứa, xuất TXT, mở `.html/.txt`, in/PDF | ✅ | `bakhiStudio.v1` |
+| 10 | Đếm từ/ký tự, trạng thái lưu, thông báo `aria-live` | ✅ | Lưu sau 0,5 giây |
+
+## H. Không có trong sản phẩm (theo yêu cầu)
 
 Không đề thi thử, không bài tính giờ, không đếm ngược, không giới hạn thời gian,
 không tự nộp bài, không xếp hạng thi, không deadline, không cơ chế tạo áp lực thời gian.
