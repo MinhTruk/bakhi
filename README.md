@@ -198,7 +198,8 @@ Mở bằng nút 🎓 ở góc phải dưới (hoặc `Ctrl/⌘ + K`):
 
 ### Thông báo cập nhật
 
-- 🔔 Chuông ở góc phải dưới, có trên **mọi trang** (trang chủ và trang bài học).
+- 🔔 Icon chuông **trên header** ở mọi trang (trang chủ: ngay bên trái nút README.md); bảng
+  thông báo mở ở **góc trên bên phải**.
 - Mỗi phiên bản trong [CHANGELOG.md](CHANGELOG.md) là một thông báo, kèm ngày và số thay đổi;
   badge hiển thị số chưa đọc.
 - **Đánh dấu đã đọc tất cả** trong bảng thông báo; trạng thái lưu ở `bakhiNotify.v1`.

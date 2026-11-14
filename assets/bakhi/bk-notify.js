@@ -132,7 +132,7 @@
                 title: heading || ('Bá Khí ' + cur.version),
                 summary: clip(highlights[0] || body.split('\n')[0] || 'Cập nhật mới', 130).replace(/`/g, ''),
                 highlights: highlights,
-                count: highlights.length,
+                count: bullets.filter(Boolean).length,
                 body: body
             });
             cur = null;
@@ -197,6 +197,25 @@
     }
     function unreadCount() { return unreadList().length; }
 
+    /** Tìm chỗ gắn chuông: cạnh nút README (trang chủ) hoặc nhóm nút bên phải header. */
+    function findBellSlot() {
+        var readme = D.querySelector('button[onclick*="openReadmeModal"]');
+        if (readme && readme.parentNode) return { before: readme };
+        var header = D.querySelector('header') || D.querySelector('[role="banner"]');
+        if (!header) return null;
+        var groups = header.querySelectorAll('div, nav');
+        var best = null;
+        for (var i = groups.length - 1; i >= 0; i--) {
+            var g = groups[i];
+            if (g === header) continue;
+            if (g.querySelectorAll('button').length < 2) continue;
+            if (g.getBoundingClientRect().width <= 0) continue;
+            best = g;
+            break;
+        }
+        return { append: best || header };
+    }
+
     function buildBell() {
         if (ui.bell) return;
         var bell = el('button', 'bknt-bell');
@@ -214,9 +233,40 @@
             e.stopPropagation();
             togglePanel();
         });
-        D.body.appendChild(bell);
         ui.bell = bell;
         ui.badge = badge;
+        mountBell(bell);
+    }
+
+    /** Nếu header quá chật (điện thoại), chuông ra ngoài thành nút nổi dưới header. */
+    function floatBell(bell) {
+        bell.classList.remove('bknt-in-header');
+        bell.classList.add('bknt-bell--float');
+        D.body.appendChild(bell);
+        var header = D.querySelector('header');
+        if (header) bell.style.top = Math.round(header.getBoundingClientRect().bottom - 10) + 'px';
+        bell.style.right = '.75rem';
+    }
+
+    function mountBell(bell) {
+        var slot = findBellSlot();
+        if (!slot) { floatBell(bell); return; }
+        var beforeWidth = D.documentElement.scrollWidth;
+        var host = null;
+        if (slot.before && slot.before.parentNode) {
+            slot.before.parentNode.insertBefore(bell, slot.before);
+            host = slot.before.parentNode;
+        } else if (slot.append) {
+            slot.append.appendChild(bell);
+            host = slot.append;
+        }
+        if (!host) { floatBell(bell); return; }
+        bell.classList.add('bknt-in-header');
+        /* Đo tràn ngang: nếu thêm chuông làm header rộng quá màn hình thì cho nổi. */
+        var header = bell.closest && bell.closest('header');
+        var overflow = D.documentElement.scrollWidth > Math.max(beforeWidth, global.innerWidth) + 1;
+        if (header && header.scrollWidth > header.clientWidth + 1) overflow = true;
+        if (overflow) floatBell(bell);
     }
 
     function buildPanel() {
@@ -261,6 +311,15 @@
             if (panel.contains(e.target) || (ui.bell && ui.bell.contains(e.target))) return;
             closePanel();
         });
+        var move = function () {
+            if (ui.bell && ui.bell.classList.contains('bknt-bell--float')) {
+                var head = D.querySelector('header');
+                if (head) ui.bell.style.top = Math.round(head.getBoundingClientRect().bottom - 10) + 'px';
+            }
+            if (panelOpen) placePanel();
+        };
+        global.addEventListener('resize', move);
+        global.addEventListener('scroll', move, true);
     }
 
     function paint() {
@@ -326,6 +385,22 @@
         if (panelOpen) closePanel();
         else openPanel();
     }
+    /** Đặt bảng ngay dưới chuông, canh phải — luôn nằm trong màn hình. */
+    function placePanel() {
+        if (!ui.panel || !ui.bell) return;
+        var r = ui.bell.getBoundingClientRect();
+        var vh = global.innerHeight || 640;
+        /* Bảng luôn bám góc trên bên phải màn hình, ngay dưới chuông. */
+        var right = 8;
+        var top = r.bottom + 8;
+        if (top > vh - 180) top = Math.max(8, r.top - 8 - Math.min(420, vh - 24));
+        ui.panel.style.left = 'auto';
+        ui.panel.style.right = right + 'px';
+        ui.panel.style.top = Math.max(8, top) + 'px';
+        ui.panel.style.bottom = 'auto';
+        ui.panel.style.maxHeight = Math.max(160, vh - Math.max(8, top) - 12) + 'px';
+    }
+
     function openPanel() {
         buildBell();
         buildPanel();
@@ -333,6 +408,7 @@
         ui.panel.hidden = false;
         ui.bell.setAttribute('aria-expanded', 'true');
         renderList();
+        placePanel();
         if (!entries) load();
         var first = ui.list.querySelector('.bknt-item');
         if (first && first.focus) first.focus();
@@ -413,7 +489,13 @@
         x.setAttribute('aria-label', 'Đóng thông báo');
         x.title = 'Đóng (Esc)';
         x.textContent = '×';
+        /* Đóng cả khi trình duyệt nuốt sự kiện click (một số bàn phím cảm ứng),
+           nhưng chỉ với nút chuột trái / chạm chính. */
         x.addEventListener('click', closeArticle);
+        x.addEventListener('pointerup', function (e) {
+            if (e && e.button != null && e.button > 0) return;
+            closeArticle();
+        });
         head.appendChild(x);
         sheet.appendChild(head);
 

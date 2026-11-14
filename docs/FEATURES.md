@@ -126,10 +126,10 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1 | Chuông nổi ở góc phải dưới trên mọi trang (trang chủ + trang bài học) | ✅ | Nạp qua `bk-core.js`, không cần sửa từng trang |
+| 1 | Icon chuông trên header ở mọi trang (trang chủ: bên trái nút README) | ✅ | Nạp qua `bk-core.js`; tự chuyển nút nổi khi header quá chật |
 | 2 | Mỗi phiên bản `## [x.y.z] — ngày` trong `CHANGELOG.md` là một thông báo | ✅ | Đọc trực tiếp, không nhân bản dữ liệu |
 | 3 | Badge số chưa đọc, chấm “chưa đọc” theo từng mục | ✅ | Ẩn badge khi đã đọc hết |
-| 4 | **Đánh dấu đã đọc tất cả** | ✅ | Lưu ở `bakhiNotify.v1` |
+| 4 | **Đánh dấu đã đọc tất cả**; bảng mở ở góc trên bên phải | ✅ | Lưu ở `bakhiNotify.v1` |
 | 5 | Bấm một thông báo → cửa sổ toàn màn hình đầy đủ nội dung phiên bản | ✅ | Markdown an toàn, tách danh sách đúng |
 | 6 | Nút ×, phím `Esc`, bấm nền để đóng; giữ focus hợp lý | ✅ | `role="dialog"`, `aria-modal`, `aria-labelledby` |
 | 7 | Danh sách có ngày `dd/mm/yyyy`, số thay đổi, tóm tắt 3 dòng | ✅ | Tự gộp dòng xuống của CHANGELOG |

@@ -2,6 +2,21 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [2.4.1] — 2026-11-14
+
+### Thông báo trên header
+
+- **Chuyển** chuông thông báo vào header thay vì nút nổi góc phải dưới; ở trang chủ
+  chuông nằm ngay **bên trái nút README.md**, các trang bài học đặt cạnh nhóm nút bên phải.
+- **Chuyển** bảng thông báo lên **góc trên bên phải**, ngay dưới chuông, tự canh lại khi đổi
+  kích thước/cuộn trang.
+- **Sửa** lỗi bảng thông báo đang ẩn vẫn chiếm chỗ và chặn thao tác — nguyên nhân khiến
+  không bấm được nút ×/chuông; thêm `[hidden] { display: none }`.
+- **Sửa** nút ×: vùng bấm lớn hơn (44px), thêm `touch-action`, đóng cả khi trình duyệt
+  không phát `click`; giữ `Esc`, bấm nền và nút “Đóng”.
+- **Thu gọn** chuông trên điện thoại (2,4rem) và tự chuyển thành nút nổi dưới header khi
+  header quá chật, tránh tràn ngang.
+
 ## [2.4.0] — 2026-11-14
 
 ### Thông báo cập nhật
