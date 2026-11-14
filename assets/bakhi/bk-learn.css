@@ -290,3 +290,8 @@ html.dark .bk-chip.on { color: #a5b4fc; }
 .bk-divider { height: 1px; background: var(--bkl-line); margin: 1rem 0; }
 .bk-pill-row { display: flex; flex-wrap: wrap; gap: .3rem; }
 .bk-scroll { max-height: 15rem; overflow: auto; }
+
+/* Chuyển tab mượt, tôn trọng giảm chuyển động */
+.bk-hub-main.bk-tab-in { animation: bk-hub-tab-in .2s ease-out; }
+@keyframes bk-hub-tab-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .bk-hub-main.bk-tab-in { animation: none !important; } }

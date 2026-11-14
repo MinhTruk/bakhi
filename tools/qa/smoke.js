@@ -207,6 +207,64 @@ ok('load track keeps paused', w.BKMusic.audio().paused === true);
 ok('player renders queue items', w.document.querySelectorAll('.bkmusic-item').length > 0);
 ok('missing lyrics shows notice', (() => { w.BKMusic.open(); const t = w.document.querySelector('.bkmusic-tabs button[data-tab="lyrics"]'); if (t) t.click(); return /chưa có lời/i.test(w.document.querySelector('.bkm-lyrics').textContent); })());
 ok('dev music tab renders', !!w.document.querySelector('[data-pane="music"] .bkdev-table'));
+ok('dev music tab has layout buttons', /Phóng to/.test(w.document.querySelector('[data-pane="music"]').textContent));
+
+/* Nâng cấp Music Player: bố cục, phím tắt có điều kiện, trợ năng, sự kiện. */
+const mPanel = w.document.querySelector('.bkmusic-panel');
+ok('music panel has minimize/maximize buttons', !!mPanel.querySelector('.bkm-min') && !!mPanel.querySelector('.bkm-max'));
+ok('music panel has resize handle', !!mPanel.querySelector('.bkmusic-resize'));
+ok('music panel has aria-live region', !!mPanel.querySelector('.bkmusic-live[aria-live]'));
+ok('music tabs expose aria roles', !!mPanel.querySelector('.bkmusic-tabs button[role="tab"][aria-controls]'));
+w.BKMusic.close();
+const closedKey = new w.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true });
+w.document.body.dispatchEvent(closedKey);
+ok('music shortcut ignored when panel closed', closedKey.defaultPrevented === false);
+w.BKMusic.open();
+ok('music open via API', mPanel.classList.contains('open'));
+const openKey = new w.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true });
+w.document.body.dispatchEvent(openKey);
+ok('music shortcut active when panel open', openKey.defaultPrevented === true);
+w.BKMusic.showTab('library');
+ok('music showTab switches pane', w.document.querySelector('.bkm-library').hidden === false && w.document.querySelector('.bkm-queue').hidden === true);
+w.BKMusic.showTab('queue');
+/* jsdom không layout → giả lập hình chữ nhật của panel để test kéo/đổi kích thước. */
+mPanel.getBoundingClientRect = function () {
+  return { left: 600, top: 340, right: 960, bottom: 740, width: 360, height: 400, x: 600, y: 340 };
+};
+function ptr(type, x, y, buttons, target) {
+  const ev = new w.MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, buttons: buttons });
+  (target || w).dispatchEvent(ev);
+  return ev;
+}
+w.BKMusic.open();
+ok('music head exists for drag', !!mPanel.querySelector('.bkmusic-head'), 'no head');
+ptr('pointerdown', 700, 360, 1, mPanel.querySelector('.bkmusic-head'));
+ok('music drag starts', mPanel.classList.contains('bkmusic-dragging'), String(w.innerWidth) + 'x' + String(w.innerHeight));
+ptr('pointermove', 620, 300, 1);
+ptr('pointerup', 620, 300, 0);
+const dragGeo = JSON.parse(w.localStorage.getItem('bakhiMusic.panel.v1') || 'null');
+ok('music drag saves layout', !!dragGeo && typeof dragGeo.x === 'number' && typeof dragGeo.w === 'number', JSON.stringify(dragGeo));
+ok('music drag clears dragging state', !mPanel.classList.contains('bkmusic-dragging'));
+ptr('pointerdown', 610, 730, 1, mPanel.querySelector('.bkmusic-resize'));
+ptr('pointermove', 530, 640, 1);
+ptr('pointerup', 530, 640, 0);
+const rzGeo = JSON.parse(w.localStorage.getItem('bakhiMusic.panel.v1') || 'null');
+ok('music resize saves bigger box', !!rzGeo && rzGeo.w > dragGeo.w && rzGeo.h > dragGeo.h, JSON.stringify(rzGeo));
+ok('music resize clears resizing state', !mPanel.classList.contains('bkmusic-resizing'));
+w.BKMusic.maximize(true);
+ok('music maximize applies class', mPanel.classList.contains('bkmusic-max'));
+w.BKMusic.maximize(false);
+w.BKMusic.minimize(true);
+ok('music minimize applies class', mPanel.classList.contains('bkmusic-min'));
+w.BKMusic.minimize(false);
+w.BKMusic.resetLayout();
+ok('music resetLayout clears layout classes', !mPanel.classList.contains('bkmusic-max') && !mPanel.classList.contains('bkmusic-min'));
+let mFired = 0;
+const mOff = w.BKMusic.on(function () { mFired++; });
+w.BKMusic.setRepeat(1);
+mOff();
+ok('music change subscription fires', mFired > 0, String(mFired));
+w.BKMusic.setRepeat(0);
 w.BKMusic.reset();
 ok('music reset restores 5 tracks', w.BKMusic.state.queue.length === 5 && w.BKMusic.state.shuffle === false);
 w.BKDev.inspector.setSelected(w.document.querySelector('header h1'));

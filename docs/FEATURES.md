@@ -25,7 +25,7 @@ Ký hiệu: ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị
 
 | # | Công cụ | Trạng thái | Chi tiết |
 |---|---|---|---|
-| 1 | Cửa sổ nổi | ✅ | Kéo, đổi kích thước, thu nhỏ, phóng to, nhớ vị trí/kích thước/tab |
+| 1 | Cửa sổ nổi | ✅ | Kéo, đổi kích thước, thu nhỏ, phóng to, nhớ vị trí/kích thước/tab; chuyển tab có chuyển động nhẹ (tôn trọng reduced-motion) |
 | 2 | Inspector 2.0 | ✅ | Chọn phần tử, highlight, breadcrumb DOM, thuộc tính/class, computed styles, kích thước, box model, copy selector/HTML, sửa style tạm thời + khôi phục |
 | 3 | CSS Studio | ✅ | Live CSS, rule builder (màu/chữ/khoảng cách/bo góc/bóng), undo/redo, reset, xuất CSS |
 | 4 | Animation Studio | ✅ | 7 preset, keyframes, duration/delay/easing (kể cả cubic-bezier), hướng, lặp, timeline, play/pause/restart, xuất CSS, lưu/nhập preset, tôn trọng reduced-motion |
@@ -36,11 +36,40 @@ Ký hiệu: ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị
 | 9 | Theme Editor | ✅ | Biến màu/nền/chữ/bo góc/khoảng cách/bóng, xem trước, preset, khôi phục, xuất |
 | 10 | Component Library | ✅ | 11 nhóm thành phần có demo + mã mẫu |
 | 11 | Backup Manager | ✅ | Tạo/xem trước/khôi phục/xuất/nhập, kiểm tra phiên bản, xác nhận trước khi khôi phục |
+| 12 | Music (tab) | ✅ | Trạng thái trực tiếp theo sự kiện, mở/phóng to/thu nhỏ/đặt lại bố cục trình phát, kiểm tra file, thư viện 5 bài |
 
 Panel Developer cũ (11 tab `fx/tools/data/ui/debug/anim/adv/insp/perf/studio/bk`) vẫn hoạt động
 nguyên vẹn và mở bằng nút trong menu 3 gạch hoặc lệnh trong palette.
 
-## C. Cách dùng nhanh
+## C. Music Player dùng chung
+
+| # | Tính năng | Trạng thái | Ghi chú |
+|---|---|---|---|
+| 1 | Thư viện 5 bài theo quy ước file `music/<slug>.mp3` · `.txt` · `.png` | ✅ | Thêm bài chỉ cần thêm file + một dòng trong `LIBRARY` |
+| 2 | Queue: thêm, xoá, phát tiếp theo, kéo thả đổi thứ tự, `Alt+↑/↓` cho bàn phím | ✅ | Không tạo audio thứ hai |
+| 3 | Shuffle (giữ bài đang phát đầu queue) và repeat 3 chế độ (off/all/one) | ✅ | Nhớ qua `bakhiMusic.v2` |
+| 4 | Lời bài hát: file `.txt` (dòng `#` là ghi chú, `[mm:ss]` để đồng bộ) và lời tự nhập | ✅ | Lời tự nhập được ưu tiên; lỗi file không làm hỏng player |
+| 5 | Bìa tự dò `.png → .jpg → .jpeg → .webp` | ✅ | Bìa xoay khi phát (tắt khi reduced-motion) |
+| 6 | Bố cục nổi: kéo tiêu đề, kéo góc đổi kích thước, thu nhỏ, phóng to, nhấp đúp đặt lại | ✅ | Nhớ ở `bakhiMusic.panel.v1`; màn hình hẹp tự thành bảng đáy |
+| 7 | Phím tắt `Space`, `←/→`, `M`, `Esc` chỉ khi panel mở | ✅ | Bỏ qua khi đang gõ hoặc tiêu điểm ở nút/liên kết |
+| 8 | Không autoplay + nút “Tiếp tục” chỉ ẩn khi bài thật sự phát | ✅ | Tránh mất nút mà không có nhạc |
+| 9 | Media Session (khoá màn hình/tai nghe) | 🟡 | Tuỳ trình duyệt |
+| 10 | Logo ♪ kéo thả, chuột phải đặt lại | ✅ | Không đè logo Dev Panel |
+
+## D. Khả năng tiếp cận & thiết bị
+
+- Toàn bộ nút có nhãn `aria-label`; trạng thái bật/tắt dùng `aria-pressed`, logo dùng
+  `aria-expanded`, panel là `role="dialog"` có tiêu điểm khi mở.
+- Tab theo chuẩn `tablist`/`tabpanel` (`aria-selected`, `aria-controls`) và đổi tab bằng
+  phím mũi tên `Home`/`End` ở cả Music Player lẫn Trung tâm học tập.
+- Vùng `aria-live` đọc tên bài, trạng thái phát, thay đổi bố cục; thanh tua/âm lượng có
+  `aria-valuetext`.
+- Mục queue dùng được bằng bàn phím: `Enter`/`Space` phát, `Delete` xoá, `Alt+↑/↓` đổi vị trí.
+- Viền tiêu điểm rõ ràng; tay chạm to hơn trên thiết bị cảm ứng; bố cục dùng được ở
+  màn hình hẹp (panel nhạc thành bảng đáy, hub thành một cột).
+- Tôn trọng `prefers-reduced-motion`: tắt xoay bìa, nhấp nháy, hiệu ứng chuyển tab.
+
+## E. Cách dùng nhanh
 
 - **Trung tâm học tập**: nút 🎓 ở góc phải dưới, hoặc `Ctrl+K` → “Trung tâm học tập”.
 - **Ôn câu sai**: nút ↻ trên dock; dùng `←/→` chuyển câu, `A/B/C/D` chọn đáp án.
@@ -48,11 +77,13 @@ nguyên vẹn và mở bằng nút trong menu 3 gạch hoặc lệnh trong palet
 - **Focus mode**: nút 🌙 hoặc `Esc` để thoát.
 - **Tìm kiếm**: phím `/` khi không ở trong ô nhập.
 - **Developer Playground**: `Ctrl+Shift+G` (cần xác thực Developer trước).
+- **Music Player**: logo ♪ góc trái dưới; `Space` phát/tạm dừng, `←/→` tua 5 giây,
+  `M` tắt tiếng (chỉ khi panel nhạc mở), `Esc` đóng.
 
 URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bookmarks`,
 `?bk=history`, `?bk=achievements`, `?bk=settings`, `?bk=search&q=...`.
 
-## D. Cấu hình AI (tuỳ chọn)
+## F. Cấu hình AI (tuỳ chọn)
 
 1. Dựng một proxy (Cloudflare Worker, Vercel function, backend riêng) nhận
    `POST { model, messages }` và gọi nhà cung cấp AI bằng khoá lưu ở server.
@@ -60,7 +91,7 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 3. AI chỉ tạo nội dung **tham khảo**, luôn gắn nhãn “Nội dung do AI tạo — không phải
    nội dung gốc đã kiểm duyệt”. Không có thao tác nào để AI sửa câu hỏi/đáp án gốc.
 
-## E. Không có trong sản phẩm (theo yêu cầu)
+## G. Không có trong sản phẩm (theo yêu cầu)
 
 Không đề thi thử, không bài tính giờ, không đếm ngược, không giới hạn thời gian,
 không tự nộp bài, không xếp hạng thi, không deadline, không cơ chế tạo áp lực thời gian.

@@ -142,6 +142,8 @@ Xem điểm và đáp án để xác định phần kiến thức cần ôn lạ
 | 💾 Lưu tiến độ | 🟢 Đã có (local-first) |
 | 🧠 Trung tâm học tập | 🟢 Đã có |
 | 🛠 Developer Playground 2.0 | 🟢 Đã có |
+| 🎧 Music Player dùng chung | 🟢 Đã có |
+| ♿ Trợ năng (bàn phím, ARIA, giảm chuyển động) | 🟢 Đang cải thiện |
 
 ---
 
@@ -155,6 +157,9 @@ Xem điểm và đáp án để xác định phần kiến thức cần ôn lạ
 - [x] Triển khai bằng GitHub Pages
 - [x] Xây dựng các trang bài tập
 - [x] Thêm các chức năng tương tác
+- [x] Music Player dùng chung (queue, shuffle, repeat, lyrics, bố cục kéo/thu/phóng)
+- [x] Chuyển động nhẹ khi đổi tab (dev panel, music, trung tâm học tập)
+- [x] Cải thiện trợ năng: phím tắt, ARIA, viền tiêu điểm, giảm chuyển động
 
 ### 🔨 Đang phát triển
 
@@ -196,6 +201,11 @@ Mở bằng nút 🎓 ở góc phải dưới (hoặc `Ctrl/⌘ + K`):
 | `← →` | Chuyển câu trong Ôn tập |
 | `A B C D` | Chọn đáp án khi ôn tập |
 | `Ctrl/⌘ + Shift + G` | Developer Playground (sau khi xác thực) |
+| `Space` | Phát / tạm dừng khi Music Player đang mở |
+| `← →` | Tua 5 giây khi Music Player đang mở |
+| `M` | Tắt / bật tiếng khi Music Player đang mở |
+
+Phím tắt của trình phát chỉ hoạt động khi panel nhạc đang mở và tự bỏ qua khi đang gõ.
 
 ### Chế độ tập trung
 
@@ -211,15 +221,37 @@ Không có đồng hồ phiên, không có thời lượng bắt buộc.
 
 ---
 
+# 🎧 Music Player
+
+Trình phát nhạc dùng chung, mở từ logo ♪ ở góc trái dưới (logo kéo thả được, chuột
+phải để đặt lại). Chi tiết: [docs/MUSIC.md](docs/MUSIC.md).
+
+- **5 bài** trong thư viện; queue thêm/xoá/đổi thứ tự (kéo thả hoặc `Alt+↑/↓`), shuffle,
+  repeat 3 chế độ, âm lượng, tua, lời có timestamp.
+- **Bố cục tự do**: kéo thanh tiêu đề để di chuyển, kéo góc dưới-trái để đổi kích thước,
+  nút thu nhỏ / phóng to, nhấp đúp tiêu đề để đặt lại. Vị trí, kích thước và tab đang mở
+  được nhớ cho lần sau.
+- **Phím tắt khi trình phát đang mở**: `Space` phát/tạm dừng, `← →` tua 5 giây,
+  `M` tắt tiếng, `Esc` đóng, `← →` trên thanh tab để đổi tab.
+- **Thư mục nhạc đơn giản**: `music/<slug>.mp3`, `music/<slug>.txt` (lời),
+  `music/<slug>.png` (bìa) — thêm bài mới chỉ cần thêm file và một dòng trong `LIBRARY`.
+- Không autoplay, không có audio thứ hai. Bài đang nghe dở hiện nút “Tiếp tục” và chỉ
+  phát khi bạn bấm; nút chỉ biến mất khi âm thanh thực sự phát.
+- Hỗ trợ Media Session (khoá màn hình / tai nghe) khi trình duyệt cho phép.
+
+---
+
 # 🛠 Developer Playground 2.0
 
-Cửa sổ nổi (`Ctrl+Shift+G`, cần mã Developer như bảng điều khiển cũ) với 10 công cụ:
+Cửa sổ nổi (`Ctrl+Shift+G`, cần mã Developer như bảng điều khiển cũ) với 11 công cụ:
 
 Inspector 2.0 · CSS Studio · Animation Studio · Performance Lab · Storage Manager ·
-Console Pro · Network Monitor · Theme Editor · Component Library · Backup Manager.
+Console Pro · Network Monitor · Theme Editor · Component Library · Backup Manager · Music.
 
-Cửa sổ kéo/đổi kích thước được, nhớ vị trí, kích thước và tab. Panel Developer cũ
-(11 tab) vẫn hoạt động nguyên vẹn.
+Cửa sổ kéo/đổi kích thước được, nhớ vị trí, kích thước và tab; chuyển tab có chuyển
+động nhẹ và tôn trọng `prefers-reduced-motion`. Tab Music có nút mở, phóng to, thu nhỏ,
+đặt lại bố cục trình phát và cập nhật trạng thái theo sự kiện (không polling).
+Panel Developer cũ (11 tab) vẫn hoạt động nguyên vẹn.
 
 Chi tiết: [docs/FEATURES.md](docs/FEATURES.md) · [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -255,6 +287,7 @@ nâng cấp chèn). Quy trình và quy ước chi tiết: [AGENTS.md](AGENTS.md)
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — kiểm toán, kiến trúc, mô hình dữ liệu, giới hạn
 - [docs/FEATURES.md](docs/FEATURES.md) — danh sách tính năng & trạng thái
+- [docs/MUSIC.md](docs/MUSIC.md) — Music Player: quy ước file, phím tắt, bố cục, xử lý sự cố
 - [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) — đồng bộ tuỳ chọn + RLS
 - [CHANGELOG.md](CHANGELOG.md) — lịch sử thay đổi
 

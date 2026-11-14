@@ -69,3 +69,61 @@
 .bkm-mute{flex:0 0 auto;width:1.9rem;height:1.9rem;border-radius:50%;border:0;background:rgba(148,163,184,.12);color:#e2e8f0;cursor:pointer;display:grid;place-items:center;transition:background .2s,color .2s}
 .bkm-mute:hover{background:rgba(148,163,184,.22)}
 .bkm-mute.on{color:#a5b4fc;background:rgba(99,102,241,.28)}
+
+/* ================= Nâng cấp: bố cục nổi + trợ năng + chuyển động ================= */
+.bkmusic-head{cursor:move;touch-action:none}
+.bkmusic-head button{cursor:pointer}
+.bkmusic-headbtns{display:flex;align-items:center;gap:.1rem;flex-shrink:0;margin-left:.15rem}
+.bkmusic-hbtn{width:1.7rem;height:1.7rem;border-radius:50%;border:0;background:transparent;color:#94a3b8;cursor:pointer;display:grid;place-items:center;transition:background .15s,color .15s}
+.bkmusic-hbtn:hover{background:rgba(148,163,184,.18);color:#e2e8f0}
+.bkmusic-hbtn[aria-pressed="true"]{background:rgba(99,102,241,.28);color:#c7d2fe}
+.bkmusic-resize{position:absolute;left:0;bottom:0;width:18px;height:18px;cursor:nesw-resize;touch-action:none;z-index:3}
+.bkmusic-resize::after{content:"";position:absolute;left:4px;bottom:4px;width:9px;height:9px;border-left:2px solid rgba(148,163,184,.5);border-bottom:2px solid rgba(148,163,184,.5);border-radius:0 0 0 4px;opacity:.8}
+.bkmusic-resize:hover::after{border-color:#a5b4fc;opacity:1}
+.bkmusic-panel.bkmusic-sized{max-height:none}
+.bkmusic-panel.bkmusic-sized .bkmusic-body{max-height:none}
+.bkmusic-panel.bkmusic-max{left:1rem!important;top:1rem!important;right:1rem!important;bottom:1rem!important;width:auto!important;height:auto!important;max-height:none;border-radius:1.1rem}
+.bkmusic-panel.bkmusic-max .bkmusic-resize{display:none}
+.bkmusic-panel.bkmusic-max .bkmusic-body{max-height:none}
+.bkmusic-panel.bkmusic-min{max-height:none}
+.bkmusic-panel.bkmusic-min .bkmusic-controls,
+.bkmusic-panel.bkmusic-min .bkmusic-progress,
+.bkmusic-panel.bkmusic-min .bkmusic-volume,
+.bkmusic-panel.bkmusic-min .bkmusic-tabs,
+.bkmusic-panel.bkmusic-min .bkmusic-body,
+.bkmusic-panel.bkmusic-min .bkmusic-foot,
+.bkmusic-panel.bkmusic-min .bkmusic-hint,
+.bkmusic-panel.bkmusic-min .bkmusic-resume,
+.bkmusic-panel.bkmusic-min .bkmusic-resize{display:none!important}
+.bkmusic-panel.bkmusic-dragging,.bkmusic-panel.bkmusic-resizing{user-select:none;opacity:.97;transition:none}
+.bkmusic-hint{padding:.1rem .85rem .35rem;font-size:.6rem;line-height:1.45;color:#94a3b8;opacity:.8;text-align:center}
+.bkmusic-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Chuyển động nhẹ khi đổi tab + phản hồi bàn phím */
+.bkm-anim{animation:bkm-tab-in .18s ease-out}
+@keyframes bkm-tab-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.bkmusic-tabs button{transition:background .15s,color .15s,transform .15s}
+.bkmusic-tabs button:active{transform:scale(.97)}
+.bkmusic-panel :focus-visible,.bkmusic-btn:focus-visible{outline:2px solid #a5b4fc;outline-offset:2px}
+.bkmusic-item:focus-visible{outline:2px solid #818cf8;outline-offset:-2px;background:rgba(99,102,241,.2)}
+.bkmusic-controls button:focus-visible,.bkmusic-mini:focus-visible,.bkmusic-hbtn:focus-visible,.bkm-mute:focus-visible{outline:2px solid #a5b4fc;outline-offset:2px}
+
+/* Tay to hơn trên thiết bị cảm ứng */
+@media (pointer:coarse){
+  .bkmusic-controls button{width:2.5rem;height:2.5rem}
+  .bkmusic-controls button.primary{width:2.9rem;height:2.9rem}
+  .bkmusic-hbtn,.bkmusic-x{width:2rem;height:2rem}
+  .bkmusic-item{padding:.55rem}
+  .bkmusic-mini{width:1.9rem;height:1.9rem}
+  .bkmusic-tabs button{padding:.5rem}
+  .bkmusic-hint{display:none}
+  .bkmusic-resize{width:24px;height:24px}
+}
+
+/* Tôn trọng thiết lập giảm chuyển động */
+@media (prefers-reduced-motion:reduce){
+  .bkmusic-panel,.bkmusic-panel *,.bkmusic-btn{animation:none!important;transition:none!important}
+  .bkmusic-panel.playing .bkmusic-art{animation:none!important}
+  .bkmusic-btn.bkmusic-fab-playing{animation:none!important}
+}
+@media (max-width:640px){.bkmusic-resize{display:none}.bkmusic-head{cursor:default}}

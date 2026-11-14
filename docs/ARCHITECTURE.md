@@ -50,12 +50,22 @@ trang bài học ─────┴──► bk-page.js
 - **bk-dev.js/css** — Developer Playground 2.0: cửa sổ nổi kéo/đổi kích thước, nhớ
   vị trí/kích thước/tab, 11 công cụ (thêm tab Music). Không thay thế panel cũ.
 - **bk-music.js/css** — Music Player dùng chung: thư viện 5 bài, queue (thêm/xoá/
-  kéo thả), shuffle, repeat 3 chế độ, âm lượng, lyrics có timestamp.
+  kéo thả hoặc `Alt+↑↓`), shuffle, repeat 3 chế độ, âm lượng, lyrics có timestamp.
   Quy ước file (không phải sửa code): `music/<slug>.mp3` (bài hát),
-  `music/<slug>.txt` (lời, dòng `#` là ghi chú), `music/<slug>.png|jpg|webp`
-  (bìa). Trạng thái lưu ở `bakhiMusic.v2`, vị trí logo nhạc ở
-  `bakhiMusic.fab.v1`; không autoplay. Do `bk-core.js` nạp trên mọi trang nên
-  chỉ có một audio instance cho mỗi trang.
+  `music/<slug>.txt` (lời, dòng `#` là ghi chú), `music/<slug>.png` (bìa, tự dò
+  `.jpg/.jpeg/.webp`). Panel nổi kéo được, đổi kích thước ở góc dưới-trái, thu nhỏ/
+  phóng to, nhớ bố cục (`bakhiMusic.panel.v1`); state ở `bakhiMusic.v2`, vị trí logo
+  ở `bakhiMusic.fab.v1`, lời tự nhập ở `bakhiMusic.lyrics.v1`; không autoplay.
+  Phím tắt (`Space`, `←/→`, `M`, `Esc`) chỉ kích hoạt khi panel mở và bỏ qua khi đang
+  gõ. Có `BKMusic.on(fn)` phát sự kiện thay đổi để UI khác (tab Music của Dev Panel)
+  cập nhật không cần polling. Media Session được đăng ký khi trình duyệt hỗ trợ.
+  Do `bk-core.js` nạp trên mọi trang nên chỉ có một audio instance cho mỗi trang.
+  Chi tiết: [MUSIC.md](MUSIC.md).
+- **Chuyển động & trợ năng** — ba bề mặt (Dev Panel, Music Player, Trung tâm học tập)
+  đều có hiệu ứng chuyển tab ngắn (`.bkdev-pane-in`, `.bkm-anim`, `.bk-tab-in`) và tự
+  tắt khi `prefers-reduced-motion: reduce`. Tab dùng `role="tablist"/"tabpanel"`,
+  điều hướng bằng phím mũi tên; mọi nút điều khiển có `aria-label`, trạng thái
+  `aria-pressed` và viền `:focus-visible`.
 - **bk-page.js** — chỉ chạy trên trang bài học: ghi lịch sử, đọc ngân hàng câu hỏi
   (chỉ đọc), bắt kết quả kiểm tra theo mẫu feedback quen thuộc, dock nhỏ 4 nút.
 

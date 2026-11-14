@@ -2,6 +2,36 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [2.1.0] — 2026-11-14
+
+### Music Player
+
+- **Thêm** bố cục nổi đầy đủ: kéo thanh tiêu đề để di chuyển, kéo góc dưới-trái để đổi
+  kích thước, nút thu nhỏ / phóng to, nhấp đúp tiêu đề để đặt lại; nhớ ở
+  `bakhiMusic.panel.v1`; màn hình hẹp tự chuyển thành bảng đáy.
+- **Thêm** phím tắt `Space` (phát/tạm dừng), `←/→` (tua 5 giây), `M` (tắt tiếng),
+  `Esc` (đóng) — chỉ khi panel nhạc đang mở, tự bỏ qua khi đang gõ hoặc tiêu điểm ở nút.
+- **Sửa** nút “Tiếp tục: …”: trước đây biến mất ngay khi bấm mà không phát nhạc; nay
+  nút chỉ ẩn khi âm thanh thực sự phát và tự đặt lại `src` khi cần.
+- **Thêm** `BKMusic.on(fn)` (phát sự kiện thay đổi), `maximize()`, `minimize()`,
+  `resetLayout()`, `showTab()`, `isOpen()`; tab Music của Dev Panel cập nhật theo sự
+  kiện thay vì polling mỗi giây.
+- **Thêm** Media Session (khoá màn hình / tai nghe) và vùng thông báo `aria-live`.
+- **Cải thiện** trợ năng: `aria-label`, `aria-pressed`, `aria-valuetext`, tab theo chuẩn
+  `tablist`/`tabpanel`, điều hướng tab bằng phím, mục queue dùng `Enter`/`Delete`/
+  `Alt+↑↓`, viền tiêu điểm, tay chạm to hơn, tôn trọng `prefers-reduced-motion`.
+
+### Giao diện
+
+- **Thêm** chuyển động nhẹ khi đổi tab ở Developer Playground, Music Player và Trung tâm
+  học tập, tự tắt khi người dùng chọn giảm chuyển động.
+
+### Tài liệu
+
+- **Thêm** `docs/MUSIC.md`; mở rộng `README.md` (mục Music Player, bảng phím tắt, trạng
+  thái dự án), `docs/FEATURES.md` (mục Music Player & khả năng tiếp cận) và
+  `docs/ARCHITECTURE.md`.
+
 ## [2.0.0] — 2026-11-13
 
 ### Nền tảng học tập

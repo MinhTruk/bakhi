@@ -281,6 +281,13 @@
                 console.warn('[BKDev]', e);
             }
         }
+        var paneEl = built[tab.id];
+        if (paneEl) {
+            /* Chuyển động nhẹ khi đổi tab; lặp lại được nhờ reflow. */
+            paneEl.classList.remove('bkdev-pane-in');
+            void paneEl.offsetWidth;
+            paneEl.classList.add('bkdev-pane-in');
+        }
         if (!skipSave) saveUI({ tab: tab.id });
         updateFoot();
         if (tab.id === 'console') renderLogs();
@@ -1748,7 +1755,10 @@
         }
 
         pane.appendChild(row(
-            btn('Mở Music Player', 'bk-btn', 'fa-music', function () { M.open(); }),
+            btn('Mở Music Player', 'bk-btn', 'fa-music', function () { M.open(); renderStatus(); }),
+            btn('Phóng to', '', 'fa-expand', function () { M.maximize(true); }),
+            btn('Thu nhỏ', '', 'fa-compress', function () { M.minimize(true); }),
+            btn('Đặt lại bố cục', '', 'fa-arrows-to-dot', function () { M.resetLayout(); }),
             btn('Đóng Music Player', '', 'fa-xmark', function () { M.close(); }),
             btn('Bật / Tắt phát', '', 'fa-play', function () { M.playPause(); renderStatus(); }),
             btn('Bài kế', '', 'fa-forward-step', function () { M.next(); renderStatus(); }),
@@ -1773,11 +1783,14 @@
         pane.appendChild(listBox);
         renderList();
         renderStatus();
-        var t = setInterval(function () {
-            if (!D.body.contains(pane)) { clearInterval(t); return; }
-            renderStatus();
-        }, 1000);
-        pane.appendChild(note('Tab này chỉ đọc trạng thái player dùng chung; mọi thay đổi thực hiện qua Music Player để đồng bộ toàn site.'));
+        /* Cập nhật theo sự kiện thay vì polling mỗi giây; tự gỡ khi rời tab. */
+        var unsub = (typeof M.on === 'function') ? M.on(function () { renderStatus(); }) : null;
+        var watch = setInterval(function () {
+            if (D.body.contains(pane)) return;
+            clearInterval(watch);
+            if (unsub) unsub();
+        }, 5000);
+        pane.appendChild(note('Space phát / tạm dừng khi Music Player đang mở. Kéo thanh tiêu đề để di chuyển, kéo góc dưới-trái để đổi kích thước, nhấp đúp tiêu đề để đặt lại. Tab này chỉ đọc trạng thái player dùng chung; mọi thay đổi thực hiện qua Music Player để đồng bộ toàn site.'));
     }
 
     /* =====================================================================

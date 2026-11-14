@@ -34,7 +34,10 @@
         repeat: svg('M7 7h9V4l4 4-4 4V9H7a1 1 0 0 0-1 1v3H4V10a3 3 0 0 1 3-3zm10 10H8v3l-4-4 4-4v3h9a1 1 0 0 0 1-1v-3h2v3a3 3 0 0 1-3 3z'),
         repeat1: svg('M7 7h9V4l4 4-4 4V9H7a1 1 0 0 0-1 1v3H4V10a3 3 0 0 1 3-3zm10 10H8v3l-4-4 4-4v3h9a1 1 0 0 0 1-1v-3h2v3a3 3 0 0 1-3 3zM11 13V8.6l-1.4.8V8l1.6-1h1.1v6z'),
         volume: svg('M4 9h3l4-4v14l-4-4H4zm11.5-1.4A5 5 0 0 1 15.5 12a5 5 0 0 1-0 4.4v-2.2a3 3 0 0 0 0-4.4zm2.3-2.6A8 8 0 0 1 17.8 12a8 8 0 0 1 0 7v-2.4a5.6 5.6 0 0 0 0-9.2z'),
-        mute: svg('M4 9h3l4-4v14l-4-4H4zm12.3 0L18 10.7 19.7 9 21 10.3 19.3 12 21 13.7 19.7 15 18 13.3 16.3 15 15 13.7 16.7 12 15 10.3z')
+        mute: svg('M4 9h3l4-4v14l-4-4H4zm12.3 0L18 10.7 19.7 9 21 10.3 19.3 12 21 13.7 19.7 15 18 13.3 16.3 15 15 13.7 16.7 12 15 10.3z'),
+        min: svg('M5 11h14v2H5z'),
+        expand: svg('M4 9V4h5v2H6v3zm11-5h5v5h-2V6h-3zM4 15h2v3h3v2H4zm14 0h2v5h-5v-2h3z'),
+        restore: svg('M9 4v2H6v3H4V4zm6 0h5v5h-2V6h-3zM4 15h2v3h3v2H4zm11 0h3v-2h2v7h-5v-2z')
     };
     if (global.BKMusic) return;
 
@@ -79,6 +82,7 @@
     /* ======================= 2. STATE ======================= */
     var KEY = 'bakhiMusic.v2';
     var FAB_KEY = 'bakhiMusic.fab.v1';
+    var PANEL_KEY = 'bakhiMusic.panel.v1';
     function defaults() {
         return {
             base: ALL.slice(),            // thứ tự gốc của queue
@@ -118,8 +122,14 @@
         try { return sanitize(JSON.parse(localStorage.getItem(KEY))); }
         catch (e) { return defaults(); }
     }
+    var listeners = [];
+    function emit() {
+        if (!listeners.length) return;
+        listeners.slice().forEach(function (fn) { try { fn(state, curTrack()); } catch (e) { } });
+    }
     function writeState() {
         try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { }
+        emit();
     }
 
     var state = readState();
@@ -157,6 +167,7 @@
     }
 
     var ui = {};          // tham chiếu DOM
+    var layout = {};      // hàm bố cục do buildUI cung cấp (kéo/thu/phóng/tab)
     var resumeHintPending = state.time > 1;   // có phiên nghe dở từ trang trước
 
     function loadTrack(qi, autoplay) {
@@ -367,6 +378,7 @@
         if (ui.seek) ui.seek.value = 0;
         if (ui.cur) ui.cur.textContent = '0:00';
         if (ui.panel) ui.panel.title = t.title + ' · ' + t.artist;
+        syncMediaSession();
     }
 
     function updatePlayBtn() {
@@ -374,6 +386,7 @@
         if (ui.play) ui.play.firstElementChild.innerHTML = playing ? ICONS.pause : ICONS.play;
         if (ui.panel) ui.panel.classList.toggle('playing', playing);
         if (ui.fab) ui.fab.classList.toggle('bkmusic-fab-playing', playing);
+        syncMediaSession();
     }
 
     function renderQueue() {
@@ -385,6 +398,10 @@
             var item = el('div', 'bkmusic-item' + (qi === state.qi ? ' active' : ''));
             item.draggable = true;
             item.dataset.qi = String(qi);
+            item.tabIndex = 0;
+            item.setAttribute('role', 'button');
+            item.setAttribute('aria-label', (qi === state.qi ? 'Đang phát: ' : 'Phát: ') + t.title + ' — ' + t.artist);
+            item.title = 'Enter: phát · Delete: xoá · Alt+↑↓: đổi vị trí';
             item.appendChild(el('span', 'drag', '⋮⋮'));
             var info = el('div', 'bkmusic-info');
             info.appendChild(el('div', 'bkmusic-title', t.title));
@@ -394,9 +411,27 @@
             var rm = el('button', 'rm', '×');
             rm.type = 'button';
             rm.title = 'Xoá khỏi queue';
+            rm.setAttribute('aria-label', 'Xoá ' + t.title + ' khỏi queue');
             rm.addEventListener('click', function (e) { e.stopPropagation(); removeAt(qi); });
             item.appendChild(rm);
             item.addEventListener('click', function () { loadTrack(qi, true); });
+            item.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ' || e.code === 'Space') {
+                    e.preventDefault();
+                    loadTrack(qi, true);
+                } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                    e.preventDefault();
+                    removeAt(qi);
+                } else if (e.altKey && e.key === 'ArrowUp' && qi > 0) {
+                    e.preventDefault();
+                    moveInQueue(qi, qi - 1);
+                    focusQueueAt(qi - 1);
+                } else if (e.altKey && e.key === 'ArrowDown' && qi < state.queue.length - 1) {
+                    e.preventDefault();
+                    moveInQueue(qi, qi + 1);
+                    focusQueueAt(qi + 1);
+                }
+            });
             item.addEventListener('dragstart', function (e) {
                 item.classList.add('dragging');
                 if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(qi)); } catch (err) { } }
@@ -416,6 +451,13 @@
     }
     var dragFrom = -1;
 
+    /** Đưa tiêu điểm về một mục queue sau khi đổi thứ tự (bàn phím). */
+    function focusQueueAt(i) {
+        if (!ui.queue) return;
+        var node = ui.queue.children[i];
+        if (node && node.focus) { try { node.focus({ preventScroll: true }); } catch (e) { } }
+    }
+
     function renderLibrary() {
         if (!ui.library) return;
         ui.library.innerHTML = '';
@@ -428,6 +470,7 @@
             var play = el('button', 'bkmusic-mini', '▶');
             play.type = 'button';
             play.title = 'Phát ngay';
+            play.setAttribute('aria-label', 'Phát ' + t.title);
             play.addEventListener('click', function (e) {
                 e.stopPropagation();
                 var qi = state.queue.indexOf(i);
@@ -437,10 +480,12 @@
             var add = el('button', 'bkmusic-mini', '+');
             add.type = 'button';
             add.title = 'Thêm vào cuối queue';
+            add.setAttribute('aria-label', 'Thêm ' + t.title + ' vào cuối queue');
             add.addEventListener('click', function (e) { e.stopPropagation(); addToQueue(i); });
             var nx = el('button', 'bkmusic-mini', '⇥');
             nx.type = 'button';
             nx.title = 'Phát ngay sau bài hiện tại';
+            nx.setAttribute('aria-label', 'Phát ' + t.title + ' ngay sau bài hiện tại');
             nx.addEventListener('click', function (e) { e.stopPropagation(); playNext(i); });
             item.appendChild(play); item.appendChild(add); item.appendChild(nx);
             ui.library.appendChild(item);
@@ -540,7 +585,78 @@
         }
     }
 
-    /* ======================= 5. UI ======================= */
+    /* ============ 5. TRỢ NĂNG: thông báo, phím tắt, media session ============ */
+    var liveEl = null;
+    /** Gửi thông báo ngắn cho trình đọc màn hình (aria-live="polite"). */
+    function announce(msg) {
+        if (!liveEl) liveEl = D.querySelector('.bkmusic-live');
+        if (liveEl) liveEl.textContent = String(msg == null ? '' : msg);
+    }
+    /** Bỏ qua phím tắt khi đang gõ hoặc đang đứng trên phần tử tương tác. */
+    function isEditable(node) {
+        if (!node || node.nodeType !== 1) return false;
+        var tag = node.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON' || tag === 'A') return true;
+        if (node.isContentEditable) return true;
+        return !!(node.closest && node.closest('[contenteditable=""],[contenteditable="true"],[role="textbox"],[role="slider"],[role="tab"]'));
+    }
+    function seekBy(sec) {
+        if (!audio || !isFinite(audio.duration) || !audio.duration) return;
+        try { audio.currentTime = Math.max(0, Math.min(audio.duration - 0.25, audio.currentTime + sec)); } catch (e) { }
+        if (ui.cur) ui.cur.textContent = fmt(audio.currentTime);
+        announce('Tua tới ' + fmt(audio.currentTime));
+    }
+    function toggleMute() {
+        state.muted = !state.muted;
+        if (audio) audio.muted = state.muted;
+        writeState();
+        updateMute();
+        announce(state.muted ? 'Đã tắt tiếng' : 'Đã bật tiếng');
+    }
+    /** Hiển thị bài đang phát trên khoá màn hình / tai nghe (nếu trình duyệt hỗ trợ). */
+    function syncMediaSession() {
+        try {
+            var ms = global.navigator && global.navigator.mediaSession;
+            if (!ms) return;
+            var t = curTrack();
+            if (global.MediaMetadata && typeof global.MediaMetadata === 'function') {
+                ms.metadata = new global.MediaMetadata({ title: t.title, artist: t.artist, album: 'Bá Khí' });
+            }
+            if (ms.playbackState !== undefined) ms.playbackState = (audio && !audio.paused) ? 'playing' : 'paused';
+        } catch (e) { }
+    }
+    try {
+        var MS = global.navigator && global.navigator.mediaSession;
+        if (MS && MS.setActionHandler) {
+            MS.setActionHandler('play', function () { if (audio && audio.paused) playPause(); });
+            MS.setActionHandler('pause', function () { if (audio && !audio.paused) playPause(); });
+            MS.setActionHandler('previoustrack', function () { prev(); });
+            MS.setActionHandler('nexttrack', function () { next(true); });
+            MS.setActionHandler('seekto', function (d) { if (d && isFinite(d.seekTime)) { try { audio.currentTime = d.seekTime; } catch (e) { } } });
+        }
+    } catch (e) { }
+
+    /* Space chỉ có tác dụng khi Music Player đang mở (không giành phím của trang). */
+    D.addEventListener('keydown', function (e) {
+        if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
+        var p = ui.panel;
+        if (!p || !p.classList.contains('open')) return;
+        if (isEditable(e.target)) return;
+        var k = e.key;
+        if (k === ' ' || k === 'Spacebar' || e.code === 'Space') {
+            e.preventDefault();
+            playPause();
+            announce(audio && !audio.paused ? 'Đang phát' : 'Đã tạm dừng');
+        } else if (k === 'ArrowRight') {
+            e.preventDefault(); seekBy(5);
+        } else if (k === 'ArrowLeft') {
+            e.preventDefault(); seekBy(-5);
+        } else if (k === 'm' || k === 'M') {
+            e.preventDefault(); toggleMute();
+        }
+    });
+
+    /* ======================= 6. UI ======================= */
     function buildUI() {
         if (ui.fab) return;
         if (!D.getElementById('bk-music-css')) {
@@ -562,10 +678,14 @@
         panel.setAttribute('role', 'dialog');
         panel.setAttribute('aria-label', 'Bá Khí Music Player');
         panel.innerHTML =
-            '<div class="bkmusic-head">' +
-            '  <div class="bkmusic-art">♪</div>' +
+            '<div class="bkmusic-head" title="Kéo để di chuyển · nhấp đúp để đặt lại bố cục">' +
+            '  <div class="bkmusic-art" aria-hidden="true">♪</div>' +
             '  <div class="bkmusic-info"><div class="bkmusic-title">—</div><div class="bkmusic-artist">—</div></div>' +
-            '  <button class="bkmusic-x" type="button" aria-label="Đóng"><i class="bk-ic">' + ICONS.close + '</i></button>' +
+            '  <div class="bkmusic-headbtns">' +
+            '    <button class="bkmusic-hbtn bkm-min" type="button" title="Thu nhỏ" aria-label="Thu nhỏ trình phát" aria-pressed="false"><i class="bk-ic">' + ICONS.min + '</i></button>' +
+            '    <button class="bkmusic-hbtn bkm-max" type="button" title="Phóng to" aria-label="Phóng to trình phát" aria-pressed="false"><i class="bk-ic">' + ICONS.expand + '</i></button>' +
+            '    <button class="bkmusic-hbtn bkmusic-x" type="button" title="Đóng" aria-label="Đóng trình phát"><i class="bk-ic">' + ICONS.close + '</i></button>' +
+            '  </div>' +
             '</div>' +
             '<div class="bkmusic-controls">' +
             '  <button class="bkm-shuffle" type="button" title="Shuffle off" aria-label="Shuffle"><i class="bk-ic">' + ICONS.shuffle + '</i></button>' +
@@ -599,13 +719,20 @@
             '    </div>' +
             '  </div>' +
             '</div>' +
+            '<div class="bkmusic-hint" aria-hidden="true">Space: phát / tạm dừng · ← →: tua 5 giây · M: tắt tiếng · Esc: đóng · kéo thanh trên để di chuyển</div>' +
             '<div class="bkmusic-foot">' +
             '  <button class="bkm-lyr-toggle" type="button">Sửa lời</button>' +
             '  <button class="bkm-addall" type="button">Nạp đủ ' + TRACKS.length + ' bài</button>' +
             '  <button class="bkm-clear" type="button">Xoá queue</button>' +
             '  <button class="bkm-reset" type="button">Reset</button>' +
-            '</div>';
+            '</div>' +
+            '<div class="bkmusic-resize" aria-hidden="true" title="Kéo để đổi kích thước"></div>';
         D.body.appendChild(panel);
+        panel.tabIndex = -1;
+        liveEl = el('div', 'bkmusic-live bkmusic-sr');
+        liveEl.setAttribute('aria-live', 'polite');
+        liveEl.setAttribute('aria-atomic', 'true');
+        panel.appendChild(liveEl);
 
         function q(sel) { return panel.querySelector(sel); }
         ui.panel = panel;
@@ -623,11 +750,210 @@
         ui.shuffle = q('.bkm-shuffle');
         ui.repeat = q('.bkm-repeat');
 
+        /* ---------- Bố cục nổi: di chuyển, đổi kích thước, thu nhỏ, phóng to ---------- */
+        var MIN_W = 272, MIN_H = 220;
+        var head = q('.bkmusic-head');
+        var resizeHandle = q('.bkmusic-resize');
+        var geo = loadGeo();
+
+        function loadGeo() {
+            var g = null;
+            try { g = JSON.parse(localStorage.getItem(PANEL_KEY) || 'null'); } catch (e) { g = null; }
+            g = (g && typeof g === 'object') ? g : {};
+            return {
+                x: isFinite(g.x) ? Number(g.x) : null,
+                y: isFinite(g.y) ? Number(g.y) : null,
+                w: isFinite(g.w) ? Number(g.w) : null,
+                h: isFinite(g.h) ? Number(g.h) : null,
+                max: !!g.max,
+                min: !!g.min,
+                tab: (g.tab === 'library' || g.tab === 'lyrics' || g.tab === 'queue') ? g.tab : 'queue'
+            };
+        }
+        function saveGeo(patch) {
+            if (patch) Object.keys(patch).forEach(function (k) { geo[k] = patch[k]; });
+            try { localStorage.setItem(PANEL_KEY, JSON.stringify(geo)); } catch (e) { }
+        }
+        function vw() { return global.innerWidth || 1024; }
+        function vh() { return global.innerHeight || 768; }
+        function clampNum(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+        function boxClamp(x, y, w, h) {
+            var W = vw(), H = vh();
+            w = Math.round(clampNum(w, MIN_W, Math.max(MIN_W, W - 16)));
+            h = Math.round(clampNum(h, MIN_H, Math.max(MIN_H, H - 16)));
+            x = Math.round(clampNum(x, 4, Math.max(4, W - w - 4)));
+            y = Math.round(clampNum(y, 4, Math.max(4, H - h - 4)));
+            return { x: x, y: y, w: w, h: h };
+        }
+        function applyBox(b) {
+            panel.style.left = b.x + 'px';
+            panel.style.top = b.y + 'px';
+            panel.style.right = 'auto';
+            panel.style.bottom = 'auto';
+            panel.style.width = b.w + 'px';
+            panel.style.height = b.h + 'px';
+            panel.classList.add('bkmusic-sized');
+        }
+        function syncLayoutBtns() {
+            var maxB = q('.bkm-max'), minB = q('.bkm-min');
+            if (maxB) {
+                maxB.setAttribute('aria-pressed', geo.max ? 'true' : 'false');
+                maxB.title = geo.max ? 'Thu về kích thước trước' : 'Phóng to';
+                maxB.firstElementChild.innerHTML = geo.max ? ICONS.restore : ICONS.expand;
+            }
+            if (minB) {
+                minB.setAttribute('aria-pressed', geo.min ? 'true' : 'false');
+                minB.title = geo.min ? 'Mở rộng' : 'Thu nhỏ';
+            }
+        }
+        function applyGeo() {
+            var mobile = vw() <= 640;
+            panel.classList.toggle('bkmusic-max', !!geo.max);
+            panel.classList.toggle('bkmusic-min', !!geo.min);
+            var custom = !mobile && !geo.max && geo.x != null && geo.y != null && geo.w && geo.h;
+            panel.classList.toggle('bkmusic-sized', custom);
+            if (custom) {
+                applyBox(boxClamp(geo.x, geo.y, geo.w, geo.h));
+            } else {
+                panel.style.left = panel.style.top = panel.style.right = panel.style.bottom = panel.style.width = panel.style.height = '';
+            }
+            syncLayoutBtns();
+        }
+        function resetLayout() {
+            geo.x = geo.y = geo.w = geo.h = null;
+            geo.max = false;
+            geo.min = false;
+            panel.style.left = panel.style.top = panel.style.right = panel.style.bottom = panel.style.width = panel.style.height = '';
+            panel.classList.remove('bkmusic-sized', 'bkmusic-max', 'bkmusic-min');
+            saveGeo();
+            syncLayoutBtns();
+        }
+
+        /* Kéo thanh tiêu đề để di chuyển (chuột + cảm ứng). Nghe sự kiện trên
+           window để nhả chuột ngoài panel vẫn kết thúc và lưu đúng. */
+        var drag = null;
+        function onPanelDragMove(e) {
+            if (!drag) return;
+            /* Nếu nút chuột đã nhả (một số trang chặn pointerup) thì kết thúc kéo. */
+            if (typeof e.buttons === 'number' && e.buttons === 0) { endPanelDrag(); return; }
+            var dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+            if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 4) return;
+            drag.moved = true;
+            if (e.cancelable) e.preventDefault();
+            var b = boxClamp(drag.x + dx, drag.y + dy, drag.w, drag.h);
+            applyBox(b);
+            geo.x = b.x; geo.y = b.y; geo.w = b.w; geo.h = b.h; geo.max = false;
+        }
+        function endPanelDrag() {
+            if (!drag) return;
+            var moved = drag.moved;
+            drag = null;
+            panel.classList.remove('bkmusic-dragging');
+            global.removeEventListener('pointermove', onPanelDragMove, true);
+            global.removeEventListener('pointerup', endPanelDrag, true);
+            global.removeEventListener('pointercancel', endPanelDrag, true);
+            D.removeEventListener('pointerup', endPanelDrag, true);
+            if (!moved) return;
+            panel.classList.toggle('bkmusic-max', !!geo.max);
+            saveGeo();
+            syncLayoutBtns();
+        }
+        head.addEventListener('pointerdown', function (e) {
+            if (e.button != null && e.button !== 0) return;
+            if (vw() <= 640) return;                 // màn hình hẹp: panel là bảng đáy, không kéo
+            if (e.target.closest && e.target.closest('button')) return;
+            var r = panel.getBoundingClientRect();
+            if (!r.width) return;
+            drag = { sx: e.clientX, sy: e.clientY, x: r.left, y: r.top, w: r.width, h: r.height, moved: false };
+            panel.classList.add('bkmusic-dragging');
+            global.addEventListener('pointermove', onPanelDragMove, true);
+            global.addEventListener('pointerup', endPanelDrag, true);
+            global.addEventListener('pointercancel', endPanelDrag, true);
+            D.addEventListener('pointerup', endPanelDrag, true);
+            if (e.cancelable) e.preventDefault();
+        });
+        head.addEventListener('dblclick', function (e) {
+            if (e.target.closest && e.target.closest('button')) return;
+            if (vw() <= 640) return;
+            resetLayout();
+            announce('Đã đặt lại bố cục trình phát');
+        });
+
+        /* Kéo góc dưới-trái để đổi kích thước (neo cạnh phải + đáy). */
+        var rz = null;
+        function onPanelResizeMove(e) {
+            if (!rz) return;
+            if (typeof e.buttons === 'number' && e.buttons === 0) { endPanelResize(); return; }
+            var dx = e.clientX - rz.sx, dy = e.clientY - rz.sy;
+            var b = boxClamp(rz.x + dx, rz.y + dy, rz.w - dx, rz.h - dy);
+            applyBox(b);
+            geo.x = b.x; geo.y = b.y; geo.w = b.w; geo.h = b.h; geo.max = false;
+            if (e.cancelable) e.preventDefault();
+        }
+        function endPanelResize() {
+            if (!rz) return;
+            rz = null;
+            panel.classList.remove('bkmusic-resizing');
+            global.removeEventListener('pointermove', onPanelResizeMove, true);
+            global.removeEventListener('pointerup', endPanelResize, true);
+            global.removeEventListener('pointercancel', endPanelResize, true);
+            D.removeEventListener('pointerup', endPanelResize, true);
+            saveGeo();
+            syncLayoutBtns();
+        }
+        resizeHandle.addEventListener('pointerdown', function (e) {
+            if (e.button != null && e.button !== 0) return;
+            if (vw() <= 640) return;                 // màn hình hẹp: không đổi kích thước
+            var r = panel.getBoundingClientRect();
+            if (!r.width) return;
+            rz = { sx: e.clientX, sy: e.clientY, x: r.left, y: r.top, w: r.width, h: r.height };
+            panel.classList.add('bkmusic-resizing');
+            global.addEventListener('pointermove', onPanelResizeMove, true);
+            global.addEventListener('pointerup', endPanelResize, true);
+            global.addEventListener('pointercancel', endPanelResize, true);
+            D.addEventListener('pointerup', endPanelResize, true);
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        q('.bkm-min').addEventListener('click', function () {
+            geo.min = !geo.min;
+            if (geo.min) geo.max = false;
+            saveGeo(); applyGeo();
+            announce(geo.min ? 'Đã thu nhỏ trình phát' : 'Đã mở rộng trình phát');
+        });
+        q('.bkm-max').addEventListener('click', function () {
+            geo.max = !geo.max;
+            if (geo.max) geo.min = false;
+            saveGeo(); applyGeo();
+            announce(geo.max ? 'Đã phóng to trình phát' : 'Đã thu về kích thước trước');
+        });
+        global.addEventListener('resize', function () {
+            if (!panel.classList.contains('open')) return;
+            if (vw() <= 640) { applyGeo(); return; }
+            if (geo.max || geo.x == null) return;
+            var r = panel.getBoundingClientRect();
+            if (!r.width) return;
+            var b = boxClamp(r.left, r.top, r.width, r.height);
+            applyBox(b);
+            geo.x = b.x; geo.y = b.y; geo.w = b.w; geo.h = b.h;
+            saveGeo();
+        });
+        applyGeo();
+
         /* Logo nhạc: mặc định góc trái dưới, kéo thả tự do (chuột + cảm ứng),
            lưu vị trí; kéo không được kích hoạt mở panel, chuột phải để đặt lại. */
-        function togglePanel() {
-            var open = panel.classList.toggle('open');
+        function togglePanel(force) {
+            var open = typeof force === 'boolean' ? force : !panel.classList.contains('open');
+            panel.classList.toggle('open', open);
             fab.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (open) {
+                applyGeo();
+                try { panel.focus({ preventScroll: true }); } catch (err) { }
+                announce((curTrack().title || 'Music Player') + ' — Space để phát hoặc tạm dừng');
+            } else if (D.activeElement && panel.contains(D.activeElement)) {
+                try { fab.focus({ preventScroll: true }); } catch (err) { }
+            }
         }
         function clampFab(x, y) {
             var w = fab.offsetWidth || 48, h = fab.offsetHeight || 48, m = 6;
@@ -696,21 +1022,17 @@
             var r = fab.getBoundingClientRect();
             placeFab(r.left, r.top);
         });
-        q('.bkmusic-x').addEventListener('click', function () { panel.classList.remove('open'); fab.setAttribute('aria-expanded', 'false'); });
+        q('.bkmusic-x').addEventListener('click', function () { togglePanel(false); });
         ui.play.addEventListener('click', playPause);
         q('.bkm-prev').addEventListener('click', prev);
         q('.bkm-next').addEventListener('click', function () { next(true); });
         ui.shuffle.addEventListener('click', function () { setShuffle(!state.shuffle); });
         ui.repeat.addEventListener('click', function () { setRepeat((state.repeat + 1) % 3); });
-        q('.bkm-mute').addEventListener('click', function () {
-            state.muted = !state.muted;
-            if (audio) audio.muted = state.muted;
-            writeState();
-            updateMute();
-        });
+        q('.bkm-mute').addEventListener('click', toggleMute);
         q('.bkm-vol').addEventListener('input', function () {
             state.volume = Number(this.value) / 100;
             if (audio) { audio.volume = state.volume; if (state.muted && state.volume > 0) { state.muted = false; audio.muted = false; updateMute(); } }
+            this.setAttribute('aria-valuetext', Math.round(state.volume * 100) + '%');
             writeState();
         });
         var seeking = false;
@@ -722,7 +1044,7 @@
             try { audio.currentTime = Number(ui.seek.value) / 1000 * audio.duration; } catch (e) { }
             ui.cur.textContent = fmt(audio.currentTime);
         });
-        ui.panel.addEventListener('keydown', function (e) { if (e.key === 'Escape') panel.classList.remove('open'); });
+        ui.panel.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.stopPropagation(); togglePanel(false); } });
         q('.bkm-clear').addEventListener('click', clearQueue);
         q('.bkm-addall').addEventListener('click', addAll);
         q('.bkm-reset').addEventListener('click', reset);
@@ -751,31 +1073,70 @@
             toast('Đã xoá lời tự thêm', 'info');
         });
 
-        Array.prototype.forEach.call(panel.querySelectorAll('.bkmusic-tabs button'), function (b) {
-            b.addEventListener('click', function () {
-                Array.prototype.forEach.call(panel.querySelectorAll('.bkmusic-tabs button'), function (x) {
-                    var on = x === b;
-                    x.classList.toggle('on', on);
-                    x.setAttribute('aria-selected', on ? 'true' : 'false');
-                });
-                var tab = b.dataset.tab;
-                ui.queue.hidden = tab !== 'queue';
-                ui.library.hidden = tab !== 'library';
-                ui.lyrics.hidden = tab !== 'lyrics';
-                var eb = panel.querySelector('.bkm-lyrics-edit');
-                if (eb) eb.hidden = true;
-                if (tab !== 'lyrics') ui.lyrics.hidden = true;
+        /* Tab Queue / Thư viện / Lyrics: bàn phím ← → Home End, nhớ tab đang mở. */
+        var tabBtns = Array.prototype.slice.call(panel.querySelectorAll('.bkmusic-tabs button'));
+        var panes = { queue: ui.queue, library: ui.library, lyrics: ui.lyrics };
+        Object.keys(panes).forEach(function (k) {
+            panes[k].id = 'bkm-pane-' + k;
+            panes[k].setAttribute('role', 'tabpanel');
+            panes[k].setAttribute('aria-labelledby', 'bkm-tab-' + k);
+        });
+        function showTab(id, skipSave) {
+            if (!panes[id]) id = 'queue';
+            tabBtns.forEach(function (b) {
+                var on = b.dataset.tab === id;
+                b.classList.toggle('on', on);
+                b.setAttribute('aria-selected', on ? 'true' : 'false');
+                b.tabIndex = on ? 0 : -1;
+            });
+            Object.keys(panes).forEach(function (k) { panes[k].hidden = k !== id; });
+            var eb = panel.querySelector('.bkm-lyrics-edit');
+            if (eb && id !== 'lyrics') eb.hidden = true;
+            var pane = panes[id];
+            pane.classList.remove('bkm-anim');
+            void pane.offsetWidth;
+            pane.classList.add('bkm-anim');
+            geo.tab = id;
+            if (!skipSave) saveGeo({ tab: id });
+        }
+        tabBtns.forEach(function (b, i) {
+            var id = b.dataset.tab;
+            b.id = 'bkm-tab-' + id;
+            b.setAttribute('aria-controls', 'bkm-pane-' + id);
+            b.addEventListener('click', function () { showTab(id); });
+            b.addEventListener('keydown', function (e) {
+                var n = null;
+                if (e.key === 'ArrowRight') n = (i + 1) % tabBtns.length;
+                else if (e.key === 'ArrowLeft') n = (i - 1 + tabBtns.length) % tabBtns.length;
+                else if (e.key === 'Home') n = 0;
+                else if (e.key === 'End') n = tabBtns.length - 1;
+                if (n == null) return;
+                e.preventDefault();
+                tabBtns[n].focus();
+                showTab(tabBtns[n].dataset.tab);
             });
         });
+        layout.showTab = showTab;
 
         q('.bkm-vol').value = String(Math.round(state.volume * 100));
+        q('.bkm-vol').setAttribute('aria-valuetext', Math.round(state.volume * 100) + '%');
         updateMute();
         setRepeat(state.repeat);
         setShuffle(state.shuffle);
         if (ui.shuffle) ui.shuffle.classList.toggle('on', state.shuffle);
         syncMeta();
         renderQueue(); renderLibrary(); renderLyrics();
+        showTab(geo.tab || 'queue', true);
         updatePlayBtn();
+
+        layout.open = function () { togglePanel(true); };
+        layout.close = function () { togglePanel(false); };
+        layout.toggle = function () { togglePanel(); };
+        layout.showTab = showTab;
+        layout.applyGeo = applyGeo;
+        layout.reset = resetLayout;
+        layout.setMax = function (on) { geo.max = on !== false; if (geo.max) geo.min = false; saveGeo(); applyGeo(); };
+        layout.setMin = function (on) { geo.min = on !== false; if (geo.min) geo.max = false; saveGeo(); applyGeo(); };
 
         // Khôi phục bài + vị trí của phiên trước, nhưng KHÔNG autoplay.
         var t = curTrack();
@@ -786,12 +1147,19 @@
         if (resumeHintPending) {
             var resume = el('button', 'bkmusic-resume', '▶ Tiếp tục: ' + t.title);
             resume.type = 'button';
+            resume.setAttribute('aria-label', 'Tiếp tục phát ' + t.title + ' từ vị trí đã dừng');
             resume.addEventListener('click', function () {
-                resume.remove();
+                /* Nút chỉ biến mất khi audio thật sự phát (sự kiện play), tránh
+                   trường hợp bị chặn autoplay mà bài không chuyển. */
+                restoreTime = Math.max(0, Number(state.time) || 0);
+                if (audio && !audio.src) audio.src = curTrack().src;
                 state.playing = true;
                 playAudio();
+                updatePlayBtn();
+                writeState();
             });
             panel.appendChild(resume);
+            ui.resume = resume;
         }
     }
 
@@ -813,6 +1181,7 @@
             ui.panel.classList.remove('playing');
             var r = ui.panel.querySelector('.bkmusic-resume');
             if (r) r.remove();
+            ui.resume = null;
         }
         if (ui.fab) ui.fab.classList.remove('bkmusic-fab-playing');
         syncMeta(); renderQueue(); renderLibrary(); renderLyrics(); updatePlayBtn();
@@ -830,6 +1199,7 @@
             if (!ui.seek) return;
             if (audio.duration) ui.seek.value = String(audio.currentTime / audio.duration * 1000);
             if (ui.cur) ui.cur.textContent = fmt(audio.currentTime);
+            if (ui.seek) ui.seek.setAttribute('aria-valuetext', fmt(audio.currentTime) + ' trên ' + fmt(audio.duration));
             syncLyrics();
             state.time = audio.currentTime;
             if (!saveTimer) saveTimer = setTimeout(function () { saveTimer = null; writeState(); }, 1000);
@@ -855,7 +1225,11 @@
             }
             loadTrack(ni, true);
         });
-        audio.addEventListener('play', function () { endedFlag = false; state.playing = true; updatePlayBtn(); writeState(); });
+        audio.addEventListener('play', function () {
+            endedFlag = false; state.playing = true; updatePlayBtn(); writeState();
+            /* Nút "Tiếp tục" chỉ biến mất khi bài thật sự phát. */
+            if (ui.resume) { ui.resume.remove(); ui.resume = null; }
+        });
         audio.addEventListener('pause', function () { if (endedFlag) return; state.playing = false; updatePlayBtn(); writeState(); });
         audio.addEventListener('error', function () {
             if (!audio.src) return;
@@ -876,8 +1250,18 @@
         tracks: TRACKS,
         get state() { return state; },
         buildUI: buildUI,
-        open: function () { if (ui.panel) { ui.panel.classList.add('open'); if (ui.fab) ui.fab.setAttribute('aria-expanded', 'true'); } },
-        close: function () { if (ui.panel) ui.panel.classList.remove('open'); },
+        open: function () { if (layout.open) layout.open(); else if (ui.panel) ui.panel.classList.add('open'); },
+        close: function () { if (layout.close) layout.close(); },
+        isOpen: function () { return !!(ui.panel && ui.panel.classList.contains('open')); },
+        maximize: function (on) { if (layout.setMax) layout.setMax(on); },
+        minimize: function (on) { if (layout.setMin) layout.setMin(on); },
+        resetLayout: function () { if (layout.reset) layout.reset(); },
+        showTab: function (id) { if (layout.showTab) layout.showTab(id); },
+        on: function (fn) {
+            if (typeof fn !== 'function') return function () { };
+            listeners.push(fn);
+            return function () { var i = listeners.indexOf(fn); if (i >= 0) listeners.splice(i, 1); };
+        },
         playPause: playPause,
         play: function () { if (audio && audio.paused) playPause(); },
         pause: function () { if (audio && !audio.paused) { endedFlag = false; audio.pause(); } },

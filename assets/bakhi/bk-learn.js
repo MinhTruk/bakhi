@@ -137,6 +137,7 @@
         var body = el('div', 'bk-hub');
         var nav = el('nav', 'bk-hub-nav');
         nav.setAttribute('aria-label', 'Khu vực học tập');
+        nav.setAttribute('role', 'tablist');
         var main = el('div', 'bk-hub-main');
         main.id = 'bkHubMain';
         TABS.forEach(function (t) {
@@ -146,6 +147,19 @@
             b.appendChild(el('i', 'fa-solid ' + t.icon));
             b.appendChild(el('span', null, t.label));
             b.addEventListener('click', function () { setTab(t.id); });
+            b.tabIndex = t.id === (tab || 'overview') ? 0 : -1;
+            b.addEventListener('keydown', function (e) {
+                var ids = TABS.map(function (x) { return x.id; });
+                var i = ids.indexOf(t.id), n = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') n = (i + 1) % ids.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') n = (i - 1 + ids.length) % ids.length;
+                else if (e.key === 'Home') n = 0;
+                else if (e.key === 'End') n = ids.length - 1;
+                if (n == null) return;
+                e.preventDefault();
+                setTab(ids[n]);
+                if (hub.navItems[ids[n]]) hub.navItems[ids[n]].focus();
+            });
             nav.appendChild(b);
             hub.navItems[t.id] = b;
         });
@@ -187,10 +201,20 @@
     function setTab(tab) {
         hub.tab = tab;
         Object.keys(hub.navItems).forEach(function (k) {
-            hub.navItems[k].classList.toggle('on', k === tab);
-            hub.navItems[k].setAttribute('aria-selected', k === tab ? 'true' : 'false');
+            var b = hub.navItems[k];
+            var on = k === tab;
+            b.classList.toggle('on', on);
+            b.setAttribute('aria-selected', on ? 'true' : 'false');
+            b.tabIndex = on ? 0 : -1;
         });
         renderTab();
+        /* Chuyển động nhẹ khi đổi tab (tự tắt khi người dùng giảm chuyển động). */
+        var root = hub.root;
+        if (root && root.classList) {
+            root.classList.remove('bk-tab-in');
+            void root.offsetWidth;
+            root.classList.add('bk-tab-in');
+        }
     }
 
     function renderTab() {
