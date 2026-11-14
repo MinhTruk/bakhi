@@ -201,6 +201,7 @@
     function playPause() {
         if (!audio) return;
         if (!audio.src) { loadTrack(state.qi, true); return; }
+
         if (audio.paused) { state.playing = true; playAudio(); }
         else { endedFlag = false; audio.pause(); }
         updatePlayBtn();
@@ -1229,6 +1230,11 @@
             endedFlag = false; state.playing = true; updatePlayBtn(); writeState();
             /* Nút "Tiếp tục" chỉ biến mất khi bài thật sự phát. */
             if (ui.resume) { ui.resume.remove(); ui.resume = null; }
+            /* Mốc thành tích “Khám phá”: đếm lượt phát thật, không lưu nội dung. */
+            try {
+                if (global.BK && global.BK.signals) global.BK.signals.bump('music.plays');
+                if (global.BK && global.BK.achievements) global.BK.achievements.check();
+            } catch (e) { }
         });
         audio.addEventListener('pause', function () { if (endedFlag) return; state.playing = false; updatePlayBtn(); writeState(); });
         audio.addEventListener('error', function () {

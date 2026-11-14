@@ -189,7 +189,8 @@ Mở bằng nút 🎓 ở góc phải dưới (hoặc `Ctrl/⌘ + K`):
 - 📝 **Ghi chú** — theo môn/câu hỏi, ghim, danh mục, Markdown an toàn, xuất tệp.
 - 🔖 **Đánh dấu** — câu hỏi, bài học, môn học, tài liệu.
 - 🕘 **Lịch sử** — bài đã mở, câu đã luyện/ôn; tìm và xoá từng mục.
-- 🏅 **Thành tích** — 10 mốc dựa trên hoạt động học thật, không streak/điểm danh.
+- 🏅 **Thành tích** — 30 mốc chia 5 nhóm (Học tập, Luyện tập, Sổ tay, Studio, Khám phá),
+  có thanh tiến độ từng mốc, bộ lọc, tìm kiếm và thông báo khi mở khoá; không streak/điểm danh.
 - ⚙️ **Cài đặt** — focus mode, cỡ chữ, nhịp ôn, AI (tuỳ chọn), Supabase (tuỳ chọn),
   xuất/nhập dữ liệu.
 

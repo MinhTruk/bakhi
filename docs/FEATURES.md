@@ -11,7 +11,7 @@ Ký hiệu: ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị
 | 3 | Ghi chú cá nhân (theo môn/câu hỏi, ghim, tìm, danh mục, Markdown an toàn, xuất) | ✅ | Markdown escape trước, chỉ http(s) |
 | 4 | Đánh dấu (câu hỏi, bài học, môn, tài liệu; nhóm; tìm/lọc) | ✅ | Nút đánh dấu trên mỗi trang bài học |
 | 5 | Lịch sử học tập (bài đã mở, câu đã luyện/ôn; tìm; xoá từng mục/toàn bộ) | ✅ | Không phải hồ sơ thi cử |
-| 6 | Thành tích (10 mốc học thật) | ✅ | Không streak/điểm danh |
+| 6 | Thành tích (30 mốc, 5 nhóm) | ✅ | Không streak/điểm danh; có tiến độ, lọc, tìm kiếm, thông báo |
 | 7 | Chế độ tập trung (ẩn điều hướng, cỡ chữ, nền nhẹ, Esc) | ✅ | Không có đồng hồ phiên |
 | 8 | Tìm kiếm toàn cục (bài học, câu đã luyện, câu cần ôn, ghi chú, đánh dấu; gợi ý, nhóm, tô sáng, debounce) | ✅ | Không quét trước toàn site |
 | 9 | Command palette `Ctrl/⌘ + K` (điều hướng, công cụ, theme, focus, dev) | ✅ | Bàn phím đầy đủ |
@@ -107,7 +107,22 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 9 | Lưu tự động, xuất HTML tự chứa, xuất TXT, mở `.html/.txt`, in/PDF | ✅ | `bakhiStudio.v1` |
 | 10 | Đếm từ/ký tự, trạng thái lưu, thông báo `aria-live` | ✅ | Lưu sau 0,5 giây |
 
-## H. Không có trong sản phẩm (theo yêu cầu)
+## H. Thành tích 2.3 & tín hiệu dùng chung
+
+| # | Tính năng | Trạng thái | Ghi chú |
+|---|---|---|---|
+| 1 | 30 mốc chia 5 nhóm: Học tập (6), Luyện tập (9), Sổ tay (6), Studio (5), Khám phá (4) | ✅ | Mỗi mốc gắn một hành động tự làm |
+| 2 | Tiến độ từng mốc (`current/goal`), thanh tiến độ, ngày đạt | ✅ | `BK.achievements.progress()` |
+| 3 | Gợi ý “3 mốc gần đạt tiếp theo” ở Tổng quan | ✅ | `BK.achievements.next(3)` |
+| 4 | Lọc Tất cả / Đã đạt / Chưa đạt + tìm kiếm theo tên/mô tả/nhóm | ✅ | Tìm kiếm không phân biệt dấu |
+| 5 | Thông báo khi mở khoá (gộp khi nhiều mốc đến cùng lúc) | ✅ | Toast qua `BK.ui.toast` |
+| 6 | Huy hiệu `x/30` trên tab Thành tích | ✅ | Cập nhật mỗi lần đổi tab |
+| 7 | Tín hiệu Studio: tài liệu, bản vẽ, lượt xuất, lượt chèn, số từ | ✅ | `bakhiSignals.v1`, chỉ số đếm |
+| 8 | Tín hiệu Music Player: mỗi lượt phát thật | ✅ | Sự kiện `play`, không autoplay |
+| 9 | Tín hiệu bảng lệnh và xuất sao lưu | ✅ | Nhóm Khám phá |
+| 10 | Không lưu nội dung trong tín hiệu, không gửi lên mạng | ✅ | Chỉ `localStorage`, giới hạn 999999 |
+
+## I. Không có trong sản phẩm (theo yêu cầu)
 
 Không đề thi thử, không bài tính giờ, không đếm ngược, không giới hạn thời gian,
 không tự nộp bài, không xếp hạng thi, không deadline, không cơ chế tạo áp lực thời gian.

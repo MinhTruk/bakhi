@@ -326,6 +326,62 @@ input[type="color"].tb{padding:.1rem;width:2rem}
   'use strict';
   var D = document;
   var KEY = 'bakhiStudio.v1';
+
+  /* ================= TÍN HIỆU THÀNH TÍCH =================
+     Studio chỉ ghi số đếm vào bakhiSignals.v1 (không ghi nội dung).
+     Trung tâm học tập đọc key này để mở khoá các mốc nhóm “Studio”. */
+  var SIGNAL_KEY = 'bakhiSignals.v1';
+  function readSignals() {
+    var base = { v: 1, studio: { docs: 0, drawings: 0, exports: 0, inserts: 0, words: 0 }, music: { plays: 0 }, ui: { palette: 0, searches: 0 }, backup: { exports: 0 } };
+    var raw = null;
+    try { raw = JSON.parse(localStorage.getItem(SIGNAL_KEY) || 'null'); } catch (e) { raw = null; }
+    if (!raw || typeof raw !== 'object') return base;
+    Object.keys(base).forEach(function (g) {
+      if (!base[g] || typeof base[g] !== 'object' || !raw[g] || typeof raw[g] !== 'object') return;
+      Object.keys(base[g]).forEach(function (k) {
+        var v = Number(raw[g][k]);
+        base[g][k] = isFinite(v) && v > 0 ? Math.min(999999, Math.floor(v)) : 0;
+      });
+    });
+    return base;
+  }
+  function writeSignals(sig) {
+    sig.v = 1; sig.updatedAt = now();
+    try { localStorage.setItem(SIGNAL_KEY, JSON.stringify(sig)); } catch (e) { }
+  }
+  function signalBump(group, key) {
+    var sig = readSignals();
+    if (!sig[group] || !(key in sig[group])) return;
+    sig[group][key] = Math.min(999999, sig[group][key] + 1);
+    writeSignals(sig);
+  }
+  function signalMax(group, key, value) {
+    var sig = readSignals();
+    if (!sig[group] || !(key in sig[group])) return;
+    var v = Math.max(0, Math.min(999999, Math.floor(Number(value) || 0)));
+    if (v <= sig[group][key]) return;
+    sig[group][key] = v;
+    writeSignals(sig);
+  }
+  function plainText(html) {
+    var tmp = D.createElement('div');
+    tmp.innerHTML = String(html || '');
+    return (tmp.innerText || tmp.textContent || '').replace(/\u00a0/g, ' ').trim();
+  }
+  function wordsOf(text) { return text ? text.split(/\s+/).length : 0; }
+  /** Đồng bộ số đếm Studio: tài liệu có nội dung, tài liệu có bản vẽ, tài liệu dài nhất. */
+  function syncStudioSignals() {
+    var docs = 0, drawings = 0, maxWords = 0;
+    S.docs.forEach(function (d) {
+      var w = wordsOf(plainText(d.html));
+      if (w >= 20) docs++;
+      if (d.draw) drawings++;
+      if (w > maxWords) maxWords = w;
+    });
+    signalMax('studio', 'docs', docs);
+    signalMax('studio', 'drawings', drawings);
+    signalMax('studio', 'words', maxWords);
+  }
   var $ = function (s, r) { return (r || D).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || D).querySelectorAll(s)); };
 
@@ -398,6 +454,7 @@ input[type="color"].tb{padding:.1rem;width:2rem}
       localStorage.setItem(KEY, JSON.stringify(S));
       lastSaved = d.updated;
       setSaveState('Đã lưu ' + timeLabel(d.updated));
+      syncStudioSignals();
     } catch (e) {
       setSaveState('Không lưu được (bộ nhớ đầy)', 'error');
       toast('Bộ nhớ trình duyệt đã đầy — hãy xuất HTML rồi xoá bớt tài liệu/ảnh.', 'error');
@@ -883,12 +940,14 @@ input[type="color"].tb{padding:.1rem;width:2rem}
     a.href = board.toDataURL('image/png');
     a.download = (titleInput.value.trim() || 'ban-ve') + '.png';
     D.body.appendChild(a); a.click(); a.remove();
+    signalBump('studio', 'exports');
     toast('Đã tải bản vẽ PNG');
   });
   $('#paintInsert').addEventListener('click', function () {
     var url = board.toDataURL('image/png');
     setMode('split');
     setTimeout(function () { insertImage(url); }, 60);
+    signalBump('studio', 'inserts');
     toast('Đã chèn bản vẽ vào tài liệu');
   });
 
@@ -929,11 +988,13 @@ input[type="color"].tb{padding:.1rem;width:2rem}
     var html = '<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'
       + escapeHtml(d.title) + '</title><style>' + css + '</style></head><body>' + d.html + '</body></html>';
     download((d.title || 'tai-lieu') + '.html', html, 'text/html');
+    signalBump('studio', 'exports');
     toast('Đã xuất HTML');
   }
   function exportTxt() {
     var d = doc();
     download((d.title || 'tai-lieu') + '.txt', page.innerText.replace(/\n{3,}/g, '\n\n'), 'text/plain');
+    signalBump('studio', 'exports');
     toast('Đã xuất TXT');
   }
   function escapeHtml(s) {

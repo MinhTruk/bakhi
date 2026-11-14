@@ -43,8 +43,13 @@ trang bài học ─────┴──► bk-page.js
     phục hồi khi JSON hỏng (sao lưu `bakhiLearn.corrupt.<ts>` rồi tạo state rỗng).
   - `BK.practice()`: ghi lượt luyện, tự đưa câu sai vào review, cập nhật lịch ôn theo
     kết quả (spaced repetition cấu hình được).
-  - `BK.addNote/addBookmark/addHistory`, `BK.achievements`, `BK.search`, `BK.io`
+  - `BK.addNote/addBookmark/addHistory`, `BK.achievements` (30 mốc, `progress()`,
+    `next()`, `groups`), `BK.signals` (tín hiệu dùng chung), `BK.search`, `BK.io`
     (export/validate/import), `BK.ai`, `BK.cloud` (adapter tuỳ chọn).
+  - `BK.signals`: key riêng `bakhiSignals.v1` với các nhóm `studio{docs,drawings,
+    exports,inserts,words}`, `music{plays}`, `ui{palette,searches}`, `backup{exports}`.
+    Chỉ là số đếm (0–999999), không chứa nội dung; Studio ghi trực tiếp key này nên
+    thành tích nhóm Studio hoạt động dù trang Studio là tệp tĩnh độc lập.
 - **bk-learn.js/css** — UI: dock nổi, modal Trung tâm học tập 7 tab, command palette
   (Ctrl/⌘+K), tìm kiếm toàn cục (`/`), focus mode, xuất/nhập.
 - **bk-dev.js/css** — Developer Playground 2.0: cửa sổ nổi kéo/đổi kích thước, nhớ

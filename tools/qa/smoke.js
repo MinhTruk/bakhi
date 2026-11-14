@@ -85,10 +85,43 @@ ok('note stored', w.BK.store.get().notes.length === 1);
 ok('bookmark stored', w.BK.store.get().bookmarks.length === 1);
 ok('achievements unlocked', Object.keys(w.BK.achievements.unlocked()).length >= 2, JSON.stringify(w.BK.achievements.unlocked()));
 const achIds = w.BK.achievements.list.map((a) => a.id);
-ok('achievements have reachable milestones', ['lessons-5', 'lessons-15', 'subjects-3', 'notes-10', 'first-review'].every((id) => achIds.includes(id)), achIds.join(','));
+ok('30 achievements defined', achIds.length === 30, String(achIds.length));
+ok('achievements split into 5 groups', w.BK.achievements.groups.length === 5 && w.BK.achievements.list.every((a) => w.BK.achievements.groups.includes(a.group)), JSON.stringify(w.BK.achievements.groups));
+ok('achievements have reachable milestones', ['lessons-5', 'lessons-15', 'subjects-3', 'notes-10', 'first-review', 'studio-doc', 'music-first', 'backup-export'].every((id) => achIds.includes(id)), achIds.join(','));
 ok('impossible achievements removed', !['q-50', 'q-100', 'accuracy-80', 'review-10', 'multi-subject', 'practice-3-days', 'review-5-mastered-history'].some((id) => achIds.includes(id)), achIds.join(','));
 ok('achievement ids unique', new Set(achIds).size === achIds.length, String(achIds.length));
-ok('achievements tab renders new list', (() => { w.BKLearn.openHub('achievements'); const n = w.document.querySelectorAll('.bk-ach').length; w.document.querySelectorAll('.bk-overlay .bk-icon-btn').forEach((b) => b.click()); return n === achIds.length; })(), String(achIds.length));
+const achProg = w.BK.achievements.progress();
+ok('achievement progress shaped', achProg.length === 30 && achProg.every((a) => a.goal > 0 && a.current >= 0 && a.current <= a.goal && a.pct >= 0 && a.pct <= 100), JSON.stringify(achProg[0]));
+ok('achievement next suggestions are locked + started', w.BK.achievements.next(3).every((a) => !a.unlockedAt && a.current > 0));
+
+/* Tín hiệu dùng chung: Studio / Music / bảng lệnh / sao lưu. */
+w.BK.signals.bump('studio.docs');
+w.BK.signals.bump('studio.drawings');
+w.BK.signals.bump('studio.exports');
+w.BK.signals.bump('studio.inserts');
+w.BK.signals.setMax('studio.words', 520);
+w.BK.signals.bump('music.plays', 10);
+w.BK.signals.bump('ui.palette');
+w.BK.signals.bump('backup.exports');
+w.BK.achievements.check();
+const sigUnlocked = w.BK.achievements.unlocked();
+ok('studio signals unlock studio milestones', ['studio-doc', 'studio-drawing', 'studio-insert', 'studio-export', 'studio-words-500'].every((id) => !!sigUnlocked[id]), JSON.stringify(sigUnlocked));
+ok('music/palette/backup signals unlock milestones', ['music-first', 'music-10', 'palette-user', 'backup-export'].every((id) => !!sigUnlocked[id]), JSON.stringify(sigUnlocked));
+ok('signals ignore unknown paths', (() => { const before = JSON.stringify(w.BK.signals.get()); w.BK.signals.bump('studio.nope'); w.BK.signals.bump('nope'); return JSON.stringify(w.BK.signals.get()) === before; })());
+ok('signals clamp negative/NaN', (() => { w.BK.signals.bump('music.plays', -9999); const v = w.BK.signals.get().music.plays; return v === 0 || v >= 0; })());
+
+w.BKLearn.openHub('achievements');
+ok('achievements tab renders all milestones', w.document.querySelectorAll('.bk-ach').length === 30, String(w.document.querySelectorAll('.bk-ach').length));
+ok('achievements tab groups headings', w.document.querySelectorAll('.bk-ach-group').length === 5, String(w.document.querySelectorAll('.bk-ach-group').length));
+ok('achievements tab shows badge count', /\d+\/30/.test((w.document.getElementById('bkAchCount') || {}).textContent || ''), String((w.document.getElementById('bkAchCount') || {}).textContent));
+const todoChip = Array.from(w.document.querySelectorAll('.bk-ach-toolbar .bk-chip')).find((b) => b.textContent === 'Chưa đạt');
+if (todoChip) todoChip.click();
+const todoCount = w.document.querySelectorAll('.bk-ach').length;
+ok('achievements filter shows locked only', todoCount === 30 - Object.keys(w.BK.achievements.unlocked()).length, String(todoCount));
+const doneChip = Array.from(w.document.querySelectorAll('.bk-ach-toolbar .bk-chip')).find((b) => b.textContent === 'Đã đạt');
+if (doneChip) doneChip.click();
+ok('achievements filter shows unlocked only', w.document.querySelectorAll('.bk-ach').length === Object.keys(w.BK.achievements.unlocked()).length);
+w.document.querySelectorAll('.bk-overlay .bk-icon-btn').forEach((b) => b.click());
 
 const found = w.BK.search.all('biên độ');
 ok('search finds practiced question', (found.flat || []).some((r) => /biên độ/i.test(r.title)), JSON.stringify((found.flat || []).map(r => r.category)));

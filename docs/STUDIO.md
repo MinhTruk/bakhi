@@ -70,7 +70,23 @@ Phím tắt: `Ctrl/⌘+S` lưu, `Ctrl/⌘+N` tài liệu mới, `Ctrl/⌘+P` in,
 - Màn hình hẹp: danh sách tài liệu mở bằng nút **Tài liệu**; trang và bảng vẽ xếp dọc.
 - In: chỉ nội dung trang giấy, không in thanh công cụ.
 
-## 6. Giới hạn đã biết
+## 6. Thành tích
+
+Studio ghi tín hiệu vào `bakhiSignals.v1` (chỉ số đếm, không nội dung) để Trung tâm
+học tập mở khoá 5 mốc nhóm **Studio**:
+
+| Mốc | Điều kiện |
+|---|---|
+| Trang giấy đầu tiên | Lưu một tài liệu có từ 20 từ |
+| Nét vẽ đầu tiên | Lưu một tài liệu có bản vẽ |
+| Minh hoạ tài liệu | Bấm **Chèn vào trang** |
+| Chia sẻ tác phẩm | Xuất HTML/TXT hoặc tải PNG |
+| Cây bút 500 từ | Một tài liệu đạt 500 từ |
+
+Tín hiệu được đồng bộ khi Studio lưu (sau 0,5 giây) và khi xuất/chèn. Xoá dữ liệu
+Studio không xoá thành tích đã đạt — thành tích nằm trong `bakhiLearn.v1`.
+
+## 7. Giới hạn đã biết
 
 - Không phải bộ soạn thảo đầy đủ như Word thật: chưa có bảng, chú thích, header/footer,
   đánh số trang, theo dõi thay đổi.

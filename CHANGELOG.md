@@ -2,6 +2,36 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [2.3.0] — 2026-11-14
+
+### Thành tích 30 mốc
+
+- **Thêm** 17 mốc mới, nâng tổng lên 30, chia 5 nhóm: Học tập (6), Luyện tập (9),
+  Sổ tay (6), Studio (5), Khám phá (4). Không mốc nào dựa trên chuỗi ngày, điểm danh
+  hay thời gian.
+- **Thêm** `BK.signals` — tín hiệu dùng chung ở key riêng `bakhiSignals.v1` (chỉ số đếm,
+  không lưu nội dung): tài liệu/bản vẽ/lượt xuất/lượt chèn/số từ của Studio, lượt phát
+  nhạc, lượt mở bảng lệnh, lượt xuất sao lưu.
+- **Thêm** `BK.achievements.progress()` (tiến độ từng mốc) và `next()` (3 mốc gần đạt),
+  `groups`, `lastUnlocked()`; thông báo toast khi mở khoá (gộp khi nhiều mốc cùng lúc).
+- **Nâng cấp** tab Thành tích: tổng quan 30 mốc, tiến độ theo nhóm, lọc Tất cả/Đã đạt/
+  Chưa đạt, tìm kiếm, thanh tiến độ và số đếm từng mốc, ngày đạt; huy hiệu `x/30` trên tab.
+- **Nâng cấp** Tổng quan: thẻ Thành tích có thanh tiến độ, 3 mốc gần đạt tiếp theo và
+  liên kết mở tab Thành tích.
+
+### Studio & Music
+
+- **Thêm** Studio tự ghi tín hiệu khi lưu tài liệu có nội dung, có bản vẽ, xuất HTML/TXT/
+  PNG, chèn bản vẽ vào trang và ghi nhận số từ lớn nhất của một tài liệu.
+- **Thêm** Music Player tăng tín hiệu ở mỗi lượt phát thật (sự kiện `play`) và tự kiểm tra
+  thành tích nếu lớp học tập có mặt.
+- **Thêm** xuất sao lưu dữ liệu và mở bảng lệnh được tính vào nhóm Khám phá.
+
+### Kiểm thử
+
+- **Mở rộng** smoke test: 30 mốc, 5 nhóm, cấu trúc `progress()`, mốc gần đạt, tín hiệu
+  Studio/Music/bảng lệnh/sao lưu, bỏ qua đường dẫn lạ, kẹp giá trị âm, render/lọc/badge.
+
 ## [2.2.0] — 2026-11-14
 
 ### Bá Khí Studio (Word & Paint)

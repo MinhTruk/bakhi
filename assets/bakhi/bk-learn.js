@@ -116,7 +116,8 @@
     var state = {
         reviewQuery: '', reviewSubject: '', reviewShowMastered: false, reviewActive: 0,
         noteQuery: '', noteCategory: '', historyQuery: '', historyKind: '',
-        bookmarkQuery: '', bookmarkType: ''
+        bookmarkQuery: '', bookmarkType: '',
+        achFilter: 'all', achQuery: ''
     };
 
     var TABS = [
@@ -146,6 +147,11 @@
             b.setAttribute('role', 'tab');
             b.appendChild(el('i', 'fa-solid ' + t.icon));
             b.appendChild(el('span', null, t.label));
+            if (t.id === 'achievements') {
+                var cnt = el('span', 'bk-hub-count', '');
+                cnt.id = 'bkAchCount';
+                b.appendChild(cnt);
+            }
             b.addEventListener('click', function () { setTab(t.id); });
             b.tabIndex = t.id === (tab || 'overview') ? 0 : -1;
             b.addEventListener('keydown', function (e) {
@@ -200,6 +206,7 @@
 
     function setTab(tab) {
         hub.tab = tab;
+        syncAchBadge();
         Object.keys(hub.navItems).forEach(function (k) {
             var b = hub.navItems[k];
             var on = k === tab;
@@ -331,19 +338,38 @@
         });
 
         /* Mốc học tập */
-        var unlocked = s.achievements.unlocked || {};
-        var achieved = BK.achievements.list.filter(function (a) { return unlocked[a.id]; });
-        root.appendChild(el('h4', null, 'Mốc học tập đã đạt'));
-        if (!achieved.length) {
-            root.appendChild(emptyState('Chưa có mốc nào. Mốc đầu tiên sẽ đến khi bạn luyện câu hỏi đầu tiên.', 'fa-flag-checkered'));
-        } else {
-            var row = el('div', 'bk-pill-row');
-            achieved.slice(0, 12).forEach(function (a) {
-                var b = badge(a.name, 'ok');
-                b.title = fmtDate(unlocked[a.id]);
-                row.appendChild(b);
+        var achs = BK.achievements.progress();
+        var achieved = achs.filter(function (a) { return a.unlockedAt; });
+        root.appendChild(el('h4', null, 'Thành tích (' + achieved.length + '/' + achs.length + ')'));
+        var achCard = el('div', 'bk-item');
+        var bar = el('div', 'bk-progress');
+        var fill = el('span');
+        fill.style.width = (achs.length ? Math.round((achieved.length / achs.length) * 100) : 0) + '%';
+        bar.appendChild(fill);
+        achCard.appendChild(bar);
+        var next = BK.achievements.next(3);
+        if (next.length) {
+            achCard.appendChild(el('p', 'bk-small bk-muted', 'Gần đạt tiếp theo:'));
+            next.forEach(function (a) {
+                var row = el('div', 'bk-ach-next');
+                row.appendChild(el('span', 'bk-ach-next-name', a.name));
+                row.appendChild(el('span', 'bk-small bk-muted', a.current + '/' + a.goal));
+                achCard.appendChild(row);
             });
-            root.appendChild(row);
+        } else if (!achieved.length) {
+            achCard.appendChild(el('p', 'bk-small bk-muted', 'Mốc đầu tiên sẽ đến khi bạn mở bài học hoặc luyện câu hỏi đầu tiên.'));
+        }
+        var more = ghostBtn('Xem tất cả thành tích', function () { setTab('achievements'); }, 'fa-medal');
+        achCard.appendChild(more);
+        root.appendChild(achCard);
+        if (achieved.length) {
+            var rowPills = el('div', 'bk-pill-row');
+            achieved.slice(-8).reverse().forEach(function (a) {
+                var b = badge(a.name, 'ok');
+                b.title = fmtDate(a.unlockedAt);
+                rowPills.appendChild(b);
+            });
+            root.appendChild(rowPills);
         }
     }
 
@@ -924,14 +950,22 @@
     }
 
     /* --------------------------- Thành tích ----------------------------- */
+    function syncAchBadge() {
+        var b = D.getElementById('bkAchCount');
+        if (!b) return;
+        var p = BK.achievements.progress();
+        var n = p.filter(function (a) { return a.unlockedAt; }).length;
+        b.textContent = n + '/' + p.length;
+        b.title = n + ' trên ' + p.length + ' mốc đã đạt';
+    }
+
     function renderAchievements(root) {
-        var s = BK.store.get();
-        var unlocked = s.achievements.unlocked || {};
-        var list = BK.achievements.list;
-        var count = list.filter(function (a) { return unlocked[a.id]; }).length;
+        var list = BK.achievements.progress();
+        var count = list.filter(function (a) { return a.unlockedAt; }).length;
+        syncAchBadge();
 
         root.appendChild(el('h3', null, 'Thành tích học tập'));
-        root.appendChild(el('p', 'bk-sub', 'Chỉ dựa trên hoạt động học thật. Không có chuỗi ngày, không yêu cầu điểm danh, không tạo áp lực.'));
+        root.appendChild(el('p', 'bk-sub', 'Mỗi mốc gắn với một việc bạn tự làm: mở bài, luyện câu hỏi, ghi chú, ôn tập, dùng Studio, nghe nhạc. Không có chuỗi ngày, không điểm danh, không áp lực thời gian.'));
 
         var progress = el('div', 'bk-item');
         progress.appendChild(el('p', 'bk-item-title', count + '/' + list.length + ' mốc đã đạt'));
@@ -941,24 +975,82 @@
         fill.style.width = (list.length ? Math.round((count / list.length) * 100) : 0) + '%';
         bar.appendChild(fill);
         progress.appendChild(bar);
+
+        var groups = BK.achievements.groups || [];
+        var groupBar = el('div', 'bk-pill-row');
+        groupBar.style.marginTop = '.5rem';
+        groups.forEach(function (g) {
+            var items = list.filter(function (a) { return a.group === g; });
+            var n = items.filter(function (a) { return a.unlockedAt; }).length;
+            groupBar.appendChild(badge(g + ' ' + n + '/' + items.length));
+        });
+        progress.appendChild(groupBar);
         root.appendChild(progress);
 
-        var grid = el('div', 'bk-ach-grid');
-        grid.style.marginTop = '.7rem';
-        list.forEach(function (a) {
-            var on = !!unlocked[a.id];
-            var tile = el('div', 'bk-ach' + (on ? ' on' : ''));
-            var ico = el('div', 'bk-ach-ico');
-            ico.innerHTML = '<i class="fa-solid ' + a.icon + '"></i>';
-            tile.appendChild(ico);
-            var w = el('div');
-            w.appendChild(el('b', null, a.name));
-            w.appendChild(el('span', null, a.desc));
-            if (on) w.appendChild(el('span', null, ' · ' + fmtDate(unlocked[a.id])));
-            tile.appendChild(w);
-            grid.appendChild(tile);
+        /* Bộ lọc + tìm kiếm */
+        var toolbar = el('div', 'bk-ach-toolbar');
+        [['all', 'Tất cả'], ['done', 'Đã đạt'], ['todo', 'Chưa đạt']].forEach(function (f) {
+            var chip = el('button', 'bk-chip' + (state.achFilter === f[0] ? ' on' : ''), f[1]);
+            chip.type = 'button';
+            chip.setAttribute('aria-pressed', state.achFilter === f[0] ? 'true' : 'false');
+            chip.addEventListener('click', function () { state.achFilter = f[0]; renderTab(); });
+            toolbar.appendChild(chip);
         });
-        root.appendChild(grid);
+        var q = el('input', 'bk-input bk-ach-search');
+        q.type = 'search';
+        q.placeholder = 'Tìm thành tích…';
+        q.value = state.achQuery;
+        q.setAttribute('aria-label', 'Tìm thành tích');
+        q.addEventListener('input', BK.util.debounce(function () { state.achQuery = q.value; renderTab(); }, 150));
+        toolbar.appendChild(q);
+        root.appendChild(toolbar);
+
+        var nq = BK.util.norm(state.achQuery);
+        var visible = list.filter(function (a) {
+            if (state.achFilter === 'done' && !a.unlockedAt) return false;
+            if (state.achFilter === 'todo' && a.unlockedAt) return false;
+            if (!nq) return true;
+            return BK.util.norm(a.name + ' ' + a.desc + ' ' + a.group).indexOf(nq) >= 0;
+        });
+
+        if (!visible.length) {
+            root.appendChild(emptyState(nq ? 'Không có mốc nào khớp “' + state.achQuery + '”.' : 'Chưa có mốc nào ở mục này.', 'fa-medal'));
+            return;
+        }
+
+        groups.concat(['Khác']).forEach(function (g) {
+            var items = visible.filter(function (a) { return g === 'Khác' ? groups.indexOf(a.group) < 0 : a.group === g; });
+            if (!items.length) return;
+            var done = items.filter(function (a) { return a.unlockedAt; }).length;
+            var head = el('h4', 'bk-ach-group', g + ' · ' + done + '/' + items.length);
+            root.appendChild(head);
+            var grid = el('div', 'bk-ach-grid');
+            grid.style.margin = '.4rem 0 .8rem';
+            items.forEach(function (a) {
+                var on = !!a.unlockedAt;
+                var tile = el('div', 'bk-ach' + (on ? ' on' : ''));
+                tile.setAttribute('title', a.desc);
+                var ico = el('div', 'bk-ach-ico');
+                ico.innerHTML = '<i class="fa-solid ' + a.icon + '"></i>';
+                tile.appendChild(ico);
+                var w = el('div', 'bk-ach-body');
+                w.appendChild(el('b', null, a.name));
+                w.appendChild(el('span', null, a.desc));
+                if (on) {
+                    w.appendChild(el('span', 'bk-ach-meta', 'Đạt ' + fmtDate(a.unlockedAt)));
+                } else if (a.goal > 1) {
+                    var mini = el('div', 'bk-progress bk-ach-bar');
+                    var mfill = el('span');
+                    mfill.style.width = a.pct + '%';
+                    mini.appendChild(mfill);
+                    w.appendChild(mini);
+                    w.appendChild(el('span', 'bk-ach-meta', a.current + '/' + a.goal));
+                }
+                tile.appendChild(w);
+                grid.appendChild(tile);
+            });
+            root.appendChild(grid);
+        });
     }
 
     /* --------------------------- Cài đặt -------------------------------- */
@@ -1141,6 +1233,11 @@
         var name = 'bakhi-learning' + file + '-' + BK.util.dayKey() + '.json';
         var ok = BK.util.download(name, JSON.stringify(BK.io.exportPayload(scope), null, 2));
         BK.ui.toast(ok ? 'Đã xuất ' + name : 'Không xuất được tệp', ok ? 'success' : 'error');
+        if (ok) {
+            BK.signals.bump('backup.exports');
+            BK.achievements.check();
+            if (hub.modal) renderTab();
+        }
     }
 
     function importData() {
@@ -1211,6 +1308,14 @@
        ================================================================== */
     var overlay = null;
 
+    function achLabel() {
+        try {
+            var p = BK.achievements.progress();
+            var n = p.filter(function (a) { return a.unlockedAt; }).length;
+            return 'Thành tích (' + n + '/' + p.length + ')';
+        } catch (e) { return 'Thành tích'; }
+    }
+
     function commands() {
         var cmds = [
             { label: 'Trung tâm học tập — Tổng quan', icon: 'fa-chart-simple', run: function () { openHub('overview'); } },
@@ -1218,7 +1323,7 @@
             { label: 'Ghi chú cá nhân', icon: 'fa-pen-nib', run: function () { openHub('notes'); } },
             { label: 'Đánh dấu', icon: 'fa-bookmark', run: function () { openHub('bookmarks'); } },
             { label: 'Lịch sử học tập', icon: 'fa-clock-rotate-left', run: function () { openHub('history'); } },
-            { label: 'Thành tích', icon: 'fa-medal', run: function () { openHub('achievements'); } },
+            { label: achLabel(), icon: 'fa-medal', run: function () { openHub('achievements'); } },
             { label: 'Cài đặt học tập & dữ liệu', icon: 'fa-gear', run: function () { openHub('settings'); } },
             { label: 'Tìm kiếm toàn cục', icon: 'fa-magnifying-glass', run: function () { openSearch(); } },
             { label: 'Bật/tắt chế độ tập trung', icon: 'fa-moon', run: function () { toggleFocus(); } },
@@ -1314,6 +1419,10 @@
     }
 
     function openPalette(initial) {
+        try {
+            BK.signals.bump('ui.palette');
+            BK.achievements.check();
+        } catch (e) { /* không chặn bảng lệnh nếu tín hiệu lỗi */ }
         var o = ensureOverlay();
         o.mode = 'palette';
         o.category = '';

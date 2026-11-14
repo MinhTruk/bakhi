@@ -560,6 +560,74 @@
     }
 
     /* ---------------------------------------------------------------------
+       Tín hiệu dùng chung giữa các ứng dụng (Studio, Music, bảng lệnh…)
+       Một key riêng, không lẫn vào dữ liệu học tập; chỉ đếm, không lưu nội dung.
+       ------------------------------------------------------------------ */
+    var SIGNALS_KEY = 'bakhiSignals.v1';
+    var SIGNAL_CAP = 999999;
+    function emptySignals() {
+        return {
+            v: 1, updatedAt: now(),
+            studio: { docs: 0, drawings: 0, exports: 0, inserts: 0, words: 0 },
+            music: { plays: 0 },
+            ui: { palette: 0, searches: 0 },
+            backup: { exports: 0 }
+        };
+    }
+    function readSignals() {
+        var out = emptySignals();
+        var raw = null;
+        try { raw = global.localStorage.getItem(SIGNALS_KEY); } catch (e) { raw = null; }
+        if (!raw) return out;
+        var parsed = null;
+        try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
+        if (!parsed || typeof parsed !== 'object') return out;
+        Object.keys(out).forEach(function (k) {
+            if (!out[k] || typeof out[k] !== 'object') return;
+            var src = parsed[k];
+            if (!src || typeof src !== 'object') return;
+            Object.keys(out[k]).forEach(function (kk) {
+                out[k][kk] = Math.max(0, Math.min(SIGNAL_CAP, num(src[kk], 0)));
+            });
+        });
+        return out;
+    }
+    function writeSignals(sig) {
+        sig.v = 1;
+        sig.updatedAt = now();
+        try { global.localStorage.setItem(SIGNALS_KEY, JSON.stringify(sig)); return true; }
+        catch (e) { return false; }
+    }
+    function signalPath(path) {
+        var parts = String(path || '').split('.');
+        if (parts.length !== 2) return null;
+        return parts;
+    }
+    /** Cộng thêm một tín hiệu, ví dụ bumpSignal('studio.docs'). */
+    function bumpSignal(path, amount) {
+        var p = signalPath(path);
+        var sig = readSignals();
+        if (!p || !sig[p[0]] || !(p[1] in sig[p[0]])) return sig;
+        var add = amount == null ? 1 : num(amount, 0);
+        sig[p[0]][p[1]] = Math.max(0, Math.min(SIGNAL_CAP, num(sig[p[0]][p[1]], 0) + add));
+        writeSignals(sig);
+        emit('signals', sig);
+        return sig;
+    }
+    /** Ghi giá trị lớn nhất đã đạt (dùng cho số từ của một tài liệu Studio). */
+    function setSignalMax(path, value) {
+        var p = signalPath(path);
+        var sig = readSignals();
+        if (!p || !sig[p[0]] || !(p[1] in sig[p[0]])) return sig;
+        var v = Math.max(0, Math.min(SIGNAL_CAP, num(value, 0)));
+        if (v <= num(sig[p[0]][p[1]], 0)) return sig;
+        sig[p[0]][p[1]] = v;
+        writeSignals(sig);
+        emit('signals', sig);
+        return sig;
+    }
+
+    /* ---------------------------------------------------------------------
        Thành tích — chỉ dựa trên hoạt động học thật, không có streak/áp lực
        ------------------------------------------------------------------ */
     /* Chỉ giữ mốc có hành động rõ ràng trong giao diện và dữ liệu luôn được ghi lại:
@@ -571,22 +639,59 @@
         return s.history.filter(function (h) { return h.kind === 'lesson' && h.url; });
     }
     function lessonUrls(s) { return uniq(lessonHistory(s).map(function (h) { return h.url; })); }
-    var ACHIEVEMENTS = [
-        { id: 'first-lesson', name: 'Bài học đầu tiên', icon: 'fa-book-open', desc: 'Mở bài học đầu tiên.', test: function (s) { return lessonHistory(s).length >= 1; } },
-        { id: 'lessons-5', name: '5 bài học', icon: 'fa-book', desc: 'Mở 5 bài học khác nhau.', test: function (s) { return lessonUrls(s).length >= 5; } },
-        { id: 'lessons-15', name: '15 bài học', icon: 'fa-book-open-reader', desc: 'Mở 15 bài học khác nhau.', test: function (s) { return lessonUrls(s).length >= 15; } },
-        { id: 'subjects-3', name: 'Khám phá 3 môn', icon: 'fa-layer-group', desc: 'Mở bài học ở 3 môn trở lên.', test: function (s) { return uniq(lessonHistory(s).map(function (h) { return h.subject; })).length >= 3; } },
-        { id: 'first-question', name: 'Câu hỏi đầu tiên', icon: 'fa-circle-question', desc: 'Luyện câu hỏi đầu tiên.', test: function (s) { return s.practice.length >= 1; } },
-        { id: 'first-note', name: 'Ghi chú đầu tiên', icon: 'fa-pen-nib', desc: 'Tạo ghi chú đầu tiên.', test: function (s) { return s.notes.length >= 1; } },
-        { id: 'notes-5', name: 'Sổ tay 5 ghi chú', icon: 'fa-book', desc: 'Tạo 5 ghi chú học tập.', test: function (s) { return s.notes.length >= 5; } },
-        { id: 'notes-10', name: 'Sổ tay 10 ghi chú', icon: 'fa-book-bookmark', desc: 'Tạo 10 ghi chú học tập.', test: function (s) { return s.notes.length >= 10; } },
-        { id: 'first-bookmark', name: 'Đánh dấu đầu tiên', icon: 'fa-bookmark', desc: 'Lưu đánh dấu đầu tiên.', test: function (s) { return s.bookmarks.length >= 1; } },
-        { id: 'bookmarks-5', name: 'Bộ sưu tập 5 đánh dấu', icon: 'fa-folder-open', desc: 'Lưu 5 bài học/ghi chú vào đánh dấu.', test: function (s) { return s.bookmarks.length >= 5; } },
-        { id: 'first-review', name: 'Câu cần ôn đầu tiên', icon: 'fa-rotate', desc: 'Có câu hỏi đầu tiên trong danh sách ôn tập.', test: function (s) { return s.review.length >= 1; } },
-        { id: 'first-mastered', name: 'Làm chủ một câu', icon: 'fa-check-double', desc: 'Đánh dấu thành thạo một câu từng sai.', test: function (s) { return s.review.some(function (r) { return r.mastered; }); } },
-        { id: 'mastered-3', name: 'Làm chủ 3 câu', icon: 'fa-award', desc: 'Đánh dấu thành thạo 3 câu từng làm sai.', test: function (s) { return s.review.filter(function (r) { return r.mastered; }).length >= 3; } }
-    ];
     function uniq(a) { return a.filter(function (v, i) { return a.indexOf(v) === i; }); }
+    function masteredCount(s) { return s.review.filter(function (r) { return r.mastered; }).length; }
+
+    var ACH_GROUPS = ['Học tập', 'Luyện tập', 'Sổ tay', 'Studio', 'Khám phá'];
+    function ach(id, name, icon, desc, group, goal, value) {
+        return {
+            id: id, name: name, icon: icon, desc: desc, group: group, goal: goal,
+            value: value,
+            test: function (s) {
+                try { return value(s, readSignals()) >= goal; } catch (e) { return false; }
+            }
+        };
+    }
+
+    /* 30 mốc, chia 5 nhóm. Mọi mốc đều gắn với một hành động người học tự làm được:
+       mở bài, làm câu hỏi, tạo ghi chú/đánh dấu, ôn tập, dùng Studio, nghe nhạc,
+       dùng bảng lệnh, xuất sao lưu. Không mốc nào phụ thuộc thời gian/chuỗi ngày. */
+    var ACHIEVEMENTS = [
+        ach('first-lesson', 'Bài học đầu tiên', 'fa-book-open', 'Mở bài học đầu tiên.', 'Học tập', 1, function (s) { return lessonHistory(s).length; }),
+        ach('lessons-5', '5 bài học', 'fa-book', 'Mở 5 bài học khác nhau.', 'Học tập', 5, function (s) { return lessonUrls(s).length; }),
+        ach('lessons-15', '15 bài học', 'fa-book-open-reader', 'Mở 15 bài học khác nhau.', 'Học tập', 15, function (s) { return lessonUrls(s).length; }),
+        ach('lessons-30', '30 bài học', 'fa-graduation-cap', 'Mở 30 bài học khác nhau.', 'Học tập', 30, function (s) { return lessonUrls(s).length; }),
+        ach('subjects-3', 'Khám phá 3 môn', 'fa-layer-group', 'Mở bài học ở 3 môn trở lên.', 'Học tập', 3, function (s) { return uniq(lessonHistory(s).map(function (h) { return h.subject; })).length; }),
+        ach('subjects-5', 'Khám phá 5 môn', 'fa-shapes', 'Mở bài học ở 5 môn trở lên.', 'Học tập', 5, function (s) { return uniq(lessonHistory(s).map(function (h) { return h.subject; })).length; }),
+
+        ach('first-question', 'Câu hỏi đầu tiên', 'fa-circle-question', 'Luyện câu hỏi đầu tiên.', 'Luyện tập', 1, function (s) { return s.practice.length; }),
+        ach('practice-25', '25 lượt luyện', 'fa-dumbbell', 'Hoàn thành 25 lượt luyện tập.', 'Luyện tập', 25, function (s) { return s.practice.length; }),
+        ach('practice-100', '100 lượt luyện', 'fa-fire', 'Hoàn thành 100 lượt luyện tập.', 'Luyện tập', 100, function (s) { return s.practice.length; }),
+        ach('correct-15', '15 câu đúng', 'fa-circle-check', 'Trả lời đúng 15 câu hỏi.', 'Luyện tập', 15, function (s) { return num(s.achievements.counters.correct, 0); }),
+        ach('first-review', 'Câu cần ôn đầu tiên', 'fa-rotate', 'Có câu hỏi đầu tiên trong danh sách ôn tập.', 'Luyện tập', 1, function (s) { return s.review.length; }),
+        ach('review-queue-10', 'Danh sách ôn 10 câu', 'fa-list-check', 'Giữ 10 câu trong danh sách cần ôn.', 'Luyện tập', 10, function (s) { return s.review.length; }),
+        ach('first-mastered', 'Làm chủ một câu', 'fa-check-double', 'Đánh dấu thành thạo một câu từng sai.', 'Luyện tập', 1, function (s) { return masteredCount(s); }),
+        ach('mastered-3', 'Làm chủ 3 câu', 'fa-award', 'Đánh dấu thành thạo 3 câu từng làm sai.', 'Luyện tập', 3, function (s) { return masteredCount(s); }),
+        ach('mastered-10', 'Làm chủ 10 câu', 'fa-medal', 'Đánh dấu thành thạo 10 câu từng làm sai.', 'Luyện tập', 10, function (s) { return masteredCount(s); }),
+
+        ach('first-note', 'Ghi chú đầu tiên', 'fa-pen-nib', 'Tạo ghi chú đầu tiên.', 'Sổ tay', 1, function (s) { return s.notes.length; }),
+        ach('notes-5', 'Sổ tay 5 ghi chú', 'fa-book', 'Tạo 5 ghi chú học tập.', 'Sổ tay', 5, function (s) { return s.notes.length; }),
+        ach('notes-10', 'Sổ tay 10 ghi chú', 'fa-book-bookmark', 'Tạo 10 ghi chú học tập.', 'Sổ tay', 10, function (s) { return s.notes.length; }),
+        ach('notes-25', 'Sổ tay 25 ghi chú', 'fa-book-open', 'Tạo 25 ghi chú học tập.', 'Sổ tay', 25, function (s) { return s.notes.length; }),
+        ach('first-bookmark', 'Đánh dấu đầu tiên', 'fa-bookmark', 'Lưu đánh dấu đầu tiên.', 'Sổ tay', 1, function (s) { return s.bookmarks.length; }),
+        ach('bookmarks-5', 'Bộ sưu tập 5 đánh dấu', 'fa-folder-open', 'Lưu 5 bài học/ghi chú vào đánh dấu.', 'Sổ tay', 5, function (s) { return s.bookmarks.length; }),
+
+        ach('studio-doc', 'Trang giấy đầu tiên', 'fa-file-lines', 'Lưu tài liệu đầu tiên trong Bá Khí Studio.', 'Studio', 1, function (s, g) { return g.studio.docs; }),
+        ach('studio-drawing', 'Nét vẽ đầu tiên', 'fa-paintbrush', 'Lưu một bản vẽ trong Bá Khí Studio.', 'Studio', 1, function (s, g) { return g.studio.drawings; }),
+        ach('studio-insert', 'Minh hoạ tài liệu', 'fa-image', 'Chèn bản vẽ vào tài liệu Studio.', 'Studio', 1, function (s, g) { return g.studio.inserts; }),
+        ach('studio-export', 'Chia sẻ tác phẩm', 'fa-file-export', 'Xuất tài liệu hoặc ảnh từ Studio.', 'Studio', 1, function (s, g) { return g.studio.exports; }),
+        ach('studio-words-500', 'Cây bút 500 từ', 'fa-feather-pointed', 'Viết một tài liệu dài 500 từ trong Studio.', 'Studio', 500, function (s, g) { return g.studio.words; }),
+
+        ach('music-first', 'Giai điệu đầu tiên', 'fa-music', 'Phát bài hát đầu tiên trong Music Player.', 'Khám phá', 1, function (s, g) { return g.music.plays; }),
+        ach('music-10', 'Nghe nhạc khi học', 'fa-headphones', 'Phát 10 lượt nhạc trong Music Player.', 'Khám phá', 10, function (s, g) { return g.music.plays; }),
+        ach('palette-user', 'Người dùng bảng lệnh', 'fa-terminal', 'Mở bảng lệnh nhanh (Ctrl/⌘ + K).', 'Khám phá', 1, function (s, g) { return g.ui.palette; }),
+        ach('backup-export', 'Sao lưu dữ liệu', 'fa-download', 'Xuất một bản sao lưu dữ liệu học tập.', 'Khám phá', 1, function (s, g) { return g.backup.exports; })
+    ];
 
     function accuracy(s) {
         s = s || load();
@@ -595,18 +700,51 @@
         return { total: total, correct: correct, wrong: total - correct, pct: total ? Math.round((correct / total) * 100) : 0 };
     }
 
+    var lastUnlocked = [];
     function checkAchievements() {
         var s = load();
-        var unlocked = false;
+        var fresh = [];
         ACHIEVEMENTS.forEach(function (a) {
             if (!s.achievements.unlocked[a.id]) {
                 var ok = false;
                 try { ok = !!a.test(s); } catch (e) { ok = false; }
-                if (ok) { s.achievements.unlocked[a.id] = now(); unlocked = true; }
+                if (ok) { s.achievements.unlocked[a.id] = now(); fresh.push(a); }
             }
         });
-        if (unlocked) { save(); emit('achievements', s.achievements); }
+        lastUnlocked = fresh.map(function (a) { return a.id; });
+        if (fresh.length) {
+            save();
+            emit('achievements', s.achievements);
+            /* Thông báo mở khoá: gộp khi nhiều mốc đến cùng lúc. */
+            var names = fresh.slice(0, 3).map(function (a) { return a.name; }).join(', ');
+            if (fresh.length > 3) names += ' và ' + (fresh.length - 3) + ' mốc khác';
+            toast(fresh.length === 1 ? 'Mở khoá thành tích: ' + names : 'Mở khoá ' + fresh.length + ' thành tích: ' + names, 'success');
+        }
         return s.achievements;
+    }
+
+    /** Tiến độ từng mốc cho giao diện: current/goal, đã đạt hay chưa, nhóm. */
+    function achievementProgress() {
+        var s = load();
+        var sig = readSignals();
+        return ACHIEVEMENTS.map(function (a) {
+            var cur = 0;
+            try { cur = Math.round(num(a.value(s, sig), 0)); } catch (e) { cur = 0; }
+            cur = Math.max(0, Math.min(a.goal, cur));
+            return {
+                id: a.id, name: a.name, desc: a.desc, icon: a.icon, group: a.group,
+                goal: a.goal, current: cur, pct: a.goal ? Math.round((cur / a.goal) * 100) : 0,
+                unlockedAt: s.achievements.unlocked[a.id] || null
+            };
+        });
+    }
+
+    /** Ba mốc gần đạt nhất (chưa mở khoá), dùng cho phần Tổng quan. */
+    function achievementNext(limit) {
+        return achievementProgress()
+            .filter(function (a) { return !a.unlockedAt && a.current > 0; })
+            .sort(function (a, b) { return b.pct - a.pct || b.current - a.current; })
+            .slice(0, limit || 3);
     }
 
     /* ---------------------------------------------------------------------
@@ -1152,7 +1290,17 @@
     BK.addBookmark = addBookmark;
     BK.removeBookmark = removeBookmark;
     BK.hasBookmark = hasBookmark;
-    BK.achievements = { list: ACHIEVEMENTS, check: checkAchievements, unlocked: function () { return load().achievements.unlocked; } };
+    BK.achievements = {
+        list: ACHIEVEMENTS, groups: ACH_GROUPS, check: checkAchievements,
+        unlocked: function () { return load().achievements.unlocked; },
+        progress: achievementProgress, next: achievementNext,
+        lastUnlocked: function () { return lastUnlocked.slice(); }
+    };
+    BK.signals = {
+        KEY: SIGNALS_KEY, get: readSignals, bump: bumpSignal, setMax: setSignalMax,
+        empty: emptySignals,
+        reset: function () { var sig = emptySignals(); writeSignals(sig); emit('signals', sig); return sig; }
+    };
     BK.stats = { accuracy: accuracy };
     BK.search = { all: searchAll, lessons: lessonIndex, highlight: highlight };
     BK.ui = {
