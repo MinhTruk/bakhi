@@ -54,6 +54,17 @@ function inject(file) {
   const block = '\n<!-- Bá Khí Learning Platform (chỉ thêm thẻ script, không sửa nội dung) -->\n' +
     scripts.map((src) => `<script src="${src}" defer></script>`).join('\n') + '\n';
 
+  // Chèn bk-bkt.js vào <head> (chặn, không defer) để animation chuyển trang
+  // hiện ngay khi trang mở, tránh chớp nội dung trước.
+  if (!html.includes('data-bkt-head')) {
+    const hpos = html.indexOf('</head>');
+    if (hpos >= 0) {
+      const lineStart = html.lastIndexOf('\n', hpos) + 1;
+      const headTag = `<script src="${prefix}assets/bakhi/bk-bkt.js" data-bkt-head="1"></script>`;
+      html = html.slice(0, lineStart) + headTag + '\n' + html.slice(lineStart);
+    }
+  }
+
   const idx = html.lastIndexOf('</body>');
   if (idx < 0) {
     console.warn(`! Không thấy </body>: ${rel}`);
