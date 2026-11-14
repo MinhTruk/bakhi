@@ -126,7 +126,7 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1 | Icon chuông trên header ở mọi trang (trang chủ: bên trái nút README) | ✅ | Nạp qua `bk-core.js`; tự chuyển nút nổi khi header quá chật |
+| 1 | Icon chuông trên header, **chỉ ở trang chủ** `index.html` (bên trái nút README) | ✅ | Nạp trực tiếp trong `index.html`; không có ở trang môn/bài học |
 | 2 | Mỗi phiên bản `## [x.y.z] — ngày` trong `CHANGELOG.md` là một thông báo | ✅ | Đọc trực tiếp, không nhân bản dữ liệu |
 | 3 | Badge số chưa đọc, chấm “chưa đọc” theo từng mục | ✅ | Ẩn badge khi đã đọc hết |
 | 4 | **Đánh dấu đã đọc tất cả**; bảng mở ở góc trên bên phải | ✅ | Lưu ở `bakhiNotify.v1` |
@@ -134,7 +134,7 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 6 | Nút ×, phím `Esc`, bấm nền để đóng; giữ focus hợp lý | ✅ | `role="dialog"`, `aria-modal`, `aria-labelledby` |
 | 7 | Danh sách có ngày `dd/mm/yyyy`, số thay đổi, tóm tắt 3 dòng | ✅ | Tự gộp dòng xuống của CHANGELOG |
 | 8 | Khi mở bằng `file://` không đọc được changelog → hiện giải thích thay vì lỗi | ✅ | Fallback 1 mục |
-| 9 | API `BKNotify.open/close/openArticle/markAll/items/unread/parse/setSource/refresh` | ✅ | Dùng được cho trang khác |
+| 9 | API `BKNotify.open/close/openArticle/markAll/items/unread/parse/setSource/refresh` | ✅ | API nội bộ; không tự mount ở trang khác |
 
 ## J. Không có trong sản phẩm (theo yêu cầu)
 
