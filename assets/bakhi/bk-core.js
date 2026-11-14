@@ -1331,9 +1331,17 @@
     } catch (e) {}
 })();
 
-/* Notify loader: chuông thông báo cập nhật (CHANGELOG.md) dùng chung cho mọi trang */
+/* Notify loader: chuông thông báo cập nhật (CHANGELOG.md) — CHỈ ở trang chủ */
 (function () {
     try {
+        /* Chỉ trang chủ Bá Khí mới có chuông thông báo. */
+        var p = (window.location && location.pathname) || '';
+        if (/\/studio(\/|$)/i.test(p)) return;
+        if (/\/(kt|kttx|ktgk|ktck|music)(\/|$)/i.test(p)) return;
+        var base = p.replace(/\/+$/, '');
+        var last = base.split('/').pop() || '';
+        var isHome = last === '' || /^index\.html?$/i.test(last);
+        if (!isHome) return;
         if (window.BKNotifyLoaded) return;
         if (document.querySelector('script[src*="bk-notify.js"]')) return;
         var cur = document.currentScript;
@@ -1344,6 +1352,41 @@
         s.src = src;
         s.async = false;
         (document.head || document.documentElement).appendChild(s);
+    } catch (e) {}
+})();
+
+/* Giảm animation cho máy yếu / prefers-reduced-motion: thêm lớp .lite toàn cục */
+(function () {
+    try {
+        var w = (typeof window !== 'undefined') ? window : null;
+        if (!w || !w.document) return;
+        var r = w.document.documentElement;
+        var reduce = false;
+        try { reduce = w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduce = false; }
+        var nav = w.navigator || {};
+        var cn = nav.connection || nav.mozConnection || nav.webkitConnection || {};
+        var low = !!(cn.saveData || /2g|3g/.test(cn.effectiveType || '') || (nav.hardwareConcurrency || 8) <= 4 || (nav.deviceMemory || 8) <= 4);
+        if (reduce || low) r.classList.add('lite');
+    } catch (e) {}
+})();
+
+/* Đánh dấu badge "Portal [môn]" để ẩn trên mobile (CSS bk-core). */
+(function () {
+    try {
+        var w = (typeof window !== 'undefined') ? window : null;
+        if (!w || !w.document) return;
+        var D = w.document;
+        function mark() {
+            try {
+                var nodes = D.querySelectorAll('div, span, a');
+                for (var i = 0; i < nodes.length; i++) {
+                    var t = (nodes[i].textContent || '').trim();
+                    if (/^Portal .+\d+$/i.test(t)) nodes[i].classList.add('bk-portal-badge');
+                }
+            } catch (e) {}
+        }
+        if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', mark);
+        else setTimeout(mark, 0);
     } catch (e) {}
 })();
 

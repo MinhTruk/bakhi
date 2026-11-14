@@ -267,3 +267,17 @@ html.bk-focus.bk-ambient::before { opacity: 1; }
     .bk-modal { max-height: 92vh; }
     .bk-modal-wide { max-width: 100%; }
 }
+
+/* Ẩn badge "Portal [môn]" trên mobile để header gọn. */
+@media (max-width: 640px) {
+    .bk-portal-badge { display: none !important; }
+}
+
+/* Máy yếu / giảm chuyển động: tắt animation nặng. */
+.lite .bk-toast, .lite .bk-overlay, .lite .bk-modal, .lite .bk-spinner { animation: none !important; }
+.lite .bk-progress > span { transition: none !important; }
+html.lite, html.lite * { scroll-behavior: auto !important; }
+@media (prefers-reduced-motion: reduce) {
+    .bk-toast, .bk-overlay, .bk-modal, .bk-spinner { animation: none !important; }
+    .bk-progress > span { transition: none !important; }
+}
