@@ -3,8 +3,8 @@
   "algorithm": "sha256(strip(assets/bakhi lines))",
   "files": {
     "admin/index.html": {
-      "hash": "7dbf1cb549fa36780970e3e1df6b9a7f16940d8f89f72e815e87a8c5bcb19541",
-      "bytes": 9124,
+      "hash": "5ddfbec7c6f3cea1f5c38a82c94cd85b89b913e85f5eb4a34dc88c97cd5c0154",
+      "bytes": 12299,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,

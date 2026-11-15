@@ -303,6 +303,12 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
         return list.length ? list : null;
     });
     ok('panel liệt kê cả thông báo và changelog', !!items && items.length === 5, items && String(items.length));
+    w.document.getElementById('folders').click();
+    await wait(30);
+    ok('bấm ra ngoài (khu vực khác) đóng panel thông báo', w.document.getElementById('bkcPanel').hidden === true);
+    w.document.getElementById('bkcBell').click();
+    await wait(30);
+    ok('bấm chuông mở lại panel sau khi bị đóng', w.document.getElementById('bkcPanel').hidden === false);
     const listText = w.document.querySelector('.bkc-panel-list').textContent;
     ok('thông báo khẩn có dấu ưu tiên', /Khẩn/.test(listText));
     ok('có nhóm thông báo từ giáo viên', /Thông báo từ giáo viên/.test(listText));
@@ -384,6 +390,11 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     ok('sau xác thực hiện mục Administrator Dashboard', !w.document.getElementById('bkDevDashSection').classList.contains('hidden'));
     ok('ẩn ô nhập Administrator Code sau xác thực', w.document.getElementById('bkDevAuthRow').classList.contains('hidden'));
     ok('admin-auth cấp phiên có hạn', !!login.token && !!login.expiresAt);
+    w.document.getElementById('bkDevCodeInput').value = 'test-dev-code';
+    w.document.getElementById('bkDevAuthBtn').click();
+    await wait(120);
+    const dashAfterAuth = w.document.getElementById('bkDevDashboard');
+    ok('xác thực mã không tự mở dashboard', !dashAfterAuth || dashAfterAuth.hidden !== false);
     w.openDevDashboard();
     const dash = await until(() => {
         const node = w.document.getElementById('bkDevDashboard');

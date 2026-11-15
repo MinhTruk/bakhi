@@ -1,0 +1,445 @@
+/* =========================================================================
+   Bá Khí — bk-admin.css
+   Giao diện trang đăng nhập Administrator Dashboard (chỉ dùng ở /admin).
+   Toàn bộ màu đi qua biến --adm-* nên đổi được Dark / Light tức thời.
+   ========================================================================= */
+
+html[data-bk-theme="dark"] body.bkadm,
+html.dark body.bkadm {
+    --adm-bg: #060a14;
+    --adm-bg-2: #0b1120;
+    --adm-card: rgba(13, 20, 36, .86);
+    --adm-card-solid: #0e1729;
+    --adm-line: rgba(148, 163, 184, .22);
+    --adm-line-strong: rgba(148, 163, 184, .38);
+    --adm-text: #e8eefc;
+    --adm-muted: #93a3bd;
+    --adm-input: rgba(7, 12, 24, .78);
+    --adm-input-line: rgba(148, 163, 184, .3);
+    --adm-chip: rgba(99, 102, 241, .14);
+    --adm-chip-text: #c7d2fe;
+    --adm-shadow: 0 40px 90px -40px rgba(0, 0, 0, .95);
+    --adm-orb-a: rgba(99, 102, 241, .38);
+    --adm-orb-b: rgba(168, 85, 247, .28);
+    --adm-orb-c: rgba(14, 165, 233, .18);
+    --adm-grid: rgba(148, 163, 184, .07);
+}
+
+html[data-bk-theme="light"] body.bkadm,
+html:not(.dark) body.bkadm {
+    --adm-bg: #eef2fb;
+    --adm-bg-2: #f8fafc;
+    --adm-card: rgba(255, 255, 255, .9);
+    --adm-card-solid: #ffffff;
+    --adm-line: rgba(100, 116, 139, .2);
+    --adm-line-strong: rgba(100, 116, 139, .34);
+    --adm-text: #0f172a;
+    --adm-muted: #5b6b86;
+    --adm-input: #f8fafc;
+    --adm-input-line: rgba(100, 116, 139, .28);
+    --adm-chip: rgba(99, 102, 241, .1);
+    --adm-chip-text: #4338ca;
+    --adm-shadow: 0 34px 80px -42px rgba(15, 23, 42, .45);
+    --adm-orb-a: rgba(99, 102, 241, .22);
+    --adm-orb-b: rgba(168, 85, 247, .18);
+    --adm-orb-c: rgba(14, 165, 233, .14);
+    --adm-grid: rgba(100, 116, 139, .08);
+}
+
+body.bkadm {
+    margin: 0;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    font-family: Lexend, system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--adm-bg);
+    color: var(--adm-text);
+    transition: background .3s ease, color .3s ease;
+    overflow-x: hidden;
+}
+
+/* Thuộc tính hidden phải luôn thắng các rule display của nút/khối. */
+[hidden] { display: none !important; }
+
+/* ------------------------------ Nền trang ------------------------------ */
+body.bkadm::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(760px 480px at 12% -8%, var(--adm-orb-a), transparent 62%),
+        radial-gradient(720px 460px at 96% 104%, var(--adm-orb-b), transparent 62%),
+        radial-gradient(560px 380px at 82% 6%, var(--adm-orb-c), transparent 64%),
+        linear-gradient(180deg, var(--adm-bg) 0%, var(--adm-bg-2) 100%);
+}
+
+body.bkadm::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(var(--adm-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--adm-grid) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(circle at 50% 42%, #000 0%, transparent 78%);
+    -webkit-mask-image: radial-gradient(circle at 50% 42%, #000 0%, transparent 78%);
+    opacity: .9;
+}
+
+/* ------------------------------ Thẻ đăng nhập -------------------------- */
+.bkadm-card {
+    position: relative;
+    z-index: 1;
+    width: min(28rem, 100%);
+    padding: 1.85rem 1.7rem 1.5rem;
+    border-radius: 24px;
+    background: var(--adm-card);
+    border: 1px solid var(--adm-line);
+    box-shadow: var(--adm-shadow);
+    backdrop-filter: blur(20px) saturate(120%);
+    -webkit-backdrop-filter: blur(20px) saturate(120%);
+    animation: bkadmCardIn .5s cubic-bezier(.2, .9, .25, 1.05) both;
+}
+
+.bkadm-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    border-radius: 24px 24px 0 0;
+    background: linear-gradient(90deg, #6366f1, #a855f7, #0ea5e9);
+}
+
+@keyframes bkadmCardIn {
+    from { opacity: 0; transform: translateY(18px) scale(.98); }
+}
+
+.bkadm-card.is-shake { animation: bkadmShake .42s cubic-bezier(.36, .07, .19, .97); }
+@keyframes bkadmShake {
+    10%, 90% { transform: translateX(-2px); }
+    20%, 80% { transform: translateX(4px); }
+    30%, 50%, 70% { transform: translateX(-7px); }
+    40%, 60% { transform: translateX(7px); }
+}
+
+.bkadm-topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .75rem;
+    margin-bottom: 1.1rem;
+}
+
+.bkadm-brandrow { display: flex; align-items: center; gap: .7rem; min-width: 0; }
+
+.bkadm-logo {
+    flex: 0 0 auto;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, #6366f1, #a855f7 55%, #0ea5e9);
+    box-shadow: 0 16px 34px -16px rgba(99, 102, 241, .95);
+}
+
+.bkadm-brand {
+    font-size: .68rem;
+    letter-spacing: .34em;
+    text-transform: uppercase;
+    color: var(--adm-muted);
+    line-height: 1.2;
+}
+
+.bkadm-brand-name {
+    display: block;
+    font-size: .92rem;
+    font-weight: 800;
+    letter-spacing: .01em;
+    color: var(--adm-text);
+    margin-top: .12rem;
+}
+
+.bkadm-theme-btn {
+    flex: 0 0 auto;
+    width: 2.35rem;
+    height: 2.35rem;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--adm-text);
+    background: var(--adm-chip);
+    border: 1px solid var(--adm-line);
+    font-size: .92rem;
+    transition: transform .16s ease, background .16s ease, border-color .16s ease;
+}
+
+.bkadm-theme-btn:hover { transform: translateY(-1px); background: rgba(99, 102, 241, .24); }
+.bkadm-theme-btn:active { transform: scale(.95); }
+
+.bkadm-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .28rem .58rem;
+    border-radius: 999px;
+    margin-bottom: .7rem;
+    background: var(--adm-chip);
+    color: var(--adm-chip-text);
+    border: 1px solid rgba(99, 102, 241, .28);
+    font-size: .64rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.bkadm-eyebrow .dot {
+    width: .42rem;
+    height: .42rem;
+    border-radius: 999px;
+    background: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, .18);
+}
+
+.bkadm-title {
+    margin: 0 0 .4rem;
+    font-size: 1.36rem;
+    line-height: 1.28;
+    font-weight: 800;
+    letter-spacing: -.01em;
+    color: var(--adm-text);
+}
+
+.bkadm-sub {
+    margin: 0 0 1.25rem;
+    font-size: .82rem;
+    line-height: 1.65;
+    color: var(--adm-muted);
+}
+
+.bkadm-sub strong { color: var(--adm-text); font-weight: 700; }
+
+.bkadm-field { display: flex; flex-direction: column; gap: .42rem; margin-bottom: .75rem; }
+
+.bkadm-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    font-size: .71rem;
+    font-weight: 700;
+    letter-spacing: .01em;
+    color: var(--adm-muted);
+}
+
+.bkadm-label .opt { font-weight: 500; opacity: .8; letter-spacing: 0; }
+
+.bkadm-inputwrap { position: relative; display: flex; align-items: center; }
+
+.bkadm-inputwrap > i {
+    position: absolute;
+    left: .92rem;
+    font-size: .86rem;
+    color: var(--adm-muted);
+    pointer-events: none;
+    transition: color .16s ease;
+}
+
+.bkadm-input {
+    width: 100%;
+    padding: .82rem 3rem .82rem 2.55rem;
+    border-radius: 13px;
+    font-size: .9rem;
+    letter-spacing: .02em;
+    background: var(--adm-input);
+    color: var(--adm-text);
+    border: 1px solid var(--adm-input-line);
+    outline: none;
+    font-family: inherit;
+    transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+.bkadm-input::placeholder { color: var(--adm-muted); opacity: .72; }
+
+.bkadm-input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, .2);
+}
+
+.bkadm-inputwrap:focus-within > i { color: #818cf8; }
+
+.bkadm-reveal {
+    position: absolute;
+    right: .45rem;
+    width: 2.05rem;
+    height: 2.05rem;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    cursor: pointer;
+    color: var(--adm-muted);
+    background: transparent;
+    font-size: .84rem;
+    transition: background .16s ease, color .16s ease;
+}
+
+.bkadm-reveal:hover { background: rgba(148, 163, 184, .16); color: var(--adm-text); }
+
+.bkadm-caps {
+    display: none;
+    align-items: center;
+    gap: .35rem;
+    margin: -.35rem 0 .55rem;
+    font-size: .68rem;
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.bkadm-caps.is-on { display: flex; }
+
+.bkadm-btn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .84rem 1rem;
+    border-radius: 13px;
+    border: 0;
+    cursor: pointer;
+    font: 800 .84rem/1.2 Lexend, system-ui, sans-serif;
+    letter-spacing: .02em;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: #fff;
+    box-shadow: 0 18px 34px -18px rgba(99, 102, 241, .95);
+    transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
+}
+
+.bkadm-btn:hover { filter: brightness(1.07); transform: translateY(-1px); }
+.bkadm-btn:active { transform: translateY(0) scale(.99); }
+.bkadm-btn[disabled] { opacity: .62; cursor: not-allowed; transform: none; filter: none; }
+
+.bkadm-btn-secondary {
+    margin-top: .55rem;
+    background: transparent;
+    color: var(--adm-text);
+    border: 1px solid var(--adm-line-strong);
+    box-shadow: none;
+    font-weight: 700;
+}
+
+.bkadm-btn-secondary:hover { background: rgba(148, 163, 184, .12); }
+
+.bkadm-btn-danger {
+    margin-top: .55rem;
+    background: rgba(244, 63, 94, .14);
+    color: #fb7185;
+    border: 1px solid rgba(244, 63, 94, .32);
+    box-shadow: none;
+}
+
+.bkadm-btn-danger:hover { background: rgba(244, 63, 94, .22); }
+
+.bkadm-msg {
+    min-height: 1.15rem;
+    margin: .65rem 0 0;
+    font-size: .74rem;
+    line-height: 1.5;
+    color: var(--adm-muted);
+    display: flex;
+    align-items: flex-start;
+    gap: .4rem;
+}
+
+.bkadm-msg.is-error { color: #fb7185; }
+.bkadm-msg.is-warn { color: #f59e0b; }
+.bkadm-msg.is-ok { color: #34d399; }
+
+.bkadm-msg:empty { display: block; }
+
+.bkadm-note {
+    display: flex;
+    align-items: flex-start;
+    gap: .55rem;
+    margin-top: 1rem;
+    padding: .65rem .75rem;
+    border-radius: 12px;
+    background: rgba(99, 102, 241, .08);
+    border: 1px solid rgba(99, 102, 241, .18);
+    color: var(--adm-muted);
+    font-size: .7rem;
+    line-height: 1.55;
+}
+
+.bkadm-note i { color: #818cf8; margin-top: .1rem; }
+
+.bkadm-foot {
+    margin: 1.05rem 0 0;
+    padding-top: .9rem;
+    border-top: 1px solid var(--adm-line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    flex-wrap: wrap;
+    font-size: .7rem;
+    line-height: 1.5;
+    color: var(--adm-muted);
+}
+
+.bkadm-foot a {
+    color: #818cf8;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+}
+
+.bkadm-foot a:hover { text-decoration: underline; }
+
+html[data-bk-theme="light"] body.bkadm .bkadm-foot a,
+html:not(.dark) body.bkadm .bkadm-foot a { color: #4f46e5; }
+
+.bkadm-statusline {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    font-size: .67rem;
+    color: var(--adm-muted);
+}
+
+.bkadm-statusline .dot {
+    width: .45rem;
+    height: .45rem;
+    border-radius: 999px;
+    background: #64748b;
+}
+
+.bkadm-statusline.is-ok .dot { background: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, .16); }
+.bkadm-statusline.is-error .dot { background: #f43f5e; box-shadow: 0 0 0 3px rgba(244, 63, 94, .16); }
+
+@media (max-width: 420px) {
+    body.bkadm { padding: .9rem; }
+    .bkadm-card { padding: 1.45rem 1.2rem 1.2rem; border-radius: 20px; }
+    .bkadm-title { font-size: 1.16rem; }
+    .bkadm-foot { justify-content: center; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bkadm-card, .bkadm-card.is-shake { animation: none; }
+}

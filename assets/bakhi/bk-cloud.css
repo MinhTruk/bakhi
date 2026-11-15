@@ -339,6 +339,7 @@ html.dark .bkc-menu-btn { color: #e2e8f0; }
 .bkc-menu-btn i { width: 1rem; text-align: center; color: #0ea5e9; }
 
 /* ------------------------------ Dev Dashboard ------------------------- */
+.bkc-dash[hidden] { display: none !important; }
 .bkc-dash {
     position: fixed; inset: 0; z-index: 2147481600; display: flex; flex-direction: column;
     background: var(--bkl-surface-2, #f8fafc); color: var(--bkl-text, #0f172a);

@@ -525,14 +525,6 @@
         });
 
         gate.confirm.addEventListener('click', submitIdentity);
-
-        D.addEventListener('click', function (e) {
-            if (!S.panelOpen) return;
-            if (S.panel && (S.panel.contains(e.target) || (S.bell && S.bell.contains(e.target)))) return;
-            /* Nút mở panel trong What's New không được tính là "bấm ra ngoài". */
-            if (e.target && e.target.closest && e.target.closest('#bkcWhatsNew')) return;
-            closePanel();
-        });
     }
 
     function runSearch(value) {
@@ -981,6 +973,20 @@
 
         (D.body || D.documentElement).appendChild(panel);
         S.panel = panel;
+
+        /* Bấm bất kỳ khu vực nào khác (menu 3 gạch, đổi giao diện, liên kết…)
+           đều đóng panel thông báo — không để panel nổi chồng lên các mục khác.
+           Dùng pha capture để vẫn đóng dù nơi khác gọi stopPropagation. */
+        if (!S.panelOutsideBound) {
+            S.panelOutsideBound = true;
+            D.addEventListener('click', function (e) {
+                if (!S.panelOpen) return;
+                if (S.panel && (S.panel.contains(e.target) || (S.bell && S.bell.contains(e.target)))) return;
+                /* Nút mở panel trong What's New không được tính là "bấm ra ngoài". */
+                if (e.target && e.target.closest && e.target.closest('#bkcWhatsNew')) return;
+                closePanel();
+            }, true);
+        }
 
         global.addEventListener('resize', placePanel);
         global.addEventListener('scroll', placePanel, true);
@@ -1480,7 +1486,7 @@
         if (D.querySelector('link[data-bk-cloud]')) return;
         var link = D.createElement('link');
         link.rel = 'stylesheet';
-        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=3.1.3.1';
+        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=4.0.0';
         link.setAttribute('data-bk-cloud', '1');
         (D.head || D.documentElement).appendChild(link);
     }

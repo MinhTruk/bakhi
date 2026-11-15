@@ -1,10 +1,11 @@
 /* =========================================================================
    Bá Khí — bk-devboard.js
-   Dev Dashboard: 6 tab (Overview, Notifications, Changelog, Students,
-   Activity Logs, Settings). Mọi thao tác ghi đều đi qua Edge Function
-   admin-actions với Dev session token — không có thao tác tin client.
+   Administrator Dashboard 4.0: shell hiện đại, 6 khu vực quản trị
+   (Overview, Notifications, Changelog, Students, Activity Logs, Settings).
+   Mọi thao tác ghi đều đi qua Edge Function admin-actions với admin session
+   token — client không bao giờ tự quyết định quyền.
 
-   Công khai: window.openDevDashboard(), window.BKDashboard
+   Công khai: window.openDevDashboard(), window.mountDevMenu, window.BKDashboard
    ========================================================================= */
 (function (global) {
     'use strict';
@@ -13,21 +14,42 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var TYPES = [['general', 'General'], ['announcement', 'Announcement'], ['update', 'Update'],
-        ['important', 'Important'], ['maintenance', 'Maintenance']];
-    var PRIORITIES = [['low', 'Low'], ['normal', 'Normal'], ['high', 'High'], ['critical', 'Critical']];
+    var APP_VERSION = '4.0.0';
+
+    var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
+        ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];
+    var PRIORITIES = [['low', 'Thấp'], ['normal', 'Bình thường'], ['high', 'Cao'], ['critical', 'Khẩn']];
     var CATEGORIES = [['features', 'Tính năng mới'], ['improvements', 'Cải tiến'], ['fixes', 'Sửa lỗi'],
         ['ui', 'Giao diện'], ['performance', 'Hiệu năng'], ['other', 'Khác']];
-    var TABS = [['overview', 'Overview', 'fa-gauge-high'], ['notifications', 'Notifications', 'fa-bullhorn'],
-        ['changelog', 'Changelog', 'fa-code-branch'], ['students', 'Students', 'fa-user-graduate'],
-        ['logs', 'Activity Logs', 'fa-clock-rotate-left'], ['settings', 'Settings', 'fa-gear']];
+    var TABS = [
+        ['overview', 'Tổng quan', 'fa-gauge-high'],
+        ['notifications', 'Thông báo', 'fa-bullhorn'],
+        ['changelog', 'Changelog', 'fa-code-branch'],
+        ['students', 'Học sinh', 'fa-user-graduate'],
+        ['logs', 'Nhật ký', 'fa-clock-rotate-left'],
+        ['settings', 'Cài đặt', 'fa-gear']
+    ];
+    var TAB_SUBS = {
+        overview: 'Toàn cảnh dữ liệu và hoạt động quản trị',
+        notifications: 'Soạn, xem trước và xuất bản thông báo tức thời',
+        changelog: 'Quản lý lịch sử phiên bản hiển thị trên website',
+        students: 'Danh sách học sinh, phân biệt hồ sơ trùng tên',
+        logs: 'Nhật ký thao tác quản trị trên máy chủ',
+        settings: 'Kết nối, giao diện và phiên làm việc'
+    };
+    var TYPE_META = {
+        general: { icon: 'fa-circle-info' }, announcement: { icon: 'fa-bullhorn' },
+        update: { icon: 'fa-arrow-up-right-dots' }, important: { icon: 'fa-triangle-exclamation' },
+        maintenance: { icon: 'fa-screwdriver-wrench' }
+    };
 
     var S = {
-        root: null, body: null, statusPill: null, tab: null,
-        notif: { editing: null, list: [] },
-        cl: { editing: null, sections: [], list: [] },
-        students: { q: '', status: 'all', list: [], importText: '' },
-        logs: []
+        root: null, body: null, statusPill: null, statusText: null, headSub: null,
+        tab: 'overview', status: null, statusAt: 0, cmdOpen: false,
+        notif: { editing: null, draft: null, list: [], q: '', filterType: '', filterStatus: '' },
+        cl: { editing: null, draft: null, sections: [], loadedFor: null, list: [], q: '', filterCat: '', filterStatus: '' },
+        students: { q: '', status: 'all', reviewOnly: false, list: [], importText: '', page: 1, pageSize: 20 },
+        logs: { list: [], q: '', target: '', limit: 100 }
     };
 
     /* ------------------------------ Tiện ích ------------------------------ */
@@ -37,15 +59,31 @@
         if (text != null) e.textContent = String(text);
         return e;
     }
-    function btn(label, cls, onClick) {
-        var b = h('button', 'bkc-btn' + (cls ? ' ' + cls : ''), label);
+    function icon(name) {
+        return h('i', 'fa-solid ' + (name || 'fa-circle'));
+    }
+    function btn(label, cls, onClick, iconName) {
+        var b = h('button', 'bkc-btn' + (cls ? ' ' + cls : ''));
         b.type = 'button';
+        if (iconName) b.appendChild(icon(iconName));
+        b.appendChild(D.createTextNode(label));
         if (onClick) b.addEventListener('click', onClick);
         return b;
     }
-    function toast(msg, type) {
-        if (global.BK && global.BK.ui && global.BK.ui.toast) global.BK.ui.toast(msg, type);
-        else console.log('[BKDashboard]', msg);
+    function iconBtn(iconName, title, onClick, cls) {
+        var b = h('button', 'bkc-icon-btn' + (cls ? ' ' + cls : ''));
+        b.type = 'button';
+        b.title = title;
+        b.setAttribute('aria-label', title);
+        b.appendChild(icon(iconName));
+        if (onClick) b.addEventListener('click', onClick);
+        return b;
+    }
+    function toast(message, type) {
+        if (global.BK && global.BK.ui && global.BK.ui.toast) {
+            try { global.BK.ui.toast(message, type); return; } catch (e) { }
+        }
+        console.log('[BKDashboard]', message);
     }
     function fmt(iso) {
         if (!iso) return '—';
@@ -54,6 +92,20 @@
         var p = function (n) { return n < 10 ? '0' + n : String(n); };
         return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() +
             ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    }
+    function fmtDay(iso) {
+        if (!iso) return '—';
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return '—';
+        var p = function (n) { return n < 10 ? '0' + n : String(n); };
+        return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear();
+    }
+    function greeting() {
+        var hour = new Date().getHours();
+        if (hour < 11) return 'Chào buổi sáng';
+        if (hour < 14) return 'Chào buổi trưa';
+        if (hour < 18) return 'Chào buổi chiều';
+        return 'Chào buổi tối';
     }
     function labelOf(pairs, value) {
         for (var i = 0; i < pairs.length; i++) if (pairs[i][0] === value) return pairs[i][1];
@@ -70,10 +122,11 @@
         if (onChange) s.addEventListener('change', function () { onChange(s.value); });
         return s;
     }
-    function fieldRow(labelText, control) {
+    function fieldRow(labelText, control, hint) {
         var row = h('div', 'bkc-form-row');
         row.appendChild(h('label', 'bkc-label', labelText));
         row.appendChild(control);
+        if (hint) row.appendChild(h('span', 'bkc-hint', hint));
         return row;
     }
     function input(type, placeholder, value) {
@@ -90,23 +143,26 @@
         if (rows) t.rows = rows;
         return t;
     }
-    function card(titleText, actions) {
+    function card(titleText, actions, subtitle) {
         var root = h('div', 'bkc-card');
         var head = h('div', 'bkc-card-head');
-        head.appendChild(h('h3', 'bkc-sec-title', titleText));
+        var titles = h('div', 'bkc-card-titles');
+        titles.appendChild(h('h3', 'bkc-sec-title', titleText));
+        if (subtitle) titles.appendChild(h('p', 'bkc-card-sub', subtitle));
+        head.appendChild(titles);
         if (actions && actions.length) {
             var acts = h('div', 'bkc-actions');
             actions.forEach(function (a) { acts.appendChild(a); });
             head.appendChild(acts);
         }
         root.appendChild(head);
-        var body = h('div');
+        var body = h('div', 'bkc-card-body');
         root.appendChild(body);
-        return { root: root, body: body, head: head };
+        return { root: root, body: body, head: head, titles: titles };
     }
     function alertBox(text, kind) {
         var a = h('div', 'bkc-alert' + (kind ? ' is-' + kind : ''));
-        a.appendChild(h('i', 'fa-solid fa-circle-info'));
+        a.appendChild(icon(kind === 'error' ? 'fa-circle-exclamation' : kind === 'ok' ? 'fa-circle-check' : 'fa-circle-info'));
         a.appendChild(h('span', null, text));
         return a;
     }
@@ -127,13 +183,35 @@
         var tr = h('tr');
         var td = h('td', null, text || 'Chưa có dữ liệu.');
         td.colSpan = cols;
-        td.style.color = 'var(--bkl-muted, #64748b)';
+        td.className = 'bkc-td-empty';
         tr.appendChild(td);
         tbody.appendChild(tr);
     }
-    function statCard(grid, label, value, hint) {
-        var c = h('div', 'bkc-stat');
-        c.appendChild(h('span', 'bkc-stat-label', label));
+    function emptyState(host, iconName, title, text) {
+        var box = h('div', 'bkc-empty-card');
+        var ic = h('span', 'bkc-empty-ic');
+        ic.appendChild(icon(iconName || 'fa-inbox'));
+        box.appendChild(ic);
+        box.appendChild(h('b', 'bkc-empty-title', title));
+        if (text) box.appendChild(h('p', 'bkc-empty-text', text));
+        host.appendChild(box);
+        return box;
+    }
+    function loading(host, text) {
+        var box = h('div', 'bkc-loading');
+        box.appendChild(h('span', 'bkc-spinner'));
+        box.appendChild(h('span', null, text || 'Đang tải…'));
+        host.appendChild(box);
+        return box;
+    }
+    function statCard(grid, label, value, hint, iconName, tone) {
+        var c = h('div', 'bkc-stat' + (tone ? ' is-' + tone : ''));
+        var top = h('div', 'bkc-stat-top');
+        var ic = h('span', 'bkc-stat-ic');
+        ic.appendChild(icon(iconName || 'fa-chart-simple'));
+        top.appendChild(ic);
+        top.appendChild(h('span', 'bkc-stat-label', label));
+        c.appendChild(top);
         c.appendChild(h('span', 'bkc-stat-value', String(value == null ? '—' : value)));
         if (hint) c.appendChild(h('span', 'bkc-stat-hint', hint));
         grid.appendChild(c);
@@ -141,16 +219,116 @@
     function pill(text, kind) {
         return h('span', 'bkc-pill' + (kind ? ' is-' + kind : ''), text);
     }
+    function counter(control, max) {
+        var c = h('span', 'bkc-counter');
+        function paint() {
+            var n = String(control.value || '').length;
+            c.textContent = n + '/' + max;
+            c.classList.toggle('is-over', n > max);
+        }
+        control.addEventListener('input', paint);
+        paint();
+        return c;
+    }
+    function checkbox(labelText, checked, onChange) {
+        var wrap = h('label', 'bkc-check');
+        var box = h('input');
+        box.type = 'checkbox';
+        box.checked = !!checked;
+        if (onChange) box.addEventListener('change', function () { onChange(box.checked); });
+        wrap.appendChild(box);
+        wrap.appendChild(h('span', null, labelText));
+        return { root: wrap, input: box };
+    }
+    function copyText(text, okMessage) {
+        var value = String(text == null ? '' : text);
+        if (global.navigator && navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(value).then(function () {
+                toast(okMessage || 'Đã sao chép', 'success');
+            }).catch(function () { legacyCopy(value, okMessage); });
+        } else legacyCopy(value, okMessage);
+    }
+    function legacyCopy(value, okMessage) {
+        try {
+            var t = D.createElement('textarea');
+            t.value = value;
+            t.style.position = 'fixed';
+            t.style.opacity = '0';
+            (D.body || D.documentElement).appendChild(t);
+            t.select();
+            D.execCommand('copy');
+            t.remove();
+            toast(okMessage || 'Đã sao chép', 'success');
+        } catch (e) { toast('Không sao chép được', 'error'); }
+    }
+    function download(filename, content, mime) {
+        try {
+            var blob = new global.Blob([content], { type: mime || 'text/plain;charset=utf-8' });
+            var url = global.URL.createObjectURL(blob);
+            var a = D.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.style.display = 'none';
+            (D.body || D.documentElement).appendChild(a);
+            a.click();
+            setTimeout(function () {
+                try { a.remove(); global.URL.revokeObjectURL(url); } catch (e) { }
+            }, 400);
+        } catch (e) {
+            toast('Trình duyệt không hỗ trợ tải tệp', 'error');
+        }
+    }
+    function csvCell(value) {
+        var s = String(value == null ? '' : value).replace(/"/g, '""');
+        return '"' + s + '"';
+    }
+    function csv(rows) {
+        return rows.map(function (r) { return r.map(csvCell).join(','); }).join('\r\n');
+    }
+    function basePath() {
+        try {
+            if (global.BK && global.BK.util && global.BK.util.basePath) return global.BK.util.basePath();
+        } catch (e) { }
+        return '../../';
+    }
+    function ensureDashCss() {
+        if (!D || typeof D.querySelector !== 'function') return;
+        if (D.querySelector('link[data-bk-admin-dash]')) return;
+        var link = D.createElement('link');
+        link.rel = 'stylesheet';
+        link.setAttribute('data-bk-admin-dash', '1');
+        link.href = basePath() + 'assets/bakhi/bk-admin-dashboard.css?v=' + APP_VERSION;
+        (D.head || D.documentElement).appendChild(link);
+    }
+    function adminSession() {
+        try {
+            var raw = global.sessionStorage.getItem('bakhiAdmin.v1');
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) { return null; }
+    }
+    function bumpVersion(value) {
+        var m = /^(\d+)\.(\d+)\.(\d+)$/.exec(String(value || ''));
+        if (!m) return String(value || '');
+        return m[1] + '.' + m[2] + '.' + (parseInt(m[3], 10) + 1);
+    }
+    function downloadJson(name, data) {
+        download(name, JSON.stringify(data, null, 2), 'application/json;charset=utf-8');
+    }
 
-    /** Gọi admin-actions; tự đăng xuất khi phiên hết hạn. */
+    /* -------------------------------- API --------------------------------- */
     function api(action, payload) {
+        if (!global.BKCloud || typeof global.BKCloud.adminAction !== 'function') {
+            return Promise.reject(new Error('Chưa tải được lớp Supabase. Hãy tải lại trang.'));
+        }
         return global.BKCloud.adminAction(action, payload).catch(function (err) {
             if (err && err.status === 401) {
-                global.BKCloud.adminLogout();
                 err.handled = true;
-                toast('Phiên quản trị đã hết hạn. Vui lòng nhập lại Administrator Code.', 'error');
+                try { global.BKCloud.adminLogout(); } catch (e) { }
+                toast('Phiên quản trị đã hết hạn. Vui lòng đăng nhập lại.', 'error');
                 closeDash();
-                promptCode();
+                if (typeof global.mountDevMenu === 'function') {
+                    try { global.mountDevMenu(); } catch (e) { }
+                }
             }
             throw err;
         });
@@ -165,15 +343,15 @@
         }
     }
 
-    /* --------------------------- Đăng nhập Dev ---------------------------- */
+    /* --------------------------- Đăng nhập Admin -------------------------- */
     function closeMenu() {
         var dd = D.getElementById('hamburgerDropdown');
         if (dd) dd.classList.add('hidden');
     }
 
     /**
-     * Mục Administrator Dashboard nằm trong menu 3 gạch và CHỈ hiện sau khi xác thực
-     * Administrator Code thành công (hoặc khi còn phiên quản trị trong tab hiện tại).
+     * Mục Administrator Dashboard nằm trong menu 3 gạch và CHỈ hiện sau khi xác
+     * thực Administrator Code thành công (hoặc khi còn phiên quản trị).
      */
     function mountDevMenu() {
         var row = D.getElementById('bkDevAuthRow');
@@ -183,13 +361,10 @@
         section.classList.toggle('hidden', !hasSession);
         if (row) row.classList.toggle('hidden', hasSession);
 
-        /* Trước khi xác thực: chỉ hiện nút Administrator; ô nhập mã mở khi bấm. */
         var reveal = D.getElementById('bkDevRevealBtn');
         var codeWrap = D.getElementById('bkDevCodeWrap');
         if (reveal && codeWrap) {
-            if (hasSession) {
-                codeWrap.classList.add('hidden');
-            }
+            if (hasSession) codeWrap.classList.add('hidden');
             if (!reveal.__bkBound) {
                 reveal.__bkBound = true;
                 reveal.addEventListener('click', function () {
@@ -208,24 +383,35 @@
             if (!msg) return;
             msg.textContent = text || '';
             msg.className = 'text-[10px] leading-snug ' + (
-                kind === 'error' ? 'text-rose-400' : kind === 'warn' ? 'text-amber-400' : 'text-slate-400');
+                kind === 'error' ? 'text-rose-400' : kind === 'warn' ? 'text-amber-400' :
+                    kind === 'ok' ? 'text-emerald-400' : 'text-slate-400');
         }
 
         function authenticate() {
             var code = input ? input.value.trim() : '';
-            if (!code) { setMsg('Nhập Administrator Code trước khi xác thực.', 'warn'); if (input) input.focus(); return; }
+            if (!code) {
+                setMsg('Nhập Administrator Code trước khi xác thực.', 'warn');
+                if (input) input.focus();
+                return;
+            }
+            if (!global.BKCloud || !global.BKCloud.configured || !global.BKCloud.configured()) {
+                setMsg('Chưa cấu hình Supabase cho trang này.', 'error');
+                return;
+            }
             if (submit) submit.disabled = true;
-            setMsg('Đang xác thực…', '');
+            setMsg('Đang xác thực trên máy chủ…', '');
             global.BKCloud.adminLogin(code).then(function () {
                 if (submit) submit.disabled = false;
                 if (input) input.value = '';
                 setMsg('', '');
                 mountDevMenu();
                 closeMenu();
-                openDash();
+                /* Không tự mở dashboard: chỉ báo thành công và để người dùng
+                   chủ động mở Administrator Dashboard ở tab riêng. */
+                toast('Xác thực Administrator thành công. Bảng quản trị đã sẵn sàng trong menu.', 'success');
             }).catch(function (err) {
                 if (submit) submit.disabled = false;
-                setMsg(err.message || 'Administrator Code không đúng.', 'error');
+                setMsg((err && err.message) || 'Administrator Code không đúng.', 'error');
             });
         }
 
@@ -241,7 +427,7 @@
         if (logout && !logout.__bkBound) {
             logout.__bkBound = true;
             logout.addEventListener('click', function () {
-                global.BKCloud.adminLogout();
+                if (global.BKCloud) global.BKCloud.adminLogout();
                 closeDash();
                 mountDevMenu();
                 closeMenu();
@@ -261,6 +447,10 @@
     }
 
     function promptCode() {
+        if (!global.BK || !global.BK.ui || !global.BK.ui.modal) {
+            toast('Không tải được giao diện xác thực. Hãy tải lại trang.', 'error');
+            return;
+        }
         var body = h('div', 'bkc-form');
         body.appendChild(h('p', 'bkc-muted',
             'Nhập Administrator Code để mở Administrator Dashboard. Mã được xác thực trên máy chủ và không được lưu lại.'));
@@ -299,97 +489,214 @@
         setTimeout(function () { try { code.focus(); } catch (e) { } }, 60);
     }
 
-    /* ------------------------------ Vỏ dashboard ------------------------- */
-    function openDash() {
-        build();
-        S.root.hidden = false;
-        D.documentElement.classList.add('bkc-lock');
-        switchTab('overview');
-        if (!S.escBound) {
-            S.escBound = true;
-            D.addEventListener('keydown', function (e) {
-                if (e.key !== 'Escape' || !S.root || S.root.hidden) return;
-                /* Để overlay/sheet đang mở tự xử lý trước. */
-                if (D.querySelector('.bkc-modal, .bk-overlay')) return;
-                e.preventDefault();
-                closeDash();
-            });
-        }
-    }
-    function closeDash() {
-        if (S.root) S.root.hidden = true;
-        D.documentElement.classList.remove('bkc-lock');
-        if (typeof global.BK_ON_DASH_CLOSE === 'function') {
-            try { global.BK_ON_DASH_CLOSE(); } catch (e) { }
-        }
-    }
-
+    /* ------------------------------ Vỏ dashboard -------------------------- */
     function build() {
+        ensureDashCss();
         if (S.root) return;
         var root = h('div', 'bkc-dash');
         root.id = 'bkDevDashboard';
         root.hidden = true;
 
-        var head = h('div', 'bkc-dash-head');
-        var mark = h('div', 'bkc-dash-mark');
-        mark.innerHTML = '<i class="fa-solid fa-shield-halved" aria-hidden="true"></i>';
-        head.appendChild(mark);
-        var titles = h('div', 'bkc-dash-titles');
-        titles.appendChild(h('span', 'bkc-dash-title', 'Bá Khí — Administrator Dashboard'));
-        titles.appendChild(h('span', 'bkc-dash-sub', 'Xuất bản tức thời · không cần commit GitHub'));
-        head.appendChild(titles);
+        var shell = h('div', 'bkc-shell');
 
-        var tools = h('div', 'bkc-dash-tools');
-        S.statusPill = pill('Đang kiểm tra…', 'warn');
-        tools.appendChild(S.statusPill);
-        tools.appendChild(btn('Làm mới', 'bkc-btn-ghost', function () { refreshTab(true); }));
-        tools.appendChild(btn('Đóng', 'bkc-btn-ghost', closeDash));
-        head.appendChild(tools);
-        root.appendChild(head);
+        /* Sidebar */
+        var side = h('aside', 'bkc-side');
+        side.setAttribute('aria-label', 'Điều hướng quản trị');
 
-        var tabs = h('div', 'bkc-tabs');
-        tabs.setAttribute('role', 'tablist');
+        var brand = h('div', 'bkc-brand');
+        var mark = h('span', 'bkc-brand-mark');
+        mark.appendChild(icon('fa-shield-halved'));
+        brand.appendChild(mark);
+        var brandText = h('div', 'bkc-brand-text');
+        brandText.appendChild(h('b', null, 'Bá Khí Admin'));
+        brandText.appendChild(h('span', null, 'Console v' + APP_VERSION));
+        brand.appendChild(brandText);
+        brand.appendChild(iconBtn('fa-xmark', 'Đóng điều hướng', function () { root.classList.remove('is-nav-open'); }, 'bkc-side-close'));
+        side.appendChild(brand);
+
+        var nav = h('nav', 'bkc-nav');
+        nav.setAttribute('role', 'tablist');
         TABS.forEach(function (t) {
             var b = h('button', 'bkc-tab');
             b.type = 'button';
             b.setAttribute('role', 'tab');
             b.setAttribute('data-tab', t[0]);
-            b.appendChild(h('i', 'fa-solid ' + t[2]));
-            b.appendChild(D.createTextNode(' ' + t[1]));
+            b.setAttribute('aria-selected', 'false');
+            b.appendChild(icon(t[2]));
+            b.appendChild(h('span', 'bkc-tab-label', t[1]));
+            if (t[0] === 'students') {
+                var badge = h('span', 'bkc-tab-badge');
+                badge.hidden = true;
+                b.appendChild(badge);
+            }
             b.addEventListener('click', function () { switchTab(t[0]); });
-            tabs.appendChild(b);
+            nav.appendChild(b);
         });
-        root.appendChild(tabs);
+        side.appendChild(nav);
+
+        var sideFoot = h('div', 'bkc-side-foot');
+        if (global.BKAdminTheme) {
+            var themeBtn = h('button', 'bkc-side-btn');
+            themeBtn.type = 'button';
+            themeBtn.setAttribute('data-bk-theme-toggle', '');
+            themeBtn.appendChild(icon(global.BKAdminTheme.get() === 'dark' ? 'fa-sun' : 'fa-moon'));
+            themeBtn.appendChild(h('span', null, 'Đổi giao diện'));
+            global.BKAdminTheme.bind(themeBtn);
+            sideFoot.appendChild(themeBtn);
+        }
+        sideFoot.appendChild(btn('Trợ giúp phím tắt', 'bkc-side-btn', openHelp, 'fa-keyboard'));
+        sideFoot.appendChild(btn('Đăng xuất', 'bkc-side-btn is-danger', doLogout, 'fa-right-from-bracket'));
+        var footNote = h('div', 'bkc-side-note');
+        footNote.appendChild(h('span', null, 'Phiên quản trị có hạn'));
+        sideFoot.appendChild(footNote);
+        side.appendChild(sideFoot);
+
+        shell.appendChild(side);
+
+        var scrim = h('div', 'bkc-nav-scrim');
+        scrim.addEventListener('click', function () { root.classList.remove('is-nav-open'); });
+        shell.appendChild(scrim);
+
+        /* Main */
+        var main = h('div', 'bkc-main');
+        var head = h('header', 'bkc-dash-head');
+
+        var headLeft = h('div', 'bkc-dash-left');
+        headLeft.appendChild(iconBtn('fa-bars', 'Mở điều hướng', function () { root.classList.add('is-nav-open'); }, 'bkc-nav-toggle'));
+        var titles = h('div', 'bkc-dash-titles');
+        var titleRow = h('div', 'bkc-dash-title-row');
+        titleRow.appendChild(h('span', 'bkc-dash-title', 'Administrator Dashboard'));
+        var live = h('span', 'bkc-live-dot');
+        live.title = 'Đang hoạt động';
+        titleRow.appendChild(live);
+        titles.appendChild(titleRow);
+        S.headSub = h('span', 'bkc-dash-sub', TAB_SUBS.overview);
+        titles.appendChild(S.headSub);
+        headLeft.appendChild(titles);
+        head.appendChild(headLeft);
+
+        var tools = h('div', 'bkc-dash-tools');
+        S.statusPill = pill('Đang kết nối…', 'warn');
+        S.statusPill.classList.add('bkc-status-pill');
+        tools.appendChild(S.statusPill);
+        tools.appendChild(btn('Tìm nhanh', 'bkc-btn-ghost bkc-kbd-btn', openCmd, 'fa-magnifying-glass'));
+        tools.appendChild(iconBtn('fa-rotate', 'Làm mới dữ liệu', function () { refreshTab(true); }, 'bkc-refresh'));
+        if (global.BKAdminTheme) {
+            var headTheme = h('button', 'bkc-icon-btn');
+            headTheme.type = 'button';
+            headTheme.setAttribute('data-bk-theme-toggle', '');
+            headTheme.appendChild(icon(global.BKAdminTheme.get() === 'dark' ? 'fa-sun' : 'fa-moon'));
+            global.BKAdminTheme.bind(headTheme);
+            tools.appendChild(headTheme);
+        }
+        tools.appendChild(iconBtn('fa-xmark', 'Đóng bảng quản trị', closeDash));
+        head.appendChild(tools);
+        main.appendChild(head);
 
         S.body = h('div', 'bkc-dash-body');
-        root.appendChild(S.body);
+        main.appendChild(S.body);
+        shell.appendChild(main);
+        root.appendChild(shell);
         (D.body || D.documentElement).appendChild(root);
         S.root = root;
+
+        try {
+            if (global.localStorage.getItem('bkAdminCompact') === '1') root.classList.add('is-compact');
+        } catch (e) { }
+
         checkStatus();
     }
 
     function checkStatus() {
-        api('settings.status').then(function (data) {
-            var st = data.status || {};
+        return api('settings.status').then(function (data) {
+            S.status = (data && data.status) || {};
+            S.statusAt = Date.now();
             if (S.statusPill) {
-                S.statusPill.textContent = 'Đã kết nối Supabase';
-                S.statusPill.className = 'bkc-pill is-ok';
+                S.statusPill.textContent = 'Đã kết nối';
+                S.statusPill.className = 'bkc-pill is-ok bkc-status-pill';
+                S.statusPill.title = 'Supabase Edge Functions + RLS';
             }
-            S.status = st;
-        }).catch(function () {
+            return S.status;
+        }).catch(function (err) {
+            if (err && err.handled) return null;
             if (S.statusPill) {
                 S.statusPill.textContent = 'Mất kết nối';
-                S.statusPill.className = 'bkc-pill is-off';
+                S.statusPill.className = 'bkc-pill is-off bkc-status-pill';
+                S.statusPill.title = (err && err.message) || 'Không gọi được máy chủ';
             }
+            return null;
         });
+    }
+
+    function openDash() {
+        build();
+        S.root.hidden = false;
+        D.documentElement.classList.add('bkc-lock');
+        switchTab(S.tab || 'overview');
+        if (!S.escBound) {
+            S.escBound = true;
+            D.addEventListener('keydown', onDashKey);
+        }
+    }
+    function closeDash() {
+        if (S.root) {
+            S.root.hidden = true;
+            S.root.classList.remove('is-nav-open');
+        }
+        closeCmd();
+        D.documentElement.classList.remove('bkc-lock');
+        if (typeof global.BK_ON_DASH_CLOSE === 'function') {
+            try { global.BK_ON_DASH_CLOSE(); } catch (e) { }
+        }
+    }
+    function doLogout() {
+        if (global.BKCloud) global.BKCloud.adminLogout();
+        closeDash();
+        if (typeof global.mountDevMenu === 'function') { try { global.mountDevMenu(); } catch (e) { } }
+        toast('Đã đăng xuất Administrator Dashboard', 'info');
+        try { global.dispatchEvent(new global.CustomEvent('bkadmin:logout')); } catch (e) { }
+    }
+
+    function onDashKey(e) {
+        if (!S.root || S.root.hidden) return;
+        if (e.key === 'Escape') {
+            if (S.cmdOpen) { e.preventDefault(); closeCmd(); return; }
+            if (D.querySelector('.bkc-modal, .bk-overlay')) return; /* overlay tự xử lý */
+            if (S.root.classList.contains('is-nav-open')) {
+                e.preventDefault();
+                S.root.classList.remove('is-nav-open');
+                return;
+            }
+            e.preventDefault();
+            closeDash();
+            return;
+        }
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+            e.preventDefault();
+            if (S.cmdOpen) closeCmd(); else openCmd();
+            return;
+        }
+        var tag = (e.target && e.target.tagName ? e.target.tagName : '').toLowerCase();
+        var typing = /^(input|textarea|select)$/.test(tag) || (e.target && e.target.isContentEditable);
+        if (typing) return;
+        if (e.altKey && /^[1-6]$/.test(e.key)) {
+            e.preventDefault();
+            switchTab(TABS[Number(e.key) - 1][0]);
+            return;
+        }
+        if (e.key === '?') { e.preventDefault(); openHelp(); }
     }
 
     function switchTab(tab) {
         S.tab = tab;
+        if (!S.root) return;
         Array.prototype.forEach.call(S.root.querySelectorAll('.bkc-tab'), function (b) {
-            b.classList.toggle('is-active', b.getAttribute('data-tab') === tab);
-            b.setAttribute('aria-selected', b.getAttribute('data-tab') === tab ? 'true' : 'false');
+            var on = b.getAttribute('data-tab') === tab;
+            b.classList.toggle('is-active', on);
+            b.setAttribute('aria-selected', on ? 'true' : 'false');
         });
+        if (S.headSub) S.headSub.textContent = TAB_SUBS[tab] || '';
+        S.root.classList.remove('is-nav-open');
         S.body.textContent = '';
         var pane = h('div', 'bkc-pane');
         S.body.appendChild(pane);
@@ -406,110 +713,238 @@
 
     function refreshTab(showToast) {
         switchTab(S.tab || 'overview');
+        checkStatus();
         if (showToast) toast('Đã làm mới dữ liệu', 'info');
+    }
+
+    function paintNavBadge(n) {
+        if (!S.root) return;
+        var badge = S.root.querySelector('.bkc-tab[data-tab="students"] .bkc-tab-badge');
+        if (!badge) return;
+        badge.hidden = !n;
+        badge.textContent = n > 99 ? '99+' : String(n);
     }
 
     /* -------------------------------- Overview ---------------------------- */
     function renderOverview(pane) {
+        var hero = h('section', 'bkc-hero');
+        var heroMain = h('div', 'bkc-hero-main');
+        heroMain.appendChild(h('span', 'bkc-hero-eyebrow', greeting() + ' · ' + fmtDay(new Date().toISOString())));
+        heroMain.appendChild(h('h2', 'bkc-hero-title', 'Trung tâm điều hành Bá Khí'));
+        heroMain.appendChild(h('p', 'bkc-hero-sub',
+            'Xuất bản thông báo và changelog tức thời, quản lý học sinh và theo dõi mọi thao tác quản trị.'));
+        hero.appendChild(heroMain);
+        var heroActions = h('div', 'bkc-hero-actions');
+        heroActions.appendChild(btn('Tạo thông báo', 'bkc-btn-primary', function () {
+            S.notif.editing = null; S.notif.draft = null; switchTab('notifications');
+        }, 'fa-plus'));
+        heroActions.appendChild(btn('Đăng changelog', 'bkc-btn-ghost', function () {
+            S.cl.editing = null; S.cl.draft = null; S.cl.sections = []; S.cl.loadedFor = null; switchTab('changelog');
+        }, 'fa-code-branch'));
+        hero.appendChild(heroActions);
+        pane.appendChild(hero);
+
+        var statsHost = h('div');
         var grid = h('div', 'bkc-grid');
-        pane.appendChild(grid);
+        statsHost.appendChild(grid);
+        pane.appendChild(statsHost);
+
+        var quick = card('Thao tác nhanh', null, 'Đi thẳng tới việc bạn cần làm');
+        var quickGrid = h('div', 'bkc-quick');
+        [
+            ['fa-bullhorn', 'Thông báo mới', 'Soạn và push ngay', function () {
+                S.notif.editing = null; S.notif.draft = null; switchTab('notifications');
+            }],
+            ['fa-user-plus', 'Import học sinh', 'Tải danh sách từ TXT', function () { switchTab('students'); }],
+            ['fa-file-arrow-up', 'Changelog mới', 'Ghi lại bản cập nhật', function () {
+                S.cl.editing = null; S.cl.draft = null; S.cl.sections = []; S.cl.loadedFor = null; switchTab('changelog');
+            }],
+            ['fa-clock-rotate-left', 'Nhật ký hoạt động', 'Xem thao tác gần đây', function () { switchTab('logs'); }]
+        ].forEach(function (q) {
+            var item = h('button', 'bkc-quick-item');
+            item.type = 'button';
+            var qi = h('span', 'bkc-quick-ic');
+            qi.appendChild(icon(q[0]));
+            item.appendChild(qi);
+            var qt = h('span', 'bkc-quick-text');
+            qt.appendChild(h('b', null, q[1]));
+            qt.appendChild(h('span', null, q[2]));
+            item.appendChild(qt);
+            item.appendChild(icon('fa-arrow-right'));
+            item.addEventListener('click', q[3]);
+            quickGrid.appendChild(item);
+        });
+        quick.body.appendChild(quickGrid);
+        pane.appendChild(quick.root);
+
         var reviewCard = h('div');
         pane.appendChild(reviewCard);
-        var recent = card('Recent Activity');
+
+        var recent = card('Hoạt động gần đây', [btn('Xem tất cả', 'bkc-btn-ghost', function () { switchTab('logs'); })],
+            '10 thao tác quản trị mới nhất');
         pane.appendChild(recent.root);
-        var loading = alertBox('Đang tải tổng quan…');
-        pane.appendChild(loading);
+
+        var loadingBox = loading(pane, 'Đang tải tổng quan…');
 
         api('overview').then(function (data) {
-            loading.remove();
+            loadingBox.remove();
             grid.textContent = '';
             var c = data.counts || {};
-            statCard(grid, 'Tổng số học sinh', c.students, c.studentsActive + ' đang hoạt động');
-            statCard(grid, 'Học sinh hoạt động', c.studentsActive, 'Được phép chọn tên');
-            statCard(grid, 'Tổng thông báo', c.announcements, c.announcementsPublished + ' đang hiển thị');
-            statCard(grid, 'Thông báo đang hiển thị', c.announcementsPublished, 'Trên website');
-            statCard(grid, 'Changelog', c.changelog, 'Bản ghi lịch sử');
+            var review = data.needsReview || [];
+            statCard(grid, 'Tổng học sinh', c.students, (c.studentsActive || 0) + ' đang hoạt động', 'fa-users', 'indigo');
+            statCard(grid, 'Học sinh hoạt động', c.studentsActive, 'Được phép chọn tên', 'fa-user-check', 'green');
+            statCard(grid, 'Cần phân biệt', review.length, review.length ? 'Trùng họ tên' : 'Không có hồ sơ trùng', 'fa-user-clock', review.length ? 'amber' : 'green');
+            statCard(grid, 'Tổng thông báo', c.announcements, (c.announcementsPublished || 0) + ' đang hiển thị', 'fa-bullhorn', 'purple');
+            statCard(grid, 'Đang hiển thị', c.announcementsPublished, 'Trên website', 'fa-eye', 'sky');
+            statCard(grid, 'Changelog', c.changelog, 'Bản ghi lịch sử', 'fa-code-branch', 'slate');
             statCard(grid, 'Phiên bản mới nhất', data.latestVersion ? data.latestVersion.version : '—',
-                data.latestVersion ? fmt(data.latestVersion.published_at || data.latestVersion.created_at) : 'Chưa có');
+                data.latestVersion ? fmt(data.latestVersion.published_at || data.latestVersion.created_at) : 'Chưa có', 'fa-tag', 'indigo');
             statCard(grid, 'Cập nhật gần nhất',
                 data.recentActivity && data.recentActivity[0] ? fmt(data.recentActivity[0].created_at) : '—',
-                'Hoạt động quản trị');
-            statCard(grid, 'Kết nối Supabase', 'OK', 'Edge Functions + RLS');
+                'Hoạt động quản trị', 'fa-clock', 'slate');
 
-            if (S.statusPill) { S.statusPill.textContent = 'Đã kết nối Supabase'; S.statusPill.className = 'bkc-pill is-ok'; }
+            paintNavBadge(review.length);
+            if (S.statusPill) {
+                S.statusPill.textContent = 'Đã kết nối';
+                S.statusPill.className = 'bkc-pill is-ok bkc-status-pill';
+            }
 
-            if (data.needsReview && data.needsReview.length) {
-                var warn = alertBox('Có ' + data.needsReview.length +
-                    ' hồ sơ trùng họ tên cần phân biệt trong tab Students.', 'warn');
-                reviewCard.appendChild(warn);
+            reviewCard.textContent = '';
+            if (review.length) {
+                var warnCard = card('Hồ sơ cần phân biệt', [
+                    btn('Mở danh sách', 'bkc-btn-ghost', function () {
+                        S.students.reviewOnly = true;
+                        S.students.status = 'all';
+                        S.students.page = 1;
+                        switchTab('students');
+                    })
+                ], 'Có ' + review.length + ' hồ sơ trùng họ tên cần bổ sung thông tin phân biệt.');
+                warnCard.body.appendChild(alertBox(
+                    'Có ' + review.length + ' hồ sơ trùng họ tên cần phân biệt. Hãy thêm ghi chú (lớp, STT…) để học sinh chọn đúng.', 'warn'));
+                var list = h('div', 'bkc-review-list');
+                review.forEach(function (st) {
+                    var item = h('div', 'bkc-review-item');
+                    var info = h('div', 'bkc-review-info');
+                    info.appendChild(h('b', null, st.display_name));
+                    info.appendChild(h('span', null, st.disambiguator || 'Chưa có thông tin phân biệt'));
+                    item.appendChild(info);
+                    item.appendChild(btn('Phân biệt', 'bkc-btn-primary bkc-btn-xs', function () {
+                        openStudentEditor({ id: st.id, display_name: st.display_name, disambiguator: st.disambiguator || '' }, function () {
+                            switchTab('overview');
+                        });
+                    }, 'fa-pen'));
+                    list.appendChild(item);
+                });
+                warnCard.body.appendChild(list);
+                reviewCard.appendChild(warnCard.root);
             }
 
             recent.body.textContent = '';
-            var list = h('div', 'bkc-activity');
             if (!data.recentActivity || !data.recentActivity.length) {
-                recent.body.appendChild(h('p', 'bkc-hint', 'Chưa có hoạt động quản trị nào.'));
+                emptyState(recent.body, 'fa-clock-rotate-left', 'Chưa có hoạt động', 'Các thao tác quản trị sẽ xuất hiện tại đây.');
             } else {
+                var act = h('div', 'bkc-activity');
                 data.recentActivity.forEach(function (log) {
                     var item = h('div', 'bkc-activity-item');
                     item.appendChild(h('span', 'bkc-activity-dot'));
                     var main = h('div', 'bkc-activity-main');
                     main.appendChild(h('b', null, log.action));
                     if (log.target_type) main.appendChild(h('span', null, ' · ' + log.target_type));
+                    if (log.target_id) main.appendChild(h('span', 'bkc-activity-id', ' · ' + log.target_id));
                     item.appendChild(main);
                     item.appendChild(h('span', 'bkc-activity-time', fmt(log.created_at)));
-                    list.appendChild(item);
+                    act.appendChild(item);
                 });
-                recent.body.appendChild(list);
+                recent.body.appendChild(act);
             }
         }).catch(function (err) {
-            loading.textContent = '';
-            loading.className = 'bkc-alert is-error';
-            loading.appendChild(h('span', null, err.message || 'Không tải được tổng quan.'));
+            if (!loadingBox.parentNode) return;
+            loadingBox.remove();
+            pane.appendChild(alertBox(err.message || 'Không tải được tổng quan.', 'error'));
         });
     }
 
     /* ------------------------------ Notifications ------------------------- */
     function renderNotifications(pane) {
-        var formCard = card(S.notif.editing ? 'Chỉnh sửa thông báo' : 'Tạo thông báo');
-        pane.appendChild(formCard.root);
+        var seed = S.notif.editing || S.notif.draft || {};
+        var editing = !!S.notif.editing;
+
+        var layout = h('div', 'bkc-split');
+        pane.appendChild(layout);
+
+        var formCard = card(editing ? 'Chỉnh sửa thông báo' : 'Tạo thông báo',
+            editing ? [btn('Tạo mới', 'bkc-btn-ghost', function () {
+                S.notif.editing = null; S.notif.draft = null; switchTab('notifications');
+            }, 'fa-plus')] : null,
+            'Nội dung hiển thị ngay trên website sau khi xuất bản.');
+        layout.appendChild(formCard.root);
 
         var f = h('div', 'bkc-form');
-        var title = input('text', 'Tiêu đề thông báo', S.notif.editing ? S.notif.editing.title : '');
+        var title = input('text', 'Tiêu đề thông báo', seed.title || '');
         title.maxLength = 160;
-        var content = textarea('Nội dung thông báo…', S.notif.editing ? S.notif.editing.content : '', 5);
-        content.maxLength = 20000;
-        var type = selectBox(TYPES, S.notif.editing ? S.notif.editing.type : 'general');
-        var priority = selectBox(PRIORITIES, S.notif.editing ? S.notif.editing.priority : 'normal');
-        var status = selectBox([['draft', 'Draft (chưa hiển thị)'], ['published', 'Published (hiển thị ngay)']],
-            S.notif.editing && S.notif.editing.is_published ? 'published' : 'draft');
+        var titleRow = h('div', 'bkc-label-row');
+        titleRow.appendChild(h('label', 'bkc-label', 'Tiêu đề'));
+        titleRow.appendChild(counter(title, 160));
+        f.appendChild(titleRow);
+        f.appendChild(title);
 
-        f.appendChild(fieldRow('Tiêu đề', title));
-        f.appendChild(fieldRow('Nội dung', content));
+        var content = textarea('Nội dung thông báo…', seed.content || '', 7);
+        content.maxLength = 20000;
+        var contentRow = h('div', 'bkc-label-row');
+        contentRow.appendChild(h('label', 'bkc-label', 'Nội dung'));
+        contentRow.appendChild(counter(content, 20000));
+        f.appendChild(contentRow);
+        f.appendChild(content);
+
+        var type = selectBox(TYPES, seed.type || 'general');
+        var priority = selectBox(PRIORITIES, seed.priority || 'normal');
+        var status = selectBox([['draft', 'Draft — chưa hiển thị'], ['published', 'Published — hiển thị ngay']],
+            editing && S.notif.editing.is_published ? 'published' : (seed.is_published ? 'published' : 'draft'));
         var grid = h('div', 'bkc-form-grid');
         grid.appendChild(fieldRow('Loại thông báo', type));
         grid.appendChild(fieldRow('Mức độ ưu tiên', priority));
         grid.appendChild(fieldRow('Trạng thái xuất bản', status));
         f.appendChild(grid);
 
+        var previewHost = h('div', 'bkc-live-preview');
+        f.appendChild(h('span', 'bkc-label', 'Xem trước trực tiếp'));
+        f.appendChild(previewHost);
+
+        function paintPreview() {
+            renderNotificationPreview(previewHost, {
+                title: title.value.trim() || 'Tiêu đề thông báo…',
+                content: content.value.trim() || 'Nội dung thông báo sẽ hiển thị tại đây khi bạn nhập.',
+                type: type.value,
+                priority: priority.value,
+                published_at: status.value === 'published' ? new Date().toISOString() : null
+            });
+        }
+        title.addEventListener('input', paintPreview);
+        content.addEventListener('input', paintPreview);
+        type.addEventListener('change', paintPreview);
+        priority.addEventListener('change', paintPreview);
+        status.addEventListener('change', paintPreview);
+        paintPreview();
+
         var actions = h('div', 'bkc-actions');
-        var push = btn('PUSH NOTIFICATION NOW', 'bkc-btn-push', function () {
+        actions.appendChild(btn('PUSH NOTIFICATION NOW', 'bkc-btn-push', function () {
             var payload = readNotifForm();
             if (!payload) return;
             payload.is_published = true;
             previewNotification(payload, function () { saveNotification(payload); });
-        });
-        actions.appendChild(push);
-        actions.appendChild(btn('Lưu', 'bkc-btn-primary', function () {
+        }, 'fa-paper-plane'));
+        actions.appendChild(btn(editing ? 'Lưu thay đổi' : 'Lưu', 'bkc-btn-primary', function () {
             var payload = readNotifForm();
             if (!payload) return;
             payload.is_published = status.value === 'published';
             saveNotification(payload);
-        }));
-        if (S.notif.editing) {
+        }, 'fa-floppy-disk'));
+        if (editing) {
             actions.appendChild(btn('Huỷ sửa', 'bkc-btn-ghost', function () {
                 S.notif.editing = null;
+                S.notif.draft = null;
                 switchTab('notifications');
-            }));
+            }, 'fa-xmark'));
         }
         f.appendChild(actions);
         formCard.body.appendChild(f);
@@ -526,31 +961,45 @@
         }
 
         /* Danh sách */
-        var listCard = card('Quản lý thông báo');
+        var listCard = card('Quản lý thông báo', [
+            btn('Xuất JSON', 'bkc-btn-ghost', function () {
+                downloadJson('bakhi-announcements-' + Date.now() + '.json', S.notif.list);
+            }, 'fa-download'),
+            iconBtn('fa-rotate', 'Làm mới danh sách', function () { loadNotifList(); })
+        ], 'Tìm kiếm, xem trước, ẩn hoặc nhân bản thông báo.');
         pane.appendChild(listCard.root);
-        var filters = h('div', 'bkc-actions');
+
+        var filters = h('div', 'bkc-filters');
         var search = input('search', 'Tìm theo tiêu đề…', S.notif.q || '');
-        search.style.maxWidth = '14rem';
-        var fType = selectBox([['', 'Tất cả loại']].concat(TYPES.map(function (p) { return [p[0], p[1]]; })),
-            S.notif.filterType || '');
+        search.className = 'bkc-input bkc-grow';
+        var fType = selectBox([['', 'Tất cả loại']].concat(TYPES), S.notif.filterType || '');
         var fStatus = selectBox([['', 'Tất cả trạng thái'], ['published', 'Đã xuất bản'], ['draft', 'Nháp']],
             S.notif.filterStatus || '');
         filters.appendChild(search);
         filters.appendChild(fType);
         filters.appendChild(fStatus);
+        filters.appendChild(btn('Tìm', '', function () {
+            S.notif.q = search.value.trim();
+            S.notif.filterType = fType.value;
+            S.notif.filterStatus = fStatus.value;
+            loadNotifList();
+        }, 'fa-magnifying-glass'));
         listCard.body.appendChild(filters);
         var listHost = h('div');
         listCard.body.appendChild(listHost);
 
         search.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') { S.notif.q = search.value.trim(); loadNotifList(); }
+            if (e.key === 'Enter') {
+                S.notif.q = search.value.trim();
+                loadNotifList();
+            }
         });
         fType.addEventListener('change', function () { S.notif.filterType = fType.value; loadNotifList(); });
         fStatus.addEventListener('change', function () { S.notif.filterStatus = fStatus.value; loadNotifList(); });
 
         function loadNotifList() {
             listHost.textContent = '';
-            listHost.appendChild(h('p', 'bkc-hint', 'Đang tải…'));
+            loading(listHost, 'Đang tải thông báo…');
             api('announcements.list', {
                 q: S.notif.q || '', type: S.notif.filterType || undefined,
                 status: S.notif.filterStatus || undefined, limit: 100
@@ -558,26 +1007,35 @@
                 listHost.textContent = '';
                 S.notif.list = data.announcements || [];
                 if (!S.notif.list.length) {
-                    listHost.appendChild(alertBox('Chưa có thông báo nào.', 'ok'));
+                    emptyState(listHost, 'fa-bullhorn', 'Chưa có thông báo',
+                        'Tạo thông báo đầu tiên ở phía trên — nội dung sẽ hiển thị ngay sau khi xuất bản.');
                     return;
                 }
+                var published = S.notif.list.filter(function (a) { return a.is_published; }).length;
+                listCard.titles.querySelector('.bkc-card-sub').textContent =
+                    S.notif.list.length + ' thông báo · ' + published + ' đang hiển thị';
                 var t = table(['Tiêu đề', 'Loại', 'Ưu tiên', 'Trạng thái', 'Xuất bản', 'Thao tác']);
                 S.notif.list.forEach(function (a) {
                     var tr = h('tr');
-                    tr.appendChild(h('td', null, a.title));
+                    var titleCell = h('td');
+                    titleCell.appendChild(h('b', null, a.title));
+                    titleCell.appendChild(h('span', 'bkc-row-sub', clip(a.content, 80)));
+                    tr.appendChild(titleCell);
                     tr.appendChild(h('td', null, labelOf(TYPES, a.type)));
-                    tr.appendChild(h('td', null, labelOf(PRIORITIES, a.priority)));
+                    var pCell = h('td');
+                    pCell.appendChild(pill(labelOf(PRIORITIES, a.priority),
+                        a.priority === 'critical' ? 'off' : a.priority === 'high' ? 'warn' : null));
+                    tr.appendChild(pCell);
                     var stCell = h('td');
                     stCell.appendChild(pill(a.is_published ? 'Published' : 'Draft', a.is_published ? 'ok' : 'warn'));
                     tr.appendChild(stCell);
                     tr.appendChild(h('td', null, fmt(a.published_at)));
                     var acts = h('td');
                     var row = h('div', 'bkc-row-actions');
-                    row.appendChild(btn('Xem', '', function () {
-                        previewNotification(a, null);
-                    }));
+                    row.appendChild(btn('Xem', '', function () { previewNotification(a, null); }));
                     row.appendChild(btn('Sửa', '', function () {
                         S.notif.editing = a;
+                        S.notif.draft = null;
                         switchTab('notifications');
                     }));
                     if (a.is_published) {
@@ -585,11 +1043,22 @@
                             mutate('announcements.unpublish', { id: a.id }, 'Đã ẩn thông báo');
                         }));
                     } else {
-                        row.appendChild(btn('Đăng lại', '', function () {
+                        row.appendChild(btn('Đăng', '', function () {
                             mutate('announcements.publish', { id: a.id }, 'Đã đăng thông báo');
                         }));
                     }
-                    row.appendChild(btn('Xoá', '', function () {
+                    row.appendChild(btn('Nhân bản', '', function () {
+                        S.notif.editing = null;
+                        S.notif.draft = {
+                            title: a.title + ' (bản sao)',
+                            content: a.content,
+                            type: a.type,
+                            priority: a.priority,
+                            is_published: false
+                        };
+                        switchTab('notifications');
+                    }));
+                    row.appendChild(btn('Xoá', 'is-danger', function () {
                         confirmDelete('thông báo', a.title, function () {
                             mutate('announcements.delete', { id: a.id }, 'Đã xoá thông báo');
                         });
@@ -613,9 +1082,12 @@
         }
 
         function saveNotification(payload) {
-            api('announcements.save', payload).then(function (data) {
-                toast(payload.is_published ? 'Đã xuất bản thông báo — hiển thị ngay trên website' : 'Đã lưu nháp thông báo', 'success');
+            api('announcements.save', payload).then(function () {
+                toast(payload.is_published
+                    ? 'Đã xuất bản thông báo — hiển thị ngay trên website'
+                    : 'Đã lưu nháp thông báo', 'success');
                 S.notif.editing = null;
+                S.notif.draft = null;
                 switchTab('notifications');
             }).catch(function (err) { fail(err); });
         }
@@ -623,19 +1095,60 @@
         loadNotifList();
     }
 
+    function clip(text, max) {
+        var s = String(text == null ? '' : text).replace(/\s+/g, ' ').trim();
+        return s.length > max ? s.slice(0, max - 1) + '…' : s;
+    }
+
+    function renderNotificationPreview(host, item) {
+        host.textContent = '';
+        var box = h('div', 'bkc-preview-card');
+        var line = h('div', 'bkc-sheet-line');
+        line.appendChild(h('span', 'bkc-tag bkc-tag-' + (item.type || 'general'), labelOf(TYPES, item.type || 'general')));
+        if (item.priority === 'high' || item.priority === 'critical') {
+            line.appendChild(h('span', 'bkc-tag bkc-tag-pri', labelOf(PRIORITIES, item.priority)));
+        }
+        if (item.published_at) line.appendChild(h('span', 'bkc-tag', fmt(item.published_at)));
+        else line.appendChild(h('span', 'bkc-tag', 'Draft'));
+        box.appendChild(line);
+        box.appendChild(h('h3', 'bkc-preview-title', item.title || 'Tiêu đề thông báo…'));
+        var body = h('div', 'bkc-preview-body');
+        String(item.content || '').split(/\n{2,}/).forEach(function (par) {
+            if (!par.trim()) return;
+            body.appendChild(h('p', null, par.trim()));
+        });
+        box.appendChild(body);
+        host.appendChild(box);
+    }
+
     function previewNotification(item, onConfirm) {
+        openSheet({
+            tags: [
+                ['bkc-tag-' + (item.type || 'general'), labelOf(TYPES, item.type || 'general')],
+                ['', labelOf(PRIORITIES, item.priority)],
+                ['', item.published_at ? fmt(item.published_at) : 'Draft']
+            ],
+            title: item.title,
+            body: function (host) { renderNotificationPreview(host, item); host.classList.add('is-plain'); },
+            confirmLabel: onConfirm ? 'Xác nhận & Push' : null,
+            onConfirm: onConfirm
+        });
+    }
+
+    /** Overlay xem trước dùng chung cho thông báo/changelog. */
+    function openSheet(opts) {
         var wrap = h('div', 'bkc-modal');
         wrap.setAttribute('role', 'dialog');
         wrap.setAttribute('aria-modal', 'true');
-        var sheet = h('div', 'bkc-sheet');
+        var sheet = h('div', 'bkc-sheet' + (opts.wide ? ' bkc-sheet-wide' : ''));
         var head = h('div', 'bkc-sheet-head');
         var titles = h('div', 'bkc-sheet-titles');
         var line = h('div', 'bkc-sheet-line');
-        line.appendChild(h('span', 'bkc-tag bkc-tag-' + item.type, labelOf(TYPES, item.type)));
-        line.appendChild(h('span', 'bkc-tag', labelOf(PRIORITIES, item.priority)));
-        if (item.published_at) line.appendChild(h('span', 'bkc-tag', fmt(item.published_at)));
+        (opts.tags || []).forEach(function (tag) {
+            line.appendChild(h('span', 'bkc-tag ' + (tag[0] || ''), tag[1]));
+        });
         titles.appendChild(line);
-        titles.appendChild(h('h2', 'bkc-sheet-title', item.title));
+        titles.appendChild(h('h2', 'bkc-sheet-title', opts.title || ''));
         head.appendChild(titles);
         var x = h('button', 'bkc-x', '×');
         x.type = 'button';
@@ -644,21 +1157,17 @@
         sheet.appendChild(head);
 
         var body = h('div', 'bkc-sheet-body');
-        String(item.content || '').split(/\n{2,}/).forEach(function (par) {
-            if (!par.trim()) return;
-            var p = h('p');
-            p.textContent = par.trim();
-            body.appendChild(p);
-        });
+        if (typeof opts.body === 'function') opts.body(body);
+        else (opts.body || []).forEach(function (node) { body.appendChild(node); });
         sheet.appendChild(body);
 
         var foot = h('div', 'bkc-sheet-foot');
         foot.appendChild(btn('Đóng', 'bkc-btn-ghost', close));
-        if (onConfirm) {
-            foot.appendChild(btn('Xác nhận & Push', 'bkc-btn-primary', function () {
+        if (opts.confirmLabel) {
+            foot.appendChild(btn(opts.confirmLabel, 'bkc-btn-primary', function () {
                 close();
-                onConfirm();
-            }));
+                if (opts.onConfirm) opts.onConfirm();
+            }, 'fa-paper-plane'));
         }
         sheet.appendChild(foot);
         wrap.appendChild(sheet);
@@ -669,7 +1178,6 @@
         function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close(); } }
         function close() {
             wrap.remove();
-            /* Chỉ mở khoá trang khi không còn dashboard phía sau. */
             if (!S.root || S.root.hidden) D.documentElement.classList.remove('bkc-lock');
             D.removeEventListener('keydown', onKey);
         }
@@ -682,6 +1190,10 @@
         body.appendChild(h('p', 'bkc-muted', 'Bạn sắp xoá ' + what + ':'));
         body.appendChild(h('p', 'bkc-confirm-name', name));
         body.appendChild(h('p', 'bkc-muted', 'Thao tác này không thể hoàn tác.'));
+        if (!global.BK || !global.BK.ui || !global.BK.ui.modal) {
+            if (global.confirm('Xoá ' + what + ' "' + name + '"?')) onYes();
+            return;
+        }
         global.BK.ui.modal({
             title: 'XÁC NHẬN XOÁ',
             body: body,
@@ -693,54 +1205,90 @@
     }
 
     /* -------------------------------- Changelog --------------------------- */
+    function ensureChangelogSections() {
+        if (!S.cl.sections.length) {
+            S.cl.sections = [{ category: 'features', text: '' }];
+        }
+        if (S.cl.editing && S.cl.loadedFor !== S.cl.editing.id) {
+            S.cl.loadedFor = S.cl.editing.id;
+            S.cl.sections = (S.cl.editing.content || []).map(function (s) {
+                return { category: s.category || 'other', text: (s.items || []).join('\n') };
+            });
+            if (!S.cl.sections.length) S.cl.sections = [{ category: 'features', text: '' }];
+        }
+    }
+
     function renderChangelog(pane) {
         var editing = S.cl.editing;
-        var formCard = card(editing ? 'Chỉnh sửa changelog' : 'Tạo changelog');
-        pane.appendChild(formCard.root);
+        ensureChangelogSections();
+
+        var layout = h('div', 'bkc-split');
+        pane.appendChild(layout);
+
+        var formCard = card(editing ? 'Chỉnh sửa changelog' : 'Tạo changelog',
+            editing ? [btn('Tạo mới', 'bkc-btn-ghost', function () {
+                S.cl.editing = null; S.cl.draft = null; S.cl.sections = []; S.cl.loadedFor = null;
+                switchTab('changelog');
+            }, 'fa-plus')] : null,
+            'Mỗi mục thay đổi là một dòng; nhóm theo danh mục để dễ đọc.');
+        layout.appendChild(formCard.root);
 
         var f = h('div', 'bkc-form');
-        var version = input('text', '2.5.0', editing ? editing.version : '');
+        var version = input('text', '4.0.0', editing ? editing.version : (S.cl.draft ? S.cl.draft.version : ''));
         version.maxLength = 32;
-        var title = input('text', 'Tiêu đề bản cập nhật', editing ? editing.title : '');
-        var summary = input('text', 'Mô tả ngắn (không bắt buộc)', editing ? (editing.summary || '') : '');
-        var category = selectBox(CATEGORIES, editing ? editing.category : 'features');
+        var title = input('text', 'Tiêu đề bản cập nhật', editing ? editing.title : (S.cl.draft ? S.cl.draft.title : ''));
+        var summary = input('text', 'Mô tả ngắn (không bắt buộc)', editing ? (editing.summary || '') : (S.cl.draft ? S.cl.draft.summary : ''));
+        var category = selectBox(CATEGORIES, editing ? editing.category : (S.cl.draft ? S.cl.draft.category : 'features'));
 
-        f.appendChild(fieldRow('Version', version));
-        f.appendChild(fieldRow('Title', title));
-        f.appendChild(fieldRow('Description', summary));
-        f.appendChild(fieldRow('Category', category));
+        var meta = h('div', 'bkc-form-grid');
+        meta.appendChild(fieldRow('Phiên bản', version));
+        meta.appendChild(fieldRow('Danh mục chính', category));
+        f.appendChild(meta);
+        f.appendChild(fieldRow('Tiêu đề', title));
+        f.appendChild(fieldRow('Mô tả ngắn', summary));
 
         var sectionsWrap = h('div', 'bkc-form-row');
-        sectionsWrap.appendChild(h('label', 'bkc-label', 'Danh sách thay đổi (mỗi dòng một mục)'));
-        var sections = h('div', 'bkc-sections');
-        sectionsWrap.appendChild(sections);
-        var addSection = btn('+ Thêm mục', 'bkc-btn-ghost', function () {
+        var secHead = h('div', 'bkc-label-row');
+        secHead.appendChild(h('label', 'bkc-label', 'Danh sách thay đổi'));
+        secHead.appendChild(btn('+ Thêm mục', 'bkc-btn-ghost bkc-btn-xs', function () {
             S.cl.sections.push({ category: 'features', text: '' });
             paintSections();
-        });
-        sectionsWrap.appendChild(addSection);
+        }, 'fa-plus'));
+        sectionsWrap.appendChild(secHead);
+        var sections = h('div', 'bkc-sections');
+        sectionsWrap.appendChild(sections);
         f.appendChild(sectionsWrap);
-
-        if (!S.cl.sections.length) {
-            var initial = editing && Array.isArray(editing.content) ? editing.content : [{ category: 'features', items: [] }];
-            S.cl.sections = initial.map(function (s) {
-                return { category: s.category || 'features', text: (s.items || []).join('\n') };
-            });
-        }
 
         function paintSections() {
             sections.textContent = '';
             S.cl.sections.forEach(function (section, index) {
                 var row = h('div', 'bkc-section-row');
-                row.appendChild(selectBox(CATEGORIES, section.category, function (v) { section.category = v; }));
+                var cat = selectBox(CATEGORIES, section.category, function (v) { section.category = v; });
+                row.appendChild(cat);
                 var ta = textarea('Added Student Identification.\nAdded Notification Center.', section.text, 3);
                 ta.addEventListener('input', function () { section.text = ta.value; });
                 row.appendChild(ta);
-                row.appendChild(btn('×', 'bkc-btn-ghost', function () {
+                var tools = h('div', 'bkc-section-tools');
+                tools.appendChild(btn('↑', 'bkc-btn-ghost bkc-btn-xs', function () {
+                    if (index === 0) return;
+                    var tmp = S.cl.sections[index - 1];
+                    S.cl.sections[index - 1] = S.cl.sections[index];
+                    S.cl.sections[index] = tmp;
+                    paintSections();
+                }));
+                tools.appendChild(btn('↓', 'bkc-btn-ghost bkc-btn-xs', function () {
+                    if (index >= S.cl.sections.length - 1) return;
+                    var tmp = S.cl.sections[index + 1];
+                    S.cl.sections[index + 1] = S.cl.sections[index];
+                    S.cl.sections[index] = tmp;
+                    paintSections();
+                }));
+                tools.appendChild(btn('×', 'bkc-btn-ghost bkc-btn-xs is-danger', function () {
                     S.cl.sections.splice(index, 1);
                     if (!S.cl.sections.length) S.cl.sections.push({ category: 'features', text: '' });
                     paintSections();
                 }));
+                row.appendChild(tools);
                 sections.appendChild(row);
             });
         }
@@ -752,19 +1300,23 @@
             if (!payload) return;
             payload.is_published = true;
             previewChangelog(payload, function () { saveChangelog(payload); });
-        }));
+        }, 'fa-paper-plane'));
         actions.appendChild(btn('Lưu nháp', 'bkc-btn-primary', function () {
             var payload = readForm();
             if (!payload) return;
             payload.is_published = false;
             saveChangelog(payload);
-        }));
+        }, 'fa-floppy-disk'));
+        actions.appendChild(btn('Gợi ý phiên bản', 'bkc-btn-ghost', function () {
+            var latest = S.cl.list[0];
+            version.value = latest ? bumpVersion(latest.version) : (version.value || '4.0.0');
+            toast('Đã điền phiên bản tiếp theo', 'info');
+        }, 'fa-wand-magic-sparkles'));
         if (editing) {
             actions.appendChild(btn('Huỷ sửa', 'bkc-btn-ghost', function () {
-                S.cl.editing = null;
-                S.cl.sections = [];
+                S.cl.editing = null; S.cl.draft = null; S.cl.sections = []; S.cl.loadedFor = null;
                 switchTab('changelog');
-            }));
+            }, 'fa-xmark'));
         }
         f.appendChild(actions);
         formCard.body.appendChild(f);
@@ -773,7 +1325,7 @@
             var v = version.value.trim();
             var t = title.value.trim();
             if (!/^[0-9A-Za-z][0-9A-Za-z.+_-]{0,31}$/.test(v)) {
-                toast('Version không hợp lệ (chữ, số, . + _ -).', 'error');
+                toast('Phiên bản không hợp lệ (chữ, số, . + _ -).', 'error');
                 version.focus();
                 return null;
             }
@@ -794,24 +1346,40 @@
 
         function saveChangelog(payload) {
             api('changelog.save', payload).then(function () {
-                toast(payload.is_published ? 'Đã xuất bản changelog — hiển thị ngay trên website' : 'Đã lưu nháp changelog', 'success');
+                toast(payload.is_published
+                    ? 'Đã xuất bản changelog — hiển thị ngay trên website'
+                    : 'Đã lưu nháp changelog', 'success');
                 S.cl.editing = null;
+                S.cl.draft = null;
                 S.cl.sections = [];
+                S.cl.loadedFor = null;
                 switchTab('changelog');
             }).catch(function (err) { fail(err); });
         }
 
         /* Danh sách */
-        var listCard = card('Lịch sử phiên bản');
+        var listCard = card('Lịch sử phiên bản', [
+            btn('Xuất JSON', 'bkc-btn-ghost', function () {
+                downloadJson('bakhi-changelog-' + Date.now() + '.json', S.cl.list);
+            }, 'fa-download'),
+            iconBtn('fa-rotate', 'Làm mới danh sách', function () { load(); })
+        ], 'Các phiên bản đã đăng hoặc đang ở dạng nháp.');
         pane.appendChild(listCard.root);
-        var filters = h('div', 'bkc-actions');
-        var search = input('search', 'Tìm theo version…', S.cl.q || '');
-        search.style.maxWidth = '14rem';
-        var fCat = selectBox([['', 'Tất cả danh mục']].concat(CATEGORIES.map(function (p) { return [p[0], p[1]]; })), S.cl.filterCat || '');
-        var fStatus = selectBox([['', 'Tất cả trạng thái'], ['published', 'Đã xuất bản'], ['draft', 'Nháp']], S.cl.filterStatus || '');
+        var filters = h('div', 'bkc-filters');
+        var search = input('search', 'Tìm theo phiên bản…', S.cl.q || '');
+        search.className = 'bkc-input bkc-grow';
+        var fCat = selectBox([['', 'Tất cả danh mục']].concat(CATEGORIES), S.cl.filterCat || '');
+        var fStatus = selectBox([['', 'Tất cả trạng thái'], ['published', 'Đã xuất bản'], ['draft', 'Nháp']],
+            S.cl.filterStatus || '');
         filters.appendChild(search);
         filters.appendChild(fCat);
         filters.appendChild(fStatus);
+        filters.appendChild(btn('Tìm', '', function () {
+            S.cl.q = search.value.trim();
+            S.cl.filterCat = fCat.value;
+            S.cl.filterStatus = fStatus.value;
+            load();
+        }, 'fa-magnifying-glass'));
         listCard.body.appendChild(filters);
         var listHost = h('div');
         listCard.body.appendChild(listHost);
@@ -824,7 +1392,7 @@
 
         function load() {
             listHost.textContent = '';
-            listHost.appendChild(h('p', 'bkc-hint', 'Đang tải…'));
+            loading(listHost, 'Đang tải changelog…');
             api('changelog.list', {
                 q: S.cl.q || '', category: S.cl.filterCat || undefined,
                 status: S.cl.filterStatus || undefined, limit: 100
@@ -832,14 +1400,18 @@
                 listHost.textContent = '';
                 S.cl.list = data.changelog || [];
                 if (!S.cl.list.length) {
-                    listHost.appendChild(alertBox('Chưa có phiên bản nào.', 'ok'));
+                    emptyState(listHost, 'fa-code-branch', 'Chưa có phiên bản nào',
+                        'Tạo bản ghi đầu tiên để thông báo thay đổi cho học sinh.');
                     return;
                 }
                 var t = table(['Version', 'Tiêu đề', 'Danh mục', 'Trạng thái', 'Xuất bản', 'Thao tác']);
                 S.cl.list.forEach(function (entry) {
                     var tr = h('tr');
                     tr.appendChild(h('td', 'bkc-code', entry.version));
-                    tr.appendChild(h('td', null, entry.title));
+                    var titleCell = h('td');
+                    titleCell.appendChild(h('b', null, entry.title));
+                    if (entry.summary) titleCell.appendChild(h('span', 'bkc-row-sub', entry.summary));
+                    tr.appendChild(titleCell);
                     tr.appendChild(h('td', null, labelOf(CATEGORIES, entry.category)));
                     var stCell = h('td');
                     stCell.appendChild(pill(entry.is_published ? 'Published' : 'Draft', entry.is_published ? 'ok' : 'warn'));
@@ -847,11 +1419,11 @@
                     tr.appendChild(h('td', null, fmt(entry.published_at)));
                     var acts = h('td');
                     var row = h('div', 'bkc-row-actions');
+                    row.appendChild(btn('Xem', '', function () { previewChangelog(entry, null); }));
                     row.appendChild(btn('Sửa', '', function () {
                         S.cl.editing = entry;
-                        S.cl.sections = (entry.content || []).map(function (s) {
-                            return { category: s.category || 'other', text: (s.items || []).join('\n') };
-                        });
+                        S.cl.draft = null;
+                        S.cl.loadedFor = null;
                         switchTab('changelog');
                     }));
                     if (entry.is_published) {
@@ -859,11 +1431,26 @@
                             mutate('changelog.unpublish', { id: entry.id }, 'Đã ẩn phiên bản');
                         }));
                     } else {
-                        row.appendChild(btn('Đăng lại', '', function () {
+                        row.appendChild(btn('Đăng', '', function () {
                             mutate('changelog.publish', { id: entry.id }, 'Đã đăng phiên bản');
                         }));
                     }
-                    row.appendChild(btn('Xoá', '', function () {
+                    row.appendChild(btn('Nhân bản', '', function () {
+                        S.cl.editing = null;
+                        S.cl.draft = {
+                            version: bumpVersion(entry.version),
+                            title: entry.title + ' (bản sao)',
+                            summary: entry.summary || '',
+                            category: entry.category
+                        };
+                        S.cl.sections = (entry.content || []).map(function (s) {
+                            return { category: s.category || 'other', text: (s.items || []).join('\n') };
+                        });
+                        if (!S.cl.sections.length) S.cl.sections = [{ category: 'features', text: '' }];
+                        S.cl.loadedFor = null;
+                        switchTab('changelog');
+                    }));
+                    row.appendChild(btn('Xoá', 'is-danger', function () {
                         confirmDelete('phiên bản', entry.version, function () {
                             mutate('changelog.delete', { id: entry.id }, 'Đã xoá phiên bản');
                         });
@@ -890,308 +1477,775 @@
     }
 
     function previewChangelog(payload, onConfirm) {
-        var item = { title: payload.title, type: 'update', priority: 'normal', content: '' };
-        var wrap = h('div', 'bkc-modal');
-        wrap.setAttribute('role', 'dialog');
-        wrap.setAttribute('aria-modal', 'true');
-        var sheet = h('div', 'bkc-sheet');
-        var head = h('div', 'bkc-sheet-head');
-        var titles = h('div', 'bkc-sheet-titles');
-        var line = h('div', 'bkc-sheet-line');
-        line.appendChild(h('span', 'bkc-tag bkc-tag-update', 'Phiên bản ' + payload.version));
-        line.appendChild(h('span', 'bkc-tag', labelOf(CATEGORIES, payload.category)));
-        titles.appendChild(line);
-        titles.appendChild(h('h2', 'bkc-sheet-title', payload.title));
-        head.appendChild(titles);
-        var x = h('button', 'bkc-x', '×');
-        x.type = 'button';
-        x.setAttribute('aria-label', 'Đóng xem trước changelog');
-        head.appendChild(x);
-        sheet.appendChild(head);
-
-        var body = h('div', 'bkc-sheet-body');
-        if (payload.summary) body.appendChild(h('p', 'bkc-wn-sum', payload.summary));
-        payload.content.forEach(function (section) {
-            var cat = h('div', 'bkc-cat');
-            cat.appendChild(h('div', 'bkc-cat-title', labelOf(CATEGORIES, section.category)));
-            var ul = h('ul', 'bkc-cat-list');
-            section.items.forEach(function (text) { ul.appendChild(h('li', null, text)); });
-            cat.appendChild(ul);
-            body.appendChild(cat);
+        openSheet({
+            wide: true,
+            tags: [['bkc-tag-update', 'Phiên bản ' + payload.version], ['', labelOf(CATEGORIES, payload.category)]],
+            title: payload.title,
+            body: function (host) {
+                if (payload.summary) host.appendChild(h('p', 'bkc-wn-sum', payload.summary));
+                (payload.content || []).forEach(function (section) {
+                    var cat = h('div', 'bkc-cat');
+                    cat.appendChild(h('div', 'bkc-cat-title', labelOf(CATEGORIES, section.category)));
+                    var ul = h('ul', 'bkc-cat-list');
+                    (section.items || []).forEach(function (text) { ul.appendChild(h('li', null, text)); });
+                    cat.appendChild(ul);
+                    host.appendChild(cat);
+                });
+            },
+            confirmLabel: onConfirm ? 'Xác nhận & Push' : null,
+            onConfirm: onConfirm
         });
-        sheet.appendChild(body);
-
-        var foot = h('div', 'bkc-sheet-foot');
-        foot.appendChild(btn('Đóng', 'bkc-btn-ghost', close));
-        foot.appendChild(btn('Xác nhận & Push', 'bkc-btn-primary', function () { close(); onConfirm(); }));
-        sheet.appendChild(foot);
-        wrap.appendChild(sheet);
-        wrap.addEventListener('click', function (e) { if (e.target === wrap) close(); });
-        (D.body || D.documentElement).appendChild(wrap);
-        D.documentElement.classList.add('bkc-lock');
-        D.addEventListener('keydown', onKey);
-        function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close(); } }
-        function close() {
-            wrap.remove();
-            /* Chỉ mở khoá trang khi không còn dashboard phía sau. */
-            if (!S.root || S.root.hidden) D.documentElement.classList.remove('bkc-lock');
-            D.removeEventListener('keydown', onKey);
-        }
-        x.addEventListener('click', close);
-        x.focus();
     }
 
     /* -------------------------------- Students ---------------------------- */
     function renderStudents(pane) {
-        var importCard = card('Import danh sách từ students.txt');
+        var importCard = card('Import danh sách học sinh', null,
+            'Mỗi dòng một họ tên đầy đủ. Dòng trống và dòng bắt đầu bằng “#” được bỏ qua.');
         pane.appendChild(importCard.root);
 
         var info = h('div', 'bkc-form');
-        info.appendChild(h('p', 'bkc-hint',
-            'Mỗi dòng là một họ tên đầy đủ (UTF-8, tiếng Việt có dấu). Dòng trống và dòng bắt đầu bằng “#” được bỏ qua. ' +
-            'Danh sách được xử lý trên máy chủ và không được lưu vào repository hay GitHub Pages.'));
-
+        var drop = h('div', 'bkc-drop');
+        drop.appendChild(icon('fa-cloud-arrow-up'));
+        drop.appendChild(h('b', null, 'Kéo thả tệp .txt vào đây'));
+        drop.appendChild(h('span', null, 'hoặc bấm để chọn tệp — dữ liệu chỉ gửi tới máy chủ, không lưu vào repository.'));
         var fileInput = h('input');
         fileInput.type = 'file';
         fileInput.accept = '.txt,text/plain';
-        fileInput.className = 'bkc-input';
+        fileInput.hidden = true;
+        drop.appendChild(fileInput);
         var ta = textarea('Dán nội dung students.txt vào đây (hoặc chọn tệp ở trên)…', S.students.importText || '', 6);
+        var parseHint = h('span', 'bkc-hint');
+        var resultHost = h('div');
 
-        fileInput.addEventListener('change', function () {
-            var file = fileInput.files && fileInput.files[0];
+        function paintParse() {
+            var lines = String(ta.value || '').split(/\r?\n/);
+            var names = [];
+            var seen = {};
+            var dup = 0;
+            lines.forEach(function (line) {
+                var s = line.trim();
+                if (!s || s.charAt(0) === '#') return;
+                var key = s.replace(/\s+/g, ' ').toLowerCase();
+                if (seen[key]) dup++;
+                seen[key] = true;
+                names.push(s);
+            });
+            S.students.importText = ta.value;
+            parseHint.textContent = names.length
+                ? names.length + ' họ tên hợp lệ' + (dup ? ' · ' + dup + ' dòng trùng trong tệp' : '')
+                : 'Chưa có dòng hợp lệ nào.';
+        }
+
+        ta.addEventListener('input', paintParse);
+        paintParse();
+
+        function readFile(file) {
             if (!file) return;
+            if (file.size > 2 * 1024 * 1024) { toast('Tệp quá lớn (tối đa 2 MB).', 'error'); return; }
             var reader = new FileReader();
-            reader.onload = function () { ta.value = String(reader.result || ''); S.students.importText = ta.value; };
+            reader.onload = function () {
+                ta.value = String(reader.result || '');
+                paintParse();
+                drop.classList.add('is-loaded');
+                var label = drop.querySelector('b');
+                if (label) label.textContent = file.name;
+            };
             reader.onerror = function () { toast('Không đọc được tệp TXT.', 'error'); };
             reader.readAsText(file, 'utf-8');
+        }
+
+        drop.addEventListener('click', function () { fileInput.click(); });
+        drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('is-over'); });
+        drop.addEventListener('dragleave', function () { drop.classList.remove('is-over'); });
+        drop.addEventListener('drop', function (e) {
+            e.preventDefault();
+            drop.classList.remove('is-over');
+            var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+            readFile(file);
+        });
+        fileInput.addEventListener('change', function () {
+            readFile(fileInput.files && fileInput.files[0]);
+            fileInput.value = '';
         });
 
-        info.appendChild(fieldRow('Tệp TXT', fileInput));
+        info.appendChild(drop);
         info.appendChild(fieldRow('Nội dung', ta));
+        info.appendChild(parseHint);
 
-        var resultHost = h('div');
         var importBtn = btn('Import danh sách', 'bkc-btn-primary', function () {
             var text = ta.value;
             if (!text.trim()) { toast('Chưa có nội dung để import.', 'warn'); return; }
             importBtn.disabled = true;
             resultHost.textContent = '';
-            resultHost.appendChild(alertBox('Đang import…'));
+            loading(resultHost, 'Đang import danh sách…');
             global.BKCloud.importStudents(text).then(function (data) {
                 importBtn.disabled = false;
                 resultHost.textContent = '';
                 var s = data.summary || {};
                 resultHost.appendChild(alertBox(
-                    'Đã xử lý ' + s.added + ' thêm mới · ' + s.updated + ' cập nhật · ' +
-                    s.unchanged + ' không đổi · ' + s.duplicated + ' trùng · ' + s.skipped + ' bỏ qua.',
-                    'ok'));
+                    'Đã xử lý ' + (s.added || 0) + ' thêm mới · ' + (s.updated || 0) + ' cập nhật · ' +
+                    (s.unchanged || 0) + ' không đổi · ' + (s.duplicated || 0) + ' trùng · ' +
+                    (s.skipped || 0) + ' bỏ qua.', 'ok'));
                 if (data.duplicates && data.duplicates.length) {
-                    var warn = alertBox('Họ tên trùng cần Admin phân biệt: ' +
-                        data.duplicates.map(function (d) { return d.name; }).join(', '), 'warn');
-                    resultHost.appendChild(warn);
+                    resultHost.appendChild(alertBox('Họ tên trùng cần Admin phân biệt: ' +
+                        data.duplicates.map(function (d) { return d.name; }).join(', '), 'warn'));
                 }
                 S.students.importText = '';
                 ta.value = '';
+                paintParse();
+                drop.classList.remove('is-loaded');
+                var label = drop.querySelector('b');
+                if (label) label.textContent = 'Kéo thả tệp .txt vào đây';
                 loadStudents();
             }).catch(function (err) {
                 importBtn.disabled = false;
                 resultHost.textContent = '';
                 resultHost.appendChild(alertBox(err.message || 'Import thất bại.', 'error'));
             });
-        });
+        }, 'fa-file-import');
         var acts = h('div', 'bkc-actions');
         acts.appendChild(importBtn);
+        acts.appendChild(btn('Xoá nội dung', 'bkc-btn-ghost', function () {
+            ta.value = '';
+            paintParse();
+            resultHost.textContent = '';
+        }, 'fa-eraser'));
         info.appendChild(acts);
         info.appendChild(resultHost);
         importCard.body.appendChild(info);
 
         /* Danh sách học sinh */
-        var listCard = card('Danh sách học sinh');
+        var listCard = card('Danh sách học sinh', [
+            btn('Xuất CSV', 'bkc-btn-ghost', function () { exportStudents(); }, 'fa-file-csv'),
+            iconBtn('fa-rotate', 'Làm mới danh sách', function () { loadStudents(); })
+        ], 'Tìm kiếm, phân biệt hồ sơ trùng tên và quản lý trạng thái.');
         pane.appendChild(listCard.root);
 
-        var filters = h('div', 'bkc-actions');
+        var filters = h('div', 'bkc-filters');
         var search = input('search', 'Tìm theo họ tên…', S.students.q || '');
-        search.style.maxWidth = '15rem';
-        var fStatus = selectBox([['all', 'Tất cả'], ['active', 'Đang hoạt động'], ['inactive', 'Đã vô hiệu']],
+        search.className = 'bkc-input bkc-grow';
+        var fStatus = selectBox([['all', 'Tất cả trạng thái'], ['active', 'Đang hoạt động'], ['inactive', 'Đã vô hiệu']],
             S.students.status || 'all');
+        var review = checkbox('Chỉ hồ sơ cần phân biệt', S.students.reviewOnly, function (v) {
+            S.students.reviewOnly = v;
+            S.students.page = 1;
+            loadStudents();
+        });
         filters.appendChild(search);
         filters.appendChild(fStatus);
+        filters.appendChild(review.root);
+        filters.appendChild(btn('Tìm', '', function () {
+            S.students.q = search.value.trim();
+            S.students.status = fStatus.value;
+            S.students.page = 1;
+            loadStudents();
+        }, 'fa-magnifying-glass'));
         listCard.body.appendChild(filters);
 
+        var summaryHost = h('div', 'bkc-summary-row');
+        listCard.body.appendChild(summaryHost);
         var listHost = h('div');
         listCard.body.appendChild(listHost);
+        var pageHost = h('div', 'bkc-pager');
+        listCard.body.appendChild(pageHost);
 
         search.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') { S.students.q = search.value.trim(); loadStudents(); }
+            if (e.key === 'Enter') {
+                S.students.q = search.value.trim();
+                S.students.page = 1;
+                loadStudents();
+            }
         });
-        fStatus.addEventListener('change', function () { S.students.status = fStatus.value; loadStudents(); });
+        fStatus.addEventListener('change', function () {
+            S.students.status = fStatus.value;
+            S.students.page = 1;
+            loadStudents();
+        });
+
+        function exportStudents() {
+            var rows = [['Họ tên', 'student_id', 'Mã nội bộ', 'Phân biệt', 'Trạng thái', 'Cần phân biệt', 'Tạo', 'Đồng bộ gần nhất']];
+            S.students.list.forEach(function (st) {
+                rows.push([st.display_name, st.id, st.student_code, st.disambiguator || '',
+                    st.is_active ? 'Active' : 'Inactive', st.needs_review ? 'Có' : 'Không',
+                    fmt(st.created_at), fmt(st.last_sync_at)]);
+            });
+            download('bakhi-students-' + Date.now() + '.csv', '\ufeff' + csv(rows), 'text/csv;charset=utf-8');
+        }
 
         function loadStudents() {
             listHost.textContent = '';
-            listHost.appendChild(h('p', 'bkc-hint', 'Đang tải…'));
+            loading(listHost, 'Đang tải danh sách học sinh…');
+            pageHost.textContent = '';
             api('students.list', {
                 q: S.students.q || '', status: S.students.status, limit: 200
             }).then(function (data) {
                 listHost.textContent = '';
                 S.students.list = data.students || [];
+                var active = S.students.list.filter(function (s) { return s.is_active; }).length;
+                var need = S.students.list.filter(function (s) { return s.needs_review; }).length;
+                summaryHost.textContent = '';
+                var row = h('div', 'bkc-summary-row');
+                row.appendChild(pill(S.students.list.length + ' hồ sơ'));
+                row.appendChild(pill(active + ' hoạt động', 'ok'));
+                row.appendChild(pill((S.students.list.length - active) + ' đã khoá', 'off'));
+                row.appendChild(pill(need + ' cần phân biệt', need ? 'warn' : 'ok'));
+                summaryHost.appendChild(row);
+
                 if (!S.students.list.length) {
-                    listHost.appendChild(alertBox('Chưa có học sinh nào. Hãy import students.txt ở trên.', 'ok'));
+                    emptyState(listHost, 'fa-user-graduate', 'Chưa có học sinh nào',
+                        'Hãy import danh sách students.txt ở phía trên.');
                     return;
                 }
-                var t = table(['Họ tên', 'student_id', 'Mã nội bộ', 'Trạng thái', 'Tạo', 'Đồng bộ gần nhất', 'Thao tác']);
-                S.students.list.forEach(function (st) {
-                    var tr = h('tr');
-                    var nameCell = h('td');
-                    nameCell.appendChild(h('b', null, st.display_name));
-                    if (st.disambiguator) nameCell.appendChild(h('div', 'bkc-hint', st.disambiguator));
-                    if (st.needs_review) nameCell.appendChild(pill('Cần phân biệt', 'warn'));
-                    tr.appendChild(nameCell);
-                    tr.appendChild(h('td', 'bkc-code', st.id));
-                    tr.appendChild(h('td', 'bkc-code', st.student_code));
-                    var stCell = h('td');
-                    stCell.appendChild(pill(st.is_active ? 'Active' : 'Đã khoá', st.is_active ? 'ok' : 'off'));
-                    tr.appendChild(stCell);
-                    tr.appendChild(h('td', null, fmt(st.created_at)));
-                    tr.appendChild(h('td', null, fmt(st.last_sync_at)));
-                    var actsCell = h('td');
-                    var row = h('div', 'bkc-row-actions');
-                    row.appendChild(btn('Sửa', '', function () { editStudent(st); }));
-                    row.appendChild(btn(st.is_active ? 'Vô hiệu' : 'Kích hoạt', '', function () {
-                        api('students.update', { id: st.id, is_active: !st.is_active }).then(function () {
-                            toast(st.is_active ? 'Đã vô hiệu hoá hồ sơ' : 'Đã kích hoạt lại hồ sơ', 'success');
-                            loadStudents();
-                        }).catch(function (err) { fail(err); });
-                    }));
-                    actsCell.appendChild(row);
-                    tr.appendChild(actsCell);
-                    t.tbody.appendChild(tr);
-                });
-                listHost.appendChild(t.wrap);
+
+                paintTable();
             }).catch(function (err) {
                 listHost.textContent = '';
                 listHost.appendChild(alertBox(err.message || 'Không tải được danh sách.', 'error'));
             });
         }
 
-        function editStudent(st) {
-            var body = h('div', 'bkc-form');
-            var name = input('text', 'Họ và tên', st.display_name);
-            var dis = input('text', 'Thông tin phân biệt (bắt buộc khi trùng tên)', st.disambiguator || '');
-            body.appendChild(fieldRow('Họ và tên', name));
-            body.appendChild(fieldRow('Phân biệt hồ sơ', dis));
-            body.appendChild(h('p', 'bkc-hint', 'student_id: ' + st.id + ' · Mã nội bộ: ' + st.student_code));
-            var msg = h('p', 'bkc-gate-msg');
-            body.appendChild(msg);
-
-            var m = global.BK.ui.modal({
-                title: 'Cập nhật hồ sơ học sinh',
-                body: body,
-                actions: [
-                    { label: 'Huỷ', variant: 'ghost', onClick: function (c) { c(); } },
-                    {
-                        label: 'Lưu', variant: 'primary', onClick: function (c) {
-                            api('students.update', {
-                                id: st.id,
-                                display_name: name.value.trim(),
-                                disambiguator: dis.value.trim()
-                            }).then(function () {
-                                c();
-                                toast('Đã cập nhật hồ sơ', 'success');
-                                loadStudents();
-                            }).catch(function (err) {
-                                msg.textContent = err.message || 'Không lưu được.';
-                                msg.className = 'bkc-gate-msg is-error';
-                            });
-                        }
-                    }
-                ]
+        function paintTable() {
+            listHost.textContent = '';
+            pageHost.textContent = '';
+            var source = S.students.list.filter(function (st) {
+                return !S.students.reviewOnly || st.needs_review;
             });
+            var pageSize = S.students.pageSize;
+            var pages = Math.max(1, Math.ceil(source.length / pageSize));
+            if (S.students.page > pages) S.students.page = pages;
+            if (S.students.page < 1) S.students.page = 1;
+            var start = (S.students.page - 1) * pageSize;
+            var slice = source.slice(start, start + pageSize);
+
+            if (!slice.length) {
+                emptyState(listHost, 'fa-filter-circle-xmark', 'Không có hồ sơ phù hợp',
+                    'Thử bỏ bộ lọc “Chỉ hồ sơ cần phân biệt” hoặc đổi từ khoá tìm kiếm.');
+                return;
+            }
+
+            var t = table(['Họ tên', 'Mã học sinh', 'Trạng thái', 'Tạo', 'Đồng bộ gần nhất', 'Thao tác']);
+            slice.forEach(function (st) {
+                var tr = h('tr');
+                var nameCell = h('td');
+                var nameRow = h('div', 'bkc-name-row');
+                var avatar = h('span', 'bkc-avatar', initials(st.display_name));
+                nameRow.appendChild(avatar);
+                var nameInfo = h('div');
+                nameInfo.appendChild(h('b', null, st.display_name));
+                if (st.disambiguator) nameInfo.appendChild(h('span', 'bkc-row-sub', st.disambiguator));
+                nameRow.appendChild(nameInfo);
+                nameCell.appendChild(nameRow);
+                if (st.needs_review) nameCell.appendChild(pill('Cần phân biệt', 'warn'));
+                tr.appendChild(nameCell);
+
+                var codeCell = h('td');
+                var codeRow = h('div', 'bkc-code-row');
+                codeRow.appendChild(h('span', 'bkc-code', st.student_code || '—'));
+                codeRow.appendChild(iconBtn('fa-copy', 'Sao chép mã nội bộ', function () {
+                    copyText(st.student_code || st.id, 'Đã sao chép mã học sinh');
+                }, 'bkc-icon-btn-xs'));
+                codeCell.appendChild(codeRow);
+                codeCell.appendChild(h('span', 'bkc-row-sub', st.id));
+                tr.appendChild(codeCell);
+
+                var stCell = h('td');
+                stCell.appendChild(pill(st.is_active ? 'Active' : 'Đã khoá', st.is_active ? 'ok' : 'off'));
+                tr.appendChild(stCell);
+                tr.appendChild(h('td', null, fmtDay(st.created_at)));
+                tr.appendChild(h('td', null, fmt(st.last_sync_at)));
+
+                var actsCell = h('td');
+                var row = h('div', 'bkc-row-actions');
+                row.appendChild(btn('Sửa', '', function () { openStudentEditor(st, loadStudents); }));
+                row.appendChild(btn(st.is_active ? 'Vô hiệu' : 'Kích hoạt', '', function () {
+                    api('students.update', { id: st.id, is_active: !st.is_active }).then(function () {
+                        toast(st.is_active ? 'Đã vô hiệu hoá hồ sơ' : 'Đã kích hoạt lại hồ sơ', 'success');
+                        loadStudents();
+                    }).catch(function (err) { fail(err); });
+                }));
+                actsCell.appendChild(row);
+                tr.appendChild(actsCell);
+                t.tbody.appendChild(tr);
+            });
+            listHost.appendChild(t.wrap);
+
+            if (pages > 1) {
+                var prev = btn('‹ Trước', 'bkc-btn-ghost bkc-btn-xs', function () {
+                    if (S.students.page > 1) { S.students.page--; paintTable(); }
+                });
+                prev.disabled = S.students.page <= 1;
+                var next = btn('Sau ›', 'bkc-btn-ghost bkc-btn-xs', function () {
+                    if (S.students.page < pages) { S.students.page++; paintTable(); }
+                });
+                next.disabled = S.students.page >= pages;
+                var size = selectBox([['10', '10 / trang'], ['20', '20 / trang'], ['50', '50 / trang']],
+                    String(pageSize), function (v) {
+                        S.students.pageSize = parseInt(v, 10) || 20;
+                        S.students.page = 1;
+                        paintTable();
+                    });
+                size.className = 'bkc-select bkc-select-sm';
+                pageHost.appendChild(prev);
+                pageHost.appendChild(h('span', 'bkc-page-label',
+                    'Trang ' + S.students.page + ' / ' + pages + ' · ' + source.length + ' hồ sơ'));
+                pageHost.appendChild(next);
+                pageHost.appendChild(size);
+            } else {
+                pageHost.appendChild(h('span', 'bkc-page-label', source.length + ' hồ sơ'));
+            }
         }
 
         loadStudents();
     }
 
+    function initials(name) {
+        var parts = String(name || '?').trim().split(/\s+/);
+        if (!parts.length) return '?';
+        var first = parts[0].charAt(0);
+        var last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
+        return (first + last).toUpperCase();
+    }
+
+    function openStudentEditor(st, onDone) {
+        var body = h('div', 'bkc-form');
+        var name = input('text', 'Họ và tên', st.display_name || '');
+        var dis = input('text', 'Lớp / STT / ghi chú phân biệt', st.disambiguator || '');
+        var active = checkbox('Hồ sơ đang hoạt động', st.is_active !== false);
+        body.appendChild(fieldRow('Họ và tên', name));
+        body.appendChild(fieldRow('Phân biệt hồ sơ', dis,
+            'Bắt buộc khi có học sinh khác trùng họ tên. Ví dụ: “Lớp 11A1”.'));
+        body.appendChild(active.root);
+        body.appendChild(h('p', 'bkc-hint', 'student_id: ' + (st.id || '—') + (st.student_code ? ' · Mã nội bộ: ' + st.student_code : '')));
+        var msg = h('p', 'bkc-gate-msg');
+        body.appendChild(msg);
+
+        if (!global.BK || !global.BK.ui || !global.BK.ui.modal) {
+            toast('Không mở được hộp thoại cập nhật.', 'error');
+            return;
+        }
+        var m = global.BK.ui.modal({
+            title: 'Cập nhật hồ sơ học sinh',
+            body: body,
+            actions: [
+                { label: 'Huỷ', variant: 'ghost', onClick: function (c) { c(); } },
+                {
+                    label: 'Lưu thay đổi', variant: 'primary', onClick: function (c) {
+                        var display = name.value.trim();
+                        if (!display) {
+                            msg.textContent = 'Họ tên không được để trống.';
+                            msg.className = 'bkc-gate-msg is-error';
+                            name.focus();
+                            return;
+                        }
+                        api('students.update', {
+                            id: st.id,
+                            display_name: display,
+                            disambiguator: dis.value.trim(),
+                            is_active: active.input.checked
+                        }).then(function () {
+                            c();
+                            toast('Đã cập nhật hồ sơ', 'success');
+                            if (onDone) onDone();
+                        }).catch(function (err) {
+                            msg.textContent = err.message || 'Không lưu được.';
+                            msg.className = 'bkc-gate-msg is-error';
+                        });
+                    }
+                }
+            ]
+        });
+        return m;
+    }
+
     /* ------------------------------ Activity Logs ------------------------- */
     function renderLogs(pane) {
-        var c = card('Activity Logs', [btn('Làm mới', 'bkc-btn-ghost', function () { switchTab('logs'); })]);
+        var c = card('Nhật ký hoạt động', [
+            btn('Xuất CSV', 'bkc-btn-ghost', function () { exportLogs(); }, 'fa-file-csv'),
+            btn('Làm mới', 'bkc-btn-ghost', function () { switchTab('logs'); }, 'fa-rotate')
+        ], 'Mọi thao tác quản trị được máy chủ ghi lại kèm thời gian.');
         pane.appendChild(c.root);
+
+        var filters = h('div', 'bkc-filters');
+        var search = input('search', 'Tìm hành động, đối tượng, nội dung…', S.logs.q || '');
+        search.className = 'bkc-input bkc-grow';
+        var limit = selectBox([['60', '60 dòng'], ['100', '100 dòng'], ['200', '200 dòng']],
+            String(S.logs.limit), function (v) {
+                S.logs.limit = parseInt(v, 10) || 100;
+                switchTab('logs');
+            });
+        var targetSel = selectBox([['', 'Tất cả đối tượng'], ['student', 'student'], ['announcement', 'announcement'],
+            ['changelog', 'changelog'], ['session', 'session']], S.logs.target || '');
+        filters.appendChild(search);
+        filters.appendChild(targetSel);
+        filters.appendChild(limit);
+        filters.appendChild(btn('Lọc', '', function () {
+            S.logs.q = search.value.trim();
+            S.logs.target = targetSel.value;
+            paintRows();
+        }, 'fa-filter'));
+        c.body.appendChild(filters);
+
         var host = h('div');
         c.body.appendChild(host);
-        host.appendChild(h('p', 'bkc-hint', 'Đang tải…'));
-        api('logs.list', { limit: 100 }).then(function (data) {
+        loading(host, 'Đang tải nhật ký…');
+
+        api('logs.list', { limit: S.logs.limit || 100 }).then(function (data) {
             host.textContent = '';
-            S.logs = data.logs || [];
-            if (!S.logs.length) { host.appendChild(alertBox('Chưa có hoạt động nào.', 'ok')); return; }
-            var t = table(['Thời gian', 'Hành động', 'Đối tượng', 'Chi tiết']);
-            S.logs.forEach(function (log) {
-                var tr = h('tr');
-                tr.appendChild(h('td', null, fmt(log.created_at)));
-                tr.appendChild(h('td', 'bkc-code', log.action));
-                tr.appendChild(h('td', null, (log.target_type || '') + (log.target_id ? ' · ' + log.target_id : '')));
-                var detail = h('td');
-                var pre = h('pre', 'bkc-pre', JSON.stringify(log.detail || {}));
-                detail.appendChild(pre);
-                tr.appendChild(detail);
-                t.tbody.appendChild(tr);
-            });
-            host.appendChild(t.wrap);
+            S.logs.list = data.logs || [];
+            paintRows();
         }).catch(function (err) {
             host.textContent = '';
             host.appendChild(alertBox(err.message || 'Không tải được nhật ký.', 'error'));
         });
+
+        search.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                S.logs.q = search.value.trim();
+                paintRows();
+            }
+        });
+        targetSel.addEventListener('change', function () {
+            S.logs.target = targetSel.value;
+            paintRows();
+        });
+
+        function filtered() {
+            var q = S.logs.q.toLowerCase();
+            return S.logs.list.filter(function (log) {
+                if (S.logs.target && log.target_type !== S.logs.target) return false;
+                if (!q) return true;
+                var blob = (log.action + ' ' + (log.target_type || '') + ' ' + (log.target_id || '') + ' ' +
+                    JSON.stringify(log.detail || {})).toLowerCase();
+                return blob.indexOf(q) >= 0;
+            });
+        }
+
+        function paintRows() {
+            host.textContent = '';
+            var rows = filtered();
+            if (!rows.length) {
+                emptyState(host, 'fa-clock-rotate-left', 'Chưa có hoạt động nào',
+                    S.logs.q || S.logs.target ? 'Không có dòng nào khớp bộ lọc hiện tại.' : 'Các thao tác quản trị sẽ xuất hiện tại đây.');
+                return;
+            }
+            var t = table(['Thời gian', 'Hành động', 'Đối tượng', 'Chi tiết', '']);
+            rows.forEach(function (log) {
+                var tr = h('tr');
+                tr.appendChild(h('td', null, fmt(log.created_at)));
+                tr.appendChild(h('td', 'bkc-code', log.action));
+                tr.appendChild(h('td', null, (log.target_type || '—') + (log.target_id ? ' · ' + log.target_id : '')));
+                var detail = h('td');
+                var raw = JSON.stringify(log.detail || {}, null, 2);
+                var pre = h('pre', 'bkc-pre', raw);
+                detail.appendChild(pre);
+                tr.appendChild(detail);
+                var act = h('td');
+                act.appendChild(iconBtn('fa-copy', 'Sao chép chi tiết', function () {
+                    copyText(raw, 'Đã sao chép chi tiết');
+                }, 'bkc-icon-btn-xs'));
+                tr.appendChild(act);
+                t.tbody.appendChild(tr);
+            });
+            host.appendChild(t.wrap);
+            host.appendChild(h('span', 'bkc-page-label', rows.length + ' dòng'));
+        }
+
+        function exportLogs() {
+            var rows = [['Thời gian', 'Hành động', 'Đối tượng', 'ID đối tượng', 'Chi tiết']];
+            filtered().forEach(function (log) {
+                rows.push([fmt(log.created_at), log.action, log.target_type || '', log.target_id || '',
+                    JSON.stringify(log.detail || {})]);
+            });
+            download('bakhi-activity-' + Date.now() + '.csv', '\ufeff' + csv(rows), 'text/csv;charset=utf-8');
+        }
     }
 
     /* --------------------------------- Settings --------------------------- */
     function renderSettings(pane) {
-        var c = card('Trạng thái hệ thống');
+        var appearance = card('Giao diện', null, 'Lựa chọn được lưu riêng cho Administrator Dashboard.');
+        paintThemeSettings(appearance.body);
+        pane.appendChild(appearance.root);
+
+        var c = card('Trạng thái hệ thống', [iconBtn('fa-rotate', 'Kiểm tra lại', function () { switchTab('settings'); })],
+            'Các secret chỉ được kiểm tra sự tồn tại, không bao giờ hiển thị giá trị.');
         pane.appendChild(c.root);
         var host = h('div', 'bkc-form');
         c.body.appendChild(host);
-        host.appendChild(h('p', 'bkc-hint', 'Đang kiểm tra…'));
+        loading(host, 'Đang kiểm tra hệ thống…');
 
         api('settings.status').then(function (data) {
             var st = data.status || {};
+            S.status = st;
             host.textContent = '';
-            var line = h('div', 'bkc-actions');
-            line.appendChild(pill(st.adminDevCode ? 'ADMIN_DEV_CODE: đã đặt' : 'ADMIN_DEV_CODE: thiếu',
-                st.adminDevCode ? 'ok' : 'off'));
-            line.appendChild(pill(st.serviceRole ? 'service_role: sẵn sàng' : 'service_role: thiếu',
-                st.serviceRole ? 'ok' : 'off'));
-            line.appendChild(pill(st.rosterSecret ? 'STUDENT_ROSTER_SECRET: đã đặt' : 'STUDENT_ROSTER_SECRET: chưa đặt',
-                st.rosterSecret ? 'ok' : 'warn'));
-            line.appendChild(pill('Học sinh: ' + st.students, 'ok'));
-            host.appendChild(line);
+
+            var statusGrid = h('div', 'bkc-status-grid');
+            statusGrid.appendChild(statusItem('ADMIN_DEV_CODE', st.adminDevCode, st.adminDevCode ? 'ADMIN_DEV_CODE: đã đặt' : 'ADMIN_DEV_CODE: thiếu',
+                'Mã quản trị dùng để đăng nhập.'));
+            statusGrid.appendChild(statusItem('service_role', st.serviceRole, st.serviceRole ? 'service_role: sẵn sàng' : 'service_role: thiếu',
+                'Chỉ dùng trong Edge Function Secrets.'));
+            statusGrid.appendChild(statusItem('STUDENT_ROSTER_SECRET', st.rosterSecret, st.rosterSecret ? 'STUDENT_ROSTER_SECRET: đã đặt' : 'STUDENT_ROSTER_SECRET: chưa đặt',
+                'Bảo vệ endpoint import danh sách.'));
+            statusGrid.appendChild(statusItem('Học sinh', st.students, 'Học sinh: ' + (st.students == null ? '—' : st.students),
+                'Tổng số hồ sơ trên máy chủ.'));
+            host.appendChild(statusGrid);
 
             var cloud = global.BKCloud && global.BKCloud.state ? global.BKCloud.state() : {};
-            var rows = h('div', 'bkc-actions');
-            rows.appendChild(pill(cloud.bound ? 'Phiên học sinh: đã gắn' : 'Phiên học sinh: chưa chọn',
-                cloud.bound ? 'ok' : 'warn'));
-            rows.appendChild(pill('Lần đồng bộ cuối: ' + (cloud.lastSyncAt ? fmt(new Date(cloud.lastSyncAt).toISOString()) : '—')));
-            host.appendChild(rows);
+            var session = adminSession();
+            var sessionCard = card('Phiên làm việc', null, 'Token chỉ lưu trong sessionStorage của tab hiện tại.');
+            var rows = h('div', 'bkc-status-grid');
+            rows.appendChild(infoItem('Phiên học sinh', cloud.bound ? 'Đã gắn' : 'Chưa chọn',
+                cloud.bound && cloud.student ? cloud.student.display_name : 'Trang quản trị không cần chọn học sinh.', cloud.bound ? 'ok' : 'warn'));
+            rows.appendChild(infoItem('Lần đồng bộ cuối',
+                cloud.lastSyncAt ? fmt(new Date(cloud.lastSyncAt).toISOString()) : '—',
+                'Đồng bộ tiến độ từ trình duyệt.', 'info'));
+            rows.appendChild(infoItem('Phiên quản trị', session && session.expiresAt ? 'Còn hiệu lực' : 'Không xác định',
+                session && session.expiresAt ? 'Hết hạn: ' + fmt(session.expiresAt) : 'Đăng nhập lại nếu cần.', 'ok'));
+            rows.appendChild(infoItem('Kết nối', S.statusAt ? 'Đã kiểm tra' : 'Chưa kiểm tra',
+                S.statusAt ? fmt(new Date(S.statusAt).toISOString()) : 'Bấm làm mới để kiểm tra.', 'info'));
+            sessionCard.body.appendChild(rows);
+            pane.appendChild(sessionCard.root);
 
-            host.appendChild(h('p', 'bkc-hint',
+            var docs = card('Tài liệu & công cụ', null, 'Mở trong tab mới.');
+            var docActs = h('div', 'bkc-actions');
+            docActs.appendChild(btn('Hướng dẫn Supabase', 'bkc-btn-ghost', function () {
+                window.open(basePath() + 'docs/SUPABASE_SETUP.md', '_blank', 'noopener');
+            }, 'fa-book'));
+            docActs.appendChild(btn('README', 'bkc-btn-ghost', function () {
+                window.open(basePath() + 'README.md', '_blank', 'noopener');
+            }, 'fa-file-lines'));
+            docActs.appendChild(btn('CHANGELOG', 'bkc-btn-ghost', function () {
+                window.open(basePath() + 'CHANGELOG.md', '_blank', 'noopener');
+            }, 'fa-code-branch'));
+            docActs.appendChild(btn('Về trang chủ', 'bkc-btn-ghost', function () {
+                window.location.href = basePath() + 'index.html';
+            }, 'fa-house'));
+            docs.body.appendChild(docActs);
+            pane.appendChild(docs.root);
+
+            var danger = card('Phiên quản trị', null, 'Đăng xuất sẽ xoá token khỏi tab này.');
+            var dangerActs = h('div', 'bkc-actions');
+            dangerActs.appendChild(btn('Đóng bảng quản trị', 'bkc-btn-ghost', closeDash, 'fa-xmark'));
+            dangerActs.appendChild(btn('Đăng xuất Administrator', 'bkc-btn-danger', doLogout, 'fa-right-from-bracket'));
+            danger.body.appendChild(dangerActs);
+            danger.body.appendChild(h('p', 'bkc-hint',
                 'Administrator Code và service_role key chỉ tồn tại trong Supabase Edge Function Secrets. ' +
                 'Dashboard không bao giờ đọc hay hiển thị giá trị của chúng.'));
-
-            var acts = h('div', 'bkc-actions');
-            acts.appendChild(btn('Đọc hướng dẫn cài đặt', 'bkc-btn-ghost', function () {
-                var a = D.createElement('a');
-                a.href = (global.BK && BK.util && BK.util.basePath ? BK.util.basePath() : './') + 'docs/SUPABASE_SETUP.md';
-                a.target = '_blank';
-                a.rel = 'noopener';
-                a.click();
-            }));
-            acts.appendChild(btn('Đăng xuất Administrator', 'bkc-btn-danger', function () {
-                global.BKCloud.adminLogout();
-                closeDash();
-                toast('Đã đăng xuất Administrator Dashboard', 'info');
-            }));
-            host.appendChild(acts);
+            pane.appendChild(danger.root);
         }).catch(function (err) {
             host.textContent = '';
             host.appendChild(alertBox(err.message || 'Không đọc được trạng thái.', 'error'));
         });
     }
 
+    function paintThemeSettings(host) {
+        var wrap = h('div', 'bkc-theme-choice');
+        var current = global.BKAdminTheme ? global.BKAdminTheme.get() : null;
+        [
+            ['dark', 'fa-moon', 'Tối', 'Phù hợp làm việc ban đêm'],
+            ['light', 'fa-sun', 'Sáng', 'Tương phản cao, dễ đọc']
+        ].forEach(function (t) {
+            var b = h('button', 'bkc-theme-card' + (current === t[0] ? ' is-active' : ''));
+            b.type = 'button';
+            b.appendChild(icon(t[1]));
+            var txt = h('span');
+            txt.appendChild(h('b', null, t[2]));
+            txt.appendChild(h('span', null, t[3]));
+            b.appendChild(txt);
+            b.addEventListener('click', function () {
+                if (!global.BKAdminTheme) {
+                    toast('Trang này dùng giao diện chung của index.html.', 'info');
+                    return;
+                }
+                global.BKAdminTheme.set(t[0]);
+                Array.prototype.forEach.call(wrap.children, function (n) {
+                    n.classList.toggle('is-active', n === b);
+                });
+                toast('Đã chuyển sang giao diện ' + t[2].toLowerCase(), 'success');
+            });
+            wrap.appendChild(b);
+        });
+        host.appendChild(wrap);
+
+        var compact = h('label', 'bkc-check');
+        var box = h('input');
+        box.type = 'checkbox';
+        try { box.checked = global.localStorage.getItem('bkAdminCompact') === '1'; } catch (e) { }
+        box.addEventListener('change', function () {
+            try { global.localStorage.setItem('bkAdminCompact', box.checked ? '1' : '0'); } catch (e) { }
+            if (S.root) S.root.classList.toggle('is-compact', box.checked);
+            toast(box.checked ? 'Đã bật chế độ gọn' : 'Đã tắt chế độ gọn', 'info');
+        });
+        compact.appendChild(box);
+        compact.appendChild(h('span', null, 'Chế độ gọn: giảm khoảng cách và cỡ chữ trong bảng'));
+        host.appendChild(compact);
+        if (!global.BKAdminTheme) {
+            host.appendChild(h('p', 'bkc-hint',
+                'Trang hiện tại không nạp mô-đun chủ đề riêng; hãy đổi giao diện bằng menu 3 gạch của index.html.'));
+        }
+    }
+
+    function statusItem(name, ok, text, hint) {
+        var box = h('div', 'bkc-status-item' + (ok ? ' is-ok' : ' is-off'));
+        var top = h('div', 'bkc-status-top');
+        top.appendChild(h('span', 'bkc-status-dot'));
+        top.appendChild(h('b', null, name));
+        box.appendChild(top);
+        box.appendChild(pill(text, ok ? 'ok' : 'off'));
+        if (hint) box.appendChild(h('span', 'bkc-hint', hint));
+        return box;
+    }
+    function infoItem(label, value, hint, kind) {
+        var box = h('div', 'bkc-status-item' + (kind ? ' is-' + kind : ''));
+        var top = h('div', 'bkc-status-top');
+        top.appendChild(h('span', 'bkc-status-dot'));
+        top.appendChild(h('b', null, label));
+        box.appendChild(top);
+        box.appendChild(h('span', 'bkc-status-value', value));
+        if (hint) box.appendChild(h('span', 'bkc-hint', hint));
+        return box;
+    }
+
+    /* ---------------------------- Command palette ------------------------- */
+    function commandActions() {
+        var list = TABS.map(function (t) {
+            return { icon: t[2], label: t[1], hint: 'Alt+' + (TABS.indexOf(t) + 1), run: function () { switchTab(t[0]); } };
+        });
+        list.push({ icon: 'fa-rotate', label: 'Làm mới dữ liệu', hint: 'Refresh', run: function () { refreshTab(true); } });
+        list.push({
+            icon: 'fa-plus', label: 'Tạo thông báo mới', hint: 'Notifications',
+            run: function () { S.notif.editing = null; S.notif.draft = null; switchTab('notifications'); }
+        });
+        list.push({
+            icon: 'fa-code-branch', label: 'Tạo changelog mới', hint: 'Changelog',
+            run: function () { S.cl.editing = null; S.cl.draft = null; S.cl.sections = []; S.cl.loadedFor = null; switchTab('changelog'); }
+        });
+        list.push({
+            icon: 'fa-user-plus', label: 'Import danh sách học sinh', hint: 'Students',
+            run: function () { switchTab('students'); }
+        });
+        if (global.BKAdminTheme) {
+            list.push({
+                icon: 'fa-circle-half-stroke', label: 'Đổi giao diện sáng / tối', hint: 'Theme',
+                run: function () {
+                    var t = global.BKAdminTheme.toggle();
+                    toast('Đã chuyển sang giao diện ' + (t === 'dark' ? 'tối' : 'sáng'), 'success');
+                }
+            });
+        }
+        list.push({ icon: 'fa-keyboard', label: 'Xem phím tắt', hint: '?', run: openHelp });
+        list.push({ icon: 'fa-right-from-bracket', label: 'Đăng xuất Administrator', hint: 'Logout', run: doLogout });
+        return list;
+    }
+
+    function openCmd() {
+        if (S.cmdOpen) { closeCmd(); return; }
+        S.cmdOpen = true;
+        var wrap = h('div', 'bkc-cmd');
+        wrap.setAttribute('role', 'dialog');
+        wrap.setAttribute('aria-modal', 'true');
+        var box = h('div', 'bkc-cmd-box');
+        var searchWrap = h('div', 'bkc-cmd-search');
+        searchWrap.appendChild(icon('fa-magnifying-glass'));
+        var search = input('text', 'Tìm lệnh hoặc chuyển nhanh…');
+        search.className = 'bkc-input';
+        searchWrap.appendChild(search);
+        searchWrap.appendChild(h('kbd', null, 'Esc'));
+        box.appendChild(searchWrap);
+        var list = h('div', 'bkc-cmd-list');
+        box.appendChild(list);
+        var foot = h('div', 'bkc-cmd-foot');
+        foot.appendChild(h('span', null, '↑ ↓ để chọn · Enter để chạy · Ctrl/⌘+K để đóng'));
+        box.appendChild(foot);
+        wrap.appendChild(box);
+        (D.body || D.documentElement).appendChild(wrap);
+        S.cmdEl = wrap;
+        S.cmdIndex = 0;
+        S.cmdItems = commandActions();
+
+        function paint() {
+            var q = search.value.trim().toLowerCase();
+            var items = S.cmdItems.filter(function (a) {
+                return !q || (a.label + ' ' + (a.hint || '')).toLowerCase().indexOf(q) >= 0;
+            });
+            list.textContent = '';
+            if (!items.length) {
+                list.appendChild(h('div', 'bkc-cmd-empty', 'Không có lệnh phù hợp.'));
+                S.cmdVisible = [];
+                return;
+            }
+            if (S.cmdIndex >= items.length) S.cmdIndex = 0;
+            S.cmdVisible = items;
+            items.forEach(function (a, i) {
+                var b = h('button', 'bkc-cmd-item' + (i === S.cmdIndex ? ' is-active' : ''));
+                b.type = 'button';
+                b.appendChild(icon(a.icon));
+                b.appendChild(h('span', 'bkc-cmd-label', a.label));
+                if (a.hint) b.appendChild(h('kbd', null, a.hint));
+                b.addEventListener('mouseenter', function () { S.cmdIndex = i; syncActive(); });
+                b.addEventListener('click', function () { run(a); });
+                list.appendChild(b);
+            });
+            syncActive();
+        }
+        function syncActive() {
+            Array.prototype.forEach.call(list.children, function (n, i) {
+                n.classList.toggle('is-active', i === S.cmdIndex);
+            });
+            var active = list.children[S.cmdIndex];
+            if (active && active.scrollIntoView) active.scrollIntoView({ block: 'nearest' });
+        }
+        function run(a) {
+            closeCmd();
+            if (a && a.run) setTimeout(a.run, 20);
+        }
+        search.addEventListener('input', function () { S.cmdIndex = 0; paint(); });
+        search.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                S.cmdIndex = Math.min((S.cmdVisible ? S.cmdVisible.length : 1) - 1, S.cmdIndex + 1);
+                syncActive();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                S.cmdIndex = Math.max(0, S.cmdIndex - 1);
+                syncActive();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                run(S.cmdVisible && S.cmdVisible[S.cmdIndex]);
+            }
+        });
+        wrap.addEventListener('click', function (e) { if (e.target === wrap) closeCmd(); });
+        paint();
+        setTimeout(function () { try { search.focus(); } catch (e) { } }, 30);
+    }
+    function closeCmd() {
+        if (S.cmdEl && S.cmdEl.parentNode) S.cmdEl.parentNode.removeChild(S.cmdEl);
+        S.cmdEl = null;
+        S.cmdOpen = false;
+    }
+
+    function openHelp() {
+        if (!global.BK || !global.BK.ui || !global.BK.ui.modal) return;
+        var body = h('div', 'bkc-shortcuts');
+        [
+            ['Ctrl / ⌘ + K', 'Mở bảng lệnh nhanh'],
+            ['Alt + 1 … 6', 'Chuyển giữa 6 khu vực quản trị'],
+            ['Esc', 'Đóng hộp thoại hoặc bảng quản trị'],
+            ['Enter', 'Chạy lệnh đang chọn trong bảng lệnh'],
+            ['?', 'Mở trợ giúp phím tắt']
+        ].forEach(function (row) {
+            var line = h('div', 'bkc-shortcut-row');
+            line.appendChild(h('kbd', null, row[0]));
+            line.appendChild(h('span', null, row[1]));
+            body.appendChild(line);
+        });
+        global.BK.ui.modal({
+            title: 'Phím tắt Administrator Dashboard',
+            body: body,
+            actions: [{ label: 'Đóng', variant: 'primary', onClick: function (c) { c(); } }]
+        });
+    }
+
+    /* ------------------------------- Bootstrap ---------------------------- */
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', mountDevMenu);
     else setTimeout(mountDevMenu, 0);
 
@@ -1201,6 +2255,7 @@
         open: openDevDashboard,
         close: closeDash,
         refresh: function () { refreshTab(false); },
-        tab: function (name) { if (S.root) switchTab(name); }
+        tab: function (name) { if (S.root) switchTab(name); },
+        version: APP_VERSION
     };
 })(typeof window !== 'undefined' ? window : this);
