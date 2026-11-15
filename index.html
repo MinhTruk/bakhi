@@ -2,6 +2,38 @@
 <html lang="vi" class="dark">
 <head>
     <meta charset="UTF-8">
+    <!-- Bá Khí: không nháy nội dung trước khi xác định phiên học sinh -->
+    <style>
+        html.bk-boot-lock body > * { visibility: hidden !important; }
+        html.bk-boot-lock #bkBootSplash { visibility: visible !important; display: flex !important; }
+        #bkBootSplash {
+            position: fixed; inset: 0; z-index: 2147482100; display: none;
+            align-items: center; justify-content: center; flex-direction: column; gap: .9rem;
+            background:
+                radial-gradient(900px 500px at 15% 0%, rgba(99,102,241,.28), transparent 60%),
+                radial-gradient(800px 460px at 90% 100%, rgba(168,85,247,.22), transparent 60%),
+                #0b1120;
+            color: #cbd5e1; font: 700 .78rem/1.4 Lexend, system-ui, sans-serif; letter-spacing: .32em;
+        }
+        #bkBootSplash .bk-boot-dot {
+            width: 1.6rem; height: 1.6rem; border-radius: 999px;
+            border: 2px solid rgba(148,163,184,.25); border-top-color: #818cf8;
+            animation: bkBootSpin .8s linear infinite;
+        }
+        @keyframes bkBootSpin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { #bkBootSplash .bk-boot-dot { animation: none; } }
+    </style>
+    <script>
+        (function () {
+            var r = document.documentElement;
+            r.classList.add('bk-boot-lock');
+            /* Failsafe: không bao giờ để trang trắng nếu Supabase không phản hồi. */
+            setTimeout(function () { r.classList.remove('bk-boot-lock'); }, 5000);
+        })();
+    </script>
+    <link rel="preconnect" href="https://wzvslyabhizsiggurwdq.supabase.co" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Quản Lý Tài Liệu & Ôn Tập - MinhTruk/bakhi</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236366f1'/><stop offset='1' stop-color='%23a855f7'/></linearGradient></defs><rect width='64' height='64' rx='16' fill='url(%23g)'/><path d='M14 22a4 4 0 0 1 4-4h9l4 5h15a4 4 0 0 1 4 4v19a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4z' fill='%23fff'/></svg>">
@@ -342,12 +374,23 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                                     <i class="fa-brands fa-github text-slate-600 dark:text-slate-300"></i>
                                     <span>GitHub Repository</span>
                                 </a>
-
-                                <!-- Dev Dashboard (xác thực Dev Code qua Supabase Edge Function) -->
-                                <button onclick="openDevDashboard()" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer">
-                                    <i class="fa-solid fa-shield-halved text-sky-500"></i>
-                                    <span>Dev Dashboard</span>
-                                </button>
+                                <!-- Dev Code → Dev Dashboard (chỉ hiện sau khi xác thực thành công) -->
+                                <div id="bkDevAuthRow" class="space-y-1.5 pt-1">
+                                    <div class="flex items-center space-x-1.5">
+                                        <input type="password" id="bkDevCodeInput" placeholder="Dev Code..." autocomplete="off" spellcheck="false" class="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-sky-500">
+                                        <button id="bkDevAuthBtn" type="button" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-medium transition cursor-pointer shrink-0">Xác thực</button>
+                                    </div>
+                                    <p id="bkDevAuthMsg" class="text-[10px] text-slate-400 leading-snug"></p>
+                                </div>
+                                <div id="bkDevDashSection" class="hidden space-y-1.5">
+                                    <button onclick="openDevDashboard()" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer">
+                                        <i class="fa-solid fa-shield-halved text-sky-500"></i>
+                                        <span>Dev Dashboard</span>
+                                    </button>
+                                    <button id="bkDevLogoutBtn" type="button" class="w-full px-3 py-1.5 bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-medium transition flex items-center justify-center space-x-2 cursor-pointer">
+                                        <i class="fa-solid fa-right-from-bracket"></i><span>Thoát Dev Dashboard</span>
+                                    </button>
+                                </div>
 
                                 <hr class="border-slate-200 dark:border-slate-700 my-1">
 
@@ -2141,7 +2184,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
 <!-- Bá Khí × Supabase: một client duy nhất, nhận diện học sinh, thông báo, changelog -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
 <script src="assets/bakhi/bk-supabase.config.js?v=3.0.0" defer></script>
-<script src="assets/bakhi/bk-cloud.js?v=3.0.0" defer></script>
-<script src="assets/bakhi/bk-devboard.js?v=3.0.0" defer></script>
+<script src="assets/bakhi/bk-cloud.js?v=3.1.0" defer></script>
+<script src="assets/bakhi/bk-devboard.js?v=3.1.0" defer></script>
 </body>
 </html>

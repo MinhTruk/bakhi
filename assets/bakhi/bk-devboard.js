@@ -166,11 +166,79 @@
     }
 
     /* --------------------------- Đăng nhập Dev ---------------------------- */
+    function closeMenu() {
+        var dd = D.getElementById('hamburgerDropdown');
+        if (dd) dd.classList.add('hidden');
+    }
+
+    /**
+     * Mục Dev Dashboard nằm trong menu 3 gạch và CHỈ hiện sau khi xác thực
+     * Dev Code thành công (hoặc khi còn phiên quản trị trong tab hiện tại).
+     */
+    function mountDevMenu() {
+        var row = D.getElementById('bkDevAuthRow');
+        var section = D.getElementById('bkDevDashSection');
+        if (!section) return;
+        var hasSession = !!(global.BKCloud && global.BKCloud.adminToken && global.BKCloud.adminToken());
+        section.classList.toggle('hidden', !hasSession);
+        if (row) row.classList.toggle('hidden', hasSession);
+
+        var input = D.getElementById('bkDevCodeInput');
+        var submit = D.getElementById('bkDevAuthBtn');
+        var msg = D.getElementById('bkDevAuthMsg');
+
+        function setMsg(text, kind) {
+            if (!msg) return;
+            msg.textContent = text || '';
+            msg.className = 'text-[10px] leading-snug ' + (
+                kind === 'error' ? 'text-rose-400' : kind === 'warn' ? 'text-amber-400' : 'text-slate-400');
+        }
+
+        function authenticate() {
+            var code = input ? input.value.trim() : '';
+            if (!code) { setMsg('Nhập Dev Code trước khi xác thực.', 'warn'); if (input) input.focus(); return; }
+            if (submit) submit.disabled = true;
+            setMsg('Đang xác thực…', '');
+            global.BKCloud.adminLogin(code).then(function () {
+                if (submit) submit.disabled = false;
+                if (input) input.value = '';
+                setMsg('', '');
+                mountDevMenu();
+                closeMenu();
+                openDash();
+            }).catch(function (err) {
+                if (submit) submit.disabled = false;
+                setMsg(err.message || 'Dev Code không đúng.', 'error');
+            });
+        }
+
+        if (submit && !submit.__bkBound) {
+            submit.__bkBound = true;
+            submit.addEventListener('click', authenticate);
+            if (input) input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); authenticate(); }
+            });
+        }
+
+        var logout = D.getElementById('bkDevLogoutBtn');
+        if (logout && !logout.__bkBound) {
+            logout.__bkBound = true;
+            logout.addEventListener('click', function () {
+                global.BKCloud.adminLogout();
+                closeDash();
+                mountDevMenu();
+                closeMenu();
+                toast('Đã thoát Dev Dashboard', 'info');
+            });
+        }
+    }
+
     function openDevDashboard() {
         if (!global.BKCloud || !global.BKCloud.configured()) {
             toast('Cấu hình Supabase chưa hoàn tất — mở assets/bakhi/bk-supabase.config.js.', 'error');
             return;
         }
+        closeMenu();
         if (global.BKCloud.adminToken()) { openDash(); return; }
         promptCode();
     }
@@ -1091,7 +1159,11 @@
         });
     }
 
+    if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', mountDevMenu);
+    else setTimeout(mountDevMenu, 0);
+
     global.openDevDashboard = openDevDashboard;
+    global.mountDevMenu = mountDevMenu;
     global.BKDashboard = {
         open: openDevDashboard,
         close: closeDash,

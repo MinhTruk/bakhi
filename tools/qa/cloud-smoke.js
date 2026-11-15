@@ -136,12 +136,22 @@ function fakeFetch(url, opts) {
 const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí</title></head><body>
 <header>
   <div class="flex items-center space-x-3">
+    <button class="bknt-bell">chuông CHANGELOG cũ</button>
     <button onclick="openReadmeModal()">README.md</button>
     <div class="relative">
       <button onclick="toggleHamburgerMenu()">menu</button>
       <div id="hamburgerDropdown" class="hidden">
         <div class="space-y-1.5">
           <button onclick="toggleDarkMode(event)">Giao diện</button>
+          <div id="bkDevAuthRow">
+            <input id="bkDevCodeInput" type="password">
+            <button id="bkDevAuthBtn" type="button">Xác thực</button>
+            <p id="bkDevAuthMsg"></p>
+          </div>
+          <div id="bkDevDashSection" class="hidden">
+            <button type="button" onclick="openDevDashboard()">Dev Dashboard</button>
+            <button id="bkDevLogoutBtn" type="button">Thoát Dev Dashboard</button>
+          </div>
         </div>
       </div>
     </div>
@@ -190,10 +200,27 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     ok('gửi truy vấn tới search-students', calls.some((c) => c.name === 'search-students' && c.body.q === 'minh anh'));
     ok('highlight ký tự trùng khớp', !!w.document.querySelector('.bkc-sug-item .bkc-hl'), (w.document.querySelector('.bkc-sug-item') || {}).textContent);
     ok('gợi ý hiển thị đúng họ tên', /Nguyễn Minh Anh/.test(w.document.querySelector('.bkc-sug').textContent));
+    ok('danh sách gợi ý nằm ngay trong khối ô nhập', w.document.querySelector('.bkc-sug').parentNode.className.indexOf('bkc-combo') >= 0);
+    ok('chỉ còn một chuông thông báo', !w.document.querySelector('.bknt-bell') && !!w.document.getElementById('bkcBell'));
 
     console.log('\n[3] Xác nhận danh tính');
+    ok('nút xác nhận bị khoá khi chưa chọn gợi ý', w.document.querySelector('.bkc-gate-confirm').disabled === true);
     suggestions[0].click();
-    ok('nút xác nhận được mở sau khi chọn', w.document.querySelector('.bkc-gate-confirm').disabled === false);
+    ok('nút xác nhận mở sau khi chọn gợi ý', w.document.querySelector('.bkc-gate-confirm').disabled === false);
+
+    /* Đổi tên trong ô nhập nhưng không đổi lựa chọn → phải bị chặn, không gọi API. */
+    const bindsBefore = calls.filter((c) => c.name === 'bind-student-session' && c.body.student_id).length;
+    const goodName = input.value;
+    input.value = 'Tên Không Tồn Tại';
+    w.document.querySelector('.bkc-gate-confirm').click();
+    ok('chặn xác nhận khi tên không khớp lựa chọn', /không khớp/.test(w.document.getElementById('bkcGateMsg').textContent), w.document.getElementById('bkcGateMsg').textContent);
+    ok('không gọi API khi tên chưa khớp', calls.filter((c) => c.name === 'bind-student-session' && c.body.student_id).length === bindsBefore);
+    ok('nút xác nhận bị khoá lại sau khi lệch tên', w.document.querySelector('.bkc-gate-confirm').disabled === true);
+
+    input.value = goodName;
+    await wait(320);
+    const again = await until(() => w.document.querySelectorAll('.bkc-sug-item').length ? w.document.querySelectorAll('.bkc-sug-item') : null);
+    again[0].click();
     w.document.querySelector('.bkc-gate-confirm').click();
     const confirmBtn = await until(() => {
         const buttons = Array.from(w.document.querySelectorAll('.bk-modal-foot .bk-btn'));
@@ -204,6 +231,11 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     const closed = await until(() => !w.document.getElementById('bkIdentityGate'));
     ok('màn hình nhập tên đóng sau khi xác nhận', !!closed);
     ok('đã gắn student_id lên backend', calls.some((c) => c.name === 'bind-student-session' && c.body.student_id === 's1'));
+    ok('bind gửi kèm họ tên để máy chủ đối chiếu', calls.some((c) => c.body.student_id === 's1' && c.body.display_name === 'Nguyễn Minh Anh'));
+    ok('có icon đổi học sinh trên header', (() => {
+        const icon = w.document.getElementById('bkcChangeStudentIcon');
+        return !!icon && icon.hidden === false && /Đổi học sinh/.test(icon.getAttribute('aria-label'));
+    })());
     ok('tên hiển thị trên header', /Nguyễn Minh Anh/.test((w.document.getElementById('bkcIdentityChip') || {}).textContent || ''));
     ok('menu có nút Đổi học sinh', !!w.document.getElementById('bkcChangeStudentBtn'));
 
@@ -237,7 +269,12 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     ok('render bằng text, không HTML thô', !!wn && !/<b>/.test(wn.innerHTML.replace(/<[^>]+>/g, '')));
 
     console.log('\n[6] Dev Dashboard');
+    ok('mục Dev Dashboard ẩn trước khi xác thực', w.document.getElementById('bkDevDashSection').classList.contains('hidden'));
+    ok('có ô nhập Dev Code trong menu', !!w.document.getElementById('bkDevCodeInput'));
     const login = await w.BKCloud.adminLogin('test-dev-code');
+    w.mountDevMenu();
+    ok('sau xác thực hiện mục Dev Dashboard', !w.document.getElementById('bkDevDashSection').classList.contains('hidden'));
+    ok('ẩn ô nhập Dev Code sau xác thực', w.document.getElementById('bkDevAuthRow').classList.contains('hidden'));
     ok('admin-auth cấp phiên có hạn', !!login.token && !!login.expiresAt);
     w.openDevDashboard();
     const dash = await until(() => {

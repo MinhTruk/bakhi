@@ -8,6 +8,7 @@
 // phân quyền nào khác từ client.
 import { json, fail, preflight, readJson } from '../_shared/http.ts';
 import { adminClient, callerUserId } from '../_shared/supabase.ts';
+import { normalizeName } from '../_shared/names.ts';
 
 async function progressFor(client: ReturnType<typeof adminClient>, studentId: string) {
     const { data } = await client
@@ -31,7 +32,7 @@ Deno.serve(async (req) => {
     if (caller instanceof Response) return caller;
 
     const client = adminClient();
-    const body = await readJson<{ student_id?: string; unbind?: boolean }>(req);
+    const body = await readJson<{ student_id?: string; display_name?: string; unbind?: boolean }>(req);
 
     /* ---------------------------- Ngắt liên kết ---------------------------- */
     if (body.unbind) {
@@ -71,6 +72,16 @@ Deno.serve(async (req) => {
     if (error) return fail(500, 'DB_ERROR', 'Không kiểm tra được hồ sơ học sinh.');
     if (!student) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh này.');
     if (!student.is_active) return fail(403, 'INACTIVE', 'Hồ sơ học sinh đã bị vô hiệu hoá.');
+    /* Đối chiếu tên người dùng gửi lên với hồ sơ — chặn trường hợp client
+       gửi student_id không tương ứng với tên đã xác nhận trên giao diện. */
+    if (body.display_name) {
+        const typed = normalizeName(String(body.display_name));
+        const actual = normalizeName(student.display_name);
+        if (!typed || typed !== actual) {
+            return fail(409, 'NAME_MISMATCH', 'Tên xác nhận không khớp với hồ sơ học sinh.');
+        }
+    }
+
     if (student.needs_review) {
         return fail(409, 'NEEDS_REVIEW',
             'Hồ sơ này đang chờ Admin phân biệt (trùng họ tên). Vui lòng liên hệ giáo viên.');

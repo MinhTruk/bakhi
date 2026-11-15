@@ -30,11 +30,17 @@
         announcements: [], reads: {}, changelog: [], co: {}, lastSeenVersion: null,
         syncTimer: null, retrying: null, syncing: false, applyingRemote: false,
         lastSyncAt: 0, syncError: null, listeners: [], channel: null,
-        gate: null, bell: null, panel: null, panelOpen: false, article: null,
-        pollTimer: null, searchSeq: 0
+        gate: null, bell: null, badge: null, changeBtn: null, panel: null, panelOpen: false,
+        article: null, pollTimer: null, searchSeq: 0, publicLoaded: false, lastAnnFetch: 0
     };
 
     function now() { return Date.now(); }
+    /** Bỏ dấu, hạ chữ thường, gộp khoảng trắng — dùng để đối chiếu tên đã nhập. */
+    function normName(value) {
+        return String(value == null ? '' : value).toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/đ/g, 'd').replace(/\s+/g, ' ').trim();
+    }
     function el(tag, cls, text) {
         var e = D.createElement(tag);
         if (cls) e.className = cls;
@@ -266,12 +272,18 @@
         var chip = D.getElementById('bkcIdentityChip');
         if (!chip) return;
         chip.textContent = '';
-        if (!S.student) { chip.hidden = true; return; }
+        if (!S.student) {
+            chip.hidden = true;
+            if (S.changeBtn) S.changeBtn.hidden = true;
+            return;
+        }
         chip.hidden = false;
         var icon = el('i', 'fa-solid fa-user-graduate');
         icon.setAttribute('aria-hidden', 'true');
         chip.appendChild(icon);
-        chip.appendChild(el('span', null, S.student.display_name));
+        chip.appendChild(el('span', 'bkc-chip-name', S.student.display_name));
+        chip.title = S.student.display_name;
+        if (S.changeBtn) S.changeBtn.hidden = false;
     }
 
     /* --------------------------- Màn hình nhập tên ---------------------- */
@@ -313,13 +325,14 @@
         var spin = el('span', 'bkc-spin');
         spin.hidden = true;
         box.appendChild(spin);
-        field.appendChild(box);
 
         var list = el('ul', 'bkc-sug');
         list.id = 'bkcSugList';
         list.setAttribute('role', 'listbox');
         list.hidden = true;
-        field.appendChild(list);
+        /* Nằm trong .bkc-combo để danh sách bám sát ngay dưới ô nhập. */
+        box.appendChild(list);
+        field.appendChild(box);
 
         var msg = el('p', 'bkc-gate-msg');
         msg.id = 'bkcGateMsg';
@@ -490,7 +503,6 @@
                     e.preventDefault();
                     return;
                 }
-                if (gate.items.length === 1) { gateSelect(gate.items[0]); e.preventDefault(); return; }
                 if (gate.selected) submitIdentity();
                 e.preventDefault();
             }
@@ -530,8 +542,22 @@
         if (!gate) return;
         var chosen = gate.selected;
         if (!chosen) {
-            if (gate.items.length === 1) chosen = gate.items[0];
-            else { gateSetMsg('Hãy chọn một học sinh trong danh sách gợi ý.', 'warn'); return; }
+            gateSetMsg('Hãy chọn đúng tên trong danh sách gợi ý bên dưới ô nhập.', 'warn');
+            try { gate.input.focus(); } catch (e) { }
+            return;
+        }
+        /* Bắt buộc tên trong ô nhập khớp với học sinh đã chọn. */
+        if (normName(gate.input.value) !== normName(chosen.display_name)) {
+            gate.selected = null;
+            gate.confirm.disabled = true;
+            gateSetMsg('Tên trong ô nhập không khớp với lựa chọn. Hãy chọn lại trong danh sách.', 'warn');
+            runSearch(gate.input.value);
+            return;
+        }
+        if (!gate.items.length) {
+            gateSetMsg('Danh sách gợi ý đã cũ. Hãy nhập lại họ tên.', 'warn');
+            runSearch(gate.input.value);
+            return;
         }
         openConfirm(chosen, false);
     }
@@ -563,7 +589,10 @@
     function bindIdentity(item) {
         var gate = S.gate;
         if (gate) { gate.spin.hidden = false; gateSetMsg('Đang xác nhận…', ''); }
-        api(CFG.functions.bindSession, { student_id: item.id }).then(function (data) {
+        api(CFG.functions.bindSession, {
+            student_id: item.id,
+            display_name: gate ? gate.input.value : item.display_name
+        }).then(function (data) {
             if (gate) gate.spin.hidden = true;
             if (!data || !data.bound) throw new Error('Máy chủ không xác nhận được danh tính.');
             applyBinding(data);
@@ -571,6 +600,12 @@
             toast('Xin chào ' + data.student.display_name + '!', 'success');
         }).catch(function (err) {
             if (gate) gate.spin.hidden = true;
+            if (err && (err.code === 'NAME_MISMATCH' || err.code === 'BAD_NAME')) {
+                if (gate) { gate.selected = null; gate.confirm.disabled = true; }
+                gateSetMsg('Tên không khớp với hồ sơ trên máy chủ. Hãy chọn lại.', 'error');
+                if (gate) runSearch(gate.input.value);
+                return;
+            }
             gateSetMsg(err.message || 'Không xác nhận được danh tính. Thử lại sau.', 'error');
         });
     }
@@ -585,8 +620,9 @@
         if (hasRemote) backupLocal();
         setIdentity(student);
         mountIdentityUi();
-        loadAnnouncements();
+        loadAnnouncements(true);
         loadChangelog();
+        S.publicLoaded = true;
         if (hasRemote) {
             S.applyingRemote = true;
             try { if (global.BK && BK.cloud && BK.cloud.merge) BK.cloud.merge(remote); } catch (e) { console.warn(e); }
@@ -716,8 +752,13 @@
             });
     }
 
-    function loadAnnouncements() {
+    function loadAnnouncements(force) {
         if (!S.ready) return Promise.resolve([]);
+        var stamp = now();
+        if (!force && S.announcements.length && stamp - S.lastAnnFetch < 5000) {
+            return Promise.resolve(S.announcements);
+        }
+        S.lastAnnFetch = stamp;
         return client().from('announcements')
             .select('id, title, content, type, priority, published_at')
             .eq('is_published', true)
@@ -776,10 +817,20 @@
         chip.hidden = true;
         chip.addEventListener('click', changeStudent);
 
+        var changeBtn = el('button', 'bkc-bell bkc-change-btn');
+        changeBtn.type = 'button';
+        changeBtn.id = 'bkcChangeStudentIcon';
+        changeBtn.setAttribute('aria-label', 'Đổi học sinh');
+        changeBtn.title = 'Đổi học sinh';
+        changeBtn.hidden = true;
+        changeBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>';
+        changeBtn.addEventListener('click', changeStudent);
+
         var anchor = D.querySelector('button[onclick*="openReadmeModal"]');
         var host = anchor && anchor.parentNode;
         if (host) {
             host.insertBefore(chip, anchor);
+            host.insertBefore(changeBtn, anchor);
             host.insertBefore(bell, anchor);
         } else {
             var header = D.querySelector('header');
@@ -790,6 +841,13 @@
         }
         S.bell = bell;
         S.badge = badge;
+        S.changeBtn = changeBtn;
+
+        /* Chỉ giữ MỘT chuông: gỡ chuông CHANGELOG.md cũ (bk-notify) để không hiện 2 mục thông báo. */
+        var legacyBell = D.querySelector('.bknt-bell');
+        if (legacyBell && legacyBell.parentNode) legacyBell.parentNode.removeChild(legacyBell);
+        var legacyPanel = D.getElementById('bkntPanel');
+        if (legacyPanel) legacyPanel.remove();
     }
 
     function paintBell() {
@@ -845,11 +903,15 @@
     function placePanel() {
         if (!S.panel || !S.bell || S.panel.hidden) return;
         var r = S.bell.getBoundingClientRect();
+        var vw = global.innerWidth || 360;
         var vh = global.innerHeight || 640;
-        var top = Math.min(Math.max(8, r.bottom + 8), Math.max(8, vh - 240));
+        var width = Math.min(368, vw - 16);
+        var right = Math.max(8, Math.min(vw - r.right, vw - width - 8));
+        var top = Math.min(Math.max(8, r.bottom + 8), Math.max(8, vh - 180));
+        S.panel.style.width = width + 'px';
+        S.panel.style.right = right + 'px';
         S.panel.style.top = top + 'px';
-        S.panel.style.right = Math.max(8, Math.min(global.innerWidth - r.right, global.innerWidth - 24)) + 'px';
-        S.panel.style.maxHeight = Math.max(180, vh - top - 16) + 'px';
+        S.panel.style.maxHeight = Math.max(160, vh - top - 12) + 'px';
     }
 
     function togglePanel() { if (S.panelOpen) closePanel(); else openPanel(); }
@@ -865,7 +927,7 @@
         if (S.bell) S.bell.setAttribute('aria-expanded', 'true');
         renderPanel();
         placePanel();
-        loadAnnouncements();
+        loadAnnouncements(true);
     }
 
     function closePanel() {
@@ -1213,7 +1275,7 @@
         if (D.querySelector('link[data-bk-cloud]')) return;
         var link = D.createElement('link');
         link.rel = 'stylesheet';
-        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=3.0.0';
+        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=3.1.0';
         link.setAttribute('data-bk-cloud', '1');
         (D.head || D.documentElement).appendChild(link);
     }
@@ -1248,10 +1310,17 @@
         if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(node, anchor);
     }
 
+    function unlockBoot() {
+        try { D.documentElement.classList.remove('bk-boot-lock'); } catch (e) { }
+        var splash = D.getElementById('bkBootSplash');
+        if (splash) splash.parentNode && splash.parentNode.removeChild(splash);
+    }
+
     function boot() {
         injectCss();
         if (typeof CFG.configured === 'function' && !CFG.configured()) {
             configWarning();
+            unlockBoot();
             return;
         }
         buildBell();
@@ -1268,15 +1337,18 @@
                 openGate();
                 setSyncState('idle', 'Chưa chọn học sinh');
             }
+            unlockBoot();
             subscribeRealtime();
-            loadAnnouncements();
-            loadChangelog();
+            if (!S.publicLoaded) {
+                loadAnnouncements(true);
+                loadChangelog();
+            }
             if (global.BK && BK.store && BK.store.on) {
                 BK.store.on('save', scheduleSync);
             }
             global.addEventListener('online', function () {
                 if (S.bound) doSync(true);
-                loadAnnouncements();
+                loadAnnouncements(true);
             });
             emit('ready', { bound: S.bound });
         }).catch(function (err) {
@@ -1284,6 +1356,7 @@
             setSyncState('error', 'Mất kết nối');
             fatalNotice(err.message || OFFLINE_MSG);
             buildFatalGate(err);
+            unlockBoot();
         });
     }
 
