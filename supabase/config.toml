@@ -1,0 +1,43 @@
+# Cấu hình Supabase CLI cho Bá Khí.
+#
+# project_id = project ref (dùng cho `supabase link` / `supabase db push`).
+# Tất cả Edge Function đều tự xác thực phiên (Anonymous Auth cho học sinh,
+# Dev session token cho quản trị) nên verify_jwt = false là bắt buộc —
+# nếu để true, Supabase sẽ chặn ngay ở cổng trước khi function chạy.
+
+project_id = "wzvslyabhizsiggurwdq"
+
+[api]
+enabled = true
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+[realtime]
+enabled = true
+
+[edge_runtime]
+enabled = true
+policy = "per_worker"
+
+[functions.admin-auth]
+verify_jwt = false
+
+[functions.admin-actions]
+verify_jwt = false
+
+[functions.import-students]
+verify_jwt = false
+
+[functions.search-students]
+verify_jwt = false
+
+[functions.bind-student-session]
+verify_jwt = false
+
+[functions.sync-student-progress]
+verify_jwt = false

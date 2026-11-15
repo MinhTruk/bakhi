@@ -13,6 +13,30 @@ Hệ thống Supabase của Bá Khí gồm 4 phần:
 > hay bất kỳ secret xác thực nào vào repository, HTML, JavaScript hoặc chat.
 > Tất cả secret nằm trong **Supabase → Edge Functions → Secrets**.
 
+## Trạng thái project hiện tại (15/11/2026)
+
+Project `wzvslyabhizsiggurwdq` **đã được cài đặt và kiểm chứng**:
+
+| Hạng mục | Trạng thái |
+|---|---|
+| Anonymous sign-ins | ✅ đã bật |
+| Migration `20261115000000_bakhi_supabase.sql` | ✅ đã chạy — 9 bảng, RLS bật toàn bộ |
+| 6 Edge Function | ✅ `ACTIVE`, `verify_jwt = false` |
+| Secret `ADMIN_DEV_CODE` | ✅ đã đặt |
+| Roster `students.txt` | ✅ 40 học sinh, 0 hồ sơ trùng tên |
+
+Kiểm chứng end-to-end đã chạy trực tiếp trên project (không phải mock):
+
+- Tạo phiên Anonymous Auth → 200.
+- `search-students` với `nguyen hoang` (không dấu) → 4 kết quả đúng; `khoa anh` (đảo thứ tự) → `Phạm Anh Khoa`.
+- Trình duyệt gọi `GET /rest/v1/students` → **403 permission denied** (đúng thiết kế: danh sách không công khai).
+- `bind-student-session` → gắn `student_id`, trả `student_code`; gọi lại `{}` → khôi phục phiên không cần nhập tên.
+- `sync-student-progress` → ghi 2 khoá; phiên mới gắn cùng tên **khôi phục đúng** practice + prefs; phiên chưa gắn đọc được **0 hàng** (RLS).
+- Push thông báo qua `admin-actions` → học sinh đọc được bản published, bản draft trả `[]`.
+- Dev Code sai → `401 BAD_DEV_CODE`.
+
+Dữ liệu test (tiến trình, thiết bị, thông báo, auth user) đã được xoá — project đang ở trạng thái sạch, chỉ còn 40 hồ sơ học sinh.
+
 ---
 
 ## Bước 1. Lấy Project URL
