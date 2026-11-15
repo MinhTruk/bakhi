@@ -343,6 +343,12 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                                     <span>GitHub Repository</span>
                                 </a>
 
+                                <!-- Dev Dashboard (xác thực Dev Code qua Supabase Edge Function) -->
+                                <button onclick="openDevDashboard()" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer">
+                                    <i class="fa-solid fa-shield-halved text-sky-500"></i>
+                                    <span>Dev Dashboard</span>
+                                </button>
+
                                 <hr class="border-slate-200 dark:border-slate-700 my-1">
 
                                 <!-- KHU VỰC NHẬP CODE FOR DEVELOPER -->
@@ -2131,5 +2137,11 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
 <script src="assets/bakhi/bk-notify.js?v=2.4.3" defer></script>
 <script src="assets/bakhi/bk-learn.js?v=2.4.2" defer></script>
 <script src="assets/bakhi/bk-dev.js?v=2.4.2" defer></script>
+
+<!-- Bá Khí × Supabase: một client duy nhất, nhận diện học sinh, thông báo, changelog -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+<script src="assets/bakhi/bk-supabase.config.js?v=3.0.0" defer></script>
+<script src="assets/bakhi/bk-cloud.js?v=3.0.0" defer></script>
+<script src="assets/bakhi/bk-devboard.js?v=3.0.0" defer></script>
 </body>
 </html>

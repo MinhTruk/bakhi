@@ -17,8 +17,8 @@
       }
     },
     "index.html": {
-      "hash": "783875a533cf939fa6021235144f9d0da60405f570923cf8077b3c48441a15f2",
-      "bytes": 197302,
+      "hash": "39445e150812a34309cc878b93dad3fce62013a4114398d5bf79e134077e5f83",
+      "bytes": 198432,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -758,5 +758,6 @@
         "tfBank": 0
       }
     }
-  }
+  },
+  "note": "index.html re-baselined for the Supabase UI additions (menu item + script tags); all educational pages unchanged."
 }
