@@ -1,0 +1,141 @@
+name: Changelog → Supabase
+
+# Phát hành các phiên bản trong CHANGELOG.md (hoặc changelogs.md) lên Supabase
+# mỗi khi push lên nhánh chính. Workflow tự chạy lại toàn bộ file nên chỉnh sửa
+# một phiên bản cũ cũng được đồng bộ; RPC phía Supabase chống trùng theo version
+# nên chạy lại nhiều lần không tạo thông báo trùng.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'CHANGELOG.md'
+      - 'changelogs.md'
+      - 'tools/changelog/**'
+      - '.github/workflows/changelog-sync.yml'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Chỉ kiểm tra dữ liệu, không ghi Supabase'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: changelog-sync
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Parse và xuất bản changelog
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Kiểm tra secrets
+        env:
+          SYNC_URL: ${{ secrets.CHANGELOG_SYNC_URL }}
+          SYNC_TOKEN: ${{ secrets.CHANGELOG_SYNC_TOKEN }}
+        run: |
+          if [ -z "$SYNC_URL" ]; then
+            echo "::error title=Thiếu cấu hình::Chưa đặt GitHub Secret CHANGELOG_SYNC_URL (URL Edge Function changelog-sync)."
+            exit 1
+          fi
+          if [ -z "$SYNC_TOKEN" ]; then
+            echo "::error title=Thiếu cấu hình::Chưa đặt GitHub Secret CHANGELOG_SYNC_TOKEN (trùng secret Supabase)."
+            exit 1
+          fi
+
+      - name: Kiểm thử bộ phân tích
+        run: node --test tools/changelog/parse.test.js
+
+      - name: Phân tích CHANGELOG
+        id: parse
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          FILE="CHANGELOG.md"
+          if [ -f "changelogs.md" ]; then FILE="changelogs.md"; fi
+          echo "Đang dùng: $FILE"
+          node tools/changelog/parse.js "$FILE" --check
+
+          FILE="$FILE" DRY_RUN="${DRY_RUN:-false}" node - <<'NODE'
+          const fs = require('fs');
+          const { buildPayload } = require('./tools/changelog/parse');
+          const file = process.env.FILE;
+          const payload = buildPayload(fs.readFileSync(file, 'utf8'), {
+            commit: process.env.GITHUB_SHA || null,
+            generator: 'bakhi-changelog-parser/1.0'
+          });
+          if (String(process.env.DRY_RUN).toLowerCase() === 'true') payload.dry_run = true;
+          fs.writeFileSync('changelog-payload.json', JSON.stringify(payload));
+          const latest = payload.entries[0];
+          console.log(`Đã phân tích ${payload.entries.length} phiên bản, mới nhất ${latest.version} (${latest.date}).`);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+            `### Changelog\n\n- Nguồn: \`${file}\`\n- Phiên bản: **${payload.entries.length}**\n- Mới nhất: **${latest.version}** — ${latest.date}\n- Dry run: **${payload.dry_run === true ? 'có' : 'không'}**\n`);
+          NODE
+
+      - name: Gửi lên Supabase
+        if: ${{ inputs.dry_run != true }}
+        env:
+          SYNC_URL: ${{ secrets.CHANGELOG_SYNC_URL }}
+          SYNC_TOKEN: ${{ secrets.CHANGELOG_SYNC_TOKEN }}
+        run: |
+          set -euo pipefail
+          HTTP=$(curl -sS --retry 2 --retry-delay 3 --max-time 60 \
+            -o changelog-response.json -w '%{http_code}' \
+            -X POST "$SYNC_URL" \
+            -H 'content-type: application/json' \
+            -H "x-changelog-token: $SYNC_TOKEN" \
+            --data-binary @changelog-payload.json || true)
+
+          echo "HTTP $HTTP"
+          if [ ! -s changelog-response.json ]; then
+            echo "::error title=Không kết nối được Supabase::Edge Function changelog-sync không trả về dữ liệu."
+            exit 1
+          fi
+          cat changelog-response.json
+
+          HTTP="$HTTP" node - <<'NODE'
+          const fs = require('fs');
+          const r = JSON.parse(fs.readFileSync('changelog-response.json', 'utf8'));
+          const lines = [];
+          lines.push('### Kết quả xuất bản');
+          lines.push('');
+          if (Array.isArray(r.results)) {
+            for (const item of r.results) {
+              const flags = [
+                item.created ? 'tạo mới' : 'cập nhật',
+                item.announcement_created ? 'có thông báo' : 'không thông báo'
+              ].join(', ');
+              lines.push(`- \`${item.version}\`: ${flags}`);
+            }
+          }
+          if (Array.isArray(r.errors) && r.errors.length) {
+            lines.push('');
+            lines.push('#### Lỗi');
+            for (const e of r.errors) lines.push(`- \`${e.version}\`: ${e.message}`);
+          }
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
+
+          if (r.error) {
+            console.error(`Lỗi Supabase: ${r.error.code} — ${r.error.message}`);
+          }
+          if (r.ok !== true) process.exit(1);
+          NODE
+
+      - name: Báo lỗi rõ ràng
+        if: ${{ failure() }}
+        run: |
+          echo "::error title=Đồng bộ changelog thất bại::Xem log phía trên. Kiểm tra secret CHANGELOG_SYNC_URL/CHANGELOG_SYNC_TOKEN và trạng thái Edge Function changelog-sync."
