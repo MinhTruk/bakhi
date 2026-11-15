@@ -31,7 +31,8 @@
         syncTimer: null, retrying: null, syncing: false, applyingRemote: false,
         lastSyncAt: 0, syncError: null, listeners: [], channel: null,
         gate: null, bell: null, badge: null, changeBtn: null, panel: null, panelOpen: false,
-        article: null, pollTimer: null, searchSeq: 0, publicLoaded: false, lastAnnFetch: 0
+        article: null, pollTimer: null, searchSeq: 0, publicLoaded: false, lastAnnFetch: 0,
+        binding: false
     };
 
     function now() { return Date.now(); }
@@ -389,6 +390,7 @@
         if (!items.length) {
             gate.list.hidden = true;
             gate.input.setAttribute('aria-expanded', 'false');
+            if (gate.lockMsg) return;                /* giữ thông điệp lỗi đang hiện */
             if (query && query.trim().length >= 2) gateSetMsg('Không tìm thấy học sinh phù hợp.', 'warn');
             else gateSetMsg('', '');
             return;
@@ -404,13 +406,16 @@
             btn.appendChild(highlightName(item.display_name, query));
             if (item.disambiguator) btn.appendChild(el('span', 'bkc-sug-tag', item.disambiguator));
             btn.addEventListener('mousedown', function (e) { e.preventDefault(); });
+            /* Chọn ngay khi chạm/giữ chuột: trên điện thoại sự kiện click có thể
+               bị huỷ khi danh sách vừa ẩn, khiến trước đây không chọn được tên. */
+            btn.addEventListener('pointerdown', function (e) { e.preventDefault(); gateSelect(item); });
             btn.addEventListener('click', function () { gateSelect(item); });
             li.appendChild(btn);
             gate.list.appendChild(li);
         });
         gate.list.hidden = false;
         gate.input.setAttribute('aria-expanded', 'true');
-        gateSetMsg('', '');
+        if (!gate.lockMsg) gateSetMsg('', '');
     }
 
     /** Highlight phần trùng khớp, bỏ qua dấu tiếng Việt. */
@@ -476,14 +481,16 @@
 
         gate.input.addEventListener('input', function () {
             var value = gate.input.value;
-            gate.selected = null;
-            gate.confirm.disabled = true;
+            if (gate.selected && normName(gate.selected.display_name) !== normName(value)) gate.selected = null;
+            gate.confirm.disabled = normName(value).length < 2;
+            gate.lockMsg = false;
+            gateSetMsg('', '');
             clearTimeout(timer);
             if (value.trim().length < 2) {
                 renderSuggestions([], '');
                 return;
             }
-            timer = setTimeout(function () { runSearch(value); }, 220);
+            timer = setTimeout(function () { runSearch(value); }, 200);
         });
 
         gate.input.addEventListener('keydown', function (e) {
@@ -498,18 +505,23 @@
                 gate.list.hidden = true;
                 gate.input.setAttribute('aria-expanded', 'false');
             } else if (e.key === 'Enter') {
+                e.preventDefault();
                 if (gate.activeIndex >= 0 && gate.items[gate.activeIndex]) {
                     gateSelect(gate.items[gate.activeIndex]);
-                    e.preventDefault();
-                    return;
                 }
-                if (gate.selected) submitIdentity();
-                e.preventDefault();
+                submitIdentity();
             }
         });
 
         gate.input.addEventListener('blur', function () {
-            setTimeout(function () { if (gate.list) gate.list.hidden = true; }, 140);
+            setTimeout(function () {
+                if (!S.gate) return;
+                var active = D.activeElement;
+                if (S.gate.list.contains(active)) return;
+                if (active === S.gate.input) return;
+                S.gate.list.hidden = true;
+                S.gate.input.setAttribute('aria-expanded', 'false');
+            }, 260);
         });
 
         gate.confirm.addEventListener('click', submitIdentity);
@@ -537,76 +549,143 @@
         });
     }
 
+    /* --------------------- Xác nhận danh tính (làm lại) ------------------- */
+
+    /* Bấm Xác nhận: nếu đã chọn đúng một gợi ý thì xác nhận hồ sơ đó, nếu không
+       thì để máy chủ tự tra đúng họ tên đã nhập — gõ đúng tên là vào được. */
     function submitIdentity() {
         var gate = S.gate;
-        if (!gate) return;
-        var chosen = gate.selected;
-        if (!chosen) {
-            gateSetMsg('Hãy chọn đúng tên trong danh sách gợi ý bên dưới ô nhập.', 'warn');
+        if (!gate || S.binding) return;
+        var typed = String(gate.input.value || '').replace(/\s+/g, ' ').trim();
+        if (normName(typed).length < 2) {
+            gateSetMsg('Hãy nhập đầy đủ họ và tên của bạn.', 'warn');
             try { gate.input.focus(); } catch (e) { }
             return;
         }
-        /* Bắt buộc tên trong ô nhập khớp với học sinh đã chọn. */
-        if (normName(gate.input.value) !== normName(chosen.display_name)) {
-            gate.selected = null;
-            gate.confirm.disabled = true;
-            gateSetMsg('Tên trong ô nhập không khớp với lựa chọn. Hãy chọn lại trong danh sách.', 'warn');
-            runSearch(gate.input.value);
+        if (gate.selected && normName(gate.selected.display_name) === normName(typed)) {
+            bindIdentity(gate.selected);
             return;
         }
-        if (!gate.items.length) {
-            gateSetMsg('Danh sách gợi ý đã cũ. Hãy nhập lại họ tên.', 'warn');
-            runSearch(gate.input.value);
-            return;
-        }
-        openConfirm(chosen, false);
+        resolveByName(typed);
     }
 
-    function openConfirm(item, isChange) {
-        var body = el('div', 'bkc-confirm');
-        body.appendChild(el('p', 'bkc-confirm-label', isChange ? 'Bạn đang đổi sang tên:' : 'Bạn đang tiếp tục với tên:'));
-        body.appendChild(el('p', 'bkc-confirm-name', item.display_name));
-        if (item.disambiguator) body.appendChild(el('p', 'bkc-muted', 'Hồ sơ: ' + item.disambiguator));
+    /* Tra đúng họ tên ở máy chủ rồi gắn phiên — không cần chọn gợi ý. */
+    function resolveByName(typed) {
+        var gate = S.gate;
+        if (!gate || S.binding) return;
+        S.binding = true;
+        gate.selected = null;
+        S.searchSeq++;                      /* huỷ kết quả gợi ý đang bay về */
+        if (gate.spin) gate.spin.hidden = false;
+        gateSetMsg('Đang đối chiếu họ tên…', '');
+        api(CFG.functions.bindSession, { display_name: typed }).then(function (data) {
+            S.binding = false;
+            if (gate.spin) gate.spin.hidden = true;
+            handleBindSuccess(data);
+        }).catch(function (err) {
+            S.binding = false;
+            if (gate.spin) gate.spin.hidden = true;
+            handleBindError(err, typed);
+        });
+    }
 
-        var m = global.BK && global.BK.ui && global.BK.ui.modal
-            ? global.BK.ui.modal({
-                title: 'XÁC NHẬN DANH TÍNH',
-                body: body,
-                actions: [
-                    { label: 'Chọn lại', variant: 'ghost', onClick: function (close) { close(); } },
-                    {
-                        label: 'Xác nhận', variant: 'primary', onClick: function (close) {
-                            close();
-                            bindIdentity(item);
-                        }
-                    }
-                ]
-            })
-            : null;
-        if (!m) { bindIdentity(item); }
+    function handleBindSuccess(data) {
+        var gate = S.gate;
+        if (gate) { if (gate.spin) gate.spin.hidden = true; gateSetMsg('', ''); }
+        if (!data || !data.bound) {
+            gateSetMsg('Máy chủ không xác nhận được danh tính. Thử lại.', 'error');
+            return;
+        }
+        applyBinding(data);
+        closeGate();
+        toast('Xin chào ' + data.student.display_name + '!', 'success');
+    }
+
+    function handleBindError(err, typed) {
+        var gate = S.gate;
+        if (!gate) return;
+        var code = err && err.code;
+        var detail = (err && err.data && err.data.error) || {};
+        if (code === 'AMBIGUOUS' && Array.isArray(detail.candidates) && detail.candidates.length) {
+            gateSetMsg('Có nhiều hồ sơ cùng họ tên — hãy chọn đúng hồ sơ của bạn.', 'warn');
+            showCandidates(detail.candidates);
+            return;
+        }
+        if (code === 'NAME_NOT_FOUND') {
+            gate.lockMsg = true;
+            gateSetMsg('Không có ai tên "' + typed + '". Kiểm tra lại họ tên hoặc chọn trong danh sách gợi ý.', 'error');
+            runSearch(typed);
+            return;
+        }
+        if (code === 'NEEDS_REVIEW') {
+            gateSetMsg('Hồ sơ này đang chờ giáo viên phân biệt trùng họ tên. Hãy báo giáo viên.', 'error');
+            return;
+        }
+        if (code === 'TOO_MANY_BINDS') {
+            gateSetMsg('Bạn đã thử quá nhiều lần. Chờ vài phút rồi bấm Xác nhận lại.', 'error');
+            return;
+        }
+        if (code === 'INACTIVE') {
+            gateSetMsg('Hồ sơ này đã bị vô hiệu hoá. Hãy liên hệ giáo viên.', 'error');
+            return;
+        }
+        if (code === 'NAME_MISMATCH') {
+            gateSetMsg('Tên không khớp hồ sơ. Hãy nhập lại đúng họ tên.', 'error');
+            return;
+        }
+        gateSetMsg((err && err.message) || 'Không xác nhận được danh tính. Thử lại sau.', 'error');
+    }
+
+    /* Nhiều hồ sơ trùng họ tên: bắt buộc chọn đúng một hồ sơ. */
+    function showCandidates(list) {
+        var gate = S.gate;
+        var box = el('div', 'bkc-candidates');
+        box.appendChild(el('p', 'bkc-confirm-label', 'Chọn hồ sơ của bạn:'));
+        var mod = null;
+        list.forEach(function (item) {
+            var btn = el('button', 'bkc-candidate');
+            btn.type = 'button';
+            btn.appendChild(el('span', 'bkc-candidate-name', item.display_name));
+            if (item.disambiguator) btn.appendChild(el('span', 'bkc-sug-tag', item.disambiguator));
+            btn.addEventListener('click', function () {
+                if (mod && mod.close) mod.close();
+                if (S.gate) { S.gate.input.value = item.display_name; S.gate.selected = item; }
+                bindIdentity(item);
+            });
+            box.appendChild(btn);
+        });
+        if (global.BK && global.BK.ui && global.BK.ui.modal) {
+            mod = global.BK.ui.modal({
+                title: 'NHIỀU HỒ SƠ TRÙNG HỌ TÊN',
+                body: box,
+                actions: [{ label: 'Đóng', variant: 'ghost', onClick: function (close) { close(); } }]
+            });
+        }
+        if (!mod && gate) {
+            var old = gate.wrap.querySelector('.bkc-candidates');
+            if (old) old.remove();
+            box.className = 'bkc-candidates bkc-candidates-inline';
+            var card = gate.wrap.querySelector('.bkc-gate-card');
+            if (card) card.appendChild(box);
+        }
     }
 
     function bindIdentity(item) {
         var gate = S.gate;
-        if (gate) { gate.spin.hidden = false; gateSetMsg('Đang xác nhận…', ''); }
+        if (S.binding) return;
+        S.binding = true;
+        if (gate) { if (gate.spin) gate.spin.hidden = false; gateSetMsg('Đang xác nhận…', ''); }
         api(CFG.functions.bindSession, {
             student_id: item.id,
-            display_name: gate ? gate.input.value : item.display_name
+            display_name: item.display_name
         }).then(function (data) {
-            if (gate) gate.spin.hidden = true;
-            if (!data || !data.bound) throw new Error('Máy chủ không xác nhận được danh tính.');
-            applyBinding(data);
-            closeGate();
-            toast('Xin chào ' + data.student.display_name + '!', 'success');
+            S.binding = false;
+            if (gate && gate.spin) gate.spin.hidden = true;
+            handleBindSuccess(data);
         }).catch(function (err) {
-            if (gate) gate.spin.hidden = true;
-            if (err && (err.code === 'NAME_MISMATCH' || err.code === 'BAD_NAME')) {
-                if (gate) { gate.selected = null; gate.confirm.disabled = true; }
-                gateSetMsg('Tên không khớp với hồ sơ trên máy chủ. Hãy chọn lại.', 'error');
-                if (gate) runSearch(gate.input.value);
-                return;
-            }
-            gateSetMsg(err.message || 'Không xác nhận được danh tính. Thử lại sau.', 'error');
+            S.binding = false;
+            if (gate && gate.spin) gate.spin.hidden = true;
+            handleBindError(err, item.display_name);
         });
     }
 
@@ -652,7 +731,7 @@
             gate.confirm.disabled = true;
             gate.items = [];
             gate.list.hidden = true;
-            gateSetMsg('', '');
+            gateSetMsg('Nhập đúng họ tên rồi bấm Xác nhận — hoặc chọn trong danh sách gợi ý.', '');
             setTimeout(function () { try { gate.input.focus(); } catch (e) { } }, 40);
         }).catch(function (err) {
             buildFatalGate(err);
@@ -1295,7 +1374,7 @@
         if (D.querySelector('link[data-bk-cloud]')) return;
         var link = D.createElement('link');
         link.rel = 'stylesheet';
-        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=3.1.1';
+        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=3.1.2';
         link.setAttribute('data-bk-cloud', '1');
         (D.head || D.documentElement).appendChild(link);
     }

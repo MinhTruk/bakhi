@@ -223,7 +223,9 @@ html.dark .bkc-tag-update { color: #7dd3fc; }
 
 /* --------------------------- Màn hình nhập tên ------------------------ */
 .bkc-gate {
-    position: fixed; inset: 0; z-index: 2147482000;
+    /* Thấp hơn .bk-overlay (2147481000), sheet, panel và toast để mọi hộp thoại
+       xác nhận luôn nằm TRÊN màn hình nhận diện — nếu không sẽ không bấm được. */
+    position: fixed; inset: 0; z-index: 2147480900;
     display: flex; align-items: center; justify-content: center; padding: 1.1rem;
     background:
         radial-gradient(900px 500px at 15% 0%, rgba(99, 102, 241, .28), transparent 60%),
@@ -502,3 +504,18 @@ html.dark .bkc-pre { background: rgba(148, 163, 184, .12); }
 }
 /* Chỉ cuộn danh sách gợi ý, không cuộn cả màn hình đăng nhập */
 .bkc-gate, .bkc-sug { touch-action: pan-y; }
+
+/* Hồ sơ trùng họ tên — chọn đúng một */
+.bkc-candidates { display: flex; flex-direction: column; gap: .45rem; }
+.bkc-candidates-inline {
+    margin-top: .8rem; padding-top: .8rem;
+    border-top: 1px solid rgba(148, 163, 184, .25);
+}
+.bkc-candidate {
+    display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+    width: 100%; padding: .6rem .75rem; cursor: pointer; text-align: left;
+    border-radius: 10px; color: inherit; font: 600 .8rem/1.35 Lexend, system-ui, sans-serif;
+    background: rgba(148, 163, 184, .16); border: 1px solid rgba(148, 163, 184, .3);
+}
+.bkc-candidate:hover { background: rgba(148, 163, 184, .3); }
+.bkc-candidate-name { overflow: hidden; text-overflow: ellipsis; }

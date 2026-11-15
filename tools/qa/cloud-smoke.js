@@ -98,14 +98,32 @@ function fakeFetch(url, opts) {
             ]
         };
     } else if (name === 'bind-student-session') {
+        const bound = {
+            ok: true, bound: true,
+            student: { id: 's1', display_name: 'Nguyễn Minh Anh', student_code: 'BK-1A2B', disambiguator: null, is_active: true },
+            progress: {}, updated: {}
+        };
+        const norm = (v) => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().replace(/\s+/g, ' ').trim();
+        const typed = norm(body.display_name);
         if (body.unbind) payload = { ok: true, bound: false };
-        else if (body.student_id) {
+        else if (body.student_id) payload = bound;
+        else if (!typed) payload = { ok: true, bound: false };            /* kiểm tra phiên ban đầu */
+        else if (typed === 'nguyen minh anh') payload = bound;             /* khớp đúng họ tên */
+        else if (typed === 'tran van bach') {
             payload = {
-                ok: true, bound: true,
-                student: { id: 's1', display_name: 'Nguyễn Minh Anh', student_code: 'BK-1A2B', disambiguator: null, is_active: true },
-                progress: {}, updated: {}
+                ok: false,
+                error: {
+                    code: 'AMBIGUOUS', message: 'Có nhiều hồ sơ cùng họ tên.',
+                    candidates: [
+                        { id: 's3', display_name: 'Trần Văn Bách', disambiguator: '10A1' },
+                        { id: 's4', display_name: 'Trần Văn Bách', disambiguator: '10A2' }
+                    ]
+                }
             };
-        } else payload = { ok: true, bound: false };
+        } else {
+            payload = { ok: false, error: { code: 'NAME_NOT_FOUND', message: 'Không có học sinh nào trùng đúng họ tên này.' } };
+        }
     } else if (name === 'admin-auth') {
         payload = { ok: true, token: 'x'.repeat(48), expiresAt: new Date(Date.now() + 3600e3).toISOString() };
     } else if (name === 'admin-actions') {
@@ -203,41 +221,57 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     ok('danh sách gợi ý nằm ngay trong khối ô nhập', w.document.querySelector('.bkc-sug').parentNode.className.indexOf('bkc-combo') >= 0);
     ok('chỉ còn một chuông thông báo', !w.document.querySelector('.bknt-bell') && !!w.document.getElementById('bkcBell'));
 
+
+    /* Trên điện thoại, click có thể bị huỷ khi danh sách vừa ẩn — chọn ngay khi chạm. */
+    suggestions[1].dispatchEvent(new w.Event('pointerdown', { bubbles: true, cancelable: true }));
+    ok('chạm vào gợi ý là chọn được ngay (không cần click)', input.value === 'Nguyễn Minh An', input.value);
     console.log('\n[3] Xác nhận danh tính');
-    ok('nút xác nhận bị khoá khi chưa chọn gợi ý', w.document.querySelector('.bkc-gate-confirm').disabled === true);
-    suggestions[0].click();
-    ok('nút xác nhận mở sau khi chọn gợi ý', w.document.querySelector('.bkc-gate-confirm').disabled === false);
+    input.value = '';
+    input.dispatchEvent(new w.Event('input', { bubbles: true }));
+    await wait(30);
+    ok('nút xác nhận khoá khi ô tên còn trống', w.document.querySelector('.bkc-gate-confirm').disabled === true);
 
-    /* Đổi tên trong ô nhập nhưng không đổi lựa chọn → phải bị chặn, không gọi API. */
-    const bindsBefore = calls.filter((c) => c.name === 'bind-student-session' && c.body.student_id).length;
-    const goodName = input.value;
+    /* Gõ tên không có trong danh sách: máy chủ trả NAME_NOT_FOUND. */
     input.value = 'Tên Không Tồn Tại';
+    input.dispatchEvent(new w.Event('input', { bubbles: true }));
+    await wait(40);
+    ok('nút xác nhận mở ngay sau khi gõ tên', w.document.querySelector('.bkc-gate-confirm').disabled === false);
     w.document.querySelector('.bkc-gate-confirm').click();
-    ok('chặn xác nhận khi tên không khớp lựa chọn', /không khớp/.test(w.document.getElementById('bkcGateMsg').textContent), w.document.getElementById('bkcGateMsg').textContent);
-    ok('không gọi API khi tên chưa khớp', calls.filter((c) => c.name === 'bind-student-session' && c.body.student_id).length === bindsBefore);
-    ok('nút xác nhận bị khoá lại sau khi lệch tên', w.document.querySelector('.bkc-gate-confirm').disabled === true);
+    const notFound = await until(() => /Không có ai tên/.test(w.document.getElementById('bkcGateMsg').textContent));
+    ok('tên không tồn tại → báo rõ ràng, vẫn ở màn hình nhận diện', !!notFound && !!w.document.getElementById('bkIdentityGate'));
+    ok('không gắn phiên khi tên không tồn tại', !calls.some((c) => c.body.student_id));
 
-    input.value = goodName;
-    await wait(320);
-    const again = await until(() => w.document.querySelectorAll('.bkc-sug-item').length ? w.document.querySelectorAll('.bkc-sug-item') : null);
-    again[0].click();
+    /* Trùng họ tên: máy chủ trả AMBIGUOUS kèm danh sách hồ sơ để chọn. */
+    input.value = 'Trần Văn Bách';
+    input.dispatchEvent(new w.Event('input', { bubbles: true }));
+    await wait(40);
     w.document.querySelector('.bkc-gate-confirm').click();
-    const confirmBtn = await until(() => {
-        const buttons = Array.from(w.document.querySelectorAll('.bk-modal-foot .bk-btn'));
-        return buttons.find((b) => b.textContent === 'Xác nhận') || null;
-    });
-    ok('modal XÁC NHẬN DANH TÍNH hiện ra', !!confirmBtn && /XÁC NHẬN DANH TÍNH/.test(w.document.querySelector('.bk-modal').textContent));
-    confirmBtn.click();
+    const candidates = await until(() => w.document.querySelectorAll('.bkc-candidate').length ? w.document.querySelectorAll('.bkc-candidate') : null);
+    ok('trùng họ tên → hiện danh sách hồ sơ để chọn', !!candidates && candidates.length === 2, candidates && String(candidates.length));
+    if (candidates && candidates[0]) {
+        const closeBtn = Array.from(w.document.querySelectorAll('.bk-modal-foot .bk-btn')).find((b) => /Đóng/.test(b.textContent));
+        if (closeBtn) closeBtn.click();
+        await wait(30);
+    }
+    ok('chưa gắn phiên khi hồ sơ còn trùng tên', !!w.document.getElementById('bkIdentityGate'));
+
+    /* Gõ đúng họ tên, không chọn gợi ý → vẫn xác nhận được. */
+    input.value = 'Nguyễn Minh Anh';
+    input.dispatchEvent(new w.Event('input', { bubbles: true }));
+    await wait(40);
+    w.document.querySelector('.bkc-gate-confirm').click();
     const closed = await until(() => !w.document.getElementById('bkIdentityGate'));
-    ok('màn hình nhập tên đóng sau khi xác nhận', !!closed);
-    ok('đã gắn student_id lên backend', calls.some((c) => c.name === 'bind-student-session' && c.body.student_id === 's1'));
-    ok('bind gửi kèm họ tên để máy chủ đối chiếu', calls.some((c) => c.body.student_id === 's1' && c.body.display_name === 'Nguyễn Minh Anh'));
+    ok('gõ đúng họ tên rồi bấm Xác nhận là vào được', !!closed);
+    ok('bind theo họ tên, không cần chọn gợi ý', calls.some((c) => c.name === 'bind-student-session' && !c.body.student_id && c.body.display_name === 'Nguyễn Minh Anh'));
+    ok('lần gắn cuối gửi đúng họ tên đã gõ (máy chủ đối chiếu)',
+        (calls.filter((c) => c.name === 'bind-student-session' && c.body.display_name).slice(-1)[0] || {}).body.display_name === 'Nguyễn Minh Anh');
     ok('có icon đổi học sinh trên header', (() => {
         const icon = w.document.getElementById('bkcChangeStudentIcon');
         return !!icon && icon.hidden === false && /Đổi học sinh/.test(icon.getAttribute('aria-label'));
     })());
     ok('tên hiển thị trên header', /Nguyễn Minh Anh/.test((w.document.getElementById('bkcIdentityChip') || {}).textContent || ''));
     ok('menu có nút Đổi học sinh', !!w.document.getElementById('bkcChangeStudentBtn'));
+
 
     console.log('\n[4] Trung tâm thông báo');
     const badge = w.document.querySelector('.bkc-badge');
@@ -325,6 +359,22 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
         return files.every((f) => !/service_role/i.test(fs.readFileSync(path.join(ROOT, f), 'utf8')) || true) &&
             !/eyJhbGciOi/.test(fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-supabase.config.js'), 'utf8'));
     })());
+
+    console.log('\n[8] Đổi học sinh');
+    w.BKCloud.changeStudent();
+    const changeBtn = await until(() => Array.from(w.document.querySelectorAll('.bk-modal-foot .bk-btn'))
+        .find((b) => b.textContent === 'Đổi học sinh') || null);
+    ok('đổi học sinh hỏi lại trước khi đổi', !!changeBtn);
+    if (changeBtn) changeBtn.click();
+    const reopened = await until(() => w.document.getElementById('bkIdentityGate'));
+    ok('mở lại màn hình nhận diện sau khi đổi học sinh', !!reopened);
+    if (reopened) {
+        const again = w.document.getElementById('bkcNameInput');
+        again.value = '';
+        again.dispatchEvent(new w.Event('input', { bubbles: true }));
+        await wait(30);
+        ok('màn hình nhận diện mở lại ở trạng thái trống', w.document.querySelector('.bkc-gate-confirm').disabled === true);
+    }
 
     const realErrors = errors.filter((e) => !/Could not load link|Not implemented: navigation/.test(e));
     ok('không có lỗi runtime', realErrors.length === 0, String(realErrors[0] || ''));

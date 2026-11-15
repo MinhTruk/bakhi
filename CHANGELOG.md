@@ -2,6 +2,41 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [3.0.0] — 2026-11-15
+
+### Tính năng
+
+- Nhận diện học sinh bằng họ tên: gõ tên, chọn trong danh sách gợi ý có tô sáng — không cần email, không cần mật khẩu, không cần tài khoản Google.
+- Phiên ẩn danh Supabase Auth: mỗi thiết bị một phiên riêng, không thu thập email hay số điện thoại.
+- Đồng bộ tiến trình học tập giữa các thiết bị: luyện tập, ôn tập, ghi chú, đánh dấu, lịch sử, thành tích — tự lưu, tự thử lại khi mất mạng.
+- Trung tâm thông báo tức thời: giáo viên đăng là máy học sinh hiện ngay, có đếm chưa đọc, mức ưu tiên và đánh dấu đã đọc.
+- What's New: xem bản cập nhật mới nhất và toàn bộ lịch sử phiên bản ngay trên trang chủ.
+- Dev Dashboard 6 tab cho giáo viên: Tổng quan, Học sinh, Thông báo, Changelog, Nhật ký, Cài đặt.
+- Import danh sách học sinh từ tệp TXT, tự phát hiện trùng họ tên và đánh dấu hồ sơ cần phân biệt.
+
+### Cải tiến
+
+- Bảo mật: bật RLS cho toàn bộ bảng; danh sách học sinh không đọc được từ trình duyệt, chỉ Edge Function dùng khoá máy chủ mới đọc được.
+- Mọi thao tác quản trị đi qua Edge Function và phải xác thực bằng Dev Code; Dev Code không lưu ở máy người dùng.
+- Giới hạn tần suất cho tìm kiếm, gắn danh tính và đăng nhập Dev Code để chống lạm dụng.
+- Máy chủ kiểm tra lại họ tên khi gắn danh tính, không tin dữ liệu do trình duyệt gửi lên.
+
+## [3.1.1] — 2026-11-15
+
+### Sửa lỗi
+
+- Sửa lỗi lớn nhất: hộp thoại xác nhận danh tính nằm BÊN DƯỚI màn hình nhận diện nên bấm Xác nhận không có phản ứng gì. Đã sửa đúng thứ tự lớp và bỏ bước xác nhận trùng — bấm Xác nhận là vào ngay.
+- Không còn bắt buộc phải chọn trong danh sách gợi ý: gõ đúng họ tên rồi bấm Xác nhận (hoặc Enter) là được, máy chủ tự đối chiếu.
+- Máy chủ trước đây hiểu nhầm yêu cầu chỉ có họ tên là 'xem liên kết' nên trả về chưa gắn danh tính — đã sửa để xác nhận đúng.
+- Trên điện thoại, chạm vào gợi ý giờ chọn được ngay; trước đây danh sách ẩn trước khi kịp nhận cú chạm nên không bao giờ chọn được tên.
+- Hồ sơ trùng họ tên: máy chủ trả về danh sách hồ sơ để chọn đúng người thay vì báo lỗi chung.
+
+### Cải tiến
+
+- Thông báo lỗi rõ ràng cho từng trường hợp: không tìm thấy họ tên, hồ sơ chờ giáo viên phân biệt, hồ sơ đã bị vô hiệu hoá, thử quá nhiều lần.
+- Chặn bấm Xác nhận nhiều lần liên tiếp để không tạo yêu cầu trùng.
+- Gợi ý cách dùng ngay trên màn hình nhận diện: nhập đúng họ tên rồi bấm Xác nhận.
+
 ## [3.1.0] — 2026-11-15
 
 ### Sửa lỗi

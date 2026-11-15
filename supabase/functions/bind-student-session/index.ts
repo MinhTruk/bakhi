@@ -41,7 +41,9 @@ Deno.serve(async (req) => {
     }
 
     /* --------------------------- Xem liên kết ------------------------------ */
-    if (!body.student_id) {
+    /* Chỉ coi là "xem liên kết" khi KHÔNG có cả student_id và họ tên; nếu có họ
+       tên thì đó là yêu cầu xác nhận danh tính (xử lý ở dưới). */
+    if (!body.student_id && !String(body.display_name ?? '').trim()) {
         const { data, error } = await client
             .from('student_devices')
             .select('student_id, created_at, last_seen_at')
@@ -63,7 +65,38 @@ Deno.serve(async (req) => {
     }
 
     /* ----------------------------- Gắn danh tính --------------------------- */
-    const studentId = String(body.student_id);
+    const typedName = body.display_name ? normalizeName(String(body.display_name)).slice(0, 120) : '';
+    const hasId = !!body.student_id;
+    let studentId = hasId ? String(body.student_id) : '';
+
+    /* Không có student_id: máy chủ tự tra đúng họ tên người dùng đã nhập.
+       Đây là đường xác nhận chính — không phụ thuộc việc client chọn gợi ý. */
+    if (!studentId) {
+        if (!typedName) return fail(400, 'MISSING_TARGET', 'Cần họ tên hoặc mã học sinh để xác nhận.');
+        const { data: rows, error: findError } = await client
+            .from('students')
+            .select('id, display_name, disambiguator, is_active, needs_review')
+            .eq('normalized_name', typedName)
+            .order('display_name', { ascending: true })
+            .limit(6);
+        if (findError) return fail(500, 'DB_ERROR', 'Không tra được hồ sơ học sinh.');
+        const active = (rows ?? []).filter((row) => row.is_active);
+        if (!active.length) {
+            return fail(404, 'NAME_NOT_FOUND',
+                'Không có học sinh nào trùng đúng họ tên này. Hãy kiểm tra lại họ tên.');
+        }
+        if (active.length > 1) {
+            return fail(409, 'AMBIGUOUS', 'Có nhiều hồ sơ cùng họ tên. Hãy chọn đúng hồ sơ của bạn.', {
+                candidates: active.map((row) => ({
+                    id: row.id,
+                    display_name: row.display_name,
+                    disambiguator: row.disambiguator ?? null
+                }))
+            });
+        }
+        studentId = active[0].id;
+    }
+
     const { data: student, error } = await client
         .from('students')
         .select('id, display_name, student_code, disambiguator, is_active, needs_review')
@@ -72,12 +105,12 @@ Deno.serve(async (req) => {
     if (error) return fail(500, 'DB_ERROR', 'Không kiểm tra được hồ sơ học sinh.');
     if (!student) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh này.');
     if (!student.is_active) return fail(403, 'INACTIVE', 'Hồ sơ học sinh đã bị vô hiệu hoá.');
-    /* Đối chiếu tên người dùng gửi lên với hồ sơ — chặn trường hợp client
-       gửi student_id không tương ứng với tên đã xác nhận trên giao diện. */
-    if (body.display_name) {
-        const typed = normalizeName(String(body.display_name));
+
+    /* Chỉ khi client gửi kèm id mới cần đối chiếu tên — chặn trường hợp gửi
+       student_id không tương ứng với tên đã xác nhận trên giao diện. */
+    if (hasId && typedName) {
         const actual = normalizeName(student.display_name);
-        if (!typed || typed !== actual) {
+        if (typedName !== actual) {
             return fail(409, 'NAME_MISMATCH', 'Tên xác nhận không khớp với hồ sơ học sinh.');
         }
     }
