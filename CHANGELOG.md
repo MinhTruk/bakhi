@@ -49,6 +49,9 @@ Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep
   trang/lọc, lưu và xuất bản changelog qua RPC dùng chung, `logs.list`/`logs.export`,
   `settings.get`/`settings.set`, `system.health`, `permissions.get`, `data.integrity`.
   Mọi thao tác xác thực lại Administrator Code ở máy chủ.
+- **Giám sát đúng phiên bản**: `system.health` và `overview` so sánh từng đoạn số như
+  `bakhi_version_cmp` thay vì sắp theo `published_at`; changelog đồng bộ chỉ có ngày nên
+  trước đây 3.2.0 bị coi là mới hơn 3.3.0.
 - **Migration mới**: `20261117000000_bakhi_changelog_sync.sql` (cột đồng bộ, liên kết
   announcement, hàm so sánh phiên bản, RPC publish, `app_settings`) và
   `20261117001000_app_settings_realtime.sql` (đưa `app_settings` vào realtime).

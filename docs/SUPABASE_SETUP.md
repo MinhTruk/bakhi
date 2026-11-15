@@ -144,6 +144,19 @@ supabase functions deploy changelog-sync --no-verify-jwt
 Lý do: học sinh dùng Anonymous Auth, Administrator Dashboard dùng phiên quản trị riêng, và
 workflow dùng `CHANGELOG_SYNC_TOKEN`; cả ba đều tự kiểm tra quyền bên trong function.
 
+> **Deploy `admin-actions` qua Management API:** endpoint `PATCH /v1/projects/{ref}/functions/admin-actions`
+> chạy runtime với `--no-remote`, nên gửi thẳng `index.ts` (còn import `https://esm.sh/...`)
+> sẽ báo `BOOT_ERROR`. Hãy bundle trước rồi mới gửi `body`:
+>
+> ```bash
+> npm install --no-save @supabase/supabase-js@2.45.4 esbuild@0.25.0
+> # thay import esm.sh bằng import '@supabase/supabase-js' trong bản tạm, rồi:
+> npx esbuild entry.ts --bundle --format=esm --platform=browser --target=es2022 --outfile=bundle.mjs
+> ```
+>
+> Gửi `bundle.mjs` (không còn import từ xa) qua `body`; kiểm tra function trả `401 NO_DEV_SESSION`
+> thay vì `503 BOOT_ERROR`. CLI `supabase functions deploy` tự bundle nên không cần bước này.
+
 ### Vai trò & xác thực từng function
 
 | Function | Người gọi | Xác thực | Giới hạn |
