@@ -835,7 +835,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between bg-white/90 dark:bg-slate-800/90 sticky top-0">
                     <div class="flex items-center space-x-2.5">
                         <i class="fa-brands fa-markdown text-sky-500 dark:text-sky-400 text-xl"></i>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100">README.md</h3>
+                        <h3 id="readme-modal-title" class="font-bold text-lg text-slate-900 dark:text-slate-100">README.md</h3>
                     </div>
                     <button onclick="closeReadmeModal()" class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition">
                         <i class="fa-solid fa-xmark text-lg"></i>
@@ -1404,26 +1404,37 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             if (ico) { ico.classList.toggle('fa-folder-open', open); ico.classList.toggle('fa-folder', !open); }
         }
 
-        async function openReadmeModal() {
+        // Trình xem markdown dùng chung cho README.md và CHANGELOG.md.
+        async function openMarkdownModal(file, title) {
             const modal = document.getElementById('readme-modal');
+            const titleEl = document.getElementById('readme-modal-title');
             const contentEl = document.getElementById('readme-content');
+            if (titleEl) titleEl.textContent = title;
             modal.classList.remove('hidden');
+            contentEl.innerHTML = '<div class="flex items-center justify-center py-12 text-slate-500 dark:text-slate-400 space-x-2"><i class="fa-solid fa-spinner fa-spin text-xl"></i><span>Đang tải nội dung ' + title + '...</span></div>';
 
             try {
                 await loadMarked();
-                const res = await fetch('./README.md');
-                if (!res.ok) throw new Error("Không thể tải file README.md");
+                const res = await fetch('./' + file);
+                if (!res.ok) throw new Error("Không thể tải file " + file);
                 const mdText = await res.text();
                 contentEl.innerHTML = sanitizeHtml(marked.parse(mdText));
             } catch (err) {
                 contentEl.innerHTML = `
                     <div class="p-4 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-300 rounded-xl text-sm">
                         <i class="fa-solid fa-circle-exclamation mr-1"></i>
-                        Không thể đọc tệp <strong>README.md</strong>.
+                        Không thể đọc tệp <strong>${title}</strong>.
                     </div>
                 `;
             }
         }
+
+        function openReadmeModal() {
+            return openMarkdownModal('README.md', 'README.md');
+        }
+
+        // bk-cloud.js gọi hàm này để mở CHANGELOG.md từ cửa sổ What's New.
+        window.openChangelogMd = () => openMarkdownModal('CHANGELOG.md', 'CHANGELOG.md');
 
         function closeReadmeModal() {
             document.getElementById('readme-modal').classList.add('hidden');
@@ -2184,7 +2195,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
 <!-- Bá Khí × Supabase: một client duy nhất, nhận diện học sinh, thông báo, changelog -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
 <script src="assets/bakhi/bk-supabase.config.js?v=3.0.0" defer></script>
-<script src="assets/bakhi/bk-cloud.js?v=3.1.0" defer></script>
+<script src="assets/bakhi/bk-cloud.js?v=3.1.1" defer></script>
 <script src="assets/bakhi/bk-devboard.js?v=3.1.0" defer></script>
 </body>
 </html>

@@ -268,6 +268,13 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     ok('nhóm nội dung theo danh mục', !!wn && /Tính năng mới/.test(wn.textContent) && /Cải tiến/.test(wn.textContent));
     ok('render bằng text, không HTML thô', !!wn && !/<b>/.test(wn.innerHTML.replace(/<[^>]+>/g, '')));
 
+
+    const mdLink = w.document.querySelector('#bkcWhatsNew .bkc-md-link');
+    ok("What's New có đường dẫn CHANGELOG.md", !!mdLink && /CHANGELOG\.md/.test(mdLink.textContent));
+    let mdOpened = false;
+    w.openChangelogMd = () => { mdOpened = true; };
+    if (mdLink) mdLink.click();
+    ok('bấm đường dẫn mở CHANGELOG.md', mdOpened);
     console.log('\n[6] Dev Dashboard');
     ok('mục Dev Dashboard ẩn trước khi xác thực', w.document.getElementById('bkDevDashSection').classList.contains('hidden'));
     ok('có ô nhập Dev Code trong menu', !!w.document.getElementById('bkDevCodeInput'));

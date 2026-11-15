@@ -2,6 +2,28 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [3.1.0] — 2026-11-15
+
+### Sửa lỗi
+
+- Xác nhận danh tính giờ kiểm tra đúng tên: nút Xác nhận chỉ mở khi đã chọn một gợi ý và tên trong ô phải khớp với gợi ý đó; máy chủ kiểm tra lần nữa và trả NAME_MISMATCH nếu lệch.
+- Bỏ tự chọn hộ khi tìm kiếm chỉ trả về một kết quả — học sinh luôn tự chọn tên của mình.
+- Chỉ còn một chuông thông báo: gỡ chuông đọc CHANGELOG.md cũ để không còn hai mục thông báo trùng nhau.
+- Danh sách gợi ý không còn cách ô nhập và chỉ cuộn bên trong danh sách, không kéo cả màn hình đăng nhập.
+
+### Giao diện & trải nghiệm
+
+- Thêm nút icon đổi học sinh ngay cạnh chuông khi đã có danh tính.
+- Vào thẳng màn hình nhận diện: nội dung trang ẩn cho tới khi xác định xong phiên, có splash BÁ KHÍ thay cho nháy trang.
+- Dev Dashboard nằm trong menu 3 gạch và chỉ hiện sau khi nhập đúng Dev Code.
+- Thêm đường dẫn CHANGELOG.md trong cửa sổ What's New và trong cửa sổ lịch sử cập nhật để xem lại toàn bộ phiên bản cũ.
+- Tinh chỉnh giao diện điện thoại và máy tính: tên trên header thu gọn thành icon dưới 720px, panel rộng hết màn hình, tôn trọng vùng an toàn của tai thỏ.
+
+### Hiệu năng
+
+- Giảm gọi mạng trùng khi khởi động: thông báo và changelog chỉ tải một lần, thêm preconnect tới Supabase.
+- Tạm dừng đồng bộ khi tab bị ẩn và chỉ làm mới trung tâm thông báo tối đa 5 giây một lần.
+
 ## [2.4.2] — 2026-11-14
 
 ### Giao diện & thông báo

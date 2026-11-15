@@ -1116,6 +1116,20 @@
         return frag;
     }
 
+    /* Đường dẫn tới CHANGELOG.md đầy đủ — trình xem markdown của trang xử lý. */
+    function changelogMdLink(label) {
+        var link = el('button', 'bkc-btn bkc-btn-ghost bkc-md-link', label || 'CHANGELOG.md');
+        link.type = 'button';
+        link.title = 'Xem toàn bộ lịch sử phiên bản trong CHANGELOG.md';
+        link.addEventListener('click', openChangelogFile);
+        return link;
+    }
+
+    function openChangelogFile() {
+        if (typeof global.openChangelogMd === 'function') { global.openChangelogMd(); return; }
+        if (global.open) global.open('CHANGELOG.md', '_blank', 'noopener');
+    }
+
     function renderWhatsNew() {
         var main = D.querySelector('main');
         if (!main) return;
@@ -1141,10 +1155,13 @@
         left.appendChild(el('h2', 'bkc-wn-title', entry.title));
         if (entry.summary) left.appendChild(el('p', 'bkc-wn-sum', entry.summary));
         head.appendChild(left);
+        var actions = el('div', 'bkc-wn-actions');
         var all = el('button', 'bkc-btn bkc-btn-ghost', 'Xem toàn bộ lịch sử');
         all.type = 'button';
         all.addEventListener('click', openChangelogHistory);
-        head.appendChild(all);
+        actions.appendChild(all);
+        actions.appendChild(changelogMdLink());
+        head.appendChild(actions);
         host.appendChild(head);
 
         var body = el('div', 'bkc-wn-body');
@@ -1189,6 +1206,9 @@
             S.changelog.forEach(function (entry) { body.appendChild(entryCard(entry)); });
         }
         sheet.appendChild(body);
+        var foot = el('div', 'bkc-sheet-foot');
+        foot.appendChild(changelogMdLink('Xem CHANGELOG.md đầy đủ'));
+        sheet.appendChild(foot);
         wrap.appendChild(sheet);
         var close = function () {
             wrap.remove();
@@ -1275,7 +1295,7 @@
         if (D.querySelector('link[data-bk-cloud]')) return;
         var link = D.createElement('link');
         link.rel = 'stylesheet';
-        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=3.1.0';
+        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=3.1.1';
         link.setAttribute('data-bk-cloud', '1');
         (D.head || D.documentElement).appendChild(link);
     }
