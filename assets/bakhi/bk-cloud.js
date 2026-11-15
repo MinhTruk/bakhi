@@ -1480,7 +1480,7 @@
         if (D.querySelector('link[data-bk-cloud]')) return;
         var link = D.createElement('link');
         link.rel = 'stylesheet';
-        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=3.1.2';
+        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=3.1.3.1';
         link.setAttribute('data-bk-cloud', '1');
         (D.head || D.documentElement).appendChild(link);
     }

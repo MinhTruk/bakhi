@@ -538,6 +538,13 @@ html.dark .bkc-pre { background: rgba(148, 163, 184, .12); }
 
 /* Header gọn: khi không đủ chỗ, các nút phụ được thay bằng mục trong menu 3 gạch */
 html.bk-hdr-tight #bkReadmeBtn { display: none !important; }
+/* Cho phép khối tiêu đề co lại và cắt bằng dấu … thay vì đẩy header tràn ngang. */
+html.bk-hdr-tight header > div { min-width: 0; }
+html.bk-hdr-tight header > div > div:first-child { min-width: 0; flex: 1 1 auto; overflow: hidden; }
+html.bk-hdr-tight header > div > div:first-child > div:last-child { min-width: 0; }
+html.bk-hdr-tight header h1,
+html.bk-hdr-tight header p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+html.bk-hdr-tight header > div > div:last-child { flex: 0 0 auto; gap: .5rem; }
 html.bk-hdr-tight .bkc-identity-chip .bkc-chip-name { display: none !important; }
 html.bk-hdr-tight .bkc-identity-chip { padding-left: .55rem; padding-right: .55rem; }
 @media (max-width: 720px) {
