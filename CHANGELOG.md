@@ -2,6 +2,51 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [3.2.0] — 2026-11-15
+
+### Tính năng
+
+- **Chuông thông báo phủ toàn website**: mọi trang môn học, bài học, đề kiểm tra, thư viện,
+  trang chủ và cả hai trang Studio đều có chuông thông báo. Thông báo mới từ giáo viên và
+  phiên bản mới hiện ngay bằng Supabase Realtime, không cần quay lại trang chính hay tải lại.
+- **Chế độ “chỉ nhận thông báo”** cho trang bài học: bật bằng thuộc tính
+  `data-bk-notify-only="1"` trên thẻ `bk-cloud.js`. Chế độ này chỉ dựng chuông, bảng thông báo,
+  đếm chưa đọc và realtime; **không** mở màn hình nhận diện học sinh, **không** đồng bộ
+  tiến trình, **không** ghi đè dữ liệu học tập trên máy.
+- **Trạng thái đã đọc dùng chung toàn site**: đọc thông báo ở trang bài học, Studio hay trang
+  chủ đều được ghi nhớ. Ở chế độ chỉ nhận thông báo, trạng thái lưu cục bộ theo origin
+  (`bakhiNotifyReads.v1`) nên mọi trang trong cùng website thấy cùng số chưa đọc.
+- **Chuông nổi cho trang không có header chung**: chuông đặt cố định ở góc phải dưới, bảng
+  thông báo tự mở **lên trên** khi chuông nằm ở nửa dưới màn hình, không bị cắt khỏi khung nhìn.
+- **Studio có thông báo**: `studio/index.html` và `studio/word-paint.html` nạp lớp thông báo
+  như mọi trang khác; không ảnh hưởng tài liệu đang soạn hay bản vẽ đang mở.
+
+### Sửa lỗi
+
+- **Administrator Dashboard — thẻ danh sách nằm sai cột**: thẻ “Quản lý thông báo” và
+  “Lịch sử phiên bản” trước đây được gắn vào khung cha thay vì lưới hai cột, khiến cột phải
+  trống và biểu mẫu co lại một nửa. Nay hai tab này hiển thị đúng bố cục hai cột, tự chuyển
+  thành một cột khi cửa sổ hẹp.
+- **Khung nhập không còn tràn viền**: toàn bộ dashboard dùng `box-sizing: border-box`;
+  `input`, `textarea`, `select` rộng 100% nằm gọn trong thẻ, không còn vượt qua mép phải
+  của thẻ hay tạo thanh cuộn ngang.
+- **Biểu mẫu rộng hết tab và màn hình**: khung nội dung `.bkc-pane` chiếm toàn bộ chiều rộng
+  khả dụng; lưới hai cột tự gộp dưới 1180px để biểu mẫu không bị bóp hẹp.
+- **Xem trước thông báo tự xuống dòng**: nội dung dài, chuỗi không khoảng trắng và liên kết
+  dài không còn đẩy thẻ rộng ra ngoài.
+- **Liên kết CHANGELOG.md đúng đường dẫn**: nút “Xem CHANGELOG.md” trong bảng thông báo ở
+  trang bài học/Studio mở đúng tệp gốc thay vì tìm trong thư mục môn học.
+- **Công cụ bảo toàn nội dung nhận diện thẻ script có thuộc tính**: `content-integrity`
+  loại bỏ đúng cả thẻ script được chèn kèm `data-*`, nhờ vậy nội dung giáo dục vẫn
+  được xác minh là không đổi.
+
+### Cải tiến
+
+- Nâng phiên bản tài nguyên dùng chung lên `?v=4.0.1` (bk-cloud, bk-cloud.css,
+  bk-admin-dashboard.css, bk-devboard) để trình duyệt tải bản mới thay vì bản lưu đệm.
+- Tài liệu được rà soát và mở rộng: README, AGENTS, kiến trúc, tính năng, Music, Studio,
+  Supabase — bổ sung sơ đồ trang, bảng key lưu trữ, quy trình kiểm thử và xử lý sự cố.
+
 ## [3.1.3] — 2026-11-15
 
 ### Tính năng

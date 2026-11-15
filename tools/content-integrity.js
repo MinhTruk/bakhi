@@ -42,7 +42,7 @@ function walk(dir, out = []) {
  */
 function stripInjected(source) {
   return source
-    .replace(/\r?\n<!-- Bá Khí Learning Platform[\s\S]*?-->\s*(?:<script src="[^"]*assets\/bakhi\/[^"]*" defer><\/script>\s*)*/g, '')
+    .replace(/\r?\n<!-- Bá Khí Learning Platform[\s\S]*?-->\s*(?:<script src="[^"]*assets\/bakhi\/[^"]*"[^>]*><\/script>\s*)*/g, '')
     .split(/\r?\n/)
     .filter((line) => !/assets\/bakhi\//.test(line))
     .join('\n');

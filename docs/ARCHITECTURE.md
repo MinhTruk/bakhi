@@ -1,22 +1,23 @@
 # Kiến trúc Bá Khí
 
-Tài liệu này mô tả hiện trạng repository, lớp nâng cấp 2.0 và các quyết định kỹ thuật.
-Cập nhật: 13/11/2026.
+Tài liệu này mô tả hiện trạng repository, lớp nâng cấp dùng chung, cơ chế thông báo và các
+quyết định kỹ thuật. Cập nhật: 15/11/2026 (phiên bản 3.2.0).
 
 ## 1. Kiểm toán repository (trước khi nâng cấp)
 
 | Hạng mục | Số lượng / ghi chú |
 |---|---|
-| Tệp HTML | 56 (1 trang chủ, 51 trang nội dung, 1 trang studio, 3 trang đặc biệt không có `</body>`) |
+| Tệp HTML | 119 (1 trang chủ, 1 trang quản trị, 116 trang nội dung/Studio, 1 tệp rỗng `images/anh/1.html`) |
 | Ngân hàng câu hỏi | 10 `MCQ_BANK`, 10 `TF_BANK`, 2 `ESSAY_BANK`; 29 `correctAnswer`, 252 `correct:`, 817 `explanation/exp/solution`, 41 mảng `options` |
-| CSS | Nhúng trong từng trang + Tailwind CDN + style V4 tự inject (`bakhi-v4.js`) |
-| JS dùng chung | `bakhi-v4.js` (chỉ trang chủ), `bakhi-transition.js` (3 trang), khối `BKT` inline trong `<head>` của mọi trang |
+| CSS | Nhúng trong từng trang + Tailwind CDN + style V4 tự inject (`bakhi-v4.js`) + CSS dùng chung trong `assets/bakhi/` |
+| JS dùng chung | `bakhi-v4.js` (trang chủ), `bakhi-transition.js`, khối `BKT` inline trong `<head>`, lớp `bk-*.js` |
 | Developer Panel | 11 tab cũ: fx, tools, data, ui, debug, anim, adv, insp, perf, studio, bk (core trong `index.html`, `bakhi-v4.js`) |
-| Storage keys | `theme`, `b11theme`, `bgOpacity`, `customBg`, `fxCfg`, `uiCfg`, `hiddenSubjects`, `favCfg`, `bktCfg`, `appHighlightsDataMap`, `bakhiBackups`, `bakhiSchema`, `bakhiColors`, `bakhiErrors`, `bakhiSnips`, `devToken`, `devLock`, `bakhi_ly11_progress`, `bakhi_toan11_checklist`, `lexend-*`, `bgmMuted` |
+| Storage keys | `theme`, `b11theme`, `bgOpacity`, `customBg`, `fxCfg`, `uiCfg`, `hiddenSubjects`, `favCfg`, `bktCfg`, `appHighlightsDataMap`, `bakhiBackups`, `bakhiSchema`, `bakhiColors`, `bakhiErrors`, `bakhiSnips`, `devToken`, `devLock`, `bakhi_ly11_progress`, `bakhi_toan11_checklist`, `lexend-*`, `bgmMuted` + các key mới bên dưới |
 | Theme | `html.dark` + `localStorage.theme`; token V4 `--bk-*` |
 | Chuyển trang | Khối BKT (hiệu ứng bàn tay/vải) + `sessionStorage.bktF` |
-| Supabase | **Chưa có** trong mã nguồn (không có SDK, không có URL/key) |
+| Supabase | Đã tích hợp: migration + 6 Edge Function + RLS + realtime (xem mục 8) |
 | Deploy | GitHub Pages, đường dẫn tương đối, không build |
+
 
 ### Vấn đề phát hiện
 
@@ -28,7 +29,8 @@ Cập nhật: 13/11/2026.
 5. `innerHTML` được dùng ở nhiều nơi với dữ liệu tĩnh (chấp nhận được), nhưng cần lớp mới
    escape mọi dữ liệu người dùng.
 6. Chưa có kiểm thử tự động hay công cụ bảo vệ nội dung.
-7. Ba tệp HTML là fragment (không có `</body>`), không thể chèn script theo cách thông thường.
+7. Một tệp HTML rỗng (`images/anh/1.html`) và các trang Studio không có `bk-core.js`, cần
+   cách chèn script riêng.
 
 ## 2. Lớp nâng cấp 2.0
 
@@ -50,12 +52,13 @@ trang bài học ─────┴──► bk-page.js
     exports,inserts,words}`, `music{plays}`, `ui{palette,searches}`, `backup{exports}`.
     Chỉ là số đếm (0–999999), không chứa nội dung; Studio ghi trực tiếp key này nên
     thành tích nhóm Studio hoạt động dù trang Studio là tệp tĩnh độc lập.
-- **bk-notify.js/css** — chuông thông báo cập nhật, **chỉ nạp trực tiếp ở `index.html`**:
+- **bk-notify.js/css** — chuông thông báo cập nhật kiểu cũ, **chỉ nạp trực tiếp ở `index.html`**:
   tải `CHANGELOG.md`, tách mỗi `## [x.y.z] — ngày` thành một thông báo, badge chưa đọc,
   “Đánh dấu đã đọc tất cả” và cửa sổ toàn màn hình đọc đầy đủ nội dung. Trạng thái ở
   `bakhiNotify.v1`; API `BKNotify` (`open`, `close`, `openArticle`, `markAll`, `items`,
-  `unread`, `parse`, `setSource`, `refresh`). Các trang môn/bài học không nạp tệp này.
-  Không chứa nội dung giáo dục.
+  `unread`, `parse`, `setSource`, `refresh`). Khi lớp Supabase chạy, `bk-cloud.js` gỡ chuông
+  cũ để không hiện hai chuông. Các trang môn/bài học dùng chuông mới ở chế độ chỉ thông báo
+  (xem mục 2.1). Không chứa nội dung giáo dục.
 - **bk-learn.js/css** — UI: dock nổi, modal Trung tâm học tập 7 tab, command palette
   (Ctrl/⌘+K), tìm kiếm toàn cục (`/`), focus mode, xuất/nhập.
 - **bk-dev.js/css** — Developer Playground 2.0: cửa sổ nổi kéo/đổi kích thước, nhớ
@@ -79,6 +82,56 @@ trang bài học ─────┴──► bk-page.js
   `aria-pressed` và viền `:focus-visible`.
 - **bk-page.js** — chỉ chạy trên trang bài học: ghi lịch sử, đọc ngân hàng câu hỏi
   (chỉ đọc), bắt kết quả kiểm tra theo mẫu feedback quen thuộc, dock nhỏ 4 nút.
+
+### 2.1. Thông báo toàn website (`bk-cloud.js`)
+
+`bk-cloud.js` là nơi duy nhất tạo Supabase client và dựng chuông thông báo. Từ 3.2.0, tệp này
+được nạp trên **mọi trang** với hai chế độ:
+
+| Chế độ | Điều kiện | Hành vi |
+|---|---|---|
+| Đầy đủ | `global.BK_ADMIN_ONLY` không đặt, không có `data-bk-notify-only` | Nhận diện học sinh, đồng bộ tiến trình, chuông trên header, đã đọc trên Supabase |
+| Chỉ thông báo | `data-bk-notify-only="1"` trên thẻ script | Chỉ chuông, realtime, bảng thông báo; đã đọc ở `localStorage` |
+
+Luồng khởi động ở chế độ chỉ thông báo:
+
+```
+DOMContentLoaded
+  └─ injectCss()                       (bk-cloud.css?v=4.0.1)
+  └─ buildBell()                       (chuông nổi góc phải dưới)
+  └─ ensureReady() → ensureSdk() → ensureSession()   (Anonymous Auth)
+       └─ subscribeRealtime()          (announcements + changelog)
+       └─ loadAnnouncements(true) + loadChangelog()
+       └─ emit('ready', { bound:false, notifyOnly:true })
+```
+
+- **Không có màn hình nhận diện** và **không gọi** `bind-student-session` hay
+  `sync-student-progress`, nên mở trang bài học không làm thay đổi hồ sơ đang gắn.
+- `readAnnouncementIds()` trả về `localReads()`; `markRead()`/`markAllRead()` ghi
+  `bakhiNotifyReads.v1`, dùng chung cho mọi trang cùng origin.
+- `paintBell()` đếm chưa đọc khi `S.bound || NOTIFY_ONLY`, nên badge hoạt động dù không có
+  hồ sơ học sinh.
+- Khi Supabase thiếu cấu hình hoặc mất mạng, `bootNotifyOnly()` chỉ ghi cảnh báo và mở khoá
+  trang; trang học không bị chặn.
+- `placePanel()` đo `documentElement.clientWidth/clientHeight` (trừ thanh cuộn). Nếu tâm
+  chuông nằm ở nửa dưới màn hình, bảng được neo `bottom` và mở lên trên; ngược lại mở xuống
+  dưới. Chiều cao tối đa luôn nằm trong khung nhìn.
+- Realtime là kênh `bakhi-public` với hai bảng; ngoài ra có poll 60 giây và tải lại khi
+  `online` để bù khi realtime không khả dụng.
+- Liên kết “Xem CHANGELOG.md” dùng `basePath()`, nên đúng cả ở trang bài học nhiều cấp thư mục.
+
+### 2.2. Administrator Dashboard 4.0
+
+- `admin/index.html` nạp `bk-admin-dashboard.css` + `bk-devboard.js`; mọi thao tác ghi đi qua
+  Edge Function `admin-actions` với header `x-admin-token`.
+- Bố cục nội dung `.bkc-pane` rộng 100% (tối đa 82rem). Hai tab Notifications/Changelog dùng
+  `.bkc-split` hai cột; mỗi cột là một `.bkc-card`. Dưới 1180px lưới gộp thành một cột để
+  biểu mẫu không bị bóp hẹp.
+- `.bkc-dash, .bkc-dash *` đặt `box-sizing: border-box`; `input/textarea/select` có
+  `width/max-width: 100%` và `min-width: 0`, nên không tràn mép thẻ.
+- Bảng danh sách (thông báo/changelog/học sinh) nằm trong `layout` (lưới), không phải `pane`,
+  tránh cột phải rỗng.
+- Panel xem trước có `overflow-wrap: anywhere`; bảng dữ liệu rộng cuộn trong `.bkc-table-wrap`.
 
 ### Vì sao không gộp vào `bakhi-v4.js`
 
@@ -137,10 +190,16 @@ Không có cơ chế nào sửa DOM câu hỏi, đáp án hay giải thích.
 ## 5. Toàn vẹn nội dung
 
 `tools/content-integrity.js` băm sha256 từng tệp HTML sau khi loại bỏ **đúng khối script**
-do lớp nâng cấp chèn (đánh dấu bằng bình luận + đường dẫn `assets/bakhi/`).
-Baseline lưu tại `docs/content-baseline.json` (56 tệp, kèm thống kê câu hỏi/giải thích).
+do lớp nâng cấp chèn (đánh dấu bằng bình luận + đường dẫn `assets/bakhi/`). Từ 3.2.0, bộ lọc
+chấp nhận cả thẻ script có thuộc tính bổ sung (ví dụ `data-bk-notify-only="1"`), nên việc
+thêm chế độ chỉ thông báo không làm sai lệch hash.
 
-Kết quả sau nâng cấp: **56/56 tệp không đổi nội dung** (`verify` thoát mã 0).
+Baseline lưu tại `docs/content-baseline.json` (**119 tệp**, kèm thống kê câu hỏi/giải thích).
+
+Kết quả sau nâng cấp: **119/119 tệp không đổi nội dung** (`verify` thoát mã 0). Nguyên tắc:
+- Dòng chứa `assets/bakhi/` là dòng của lớp nâng cấp, được phép thay đổi.
+- Mọi thay đổi khác trong tệp nội dung đều bị coi là regression.
+- Không chạy `baseline` để “che” thay đổi nội dung; chỉ chạy khi thực sự có thay đổi được duyệt.
 
 ## 6. Bảo mật
 
@@ -157,13 +216,15 @@ Kết quả sau nâng cấp: **56/56 tệp không đổi nội dung** (`verify` 
 
 - Bắt kết quả luyện tập phụ thuộc cấu trúc từng trang; trang không theo mẫu feedback
   sẽ không tự ghi (dùng API `BK.practice`).
-- Không có backend: dữ liệu nằm ở localStorage, không đồng bộ giữa thiết bị trừ khi
+- Không có backend mặc định: dữ liệu nằm ở localStorage, không đồng bộ giữa thiết bị trừ khi
   cấu hình Supabase.
-- Ba tệp fragment (`images/anh/1.html`, `music/1.html`, `ktgk1/hoa/indexhoa.html`)
-  không được chèn script do thiếu `</body>`.
+- Tệp `images/anh/1.html` rỗng và không được chèn script. Hai trang Studio không có
+  `bk-core.js` nên được chèn thủ công `bk-supabase.config.js` + `bk-cloud.js`.
 - Tìm kiếm câu hỏi giới hạn ở câu đã luyện/đang ôn và ngân hàng của trang hiện tại,
-  không quét trước toàn bộ 56 trang (tránh tải nặng).
+  không quét trước toàn bộ 119 trang (tránh tải nặng).
 - `prefers-reduced-motion` được tôn trọng ở animation mới; các hiệu ứng cũ giữ nguyên.
+- Chế độ chỉ thông báo không đồng bộ tiến trình, nên dữ liệu học trên trang bài học chỉ nằm
+  trên thiết bị. Đây là chủ ý để không cần đăng nhập khi đang học.
 
 ## Lớp Supabase (nhận diện, thông báo, đồng bộ)
 
@@ -172,7 +233,7 @@ Kết quả sau nâng cấp: **56/56 tệp không đổi nội dung** (`verify` 
 | Nhận diện học sinh | `assets/bakhi/bk-cloud.js` + `supabase/functions/bind-student-session` | Gõ họ tên hoặc chọn gợi ý; máy chủ đối chiếu `normalized_name` và gắn phiên |
 | Tìm kiếm gợi ý | `supabase/functions/search-students` | Tối đa 8 kết quả/lần, giới hạn tần suất theo phiên |
 | Đồng bộ tiến trình | `bk-cloud.js` + `sync-student-progress` | Debounce, thử lại theo cấp số nhân, gộp dữ liệu hai chiều |
-| Trung tâm thông báo | `bk-cloud.js` + bảng `announcements` | Realtime + đếm chưa đọc + đánh dấu đã đọc |
+| Trung tâm thông báo | `bk-cloud.js` + bảng `announcements` | Realtime + đếm chưa đọc + đánh dấu đã đọc; có mặt trên mọi trang (chế độ chỉ thông báo ở trang bài học/Studio) |
 | Lịch sử phiên bản | bảng `changelog` | Hiển thị ở What's New và trong trung tâm thông báo, xếp theo số phiên bản |
 | Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html` | 6 tab, xác thực Administrator Code qua `admin-auth` |
 

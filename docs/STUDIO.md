@@ -93,3 +93,77 @@ Studio không xoá thành tích đã đạt — thành tích nằm trong `bakhiL
 - Không đồng bộ giữa các thiết bị (dữ liệu cục bộ); hãy xuất HTML/TXT để sao lưu.
 - Ảnh/bản vẽ lớn làm tăng dung lượng lưu; nên xuất PNG riêng khi không cần nhúng.
 - Canvas không thao tác được hoàn toàn bằng bàn phím (bản chất công cụ vẽ).
+
+## 8. Hai phiên bản Studio
+
+| Tệp | Mục đích | Lớp nâng cấp |
+|---|---|---|
+| `studio/word-paint.html` | Word & Paint đầy đủ, mở từ menu/palette | `bk-cloud.js` (chỉ thông báo) |
+| `studio/index.html` | Bản Studio rút gọn, giao diện tối giản | `bk-cloud.js` (chỉ thông báo) |
+
+Cả hai đều là tệp tĩnh độc lập, không cần backend. Chuông thông báo đặt ở góc phải dưới và
+không che thanh công cụ. Thông báo không làm gián đoạn tài liệu đang soạn: bảng chỉ mở khi
+bấm chuông.
+
+## 9. Dữ liệu, an toàn và sao lưu
+
+### Cấu trúc `bakhiStudio.v1`
+
+```jsonc
+{
+  "v": 1,
+  "activeId": "doc-...",
+  "docs": [
+    {
+      "id": "doc-...",
+      "title": "Tài liệu chưa đặt tên",
+      "html": "<p>...</p>",
+      "draw": "data:image/png;base64,...",   // có thể rỗng
+      "mode": "word",                          // word | paint | split
+      "updated": 1760000000000
+    }
+  ]
+}
+```
+
+### An toàn
+
+- Dán và mở tệp HTML đều đi qua bộ lọc: bỏ `<script>`, `<iframe>`, thuộc tính `on*`,
+  `javascript:`, `data:` nguy hiểm.
+- Xuất HTML tạo tệp **tự chứa** (CSS inline), không nhúng mã độc từ tài liệu gốc.
+- Studio không đọc cookie, không gọi mạng, không gửi dữ liệu tới Supabase.
+
+### Sao lưu & phục hồi
+
+1. **Menu Tệp → Xuất HTML** cho từng tài liệu quan trọng.
+2. **Xuất TXT** nếu chỉ cần nội dung chữ.
+3. **Tải PNG** cho bản vẽ.
+4. Để phục hồi: **Menu Tệp → Mở tệp** và chọn `.html`/`.txt` đã xuất.
+5. Xoá dữ liệu Studio chỉ đặt lại `bakhiStudio.v1`; thành tích đã đạt vẫn còn trong
+   `bakhiLearn.v1`.
+
+## 10. Câu hỏi thường gặp
+
+**Studio có cần đăng nhập không?**
+Không. Studio chạy hoàn toàn cục bộ; chuông thông báo dùng chế độ chỉ thông báo.
+
+**Vì sao không thấy nút chèn bảng?**
+Bảng chưa được hỗ trợ (xem Giới hạn). Có thể dùng HTML trong chế độ xem mã nguồn nếu cần.
+
+**Tôi lỡ xoá tài liệu, có khôi phục được không?**
+Chỉ khi bạn đã xuất HTML/TXT trước đó. Dữ liệu Studio không có lịch sử phiên bản.
+
+**Dung lượng đầy thì sao?**
+Xuất và xoá bớt tài liệu/ảnh; hoặc giảm kích thước ảnh trước khi chèn (giới hạn 1,2 MB/ảnh).
+
+**Có thể mở Studio trên điện thoại không?**
+Có. Giao diện xếp dọc, danh sách tài liệu mở bằng nút **Tài liệu**; vẽ bằng ngón tay được.
+
+## 11. Kiểm thử
+
+- Mở `studio/word-paint.html`, tạo tài liệu, gõ vài từ, đổi chế độ, tải lại trang → nội dung
+  còn nguyên.
+- Xuất HTML rồi mở tệp đã xuất ở cửa sổ ẩn danh → nội dung và định dạng hiển thị đúng.
+- Vẽ vài nét, chèn vào trang, xuất PNG → ảnh đúng.
+- Bấm chuông thông báo → bảng mở, không che thanh công cụ.
+- `NODE_PATH=... node tools/qa/smoke.js` (nhóm `[1]`) kiểm tra tín hiệu Studio → thành tích.

@@ -967,7 +967,7 @@
             }, 'fa-download'),
             iconBtn('fa-rotate', 'Làm mới danh sách', function () { loadNotifList(); })
         ], 'Tìm kiếm, xem trước, ẩn hoặc nhân bản thông báo.');
-        pane.appendChild(listCard.root);
+        layout.appendChild(listCard.root);
 
         var filters = h('div', 'bkc-filters');
         var search = input('search', 'Tìm theo tiêu đề…', S.notif.q || '');
@@ -1364,7 +1364,7 @@
             }, 'fa-download'),
             iconBtn('fa-rotate', 'Làm mới danh sách', function () { load(); })
         ], 'Các phiên bản đã đăng hoặc đang ở dạng nháp.');
-        pane.appendChild(listCard.root);
+        layout.appendChild(listCard.root);
         var filters = h('div', 'bkc-filters');
         var search = input('search', 'Tìm theo phiên bản…', S.cl.q || '');
         search.className = 'bkc-input bkc-grow';

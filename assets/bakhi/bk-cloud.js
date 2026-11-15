@@ -21,7 +21,18 @@
     var CFG = global.BK_SUPABASE || {};
     var IDENTITY_KEY = 'bakhiStudent.v1';
     var ADMIN_KEY = 'bakhiAdmin.v1';
+    var NOTIFY_READ_KEY = 'bakhiNotifyReads.v1';
     var OFFLINE_MSG = 'Không kết nối được máy chủ. Dữ liệu học tập vẫn được lưu trên thiết bị này.';
+
+    /* Chế độ chỉ nhận thông báo cho các trang môn học / bài học / studio:
+       bật bằng data-bk-notify-only trên thẻ script bk-cloud.js.
+       Không mở màn hình nhận diện, không đồng bộ tiến trình — chỉ chuông,
+       thông báo realtime và trạng thái đã đọc lưu trên thiết bị. */
+    var NOTIFY_ONLY = false;
+    try {
+        NOTIFY_ONLY = !!global.BK_NOTIFY_ONLY ||
+            !!(D.querySelector && D.querySelector('script[data-bk-notify-only]'));
+    } catch (e) { }
 
     var S = {
         sdk: null, client: null, booting: null, session: null, ready: false,
@@ -61,6 +72,14 @@
     function lsDel(key) {
         try { global.localStorage.removeItem(key); } catch (e) { }
     }
+    /* Trạng thái đã đọc cho chế độ chỉ nhận thông báo (không có hồ sơ học sinh). */
+    function localReads() {
+        var map = lsGet(NOTIFY_READ_KEY);
+        return map && typeof map === 'object' && !Array.isArray(map) ? map : {};
+    }
+    function saveLocalReads(map) {
+        lsSet(NOTIFY_READ_KEY, map || {});
+    }
     function fmtDate(iso) {
         if (!iso) return '';
         var d = new Date(iso);
@@ -86,7 +105,7 @@
     }
     function basePath() {
         try { if (global.BK && global.BK.util && global.BK.util.basePath) return global.BK.util.basePath(); } catch (e) { }
-        var s = D.currentScript;
+        var s = D.currentScript || (D.querySelector && D.querySelector('script[src*="assets/bakhi/bk-cloud.js"]'));
         var src = (s && s.src) || '';
         var i = src.indexOf('/assets/bakhi/');
         return i >= 0 ? src.slice(0, i + 1) : './';
@@ -814,6 +833,7 @@
        Trạng thái đã đọc + thông báo
        ------------------------------------------------------------------ */
     function readAnnouncementIds() {
+        if (NOTIFY_ONLY) return Promise.resolve(localReads());
         if (!S.bound || !S.student) return Promise.resolve({});
         return client().from('announcement_reads')
             .select('announcement_id, read_at')
@@ -901,7 +921,12 @@
 
         var anchor = D.querySelector('button[onclick*="openReadmeModal"]');
         var host = anchor && anchor.parentNode;
-        if (host) {
+        if (NOTIFY_ONLY) {
+            /* Trang môn học/bài học/studio: chuông nổi góc phải dưới, không
+               chen vào header riêng của từng trang. */
+            bell.classList.add('bkc-bell-float');
+            (D.body || D.documentElement).appendChild(bell);
+        } else if (host) {
             host.insertBefore(chip, anchor);
             host.insertBefore(changeBtn, anchor);
             host.insertBefore(bell, anchor);
@@ -925,7 +950,7 @@
 
     function paintBell() {
         if (!S.badge) return;
-        var n = S.bound ? unreadCount() : 0;
+        var n = (S.bound || NOTIFY_ONLY) ? unreadCount() : 0;
         S.badge.hidden = n === 0;
         S.badge.textContent = n > 99 ? '99+' : String(n);
         if (S.bell) {
@@ -995,21 +1020,31 @@
     function placePanel() {
         if (!S.panel || !S.bell || S.panel.hidden) return;
         var r = S.bell.getBoundingClientRect();
-        var vw = global.innerWidth || 360;
-        var vh = global.innerHeight || 640;
+        var vw = (D.documentElement && D.documentElement.clientWidth) || global.innerWidth || 360;
+        var vh = (D.documentElement && D.documentElement.clientHeight) || global.innerHeight || 640;
         var width = Math.min(368, vw - 16);
         var right = Math.max(8, Math.min(vw - r.right, vw - width - 8));
-        var top = Math.min(Math.max(8, r.bottom + 8), Math.max(8, vh - 180));
         S.panel.style.width = width + 'px';
         S.panel.style.right = right + 'px';
-        S.panel.style.top = top + 'px';
-        S.panel.style.maxHeight = Math.max(160, vh - top - 12) + 'px';
+        /* Chuông nổi ở nửa dưới màn hình (trang môn học, studio) → mở panel
+           lên trên để không bị cắt khỏi khung nhìn. */
+        if (r.bottom > vh * 0.52) {
+            var bottom = Math.max(8, vh - r.top + 8);
+            S.panel.style.top = 'auto';
+            S.panel.style.bottom = bottom + 'px';
+            S.panel.style.maxHeight = Math.max(180, vh - bottom - 6) + 'px';
+        } else {
+            var top = Math.min(Math.max(8, r.bottom + 8), Math.max(8, vh - 180));
+            S.panel.style.top = top + 'px';
+            S.panel.style.bottom = 'auto';
+            S.panel.style.maxHeight = Math.max(160, vh - top - 12) + 'px';
+        }
     }
 
     function togglePanel() { if (S.panelOpen) closePanel(); else openPanel(); }
 
     function openPanel() {
-        if (!S.bound) {
+        if (!S.bound && !NOTIFY_ONLY) {
             toast('Hãy chọn học sinh trước khi xem thông báo.', 'info');
             return;
         }
@@ -1156,6 +1191,14 @@
     }
 
     function markRead(id) {
+        if (NOTIFY_ONLY) {
+            if (S.reads[id]) return Promise.resolve();
+            S.reads[id] = new Date().toISOString();
+            saveLocalReads(S.reads);
+            paintBell();
+            if (S.panelOpen) renderPanel();
+            return Promise.resolve();
+        }
         if (!S.bound || !S.student || S.reads[id]) return Promise.resolve();
         S.reads[id] = new Date().toISOString();
         paintBell();
@@ -1169,6 +1212,17 @@
     }
 
     function markAllRead() {
+        if (NOTIFY_ONLY) {
+            var localUnread = S.announcements.filter(function (a) { return !S.reads[a.id]; });
+            if (!localUnread.length) { toast('Bạn đã đọc tất cả thông báo.', 'info'); return; }
+            var localStamp = new Date().toISOString();
+            localUnread.forEach(function (a) { S.reads[a.id] = localStamp; });
+            saveLocalReads(S.reads);
+            paintBell();
+            renderPanel();
+            toast('Đã đánh dấu tất cả thông báo là đã đọc', 'success');
+            return;
+        }
         if (!S.bound || !S.student) return;
         var unread = S.announcements.filter(function (a) { return !S.reads[a.id]; });
         if (!unread.length) { toast('Bạn đã đọc tất cả thông báo.', 'info'); return; }
@@ -1310,7 +1364,7 @@
 
     function openChangelogFile() {
         if (typeof global.openChangelogMd === 'function') { global.openChangelogMd(); return; }
-        if (global.open) global.open('CHANGELOG.md', '_blank', 'noopener');
+        if (global.open) global.open(basePath() + 'CHANGELOG.md', '_blank', 'noopener');
     }
 
     /* Phiên bản mới nhất theo SỐ phiên bản (không theo ngày đăng). */
@@ -1486,7 +1540,7 @@
         if (D.querySelector('link[data-bk-cloud]')) return;
         var link = D.createElement('link');
         link.rel = 'stylesheet';
-        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=4.0.0';
+        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=4.0.1';
         link.setAttribute('data-bk-cloud', '1');
         (D.head || D.documentElement).appendChild(link);
     }
@@ -1558,10 +1612,32 @@
         if (splash) splash.parentNode && splash.parentNode.removeChild(splash);
     }
 
+    /* Trang môn học / bài học / studio: chỉ chuông + thông báo realtime,
+       không mở màn hình nhận diện và không đồng bộ tiến trình học tập. */
+    function bootNotifyOnly() {
+        injectCss();
+        if (typeof CFG.configured === 'function' && !CFG.configured()) { unlockBoot(); return; }
+        buildBell();
+        ensureReady().then(function () {
+            subscribeRealtime();
+            loadAnnouncements(true);
+            loadChangelog();
+            unlockBoot();
+            emit('ready', { bound: false, notifyOnly: true });
+        }).catch(function (err) {
+            /* Trang bài học vẫn phải dùng được khi mất mạng hoặc thiếu cấu hình. */
+            S.error = err;
+            unlockBoot();
+            console.warn('[BKCloud] notify-only:', err && err.message);
+        });
+        global.addEventListener('online', function () { loadAnnouncements(true); });
+    }
+
     function boot() {
         injectCss();
         /* Trang Administrator Dashboard không cần nhận diện học sinh. */
         if (global.BK_ADMIN_ONLY) { unlockBoot(); return; }
+        if (NOTIFY_ONLY) { bootNotifyOnly(); return; }
         if (typeof CFG.configured === 'function' && !CFG.configured()) {
             configWarning();
             unlockBoot();

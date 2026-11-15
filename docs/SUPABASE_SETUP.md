@@ -24,6 +24,7 @@ Project `wzvslyabhizsiggurwdq` **đã được cài đặt và kiểm chứng**:
 | 6 Edge Function | ✅ `ACTIVE`, `verify_jwt = false` |
 | Secret `ADMIN_DEV_CODE` | ✅ đã đặt |
 | Roster `students.txt` | ✅ 40 học sinh, 0 hồ sơ trùng tên |
+| Thông báo toàn website (3.2.0) | ✅ chuông ở trang chủ, trang bài học và Studio |
 
 Kiểm chứng end-to-end đã chạy trực tiếp trên project (không phải mock):
 
@@ -120,6 +121,20 @@ supabase functions deploy sync-student-progress --no-verify-jwt
 
 Lý do: học sinh dùng Anonymous Auth và Administrator Dashboard dùng phiên quản trị riêng; cả hai
 đều tự kiểm tra quyền bên trong function.
+
+### Vai trò & xác thực từng function
+
+| Function | Người gọi | Xác thực | Giới hạn |
+|---|---|---|---|
+| `search-students` | Học sinh (ẩn danh) | Phiên Supabase | 40 lượt/phút/phiên |
+| `bind-student-session` | Học sinh (ẩn danh) | Phiên + họ tên đối chiếu server | 10 lượt/10 phút/thiết bị |
+| `sync-student-progress` | Học sinh (ẩn danh) | Phiên + `student_id` do server suy ra | Theo phiên |
+| `admin-auth` | Giáo viên | `ADMIN_DEV_CODE` so sánh hằng thời gian | 8 lượt/10 phút/IP |
+| `admin-actions` | Dashboard | `x-admin-token` (hash trong `admin_sessions`) | Theo phiên quản trị |
+| `import-students` | Dashboard / script | `x-admin-token` hoặc `STUDENT_ROSTER_SECRET` | Theo phiên |
+
+Riêng `admin-actions` xác thực lại ở **mỗi** thao tác, không tin trạng thái đã đăng nhập ở
+client. Token quản trị chỉ nằm trong `sessionStorage`, mất khi đóng tab.
 
 ## Bước 7. Đặt Administrator Code (KHU VỰC 3)
 
@@ -235,6 +250,80 @@ dấu `needs_review` và không thể chọn.
   `student_id` khi đọc/ghi tiến trình.
 - Nội dung thông báo và changelog được render bằng `textContent` (không `innerHTML`)
   nên không thể chèn HTML/script.
+- Administrator Code không bao giờ nằm trong bundle; chỉ hash SHA-256 của token phiên
+  được lưu trong `admin_sessions`, token thật ở `sessionStorage` của tab quản trị.
+- Publishable key là khoá công khai; bảo vệ dữ liệu dựa hoàn toàn vào RLS + Edge Function.
+
+## Thông báo trên toàn website
+
+Từ phiên bản 3.2.0, lớp thông báo chạy ở hai chế độ:
+
+| Trang | Chế độ | Đã đọc lưu ở | Gọi Edge Function |
+|---|---|---|---|
+| `index.html` | Đầy đủ | `announcement_reads` (Supabase) | `bind-student-session`, `sync-student-progress` |
+| Trang môn/bài học, `studio/*` | Chỉ thông báo | `bakhiNotifyReads.v1` (local) | Không |
+
+Hệ quả cần biết khi vận hành:
+
+- Học sinh **không cần chọn tên** để thấy thông báo trên trang bài học. Trang chỉ đọc bảng
+  `announcements`/`changelog` bản `is_published` bằng phiên ẩn danh.
+- Trạng thái đã đọc trên trang bài học **không** đồng bộ lên Supabase; đây là chủ ý để
+  không cần hồ sơ học sinh. Trên trang chủ, trạng thái vẫn đồng bộ theo hồ sơ.
+- Realtime dùng kênh `bakhi-public` cho hai bảng `announcements` và `changelog`. Nếu dự án
+  tắt realtime, chuông vẫn cập nhật qua poll 60 giây và khi mạng có lại.
+- Thông báo mới hiện ngay khi giáo viên bấm **PUSH NOTIFICATION NOW**; không cần deploy lại
+  trang tĩnh.
+
+### Kiểm tra thông báo realtime
+
+1. Mở một trang bài học ở cửa sổ thường, giữ nguyên.
+2. Ở cửa sổ ẩn danh, mở Administrator Dashboard → Notifications → tạo và push một thông báo.
+3. Trong vài giây, chuông ở cửa sổ thứ nhất tăng badge và hiện mục mới.
+4. Bấm chuông → đọc → badge giảm; tải lại trang → trạng thái đã đọc được giữ.
+5. Tắt mạng, push thông báo khác, bật mạng lại → trong tối đa 60 giây thông báo xuất hiện.
+
+## Vận hành & bảo trì
+
+### Xoay Administrator Code
+
+```bash
+supabase secrets set ADMIN_DEV_CODE='<mã-mới>'
+```
+
+Sau khi đổi, các phiên quản trị đang mở vẫn dùng được tới khi hết hạn (`ADMIN_SESSION_HOURS`);
+muốn thu hồi ngay, xoá các hàng trong `admin_sessions`:
+
+```sql
+delete from public.admin_sessions;
+```
+
+### Kiểm tra sức khoẻ định kỳ
+
+| Việc | Cách làm |
+|---|---|
+| RLS còn bật | `select relname, relrowsecurity from pg_class where relname in ('students','announcements','changelog');` |
+| Realtime còn bật | Dashboard → Database → Replication → kiểm tra `announcements`, `changelog` |
+| Function còn sống | Dashboard → Edge Functions → trạng thái `ACTIVE` |
+| Rate limit | Xem bảng `rate_limits`; dọn định kỳ nếu phình to |
+| Log thao tác | Administrator Dashboard → Activity Logs |
+| Phiên cũ | Xoá `admin_sessions` hết hạn, `student_devices` không dùng |
+
+### Chạy lại migration an toàn
+
+Migration dùng `create table if not exists`, `drop policy if exists` và `create or replace
+function`, nên chạy lại không làm mất dữ liệu. Tuy vậy vẫn nên sao lưu trước:
+
+```bash
+supabase db dump --data-only > backup.sql
+```
+
+### Dọn dữ liệu test
+
+```sql
+delete from public.student_progress where student_id in (select id from public.students where student_code like 'TEST%');
+delete from public.announcements where title like '[TEST]%';
+delete from public.changelog where version like '0.0.%';
+```
 
 ## Xử lý sự cố
 
@@ -247,3 +336,9 @@ dấu `needs_review` và không thể chọn.
 | “Phiên quản trị đã hết hạn” | Quá `ADMIN_SESSION_HOURS`, nhập lại Administrator Code |
 | “Chưa cấu hình ADMIN_DEV_CODE” | Thiếu secret ở Bước 7 |
 | Thông báo không tự cập nhật | Realtime chưa bật cho bảng; polling 60s vẫn hoạt động |
+| Chuông không hiện trên trang bài học | Thiếu thẻ `bk-cloud.js` hoặc sai đường dẫn tương đối |
+| Chuông hiện nhưng không có thông báo | Chưa có bản `is_published`, hoặc RLS/publishable key sai |
+| Đã đọc trên trang bài học nhưng trang chủ vẫn báo chưa đọc | Hai nguồn trạng thái khác nhau (local vs Supabase) — đúng thiết kế |
+| Dashboard báo 401 khi push | Token hết hạn hoặc `admin_sessions` bị xoá |
+| Import báo 0 học sinh | Tệp sai UTF-8, hoặc mọi dòng bắt đầu bằng `#` |
+| Trang trắng sau khi deploy | Đường dẫn tuyệt đối thay vì tương đối; kiểm tra Console/Network |

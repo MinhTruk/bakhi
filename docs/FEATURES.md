@@ -1,6 +1,10 @@
-# Tính năng Bá Khí 2.0
+# Tính năng Bá Khí 3.2
 
-Ký hiệu: ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị chặn
+Tài liệu liệt kê toàn bộ tính năng đang có, trạng thái và ghi chú triển khai. Ký hiệu:
+✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị chặn
+
+Phạm vi: trang chủ, các trang môn học/bài học/đề kiểm tra, hai trang Studio, trình phát nhạc,
+Trung tâm học tập, Developer Playground, Administrator Dashboard và lớp Supabase.
 
 ## A. Nền tảng học tập (có trên mọi trang bài học + trang chủ)
 
@@ -18,7 +22,7 @@ Ký hiệu: ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị
 | 10 | Phím tắt (`Ctrl+K`, `/`, `Esc`, `←/→`, `A/B/C/D`) | ✅ | Bỏ qua khi đang gõ |
 | 11 | Xuất / nhập JSON (tất cả, ghi chú, đánh dấu, thống kê; xem trước; xác thực; hợp nhất) | ✅ | Không ghi đè ngân hàng câu hỏi |
 | 12 | Ghi nhận luyện tập tự động trên trang bài học | 🟡 | Theo mẫu feedback quen thuộc; API `BK.practice()` cho trang khác |
-| 13 | Đồng bộ Supabase | 🟡 | Adapter hoàn chỉnh; cần cấu hình + SQL + SDK |
+| 13 | Đồng bộ Supabase | ✅ | Adapter + migration + Edge Function; bật bằng cấu hình, không bắt buộc |
 | 14 | AI hỗ trợ | 🟡 | Adapter + cấu hình endpoint; cần proxy (không có key trong trình duyệt) |
 
 ## B. Developer Playground 2.0 (`Ctrl+Shift+G`, sau khi xác thực Developer)
@@ -80,6 +84,9 @@ nguyên vẹn và mở bằng nút trong menu 3 gạch hoặc lệnh trong palet
 - **Developer Playground**: `Ctrl+Shift+G` (cần xác thực Developer trước).
 - **Music Player**: logo ♪ góc trái dưới; `Space` phát/tạm dừng, `←/→` tua 5 giây,
   `M` tắt tiếng (chỉ khi panel nhạc mở), `Esc` đóng.
+- **Thông báo**: bấm chuông (header ở trang chủ, góc phải dưới ở trang bài học/Studio);
+  bấm “Đánh dấu tất cả đã đọc” để xoá badge; bấm một mục để đọc đầy đủ.
+- **Studio**: menu 3 gạch → Bá Khí Studio, hoặc `/studio/word-paint.html`.
 
 URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bookmarks`,
 `?bk=history`, `?bk=achievements`, `?bk=settings`, `?bk=search&q=...`.
@@ -122,21 +129,48 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 9 | Tín hiệu bảng lệnh và xuất sao lưu | ✅ | Nhóm Khám phá |
 | 10 | Không lưu nội dung trong tín hiệu, không gửi lên mạng | ✅ | Chỉ `localStorage`, giới hạn 999999 |
 
-## I. Thông báo cập nhật (`bk-notify.js`)
+## I. Trung tâm thông báo (`bk-cloud.js`, `bk-notify.js`)
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1 | Icon chuông trên header, **chỉ ở trang chủ** `index.html` (bên trái nút README) | ✅ | Nạp trực tiếp trong `index.html`; không có ở trang môn/bài học |
-| 2 | Mỗi phiên bản `## [x.y.z] — ngày` trong `CHANGELOG.md` là một thông báo | ✅ | Đọc trực tiếp, không nhân bản dữ liệu |
-| 3 | Badge số chưa đọc, chấm “chưa đọc” theo từng mục | ✅ | Ẩn badge khi đã đọc hết |
-| 4 | **Đánh dấu đã đọc tất cả**; bảng mở ở góc trên bên phải | ✅ | Lưu ở `bakhiNotify.v1` |
-| 5 | Bấm một thông báo → cửa sổ toàn màn hình đầy đủ nội dung phiên bản | ✅ | Markdown an toàn, tách danh sách đúng |
-| 6 | Nút ×, phím `Esc`, bấm nền để đóng; giữ focus hợp lý | ✅ | `role="dialog"`, `aria-modal`, `aria-labelledby` |
-| 7 | Danh sách có ngày `dd/mm/yyyy`, số thay đổi, tóm tắt 3 dòng | ✅ | Tự gộp dòng xuống của CHANGELOG |
-| 8 | Khi mở bằng `file://` không đọc được changelog → hiện giải thích thay vì lỗi | ✅ | Fallback 1 mục |
-| 9 | API `BKNotify.open/close/openArticle/markAll/items/unread/parse/setSource/refresh` | ✅ | API nội bộ; không tự mount ở trang khác |
+| 1 | Chuông thông báo trên **mọi trang**: chủ, môn học, bài học, đề kiểm tra, Studio | ✅ | Từ 3.2.0; trang bài học dùng chuông nổi |
+| 2 | Chế độ **chỉ nhận thông báo** cho trang bài học/Studio | ✅ | `data-bk-notify-only="1"`; không nhận diện, không đồng bộ tiến trình |
+| 3 | Thông báo từ giáo viên qua Supabase Realtime | ✅ | Không cần tải lại; poll 60 giây dự phòng |
+| 4 | Mỗi phiên bản `## [x.y.z] — ngày` trong `CHANGELOG.md`/bảng `changelog` là một mục | ✅ | Đọc trực tiếp, không nhân bản dữ liệu |
+| 5 | Badge số chưa đọc, chấm “chưa đọc” từng mục, mức ưu tiên | ✅ | Ẩn badge khi đã đọc hết |
+| 6 | **Đánh dấu đã đọc tất cả** ngay trong bảng | ✅ | Trang chủ: Supabase; trang bài học: `bakhiNotifyReads.v1` |
+| 7 | Bấm một mục → cửa sổ đầy đủ nội dung phiên bản/thông báo | ✅ | Markdown an toàn, đóng bằng ×, `Esc`, bấm nền |
+| 8 | Bảng tự mở lên trên khi chuông ở nửa dưới màn hình | ✅ | Không bị cắt khỏi khung nhìn |
+| 9 | Liên kết “Xem CHANGELOG.md” đúng đường dẫn ở mọi cấp thư mục | ✅ | Dùng `basePath()` |
+| 10 | Trang chủ có What's New tóm tắt phiên bản cao nhất | ✅ | So sánh theo số phiên bản |
+| 11 | Chuông cũ `bk-notify.js` tự được gỡ khi lớp mới hoạt động | ✅ | Tránh hiện hai chuông |
 
-## J. Không có trong sản phẩm (theo yêu cầu)
+### Hai chế độ thông báo
+
+| | Đầy đủ (trang chủ) | Chỉ thông báo (bài học, Studio) |
+|---|---|---|
+| Màn hình nhận diện | Có | Không |
+| Đồng bộ tiến trình | Có | Không |
+| Vị trí chuông | Header cạnh README.md | Nổi góc phải dưới |
+| Đã đọc | `announcement_reads` (Supabase) | `bakhiNotifyReads.v1` (local) |
+| Realtime + poll | Có | Có |
+| Ảnh hưởng dữ liệu học | Không | Không |
+
+## J. Administrator Dashboard 4.0
+
+| # | Tính năng | Trạng thái | Ghi chú |
+|---|---|---|---|
+| 1 | 6 tab: Tổng quan, Thông báo, Changelog, Học sinh, Nhật ký, Cài đặt | ✅ | `admin/index.html` + `bk-devboard.js` |
+| 2 | Bố cục hai cột, tự gộp một cột dưới 1180px | ✅ | Biểu mẫu bên trái, danh sách bên phải |
+| 3 | Khung nhập không tràn viền | ✅ | `box-sizing: border-box`, `min-width:0`, `max-width:100%` |
+| 4 | Xem trước trực tiếp thông báo/changelog | ✅ | Nội dung dài tự xuống dòng |
+| 5 | Bảng lệnh nhanh `Ctrl/⌘+K` | ✅ | Nhảy tab, làm mới, tạo mới |
+| 6 | Giao diện sáng/tối + chế độ compact | ✅ | Theo theme site |
+| 7 | Xác thực Administrator Code + phiên `sessionStorage` | ✅ | Mọi thao tác ghi qua Edge Function |
+| 8 | Import `students.txt`, phát hiện trùng tên, đánh dấu phân biệt | ✅ | Xem SUPABASE_SETUP |
+| 9 | Push thông báo/changelog ngay, ẩn/đăng lại/xoá | ✅ | Realtime tới máy học sinh |
+
+## K. Không có trong sản phẩm (theo yêu cầu)
 
 Không đề thi thử, không bài tính giờ, không đếm ngược, không giới hạn thời gian,
 không tự nộp bài, không xếp hạng thi, không deadline, không cơ chế tạo áp lực thời gian.
@@ -152,3 +186,7 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | What's New trên trang chính | ✅ | Phiên bản mới nhất kèm tóm tắt |
 | Administrator Dashboard | ✅ | `admin/index.html`, yêu cầu Administrator Code |
 | Import danh sách học sinh | ✅ | Từ `students.txt`, phát hiện trùng tên |
+| Nhật ký thao tác quản trị | ✅ | Ai làm gì, lúc nào; chỉ đọc trong dashboard |
+| Thông báo trên trang bài học/Studio | ✅ | Chế độ chỉ thông báo, không cần đăng nhập |
+| Kiểm thử & bảo toàn nội dung | ✅ | `content-integrity` 119 tệp + 2 bộ smoke test |
+| Tài liệu | ✅ | README, AGENTS, ARCHITECTURE, FEATURES, MUSIC, STUDIO, SUPABASE_SETUP |

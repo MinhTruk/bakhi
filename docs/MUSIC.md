@@ -21,6 +21,16 @@ music/<slug>.png    ảnh bìa (tự dò .png → .jpg → .jpeg → .webp)
 music/gia-nhu.mp3 · music/gia-nhu.txt · music/gia-nhu.png
 ```
 
+Thư viện hiện có 5 bài:
+
+| `id` | Tệp |
+|---|---|
+| `co-le-anh` | `co-le-anh.mp3` · `.txt` · `.png` |
+| `du-bao-thoi-tiet-hom-nay-mua` | `du-bao-thoi-tiet-hom-nay-mua.mp3` · `.txt` · `.png` |
+| `gia-nhu` | `gia-nhu.mp3` · `.txt` · `.png` |
+| `homesick` | `homesick.mp3` · `.txt` · `.png` |
+| `xuong-rong-intro` | `xuong-rong-intro.mp3` · `.txt` · `.png` |
+
 Thêm bài mới:
 
 1. Bỏ 3 file vào thư mục `music/`.
@@ -32,8 +42,16 @@ Thêm bài mới:
 
 `src`, `lyricSrc` và `coverBase` được sinh tự động từ `id` — không khai báo tay.
 
-> Các file `.mp3` hiện có là **bản thu thử 12 giây** tự tạo để trình phát chạy được ngay.
+> Các file `.mp3` hiện có là bản thu thử ngắn tự tạo để trình phát chạy được ngay.
 > Hãy thay bằng file bạn có quyền sử dụng; giữ nguyên tên file là đủ.
+
+### Kích thước & hiệu năng
+
+- Mỗi tệp `.mp3` hiện khoảng 8–13 MB. Trình duyệt chỉ tải bài khi bạn bấm phát (không
+  tải trước toàn bộ thư viện), trừ khi trình duyệt tự cache.
+- Ảnh bìa nên giữ dưới ~300 KB để panel mở nhanh trên mạng chậm.
+- Lời bài hát là tệp văn bản nhỏ, tải khi mở tab Lời.
+- Không có audio thứ hai: chuyển bài dùng lại cùng một thẻ `<audio>`, nên không bị chồng nhạc.
 
 ## 2. Lời bài hát
 
@@ -109,5 +127,40 @@ Ngoài ra trình phát còn đăng ký Media Session (nếu trình duyệt hỗ 
 | Panel nằm ngoài màn hình | Nhấp đúp thanh tiêu đề, hoặc xoá `bakhiMusic.panel.v1` trong localStorage |
 | Logo ♪ mất | Chuột phải vào logo, hoặc xoá `bakhiMusic.fab.v1` |
 | Phím `Space` không tác dụng | Panel nhạc phải đang mở và không được đứng trong ô nhập |
+| Nhạc tự phát khi mở trang | Kiểm tra tiện ích trình duyệt/xem trước autoplay; thiết kế không autoplay |
+| Bài bị nhảy về đầu | File `.mp3` hỏng hoặc bị chặn range request; thử tệp khác |
+| Panel che nội dung đang đọc | Kéo panel sang chỗ khác, thu nhỏ, hoặc nhấp đúp tiêu đề để đặt lại |
+| Lời bị lệch nhịp | Timestamp chỉ là gợi ý; sửa `[mm:ss]` trong file `.txt` hoặc dùng **Sửa lời** |
 
 Kiểm tra tự động: `NODE_PATH=/tmp/bktest/node_modules node tools/qa/smoke.js` (nhóm `[1b]`).
+Trên Windows, đặt `$env:NODE_PATH` tới thư mục `node_modules` của jsdom.
+
+## 7. Tích hợp với phần còn lại
+
+- **Thành tích**: mỗi lượt phát thật ghi tín hiệu `music.plays` vào `bakhiSignals.v1`; Trung
+  tâm học tập dùng số đếm này cho nhóm **Khám phá**, không lưu tên bài hay nội dung.
+- **Developer Playground**: tab **Music** đọc trạng thái qua `BKMusic.on(fn)` và có nút mở,
+  phóng to, thu nhỏ, đặt lại bố cục; không polling.
+- **Trang chủ & trang bài học**: `bk-core.js` nạp `bk-music.js` một lần cho mỗi trang, nên
+  trình phát tồn tại xuyên suốt nhưng không chồng audio.
+- **Thông báo**: chuông thông báo là phần tử riêng, không che logo ♪ (logo ở trái dưới,
+  chuông ở phải dưới).
+- **Focus mode**: panel nhạc vẫn dùng được; không tự phát, không tự đóng.
+
+## 8. Câu hỏi thường gặp
+
+**Tôi có thể thêm nhiều bài cùng lúc không?**
+Có, miễn mỗi bài có `id` riêng và một dòng trong `LIBRARY`.
+
+**Có cần cài thư viện ngoài không?**
+Không. Toàn bộ dùng HTML5 Audio + DOM thuần.
+
+**Nhạc có được gửi lên máy chủ không?**
+Không. Tệp nằm trong repository tĩnh; trạng thái nghe lưu cục bộ.
+
+**Vì sao mở trang mới thì nhạc dừng?**
+Mỗi trang là một tài liệu riêng (điều hướng tĩnh), nên thẻ audio được tạo lại. Đây là giới
+hạn của website không SPA, không phải lỗi.
+
+**Làm sao xoá lịch sử nghe?**
+Xoá `bakhiMusic.v2` (queue/trạng thái) trong Local Storage; không ảnh hưởng dữ liệu học tập.
