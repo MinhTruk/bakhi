@@ -44,6 +44,31 @@ async function sha256Hex(value: string): Promise<string> {
     return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/* So sánh phiên bản theo từng đoạn số, giống RPC bakhi_version_cmp.
+   Dùng để "phiên bản mới nhất" không phụ thuộc giờ published_at. */
+function versionCmp(a: string, b: string): number {
+    const pa = String(a || '').split(/[.+-]/);
+    const pb = String(b || '').split(/[.+-]/);
+    const len = Math.max(pa.length, pb.length);
+    for (let i = 0; i < len; i++) {
+        const x = pa[i] ?? '0';
+        const y = pb[i] ?? '0';
+        const nx = /^\d+$/.test(x) ? Number(x) : null;
+        const ny = /^\d+$/.test(y) ? Number(y) : null;
+        if (nx !== null && ny !== null) {
+            if (nx !== ny) return nx > ny ? 1 : -1;
+        } else if (x !== y) {
+            return x > y ? 1 : -1;
+        }
+    }
+    return 0;
+}
+
+function latestByVersion<T extends { version: string }>(rows: T[] | null | undefined): T | null {
+    if (!rows || !rows.length) return null;
+    return rows.slice().sort((a, b) => versionCmp(b.version, a.version))[0];
+}
+
 function adminClient(): SupabaseClient {
     const url = Deno.env.get('SUPABASE_URL') ?? '';
     const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
@@ -163,12 +188,11 @@ Deno.serve(async (req) => {
                     client.from('changelog').select('*', { count: 'exact', head: true }),
                     client.from('admin_activity_logs').select('*', { count: 'exact', head: true })
                 ]);
-                const { data: latest } = await client
+                const { data: latestRows } = await client
                     .from('changelog')
                     .select('version, title, published_at, created_at')
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
+                    .limit(500);
+                const latest = latestByVersion(latestRows);
                 const { data: recent } = await client
                     .from('admin_activity_logs')
                     .select('id, action, target_type, target_id, created_at')
@@ -691,10 +715,10 @@ Deno.serve(async (req) => {
                     client.from('app_settings').select('key, value, updated_at').order('key', { ascending: true })
                 ]);
                 const latencyMs = Date.now() - started;
-                const { data: latest } = await client.from('changelog')
+                const { data: latestRows } = await client.from('changelog')
                     .select('version, title, published_at, sync_state, synced_at, source')
-                    .order('published_at', { ascending: false, nullsFirst: false })
-                    .limit(1).maybeSingle();
+                    .limit(500);
+                const latest = latestByVersion(latestRows);
                 const { data: failures } = await client.from('changelog')
                     .select('version, title, sync_error, synced_at, source')
                     .eq('sync_state', 'failed')
