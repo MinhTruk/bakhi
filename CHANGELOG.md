@@ -2,6 +2,69 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [3.3.0] — 2026-11-15
+
+### Tính năng
+
+- **Tự động đồng bộ CHANGELOG.md lên Supabase**: GitHub Actions đọc `CHANGELOG.md` khi
+  có thay đổi trên nhánh `main`, tách phiên bản / ngày / nhóm nội dung / markdown, rồi
+  gọi Edge Function `changelog-sync` ghi vào bảng `changelog`. Mỗi phiên bản mới được
+  tạo **một** thông báo đẩy liên kết qua `announcements.changelog_version`, chống trùng
+  bằng `pg_advisory_xact_lock` và unique index; chạy lại chỉ cập nhật, không báo lại.
+- **Administrator Dashboard 9 mô-đun**: Tổng quan, Học sinh, Thông báo, Lịch sử phiên
+  bản, Nhật ký, Giám sát, Quyền, Cấu hình, Dữ liệu. Bảng có tìm kiếm, lọc, sắp xếp,
+  phân trang phía máy chủ; xem chi tiết học sinh, xuất CSV/JSON, xác nhận trước thao tác
+  ảnh hưởng dữ liệu; sidebar thu gọn được, breadcrumb, trạng thái tải/thành công/lỗi/rỗng.
+- **Lịch sử phiên bản dạng cột dọc** trong dashboard: biểu mẫu tạo/sửa phiên bản chiếm
+  toàn chiều rộng phía trên, danh sách phiên bản bên dưới với cột rõ ràng, cuộn ngang
+  trên màn hình hẹp; giữ nguyên tìm kiếm, lọc nguồn/đồng bộ, xuất JSON, sửa và xoá.
+- **Giao diện thông báo tối thống nhất**: trung tâm thông báo, bảng thông báo, popup,
+  danh sách, chi tiết, thông báo lịch sử phiên bản, toast, modal, trạng thái tải/rỗng/lỗi
+  dùng chung bộ biến `--bkc-n-*` và lớp `.bkc-dark`; không còn thẻ trắng hay chữ khó đọc
+  trên nền tối.
+- **Cờ tính năng và bảo trì**: bảng `app_settings` (chỉ đọc khoá `public.*`), realtime
+  đẩy thay đổi ngay tới trình duyệt; `public.whatsnew` điều khiển khối “Cập nhật gần đây”,
+  `public.maintenance` bật dải thông báo bảo trì toàn site.
+- **Favicon tĩnh dùng chung**: `assets/bakhi/favicon.svg` cùng bộ PNG 16/32/48/192/512,
+  `apple-touch-icon.png` và `favicon.ico`; chèn link tương đối đúng cho 118/119 trang,
+  gồm cả Studio, Word & Paint và trang quản trị. Không còn favicon GIF động.
+
+### Sửa lỗi
+
+- **Bỏ “Có gì mới” khỏi Studio và Word & Paint** bằng logic: `bk-cloud.js` chỉ dựng khối
+  cập nhật gần đây khi thẻ script có `data-bk-whatsnew="1"` hoặc trang đã có khung
+  `#bkcWhatsNew`; hai trang Studio chạy chế độ chỉ thông báo nên không bao giờ hiện khối
+  này, không dùng CSS che.
+- **Không hiện hai chuông thông báo**: `bk-cloud.js` gỡ chuông `bk-notify.js` cũ trên
+  trang chủ khi lớp thông báo mới đã dựng xong.
+- **Markdown an toàn trong thông báo**: nội dung từ máy chủ được escape trước, chỉ cho
+  phép liên kết `http(s)`, không chèn HTML thô; giữ xuống dòng và danh sách.
+- **Liên kết thông báo → phiên bản**: bấm thông báo sinh ra từ CHANGELOG sẽ mở đúng mục
+  phiên bản trong cửa sổ lịch sử, kể cả sau khi tải lại trang.
+
+### Cải tiến
+
+- **Backend admin mở rộng trong một Edge Function**: `admin-actions` bổ sung
+  `students.detail`, `students.export`, `announcements.stats`, `changelog.list` có phân
+  trang/lọc, lưu và xuất bản changelog qua RPC dùng chung, `logs.list`/`logs.export`,
+  `settings.get`/`settings.set`, `system.health`, `permissions.get`, `data.integrity`.
+  Mọi thao tác xác thực lại Administrator Code ở máy chủ.
+- **Migration mới**: `20261117000000_bakhi_changelog_sync.sql` (cột đồng bộ, liên kết
+  announcement, hàm so sánh phiên bản, RPC publish, `app_settings`) và
+  `20261117001000_app_settings_realtime.sql` (đưa `app_settings` vào realtime).
+- **Cache-bust tài sản dùng chung** lên `?v=4.1.0` cho `bk-cloud`, `bk-devboard`,
+  `bk-admin-dashboard` trên toàn bộ trang để trình duyệt nhận giao diện mới.
+- **Tài liệu**: cập nhật kiến trúc, tính năng, hướng dẫn Supabase, README và AGENTS.md
+  cho quy trình đồng bộ changelog, 9 mô-đun quản trị, favicon và migration mới.
+
+### Bảo mật
+
+- **Khoá đồng bộ changelog**: workflow dùng GitHub Secrets `CHANGELOG_SYNC_TOKEN` và
+  `CHANGELOG_SYNC_URL`; Edge Function so token bằng thời gian hằng, không nhận request
+  không có token, không đặt khoá bí mật trong mã nguồn.
+- **Ghi cấu hình chỉ qua service role**: `app_settings` không cho ghi từ trình duyệt;
+  `admin-actions` chỉ chấp nhận hai khoá `public.whatsnew` và `public.maintenance`.
+
 ## [3.2.1] — 2026-11-15
 
 ### Bảo mật

@@ -34,18 +34,20 @@ Hướng dẫn cho agent/developer làm việc trong repository này. Đọc h�
   bk-dev.js|css        Developer Playground 2.0 (11 công cụ, tab Music)
   bk-music.js|css      Music Player dùng chung (queue, shuffle, repeat, lyrics)
   bk-cloud.js|css      Nhận diện, thông báo realtime, changelog, đồng bộ (Supabase)
-  bk-devboard.js       Administrator Dashboard 6 tab
-  bk-admin-dashboard.css  Giao diện dashboard 4.0
+  bk-devboard.js       Administrator Dashboard 9 mô-đun
+  bk-admin-dashboard.css  Giao diện dashboard 4.1
   bk-admin.css|bk-admin-theme.js  Trang đăng nhập quản trị + theme
   bk-supabase.config.js  Nơi duy nhất chứa URL + publishable key
-  bk-notify.js|css     Chuông CHANGELOG.md cũ (chỉ nạp ở index.html)
+  bk-notify.js|css     Chuông CHANGELOG.md cũ (chỉ nạp ở index.html, dự phòng)
+  favicon.svg|*.png|.ico  Favicon tĩnh dùng chung (không dùng GIF)
   bk-bkt.js            Hiệu ứng chuyển trang "bàn tay kéo"
   bk-page.js           Cầu nối cho trang bài học
 /ktgk1, /ktgk2, /ktck1, /ktck2, /kttx   Nội dung giáo dục (HTML tĩnh)
 /music                 music/<slug>.mp3|txt|png
 /studio                index.html (bản rút gọn) + word-paint.html (Word & Paint)
-/supabase/             migrations/ (schema + RLS + realtime) + functions/ (6 Edge Function)
-/tools                 content-integrity, integrate-pages, qa/smoke, qa/cloud-smoke
+/supabase/             migrations/ (schema + RLS + realtime) + functions/ (7 Edge Function)
+/.github/workflows/    changelog-sync.yml (CHANGELOG.md → Supabase)
+/tools                 content-integrity, integrate-pages, inject-favicon, make-favicon, qa/smoke, qa/cloud-smoke
 /docs                  Kiến trúc, tính năng, Music, Studio, Supabase, baseline nội dung
 ```
 
@@ -105,17 +107,24 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   - **Đầy đủ** (trang chủ): màn hình nhận diện, đồng bộ tiến trình, chuông trên header.
   - **Chỉ thông báo**: bật bằng `data-bk-notify-only="1"` trên thẻ script; chỉ chuông,
     realtime, bảng thông báo và trạng thái đã đọc cục bộ.
+- **What's New là tuỳ chọn**: chỉ trang có `data-bk-whatsnew="1"` (hiện là `index.html`)
+  mới dựng khối “Cập nhật gần đây”. Studio và Word & Paint **không** được bật cờ này;
+  không dùng CSS để che khối.
 - Khi thêm trang mới, dùng đúng mẫu (giữ `defer` và thứ tự config → cloud):
 
 ```html
 <script src="../../assets/bakhi/bk-supabase.config.js?v=4.0.0" defer></script>
-<script src="../../assets/bakhi/bk-cloud.js?v=4.0.1" data-bk-notify-only="1" defer></script>
+<script src="../../assets/bakhi/bk-cloud.js?v=4.1.0" data-bk-notify-only="1" defer></script>
 ```
 
 - Chỉ nạp `bk-cloud.js` **một lần** trên mỗi trang. Ở chế độ đầy đủ, không thêm
   `data-bk-notify-only`.
 - Không đặt chuông/thông báo trong iframe nội dung; dùng chuông nổi của `bk-cloud`.
 - Trạng thái đã đọc cục bộ ở `bakhiNotifyReads.v1`; không xoá key này khi nâng cấp.
+- Giao diện thông báo dùng bộ biến `--bkc-n-*` và lớp `.bkc-dark`; trang mới không tự đặt
+  thẻ trắng trong luồng thông báo.
+- **Favicon tĩnh**: chạy `node tools/inject-favicon.js` sau khi thêm trang HTML. Tool chèn
+  link SVG/PNG/ICO/apple-touch-icon với đường dẫn tương đối đúng; không dùng GIF.
 
 ### 4.2. Bảng lưu trữ
 
@@ -132,12 +141,15 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 
 - Mọi thay đổi hành vi phải có mục trong `CHANGELOG.md`, theo nhóm
   **Tính năng / Sửa lỗi / Cải tiến**, ghi ngày và số phiên bản mới.
+- Sau khi push `CHANGELOG.md` lên `main`, workflow `.github/workflows/changelog-sync.yml`
+  tự đồng bộ lên Supabase. Không sửa tay bảng `changelog` cho nội dung đã có trong tệp;
+  không tạo announcement trùng. Kiểm tra trạng thái ở tab **Giám sát** của dashboard.
 - Khi đổi API/cấu trúc dữ liệu, cập nhật đồng thời `docs/ARCHITECTURE.md` và
   `docs/FEATURES.md`; khi đổi quy trình cài đặt, cập nhật `docs/SUPABASE_SETUP.md`.
 - Commit message bằng tiếng Việt có dấu, ví dụ:
-  `feat(3.2.0): chuông thông báo toàn website và sửa bố cục dashboard`.
+  `feat(3.3.0): đồng bộ changelog, 9 mô-đun quản trị và favicon tĩnh`.
 - Trước khi push: chạy `content-integrity verify`, `node --check` cho các tệp JS đã sửa,
-  hai smoke test, và mở thử trang chủ + một trang bài học + dashboard.
+  hai smoke test, và mở thử trang chủ + một trang bài học + Studio + dashboard.
 
 ## 5. Những việc không được làm
 

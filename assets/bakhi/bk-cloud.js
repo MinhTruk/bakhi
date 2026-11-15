@@ -34,11 +34,24 @@
             !!(D.querySelector && D.querySelector('script[data-bk-notify-only]'));
     } catch (e) { }
 
+    /* What's New là tuỳ chọn: chỉ trang đánh dấu data-bk-whatsnew="1" mới
+       được chèn khối cập nhật gần đây. Studio và Word & Paint chạy chế độ
+       chỉ thông báo nên không bao giờ nhận khối này. */
+    var WHATSNEW_OPT_IN = false;
+    try {
+        var selfScript = D.currentScript ||
+            (D.querySelector && D.querySelector('script[src*="assets/bakhi/bk-cloud.js"]'));
+        WHATSNEW_OPT_IN = !!(selfScript && selfScript.getAttribute &&
+            selfScript.getAttribute('data-bk-whatsnew') === '1');
+    } catch (e) { }
+
     var S = {
         sdk: null, client: null, booting: null, session: null, ready: false,
         configOk: false, error: null, fatal: null,
         student: null, bound: false,
         announcements: [], reads: {}, changelog: [], co: {}, lastSeenVersion: null,
+        annLoading: false, annError: null, clLoading: false, clError: null,
+        flags: {}, flagsLoaded: false, realtime: 'idle', maintenanceNode: null,
         syncTimer: null, retrying: null, syncing: false, applyingRemote: false,
         lastSyncAt: 0, syncError: null, listeners: [], channel: null,
         gate: null, bell: null, badge: null, changeBtn: null, panel: null, panelOpen: false,
@@ -852,8 +865,11 @@
             return Promise.resolve(S.announcements);
         }
         S.lastAnnFetch = stamp;
+        S.annLoading = true;
+        S.annError = null;
+        if (S.panelOpen) renderPanel();
         return client().from('announcements')
-            .select('id, title, content, type, priority, published_at')
+            .select('id, title, content, type, priority, published_at, changelog_version')
             .eq('is_published', true)
             .order('published_at', { ascending: false })
             .limit(50)
@@ -863,12 +879,16 @@
                 return readAnnouncementIds().catch(function () { return {}; });
             }).then(function (reads) {
                 S.reads = reads || {};
+                S.annLoading = false;
                 paintBell();
                 if (S.panelOpen) renderPanel();
                 emit('announcements', S.announcements);
                 return S.announcements;
             }).catch(function (err) {
+                S.annLoading = false;
+                S.annError = err && err.message ? err.message : 'Không tải được thông báo.';
                 console.warn('[BKCloud] announcements', err);
+                if (S.panelOpen) renderPanel();
                 return [];
             });
     }
@@ -962,7 +982,7 @@
 
     function buildPanel() {
         if (S.panel) return;
-        var panel = el('div', 'bkc-panel');
+        var panel = el('div', 'bkc-panel bkc-dark');
         panel.id = 'bkcPanel';
         panel.hidden = true;
         panel.setAttribute('role', 'dialog');
@@ -1087,6 +1107,28 @@
         if (!S.list) return;
         S.list.textContent = '';
         var hasAny = S.announcements.length || S.changelog.length;
+
+        if (S.annLoading && !hasAny) {
+            var busy = el('div', 'bkc-loading');
+            busy.appendChild(el('span', 'bkc-spinner'));
+            busy.appendChild(el('span', null, 'Đang tải thông báo…'));
+            S.list.appendChild(busy);
+            return;
+        }
+
+        if (S.annError && !hasAny) {
+            var err = el('div', 'bkc-error');
+            err.appendChild(el('i', 'fa-solid fa-triangle-exclamation'));
+            err.appendChild(el('p', null, 'Không tải được thông báo.'));
+            err.appendChild(el('span', 'bkc-error-detail', clip(S.annError, 180)));
+            var retry = el('button', 'bkc-btn bkc-btn-ghost', 'Thử lại');
+            retry.type = 'button';
+            retry.addEventListener('click', function () { loadAnnouncements(true); });
+            err.appendChild(retry);
+            S.list.appendChild(err);
+            return;
+        }
+
         if (!hasAny) {
             var empty = el('div', 'bkc-empty');
             empty.appendChild(el('i', 'fa-regular fa-bell-slash'));
@@ -1107,6 +1149,9 @@
                 top.appendChild(el('span', 'bkc-tag bkc-tag-' + a.type, typeLabel(a.type)));
                 if (a.priority === 'high' || a.priority === 'critical') {
                     top.appendChild(el('span', 'bkc-tag bkc-tag-pri', priorityLabel(a.priority)));
+                }
+                if (a.changelog_version) {
+                    top.appendChild(el('span', 'bkc-tag bkc-tag-update', 'v' + a.changelog_version));
                 }
                 top.appendChild(el('span', 'bkc-item-time', relTime(a.published_at)));
                 item.appendChild(top);
@@ -1147,7 +1192,7 @@
         var wrap = el('div', 'bkc-modal');
         wrap.setAttribute('role', 'dialog');
         wrap.setAttribute('aria-modal', 'true');
-        var sheet = el('div', 'bkc-sheet bkc-sheet-wide');
+        var sheet = el('div', 'bkc-sheet bkc-sheet-wide bkc-dark');
         var head = el('div', 'bkc-sheet-head');
         var titles = el('div', 'bkc-sheet-titles');
         titles.appendChild(el('h2', 'bkc-sheet-title', entry.title));
@@ -1183,6 +1228,73 @@
         D.documentElement.classList.add('bkc-lock');
         D.addEventListener('keydown', onKey);
         x.focus();
+    }
+
+    /**
+     * Render Markdown nội tuyến an toàn: chỉ tạo text node và các thẻ
+     * strong/em/code/a. Không dùng innerHTML, không nhận javascript: URL.
+     */
+    function safeHref(raw) {
+        var url = String(raw || '').trim();
+        if (/^(https?:\/\/|mailto:|\/(?!\/)|\.{1,2}\/|#)/i.test(url)) return url;
+        return null;
+    }
+
+    function appendInlineMd(host, text) {
+        var s = String(text == null ? '' : text);
+        var re = /(\*\*[^*]+\*\*|__[^_]+__|`[^`]+`|!\[[^\]]*\]\([^)]*\)|\[[^\]]+\]\([^)]*\)|\*[^*\n]+\*|_[^_\n]+_)/g;
+        var last = 0;
+        var m;
+        while ((m = re.exec(s))) {
+            if (m.index > last) host.appendChild(D.createTextNode(s.slice(last, m.index)));
+            var tok = m[0];
+            var node = null;
+            if (tok.slice(0, 2) === '**' && tok.slice(-2) === '**') {
+                node = el('strong');
+                node.textContent = tok.slice(2, -2);
+            } else if (tok.slice(0, 2) === '__' && tok.slice(-2) === '__') {
+                node = el('strong');
+                node.textContent = tok.slice(2, -2);
+            } else if (tok.charAt(0) === '`') {
+                node = el('code', 'bkc-n-code');
+                node.textContent = tok.slice(1, -1);
+            } else if (tok.slice(0, 2) === '![') {
+                node = D.createTextNode((/^!\[([^\]]*)\]/.exec(tok) || [])[1] || '');
+            } else if (tok.charAt(0) === '[') {
+                var lm = /^\[([^\]]+)\]\(([^)]*)\)$/.exec(tok);
+                var href = lm ? safeHref(lm[2]) : null;
+                if (href) {
+                    node = el('a', 'bkc-n-link');
+                    node.href = href;
+                    node.target = '_blank';
+                    node.rel = 'noopener noreferrer';
+                    node.textContent = lm[1];
+                } else {
+                    node = D.createTextNode(lm ? lm[1] : tok);
+                }
+            } else if (tok.charAt(0) === '*') {
+                node = el('em');
+                node.textContent = tok.slice(1, -1);
+            } else if (tok.charAt(0) === '_') {
+                node = el('em');
+                node.textContent = tok.slice(1, -1);
+            }
+            if (node) host.appendChild(node);
+            last = m.index + tok.length;
+        }
+        if (last < s.length) host.appendChild(D.createTextNode(s.slice(last)));
+    }
+
+    function appendTextBlock(host, text) {
+        String(text || '').split(/\n{2,}/).forEach(function (par) {
+            if (!par.trim()) return;
+            var p = el('p');
+            par.split('\n').forEach(function (line, i) {
+                if (i) p.appendChild(el('br'));
+                appendInlineMd(p, line);
+            });
+            host.appendChild(p);
+        });
     }
 
     function clip(text, max) {
@@ -1265,7 +1377,7 @@
         var wrap = el('div', 'bkc-modal');
         wrap.setAttribute('role', 'dialog');
         wrap.setAttribute('aria-modal', 'true');
-        var sheet = el('div', 'bkc-sheet');
+        var sheet = el('div', 'bkc-sheet bkc-dark');
         var head = el('div', 'bkc-sheet-head');
         var titles = el('div', 'bkc-sheet-titles');
         var line = el('div', 'bkc-sheet-line');
@@ -1283,15 +1395,24 @@
         sheet.appendChild(head);
 
         var body = el('div', 'bkc-sheet-body');
-        String(item.content || '').split(/\n{2,}/).forEach(function (par) {
-            if (!par.trim()) return;
-            var p = el('p');
-            p.textContent = par.trim();
-            body.appendChild(p);
-        });
+        appendTextBlock(body, item.content);
         sheet.appendChild(body);
 
         var foot = el('div', 'bkc-sheet-foot');
+        if (item.changelog_version) {
+            var versionEntry = S.changelog.filter(function (e) {
+                return e.version === item.changelog_version;
+            })[0];
+            if (versionEntry) {
+                var vBtn = el('button', 'bkc-btn bkc-btn-ghost', 'Xem phiên bản ' + item.changelog_version);
+                vBtn.type = 'button';
+                vBtn.addEventListener('click', function () {
+                    closeArticle();
+                    openChangelogEntry(versionEntry);
+                });
+                foot.appendChild(vBtn);
+            }
+        }
         var btn = el('button', 'bkc-btn', 'Đóng');
         btn.type = 'button';
         btn.addEventListener('click', closeArticle);
@@ -1312,11 +1433,15 @@
        ------------------------------------------------------------------ */
     var CAT_LABEL = {
         features: 'Tính năng mới', improvements: 'Cải tiến', fixes: 'Sửa lỗi',
-        ui: 'Giao diện', performance: 'Hiệu năng', other: 'Khác'
+        ui: 'Giao diện', performance: 'Hiệu năng', security: 'Bảo mật',
+        notice: 'Thông báo', other: 'Khác'
     };
 
     function loadChangelog() {
         if (!S.ready) return Promise.resolve([]);
+        S.clLoading = true;
+        S.clError = null;
+        if (S.panelOpen) renderPanel();
         return client().from('changelog')
             .select('id, version, title, summary, content, category, published_at')
             .eq('is_published', true)
@@ -1325,14 +1450,80 @@
             .then(function (res) {
                 if (res.error) throw res.error;
                 S.changelog = res.data || [];
+                S.clLoading = false;
                 renderWhatsNew();
                 renderPanel();
                 emit('changelog', S.changelog);
                 return S.changelog;
             }).catch(function (err) {
+                S.clLoading = false;
+                S.clError = err && err.message ? err.message : 'Không tải được changelog.';
                 console.warn('[BKCloud] changelog', err);
+                renderWhatsNew();
+                if (S.panelOpen) renderPanel();
                 return [];
             });
+    }
+
+    /* ---------------------------------------------------------------------
+       Feature flags công khai (app_settings: public.*)
+       ------------------------------------------------------------------ */
+    function loadSiteFlags() {
+        if (!S.ready) return Promise.resolve({});
+        try {
+            return client().from('app_settings')
+                .select('key, value')
+                .like('key', 'public.%')
+                .then(function (res) {
+                    if (res.error) throw res.error;
+                    var flags = {};
+                    (res.data || []).forEach(function (row) { flags[row.key] = row.value; });
+                    S.flags = flags;
+                    S.flagsLoaded = true;
+                    renderMaintenance();
+                    renderWhatsNew();
+                    emit('flags', flags);
+                    return flags;
+                })
+                .catch(function (err) {
+                    console.warn('[BKCloud] flags', err);
+                    return {};
+                });
+        } catch (err) {
+            console.warn('[BKCloud] flags', err);
+            return Promise.resolve({});
+        }
+    }
+
+    function renderMaintenance() {
+        var cfg = S.flags ? S.flags['public.maintenance'] : null;
+        var on = !!(cfg && cfg.enabled);
+        if (!on) {
+            if (S.maintenanceNode && S.maintenanceNode.parentNode) {
+                S.maintenanceNode.parentNode.removeChild(S.maintenanceNode);
+            }
+            S.maintenanceNode = null;
+            return;
+        }
+        var message = String(cfg.message || 'Website đang bảo trì. Một số tính năng có thể tạm thời gián đoạn.');
+        if (!S.maintenanceNode) {
+            var node = el('div', 'bkc-maint bkc-dark');
+            node.setAttribute('role', 'status');
+            node.appendChild(el('i', 'fa-solid fa-screwdriver-wrench'));
+            node.appendChild(el('span', 'bkc-maint-text'));
+            var close = el('button', 'bkc-maint-x', '×');
+            close.type = 'button';
+            close.setAttribute('aria-label', 'Ẩn thông báo bảo trì');
+            close.addEventListener('click', function () {
+                if (S.maintenanceNode) S.maintenanceNode.hidden = true;
+            });
+            node.appendChild(close);
+            (D.body || D.documentElement).appendChild(node);
+            S.maintenanceNode = node;
+        }
+        S.maintenanceNode.hidden = false;
+        var text = S.maintenanceNode.querySelector('.bkc-maint-text');
+        if (text) text.textContent = message;
     }
 
     function sectionBlock(entry) {
@@ -1344,7 +1535,7 @@
             var ul = el('ul', 'bkc-cat-list');
             (section.items || []).forEach(function (text) {
                 var li = el('li');
-                li.textContent = text;
+                appendInlineMd(li, text);
                 ul.appendChild(li);
             });
             group.appendChild(ul);
@@ -1375,19 +1566,53 @@
         })[0];
     }
 
-    /* Cập nhật gần nhất — hiển thị trên trang chính (trở lại từ 3.1.3). */
+    function flagEnabled(key, fallback) {
+        var value = S.flags ? S.flags[key] : null;
+        if (value == null) return fallback;
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'object' && value.enabled !== undefined) return !!value.enabled;
+        return fallback;
+    }
+
+    /* Cập nhật gần nhất — chỉ hiển thị khi trang đăng ký data-bk-whatsnew
+       hoặc đã có sẵn khung #bkcWhatsNew. Studio / Word & Paint không đăng ký. */
     function renderWhatsNew() {
-        var main = D.querySelector('main');
-        if (!main) return;
         var host = D.getElementById('bkcWhatsNew');
+        if (!host && !WHATSNEW_OPT_IN) return;
         if (!host) {
-            host = el('section', 'bkc-whatsnew');
+            var main = D.querySelector('main');
+            if (!main) return;
+            host = el('section', 'bkc-whatsnew bkc-dark');
             host.id = 'bkcWhatsNew';
             var anchor = main.children[1] || main.firstElementChild;
             if (anchor && anchor.nextSibling) main.insertBefore(host, anchor.nextSibling);
             else main.appendChild(host);
         }
+        host.classList.add('bkc-dark');
         host.textContent = '';
+
+        if (!flagEnabled('public.whatsnew', true)) { host.hidden = true; return; }
+        if (S.clLoading && !S.changelog.length) {
+            host.hidden = false;
+            var busy = el('div', 'bkc-loading');
+            busy.appendChild(el('span', 'bkc-spinner'));
+            busy.appendChild(el('span', null, 'Đang tải cập nhật…'));
+            host.appendChild(busy);
+            return;
+        }
+        if (S.clError && !S.changelog.length) {
+            host.hidden = false;
+            var err = el('div', 'bkc-error');
+            err.appendChild(el('i', 'fa-solid fa-triangle-exclamation'));
+            err.appendChild(el('p', null, 'Không tải được cập nhật gần đây.'));
+            var retry = el('button', 'bkc-btn bkc-btn-ghost', 'Thử lại');
+            retry.type = 'button';
+            retry.addEventListener('click', function () { loadChangelog(); });
+            err.appendChild(retry);
+            host.appendChild(err);
+            return;
+        }
+
         var entry = latestChangelog();
         if (!entry) { host.hidden = true; return; }
         host.hidden = false;
@@ -1433,7 +1658,7 @@
         var wrap = el('div', 'bkc-modal');
         wrap.setAttribute('role', 'dialog');
         wrap.setAttribute('aria-modal', 'true');
-        var sheet = el('div', 'bkc-sheet bkc-sheet-wide');
+        var sheet = el('div', 'bkc-sheet bkc-sheet-wide bkc-dark');
         var head = el('div', 'bkc-sheet-head');
         var titles = el('div', 'bkc-sheet-titles');
         titles.appendChild(el('h2', 'bkc-sheet-title', 'Lịch sử cập nhật Bá Khí'));
@@ -1540,7 +1765,7 @@
         if (D.querySelector('link[data-bk-cloud]')) return;
         var link = D.createElement('link');
         link.rel = 'stylesheet';
-        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=4.0.1';
+        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=4.1.0';
         link.setAttribute('data-bk-cloud', '1');
         (D.head || D.documentElement).appendChild(link);
     }
@@ -1548,6 +1773,7 @@
     function subscribeRealtime() {
         if (!S.ready || S.channel) return;
         try {
+            S.realtime = 'connecting';
             S.channel = client().channel('bakhi-public')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, function () {
                     /* force = true: bỏ qua cache 5 giây, nếu không thông báo mới sẽ
@@ -1558,8 +1784,15 @@
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'changelog' }, function () {
                     loadChangelog();
                 })
-                .subscribe();
-        } catch (e) { console.warn('[BKCloud] realtime', e); }
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, function () {
+                    loadSiteFlags();
+                })
+                .subscribe(function (status) {
+                    if (status === 'SUBSCRIBED') S.realtime = 'connected';
+                    else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') S.realtime = 'error';
+                    else if (status === 'CLOSED') S.realtime = 'closed';
+                });
+        } catch (e) { S.realtime = 'error'; console.warn('[BKCloud] realtime', e); }
 
         clearInterval(S.pollTimer);
         S.pollTimer = setInterval(function () {
@@ -1622,6 +1855,7 @@
             subscribeRealtime();
             loadAnnouncements(true);
             loadChangelog();
+            loadSiteFlags();
             unlockBoot();
             emit('ready', { bound: false, notifyOnly: true });
         }).catch(function (err) {
@@ -1663,6 +1897,7 @@
             if (!S.publicLoaded) {
                 loadAnnouncements(true);
                 loadChangelog();
+                loadSiteFlags();
             }
             if (global.BK && BK.store && BK.store.on) {
                 BK.store.on('save', scheduleSync);
@@ -1694,7 +1929,10 @@
             return {
                 ready: S.ready, bound: S.bound, student: S.student,
                 lastSyncAt: S.lastSyncAt, syncError: S.syncError ? S.syncError.message : null,
-                announcements: S.announcements.length, changelog: S.changelog.length
+                announcements: S.announcements.length, changelog: S.changelog.length,
+                annLoading: S.annLoading, annError: S.annError,
+                clLoading: S.clLoading, clError: S.clError,
+                flags: S.flags, flagsLoaded: S.flagsLoaded, realtime: S.realtime
             };
         },
         identity: function () { return S.student; },

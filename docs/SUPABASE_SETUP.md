@@ -6,8 +6,9 @@ Hệ thống Supabase của Bá Khí gồm 4 phần:
 |---|---|---|
 | Cấu hình công khai | `assets/bakhi/bk-supabase.config.js` | **Nơi duy nhất** chứa Project URL + Publishable key |
 | Lớp client | `assets/bakhi/bk-cloud.js` | Một Supabase client duy nhất: Anonymous Auth, nhận diện học sinh, thông báo, changelog, đồng bộ |
-| Administrator Dashboard | `assets/bakhi/bk-devboard.js` + `admin/index.html` | 6 tab quản trị, xác thực Administrator Code qua Edge Function |
-| Backend | `supabase/migrations/`, `supabase/functions/` | Schema + RLS + 6 Edge Functions |
+| Administrator Dashboard | `assets/bakhi/bk-devboard.js` + `admin/index.html` | 9 mô-đun quản trị, xác thực Administrator Code qua Edge Function |
+| Backend | `supabase/migrations/`, `supabase/functions/` | Schema + RLS + 7 Edge Functions |
+| Đồng bộ changelog | `.github/workflows/changelog-sync.yml` + `supabase/functions/changelog-sync` | GitHub Actions xuất bản `CHANGELOG.md` lên Supabase |
 
 > ⚠️ **Không bao giờ** đặt `service_role` key, secret key, database password, Administrator Code
 > hay bất kỳ secret xác thực nào vào repository, HTML, JavaScript hoặc chat.
@@ -21,10 +22,15 @@ Project `wzvslyabhizsiggurwdq` **đã được cài đặt và kiểm chứng**:
 |---|---|
 | Anonymous sign-ins | ✅ đã bật |
 | Migration `20261115000000_bakhi_supabase.sql` | ✅ đã chạy — 9 bảng, RLS bật toàn bộ |
-| 6 Edge Function | ✅ `ACTIVE`, `verify_jwt = false` |
+| Migration `20261116000000_bakhi_security_hardening.sql` | ✅ đã chạy — thu hồi quyền hàm/bảng |
+| Migration `20261117000000_bakhi_changelog_sync.sql` | ✅ đã chạy — cột đồng bộ, RPC publish, `app_settings` |
+| Migration `20261117001000_app_settings_realtime.sql` | ✅ đã chạy — `app_settings` vào realtime |
+| 7 Edge Function | ✅ `ACTIVE`, `verify_jwt = false` |
 | Secret `ADMIN_DEV_CODE` | ✅ đã đặt |
+| Secret `CHANGELOG_SYNC_TOKEN` | ✅ đã đặt (Edge Function + GitHub Secrets) |
 | Roster `students.txt` | ✅ 40 học sinh, 0 hồ sơ trùng tên |
 | Thông báo toàn website (3.2.0) | ✅ chuông ở trang chủ, trang bài học và Studio |
+| Đồng bộ changelog (3.3.0) | ✅ 14 phiên bản, 8 tạo mới, 1 thông báo cho 3.2.1; chạy lại 0/0 |
 
 Kiểm chứng end-to-end đã chạy trực tiếp trên project (không phải mock):
 
@@ -97,6 +103,13 @@ Sau đó chạy tiếp migration gia cố bảo mật (xem
 supabase/migrations/20261116000000_bakhi_security_hardening.sql
 ```
 
+Và hai migration cho đồng bộ changelog + cấu hình site (3.3.0):
+
+```
+supabase/migrations/20261117000000_bakhi_changelog_sync.sql
+supabase/migrations/20261117001000_app_settings_realtime.sql
+```
+
 Hoặc dùng CLI:
 
 ```bash
@@ -113,6 +126,7 @@ supabase functions deploy import-students
 supabase functions deploy search-students
 supabase functions deploy bind-student-session
 supabase functions deploy sync-student-progress
+supabase functions deploy changelog-sync
 ```
 
 Bắt buộc dùng `--no-verify-jwt` cho các function tự xác thực phiên riêng:
@@ -124,10 +138,11 @@ supabase functions deploy import-students --no-verify-jwt
 supabase functions deploy search-students --no-verify-jwt
 supabase functions deploy bind-student-session --no-verify-jwt
 supabase functions deploy sync-student-progress --no-verify-jwt
+supabase functions deploy changelog-sync --no-verify-jwt
 ```
 
-Lý do: học sinh dùng Anonymous Auth và Administrator Dashboard dùng phiên quản trị riêng; cả hai
-đều tự kiểm tra quyền bên trong function.
+Lý do: học sinh dùng Anonymous Auth, Administrator Dashboard dùng phiên quản trị riêng, và
+workflow dùng `CHANGELOG_SYNC_TOKEN`; cả ba đều tự kiểm tra quyền bên trong function.
 
 ### Vai trò & xác thực từng function
 
@@ -139,6 +154,7 @@ Lý do: học sinh dùng Anonymous Auth và Administrator Dashboard dùng phiên
 | `admin-auth` | Giáo viên | `ADMIN_DEV_CODE` so sánh hằng thời gian | 8 lượt/10 phút/IP |
 | `admin-actions` | Dashboard | `x-admin-token` (hash trong `admin_sessions`) | Theo phiên quản trị |
 | `import-students` | Dashboard / script | `x-admin-token` hoặc `STUDENT_ROSTER_SECRET` | Theo phiên |
+| `changelog-sync` | GitHub Actions | `x-changelog-token` so sánh hằng thời gian với `CHANGELOG_SYNC_TOKEN` | Theo lần chạy workflow |
 
 Riêng `admin-actions` xác thực lại ở **mỗi** thao tác, không tin trạng thái đã đăng nhập ở
 client. Token quản trị chỉ nằm trong `sessionStorage`, mất khi đóng tab.
@@ -170,6 +186,45 @@ gửi qua header `x-admin-token`; `admin-actions` xác thực lại ở **mỗi*
 | `SUPABASE_URL` | ✅ tự có | Supabase tự inject cho Edge Functions. |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ tự có | Supabase tự inject; **không** đặt vào repository và không gửi về client. |
 | `STUDENT_ROSTER_SECRET` | – | Chỉ dùng để đối chiếu khi bạn muốn xác nhận một bản import do chính bạn khởi tạo (ví dụ chạy bằng script/CI). Dashboard hiện xác thực import bằng Dev session nên secret này không bắt buộc. Nếu đặt, dùng một chuỗi ngẫu nhiên ≥ 32 ký tự do bạn tự sinh. |
+| `CHANGELOG_SYNC_TOKEN` | ✅ cho đồng bộ | Chuỗi ngẫu nhiên ≥ 32 ký tự, đặt ở **Supabase Secrets** và **GitHub → Settings → Secrets → Actions**. Workflow gửi qua header `x-changelog-token`; function từ chối request thiếu hoặc sai token. |
+
+### Đồng bộ CHANGELOG.md qua GitHub Actions
+
+1. Đặt secret trên Supabase:
+
+   ```bash
+   supabase secrets set CHANGELOG_SYNC_TOKEN='<chuỗi-ngẫu-nhiên-≥32-ký-tự>'
+   ```
+
+2. Trong GitHub repository → **Settings → Secrets and variables → Actions**, thêm:
+
+   | Secret | Giá trị |
+   |---|---|
+   | `CHANGELOG_SYNC_URL` | `https://wzvslyabhizsiggurwdq.supabase.co/functions/v1/changelog-sync` |
+   | `CHANGELOG_SYNC_TOKEN` | cùng giá trị đã đặt ở Supabase |
+
+3. Workflow `.github/workflows/changelog-sync.yml` chạy khi `CHANGELOG.md` thay đổi trên
+   nhánh `main` (hoặc bấm **Run workflow**). Nó tách phiên bản, ngày, nhóm nội dung và
+   Markdown, rồi gửi `{entries:[...]}` tới function.
+
+Kết quả mong đợi:
+
+- Phiên bản mới → ghi vào `changelog`, tạo **một** announcement liên kết qua
+  `changelog_version`, học sinh nhận realtime.
+- Chạy lại cùng nội dung → cập nhật hàng đã có, **không** tạo thêm announcement.
+- Sửa nội dung phiên bản đã xuất bản → cập nhật nội dung, không báo lại.
+- Lỗi từng phần → HTTP 207; `sync_state = 'failed'` và `sync_error` ghi lý do; dashboard
+  mô-đun Giám sát hiển thị các hàng lỗi.
+
+Kiểm tra nhanh trong SQL Editor:
+
+```sql
+select version, source, sync_state, synced_at, left(coalesce(sync_error,''), 80) as error
+from public.changelog order by published_at desc nulls last limit 15;
+
+select version from public.announcements
+where changelog_version is not null order by version desc;
+```
 
 Trạng thái các secret được hiển thị trong **Administrator Dashboard → Settings** (chỉ hiện
 “đã đặt / thiếu”, không bao giờ hiện giá trị).
@@ -185,7 +240,8 @@ Migration đã bật RLS cho toàn bộ bảng:
 | `student_progress` | **chỉ đọc** hàng của `bakhi_current_student_id()` | Ghi duy nhất qua `sync-student-progress` (service_role); trình duyệt không có quyền INSERT/UPDATE |
 | `announcements` | chỉ đọc bản `is_published` | Ghi qua `admin-actions` |
 | `announcement_reads` | đọc/ghi hàng của chính mình | Trạng thái đã đọc riêng từng học sinh |
-| `changelog` | chỉ đọc bản `is_published` | Ghi qua `admin-actions` |
+| `changelog` | chỉ đọc bản `is_published` | Ghi qua `admin-actions` và `changelog-sync` |
+| `app_settings` | chỉ đọc khoá `public.%` | Ghi qua `admin-actions` (service_role); `public.whatsnew`, `public.maintenance`; realtime |
 | `admin_activity_logs`, `admin_sessions`, `rate_limits` | **không có quyền** | Chỉ service_role |
 
 Kiểm tra nhanh: mở Console trình duyệt khi đã chọn tên và chạy

@@ -1,4 +1,4 @@
-# Tính năng Bá Khí 3.2
+# Tính năng Bá Khí 3.3
 
 Tài liệu liệt kê toàn bộ tính năng đang có, trạng thái và ghi chú triển khai. Ký hiệu:
 ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị chặn
@@ -142,8 +142,15 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 7 | Bấm một mục → cửa sổ đầy đủ nội dung phiên bản/thông báo | ✅ | Markdown an toàn, đóng bằng ×, `Esc`, bấm nền |
 | 8 | Bảng tự mở lên trên khi chuông ở nửa dưới màn hình | ✅ | Không bị cắt khỏi khung nhìn |
 | 9 | Liên kết “Xem CHANGELOG.md” đúng đường dẫn ở mọi cấp thư mục | ✅ | Dùng `basePath()` |
-| 10 | Trang chủ có What's New tóm tắt phiên bản cao nhất | ✅ | So sánh theo số phiên bản |
+| 10 | Khối “Cập nhật gần đây” tóm tắt phiên bản cao nhất, **chỉ bật ở trang chủ** | ✅ | `data-bk-whatsnew="1"`; Studio/Word & Paint không dựng khối này |
 | 11 | Chuông cũ `bk-notify.js` tự được gỡ khi lớp mới hoạt động | ✅ | Tránh hiện hai chuông |
+| 12 | Giao diện thông báo tối thống nhất | ✅ | Biến `--bkc-n-*` + `.bkc-dark`; không còn thẻ trắng |
+| 13 | Trạng thái tải / rỗng / lỗi rõ ràng trong bảng thông báo | ✅ | Có nút thử lại khi lỗi |
+| 14 | Markdown an toàn + liên kết `http(s)` | ✅ | Escape trước, không chèn HTML thô |
+| 15 | Thông báo sinh từ CHANGELOG mở đúng phiên bản | ✅ | Liên kết qua `changelog_version` |
+| 16 | Cờ `public.whatsnew` và `public.maintenance` | ✅ | Đọc từ `app_settings`, realtime |
+| 17 | Dải thông báo bảo trì toàn site | ✅ | Bật/tắt từ dashboard, có nút ẩn |
+| 18 | Đồng bộ CHANGELOG.md tự động, chống trùng | ✅ | GitHub Actions + `changelog-sync` + RPC publish |
 
 ### Hai chế độ thông báo
 
@@ -156,19 +163,25 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | Realtime + poll | Có | Có |
 | Ảnh hưởng dữ liệu học | Không | Không |
 
-## J. Administrator Dashboard 4.0
+## J. Administrator Dashboard 4.1
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1 | 6 tab: Tổng quan, Thông báo, Changelog, Học sinh, Nhật ký, Cài đặt | ✅ | `admin/index.html` + `bk-devboard.js` |
-| 2 | Bố cục hai cột, tự gộp một cột dưới 1180px | ✅ | Biểu mẫu bên trái, danh sách bên phải |
-| 3 | Khung nhập không tràn viền | ✅ | `box-sizing: border-box`, `min-width:0`, `max-width:100%` |
-| 4 | Xem trước trực tiếp thông báo/changelog | ✅ | Nội dung dài tự xuống dòng |
-| 5 | Bảng lệnh nhanh `Ctrl/⌘+K` | ✅ | Nhảy tab, làm mới, tạo mới |
-| 6 | Giao diện sáng/tối + chế độ compact | ✅ | Theo theme site |
-| 7 | Xác thực Administrator Code + phiên `sessionStorage` | ✅ | Mọi thao tác ghi qua Edge Function |
-| 8 | Import `students.txt`, phát hiện trùng tên, đánh dấu phân biệt | ✅ | Xem SUPABASE_SETUP |
-| 9 | Push thông báo/changelog ngay, ẩn/đăng lại/xoá | ✅ | Realtime tới máy học sinh |
+| 1 | **9 mô-đun**: Tổng quan, Học sinh, Thông báo, Lịch sử phiên bản, Nhật ký, Giám sát, Quyền, Cấu hình, Dữ liệu | ✅ | `admin/index.html` + `bk-devboard.js` |
+| 2 | Sidebar thu gọn, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng | ✅ | Bố cục không tràn ngang |
+| 3 | Bảng có tìm kiếm, lọc, sắp xếp, phân trang phía máy chủ | ✅ | Học sinh, thông báo, changelog, nhật ký |
+| 4 | Lịch sử phiên bản dạng cột dọc | ✅ | Biểu mẫu toàn chiều rộng trên, danh sách bên dưới |
+| 5 | Xem chi tiết học sinh + xuất CSV/JSON | ✅ | Dữ liệu đọc qua `admin-actions` |
+| 6 | Lưu/xuất bản changelog qua RPC dùng chung với GitHub | ✅ | Cùng quy tắc chống trùng |
+| 7 | Nhật ký thao tác quản trị + xuất | ✅ | Lọc theo hành động/đối tượng |
+| 8 | Giám sát hệ thống: độ trễ, số bản ghi, hàng đợi đồng bộ, lỗi gần đây | ✅ | `system.health` |
+| 9 | Quyền: báo cáo thật về hàm/bảng/policy | 🟡 | Chỉ đọc — một Administrator Code dùng chung, chưa có vai trò riêng |
+| 10 | Cấu hình: bật/tắt What's New và bảo trì | ✅ | Chỉ hai khoá `public.*` |
+| 11 | Dữ liệu: kiểm tra toàn vẹn + xuất CSV/JSON | ✅ | Không có xoá hàng loạt |
+| 12 | Xác nhận trước thao tác ảnh hưởng dữ liệu | ✅ | Sửa/xoá thông báo, changelog |
+| 13 | Xác thực Administrator Code + phiên `sessionStorage` | ✅ | Mọi thao tác kiểm tra lại ở máy chủ |
+| 14 | Import `students.txt`, phát hiện trùng tên | ✅ | Xem SUPABASE_SETUP |
+| 15 | Push thông báo/changelog ngay, ẩn/đăng lại/xoá | ✅ | Realtime tới máy học sinh |
 
 ## K. Không có trong sản phẩm (theo yêu cầu)
 
@@ -183,10 +196,13 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Phiên ẩn danh | ✅ | Không email/mật khẩu |
 | Đồng bộ tiến trình | ✅ | Tự lưu, tự thử lại, gộp hai chiều |
 | Trung tâm thông báo | ✅ | Thông báo giáo viên + toàn bộ changelog |
-| What's New trên trang chính | ✅ | Phiên bản mới nhất kèm tóm tắt |
-| Administrator Dashboard | ✅ | `admin/index.html`, yêu cầu Administrator Code |
+| Khối “Cập nhật gần đây” | ✅ | Chỉ trang chủ; Studio/Word & Paint không dựng |
+| Đồng bộ CHANGELOG.md | ✅ | GitHub Actions + `changelog-sync`, một thông báo mỗi phiên bản |
+| Cấu hình site | ✅ | `app_settings` (`public.whatsnew`, `public.maintenance`), realtime |
+| Administrator Dashboard | ✅ | `admin/index.html`, yêu cầu Administrator Code, 9 mô-đun |
 | Import danh sách học sinh | ✅ | Từ `students.txt`, phát hiện trùng tên |
 | Nhật ký thao tác quản trị | ✅ | Ai làm gì, lúc nào; chỉ đọc trong dashboard |
 | Thông báo trên trang bài học/Studio | ✅ | Chế độ chỉ thông báo, không cần đăng nhập |
 | Kiểm thử & bảo toàn nội dung | ✅ | `content-integrity` 119 tệp + 2 bộ smoke test |
+| Favicon tĩnh dùng chung | ✅ | SVG + PNG 16/32/48/192/512 + ICO + apple-touch-icon; 118/119 trang |
 | Tài liệu | ✅ | README, AGENTS, ARCHITECTURE, FEATURES, MUSIC, STUDIO, SUPABASE_SETUP |

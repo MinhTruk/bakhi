@@ -77,6 +77,7 @@ function builder(rows) {
         select() { return api; },
         eq() { return api; },
         in() { return api; },
+        like() { return api; },
         ilike() { return api; },
         order() { return api; },
         limit() { return api; },
@@ -168,7 +169,8 @@ function fakeFetch(url, opts) {
 }
 
 /* --------------------------------- Test DOM -------------------------------- */
-const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí</title></head><body>
+const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí</title>
+<script src="assets/bakhi/bk-cloud.js" data-bk-whatsnew="1"></script></head><body>
 <header>
   <div class="flex items-center space-x-3">
     <button class="bknt-bell">chuông CHANGELOG cũ</button>
@@ -350,7 +352,7 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     ok('mở được chi tiết phiên bản trong thông báo', !!clModal && /Tính năng mới/.test(clModal.textContent));
     if (clModal) w.document.querySelector('.bkc-modal .bkc-x').click();
 
-    console.log('\n[5] What\'s New trên trang chính (trở lại từ 3.1.3)');
+    console.log('\n[5] What\'s New trên trang chính (chỉ bật khi opt-in)');
     const wn = await until(() => {
         const node = w.document.getElementById('bkcWhatsNew');
         return node && node.hidden === false ? node : null;
@@ -401,7 +403,7 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
         return node && node.hidden === false ? node : null;
     });
     ok('dashboard mở sau khi xác thực', !!dash);
-    ok('dashboard có 6 tab', !!dash && dash.querySelectorAll('.bkc-tab').length === 6, dash && String(dash.querySelectorAll('.bkc-tab').length));
+    ok('dashboard có 9 tab', !!dash && dash.querySelectorAll('.bkc-tab').length === 9, dash && String(dash.querySelectorAll('.bkc-tab').length));
     const stats = await until(() => w.document.querySelectorAll('.bkc-stat').length);
     ok('tab Overview hiển thị số liệu', !!stats && stats === 8, String(stats));
     ok('Overview có Recent Activity', /admin\.login/.test((w.document.querySelector('.bkc-activity') || {}).textContent || ''));
@@ -439,12 +441,17 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     })());
 
     console.log('\n[8] Đổi học sinh');
+    const oldGate = w.document.getElementById('bkIdentityGate');
     w.BKCloud.changeStudent();
     const changeBtn = await until(() => Array.from(w.document.querySelectorAll('.bk-modal-foot .bk-btn'))
         .find((b) => b.textContent === 'Đổi học sinh') || null);
     ok('đổi học sinh hỏi lại trước khi đổi', !!changeBtn);
     if (changeBtn) changeBtn.click();
-    const reopened = await until(() => w.document.getElementById('bkIdentityGate'));
+    const reopened = await until(() => {
+        const gate = w.document.getElementById('bkIdentityGate');
+        const input = w.document.getElementById('bkcNameInput');
+        return gate && gate !== oldGate && input ? gate : null;
+    });
     ok('mở lại màn hình nhận diện sau khi đổi học sinh', !!reopened);
     if (reopened) {
         const again = w.document.getElementById('bkcNameInput');
@@ -453,6 +460,12 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
         await wait(30);
         ok('màn hình nhận diện mở lại ở trạng thái trống', w.document.querySelector('.bkc-gate-confirm').disabled === true);
     }
+
+    console.log('\n[9] What\'s New chỉ là tuỳ chọn');
+    const studioHtml = fs.readFileSync(path.join(ROOT, 'studio/index.html'), 'utf8');
+    const paintHtml = fs.readFileSync(path.join(ROOT, 'studio/word-paint.html'), 'utf8');
+    ok('Studio không bật What\'s New', !/data-bk-whatsnew/.test(studioHtml));
+    ok('Word & Paint không bật What\'s New', !/data-bk-whatsnew/.test(paintHtml));
 
     const realErrors = errors.filter((e) => !/Could not load link|Not implemented: navigation/.test(e));
     ok('không có lỗi runtime', realErrors.length === 0, String(realErrors[0] || ''));

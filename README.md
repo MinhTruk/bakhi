@@ -28,18 +28,20 @@ BAKHI hướng đến việc giúp việc ôn tập trở nên:
 - 📝 **Tương tác** hơn
 - 🎯 **Tập trung vào việc ôn thi**
 
-### Điểm nổi bật ở phiên bản 3.2.0
+### Điểm nổi bật ở phiên bản 3.3.0
 
 - **Một website, một trải nghiệm thông báo**: chuông thông báo có mặt trên trang chủ, mọi
   trang môn học/bài học/đề kiểm tra và cả Studio. Giáo viên đăng thông báo là máy học sinh
-  nhận được ngay, kể cả khi đang làm bài.
+  nhận được ngay, kể cả khi đang làm bài; toàn bộ giao diện thông báo dùng chung một theme tối.
+- **CHANGELOG.md tự lên sóng**: GitHub Actions đọc tệp khi bạn push, đồng bộ lên Supabase và
+  tạo đúng một thông báo cho mỗi phiên bản mới. Không cần sửa HTML mỗi lần phát hành.
 - **Học tập local-first**: tiến trình, ghi chú, đánh dấu, thành tích lưu trên máy trước;
   Supabase chỉ là lớp đồng bộ tuỳ chọn, không bắt buộc tài khoản.
 - **Không áp lực thời gian**: không đồng hồ đếm ngược, không tính giờ, không xếp hạng thi.
-- **Quản trị tập trung**: Administrator Dashboard 6 tab, có xem trước thông báo/changelog
-  trước khi push, quản lý học sinh và nhật ký thao tác.
+- **Quản trị tập trung**: Administrator Dashboard 9 mô-đun, có xem trước thông báo/changelog
+  trước khi push, quản lý học sinh, nhật ký, giám sát, cấu hình và dữ liệu.
 - **Công cụ học tập đi kèm**: Trung tâm học tập 7 tab, Music Player, Bá Khí Studio (Word & Paint),
-  Developer Playground 2.0.
+  Developer Playground 2.0. Favicon tĩnh dùng chung trên toàn site.
 
 ### Yêu cầu & tương thích
 
@@ -180,8 +182,9 @@ Làm theo [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md). Tóm tắt:
 
 1. Điền Project URL + Publishable key vào `assets/bakhi/bk-supabase.config.js`.
 2. Bật Anonymous sign-ins trong Supabase.
-3. Chạy migration SQL và deploy 6 Edge Function.
-4. Đặt secret `ADMIN_DEV_CODE`, sau đó import `students.txt` trong Administrator Dashboard.
+3. Chạy migration SQL và deploy 7 Edge Function.
+4. Đặt secret `ADMIN_DEV_CODE` + `CHANGELOG_SYNC_TOKEN`, sau đó import `students.txt` trong
+   Administrator Dashboard và thêm GitHub Secrets cho đồng bộ changelog.
 
 Không cấu hình Supabase thì website vẫn hoạt động đầy đủ ở chế độ local-first; chỉ thiếu
 nhận diện học sinh, đồng bộ giữa thiết bị và thông báo realtime.
@@ -224,7 +227,10 @@ script và không sửa nội dung gốc.
 | 🎧 Music Player dùng chung | 🟢 Đã có |
 | 🎨 Bá Khí Studio (Word & Paint) | 🟢 Đã có |
 | 🔔 Thông báo realtime toàn website (kể cả trang bài học, Studio) | 🟢 Đã có (3.2.0) |
-| 🛠️ Administrator Dashboard 4.0 (6 tab, xem trước, lệnh nhanh) | 🟢 Đã có |
+| 🛠️ Administrator Dashboard 4.1 (9 mô-đun, xem trước, lệnh nhanh) | 🟢 Đã có (3.3.0) |
+| 🔄 Đồng bộ CHANGELOG.md tự động qua GitHub Actions | 🟢 Đã có (3.3.0) |
+| 🌙 Giao diện thông báo tối thống nhất | 🟢 Đã có (3.3.0) |
+| 🖼️ Favicon tĩnh SVG/PNG/ICO toàn site | 🟢 Đã có (3.3.0) |
 | 🧪 Bảo toàn nội dung bằng hash (content-integrity) | 🟢 Đã có |
 | ♿ Trợ năng (bàn phím, ARIA, giảm chuyển động) | 🟢 Đang cải thiện |
 
@@ -246,6 +252,8 @@ script và không sửa nội dung gốc.
 - [x] Bá Khí Studio: soạn thảo kiểu Word + bảng vẽ kiểu Paint, lưu cục bộ, xuất HTML/TXT/PNG
 - [x] Thông báo cập nhật trên mọi trang: mỗi phiên bản trong `CHANGELOG.md` là một thông báo,
   đánh dấu đã đọc tất cả và đọc đầy đủ trong cửa sổ toàn màn hình
+- [x] Đồng bộ `CHANGELOG.md` lên Supabase bằng GitHub Actions, chống trùng thông báo
+- [x] Giao diện thông báo tối thống nhất và favicon tĩnh SVG/PNG/ICO toàn site
 
 ### 🔨 Đang phát triển
 
@@ -408,9 +416,14 @@ Chuông là nơi duy nhất hiển thị thông tin cập nhật, và nay có m�
   Supabase Realtime (không cần tải lại trang), có đếm số chưa đọc, mức ưu tiên và trạng thái
   đã đọc. Cơ chế dự phòng: tự tải lại mỗi 60 giây và khi mạng có lại.
 - **Cập nhật phiên bản** — toàn bộ changelog, xếp theo **số phiên bản** từ cũ đến mới
-  (3.0.0 → 3.1.0 → 3.1.1 → 3.1.2 → 3.1.3 → 3.2.0), bấm vào để đọc đầy đủ từng mục.
-- **What's New** — thẻ “Cập nhật gần nhất” trên trang chính tóm tắt phiên bản mới nhất và dẫn tới
-  trung tâm thông báo hoặc tệp [CHANGELOG.md](CHANGELOG.md).
+  (3.0.0 → 3.1.0 → … → 3.2.1 → 3.3.0), bấm vào để đọc đầy đủ từng mục.
+- **What's New** — thẻ “Cập nhật gần nhất” **chỉ có trên trang chính**, tóm tắt phiên bản mới
+  nhất và dẫn tới trung tâm thông báo hoặc tệp [CHANGELOG.md](CHANGELOG.md). Studio và
+  Word & Paint không dựng khối này.
+- **Theme tối thống nhất** — trung tâm thông báo, bảng, popup, chi tiết, toast và trạng thái
+  tải/rỗng/lỗi dùng chung bộ biến `--bkc-n-*`; không còn thẻ trắng hay chữ khó đọc.
+- **Cờ cấu hình** — `public.whatsnew` bật/tắt khối cập nhật gần đây, `public.maintenance`
+  hiện dải bảo trì toàn site; thay đổi từ dashboard tới trình duyệt ngay qua realtime.
 
 ### Hai chế độ hoạt động
 
@@ -422,7 +435,7 @@ Chuông là nơi duy nhất hiển thị thông tin cập nhật, và nay có m�
 Chế độ chỉ thông báo được bật bằng thuộc tính trên thẻ script:
 
 ```html
-<script src="../../assets/bakhi/bk-cloud.js?v=4.0.1" data-bk-notify-only="1" defer></script>
+<script src="../../assets/bakhi/bk-cloud.js?v=4.1.0" data-bk-notify-only="1" defer></script>
 ```
 
 Nếu Supabase chưa cấu hình hoặc đang mất mạng, chuông vẫn xuất hiện và trang học hoạt động
@@ -440,23 +453,29 @@ Trang quản trị dành riêng cho giáo viên, **yêu cầu Administrator Code
 | Menu 3 gạch | nút **Administrator** → nhập mã | Mục “Administrator Dashboard” chỉ hiện sau khi mã đúng, bấm vào mở **tab mới** |
 | Trang riêng | [`/admin/`](https://minhtruk.github.io/bakhi/admin/) | Tự hỏi Administrator Code khi mở tab mới |
 
-Sáu tab:
+Chín mô-đun:
 
-1. **Overview** — số học sinh, thông báo, phiên bản, nhật ký hoạt động gần đây, hồ sơ cần phân biệt.
-2. **Notifications** — soạn, xem trước, **PUSH NOTIFICATION NOW** (xuất bản tức thời), sửa/ẩn/đăng lại/xoá.
-3. **Changelog** — tạo bản cập nhật theo nhóm (Tính năng, Cải tiến, Sửa lỗi, Giao diện, Hiệu năng), push ngay.
-4. **Students** — import `students.txt`, tìm kiếm, sửa họ tên, đánh dấu phân biệt trùng tên, vô hiệu hoá.
-5. **Activity Logs** — nhật ký thao tác quản trị (ai làm gì, lúc nào).
-6. **Settings** — trạng thái secret, số học sinh, phiên hiện tại, đăng xuất.
+1. **Tổng quan** — số học sinh, thông báo, phiên bản, nhật ký hoạt động gần đây, hồ sơ cần phân biệt.
+2. **Học sinh** — import `students.txt`, tìm kiếm, sửa họ tên, đánh dấu phân biệt trùng tên, vô hiệu hoá, xem chi tiết, xuất CSV.
+3. **Thông báo** — soạn, xem trước, **PUSH NOTIFICATION NOW**, thống kê, sửa/ẩn/đăng lại/xoá.
+4. **Lịch sử phiên bản** — biểu mẫu toàn chiều rộng phía trên, danh sách phiên bản bên dưới; lọc nguồn/đồng bộ, xuất JSON, lưu nháp hoặc xuất bản.
+5. **Nhật ký** — nhật ký thao tác quản trị (ai làm gì, lúc nào), lọc và xuất.
+6. **Giám sát** — độ trễ, số bản ghi, hàng đợi đồng bộ changelog, lỗi gần đây.
+7. **Quyền** — báo cáo thật về hàm, bảng và policy; chỉ đọc.
+8. **Cấu hình** — bật/tắt What's New và thông báo bảo trì.
+9. **Dữ liệu** — kiểm tra toàn vẹn và xuất CSV/JSON; không có xoá hàng loạt.
 
-### Giao diện 4.0
+### Giao diện 4.1
 
-- **Bố cục hai cột**: biểu mẫu bên trái, danh sách bên phải; tự gộp thành một cột trên màn
-  hình hẹp để khung nhập luôn đủ rộng. Mọi thẻ kéo giãn theo tab và màn hình.
+- **9 mô-đun trong sidebar thu gọn được**, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng.
+- **Bảng dữ liệu** có tìm kiếm, lọc, sắp xếp và phân trang phía máy chủ; bảng rộng cuộn trong
+  khung, không đẩy vỡ bố cục.
+- **Lịch sử phiên bản dạng cột dọc**: biểu mẫu tạo/sửa chiếm toàn chiều rộng, danh sách bên dưới.
 - **Khung nhập chuẩn**: `input`, `textarea`, `select` dùng `border-box`, rộng tối đa bằng
   phần nội dung của thẻ — không tràn viền, không tạo thanh cuộn ngang.
-- **Bảng lệnh nhanh** (`Ctrl/⌘ + K` trong dashboard): nhảy tab, làm mới dữ liệu, tạo thông báo
-  hoặc changelog mới.
+- **Bảng lệnh nhanh** (`Ctrl/⌘ + K`): nhảy tab, làm mới dữ liệu, tạo thông báo hoặc changelog mới.
+- **Xác nhận trước thao tác** ảnh hưởng dữ liệu; mọi thao tác ghi kiểm tra lại Administrator
+  Code ở máy chủ.
 - **Giao diện sáng/tối** theo theme của site, chế độ **compact** để xem nhiều dòng hơn,
   nút trợ giúp tóm tắt phím tắt và quy trình push.
 - **Xem trước trực tiếp** thông báo/changelog ngay trong biểu mẫu trước khi xuất bản.
@@ -479,11 +498,12 @@ có kiểm tra phiên quản trị.
   bk-dev.js|css         Developer Playground 2.0
   bk-music.js|css       Music Player dùng chung
   bk-cloud.js|css       Nhận diện, thông báo realtime, changelog, đồng bộ (Supabase)
-  bk-devboard.js        Administrator Dashboard 6 tab + menu Administrator
-  bk-admin-dashboard.css Giao diện dashboard 4.0 (2 cột, responsive, form chuẩn)
+  bk-devboard.js        Administrator Dashboard 9 mô-đun + menu Administrator
+  bk-admin-dashboard.css Giao diện dashboard 4.1 (sidebar thu gọn, bảng phân trang)
   bk-admin.css|bk-admin-theme.js  Trang đăng nhập quản trị + theme
   bk-supabase.config.js Nơi duy nhất chứa Project URL + Publishable key
-  bk-notify.js|css      Chuông CHANGELOG.md cũ (được gỡ khi lớp Supabase hoạt động)
+  bk-notify.js|css      Chuông CHANGELOG.md cũ (dự phòng, bị gỡ khi lớp Supabase hoạt động)
+  favicon.svg|*.png|.ico  Favicon tĩnh dùng chung
   bk-bkt.js, bk-page.js Hiệu ứng chuyển trang & cầu nối trang bài học
 /ktgk1, /ktgk2, /ktck1, /ktck2, /kttx
                         Nội dung giáo dục (HTML tĩnh, mỗi trang tự chứa)

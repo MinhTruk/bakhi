@@ -1,7 +1,7 @@
 # Kiến trúc Bá Khí
 
 Tài liệu này mô tả hiện trạng repository, lớp nâng cấp dùng chung, cơ chế thông báo và các
-quyết định kỹ thuật. Cập nhật: 15/11/2026 (phiên bản 3.2.0).
+quyết định kỹ thuật. Cập nhật: 15/11/2026 (phiên bản 3.3.0).
 
 ## 1. Kiểm toán repository (trước khi nâng cấp)
 
@@ -15,7 +15,7 @@ quyết định kỹ thuật. Cập nhật: 15/11/2026 (phiên bản 3.2.0).
 | Storage keys | `theme`, `b11theme`, `bgOpacity`, `customBg`, `fxCfg`, `uiCfg`, `hiddenSubjects`, `favCfg`, `bktCfg`, `appHighlightsDataMap`, `bakhiBackups`, `bakhiSchema`, `bakhiColors`, `bakhiErrors`, `bakhiSnips`, `devToken`, `devLock`, `bakhi_ly11_progress`, `bakhi_toan11_checklist`, `lexend-*`, `bgmMuted` + các key mới bên dưới |
 | Theme | `html.dark` + `localStorage.theme`; token V4 `--bk-*` |
 | Chuyển trang | Khối BKT (hiệu ứng bàn tay/vải) + `sessionStorage.bktF` |
-| Supabase | Đã tích hợp: migration + 6 Edge Function + RLS + realtime (xem mục 8) |
+| Supabase | Đã tích hợp: migration + 7 Edge Function + RLS + realtime (xem mục 8) |
 | Deploy | GitHub Pages, đường dẫn tương đối, không build |
 
 
@@ -58,7 +58,13 @@ trang bài học ─────┴──► bk-page.js
   `bakhiNotify.v1`; API `BKNotify` (`open`, `close`, `openArticle`, `markAll`, `items`,
   `unread`, `parse`, `setSource`, `refresh`). Khi lớp Supabase chạy, `bk-cloud.js` gỡ chuông
   cũ để không hiện hai chuông. Các trang môn/bài học dùng chuông mới ở chế độ chỉ thông báo
-  (xem mục 2.1). Không chứa nội dung giáo dục.
+  (xem mục 2.1). Không chứa nội dung giáo dục. Từ 3.3.0, chuông mới là giao diện duy nhất
+  người dùng thấy; `bk-notify.js` chỉ còn là lớp dự phòng khi Supabase không cấu hình.
+- **Favicon tĩnh** — `assets/bakhi/favicon.svg` là nguồn; `tools/make-favicon.js` sinh bộ
+  PNG 16/32/48/192/512, `apple-touch-icon.png` và `favicon.ico` không phụ thuộc thư viện.
+  `tools/inject-favicon.js` chèn link tương đối vào 118/119 tệp HTML (bỏ qua
+  `images/anh/1.html` vì tệp rỗng). Mọi dòng chèn chứa `assets/bakhi/` nên
+  `content-integrity` bỏ qua; không dùng favicon GIF.
 - **bk-learn.js/css** — UI: dock nổi, modal Trung tâm học tập 7 tab, command palette
   (Ctrl/⌘+K), tìm kiếm toàn cục (`/`), focus mode, xuất/nhập.
 - **bk-dev.js/css** — Developer Playground 2.0: cửa sổ nổi kéo/đổi kích thước, nhớ
@@ -97,11 +103,11 @@ Luồng khởi động ở chế độ chỉ thông báo:
 
 ```
 DOMContentLoaded
-  └─ injectCss()                       (bk-cloud.css?v=4.0.1)
+  └─ injectCss()                       (bk-cloud.css?v=4.1.0)
   └─ buildBell()                       (chuông nổi góc phải dưới)
   └─ ensureReady() → ensureSdk() → ensureSession()   (Anonymous Auth)
-       └─ subscribeRealtime()          (announcements + changelog)
-       └─ loadAnnouncements(true) + loadChangelog()
+       └─ subscribeRealtime()          (announcements + changelog + app_settings)
+       └─ loadAnnouncements(true) + loadChangelog() + loadSiteFlags()
        └─ emit('ready', { bound:false, notifyOnly:true })
 ```
 
@@ -120,18 +126,44 @@ DOMContentLoaded
   `online` để bù khi realtime không khả dụng.
 - Liên kết “Xem CHANGELOG.md” dùng `basePath()`, nên đúng cả ở trang bài học nhiều cấp thư mục.
 
-### 2.2. Administrator Dashboard 4.0
+#### Giao diện tối và khối “Cập nhật gần đây” (3.3.0)
+
+- Toàn bộ bề mặt thông báo dùng chung bộ biến `--bkc-n-*` trong `bk-cloud.css` và lớp
+  `.bkc-dark`: trung tâm thông báo, bảng, popup, danh sách, chi tiết, toast, modal, trạng
+  thái tải/rỗng/lỗi. Không có thẻ trắng nào còn sót trong luồng thông báo.
+- **What's New là tuỳ chọn**: `bk-cloud.js` chỉ dựng khối cập nhật gần đây khi thẻ script
+  có `data-bk-whatsnew="1"` hoặc trang đã có khung `#bkcWhatsNew`. Chỉ `index.html` bật cờ
+  này; `studio/index.html` và `studio/word-paint.html` chạy chế độ chỉ thông báo nên không
+  bao giờ hiện khối. Đây là logic, không phải CSS ẩn.
+- Feature flag đọc từ `app_settings` qua RLS `public.*`: `public.whatsnew` bật/tắt khối
+  cập nhật gần đây, `public.maintenance` hiện dải bảo trì toàn site. Hai bảng `app_settings`
+  và `announcements`/`changelog` đều nằm trong realtime nên thay đổi từ dashboard tới
+  trình duyệt ngay.
+- Thông báo sinh ra từ CHANGELOG mang `changelog_version`; khi bấm, `bk-cloud.js` mở đúng
+  mục phiên bản trong cửa sổ lịch sử. Markdown từ máy chủ được escape trước, chỉ cho phép
+  liên kết `http(s)`.
+- Kênh realtime `bakhi-public` lắng nghe `announcements`, `changelog`, `app_settings`;
+  trạng thái kênh được công bố qua `BKCloud.state().realtime` để dashboard giám sát.
+
+### 2.2. Administrator Dashboard 4.1
 
 - `admin/index.html` nạp `bk-admin-dashboard.css` + `bk-devboard.js`; mọi thao tác ghi đi qua
   Edge Function `admin-actions` với header `x-admin-token`.
-- Bố cục nội dung `.bkc-pane` rộng 100% (tối đa 82rem). Hai tab Notifications/Changelog dùng
-  `.bkc-split` hai cột; mỗi cột là một `.bkc-card`. Dưới 1180px lưới gộp thành một cột để
-  biểu mẫu không bị bóp hẹp.
+- **9 mô-đun**: Tổng quan, Học sinh, Thông báo, Lịch sử phiên bản, Nhật ký, Giám sát,
+  Quyền, Cấu hình, Dữ liệu. Sidebar thu gọn được, breadcrumb, tìm kiếm, trạng thái
+  tải/thành công/lỗi/rỗng; bảng có lọc, sắp xếp, phân trang phía máy chủ.
+- Bố cục nội dung `.bkc-pane` rộng 100% (tối đa 82rem). Tab Lịch sử phiên bản dùng
+  `.bkc-stack`: biểu mẫu tạo/sửa chiếm toàn chiều rộng phía trên, danh sách phiên bản bên
+  dưới. Tab Thông báo vẫn dùng `.bkc-split` hai cột; dưới 1180px lưới gộp thành một cột.
 - `.bkc-dash, .bkc-dash *` đặt `box-sizing: border-box`; `input/textarea/select` có
   `width/max-width: 100%` và `min-width: 0`, nên không tràn mép thẻ.
-- Bảng danh sách (thông báo/changelog/học sinh) nằm trong `layout` (lưới), không phải `pane`,
-  tránh cột phải rỗng.
-- Panel xem trước có `overflow-wrap: anywhere`; bảng dữ liệu rộng cuộn trong `.bkc-table-wrap`.
+- Bảng danh sách (thông báo/changelog/học sinh/nhật ký) nằm trong `layout` (lưới), không
+  phải `pane`, tránh cột phải rỗng; bảng rộng cuộn trong `.bkc-table-wrap`.
+- Panel xem trước có `overflow-wrap: anywhere`.
+- Mô-đun Quyền chỉ đọc: hệ thống chỉ có một Administrator Code dùng chung, không có danh
+  tính quản trị riêng để phân vai trò. Dashboard hiển thị báo cáo quyền thật (hàm, bảng,
+  policy) thay vì giả lập nhiều vai trò.
+- Mô-đun Dữ liệu chỉ kiểm tra toàn vẹn và xuất CSV/JSON; không có nút xoá hàng loạt.
 
 ### Vì sao không gộp vào `bakhi-v4.js`
 
@@ -234,13 +266,21 @@ Kết quả sau nâng cấp: **119/119 tệp không đổi nội dung** (`verify
 | Tìm kiếm gợi ý | `supabase/functions/search-students` | Tối đa 8 kết quả/lần, giới hạn tần suất theo phiên |
 | Đồng bộ tiến trình | `bk-cloud.js` + `sync-student-progress` | Debounce, thử lại theo cấp số nhân, gộp dữ liệu hai chiều |
 | Trung tâm thông báo | `bk-cloud.js` + bảng `announcements` | Realtime + đếm chưa đọc + đánh dấu đã đọc; có mặt trên mọi trang (chế độ chỉ thông báo ở trang bài học/Studio) |
-| Lịch sử phiên bản | bảng `changelog` | Hiển thị ở What's New và trong trung tâm thông báo, xếp theo số phiên bản |
-| Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html` | 6 tab, xác thực Administrator Code qua `admin-auth` |
+| Lịch sử phiên bản | bảng `changelog` | Hiển thị trong trung tâm thông báo và khối “Cập nhật gần đây” chỉ bật ở trang chủ, xếp theo số phiên bản |
+| Đồng bộ changelog | `.github/workflows/changelog-sync.yml` + `supabase/functions/changelog-sync` | GitHub Actions đọc `CHANGELOG.md`, gọi hàm bằng `CHANGELOG_SYNC_TOKEN`; hàm dùng RPC `bakhi_publish_changelog` để ghi và tạo thông báo một lần |
+| Cấu hình site | bảng `app_settings` | Chỉ đọc khoá `public.*`; `public.whatsnew`, `public.maintenance`; realtime; ghi qua `admin-actions` |
+| Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html` | 9 mô-đun, xác thực Administrator Code qua `admin-auth`; mọi thao tác kiểm tra lại ở `admin-actions` |
 
 Ghi chú triển khai:
 
 - Mọi Edge Function đặt `verify_jwt = false` trong `supabase/config.toml` nhưng tự kiểm tra phiên
-  người gọi (ẩn danh) hoặc `x-admin-token` (quản trị).
+  người gọi (ẩn danh), `x-admin-token` (quản trị) hoặc `CHANGELOG_SYNC_TOKEN` (workflow).
 - Bảng `students` không có policy đọc cho `anon`/`authenticated`; chỉ service role trong Edge
   Function đọc được, nên danh sách thật không lộ ra trình duyệt.
-- `announcements` và `changelog` nằm trong publication `supabase_realtime` để cập nhật tức thời.
+- `announcements`, `changelog` và `app_settings` nằm trong publication `supabase_realtime` để
+  cập nhật tức thời.
+- Chống trùng changelog: `changelog.version` là duy nhất; `announcements.changelog_version`
+  có partial unique index; RPC dùng `pg_advisory_xact_lock` và chỉ tạo thông báo khi phiên
+  bản mới hơn mọi phiên bản đã xuất bản và chưa có thông báo liên kết.
+- Workflow chạy lại chỉ cập nhật hàng đã có (hash nội dung), không tạo thêm thông báo; lỗi
+  từng phần được ghi vào `sync_state`/`sync_error` và trả HTTP 207.
