@@ -103,11 +103,12 @@ Sau đó chạy tiếp migration gia cố bảo mật (xem
 supabase/migrations/20261116000000_bakhi_security_hardening.sql
 ```
 
-Và hai migration cho đồng bộ changelog + cấu hình site (3.3.0):
+Và ba migration cho đồng bộ changelog, cấu hình site và báo cáo quyền (3.3.0):
 
 ```
 supabase/migrations/20261117000000_bakhi_changelog_sync.sql
 supabase/migrations/20261117001000_app_settings_realtime.sql
+supabase/migrations/20261117002000_bakhi_permissions_report.sql
 ```
 
 Hoặc dùng CLI:

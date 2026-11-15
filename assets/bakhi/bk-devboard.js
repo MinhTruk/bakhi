@@ -2401,6 +2401,75 @@
                 });
                 host.appendChild(t.wrap);
 
+                if (data.report_error) {
+                    host.appendChild(alertBox('Không đọc được catalog quyền: ' + data.report_error, 'error'));
+                }
+
+                var fnList = data.functions || [];
+                if (fnList.length) {
+                    var fnCard = card('Hàm trong schema public (' + fnList.length + ')', null,
+                        'Đọc từ pg_proc. Cột anon = true nghĩa là khách chưa đăng nhập cũng gọi được.');
+                    var ft = table(['Hàm', 'SECURITY DEFINER', 'anon', 'authenticated', 'service_role']);
+                    fnList.forEach(function (fn) {
+                        var tr = h('tr');
+                        tr.appendChild(h('td', 'bkc-code', fn.name || '—'));
+                        var dCell = h('td');
+                        dCell.appendChild(pill(fn.security_definer ? 'Có' : 'Không', fn.security_definer ? 'warn' : 'off'));
+                        tr.appendChild(dCell);
+                        [['anon_execute', 'warn'], ['authenticated_execute', 'ok'], ['service_execute', 'ok']]
+                            .forEach(function (pair) {
+                                var cell = h('td');
+                                cell.appendChild(pill(fn[pair[0]] ? 'Có' : 'Không', fn[pair[0]] ? pair[1] : 'off'));
+                                tr.appendChild(cell);
+                            });
+                        ft.tbody.appendChild(tr);
+                    });
+                    fnCard.body.appendChild(ft.wrap);
+                    host.appendChild(fnCard.root);
+                }
+
+                var tblList = data.tables || [];
+                if (tblList.length) {
+                    var tbCard = card('Bảng & RLS (' + tblList.length + ')', null,
+                        'RLS là lớp bảo vệ chính; quyền anon chỉ nên mở ở bảng công khai.');
+                    var tt = table(['Bảng', 'RLS', 'Policy', 'anon SELECT', 'authenticated SELECT', 'anon INSERT', 'authenticated INSERT']);
+                    tblList.forEach(function (tb) {
+                        var tr = h('tr');
+                        tr.appendChild(h('td', 'bkc-code', tb.name || '—'));
+                        var rlsCell = h('td');
+                        rlsCell.appendChild(pill(tb.rls_enabled ? 'Bật' : 'Tắt', tb.rls_enabled ? 'ok' : 'warn'));
+                        tr.appendChild(rlsCell);
+                        tr.appendChild(h('td', null, String(tb.policy_count == null ? '—' : tb.policy_count)));
+                        [['anon_select', 'warn'], ['authenticated_select', 'ok'], ['anon_insert', 'warn'], ['authenticated_insert', 'ok']]
+                            .forEach(function (pair) {
+                                var cell = h('td');
+                                cell.appendChild(pill(tb[pair[0]] ? 'Có' : 'Không', tb[pair[0]] ? pair[1] : 'off'));
+                                tr.appendChild(cell);
+                            });
+                        tt.tbody.appendChild(tr);
+                    });
+                    tbCard.body.appendChild(tt.wrap);
+                    host.appendChild(tbCard.root);
+                }
+
+                var polList = data.policies || [];
+                if (polList.length) {
+                    var polCard = card('Policy đang áp dụng (' + polList.length + ')', null,
+                        'Đọc từ pg_policies — chỉ hiển thị, không sửa từ dashboard.');
+                    var pt = table(['Bảng', 'Policy', 'Lệnh', 'Kiểu', 'Vai trò']);
+                    polList.forEach(function (pol) {
+                        var tr = h('tr');
+                        tr.appendChild(h('td', 'bkc-code', pol.table_name || '—'));
+                        tr.appendChild(h('td', null, pol.name || '—'));
+                        tr.appendChild(h('td', null, pol.command || '—'));
+                        tr.appendChild(h('td', null, pol.permissive ? 'Permissive' : 'Restrictive'));
+                        tr.appendChild(h('td', null, (pol.roles || []).join(', ') || 'PUBLIC'));
+                        pt.tbody.appendChild(tr);
+                    });
+                    polCard.body.appendChild(pt.wrap);
+                    host.appendChild(polCard.root);
+                }
+
                 if ((data.limitations || []).length) {
                     var limitCard = card('Giới hạn đã biết', null, 'Không có thao tác giả lập nào được bật.');
                     data.limitations.forEach(function (text) {

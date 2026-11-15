@@ -466,9 +466,12 @@ Deno.serve(async (req) => {
             case 'changelog.list': {
                 const limit = Math.min(200, Math.max(1, Number(body.limit) || 100));
                 const offset = Math.max(0, Number(body.offset) || 0);
-                let query = client.from('changelog').select('*', { count: 'exact' })
+                /* Sắp xếp theo phiên bản ngữ nghĩa, không theo created_at/published_at.
+                   Lấy tối đa 500 hàng đã lọc rồi mới cắt trang để thứ tự đúng trên
+                   toàn bộ danh sách (changelog luôn nhỏ hơn ngưỡng này). */
+                let query = client.from('changelog').select('*')
                     .order('created_at', { ascending: false })
-                    .range(offset, offset + limit - 1);
+                    .limit(500);
                 const q = str(body.q, 60).replace(/[%,()"'\\]/g, '');
                 if (q) query = query.or(`version.ilike.%${q}%,title.ilike.%${q}%`);
                 if (CATEGORIES.includes(String(body.category))) query = query.eq('category', String(body.category));
@@ -478,9 +481,16 @@ Deno.serve(async (req) => {
                 if (['draft', 'published', 'failed'].includes(String(body.sync_state))) {
                     query = query.eq('sync_state', String(body.sync_state));
                 }
-                const { data, error, count } = await query;
+                const { data, error } = await query;
                 if (error) throw error;
-                return json({ ok: true, total: count ?? (data ?? []).length, offset, changelog: data ?? [] });
+                const sorted = (data ?? []).slice()
+                    .sort((a, b) => versionCmp(String(b.version), String(a.version)));
+                return json({
+                    ok: true,
+                    total: sorted.length,
+                    offset,
+                    changelog: sorted.slice(offset, offset + limit)
+                });
             }
 
             case 'changelog.save': {
@@ -760,9 +770,16 @@ Deno.serve(async (req) => {
 
             /* ------------------------------ Quyền hạn ------------------------------- */
             case 'permissions.get': {
-                const { data: session } = await client.from('admin_sessions')
-                    .select('id, created_at, expires_at, last_used_at')
-                    .eq('id', auth.sessionId).maybeSingle();
+                const [sessionRes, reportRes] = await Promise.all([
+                    client.from('admin_sessions')
+                        .select('id, created_at, expires_at, last_used_at')
+                        .eq('id', auth.sessionId).maybeSingle(),
+                    /* Catalog thật (hàm, bảng, policy). Nếu migration chưa chạy,
+                       vẫn trả báo cáo năng lực và ghi rõ lỗi thay vì hỏng cả màn hình. */
+                    client.rpc('bakhi_permissions_report')
+                ]);
+                const report = (reportRes.data ?? null) as Record<string, unknown> | null;
+                const reportError = reportRes.error ? reportRes.error.message : null;
                 return json({
                     ok: true,
                     mode: 'single-admin-code',
@@ -771,7 +788,7 @@ Deno.serve(async (req) => {
                         label: 'Administrator',
                         description: 'Một Administrator Code dùng chung; mọi phiên quản trị có cùng quyền.'
                     },
-                    session: session ?? null,
+                    session: sessionRes.data ?? null,
                     capabilities: {
                         overview: true,
                         students: true,
@@ -787,7 +804,12 @@ Deno.serve(async (req) => {
                     limitations: [
                         'Chưa có mô hình nhiều quản trị viên hoặc phân quyền theo vai trò.',
                         'Không thể cấp/thu quyền riêng cho từng tài khoản khi chưa có danh tính quản trị.'
-                    ]
+                    ],
+                    functions: (report && report.functions) || [],
+                    tables: (report && report.tables) || [],
+                    policies: (report && report.policies) || [],
+                    report_generated_at: (report && report.generated_at) || null,
+                    report_error: reportError
                 });
             }
 

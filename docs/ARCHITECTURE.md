@@ -161,8 +161,8 @@ DOMContentLoaded
   phải `pane`, tránh cột phải rỗng; bảng rộng cuộn trong `.bkc-table-wrap`.
 - Panel xem trước có `overflow-wrap: anywhere`.
 - Mô-đun Quyền chỉ đọc: hệ thống chỉ có một Administrator Code dùng chung, không có danh
-  tính quản trị riêng để phân vai trò. Dashboard hiển thị báo cáo quyền thật (hàm, bảng,
-  policy) thay vì giả lập nhiều vai trò.
+  tính quản trị riêng để phân vai trò. Dashboard hiển thị báo cáo quyền thật từ
+  `bakhi_permissions_report()` (hàm, bảng + RLS, policy) thay vì giả lập nhiều vai trò.
 - Mô-đun Dữ liệu chỉ kiểm tra toàn vẹn và xuất CSV/JSON; không có nút xoá hàng loạt.
 
 ### Vì sao không gộp vào `bakhi-v4.js`

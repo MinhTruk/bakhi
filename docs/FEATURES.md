@@ -175,7 +175,7 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 6 | Lưu/xuất bản changelog qua RPC dùng chung với GitHub | ✅ | Cùng quy tắc chống trùng |
 | 7 | Nhật ký thao tác quản trị + xuất | ✅ | Lọc theo hành động/đối tượng |
 | 8 | Giám sát hệ thống: độ trễ, số bản ghi, hàng đợi đồng bộ, lỗi gần đây | ✅ | `system.health` |
-| 9 | Quyền: báo cáo thật về hàm/bảng/policy | 🟡 | Chỉ đọc — một Administrator Code dùng chung, chưa có vai trò riêng |
+| 9 | Quyền: báo cáo thật về hàm/bảng/policy | ✅ | Đọc catalog qua `bakhi_permissions_report()`; một Administrator Code dùng chung, chưa có vai trò riêng |
 | 10 | Cấu hình: bật/tắt What's New và bảo trì | ✅ | Chỉ hai khoá `public.*` |
 | 11 | Dữ liệu: kiểm tra toàn vẹn + xuất CSV/JSON | ✅ | Không có xoá hàng loạt |
 | 12 | Xác nhận trước thao tác ảnh hưởng dữ liệu | ✅ | Sửa/xoá thông báo, changelog |

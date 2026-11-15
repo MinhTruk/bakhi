@@ -52,11 +52,17 @@ Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep
 - **Giám sát đúng phiên bản**: `system.health` và `overview` so sánh từng đoạn số như
   `bakhi_version_cmp` thay vì sắp theo `published_at`; changelog đồng bộ chỉ có ngày nên
   trước đây 3.2.0 bị coi là mới hơn 3.3.0.
+- **Danh sách phiên bản đúng thứ tự**: `changelog.list` lấy tối đa 500 hàng đã lọc, sắp
+  theo từng đoạn số rồi mới cắt trang; trang đầu luôn là 3.3.0, 3.2.1… thay vì 2.0.0.
+- **Báo cáo quyền thật**: `permissions.get` gọi `bakhi_permissions_report()` trả về hàm,
+  bảng + RLS và policy đọc từ catalog; migration mới
+  `20261117002000_bakhi_permissions_report.sql` chỉ cấp quyền cho `service_role`.
 - **Migration mới**: `20261117000000_bakhi_changelog_sync.sql` (cột đồng bộ, liên kết
-  announcement, hàm so sánh phiên bản, RPC publish, `app_settings`) và
-  `20261117001000_app_settings_realtime.sql` (đưa `app_settings` vào realtime).
-- **Cache-bust tài sản dùng chung** lên `?v=4.1.0` cho `bk-cloud`, `bk-devboard`,
-  `bk-admin-dashboard` trên toàn bộ trang để trình duyệt nhận giao diện mới.
+  announcement, hàm so sánh phiên bản, RPC publish, `app_settings`),
+  `20261117001000_app_settings_realtime.sql` (đưa `app_settings` vào realtime) và
+  `20261117002000_bakhi_permissions_report.sql` (báo cáo quyền chỉ đọc).
+- **Cache-bust tài sản dùng chung** lên `?v=4.1.0` cho `bk-cloud`, `bk-admin-dashboard`
+  và `?v=4.1.1` cho `bk-devboard` trên toàn bộ trang để trình duyệt nhận giao diện mới.
 - **Tài liệu**: cập nhật kiến trúc, tính năng, hướng dẫn Supabase, README và AGENTS.md
   cho quy trình đồng bộ changelog, 9 mô-đun quản trị, favicon và migration mới.
 
