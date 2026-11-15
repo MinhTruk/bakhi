@@ -90,6 +90,13 @@ Tạo các bảng: `students`, `student_devices`, `student_progress`, `announcem
 `announcement_reads`, `changelog`, `admin_activity_logs`, `admin_sessions`,
 `rate_limits`; kèm trigger `updated_at`, index, unique constraint, RLS và realtime.
 
+Sau đó chạy tiếp migration gia cố bảo mật (xem
+[Gia cố bảo mật](#gia-cố-bảo-mật-15112026)):
+
+```
+supabase/migrations/20261116000000_bakhi_security_hardening.sql
+```
+
 Hoặc dùng CLI:
 
 ```bash
@@ -175,7 +182,7 @@ Migration đã bật RLS cho toàn bộ bảng:
 |---|---|---|
 | `students` | **không có quyền** | Chỉ Edge Function (service_role) đọc — danh sách không công khai |
 | `student_devices` | chỉ đọc hàng của `auth.uid()` | Ghi do `bind-student-session` |
-| `student_progress` | đọc/ghi hàng của `bakhi_current_student_id()` | Không đọc được của người khác |
+| `student_progress` | **chỉ đọc** hàng của `bakhi_current_student_id()` | Ghi duy nhất qua `sync-student-progress` (service_role); trình duyệt không có quyền INSERT/UPDATE |
 | `announcements` | chỉ đọc bản `is_published` | Ghi qua `admin-actions` |
 | `announcement_reads` | đọc/ghi hàng của chính mình | Trạng thái đã đọc riêng từng học sinh |
 | `changelog` | chỉ đọc bản `is_published` | Ghi qua `admin-actions` |
@@ -254,6 +261,41 @@ dấu `needs_review` và không thể chọn.
   được lưu trong `admin_sessions`, token thật ở `sessionStorage` của tab quản trị.
 - Publishable key là khoá công khai; bảo vệ dữ liệu dựa hoàn toàn vào RLS + Edge Function.
 
+### Gia cố bảo mật (15/11/2026)
+
+Kết quả audit schema + RLS trên DB thật phát hiện một điểm dễ sai: **Supabase đặt default
+privileges cho schema `public`**, nên mọi hàm mới tự động có `EXECUTE` cho `anon`,
+`authenticated` và `service_role`. Lệnh `revoke ... from public` **không** thu hồi quyền đã
+cấp trực tiếp cho hai vai trò kia. Vì vậy migration gốc để lọt hai đường:
+
+| Trước | Sau (migration gia cố) |
+|---|---|
+| `anon` gọi được `bakhi_rate_limit()` → ai có publishable key cũng thêm được hàng `rate_limits` không giới hạn | Chỉ `service_role` (Edge Function) gọi được |
+| `anon` gọi được `bakhi_current_student_id()` | Chỉ `authenticated` + `service_role` |
+| `authenticated` INSERT/UPDATE trực tiếp `student_progress` → bỏ qua giới hạn 1,5 MB và quy tắc mốc thời gian | Chỉ `SELECT`; mọi lượt ghi đi qua `sync-student-progress` |
+| `bakhi_touch_updated_at` không khoá `search_path` | `search_path = public, pg_temp` |
+| Thiếu index cho FK `announcement_reads.announcement_id` | Đã thêm `announcement_reads_announcement_idx` |
+| Policy `student_devices` gọi `auth.uid()` mỗi hàng | `(select auth.uid())` — tính một lần mỗi câu lệnh |
+
+Kiểm tra lại quyền (phải ra đúng như bảng trên):
+
+```sql
+select p.proname,
+       has_function_privilege('anon', p.oid, 'execute')          as anon_exec,
+       has_function_privilege('authenticated', p.oid, 'execute') as auth_exec
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public';
+
+select grantee, string_agg(privilege_type, ',' order by privilege_type)
+from information_schema.role_table_grants
+where table_schema = 'public' and table_name = 'student_progress'
+group by grantee;
+```
+
+Hai bảng `admin_activity_logs`, `admin_sessions`, `rate_limits` và `students` vẫn hiện cảnh báo
+“RLS Enabled No Policy” trên Security Advisor — **đây là chủ ý**: chúng đã bị `revoke` toàn bộ
+quyền khỏi `anon`/`authenticated` và chỉ `service_role` dùng, nên không cần policy.
+
 ## Thông báo trên toàn website
 
 Từ phiên bản 3.2.0, lớp thông báo chạy ở hai chế độ:
@@ -305,6 +347,7 @@ delete from public.admin_sessions;
 | Realtime còn bật | Dashboard → Database → Replication → kiểm tra `announcements`, `changelog` |
 | Function còn sống | Dashboard → Edge Functions → trạng thái `ACTIVE` |
 | Rate limit | Xem bảng `rate_limits`; dọn định kỳ nếu phình to |
+| Quyền hàm | `select proname, has_function_privilege('anon', oid, 'execute') from pg_proc where pronamespace = 'public'::regnamespace;` — `anon` phải là `false` với cả ba hàm |
 | Log thao tác | Administrator Dashboard → Activity Logs |
 | Phiên cũ | Xoá `admin_sessions` hết hạn, `student_devices` không dùng |
 
@@ -316,6 +359,11 @@ function`, nên chạy lại không làm mất dữ liệu. Tuy vậy vẫn nên
 ```bash
 supabase db dump --data-only > backup.sql
 ```
+
+**Luôn chạy đủ hai tệp theo đúng thứ tự**: `20261115000000_bakhi_supabase.sql` rồi
+`20261116000000_bakhi_security_hardening.sql`. Tệp đầu có `grant select, insert, update on
+public.student_progress to authenticated`; nếu chạy riêng nó, quyền ghi trực tiếp sẽ mở lại và
+phải chạy tệp gia cố để đóng.
 
 ### Dọn dữ liệu test
 

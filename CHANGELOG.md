@@ -2,6 +2,31 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [3.2.1] — 2026-11-15
+
+### Bảo mật
+
+- **Chặn `anon` gọi hàm SECURITY DEFINER**: audit phát hiện Supabase cấp mặc định
+  `EXECUTE` cho `anon`/`authenticated` trên mọi hàm mới của schema `public`, nên
+  `revoke ... from public` trong migration gốc không có tác dụng. Hệ quả là bất kỳ ai
+  có publishable key đều gọi được `bakhi_rate_limit()` và ghi thêm hàng vào
+  `rate_limits` không giới hạn. Nay chỉ `service_role` (Edge Function) gọi được hàm
+  này; `bakhi_current_student_id()` chỉ còn `authenticated` và `service_role`.
+- **Tiến trình học tập chỉ ghi qua Edge Function**: thu hồi `INSERT`/`UPDATE` trên
+  `student_progress` khỏi `authenticated`. Trước đây một thiết bị đã gắn hồ sơ có thể
+  ghi thẳng vào bảng qua REST, bỏ qua giới hạn 1,5 MB và quy tắc “chỉ ghi khi mốc thời
+  gian mới hơn” của `sync-student-progress`. Trình duyệt vẫn đọc được hàng của mình.
+- **Khoá `search_path` cho hàm trigger** `bakhi_touch_updated_at`
+  (`public, pg_temp`), theo khuyến nghị của Supabase Security Advisor.
+- **Thêm index khoá ngoại** `announcement_reads(announcement_id)` và đổi policy
+  `student_devices` sang `(select auth.uid())` để tránh RLS initplan.
+
+### Cải tiến
+
+- **Migration gia cố riêng**: `supabase/migrations/20261116000000_bakhi_security_hardening.sql`,
+  idempotent, có ghi chú hoàn tác; tài liệu Supabase thêm mục “Gia cố bảo mật” kèm câu
+  SQL kiểm chứng quyền hàm và quyền bảng.
+
 ## [3.2.0] — 2026-11-15
 
 ### Tính năng
