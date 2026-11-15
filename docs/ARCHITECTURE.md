@@ -164,3 +164,22 @@ Kết quả sau nâng cấp: **56/56 tệp không đổi nội dung** (`verify` 
 - Tìm kiếm câu hỏi giới hạn ở câu đã luyện/đang ôn và ngân hàng của trang hiện tại,
   không quét trước toàn bộ 56 trang (tránh tải nặng).
 - `prefers-reduced-motion` được tôn trọng ở animation mới; các hiệu ứng cũ giữ nguyên.
+
+## Lớp Supabase (nhận diện, thông báo, đồng bộ)
+
+| Thành phần | Tệp / vị trí | Vai trò |
+| --- | --- | --- |
+| Nhận diện học sinh | `assets/bakhi/bk-cloud.js` + `supabase/functions/bind-student-session` | Gõ họ tên hoặc chọn gợi ý; máy chủ đối chiếu `normalized_name` và gắn phiên |
+| Tìm kiếm gợi ý | `supabase/functions/search-students` | Tối đa 8 kết quả/lần, giới hạn tần suất theo phiên |
+| Đồng bộ tiến trình | `bk-cloud.js` + `sync-student-progress` | Debounce, thử lại theo cấp số nhân, gộp dữ liệu hai chiều |
+| Trung tâm thông báo | `bk-cloud.js` + bảng `announcements` | Realtime + đếm chưa đọc + đánh dấu đã đọc |
+| Lịch sử phiên bản | bảng `changelog` | Hiển thị ở What's New và trong trung tâm thông báo, xếp theo số phiên bản |
+| Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html` | 6 tab, xác thực Administrator Code qua `admin-auth` |
+
+Ghi chú triển khai:
+
+- Mọi Edge Function đặt `verify_jwt = false` trong `supabase/config.toml` nhưng tự kiểm tra phiên
+  người gọi (ẩn danh) hoặc `x-admin-token` (quản trị).
+- Bảng `students` không có policy đọc cho `anon`/`authenticated`; chỉ service role trong Edge
+  Function đọc được, nên danh sách thật không lộ ra trình duyệt.
+- `announcements` và `changelog` nằm trong publication `supabase_realtime` để cập nhật tức thời.

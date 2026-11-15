@@ -318,7 +318,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 
                 <div class="flex items-center space-x-3">
                     <!-- Nút Đọc README ra ngoài Header -->
-                    <button onclick="openReadmeModal()" class="hdr-btn px-3.5 py-2 bg-indigo-600/90 hover:bg-indigo-600 border border-indigo-500/50 rounded-xl text-xs font-medium text-white transition flex items-center space-x-2 shadow-md cursor-pointer">
+                    <button id="bkReadmeBtn" onclick="openReadmeModal()" class="hdr-btn px-3.5 py-2 bg-indigo-600/90 hover:bg-indigo-600 border border-indigo-500/50 rounded-xl text-xs font-medium text-white transition flex items-center space-x-2 shadow-md cursor-pointer">
                         <i class="fa-solid fa-book-open"></i>
                         <span class="hidden sm:inline">README.md</span>
                     </button>
@@ -351,6 +351,12 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                                         <span>Giao diện Sáng/Tối</span>
                                     </span>
                                     <span id="themeText" class="text-[10px] text-slate-400">Đang tối</span>
+                                </button>
+
+                                <!-- README.md (dự phòng khi header quá hẹp) -->
+                                <button onclick="openReadmeModal()" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer">
+                                    <i class="fa-solid fa-book-open text-indigo-500"></i>
+                                    <span>README.md</span>
                                 </button>
 
                                 <!-- GitHub Wiki link -->
@@ -389,13 +395,10 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                                     </div>
                                 </div>
                                 <div id="bkDevDashSection" class="hidden space-y-1.5">
-                                    <button onclick="openDevDashboard()" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer">
+                                    <a href="admin/index.html" target="_blank" rel="noopener" id="bkAdminOpenLink" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition">
                                         <i class="fa-solid fa-shield-halved text-sky-500"></i>
                                         <span>Administrator Dashboard</span>
-                                    </button>
-                                    <a href="admin/" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition">
-                                        <i class="fa-solid fa-up-right-from-square text-sky-500"></i>
-                                        <span>Mở trang quản trị riêng</span>
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400 ml-auto"></i>
                                     </a>
                                     <button id="bkDevLogoutBtn" type="button" class="w-full px-3 py-1.5 bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-medium transition flex items-center justify-center space-x-2 cursor-pointer">
                                         <i class="fa-solid fa-right-from-bracket"></i><span>Thoát Administrator Dashboard</span>
@@ -2205,7 +2208,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
 <!-- Bá Khí × Supabase: một client duy nhất, nhận diện học sinh, thông báo, changelog -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
 <script src="assets/bakhi/bk-supabase.config.js?v=3.0.0" defer></script>
-<script src="assets/bakhi/bk-cloud.js?v=3.1.4" defer></script>
-<script src="assets/bakhi/bk-devboard.js?v=3.1.4" defer></script>
+<script src="assets/bakhi/bk-cloud.js?v=3.1.3" defer></script>
+<script src="assets/bakhi/bk-devboard.js?v=3.1.3" defer></script>
 </body>
 </html>

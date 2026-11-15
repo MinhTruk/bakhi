@@ -140,3 +140,15 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 
 Không đề thi thử, không bài tính giờ, không đếm ngược, không giới hạn thời gian,
 không tự nộp bài, không xếp hạng thi, không deadline, không cơ chế tạo áp lực thời gian.
+
+## Nhận diện, thông báo & quản trị (lớp Supabase)
+
+| Tính năng | Trạng thái | Ghi chú |
+| --- | --- | --- |
+| Nhận diện bằng họ tên | ✅ | Gõ tên hoặc chọn gợi ý; máy chủ đối chiếu |
+| Phiên ẩn danh | ✅ | Không email/mật khẩu |
+| Đồng bộ tiến trình | ✅ | Tự lưu, tự thử lại, gộp hai chiều |
+| Trung tâm thông báo | ✅ | Thông báo giáo viên + toàn bộ changelog |
+| What's New trên trang chính | ✅ | Phiên bản mới nhất kèm tóm tắt |
+| Administrator Dashboard | ✅ | `admin/index.html`, yêu cầu Administrator Code |
+| Import danh sách học sinh | ✅ | Từ `students.txt`, phát hiện trùng tên |

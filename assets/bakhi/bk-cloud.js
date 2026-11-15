@@ -32,7 +32,7 @@
         lastSyncAt: 0, syncError: null, listeners: [], channel: null,
         gate: null, bell: null, badge: null, changeBtn: null, panel: null, panelOpen: false,
         article: null, pollTimer: null, searchSeq: 0, publicLoaded: false, lastAnnFetch: 0,
-        binding: false
+        binding: false, fitTimer: null
     };
 
     function now() { return Date.now(); }
@@ -529,6 +529,8 @@
         D.addEventListener('click', function (e) {
             if (!S.panelOpen) return;
             if (S.panel && (S.panel.contains(e.target) || (S.bell && S.bell.contains(e.target)))) return;
+            /* Nút mở panel trong What's New không được tính là "bấm ra ngoài". */
+            if (e.target && e.target.closest && e.target.closest('#bkcWhatsNew')) return;
             closePanel();
         });
     }
@@ -1263,6 +1265,7 @@
             .then(function (res) {
                 if (res.error) throw res.error;
                 S.changelog = res.data || [];
+                renderWhatsNew();
                 renderPanel();
                 emit('changelog', S.changelog);
                 return S.changelog;
@@ -1302,6 +1305,55 @@
     function openChangelogFile() {
         if (typeof global.openChangelogMd === 'function') { global.openChangelogMd(); return; }
         if (global.open) global.open('CHANGELOG.md', '_blank', 'noopener');
+    }
+
+    /* Phiên bản mới nhất theo SỐ phiên bản (không theo ngày đăng). */
+    function latestChangelog() {
+        if (!S.changelog.length) return null;
+        return S.changelog.slice().sort(function (a, b) {
+            return compareVersion(b.version, a.version);
+        })[0];
+    }
+
+    /* Cập nhật gần nhất — hiển thị trên trang chính (trở lại từ 3.1.3). */
+    function renderWhatsNew() {
+        var main = D.querySelector('main');
+        if (!main) return;
+        var host = D.getElementById('bkcWhatsNew');
+        if (!host) {
+            host = el('section', 'bkc-whatsnew');
+            host.id = 'bkcWhatsNew';
+            var anchor = main.children[1] || main.firstElementChild;
+            if (anchor && anchor.nextSibling) main.insertBefore(host, anchor.nextSibling);
+            else main.appendChild(host);
+        }
+        host.textContent = '';
+        var entry = latestChangelog();
+        if (!entry) { host.hidden = true; return; }
+        host.hidden = false;
+
+        var head = el('div', 'bkc-wn-head');
+        var left = el('div');
+        var line = el('div', 'bkc-wn-line');
+        line.appendChild(el('span', 'bkc-tag bkc-tag-update', 'Phiên bản ' + entry.version));
+        if (entry.published_at) line.appendChild(el('span', 'bkc-tag', fmtDate(entry.published_at)));
+        left.appendChild(line);
+        left.appendChild(el('h2', 'bkc-wn-title', entry.title));
+        if (entry.summary) left.appendChild(el('p', 'bkc-wn-sum', entry.summary));
+        head.appendChild(left);
+
+        var actions = el('div', 'bkc-wn-actions');
+        var all = el('button', 'bkc-btn bkc-btn-ghost', 'Xem tất cả cập nhật');
+        all.type = 'button';
+        all.addEventListener('click', function (e) { e.stopPropagation(); openPanel(); });
+        actions.appendChild(all);
+        actions.appendChild(changelogMdLink());
+        head.appendChild(actions);
+        host.appendChild(head);
+
+        var body = el('div', 'bkc-wn-body');
+        body.appendChild(sectionBlock(entry));
+        host.appendChild(body);
     }
 
     function entryCard(entry) {
@@ -1438,7 +1490,9 @@
         try {
             S.channel = client().channel('bakhi-public')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, function () {
-                    loadAnnouncements();
+                    /* force = true: bỏ qua cache 5 giây, nếu không thông báo mới sẽ
+                       không hiện ngay khi vừa mở panel hoặc vừa poll xong. */
+                    loadAnnouncements(true);
                     toast('Có thông báo mới', 'info');
                 })
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'changelog' }, function () {
@@ -1452,6 +1506,35 @@
             if (D.hidden) return;
             loadAnnouncements();
         }, CFG.pollMs || 60000);
+    }
+
+    /* Khi header không đủ chỗ, ẩn bớt nút phụ để không bị tràn (thay bằng
+       mục tương ứng trong menu 3 gạch). */
+    function fitHeader() {
+        var header = D.querySelector('header');
+        if (!header) return;
+        var inner = header.firstElementChild || header;
+        D.documentElement.classList.remove('bk-hdr-tight');
+        var overflow = inner.scrollWidth - inner.clientWidth > 1;
+        if (!overflow) {
+            /* Thử lại khi cửa sổ hẹp: nếu vẫn tràn thì bật chế độ gọn. */
+            overflow = header.scrollWidth - header.clientWidth > 1;
+        }
+        if (overflow) D.documentElement.classList.add('bk-hdr-tight');
+    }
+
+    function scheduleFitHeader() {
+        clearTimeout(S.fitTimer);
+        S.fitTimer = setTimeout(fitHeader, 120);
+    }
+
+    function mountHeaderFit() {
+        fitHeader();
+        global.addEventListener('resize', scheduleFitHeader);
+        global.addEventListener('orientationchange', scheduleFitHeader);
+        if (global.ResizeObserver) {
+            try { new global.ResizeObserver(scheduleFitHeader).observe(D.querySelector('header')); } catch (e) { }
+        }
     }
 
     function mountSyncIndicator() {
@@ -1480,6 +1563,7 @@
         }
         buildBell();
         mountSyncIndicator();
+        mountHeaderFit();
         ensureReady().then(function () {
             setSyncState('pending', 'Đang kết nối…');
             return api(CFG.functions.bindSession, {});

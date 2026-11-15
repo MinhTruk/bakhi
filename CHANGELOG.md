@@ -2,13 +2,34 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
-## [3.2.0] — 2026-11-15
+## [3.1.3] — 2026-11-15
+
+### Tính năng
+
+- **Khôi phục khu vực “Cập nhật gần nhất” (What's New)** trên trang chính: hiện phiên bản
+  mới nhất kèm tóm tắt và danh sách thay đổi, có nút mở trung tâm thông báo và xem CHANGELOG.md.
+- **Mục Administrator Dashboard mở tab mới**: sau khi xác nhận Administrator Code, bấm mục này
+  sẽ mở `admin/index.html` ở tab riêng (trang quản trị đầy đủ, tự yêu cầu mã riêng khi mở tab mới).
+- **Header tự thu gọn**: khi không đủ chỗ, nút README.md và tên học sinh trên header được ẩn bớt
+  và thay bằng mục tương ứng trong menu 3 gạch, tránh tràn ngang trên điện thoại và cửa sổ hẹp.
+
+### Sửa lỗi
+
+- **Thông báo mới hiện ngay lập tức**: sự kiện realtime trước đây bị bỏ qua bởi bộ nhớ đệm 5 giây,
+  nên vừa mở panel hoặc vừa tải lại xong thì thông báo mới không xuất hiện. Nay sự kiện realtime
+  luôn tải lại ngay.
+- **Đóng dashboard bằng phím Esc** và không còn mở khoá cuộn trang khi đóng hộp xem trước
+  trong lúc dashboard vẫn mở.
+- Nhãn “Đăng xuất Dev” đổi thành “Đăng xuất Administrator”.
+
+
+## [3.1.2] — 2026-11-15
 
 ### Tính năng
 
 - Trang quản trị riêng tại admin/ — mở là phải nhập Administrator Code, dùng chung dữ liệu với trang chính.
 - Menu 3 gạch có mục Administrator: nhập Administrator Code để mở Administrator Dashboard, kèm đường dẫn mở thẳng trang quản trị riêng.
-- Trung tâm thông báo hiện cả thông báo từ giáo viên và toàn bộ phiên bản cập nhật, xếp từ cũ đến mới: 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0.
+- Trung tâm thông báo hiện cả thông báo từ giáo viên và toàn bộ phiên bản cập nhật, xếp từ cũ đến mới theo số phiên bản.
 - Bấm vào một phiên bản trong trung tâm thông báo để xem đầy đủ nội dung thay đổi của phiên bản đó.
 
 ### Sửa lỗi

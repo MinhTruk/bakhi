@@ -535,3 +535,11 @@ html.dark .bkc-pre { background: rgba(148, 163, 184, .12); }
     padding: .5rem .35rem .35rem; border-top: 1px solid var(--bkl-line, rgba(100, 116, 139, .18));
     display: flex; justify-content: flex-end; margin-top: .25rem;
 }
+
+/* Header gọn: khi không đủ chỗ, các nút phụ được thay bằng mục trong menu 3 gạch */
+html.bk-hdr-tight #bkReadmeBtn { display: none !important; }
+html.bk-hdr-tight .bkc-identity-chip .bkc-chip-name { display: none !important; }
+html.bk-hdr-tight .bkc-identity-chip { padding-left: .55rem; padding-right: .55rem; }
+@media (max-width: 720px) {
+    html.bk-hdr-tight header h1 { font-size: .95rem !important; }
+}

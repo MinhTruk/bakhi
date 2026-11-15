@@ -305,6 +305,16 @@
         S.root.hidden = false;
         D.documentElement.classList.add('bkc-lock');
         switchTab('overview');
+        if (!S.escBound) {
+            S.escBound = true;
+            D.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape' || !S.root || S.root.hidden) return;
+                /* Để overlay/sheet đang mở tự xử lý trước. */
+                if (D.querySelector('.bkc-modal, .bk-overlay')) return;
+                e.preventDefault();
+                closeDash();
+            });
+        }
     }
     function closeDash() {
         if (S.root) S.root.hidden = true;
@@ -659,7 +669,8 @@
         function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close(); } }
         function close() {
             wrap.remove();
-            D.documentElement.classList.remove('bkc-lock');
+            /* Chỉ mở khoá trang khi không còn dashboard phía sau. */
+            if (!S.root || S.root.hidden) D.documentElement.classList.remove('bkc-lock');
             D.removeEventListener('keydown', onKey);
         }
         x.addEventListener('click', close);
@@ -894,6 +905,7 @@
         head.appendChild(titles);
         var x = h('button', 'bkc-x', '×');
         x.type = 'button';
+        x.setAttribute('aria-label', 'Đóng xem trước changelog');
         head.appendChild(x);
         sheet.appendChild(head);
 
@@ -921,7 +933,8 @@
         function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close(); } }
         function close() {
             wrap.remove();
-            D.documentElement.classList.remove('bkc-lock');
+            /* Chỉ mở khoá trang khi không còn dashboard phía sau. */
+            if (!S.root || S.root.hidden) D.documentElement.classList.remove('bkc-lock');
             D.removeEventListener('keydown', onKey);
         }
         x.addEventListener('click', close);
@@ -1167,7 +1180,7 @@
                 a.rel = 'noopener';
                 a.click();
             }));
-            acts.appendChild(btn('Đăng xuất Dev', 'bkc-btn-danger', function () {
+            acts.appendChild(btn('Đăng xuất Administrator', 'bkc-btn-danger', function () {
                 global.BKCloud.adminLogout();
                 closeDash();
                 toast('Đã đăng xuất Administrator Dashboard', 'info');

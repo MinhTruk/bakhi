@@ -344,11 +344,29 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     ok('mở được chi tiết phiên bản trong thông báo', !!clModal && /Tính năng mới/.test(clModal.textContent));
     if (clModal) w.document.querySelector('.bkc-modal .bkc-x').click();
 
-    console.log('\n[5] Không còn changelog trên trang chính');
-    ok('không còn khu vực What\'s New', !w.document.getElementById('bkcWhatsNew'));
-    ok('không còn section changelog trong main', !w.document.querySelector('main .bkc-whatsnew'));
-    const mdLink = w.document.querySelector('.bkc-panel-foot .bkc-md-link');
-    ok('panel có đường dẫn CHANGELOG.md', !!mdLink && /CHANGELOG\.md/.test(mdLink.textContent));
+    console.log('\n[5] What\'s New trên trang chính (trở lại từ 3.1.3)');
+    const wn = await until(() => {
+        const node = w.document.getElementById('bkcWhatsNew');
+        return node && node.hidden === false ? node : null;
+    });
+    ok('khu vực What\'s New hiển thị', !!wn);
+    ok('hiển thị phiên bản CAO NHẤT, không theo ngày đăng',
+        !!wn && /Phiên bản 3\.1\.1/.test(wn.textContent), wn && wn.textContent.slice(0, 60));
+    ok('nhóm nội dung theo danh mục', !!wn && /Sửa lỗi|Tính năng mới|Cải tiến/.test(wn.textContent));
+    ok('render bằng text, không HTML thô', !!wn && !/<b>/.test(wn.innerHTML.replace(/<[^>]+>/g, '')));
+    const allBtn = wn && Array.from(wn.querySelectorAll('button')).find((b) => /Xem tất cả cập nhật/.test(b.textContent));
+    ok('có nút mở trung tâm thông báo', !!allBtn);
+    if (allBtn) {
+        allBtn.click();
+        await wait(120);
+        const panelOpened = !w.document.getElementById('bkcPanel').hidden;
+        ok('bấm nút mở panel thông báo', panelOpened,
+            'hidden=' + w.document.getElementById('bkcPanel').hidden + ' bound=' + w.BKCloud.state().bound);
+        const px = w.document.getElementById('bkcPanelClose');
+        if (px) px.click();
+    }
+    const mdLink = w.document.querySelector('#bkcWhatsNew .bkc-md-link');
+    ok("What's New có đường dẫn CHANGELOG.md", !!mdLink && /CHANGELOG\.md/.test(mdLink.textContent));
     let mdOpened = false;
     w.openChangelogMd = () => { mdOpened = true; };
     if (mdLink) mdLink.click();

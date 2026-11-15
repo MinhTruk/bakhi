@@ -7,6 +7,7 @@
 <p align="center">
 
 - 🌐 **[Mở BAKHI](https://minhtruk.github.io/bakhi/)**  
+- 🛠️ **[Administrator Dashboard](https://minhtruk.github.io/bakhi/admin/)** (cần Administrator Code)  
 - 📦 **[GitHub Repository](https://github.com/MinhTruk/bakhi)**
 - 📱 **[TikTok](https://www.tiktok.com/@meionyx)**   
 - 🟦 **[Facebook](https://www.facebook.com/meionyxx/)**
@@ -290,6 +291,90 @@ Chi tiết: [docs/FEATURES.md](docs/FEATURES.md) · [docs/ARCHITECTURE.md](docs/
 
 ---
 
+# 🔐 Nhận diện học sinh & đồng bộ (Supabase)
+
+Bá Khí có lớp nhận diện và đồng bộ chạy trên Supabase, nhưng **không bắt học sinh tạo tài khoản**:
+
+- **Nhận diện bằng họ tên** — gõ đúng họ và tên (có dấu hay không dấu đều được), bấm **Xác nhận**
+  hoặc chọn trong danh sách gợi ý. Máy chủ đối chiếu lại với danh sách giáo viên đã import, nên
+  không thể “nhận vơ” một cái tên không tồn tại.
+- **Phiên ẩn danh** — mỗi thiết bị có một phiên Supabase Anonymous Auth riêng: không email,
+  không mật khẩu, không đăng nhập Google.
+- **Đồng bộ tiến trình** — luyện tập, ôn tập, ghi chú, đánh dấu, lịch sử, thành tích và tuỳ chọn
+  được lưu trên máy trước, tự đẩy lên máy chủ, tự thử lại khi mất mạng và gộp khi có dữ liệu mới
+  từ thiết bị khác.
+- **Đổi học sinh** — bấm icon cạnh chuông hoặc mục “Đổi học sinh” trong menu 3 gạch. Tiến trình
+  của người trước vẫn được giữ trên máy chủ.
+- **Danh sách học sinh không công khai** — bảng `students` khoá RLS; chỉ Edge Function dùng khoá
+  máy chủ mới đọc được, trình duyệt không bao giờ tải cả danh sách về.
+
+Hướng dẫn cài đặt, mô hình dữ liệu và cách kiểm thử: [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md).
+
+---
+
+# 🔔 Trung tâm thông báo
+
+Chuông ở header là nơi duy nhất hiển thị thông tin cập nhật:
+
+- **Thông báo từ giáo viên** — đăng từ Administrator Dashboard, hiện ngay trên máy học sinh nhờ
+  Supabase Realtime (không cần tải lại trang), có đếm số chưa đọc, mức ưu tiên và trạng thái đã đọc.
+- **Cập nhật phiên bản** — toàn bộ changelog, xếp theo **số phiên bản** từ cũ đến mới
+  (3.0.0 → 3.1.0 → 3.1.1 → 3.1.2 → 3.1.3), bấm vào để đọc đầy đủ từng mục.
+- **What's New** — thẻ “Cập nhật gần nhất” trên trang chính tóm tắt phiên bản mới nhất và dẫn tới
+  trung tâm thông báo hoặc tệp [CHANGELOG.md](CHANGELOG.md).
+
+---
+
+# 🛠️ Administrator Dashboard
+
+Trang quản trị dành riêng cho giáo viên, **yêu cầu Administrator Code** ở cả hai lối vào:
+
+| Lối vào | Đường dẫn | Ghi chú |
+| --- | --- | --- |
+| Menu 3 gạch | nút **Administrator** → nhập mã | Mục “Administrator Dashboard” chỉ hiện sau khi mã đúng, bấm vào mở **tab mới** |
+| Trang riêng | [`/admin/`](https://minhtruk.github.io/bakhi/admin/) | Tự hỏi Administrator Code khi mở tab mới |
+
+Sáu tab:
+
+1. **Overview** — số học sinh, thông báo, phiên bản, nhật ký hoạt động gần đây, hồ sơ cần phân biệt.
+2. **Notifications** — soạn, xem trước, **PUSH NOTIFICATION NOW** (xuất bản tức thời), sửa/ẩn/đăng lại/xoá.
+3. **Changelog** — tạo bản cập nhật theo nhóm (Tính năng, Cải tiến, Sửa lỗi, Giao diện, Hiệu năng), push ngay.
+4. **Students** — import `students.txt`, tìm kiếm, sửa họ tên, đánh dấu phân biệt trùng tên, vô hiệu hoá.
+5. **Activity Logs** — nhật ký thao tác quản trị (ai làm gì, lúc nào).
+6. **Settings** — trạng thái secret, số học sinh, phiên hiện tại, đăng xuất.
+
+Bảo mật: Administrator Code và `service_role` key chỉ nằm trong Supabase Edge Function Secrets;
+dashboard không bao giờ đọc hay hiển thị giá trị của chúng. Mọi thao tác ghi đều đi qua Edge Function
+có kiểm tra phiên quản trị.
+
+---
+
+# 🧱 Kiến trúc kỹ thuật
+
+```
+/                       index.html (trung tâm) + bakhi-v4.js (lớp V4 cũ)
+/admin                  Administrator Dashboard riêng (yêu cầu Administrator Code)
+/assets/bakhi/
+  bk-core.js|css        Kho dữ liệu local-first, UI kit, tìm kiếm
+  bk-cloud.js|css       Nhận diện học sinh, trung tâm thông báo, đồng bộ (Supabase)
+  bk-devboard.js        Administrator Dashboard 6 tab + menu Administrator
+  bk-notify.js|css      Chuông CHANGELOG.md cũ (được gỡ khi lớp Supabase hoạt động)
+  bk-learn.js|css       Trung tâm học tập, ôn tập, ghi chú, đánh dấu, thành tích
+  bk-dev.js|css         Developer Playground 2.0
+  bk-music.js|css       Music Player
+  bk-bkt.js, bk-page.js Hiệu ứng chuyển trang & cầu nối trang bài học
+supabase/
+  migrations/           Schema + RLS + realtime cho announcements & changelog
+  functions/            admin-auth, admin-actions, search-students, bind-student-session,
+                        sync-student-progress, import-students
+/tools                  Công cụ kiểm tra (content-integrity, smoke test)
+/docs                   Tài liệu kiến trúc, tính năng, Supabase, baseline nội dung
+```
+
+Không có bước build: website là HTML/CSS/JS tĩnh, deploy bằng GitHub Pages.
+
+---
+
 # 🚫 Không phải nền tảng thi cử
 
 Bá Khí **không có** đề thi thử, bài tính giờ, đồng hồ đếm ngược, giới hạn thời gian,
@@ -322,8 +407,9 @@ nâng cấp chèn). Quy trình và quy ước chi tiết: [AGENTS.md](AGENTS.md)
 - [docs/FEATURES.md](docs/FEATURES.md) — danh sách tính năng & trạng thái
 - [docs/MUSIC.md](docs/MUSIC.md) — Music Player: quy ước file, phím tắt, bố cục, xử lý sự cố
 - [docs/STUDIO.md](docs/STUDIO.md) — Bá Khí Studio: Word & Paint, lưu trữ, giới hạn
-- [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) — đồng bộ tuỳ chọn + RLS
-- [CHANGELOG.md](CHANGELOG.md) — lịch sử thay đổi
+- [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) — cài đặt Supabase, Administrator Code, RLS, kiểm thử
+- [CHANGELOG.md](CHANGELOG.md) — lịch sử thay đổi theo phiên bản
+- [AGENTS.md](AGENTS.md) — quy ước làm việc trong repository
 
 ---
 
