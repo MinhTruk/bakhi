@@ -148,7 +148,7 @@
             if (err && err.status === 401) {
                 global.BKCloud.adminLogout();
                 err.handled = true;
-                toast('Phiên quản trị đã hết hạn. Vui lòng nhập lại Dev Code.', 'error');
+                toast('Phiên quản trị đã hết hạn. Vui lòng nhập lại Administrator Code.', 'error');
                 closeDash();
                 promptCode();
             }
@@ -172,8 +172,8 @@
     }
 
     /**
-     * Mục Dev Dashboard nằm trong menu 3 gạch và CHỈ hiện sau khi xác thực
-     * Dev Code thành công (hoặc khi còn phiên quản trị trong tab hiện tại).
+     * Mục Administrator Dashboard nằm trong menu 3 gạch và CHỈ hiện sau khi xác thực
+     * Administrator Code thành công (hoặc khi còn phiên quản trị trong tab hiện tại).
      */
     function mountDevMenu() {
         var row = D.getElementById('bkDevAuthRow');
@@ -182,6 +182,23 @@
         var hasSession = !!(global.BKCloud && global.BKCloud.adminToken && global.BKCloud.adminToken());
         section.classList.toggle('hidden', !hasSession);
         if (row) row.classList.toggle('hidden', hasSession);
+
+        /* Trước khi xác thực: chỉ hiện nút Administrator; ô nhập mã mở khi bấm. */
+        var reveal = D.getElementById('bkDevRevealBtn');
+        var codeWrap = D.getElementById('bkDevCodeWrap');
+        if (reveal && codeWrap) {
+            if (hasSession) {
+                codeWrap.classList.add('hidden');
+            }
+            if (!reveal.__bkBound) {
+                reveal.__bkBound = true;
+                reveal.addEventListener('click', function () {
+                    codeWrap.classList.toggle('hidden');
+                    var field = D.getElementById('bkDevCodeInput');
+                    if (field && !codeWrap.classList.contains('hidden')) field.focus();
+                });
+            }
+        }
 
         var input = D.getElementById('bkDevCodeInput');
         var submit = D.getElementById('bkDevAuthBtn');
@@ -196,7 +213,7 @@
 
         function authenticate() {
             var code = input ? input.value.trim() : '';
-            if (!code) { setMsg('Nhập Dev Code trước khi xác thực.', 'warn'); if (input) input.focus(); return; }
+            if (!code) { setMsg('Nhập Administrator Code trước khi xác thực.', 'warn'); if (input) input.focus(); return; }
             if (submit) submit.disabled = true;
             setMsg('Đang xác thực…', '');
             global.BKCloud.adminLogin(code).then(function () {
@@ -208,7 +225,7 @@
                 openDash();
             }).catch(function (err) {
                 if (submit) submit.disabled = false;
-                setMsg(err.message || 'Dev Code không đúng.', 'error');
+                setMsg(err.message || 'Administrator Code không đúng.', 'error');
             });
         }
 
@@ -228,7 +245,7 @@
                 closeDash();
                 mountDevMenu();
                 closeMenu();
-                toast('Đã thoát Dev Dashboard', 'info');
+                toast('Đã thoát Administrator Dashboard', 'info');
             });
         }
     }
@@ -246,15 +263,15 @@
     function promptCode() {
         var body = h('div', 'bkc-form');
         body.appendChild(h('p', 'bkc-muted',
-            'Nhập Dev Code để mở Dev Dashboard. Mã được xác thực trên máy chủ và không được lưu lại.'));
-        var code = input('password', 'Dev Code…');
+            'Nhập Administrator Code để mở Administrator Dashboard. Mã được xác thực trên máy chủ và không được lưu lại.'));
+        var code = input('password', 'Administrator Code…');
         code.autocomplete = 'off';
-        body.appendChild(fieldRow('Dev Code', code));
+        body.appendChild(fieldRow('Administrator Code', code));
         var msg = h('p', 'bkc-gate-msg');
         body.appendChild(msg);
 
         var modal = global.BK.ui.modal({
-            title: 'Dev Dashboard',
+            title: 'Administrator Dashboard',
             body: body,
             actions: [
                 { label: 'Huỷ', variant: 'ghost', onClick: function (c) { c(); } },
@@ -265,14 +282,14 @@
         function submit() {
             var value = code.value.trim();
             msg.className = 'bkc-gate-msg';
-            if (!value) { msg.textContent = 'Vui lòng nhập Dev Code.'; msg.className = 'bkc-gate-msg is-warn'; return; }
+            if (!value) { msg.textContent = 'Vui lòng nhập Administrator Code.'; msg.className = 'bkc-gate-msg is-warn'; return; }
             msg.textContent = 'Đang xác thực…';
             global.BKCloud.adminLogin(value).then(function () {
                 code.value = '';
                 try { modal.close(); } catch (e) { }
                 openDash();
             }).catch(function (err) {
-                msg.textContent = err.message || 'Dev Code không đúng.';
+                msg.textContent = err.message || 'Administrator Code không đúng.';
                 msg.className = 'bkc-gate-msg is-error';
             });
         }
@@ -292,6 +309,9 @@
     function closeDash() {
         if (S.root) S.root.hidden = true;
         D.documentElement.classList.remove('bkc-lock');
+        if (typeof global.BK_ON_DASH_CLOSE === 'function') {
+            try { global.BK_ON_DASH_CLOSE(); } catch (e) { }
+        }
     }
 
     function build() {
@@ -305,7 +325,7 @@
         mark.innerHTML = '<i class="fa-solid fa-shield-halved" aria-hidden="true"></i>';
         head.appendChild(mark);
         var titles = h('div', 'bkc-dash-titles');
-        titles.appendChild(h('span', 'bkc-dash-title', 'Bá Khí — Dev Dashboard'));
+        titles.appendChild(h('span', 'bkc-dash-title', 'Bá Khí — Administrator Dashboard'));
         titles.appendChild(h('span', 'bkc-dash-sub', 'Xuất bản tức thời · không cần commit GitHub'));
         head.appendChild(titles);
 
@@ -1136,7 +1156,7 @@
             host.appendChild(rows);
 
             host.appendChild(h('p', 'bkc-hint',
-                'Dev Code và service_role key chỉ tồn tại trong Supabase Edge Function Secrets. ' +
+                'Administrator Code và service_role key chỉ tồn tại trong Supabase Edge Function Secrets. ' +
                 'Dashboard không bao giờ đọc hay hiển thị giá trị của chúng.'));
 
             var acts = h('div', 'bkc-actions');
@@ -1150,7 +1170,7 @@
             acts.appendChild(btn('Đăng xuất Dev', 'bkc-btn-danger', function () {
                 global.BKCloud.adminLogout();
                 closeDash();
-                toast('Đã đăng xuất Dev Dashboard', 'info');
+                toast('Đã đăng xuất Administrator Dashboard', 'info');
             }));
             host.appendChild(acts);
         }).catch(function (err) {

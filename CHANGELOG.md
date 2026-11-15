@@ -2,6 +2,25 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [3.2.0] — 2026-11-15
+
+### Tính năng
+
+- Trang quản trị riêng tại admin/ — mở là phải nhập Administrator Code, dùng chung dữ liệu với trang chính.
+- Menu 3 gạch có mục Administrator: nhập Administrator Code để mở Administrator Dashboard, kèm đường dẫn mở thẳng trang quản trị riêng.
+- Trung tâm thông báo hiện cả thông báo từ giáo viên và toàn bộ phiên bản cập nhật, xếp từ cũ đến mới: 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0.
+- Bấm vào một phiên bản trong trung tâm thông báo để xem đầy đủ nội dung thay đổi của phiên bản đó.
+
+### Sửa lỗi
+
+- Sửa nút × của trung tâm thông báo: trước đây panel dùng thuộc tính hiển thị riêng nên không tắt được, giờ bấm là đóng.
+- Bỏ khu vực cập nhật (What's New) khỏi màn hình chính để không trùng lặp với trung tâm thông báo.
+
+### Cải tiến
+
+- Đổi tên Dev Code thành Administrator Code và Dev Dashboard thành Administrator Dashboard trên toàn bộ giao diện lẫn thông điệp máy chủ.
+- Ô nhập mã quản trị được giấu sau nút Administrator, chỉ hiện khi bấm; mục Administrator Dashboard chỉ xuất hiện sau khi xác nhận mã đúng.
+
 ## [3.0.0] — 2026-11-15
 
 ### Tính năng

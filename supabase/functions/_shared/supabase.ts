@@ -39,7 +39,7 @@ export async function requireAdmin(req: Request, client: SupabaseClient) {
     if (error) return { error: fail(500, 'DB_ERROR', 'Không kiểm tra được phiên quản trị.') };
     if (!data) return { error: fail(401, 'BAD_DEV_SESSION', 'Phiên quản trị không hợp lệ.') };
     if (new Date(data.expires_at).getTime() < Date.now()) {
-        return { error: fail(401, 'EXPIRED_DEV_SESSION', 'Phiên quản trị đã hết hạn. Vui lòng nhập lại Dev Code.') };
+        return { error: fail(401, 'EXPIRED_DEV_SESSION', 'Phiên quản trị đã hết hạn. Vui lòng nhập lại Administrator Code.') };
     }
     await client.from('admin_sessions').update({ last_used_at: new Date().toISOString() }).eq('id', data.id);
     return { sessionId: data.id as string };

@@ -1,10 +1,10 @@
-// admin-auth — xác thực Dev Code và cấp phiên quản trị có thời hạn.
+// admin-auth — xác thực Administrator Code và cấp phiên quản trị có thời hạn.
 //
 // Secret cần thiết (Supabase → Edge Functions → Secrets):
-//   ADMIN_DEV_CODE      Dev Code do bạn tự tạo.
+//   ADMIN_DEV_CODE      Administrator Code do bạn tự tạo.
 //   ADMIN_SESSION_HOURS (tuỳ chọn) thời hạn phiên, mặc định 8.
 //
-// Dev Code không bao giờ được trả về, không lưu ở client, không nằm trong repo.
+// Administrator Code không bao giờ được trả về, không lưu ở client, không nằm trong repo.
 import { json, fail, preflight, readJson, clientIp, safeEqual, sha256Hex } from '../_shared/http.ts';
 import { adminClient } from '../_shared/supabase.ts';
 
@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
 
     const submitted = String(code ?? '');
     if (!submitted || !safeEqual(submitted, devCode)) {
-        return fail(401, 'BAD_DEV_CODE', 'Dev Code không đúng.');
+        return fail(401, 'BAD_DEV_CODE', 'Administrator Code không đúng.');
     }
 
     const hours = Math.min(24, Math.max(1, Number(Deno.env.get('ADMIN_SESSION_HOURS') ?? 8) || 8));

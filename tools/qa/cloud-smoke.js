@@ -44,16 +44,33 @@ const ANNOUNCEMENTS = [
     type: 'maintenance', priority: 'normal', published_at: '2026-11-13T08:00:00Z'
   }
 ];
-const CHANGELOG = [{
-    id: 'c1', version: '3.0.0', title: 'Nhận diện học sinh và thông báo tức thời',
-    summary: 'Bản cập nhật lớn về đồng bộ.', published_at: '2026-11-15T02:00:00Z', category: 'features',
-    content: [
-        { category: 'features', items: ['Thêm nhận diện học sinh bằng họ tên.', 'Thêm trung tâm thông báo.'] },
-        { category: 'improvements', items: ['Đồng bộ tiến trình giữa các thiết bị.'] }
-    ]
-}];
+const CHANGELOG = [
+    {
+        id: 'c1', version: '3.0.0', title: 'Nhận diện học sinh và thông báo tức thời',
+        summary: 'Bản cập nhật lớn về đồng bộ.', published_at: '2026-11-15T02:00:00Z', category: 'features',
+        content: [
+            { category: 'features', items: ['Thêm nhận diện học sinh bằng họ tên.', 'Thêm trung tâm thông báo.'] },
+            { category: 'improvements', items: ['Đồng bộ tiến trình giữa các thiết bị.'] }
+        ]
+    },
+    {
+        id: 'c3', version: '3.1.1', title: 'Sửa lỗi không xác nhận được danh tính',
+        summary: 'Bấm Xác nhận giờ luôn có tác dụng.', published_at: '2026-11-15T04:00:00Z', category: 'fixes',
+        content: [{ category: 'fixes', items: ['Sửa thứ tự lớp hộp thoại xác nhận.'] }]
+    },
+    {
+        id: 'c2', version: '3.1.0', title: 'Xác nhận danh tính chắc chắn hơn',
+        summary: 'Gộp hai chuông thành một.', published_at: '2026-11-15T03:00:00Z', category: 'fixes',
+        content: [{ category: 'ui', items: ['Thêm icon đổi học sinh.'] }]
+    }
+];
 
-const ROWS = { announcements: ANNOUNCEMENTS, announcement_reads: [], changelog: CHANGELOG, students: [], student_devices: [] };
+const ROWS = {
+    announcements: ANNOUNCEMENTS, announcement_reads: [],
+    /* Supabase trả về mới nhất trước; panel phải sắp xếp lại theo SỐ phiên bản. */
+    changelog: CHANGELOG.slice().sort((a, b) => new Date(b.published_at) - new Date(a.published_at)),
+    students: [], student_devices: []
+};
 
 function builder(rows) {
     const api = {
@@ -162,13 +179,16 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
         <div class="space-y-1.5">
           <button onclick="toggleDarkMode(event)">Giao diện</button>
           <div id="bkDevAuthRow">
-            <input id="bkDevCodeInput" type="password">
-            <button id="bkDevAuthBtn" type="button">Xác thực</button>
-            <p id="bkDevAuthMsg"></p>
+            <button id="bkDevRevealBtn" type="button">Administrator</button>
+            <div id="bkDevCodeWrap" class="hidden">
+              <input id="bkDevCodeInput" type="password">
+              <button id="bkDevAuthBtn" type="button">Xác thực</button>
+              <p id="bkDevAuthMsg"></p>
+            </div>
           </div>
           <div id="bkDevDashSection" class="hidden">
-            <button type="button" onclick="openDevDashboard()">Dev Dashboard</button>
-            <button id="bkDevLogoutBtn" type="button">Thoát Dev Dashboard</button>
+            <button type="button" onclick="openDevDashboard()">Administrator Dashboard</button>
+            <button id="bkDevLogoutBtn" type="button">Thoát Administrator Dashboard</button>
           </div>
         </div>
       </div>
@@ -282,40 +302,69 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
         const list = w.document.querySelectorAll('.bkc-item');
         return list.length ? list : null;
     });
-    ok('panel liệt kê thông báo', !!items && items.length === 2, items && String(items.length));
-    ok('thông báo khẩn có dấu ưu tiên', /Khẩn/.test(w.document.querySelector('.bkc-panel-list').textContent));
+    ok('panel liệt kê cả thông báo và changelog', !!items && items.length === 5, items && String(items.length));
+    const listText = w.document.querySelector('.bkc-panel-list').textContent;
+    ok('thông báo khẩn có dấu ưu tiên', /Khẩn/.test(listText));
+    ok('có nhóm thông báo từ giáo viên', /Thông báo từ giáo viên/.test(listText));
+    ok('có nhóm cập nhật phiên bản', /Cập nhật phiên bản/.test(listText));
+
+    /* Thứ tự phiên bản: 3.0.0 → 3.1.0 → 3.1.1 */
+    const versionOrder = Array.from(w.document.querySelectorAll('.bkc-item-version'))
+        .map((n) => {
+            const tag = n.querySelector('.bkc-tag');
+            return (tag ? tag.textContent : '').replace('Phiên bản', '').trim();
+        });
+    ok('phiên bản đúng thứ tự 3.0.0 → 3.1.0 → 3.1.1',
+        versionOrder.join(',') === '3.0.0,3.1.0,3.1.1', versionOrder.join(','));
+
+    /* Nút × phải đóng được panel. */
+    const panel = w.document.getElementById('bkcPanel');
+    const closeX = w.document.getElementById('bkcPanelClose');
+    ok('panel có nút ×', !!closeX);
+    if (closeX) closeX.click();
+    ok('bấm × đóng được panel', !!panel && panel.hidden === true);
+    w.document.getElementById('bkcBell').click();
+    await until(() => !w.document.getElementById('bkcPanel').hidden);
+
     items[0].click();
     const article = await until(() => w.document.querySelector('.bkc-modal'));
-    ok('mở nội dung đầy đủ', !!article && /Lịch học tuần này/.test(article.textContent));
+    ok('mở nội dung thông báo đầy đủ', !!article && /Lịch học tuần này/.test(article.textContent));
     const articleClose = w.document.querySelector('.bkc-modal .bkc-x');
     articleClose.click();
     ok('đóng nội dung đầy đủ', !w.document.querySelector('.bkc-modal'));
     ok('đánh dấu đã đọc giảm badge', w.document.querySelector('.bkc-badge').textContent === '1', w.document.querySelector('.bkc-badge').textContent);
 
-    console.log('\n[5] What\'s New');
-    const wn = await until(() => {
-        const node = w.document.getElementById('bkcWhatsNew');
-        return node && node.hidden === false ? node : null;
+    /* Mở một phiên bản trong panel → xem nội dung từng mục. */
+    const versionItem = w.document.querySelector('.bkc-item-version');
+    if (versionItem) versionItem.click();
+    const clModal = await until(() => {
+        const node = w.document.querySelector('.bkc-modal');
+        return node && /Phiên bản 3\.0\.0/.test(node.textContent) ? node : null;
     });
-    ok('khu vực What\'s New hiển thị', !!wn);
-    ok('hiển thị phiên bản mới nhất', !!wn && /Phiên bản 3\.0\.0/.test(wn.textContent));
-    ok('nhóm nội dung theo danh mục', !!wn && /Tính năng mới/.test(wn.textContent) && /Cải tiến/.test(wn.textContent));
-    ok('render bằng text, không HTML thô', !!wn && !/<b>/.test(wn.innerHTML.replace(/<[^>]+>/g, '')));
+    ok('mở được chi tiết phiên bản trong thông báo', !!clModal && /Tính năng mới/.test(clModal.textContent));
+    if (clModal) w.document.querySelector('.bkc-modal .bkc-x').click();
 
-
-    const mdLink = w.document.querySelector('#bkcWhatsNew .bkc-md-link');
-    ok("What's New có đường dẫn CHANGELOG.md", !!mdLink && /CHANGELOG\.md/.test(mdLink.textContent));
+    console.log('\n[5] Không còn changelog trên trang chính');
+    ok('không còn khu vực What\'s New', !w.document.getElementById('bkcWhatsNew'));
+    ok('không còn section changelog trong main', !w.document.querySelector('main .bkc-whatsnew'));
+    const mdLink = w.document.querySelector('.bkc-panel-foot .bkc-md-link');
+    ok('panel có đường dẫn CHANGELOG.md', !!mdLink && /CHANGELOG\.md/.test(mdLink.textContent));
     let mdOpened = false;
     w.openChangelogMd = () => { mdOpened = true; };
     if (mdLink) mdLink.click();
     ok('bấm đường dẫn mở CHANGELOG.md', mdOpened);
+
     console.log('\n[6] Dev Dashboard');
-    ok('mục Dev Dashboard ẩn trước khi xác thực', w.document.getElementById('bkDevDashSection').classList.contains('hidden'));
-    ok('có ô nhập Dev Code trong menu', !!w.document.getElementById('bkDevCodeInput'));
+    ok('mục Administrator Dashboard ẩn trước khi xác thực', w.document.getElementById('bkDevDashSection').classList.contains('hidden'));
+    ok('có ô nhập Administrator Code trong menu', !!w.document.getElementById('bkDevCodeInput'));
+    ok('ô nhập mã ẩn cho tới khi bấm Administrator',
+        w.document.getElementById('bkDevCodeWrap').classList.contains('hidden'));
+    w.document.getElementById('bkDevRevealBtn').click();
+    ok('bấm Administrator mở ô nhập mã', !w.document.getElementById('bkDevCodeWrap').classList.contains('hidden'));
     const login = await w.BKCloud.adminLogin('test-dev-code');
     w.mountDevMenu();
-    ok('sau xác thực hiện mục Dev Dashboard', !w.document.getElementById('bkDevDashSection').classList.contains('hidden'));
-    ok('ẩn ô nhập Dev Code sau xác thực', w.document.getElementById('bkDevAuthRow').classList.contains('hidden'));
+    ok('sau xác thực hiện mục Administrator Dashboard', !w.document.getElementById('bkDevDashSection').classList.contains('hidden'));
+    ok('ẩn ô nhập Administrator Code sau xác thực', w.document.getElementById('bkDevAuthRow').classList.contains('hidden'));
     ok('admin-auth cấp phiên có hạn', !!login.token && !!login.expiresAt);
     w.openDevDashboard();
     const dash = await until(() => {

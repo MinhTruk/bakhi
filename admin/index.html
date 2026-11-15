@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Administrator Dashboard — Bá Khí</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://wzvslyabhizsiggurwdq.supabase.co" crossorigin>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/bakhi/bk-core.css?v=2.4.2">
+    <link rel="stylesheet" href="../assets/bakhi/bk-cloud.css?v=3.1.4" data-bk-cloud="1">
+    <style>
+        :root { color-scheme: dark; }
+        * { box-sizing: border-box; }
+        body.bkadm {
+            margin: 0; min-height: 100dvh; display: flex; align-items: center; justify-content: center;
+            padding: 1.1rem; padding-bottom: calc(1.1rem + env(safe-area-inset-bottom, 0px));
+            font-family: Lexend, system-ui, -apple-system, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(900px 500px at 15% 0%, rgba(99, 102, 241, .30), transparent 60%),
+                radial-gradient(800px 460px at 90% 100%, rgba(168, 85, 247, .24), transparent 60%),
+                #0b1120;
+            color: #e2e8f0;
+        }
+        .bkadm-card {
+            width: min(26rem, 100%); padding: 1.6rem 1.5rem;
+            background: rgba(15, 23, 42, .92); border: 1px solid rgba(148, 163, 184, .28);
+            border-radius: 20px; box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .9);
+        }
+        .bkadm-brand {
+            font-size: .74rem; letter-spacing: .34em; text-transform: uppercase;
+            color: #a5b4fc; margin-bottom: .6rem;
+        }
+        .bkadm-title { margin: 0 0 .35rem; font-size: 1.16rem; line-height: 1.35; }
+        .bkadm-sub { margin: 0 0 1.1rem; font-size: .8rem; line-height: 1.55; color: #94a3b8; }
+        .bkadm-field { display: flex; flex-direction: column; gap: .35rem; margin-bottom: .6rem; }
+        .bkadm-label { font-size: .72rem; font-weight: 600; color: #cbd5f5; }
+        .bkadm-input {
+            width: 100%; padding: .7rem .8rem; border-radius: 11px; font-size: .86rem;
+            background: #0b1120; color: #e2e8f0; border: 1px solid rgba(148, 163, 184, .35);
+            outline: none;
+        }
+        .bkadm-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, .25); }
+        .bkadm-btn {
+            width: 100%; padding: .78rem 1rem; border-radius: 11px; border: 0; cursor: pointer;
+            font: 700 .84rem/1.2 Lexend, system-ui, sans-serif; letter-spacing: .03em;
+            background: linear-gradient(135deg, #6366f1, #a855f7); color: #fff;
+            box-shadow: 0 14px 30px -14px rgba(99, 102, 241, .9);
+        }
+        .bkadm-btn[disabled] { opacity: .6; cursor: not-allowed; }
+        .bkadm-btn-secondary {
+            background: transparent; color: #cbd5f5; border: 1px solid rgba(148, 163, 184, .35);
+            box-shadow: none; font-weight: 600; margin-top: .5rem;
+        }
+        .bkadm-msg { min-height: 1.1rem; margin: .55rem 0 0; font-size: .76rem; line-height: 1.45; }
+        .bkadm-msg.is-error { color: #fb7185; }
+        .bkadm-msg.is-warn { color: #fbbf24; }
+        .bkadm-msg.is-ok { color: #34d399; }
+        .bkadm-foot { margin: 1rem 0 0; font-size: .7rem; line-height: 1.5; color: #64748b; }
+        .bkadm-foot a { color: #818cf8; text-decoration: none; }
+        .bkadm-foot a:hover { text-decoration: underline; }
+        @media (max-width: 420px) {
+            .bkadm-card { padding: 1.3rem 1.1rem; border-radius: 16px; }
+            .bkadm-title { font-size: 1.05rem; }
+        }
+    </style>
+    <script>window.BK_ADMIN_ONLY = true;</script>
+</head>
+<body class="bkadm">
+    <main class="bkadm-card" id="bkAdmCard">
+        <div class="bkadm-brand">Bá Khí</div>
+        <h1 class="bkadm-title">Administrator Dashboard</h1>
+        <p class="bkadm-sub">
+            Nhập <strong>Administrator Code</strong> để mở bảng quản trị.
+            Mã được xác thực trên máy chủ và không được lưu ở trình duyệt.
+        </p>
+
+        <form id="bkAdmForm" autocomplete="off">
+            <div class="bkadm-field">
+                <label class="bkadm-label" for="bkAdmCode">Administrator Code</label>
+                <input class="bkadm-input" id="bkAdmCode" type="password" inputmode="text"
+                       autocomplete="off" spellcheck="false" placeholder="Nhập mã quản trị…">
+            </div>
+            <button class="bkadm-btn" id="bkAdmSubmit" type="submit">Mở bảng quản trị</button>
+            <p class="bkadm-msg" id="bkAdmMsg" role="status"></p>
+        </form>
+
+        <button class="bkadm-btn" id="bkAdmReopen" type="button" hidden>
+            Mở lại Administrator Dashboard
+        </button>
+        <button class="bkadm-btn bkadm-btn-secondary" id="bkAdmLogout" type="button" hidden>
+            Đăng xuất khỏi bảng quản trị
+        </button>
+
+        <p class="bkadm-foot">
+            Trang dành cho giáo viên quản trị.
+            <a href="../index.html">← Về trang chủ Bá Khí</a>
+        </p>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+    <script src="../assets/bakhi/bk-supabase.config.js" defer></script>
+    <script src="../assets/bakhi/bk-core.js?v=2.4.2" defer></script>
+    <script src="../assets/bakhi/bk-cloud.js?v=3.1.4" defer></script>
+    <script src="../assets/bakhi/bk-devboard.js?v=3.1.4" defer></script>
+    <script>
+        (function () {
+            'use strict';
+            var D = document;
+            var form = D.getElementById('bkAdmForm');
+            var input = D.getElementById('bkAdmCode');
+            var submit = D.getElementById('bkAdmSubmit');
+            var msg = D.getElementById('bkAdmMsg');
+            var logout = D.getElementById('bkAdmLogout');
+            var reopen = D.getElementById('bkAdmReopen');
+            var card = D.getElementById('bkAdmCard');
+            var busy = false;
+
+            function say(text, kind) {
+                msg.textContent = text || '';
+                msg.className = 'bkadm-msg' + (kind ? ' is-' + kind : '');
+            }
+
+            function open() {
+                card.hidden = true;
+                logout.hidden = false;
+                reopen.hidden = true;
+                form.hidden = true;
+                global_openDash();
+            }
+
+            /* Đóng bảng quản trị → hiện lại thẻ với nút mở lại. */
+            window.BK_ON_DASH_CLOSE = function () {
+                card.hidden = false;
+                form.hidden = true;
+                logout.hidden = false;
+                reopen.hidden = false;
+                say('Bảng quản trị đã đóng.', '');
+            };
+
+            function global_openDash() {
+                if (typeof window.openDevDashboard === 'function') window.openDevDashboard();
+            }
+
+            function authenticate(e) {
+                if (e) e.preventDefault();
+                if (busy) return;
+                var code = (input.value || '').trim();
+                if (!code) { say('Hãy nhập Administrator Code.', 'warn'); input.focus(); return; }
+                if (!window.BKCloud || !window.BKCloud.configured()) {
+                    say('Chưa cấu hình Supabase cho trang này.', 'error');
+                    return;
+                }
+                busy = true;
+                submit.disabled = true;
+                say('Đang xác thực…', '');
+                window.BKCloud.adminLogin(code).then(function () {
+                    busy = false;
+                    submit.disabled = false;
+                    input.value = '';
+                    say('Đã xác thực. Đang mở bảng quản trị…', 'ok');
+                    open();
+                }).catch(function (err) {
+                    busy = false;
+                    submit.disabled = false;
+                    say((err && err.message) || 'Administrator Code không đúng.', 'error');
+                    input.focus();
+                });
+            }
+
+            form.addEventListener('submit', authenticate);
+
+            reopen.addEventListener('click', function () {
+                card.hidden = true;
+                reopen.hidden = true;
+                global_openDash();
+            });
+
+            logout.addEventListener('click', function () {
+                if (window.BKCloud) window.BKCloud.adminLogout();
+                window.location.reload();
+            });
+
+            /* Còn phiên quản trị trong tab này thì vào thẳng. */
+            window.addEventListener('load', function () {
+                if (window.BKCloud && window.BKCloud.adminToken && window.BKCloud.adminToken()) open();
+                else setTimeout(function () { try { input.focus(); } catch (err) { } }, 60);
+            });
+        })();
+    </script>
+</body>
+</html>

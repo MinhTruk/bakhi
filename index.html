@@ -374,21 +374,31 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                                     <i class="fa-brands fa-github text-slate-600 dark:text-slate-300"></i>
                                     <span>GitHub Repository</span>
                                 </a>
-                                <!-- Dev Code → Dev Dashboard (chỉ hiện sau khi xác thực thành công) -->
+                                <!-- Administrator: mục dashboard chỉ mở sau khi xác nhận Administrator Code -->
                                 <div id="bkDevAuthRow" class="space-y-1.5 pt-1">
-                                    <div class="flex items-center space-x-1.5">
-                                        <input type="password" id="bkDevCodeInput" placeholder="Dev Code..." autocomplete="off" spellcheck="false" class="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-sky-500">
-                                        <button id="bkDevAuthBtn" type="button" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-medium transition cursor-pointer shrink-0">Xác thực</button>
+                                    <button id="bkDevRevealBtn" type="button" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer">
+                                        <i class="fa-solid fa-lock text-slate-500 dark:text-slate-400"></i>
+                                        <span>Administrator</span>
+                                    </button>
+                                    <div id="bkDevCodeWrap" class="hidden space-y-1.5">
+                                        <div class="flex items-center space-x-1.5">
+                                            <input type="password" id="bkDevCodeInput" placeholder="Administrator Code…" autocomplete="off" spellcheck="false" class="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-sky-500">
+                                            <button id="bkDevAuthBtn" type="button" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-medium transition cursor-pointer shrink-0">Xác thực</button>
+                                        </div>
+                                        <p id="bkDevAuthMsg" class="text-[10px] text-slate-400 leading-snug"></p>
                                     </div>
-                                    <p id="bkDevAuthMsg" class="text-[10px] text-slate-400 leading-snug"></p>
                                 </div>
                                 <div id="bkDevDashSection" class="hidden space-y-1.5">
                                     <button onclick="openDevDashboard()" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer">
                                         <i class="fa-solid fa-shield-halved text-sky-500"></i>
-                                        <span>Dev Dashboard</span>
+                                        <span>Administrator Dashboard</span>
                                     </button>
+                                    <a href="admin/" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition">
+                                        <i class="fa-solid fa-up-right-from-square text-sky-500"></i>
+                                        <span>Mở trang quản trị riêng</span>
+                                    </a>
                                     <button id="bkDevLogoutBtn" type="button" class="w-full px-3 py-1.5 bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-medium transition flex items-center justify-center space-x-2 cursor-pointer">
-                                        <i class="fa-solid fa-right-from-bracket"></i><span>Thoát Dev Dashboard</span>
+                                        <i class="fa-solid fa-right-from-bracket"></i><span>Thoát Administrator Dashboard</span>
                                     </button>
                                 </div>
 
@@ -2195,7 +2205,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
 <!-- Bá Khí × Supabase: một client duy nhất, nhận diện học sinh, thông báo, changelog -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
 <script src="assets/bakhi/bk-supabase.config.js?v=3.0.0" defer></script>
-<script src="assets/bakhi/bk-cloud.js?v=3.1.2" defer></script>
-<script src="assets/bakhi/bk-devboard.js?v=3.1.0" defer></script>
+<script src="assets/bakhi/bk-cloud.js?v=3.1.4" defer></script>
+<script src="assets/bakhi/bk-devboard.js?v=3.1.4" defer></script>
 </body>
 </html>

@@ -519,3 +519,19 @@ html.dark .bkc-pre { background: rgba(148, 163, 184, .12); }
 }
 .bkc-candidate:hover { background: rgba(148, 163, 184, .3); }
 .bkc-candidate-name { overflow: hidden; text-overflow: ellipsis; }
+
+/* `hidden` phải thắng các lớp có display riêng (nếu không panel không tắt được) */
+.bkc-panel[hidden], .bkc-sug[hidden], .bkc-candidates[hidden],
+.bkc-whatsnew[hidden], .bkc-modal[hidden] { display: none !important; }
+.bkc-panel[hidden] { pointer-events: none; }
+
+/* Nhóm trong trung tâm thông báo */
+.bkc-group-title {
+    padding: .5rem .6rem .25rem; font: 700 .66rem/1.3 Lexend, system-ui, sans-serif;
+    letter-spacing: .07em; text-transform: uppercase; color: var(--bkl-muted, #64748b);
+}
+.bkc-item-version .bkc-item-title { font-size: .8rem; }
+.bkc-panel-foot {
+    padding: .5rem .35rem .35rem; border-top: 1px solid var(--bkl-line, rgba(100, 116, 139, .18));
+    display: flex; justify-content: flex-end; margin-top: .25rem;
+}

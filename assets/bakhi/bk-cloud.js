@@ -956,8 +956,13 @@
         head.appendChild(titles);
         var close = el('button', 'bkc-x', '×');
         close.type = 'button';
+        close.id = 'bkcPanelClose';
         close.setAttribute('aria-label', 'Đóng thông báo');
-        close.addEventListener('click', closePanel);
+        close.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();          /* không để click ngoài/bell mở lại panel */
+            closePanel();
+        });
         head.appendChild(close);
         panel.appendChild(head);
 
@@ -1016,35 +1021,125 @@
         if (S.bell) { S.bell.setAttribute('aria-expanded', 'false'); S.bell.focus(); }
     }
 
+    /** So sánh số phiên bản kiểu 3.1.10 > 3.1.9 (không so sánh chuỗi). */
+    function compareVersion(a, b) {
+        var pa = String(a || '').split(/[.+-]/), pb = String(b || '').split(/[.+-]/);
+        var len = Math.max(pa.length, pb.length);
+        for (var i = 0; i < len; i++) {
+            var na = parseInt(pa[i], 10), nb = parseInt(pb[i], 10);
+            if (isNaN(na) && isNaN(nb)) continue;
+            if (isNaN(na)) return 1;
+            if (isNaN(nb)) return -1;
+            if (na !== nb) return na - nb;
+        }
+        return 0;
+    }
+
+    function panelGroup(title) {
+        var head = el('div', 'bkc-group-title', title);
+        return head;
+    }
+
     function renderPanel() {
         if (!S.list) return;
         S.list.textContent = '';
-        if (!S.announcements.length) {
+        var hasAny = S.announcements.length || S.changelog.length;
+        if (!hasAny) {
             var empty = el('div', 'bkc-empty');
             empty.appendChild(el('i', 'fa-regular fa-bell-slash'));
             empty.appendChild(el('p', null, 'Chưa có thông báo nào.'));
             S.list.appendChild(empty);
             return;
         }
-        S.announcements.forEach(function (a) {
-            var unread = !S.reads[a.id];
-            var item = el('button', 'bkc-item' + (unread ? ' is-unread' : ''));
-            item.type = 'button';
-            item.setAttribute('data-priority', a.priority);
 
-            var top = el('div', 'bkc-item-top');
-            top.appendChild(el('span', 'bkc-tag bkc-tag-' + a.type, typeLabel(a.type)));
-            if (a.priority === 'high' || a.priority === 'critical') {
-                top.appendChild(el('span', 'bkc-tag bkc-tag-pri', priorityLabel(a.priority)));
-            }
-            top.appendChild(el('span', 'bkc-item-time', relTime(a.published_at)));
-            item.appendChild(top);
+        if (S.announcements.length) {
+            S.list.appendChild(panelGroup('Thông báo từ giáo viên'));
+            S.announcements.forEach(function (a) {
+                var unread = !S.reads[a.id];
+                var item = el('button', 'bkc-item' + (unread ? ' is-unread' : ''));
+                item.type = 'button';
+                item.setAttribute('data-priority', a.priority);
 
-            item.appendChild(el('b', 'bkc-item-title', a.title));
-            item.appendChild(el('span', 'bkc-item-sum', clip(a.content, 120)));
-            item.addEventListener('click', function () { openArticle(a.id); });
-            S.list.appendChild(item);
-        });
+                var top = el('div', 'bkc-item-top');
+                top.appendChild(el('span', 'bkc-tag bkc-tag-' + a.type, typeLabel(a.type)));
+                if (a.priority === 'high' || a.priority === 'critical') {
+                    top.appendChild(el('span', 'bkc-tag bkc-tag-pri', priorityLabel(a.priority)));
+                }
+                top.appendChild(el('span', 'bkc-item-time', relTime(a.published_at)));
+                item.appendChild(top);
+
+                item.appendChild(el('b', 'bkc-item-title', a.title));
+                item.appendChild(el('span', 'bkc-item-sum', clip(a.content, 120)));
+                item.addEventListener('click', function () { openArticle(a.id); });
+                S.list.appendChild(item);
+            });
+        }
+
+        if (S.changelog.length) {
+            S.list.appendChild(panelGroup('Cập nhật phiên bản'));
+            /* Xếp theo SỐ phiên bản tăng dần: 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0. */
+            S.changelog.slice().sort(function (a, b) {
+                return compareVersion(a.version, b.version);
+            }).forEach(function (entry) {
+                var item = el('button', 'bkc-item bkc-item-version');
+                item.type = 'button';
+                var top = el('div', 'bkc-item-top');
+                top.appendChild(el('span', 'bkc-tag bkc-tag-update', 'Phiên bản ' + entry.version));
+                top.appendChild(el('span', 'bkc-item-time', relTime(entry.published_at)));
+                item.appendChild(top);
+                item.appendChild(el('b', 'bkc-item-title', entry.title));
+                if (entry.summary) item.appendChild(el('span', 'bkc-item-sum', clip(entry.summary, 120)));
+                item.addEventListener('click', function () { openChangelogEntry(entry); });
+                S.list.appendChild(item);
+            });
+        }
+
+        var foot = el('div', 'bkc-panel-foot');
+        foot.appendChild(changelogMdLink('Xem CHANGELOG.md'));
+        S.list.appendChild(foot);
+    }
+
+    /* Mở nội dung đầy đủ của một phiên bản trong trung tâm thông báo. */
+    function openChangelogEntry(entry) {
+        var wrap = el('div', 'bkc-modal');
+        wrap.setAttribute('role', 'dialog');
+        wrap.setAttribute('aria-modal', 'true');
+        var sheet = el('div', 'bkc-sheet bkc-sheet-wide');
+        var head = el('div', 'bkc-sheet-head');
+        var titles = el('div', 'bkc-sheet-titles');
+        titles.appendChild(el('h2', 'bkc-sheet-title', entry.title));
+        var line = el('div', 'bkc-sheet-line');
+        line.appendChild(el('span', 'bkc-tag bkc-tag-update', 'Phiên bản ' + entry.version));
+        if (entry.published_at) line.appendChild(el('span', 'bkc-tag', fmtDate(entry.published_at)));
+        titles.appendChild(line);
+        head.appendChild(titles);
+        var x = el('button', 'bkc-x', '×');
+        x.type = 'button';
+        x.setAttribute('aria-label', 'Đóng bản cập nhật');
+        head.appendChild(x);
+        sheet.appendChild(head);
+
+        var body = el('div', 'bkc-sheet-body');
+        if (entry.summary) body.appendChild(el('p', 'bkc-wn-sum', entry.summary));
+        body.appendChild(sectionBlock(entry));
+        var foot = el('div', 'bkc-sheet-foot');
+        foot.appendChild(changelogMdLink('Xem CHANGELOG.md đầy đủ'));
+        body.appendChild(foot);
+        sheet.appendChild(body);
+        wrap.appendChild(sheet);
+
+        var close = function () {
+            wrap.remove();
+            D.documentElement.classList.remove('bkc-lock');
+            D.removeEventListener('keydown', onKey);
+        };
+        var onKey = function (e) { if (e.key === 'Escape') { e.preventDefault(); close(); } };
+        x.addEventListener('click', function (e) { e.stopPropagation(); close(); });
+        wrap.addEventListener('click', function (e) { if (e.target === wrap) close(); });
+        (D.body || D.documentElement).appendChild(wrap);
+        D.documentElement.classList.add('bkc-lock');
+        D.addEventListener('keydown', onKey);
+        x.focus();
     }
 
     function clip(text, max) {
@@ -1168,7 +1263,7 @@
             .then(function (res) {
                 if (res.error) throw res.error;
                 S.changelog = res.data || [];
-                renderWhatsNew();
+                renderPanel();
                 emit('changelog', S.changelog);
                 return S.changelog;
             }).catch(function (err) {
@@ -1207,47 +1302,6 @@
     function openChangelogFile() {
         if (typeof global.openChangelogMd === 'function') { global.openChangelogMd(); return; }
         if (global.open) global.open('CHANGELOG.md', '_blank', 'noopener');
-    }
-
-    function renderWhatsNew() {
-        var main = D.querySelector('main');
-        if (!main) return;
-        var host = D.getElementById('bkcWhatsNew');
-        if (!host) {
-            host = el('section', 'bkc-whatsnew');
-            host.id = 'bkcWhatsNew';
-            var anchor = main.children[1] || main.firstElementChild;
-            if (anchor && anchor.nextSibling) main.insertBefore(host, anchor.nextSibling);
-            else main.appendChild(host);
-        }
-        host.textContent = '';
-        var entry = S.changelog[0];
-        if (!entry) { host.hidden = true; return; }
-        host.hidden = false;
-
-        var head = el('div', 'bkc-wn-head');
-        var left = el('div');
-        var line = el('div', 'bkc-wn-line');
-        line.appendChild(el('span', 'bkc-tag bkc-tag-update', 'Phiên bản ' + entry.version));
-        if (entry.published_at) line.appendChild(el('span', 'bkc-tag', fmtDate(entry.published_at)));
-        left.appendChild(line);
-        left.appendChild(el('h2', 'bkc-wn-title', entry.title));
-        if (entry.summary) left.appendChild(el('p', 'bkc-wn-sum', entry.summary));
-        head.appendChild(left);
-        var actions = el('div', 'bkc-wn-actions');
-        var all = el('button', 'bkc-btn bkc-btn-ghost', 'Xem toàn bộ lịch sử');
-        all.type = 'button';
-        all.addEventListener('click', openChangelogHistory);
-        actions.appendChild(all);
-        actions.appendChild(changelogMdLink());
-        head.appendChild(actions);
-        host.appendChild(head);
-
-        var body = el('div', 'bkc-wn-body');
-        body.appendChild(sectionBlock(entry));
-        host.appendChild(body);
-
-        S.lastSeenVersion = entry.version;
     }
 
     function entryCard(entry) {
@@ -1417,6 +1471,8 @@
 
     function boot() {
         injectCss();
+        /* Trang Administrator Dashboard không cần nhận diện học sinh. */
+        if (global.BK_ADMIN_ONLY) { unlockBoot(); return; }
         if (typeof CFG.configured === 'function' && !CFG.configured()) {
             configWarning();
             unlockBoot();

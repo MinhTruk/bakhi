@@ -6,10 +6,10 @@ Hệ thống Supabase của Bá Khí gồm 4 phần:
 |---|---|---|
 | Cấu hình công khai | `assets/bakhi/bk-supabase.config.js` | **Nơi duy nhất** chứa Project URL + Publishable key |
 | Lớp client | `assets/bakhi/bk-cloud.js` | Một Supabase client duy nhất: Anonymous Auth, nhận diện học sinh, thông báo, changelog, đồng bộ |
-| Dev Dashboard | `assets/bakhi/bk-devboard.js` | 6 tab quản trị, xác thực Dev Code qua Edge Function |
+| Administrator Dashboard | `assets/bakhi/bk-devboard.js` + `admin/index.html` | 6 tab quản trị, xác thực Administrator Code qua Edge Function |
 | Backend | `supabase/migrations/`, `supabase/functions/` | Schema + RLS + 6 Edge Functions |
 
-> ⚠️ **Không bao giờ** đặt `service_role` key, secret key, database password, Dev Code
+> ⚠️ **Không bao giờ** đặt `service_role` key, secret key, database password, Administrator Code
 > hay bất kỳ secret xác thực nào vào repository, HTML, JavaScript hoặc chat.
 > Tất cả secret nằm trong **Supabase → Edge Functions → Secrets**.
 
@@ -33,7 +33,7 @@ Kiểm chứng end-to-end đã chạy trực tiếp trên project (không phải
 - `bind-student-session` → gắn `student_id`, trả `student_code`; gọi lại `{}` → khôi phục phiên không cần nhập tên.
 - `sync-student-progress` → ghi 2 khoá; phiên mới gắn cùng tên **khôi phục đúng** practice + prefs; phiên chưa gắn đọc được **0 hàng** (RLS).
 - Push thông báo qua `admin-actions` → học sinh đọc được bản published, bản draft trả `[]`.
-- Dev Code sai → `401 BAD_DEV_CODE`.
+- Administrator Code sai → `401 BAD_DEV_CODE`.
 
 Dữ liệu test (tiến trình, thiết bị, thông báo, auth user) đã được xoá — project đang ở trạng thái sạch, chỉ còn 40 hồ sơ học sinh.
 
@@ -118,10 +118,10 @@ supabase functions deploy bind-student-session --no-verify-jwt
 supabase functions deploy sync-student-progress --no-verify-jwt
 ```
 
-Lý do: học sinh dùng Anonymous Auth và Dev Dashboard dùng Dev session riêng; cả hai
+Lý do: học sinh dùng Anonymous Auth và Administrator Dashboard dùng phiên quản trị riêng; cả hai
 đều tự kiểm tra quyền bên trong function.
 
-## Bước 7. Đặt Dev Code (KHU VỰC 3)
+## Bước 7. Đặt Administrator Code (KHU VỰC 3)
 
 Tự tạo một mã mạnh (tối thiểu 16 ký tự, không dùng lại mật khẩu khác), rồi:
 
@@ -133,7 +133,7 @@ hoặc Dashboard → **Edge Functions → Secrets → Add new secret**.
 
 | Secret | Bắt buộc | Mục đích |
 |---|---|---|
-| `ADMIN_DEV_CODE` | ✅ | Dev Code dùng để mở Dev Dashboard. Không lưu ở client. |
+| `ADMIN_DEV_CODE` | ✅ | Administrator Code dùng để mở Administrator Dashboard. Không lưu ở client. |
 | `ADMIN_SESSION_HOURS` | – | Thời hạn phiên quản trị (mặc định 8, tối đa 24). |
 
 Dev code được gửi tới `admin-auth`, so sánh theo thời gian hằng, giới hạn 8 lần / 10 phút
@@ -149,7 +149,7 @@ gửi qua header `x-admin-token`; `admin-actions` xác thực lại ở **mỗi*
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ tự có | Supabase tự inject; **không** đặt vào repository và không gửi về client. |
 | `STUDENT_ROSTER_SECRET` | – | Chỉ dùng để đối chiếu khi bạn muốn xác nhận một bản import do chính bạn khởi tạo (ví dụ chạy bằng script/CI). Dashboard hiện xác thực import bằng Dev session nên secret này không bắt buộc. Nếu đặt, dùng một chuỗi ngẫu nhiên ≥ 32 ký tự do bạn tự sinh. |
 
-Trạng thái các secret được hiển thị trong **Dev Dashboard → Settings** (chỉ hiện
+Trạng thái các secret được hiển thị trong **Administrator Dashboard → Settings** (chỉ hiện
 “đã đặt / thiếu”, không bao giờ hiện giá trị).
 
 ## Bước 9. Cấu hình RLS (đã có trong migration)
@@ -193,8 +193,8 @@ using (false);  -- chỉ service_role truy cập được
 
 ## Bước 11. Import students.txt
 
-1. Mở website → menu 3 gạch → **Dev Dashboard**.
-2. Nhập Dev Code.
+1. Mở website → menu 3 gạch → **Administrator** → nhập **Administrator Code**.
+2. Hoặc mở riêng trang `admin/index.html` — cũng yêu cầu Administrator Code.
 3. Tab **Students** → chọn tệp `students.txt` (hoặc dán nội dung).
 4. Bấm **Import danh sách**.
 
@@ -215,7 +215,7 @@ dấu `needs_review` và không thể chọn.
 | 4 | Chọn tên → Xác nhận | Vào website, có tên ở header |
 | 5 | F5 / đóng và mở lại trình duyệt | Không hỏi lại tên |
 | 6 | Menu → Đổi học sinh | Quay lại màn hình nhập tên |
-| 7 | Dev Dashboard → Push notification | Chuông tăng số ngay, không cần F5 |
+| 7 | Administrator Dashboard → Push notification | Chuông tăng số ngay, không cần F5 |
 | 8 | Push changelog | Khu vực “What’s New” cập nhật ngay |
 | 9 | Học 1 câu ở máy A, mở máy B chọn cùng tên | Tiến trình được khôi phục |
 | 10 | Ngắt mạng → học tiếp → bật mạng | Tự retry, dữ liệu local không mất |
@@ -244,6 +244,6 @@ dấu `needs_review` và không thể chọn.
 | “Không tạo được phiên ẩn danh” | Chưa bật Anonymous sign-ins |
 | “Không tìm thấy học sinh phù hợp” | Chưa import students.txt, hoặc hồ sơ bị vô hiệu |
 | “Hồ sơ đang chờ Admin phân biệt” | Trùng họ tên, cần đặt thông tin phân biệt |
-| “Phiên quản trị đã hết hạn” | Quá `ADMIN_SESSION_HOURS`, nhập lại Dev Code |
+| “Phiên quản trị đã hết hạn” | Quá `ADMIN_SESSION_HOURS`, nhập lại Administrator Code |
 | “Chưa cấu hình ADMIN_DEV_CODE” | Thiếu secret ở Bước 7 |
 | Thông báo không tự cập nhật | Realtime chưa bật cho bảng; polling 60s vẫn hoạt động |
