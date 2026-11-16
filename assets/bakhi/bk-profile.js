@@ -196,6 +196,25 @@
         return next;
     }
 
+    /**
+     * Áp hồ sơ từ máy chủ (đồng bộ thiết bị khác). Chỉ ghi khi bản máy chủ mới
+     * hơn bản cục bộ; không đổi `updatedAt` và không phát sự kiện 'save' để
+     * tránh vòng lặp đẩy ngược lên máy chủ.
+     */
+    function applyRemote(raw) {
+        if (!raw || typeof raw !== 'object') return false;
+        var idc = identity();
+        var all = readAll();
+        var cur = all.profiles[idc.key] || emptyProfile();
+        var incoming = sanitizeProfile(raw);
+        if (!incoming.updatedAt || incoming.updatedAt <= cur.updatedAt) return false;
+        if (!canEquip(incoming.frame)) incoming.frame = 'none';
+        all.profiles[idc.key] = incoming;
+        writeAll(all);
+        emit('remote');
+        return true;
+    }
+
     function reset() {
         var idc = identity();
         var all = readAll();
@@ -369,6 +388,7 @@
         identity: identity,
         get: get,
         save: save,
+        applyRemote: applyRemote,
         reset: reset,
         on: on,
         off: on, /* giữ chữ ký đối xứng: hàm trả về unsubscribe */

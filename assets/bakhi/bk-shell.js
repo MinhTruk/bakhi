@@ -609,7 +609,7 @@
         var s = D.createElement('script');
         s.id = 'bkDevScript';
         s.src = S.base + 'assets/bakhi/bk-dev.js?v=' +
-            ((global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '3.5.0');
+            ((global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '3.6.0');
         s.defer = true;
         s.onload = function () { if (cb) cb(); };
         (D.body || D.head).appendChild(s);

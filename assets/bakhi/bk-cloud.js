@@ -59,6 +59,8 @@
         flags: {}, flagsLoaded: false, realtime: 'idle', maintenanceNode: null,
         syncTimer: null, retrying: null, syncing: false, applyingRemote: false,
         lastSyncAt: 0, syncError: null, listeners: [], channel: null,
+        studentTimer: null, studentBusy: false, lastStudentAt: 0, studentError: null,
+        profileServerAt: 0, studentDisabled: false,
         gate: null, bell: null, badge: null, changeBtn: null, panel: null, panelOpen: false,
         article: null, pollTimer: null, searchSeq: 0, publicLoaded: false, lastAnnFetch: 0,
         binding: false, fitTimer: null
@@ -1749,11 +1751,66 @@
         Object.keys(s.prefs || {}).forEach(function (k) {
             if (k !== 'cloud') prefs[k] = s.prefs[k];
         });
-        return {
+        var signals = null;
+        try { if (BK.signals && BK.signals.get) signals = BK.signals.get(); } catch (e) { signals = null; }
+        var badges = null;
+        try { if (BK.badges && BK.badges.snapshot) badges = BK.badges.snapshot(); } catch (e) { badges = null; }
+        var out = {
             practice: s.practice, review: s.review, notes: s.notes,
             bookmarks: s.bookmarks, history: s.history,
             achievements: s.achievements, prefs: prefs
         };
+        if (signals) out.signals = signals;
+        if (badges) out.badges = badges;
+        return out;
+    }
+
+    /* ---------------------------------------------------------------------
+       Đồng bộ hồ sơ + thành tích đã xác minh (Edge Function student-profile)
+       ------------------------------------------------------------------ */
+    function scheduleStudentSync(delay) {
+        if (!S.bound || S.studentDisabled) return;
+        clearTimeout(S.studentTimer);
+        S.studentTimer = setTimeout(function () { syncStudent(); }, delay || 1800);
+    }
+
+    function syncStudent() {
+        if (!S.bound || S.studentBusy || S.studentDisabled) return Promise.resolve(null);
+        var fn = CFG.functions && CFG.functions.studentProfile;
+        if (!fn) return Promise.resolve(null);
+        var local = null;
+        try { local = (global.BKProfile && BKProfile.get) ? BKProfile.get() : null; } catch (e) { local = null; }
+        var push = !!(local && local.updatedAt && local.updatedAt > (S.profileServerAt || 0));
+        var body = { action: push ? 'update' : 'sync' };
+        if (push) body.profile = local;
+        S.studentBusy = true;
+        return api(fn, body).then(function (data) {
+            S.studentBusy = false;
+            S.studentError = null;
+            S.lastStudentAt = now();
+            if (!data || !data.ok) return data;
+            if (data.profile && data.profile.updatedAt) S.profileServerAt = Number(data.profile.updatedAt) || 0;
+            S.applyingRemote = true;
+            try {
+                if (global.BKProfile && BKProfile.applyRemote && data.profile) BKProfile.applyRemote(data.profile);
+                if (global.BK && BK.badges && BK.badges.applyServer) BK.badges.applyServer(data.badges || []);
+            } catch (e) { /* hồ sơ/badge hỏng không được chặn đồng bộ tiến trình */ }
+            S.applyingRemote = false;
+            if (data.frameRejected) {
+                toast('Khung avatar chưa mở nên chưa đồng bộ được. Hãy chọn khung khác.', 'error');
+            }
+            emit('student', data);
+            return data;
+        }).catch(function (err) {
+            S.studentBusy = false;
+            S.studentError = err;
+            /* Edge Function chưa deploy (404) hoặc chưa bật: tắt hẳn để trang im lặng. */
+            if (err && (err.status === 404 || err.code === 'HTTP_404')) {
+                S.studentDisabled = true;
+                S.studentError = null;
+            }
+            return null;
+        });
     }
 
     function scheduleSync() {
@@ -1782,6 +1839,7 @@
                 S.applyingRemote = false;
             }
             emit('synced', data);
+            if (!S.lastStudentAt || now() - S.lastStudentAt > 60000) scheduleStudentSync(600);
             return data;
         }).catch(function (err) {
             S.syncing = false;
@@ -1810,7 +1868,8 @@
         if (D.querySelector('link[data-bk-cloud]')) return;
         var link = D.createElement('link');
         link.rel = 'stylesheet';
-        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=3.4.0';
+        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=' +
+            ((global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '3.6.0');
         link.setAttribute('data-bk-cloud', '1');
         (D.head || D.documentElement).appendChild(link);
     }
@@ -1947,8 +2006,18 @@
             if (global.BK && BK.store && BK.store.on) {
                 BK.store.on('save', scheduleSync);
             }
+            /* Hồ sơ và thành tích: đẩy khi có thay đổi, kéo khi mở trang. */
+            try {
+                if (global.BKProfile && BKProfile.on) {
+                    BKProfile.on(function (d) { if (d && d.kind === 'save') scheduleStudentSync(1500); });
+                }
+                if (global.BK && BK.badges && BK.badges.on) {
+                    BK.badges.on(function (d) { if (d && d.kind === 'unlock') scheduleStudentSync(1200); });
+                }
+            } catch (e) { }
+            scheduleStudentSync(1200);
             global.addEventListener('online', function () {
-                if (S.bound) doSync(true);
+                if (S.bound) { doSync(true); syncStudent(); }
                 loadAnnouncements(true);
             });
             emit('ready', { bound: S.bound });
@@ -2022,12 +2091,16 @@
                 clLoading: S.clLoading, clError: S.clError,
                 flags: S.flags, flagsLoaded: S.flagsLoaded, realtime: S.realtime,
                 wnLimit: WN_LIMIT, wnExpanded: wnExpanded,
-                devActive: !!devSessionLocal()
+                devActive: !!devSessionLocal(),
+                studentSyncAt: S.lastStudentAt,
+                studentError: S.studentError ? S.studentError.message : null,
+                profileServerAt: S.profileServerAt
             };
         },
         identity: function () { return S.student; },
         changeStudent: changeStudent,
         syncNow: function () { return doSync(true); },
+        syncStudent: syncStudent,
         openNotifications: openPanel,
         openChangelogHistory: openChangelogHistory,
         refresh: function () { return Promise.all([loadAnnouncements(), loadChangelog()]); },

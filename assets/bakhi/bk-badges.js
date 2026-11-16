@@ -491,6 +491,60 @@
     }
 
     /* ---------------------------------------------------------------------
+       Đồng bộ máy chủ: gửi ảnh chụp bộ đếm, nhận badge đã xác minh
+       ------------------------------------------------------------------ */
+
+    /** Ảnh chụp tối thiểu để máy chủ tính lại thành tích (không có badge đã mở). */
+    function snapshot() {
+        var t = load();
+        return {
+            pages: t.pages,
+            days: t.days,
+            tracks: t.tracks,
+            sameTrack: t.sameTrack,
+            counters: t.counters,
+            maxStreak: t.maxStreak
+        };
+    }
+
+    /**
+     * Áp danh sách badge máy chủ đã xác minh. Chỉ nhận id có trong danh mục;
+     * badge Administrator chỉ được ghi khi máy chủ trả kind='admin'. Hàm này
+     * không bao giờ xoá badge cục bộ (giữ được tiến trình khi ngoại tuyến).
+     */
+    function applyServer(list) {
+        if (!Array.isArray(list) || !list.length) return 0;
+        var t = load();
+        var added = 0;
+        list.forEach(function (row) {
+            if (!row) return;
+            var id = String(row.badge_id || row.id || '').slice(0, 64);
+            var def = BY_ID[id];
+            if (!def) return;
+            /* Badge Administrator chỉ hợp lệ khi máy chủ ghi rõ kind='admin'. */
+            if (def.adminOnly && row.kind !== 'admin') return;
+            if (t.unlocked[id]) return;
+            var at = Date.parse(row.awarded_at);
+            if (!isFinite(at) || at <= 0) at = Number(row.awarded_at) || Date.now();
+            t.unlocked[id] = at;
+            if (def.adminOnly || row.kind === 'admin') {
+                t.granted[id] = {
+                    by: String(row.awarded_by || 'admin').slice(0, 60),
+                    at: at,
+                    reason: String(row.reason || '').slice(0, 200)
+                };
+            }
+            added++;
+        });
+        if (added) {
+            save();
+            emit('sync', { badges: [] });
+            check({ silent: true });
+        }
+        return added;
+    }
+
+    /* ---------------------------------------------------------------------
        Khung avatar: quyền sở hữu
        ------------------------------------------------------------------ */
     var BASE_FRAMES = ['none', 'leaf'];
@@ -539,6 +593,8 @@
         bumpCounter: bumpCounter,
         markDay: markDay,
         applyGrants: applyGrants,
+        applyServer: applyServer,
+        snapshot: snapshot,
         ownedFrames: ownedFrames,
         canEquip: canEquip,
         on: function (fn) {

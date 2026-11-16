@@ -144,6 +144,22 @@ function fakeFetch(url, opts) {
         }
     } else if (name === 'admin-auth') {
         payload = { ok: true, token: 'x'.repeat(48), expiresAt: new Date(Date.now() + 3600e3).toISOString() };
+    } else if (name === 'student-profile') {
+        payload = {
+            ok: true,
+            catalogVersion: '3.6.0-test',
+            profile: {
+                nickname: 'Minh Anh', bio: 'Học sinh 11A1', avatar: '', banner: '',
+                frame: 'leaf', links: [{ label: 'GitHub', url: 'https://github.com/x', visible: true }],
+                updatedAt: Date.now() + 5000
+            },
+            frames: ['none', 'leaf', 'sakura'],
+            badges: [
+                { badge_id: 'admin-legend', kind: 'admin', awarded_at: new Date().toISOString(), awarded_by: 'session-1', reason: 'Đóng góp' }
+            ],
+            earned: [],
+            frameRejected: false
+        };
     } else if (name === 'admin-actions') {
         if (body.action === 'settings.status') {
             payload = { ok: true, status: { adminDevCode: true, serviceRole: true, rosterSecret: false, students: 40 } };
@@ -243,10 +259,11 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     w.matchMedia = w.matchMedia || ((q) => ({ matches: false, media: q, addEventListener() { }, removeEventListener() { } }));
     w.fetch = fakeFetch;
     w.supabase = { createClient: () => fakeClient() };
-    w.BK_SUPABASE = { url: 'https://demo.supabase.co', key: 'sb_publishable_test', functions: { adminAuth: 'admin-auth', adminActions: 'admin-actions', importStudents: 'import-students', searchStudents: 'search-students', bindSession: 'bind-student-session', syncProgress: 'sync-student-progress' }, syncDebounceMs: 20, pollMs: 600000, configured: () => true };
+    w.BK_SUPABASE = { url: 'https://demo.supabase.co', key: 'sb_publishable_test', functions: { adminAuth: 'admin-auth', adminActions: 'admin-actions', devAuth: 'dev-auth', importStudents: 'import-students', searchStudents: 'search-students', bindSession: 'bind-student-session', syncProgress: 'sync-student-progress', studentProfile: 'student-profile' }, syncDebounceMs: 20, pollMs: 600000, configured: () => true };
 
     function load(file) { w.eval(fs.readFileSync(path.join(ROOT, file), 'utf8')); }
     load('assets/bakhi/bk-core.js');
+    load('assets/bakhi/bk-profile.js');
     load('assets/bakhi/bk-cloud.js');
     load('assets/bakhi/bk-devboard.js');
 
@@ -419,7 +436,24 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     if (mdLink) mdLink.click();
     ok('bấm đường dẫn mở CHANGELOG.md', mdOpened);
 
-    console.log('\n[6] Dev Dashboard');
+    console.log('\n[6] Hồ sơ & thành tích đồng bộ máy chủ');
+    ok('cấu hình có Edge Function student-profile',
+        w.BK_SUPABASE.functions.studentProfile === 'student-profile');
+    const studentSync = await w.BKCloud.syncStudent();
+    const profileCall = calls.filter((c) => c.name === 'student-profile').pop();
+    ok('gọi student-profile sau khi gắn danh tính', !!profileCall);
+    ok('không gửi danh sách badge đã mở lên máy chủ',
+        !!profileCall && !('badges' in profileCall.body) && !('unlocked' in profileCall.body),
+        profileCall && Object.keys(profileCall.body).join(','));
+    ok('máy chủ trả hồ sơ đã xác minh', !!studentSync && studentSync.ok === true &&
+        studentSync.profile && studentSync.profile.nickname === 'Minh Anh');
+    ok('áp hồ sơ máy chủ vào kho cục bộ',
+        w.BKProfile.get().nickname === 'Minh Anh' && w.BKProfile.get().frame === 'leaf',
+        JSON.stringify(w.BKProfile.get()).slice(0, 120));
+    ok('trạng thái đồng bộ hồ sơ được ghi nhận',
+        w.BKCloud.state().studentSyncAt > 0 && !w.BKCloud.state().studentError);
+
+    console.log('\n[7] Dev Dashboard');
     ok('mục Administrator Dashboard ẩn trước khi xác thực', w.document.getElementById('bkDevDashSection').classList.contains('hidden'));
     ok('có ô nhập Administrator Code trong menu', !!w.document.getElementById('bkDevCodeInput'));
     ok('ô nhập mã ẩn cho tới khi bấm Administrator',
@@ -479,7 +513,7 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
         !!permText && /Bảng & RLS/.test(permText) && /Policy đang áp dụng/.test(permText));
     ok('tab Permissions nêu giới hạn vai trò', /nhiều quản trị viên/.test(permText || ''));
 
-    console.log('\n[7] Bảo mật phía client');
+    console.log('\n[8] Bảo mật phía client');
     ok('không có Dev Code trong storage', !JSON.stringify(Object.assign({}, w.localStorage)).includes('test-dev-code'));
     ok('token admin chỉ ở sessionStorage', !!w.sessionStorage.getItem('bakhiAdmin.v1') && !w.localStorage.getItem('bakhiAdmin.v1'));
     ok('không có service_role key trong mã nguồn', (() => {
@@ -488,7 +522,7 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
             !/eyJhbGciOi/.test(fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-supabase.config.js'), 'utf8'));
     })());
 
-    console.log('\n[8] Đổi học sinh');
+    console.log('\n[9] Đổi học sinh');
     const oldGate = w.document.getElementById('bkIdentityGate');
     w.BKCloud.changeStudent();
     const changeBtn = await until(() => Array.from(w.document.querySelectorAll('.bk-modal-foot .bk-btn'))
@@ -509,7 +543,7 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
         ok('màn hình nhận diện mở lại ở trạng thái trống', w.document.querySelector('.bkc-gate-confirm').disabled === true);
     }
 
-    console.log('\n[9] What\'s New chỉ là tuỳ chọn');
+    console.log('\n[10] What\'s New chỉ là tuỳ chọn');
     const studioHtml = fs.readFileSync(path.join(ROOT, 'studio/index.html'), 'utf8');
     const paintHtml = fs.readFileSync(path.join(ROOT, 'studio/word-paint.html'), 'utf8');
     ok('Studio không bật What\'s New', !/data-bk-whatsnew/.test(studioHtml));

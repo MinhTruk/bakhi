@@ -2,6 +2,51 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [3.6.0] — 2026-11-16
+
+### Tính năng
+
+- **Hồ sơ đồng bộ máy chủ**: biệt danh, giới thiệu, liên kết và khung avatar được lưu
+  theo học sinh trong bảng `student_profiles` và tự đồng bộ giữa các thiết bị qua Edge
+  Function `student-profile`. Dữ liệu cục bộ (`bakhiProfile.v1`) vẫn là bản dùng ngay
+  khi ngoại tuyến; bản máy chủ chỉ ghi đè khi mới hơn.
+- **75 thành tích xác minh phía máy chủ**: máy chủ đọc dữ liệu học tập đã đồng bộ, tự
+  tính lại chỉ số rồi mới ghi badge vào `student_badges`. Trình duyệt không gửi danh
+  sách badge đã mở và không ghi trực tiếp được vào bảng này. 73 badge tự động theo dữ
+  liệu thật; 2 badge Administrator (`admin-chosen`, `admin-legend`) chỉ do
+  `admin-actions` trao khi có phiên Administrator.
+- **Khung avatar có chủ**: mỗi khung đến từ một badge đã xác minh; trigger
+  `bakhi_profile_frame_guard` chặn gán khung chưa sở hữu (`FRAME_NOT_OWNED`), và
+  `bakhi_owned_frames()` là nguồn duy nhất cho cả client lẫn máy chủ.
+- **Quản trị hồ sơ trong dashboard**: `admin-actions` thêm `profiles.list`,
+  `profiles.detail`, `badges.list`, `badges.grant`, `badges.revoke`. Mọi thao tác trao
+  hoặc thu hồi badge đều ghi vào `admin_activity_logs` kèm mã phiên Administrator.
+- **Danh mục badge dùng chung**: `tools/gen-badge-catalog.js` sinh
+  `supabase/functions/_shared/badge-catalog.ts` từ `bk-badges.js`; QA đối chiếu hai bên
+  để không lệch danh mục, mục tiêu hay khung thưởng.
+
+### Sửa lỗi
+
+- `BK.signals.get()` không còn tự đổi `updatedAt` khi chỉ đọc.
+- Đồng bộ hồ sơ tự tắt khi Edge Function `student-profile` chưa được triển khai (404)
+  để website đang chạy không phát sinh lỗi lặp lại.
+
+### Cải tiến
+
+- Cache-busting toàn website lên `3.6.0`.
+- Migration `20261119000000_bakhi_profile_badges.sql`: bật RLS cho `student_profiles`
+  và `student_badges`, chỉ cho đọc bản ghi của chính mình, thu hồi toàn bộ quyền ghi
+  `student_badges` khỏi `anon`/`authenticated`.
+- `sync-student-progress` nhận thêm `signals` và `badges` (bộ đếm thành tích, trang đã
+  ghé, chuỗi ngày) — chỉ để máy chủ tính lại thành tích, không cấp quyền gì.
+- QA mới `tools/qa/badges-smoke.js`: đối chiếu danh mục 75 badge, so khớp chỉ số máy
+  chủ với client, chặn tự trao badge Administrator, kiểm tra `applyRemote` và các ràng
+  buộc RLS/trigger trong migration. `cloud-smoke.js` thêm mục kiểm tra đồng bộ hồ sơ.
+
+> Ghi chú triển khai: các tính năng trên cần chạy migration `20261119000000` và deploy
+> Edge Functions `student-profile`, `admin-actions`, `sync-student-progress` trên dự án
+> Supabase thật. Khi chưa deploy, website vẫn hoạt động local-first như trước.
+
 ## [3.5.0] — 2026-11-16
 
 ### Tính năng

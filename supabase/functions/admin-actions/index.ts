@@ -129,6 +129,8 @@ function cleanDisplayName(input: unknown): string {
 const ANNOUNCEMENT_TYPES = ['general', 'announcement', 'update', 'important', 'maintenance'];
 const PRIORITIES = ['low', 'normal', 'high', 'critical'];
 const CATEGORIES = ['features', 'improvements', 'fixes', 'ui', 'performance', 'security', 'notice', 'other'];
+/* Hai badge chỉ Administrator trao; Edge Function student-profile không bao giờ ghi hai id này. */
+const ADMIN_BADGE_IDS = ['admin-chosen', 'admin-legend'];
 
 function str(v: unknown, max: number): string {
     return String(v ?? '').trim().slice(0, max);
@@ -172,6 +174,7 @@ Deno.serve(async (req) => {
     const client = adminClient();
     const auth = await requireAdmin(req, client);
     if ('error' in auth) return auth.error;
+    const sessionId = auth.sessionId;
 
     const body = await readJson<Record<string, unknown>>(req);
     const action = str(body.action, 60);
@@ -360,6 +363,118 @@ Deno.serve(async (req) => {
                 }
                 await logAction(client, 'students.update', 'student', id, patch);
                 return json({ ok: true, student: data });
+            }
+
+            /* --------------------------- Hồ sơ & badge --------------------------- */
+            case 'profiles.list': {
+                const limit = Math.min(100, Math.max(1, Number(body.limit) || 40));
+                const offset = Math.max(0, Number(body.offset) || 0);
+                let query = client.from('students')
+                    .select('id, display_name, disambiguator, is_active, needs_review', { count: 'exact' })
+                    .order('display_name', { ascending: true })
+                    .range(offset, offset + limit - 1);
+                if (body.q) query = query.ilike('display_name', `%${str(body.q, 120)}%`);
+                const { data: students, error, count } = await query;
+                if (error) throw error;
+                const ids = (students ?? []).map((s) => s.id);
+                const profiles: Record<string, Record<string, unknown>> = {};
+                const badgeCounts: Record<string, number> = {};
+                if (ids.length) {
+                    const { data: rows } = await client
+                        .from('student_profiles')
+                        .select('student_id, nickname, avatar_url, frame, updated_at')
+                        .in('student_id', ids);
+                    for (const row of rows ?? []) profiles[row.student_id] = row;
+                    const { data: badgeRows } = await client
+                        .from('student_badges')
+                        .select('student_id')
+                        .in('student_id', ids);
+                    for (const row of badgeRows ?? []) {
+                        badgeCounts[row.student_id] = (badgeCounts[row.student_id] ?? 0) + 1;
+                    }
+                }
+                return json({
+                    ok: true,
+                    total: count ?? (students ?? []).length,
+                    offset,
+                    profiles: (students ?? []).map((s) => ({
+                        ...s,
+                        profile: profiles[s.id] ?? null,
+                        badges: badgeCounts[s.id] ?? 0
+                    }))
+                });
+            }
+
+            case 'profiles.detail': {
+                const id = str(body.id, 40);
+                if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                const { data: student } = await client.from('students').select('*').eq('id', id).maybeSingle();
+                if (!student) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+                const { data: profile } = await client
+                    .from('student_profiles').select('*').eq('student_id', id).maybeSingle();
+                const { data: badges } = await client
+                    .from('student_badges')
+                    .select('badge_id, kind, awarded_at, awarded_by, reason')
+                    .eq('student_id', id)
+                    .order('awarded_at', { ascending: false });
+                return json({ ok: true, student, profile: profile ?? null, badges: badges ?? [] });
+            }
+
+            case 'badges.list': {
+                const id = str(body.id, 40);
+                if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                const { data: badges, error } = await client
+                    .from('student_badges')
+                    .select('badge_id, kind, awarded_at, awarded_by, reason')
+                    .eq('student_id', id)
+                    .order('awarded_at', { ascending: false });
+                if (error) throw error;
+                return json({ ok: true, badges: badges ?? [] });
+            }
+
+            case 'badges.grant': {
+                const id = str(body.id, 40);
+                const badgeId = str(body.badge_id, 64);
+                if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                if (!ADMIN_BADGE_IDS.includes(badgeId)) {
+                    return fail(400, 'NOT_ADMIN_BADGE', 'Chỉ trao được badge dành riêng cho Administrator.');
+                }
+                const { data: student } = await client.from('students').select('id').eq('id', id).maybeSingle();
+                if (!student) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+                const reason = cleanDisplayName(body.reason).slice(0, 200);
+                const { error } = await client.from('student_badges').upsert({
+                    student_id: id,
+                    badge_id: badgeId,
+                    kind: 'admin',
+                    awarded_at: new Date().toISOString(),
+                    awarded_by: sessionId,
+                    reason
+                }, { onConflict: 'student_id,badge_id' });
+                if (error) throw error;
+                await logAction(client, 'badges.grant', 'student', id, { badge_id: badgeId, reason });
+                const { data: badges } = await client
+                    .from('student_badges')
+                    .select('badge_id, kind, awarded_at, awarded_by, reason')
+                    .eq('student_id', id)
+                    .order('awarded_at', { ascending: false });
+                return json({ ok: true, badges: badges ?? [] });
+            }
+
+            case 'badges.revoke': {
+                const id = str(body.id, 40);
+                const badgeId = str(body.badge_id, 64);
+                if (!id || !badgeId) return fail(400, 'MISSING_ID', 'Thiếu id học sinh hoặc badge.');
+                if (!ADMIN_BADGE_IDS.includes(badgeId)) {
+                    return fail(400, 'NOT_ADMIN_BADGE', 'Chỉ thu hồi được badge do Administrator trao.');
+                }
+                const { error } = await client.from('student_badges')
+                    .delete()
+                    .eq('student_id', id)
+                    .eq('badge_id', badgeId)
+                    .eq('kind', 'admin');
+                if (error) throw error;
+                await logAction(client, 'badges.revoke', 'student', id, { badge_id: badgeId });
+                return json({ ok: true });
             }
 
             /* ------------------------------ Thông báo ------------------------------ */

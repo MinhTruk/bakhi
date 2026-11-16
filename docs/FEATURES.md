@@ -1,4 +1,4 @@
-# Tính năng Bá Khí 3.5
+# Tính năng Bá Khí 3.6
 
 Tài liệu liệt kê toàn bộ tính năng đang có, trạng thái và ghi chú triển khai. Ký hiệu:
 ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị chặn
@@ -124,17 +124,18 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 
 ## H. Thành tích & tín hiệu dùng chung
 
-### H.1. Hệ 75 thành tích (3.4.0)
+### H.1. Hệ 75 thành tích (3.4.0 → xác minh máy chủ 3.6.0)
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1 | Đúng 75 badge: 73 tự động + 2 chỉ Administrator trao | ✅ (cục bộ) | `bk-badges.js`, `bakhiBadges.v1` |
+| 1 | Đúng 75 badge: 73 tự động + 2 chỉ Administrator trao | ✅ | `bk-badges.js`, `bakhiBadges.v1` |
 | 2 | 8 danh mục: Học tập, Khám phá, Đều đặn, Âm nhạc, Tương tác, Hồ sơ, Sáng tạo, Bí mật | ✅ | Mỗi badge có danh mục + độ hiếm |
 | 3 | 6 bậc độ hiếm: Phổ biến, Ít gặp, Hiếm, Cực hiếm, Huyền thoại, Bí mật | ✅ | Hiển thị trên thẻ badge |
 | 4 | Tiến độ từng badge, thanh tiến độ, lọc danh mục/độ hiếm/trạng thái, tìm kiếm | ✅ | `BKProfileUI.renderBadgeBoard` |
-| 5 | Badge thưởng khung avatar; khung chỉ trang bị khi đã mở khoá | ✅ | 13 khung, `ownedFrames`/`canEquip` |
-| 6 | Trao badge Administrator theo danh sách máy chủ, chống trùng | ⚠️ cục bộ | `applyGrants` idempotent; chưa có API trao badge |
-| 7 | Xác minh thành tích phía máy chủ | ❌ chưa có | Cần bảng badge + Edge Function (xem ARCHITECTURE §7) |
+| 5 | Badge thưởng khung avatar; khung chỉ trang bị khi đã mở khoá | ✅ | 13 khung, `ownedFrames`/`canEquip`, trigger `bakhi_profile_frame_guard` |
+| 6 | Trao/thu hồi badge Administrator có kiểm tra phiên, ghi audit log | ⚠️ đã có mã | `admin-actions` `badges.grant`/`badges.revoke`, 2 id admin; cần deploy |
+| 7 | Xác minh thành tích phía máy chủ, không tin danh sách client gửi | ⚠️ đã có mã | `student-profile` + `_shared/badge-rules.ts` + bảng `student_badges`; cần deploy |
+| 8 | Đồng bộ hồ sơ và thành tích giữa các thiết bị | ⚠️ đã có mã | `student_profiles` + `BKProfile.applyRemote`/`BK.badges.applyServer`; cần deploy |
 
 ### H.2. Thành tích 2.3 trong Trung tâm học tập
 

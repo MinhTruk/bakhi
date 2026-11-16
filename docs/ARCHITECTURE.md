@@ -180,12 +180,12 @@ DOMContentLoaded
 
 - **Hồ sơ local-first** (`bk-profile.js`, khoá `bakhiProfile.v1`): biệt danh, giới thiệu,
   ảnh đại diện/bìa (canvas resize rồi lưu data URL), tối đa 6 liên kết chỉ nhận `http(s)`,
-  khung avatar đang dùng. Hồ sơ gắn với danh tính `bakhiStudent.v1`; chưa có bảng profile
-  phía Supabase.
+  khung avatar đang dùng. Hồ sơ gắn với danh tính `bakhiStudent.v1`; bản cục bộ vẫn là
+  nguồn dùng ngay khi ngoại tuyến, còn bản máy chủ (3.6.0) chỉ ghi đè khi mới hơn.
 - **Thành tích** (`bk-badges.js`, khoá `bakhiBadges.v1`): đúng 75 badge — 73 tự động theo
   chỉ số học tập/khám phá/chuỗi ngày/âm nhạc/tương tác/hồ sơ/Studio/bí mật, 2 badge chỉ
-  Administrator trao (`applyGrants`, idempotent). 8 danh mục, 6 bậc độ hiếm; badge đã mở
-  thưởng khung avatar (`ownedFrames`).
+  Administrator trao. 8 danh mục, 6 bậc độ hiếm; badge đã mở thưởng khung avatar
+  (`ownedFrames`). Từ 3.6.0, badge tự động được máy chủ xác minh lại (xem 2.6).
 - **Component dùng chung** (`bk-profile-ui.js`): `renderHero`, `renderEditor`,
   `renderFrames`, `renderBadgeBoard` — dùng cho cả `/profile/` và tab Hồ sơ trong `/settings/`,
   không có hệ thống hồ sơ thứ hai.
@@ -218,6 +218,31 @@ DOMContentLoaded
   xoá phiên, đóng panel, gỡ FAB. Thu nhỏ giữ tab/kích thước/trạng thái. Panel nằm dưới
   `.bk-overlay` để hộp xác nhận luôn bấm được; không có animation favicon và không có
   Highlight Manager độc lập.
+
+### 2.6. Hồ sơ và thành tích xác minh phía máy chủ (3.6.0)
+
+- **Bảng dữ liệu** (`supabase/migrations/20261119000000_bakhi_profile_badges.sql`):
+  - `student_profiles` (1 dòng/học sinh): biệt danh, giới thiệu, ảnh đại diện/bìa, liên kết,
+    khung avatar. RLS: mỗi học sinh chỉ đọc/ghi dòng của mình.
+  - `student_badges` (khoá chính `student_id` + `badge_id`, cột `kind` = `auto`/`admin`):
+    RLS chỉ có policy đọc của chính mình; **thu hồi toàn bộ quyền ghi** khỏi
+    `anon`/`authenticated`. Chỉ service role trong Edge Function ghi được.
+  - `bakhi_owned_frames(uuid)`: 2 khung cơ bản + khung thưởng của badge đã xác minh;
+    trigger `bakhi_profile_frame_guard` chặn gán khung chưa sở hữu (`FRAME_NOT_OWNED`).
+- **Edge Function `student-profile`** (`sync` | `update` | `get`): đọc `student_progress`
+  đã đồng bộ, dựng ảnh chụp, tính lại chỉ số bằng `_shared/badge-rules.ts` rồi ghi badge
+  `auto` đủ điều kiện. Client **không** gửi danh sách badge đã mở; `applyServer()` chỉ nhận
+  id có trong danh mục và badge `admin` chỉ khi `kind='admin'`. Giới hạn 90 lần/giờ/học sinh.
+- **Danh mục dùng chung**: `tools/gen-badge-catalog.js` sinh
+  `_shared/badge-catalog.ts` từ `bk-badges.js`; `badges-smoke.js` đối chiếu để phát hiện lệch.
+- **Trao badge Administrator**: chỉ `admin-actions` với `x-admin-token` (các action
+  `badges.grant`/`badges.revoke`), giới hạn ở `admin-chosen` và `admin-legend`, ghi
+  `admin_activity_logs`. `student-profile` không bao giờ ghi hai id này.
+- **Đồng bộ máy khách**: `bk-cloud.js` đẩy hồ sơ khi `updatedAt` mới hơn bản máy chủ, kéo
+  badge đã xác minh, và tự tắt (`studentDisabled`) khi Edge Function chưa được deploy (404).
+- **Trạng thái triển khai**: mã đã hoàn tất và kiểm thử cục bộ; migration + ba Edge Function
+  (`student-profile`, `admin-actions`, `sync-student-progress`) **cần được deploy** trên dự án
+  Supabase thật trước khi tính năng chạy trên website công khai.
 
 ### 2.4. Administrator Dashboard 4.1
 
@@ -331,11 +356,12 @@ Kết quả sau nâng cấp: **119/119 tệp không đổi nội dung** (`verify
 - `prefers-reduced-motion` được tôn trọng ở animation mới; các hiệu ứng cũ giữ nguyên.
 - Chế độ chỉ thông báo không đồng bộ tiến trình, nên dữ liệu học trên trang bài học chỉ nằm
   trên thiết bị. Đây là chủ ý để không cần đăng nhập khi đang học.
-- Hồ sơ và thành tích hiện chỉ nằm trên thiết bị (`bakhiProfile.v1`, `bakhiBadges.v1`);
-  chưa có bảng profile/badge, Storage bucket hay Edge Function xác minh phía máy chủ.
-  Hai badge Administrator được nhận từ danh sách trao tặng khi có API, chưa có endpoint.
-- `/chat/`, hợp nhất hai trang Studio, Dev Playground 14 tab và mở rộng dashboard A–M
-  chưa triển khai; xem `CHANGELOG.md` mục 3.4.0 và báo cáo phát hành.
+- Hồ sơ và thành tích: bản cục bộ (`bakhiProfile.v1`, `bakhiBadges.v1`) luôn dùng được;
+  đồng bộ/xác minh phía máy chủ (3.6.0) chỉ hoạt động sau khi deploy migration
+  `20261119000000` và Edge Functions `student-profile`/`admin-actions`. Khi chưa deploy,
+  `bk-cloud.js` tự tắt đồng bộ hồ sơ sau lỗi 404 và website giữ nguyên hành vi local-first.
+- `/chat/`, hợp nhất hai trang Studio và mở rộng dashboard A–M chưa triển khai; xem
+  `CHANGELOG.md` mục 3.6.0 và báo cáo phát hành.
 - Vì menu ba gạch bị ẩn, Dev Code **chỉ** vào từ Cài đặt → Nhà phát triển → Dev Code;
   Developer Playground chỉ mở khi `dev-auth` đã cấp phiên (xem 2.5).
 

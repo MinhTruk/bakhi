@@ -1,7 +1,11 @@
 // sync-student-progress — đồng bộ tiến trình học tập theo student_id.
 //
 // Body: { payload: { practice?, review?, notes?, bookmarks?, history?,
-//                   achievements?, prefs? }, updated_at?: ISO }
+//                   achievements?, prefs?, signals?, badges? }, updated_at?: ISO }
+//
+// `signals` (bộ đếm thành tích) và `badges` (trang đã ghé, chuỗi ngày, lượt
+// nghe) do máy khách gửi lên chỉ để Edge Function student-profile tính lại
+// thành tích; bản thân chúng không cấp quyền gì.
 //
 // Quy tắc xung đột: chỉ ghi khi mốc thời gian gửi lên mới hơn hoặc bằng bản
 // đang lưu. Sau đó trả về toàn bộ dữ liệu máy chủ để client hợp nhất — không
@@ -9,7 +13,7 @@
 import { json, fail, preflight, readJson } from '../_shared/http.ts';
 import { adminClient, callerUserId } from '../_shared/supabase.ts';
 
-const KEYS = ['practice', 'review', 'notes', 'bookmarks', 'history', 'achievements', 'prefs'];
+const KEYS = ['practice', 'review', 'notes', 'bookmarks', 'history', 'achievements', 'prefs', 'signals', 'badges'];
 const MAX_BYTES = 1_500_000;
 
 Deno.serve(async (req) => {
