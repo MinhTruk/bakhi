@@ -565,8 +565,16 @@
             var adminRow = el('div', 'bk-auth-box');
             var dash = el('a', 'bk-btn');
             dash.href = base() + 'admin/';
+            dash.target = '_blank';
+            dash.rel = 'noopener noreferrer';
             dash.appendChild(icon('fa-gauge-high'));
             dash.appendChild(el('span', null, 'Mở Administrator Dashboard'));
+            /* Mở tab mới, tránh mở trùng khi bấm liên tục. Giữ nguyên tab Settings. */
+            dash.addEventListener('click', function (e) {
+                if (dash.getAttribute('data-opening') === '1') { e.preventDefault(); return; }
+                dash.setAttribute('data-opening', '1');
+                setTimeout(function () { dash.removeAttribute('data-opening'); }, 1500);
+            });
             var adminOut = el('button', 'bk-btn bk-btn-ghost');
             adminOut.type = 'button';
             adminOut.appendChild(icon('fa-right-from-bracket'));
@@ -611,8 +619,9 @@
                 aSubmit.disabled = true;
                 sayAdmin('Đang xác thực…');
                 cloud.adminLogin(code).then(function () {
-                    sayAdmin('Xác thực thành công. Đang mở Administrator Dashboard…', 'ok');
-                    global.location.href = base() + 'admin/';
+                    /* Không tự chuyển trang: chỉ báo thành công và hiện nút mở tab mới. */
+                    toast('Xác thực Administrator thành công.', 'success');
+                    buildDev(panel);
                 }).catch(function (err) {
                     var codeName = (err && err.code) || '';
                     var m = (err && err.message) || '';

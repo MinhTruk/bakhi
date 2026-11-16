@@ -306,6 +306,11 @@
         else lsDel(IDENTITY_KEY);
         paintIdentityChip();
         emit('identity', S.student);
+        /* Đổi học sinh tức thời cho mọi thành phần trong trang (avatar, menu,
+           thành tích, Learning Center) mà không cần tải lại trang. */
+        try {
+            global.dispatchEvent(new global.CustomEvent('bk:identity', { detail: S.student }));
+        } catch (e) { }
     }
 
     function paintIdentityChip() {
@@ -322,9 +327,16 @@
         icon.setAttribute('aria-hidden', 'true');
         chip.appendChild(icon);
         chip.appendChild(el('span', 'bkc-chip-name', S.student.display_name));
-        chip.title = S.student.display_name;
+        var roleLabel = (global.BKRoles && global.BKRoles.labelFor) ? global.BKRoles.labelFor(S.student.id) : '';
+        if (roleLabel) {
+            var role = el('span', 'bkc-chip-role', roleLabel);
+            chip.appendChild(role);
+        }
+        chip.title = S.student.display_name + (roleLabel ? ' · ' + roleLabel : '');
         if (S.changeBtn) S.changeBtn.hidden = false;
     }
+
+    if (global.BKRoles && global.BKRoles.onReady) global.BKRoles.onReady(paintIdentityChip);
 
     /* --------------------------- Màn hình nhập tên ---------------------- */
     function buildGate() {
@@ -1645,22 +1657,47 @@
         head.appendChild(actions);
         host.appendChild(head);
 
-        /* Giới hạn hiển thị: 10 mục đầu, phần còn lại sau nút "Xem thêm". */
-        var shown = wnExpanded ? entries : entries.slice(0, WN_LIMIT);
+        /* CHỈ phiên bản mới nhất. Nội dung quá 10 dòng thì thu gọn 10 dòng đầu;
+           nút "Xem thêm" mở toàn bộ, "Thu gọn" trả lại. Lịch sử cũ vẫn nằm
+           trong nút "Xem tất cả cập nhật" (không xoá dữ liệu changelog). */
+        var latest = entries[0];
         var body = el('div', 'bkc-wn-body');
         body.id = 'bkcWhatsNewList';
         var list = el('div', 'bkc-wn-list');
-        shown.forEach(function (e) { list.appendChild(wnItem(e)); });
+        list.appendChild(wnItem(latest));
+
+        var lines = [];
+        var sections = Array.isArray(latest.content) ? latest.content : [];
+        sections.forEach(function (sec) {
+            var items = Array.isArray(sec && sec.items) ? sec.items : [];
+            items.forEach(function (text) {
+                if (text == null || text === '') return;
+                lines.push({ category: (sec && sec.category) || 'other', text: String(text) });
+            });
+        });
+
+        if (lines.length) {
+            var lineBox = el('div', 'bkc-wn-lines');
+            var visible = wnExpanded ? lines : lines.slice(0, WN_LIMIT);
+            visible.forEach(function (line) {
+                var row = el('div', 'bkc-wn-line-item');
+                row.appendChild(el('span', 'bkc-tag bkc-tag-update', CAT_LABEL[line.category] || 'Khác'));
+                row.appendChild(el('span', 'bkc-wn-line-text', line.text));
+                lineBox.appendChild(row);
+            });
+            list.appendChild(lineBox);
+        }
         body.appendChild(list);
         host.appendChild(body);
 
-        if (entries.length > WN_LIMIT) {
+        if (lines.length > WN_LIMIT) {
             var foot = el('div', 'bkc-wn-foot');
             var more = el('button', 'bkc-btn bkc-btn-ghost');
             more.type = 'button';
             more.id = 'bkcWhatsNewMore';
             more.textContent = wnExpanded ? 'Thu gọn' : 'Xem thêm';
             more.setAttribute('aria-expanded', wnExpanded ? 'true' : 'false');
+            more.setAttribute('aria-controls', 'bkcWhatsNewList');
             more.addEventListener('click', function () {
                 wnExpanded = !wnExpanded;
                 renderWhatsNew();
@@ -1669,7 +1706,8 @@
                     try { again.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) { }
                 }
             });
-            foot.appendChild(el('span', 'bkc-wn-count', (wnExpanded ? entries.length : WN_LIMIT) + ' / ' + entries.length + ' mục'));
+            foot.appendChild(el('span', 'bkc-wn-count',
+                (wnExpanded ? lines.length : WN_LIMIT) + ' / ' + lines.length + ' dòng'));
             foot.appendChild(more);
             host.appendChild(foot);
         }

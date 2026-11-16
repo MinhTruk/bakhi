@@ -326,7 +326,7 @@
         var r = el(tag, 'bk-menu-row');
         if (tag === 'a') {
             r.href = opts.href || '#';
-            if (opts.external) { r.target = '_blank'; r.rel = 'noopener'; }
+            if (opts.external) { r.target = '_blank'; r.rel = 'noopener noreferrer'; }
         } else {
             r.type = 'button';
         }
@@ -351,6 +351,9 @@
         head.appendChild(avatarNode(42));
         var text = el('div', 'bk-menu-head-text');
         var nameEl = el('div', 'bk-menu-name', displayName());
+        var roleEl = el('div', 'bk-menu-role');
+        roleEl.id = 'bkMenuRole';
+        roleEl.hidden = true;
         var nickEl = el('div', 'bk-menu-nick');
         var status = el('div', 'bk-menu-status', 'Học sinh');
         var switchBtn = el('button', 'bk-menu-switch', 'Đổi học sinh');
@@ -361,6 +364,7 @@
             else if (typeof global.changeStudent === 'function') global.changeStudent();
         });
         text.appendChild(nameEl);
+        text.appendChild(roleEl);
         text.appendChild(nickEl);
         text.appendChild(status);
         text.appendChild(switchBtn);
@@ -404,7 +408,7 @@
 
         /* --- Chat: phòng chung, tin nhắn riêng, nhóm nhỏ --- */
         menu.appendChild(row('a', 'fa-comments', 'Chat', {
-            href: S.base + 'chat/', role: 'menuitem',
+            href: S.base + 'chat/', role: 'menuitem', external: true,
             onClick: function () { closeMenu(); }
         }));
 
@@ -496,6 +500,14 @@
             S.btn.replaceChild(fresh, old);
         }
         if (S.nameEl) S.nameEl.textContent = displayName();
+        var roleEl = D.getElementById('bkMenuRole');
+        if (roleEl) {
+            var idc = null;
+            try { idc = profileApi() && profileApi().identity ? profileApi().identity() : null; } catch (e) { }
+            var label = (idc && global.BKRoles) ? global.BKRoles.labelFor(idc.studentId) : '';
+            roleEl.textContent = label;
+            roleEl.hidden = !label;
+        }
         if (S.nickEl) {
             var api = profileApi();
             var p = api ? api.get() : {};
@@ -637,6 +649,123 @@
     /* ---------------------------------------------------------------------
        Khởi động
        ------------------------------------------------------------------ */
+    /* ---------------------------------------------------------------------
+       Bảo trì toàn website
+       - Đọc public.maintenance từ Supabase; chỉ Admin hợp lệ mới đi tiếp.
+       - Không phá dữ liệu, không chặn trang quản trị.
+       ------------------------------------------------------------------ */
+    var MAINT_TIMER = null;
+    var MAINT_LAST = null;
+
+    function adminSessionActive() {
+        try {
+            var raw = global.sessionStorage.getItem('bakhiAdmin.v1');
+            if (!raw) return false;
+            var data = JSON.parse(raw);
+            if (!data || !data.token) return false;
+            return !data.expiresAt || Number(data.expiresAt) > Date.now();
+        } catch (e) { return false; }
+    }
+
+    function fmtMaintenanceTime(iso) {
+        if (!iso) return '';
+        try {
+            var d = new Date(iso);
+            if (isNaN(d.getTime())) return '';
+            return d.toLocaleString('vi-VN', {
+                hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'
+            });
+        } catch (e) { return ''; }
+    }
+
+    function removeMaintenance() {
+        var node = D.getElementById('bkMaintenance');
+        if (node && node.parentNode) node.parentNode.removeChild(node);
+        if (D.body) D.body.classList.remove('bk-maintenance-on');
+    }
+
+    function paintMaintenance(value) {
+        MAINT_LAST = value || {};
+        if (!MAINT_LAST.enabled || adminSessionActive()) { removeMaintenance(); return; }
+        var host = D.getElementById('bkMaintenance');
+        if (!host) {
+            host = D.createElement('div');
+            host.id = 'bkMaintenance';
+            host.className = 'bk-maint';
+            host.setAttribute('role', 'alertdialog');
+            host.setAttribute('aria-modal', 'true');
+            host.setAttribute('aria-label', 'Thông báo bảo trì');
+            (D.body || D.documentElement).appendChild(host);
+        }
+        host.textContent = '';
+        var card = D.createElement('div');
+        card.className = 'bk-maint-card';
+        var mark = D.createElement('div');
+        mark.className = 'bk-maint-mark';
+        mark.setAttribute('aria-hidden', 'true');
+        mark.innerHTML = '<svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0 5 5l-9.4 9.4a2.1 2.1 0 0 1-3-3z"/><path d="M9 9l6 6"/></svg>';
+        card.appendChild(mark);
+        var title = D.createElement('h1');
+        title.className = 'bk-maint-title';
+        title.textContent = MAINT_LAST.title || 'Bá Khí đang bảo trì';
+        card.appendChild(title);
+        var msg = D.createElement('p');
+        msg.className = 'bk-maint-msg';
+        msg.textContent = MAINT_LAST.message || 'Website tạm đóng để nâng cấp. Dữ liệu học tập của bạn được giữ nguyên.';
+        card.appendChild(msg);
+        if (MAINT_LAST.reason) {
+            var reason = D.createElement('p');
+            reason.className = 'bk-maint-reason';
+            reason.textContent = 'Lý do: ' + MAINT_LAST.reason;
+            card.appendChild(reason);
+        }
+        var s = fmtMaintenanceTime(MAINT_LAST.startAt);
+        var e = fmtMaintenanceTime(MAINT_LAST.endAt);
+        if (s || e) {
+            var time = D.createElement('p');
+            time.className = 'bk-maint-time';
+            time.textContent = (s ? 'Bắt đầu: ' + s : '') + (s && e ? ' · ' : '') + (e ? 'Dự kiến mở lại: ' + e : '');
+            card.appendChild(time);
+        }
+        var actions = D.createElement('div');
+        actions.className = 'bk-maint-actions';
+        var retry = D.createElement('button');
+        retry.type = 'button';
+        retry.className = 'bk-maint-btn';
+        retry.textContent = 'Thử lại';
+        retry.addEventListener('click', function () { loadMaintenance(true); });
+        actions.appendChild(retry);
+        card.appendChild(actions);
+        card.appendChild(Object.assign(D.createElement('p'), {
+            className: 'bk-maint-foot',
+            textContent: 'Quản trị viên đã đăng nhập vẫn có thể mở Administrator Dashboard để tắt bảo trì.'
+        }));
+        host.appendChild(card);
+        if (D.body) D.body.classList.add('bk-maintenance-on');
+    }
+
+    function loadMaintenance(force) {
+        if (/\/admin\//.test(global.location.pathname || '')) return;
+        var cfg = global.BK_SUPABASE;
+        if (!cfg || typeof cfg.configured !== 'function' || !cfg.configured()) {
+            var isTestEnv = /jsdom/i.test(String((global.navigator && global.navigator.userAgent) || ''));
+            if (!force && !isTestEnv && !MAINT_TIMER) {
+                MAINT_TIMER = setTimeout(function () { MAINT_TIMER = null; loadMaintenance(); }, 900);
+            }
+            return;
+        }
+        try {
+            global.fetch(cfg.url + '/rest/v1/app_settings?key=eq.public.maintenance&select=value', {
+                headers: { apikey: cfg.key, Authorization: 'Bearer ' + cfg.key },
+                cache: 'no-store'
+            }).then(function (res) { return res.ok ? res.json() : null; })
+                .then(function (rows) {
+                    if (!Array.isArray(rows) || !rows.length) return;
+                    paintMaintenance(rows[0] && rows[0].value);
+                }).catch(function () { /* mất mạng: giữ nguyên trạng thái hiện tại */ });
+        } catch (e) { }
+    }
+
     function init() {
         S.base = basePath();
         ensureCss('bk-shell');
@@ -657,6 +786,21 @@
         hookEffects();
         hookSearch();
         paintProfileBits();
+        loadMaintenance();
+        /* Không tạo timer định kỳ trong môi trường jsdom (QA) để tiến trình thoát.
+           Trình duyệt thật vẫn kiểm tra lại mỗi 2 phút và khi quay lại tab. */
+        var isJsdom = /jsdom/i.test(String((global.navigator && global.navigator.userAgent) || ''));
+        if (!S.maintPoll && !isJsdom) {
+            S.maintPoll = setInterval(function () {
+                if (!D.hidden) loadMaintenance();
+            }, 120000);
+        }
+        global.addEventListener('focus', function () { loadMaintenance(); });
+        global.addEventListener('bk:identity', function () { paintProfileBits(); });
+        if (global.BKRoles && global.BKRoles.onReady) global.BKRoles.onReady(paintProfileBits);
+        global.addEventListener('bk:maintenance', function (e) {
+            if (e && e.detail) paintMaintenance(e.detail);
+        });
         if (devActive()) ensureDevScript();
         global.addEventListener('bk:dev', function (e) {
             if (e && e.detail && e.detail.active) ensureDevScript();
@@ -691,6 +835,10 @@
         refresh: paintProfileBits,
         openDev: openDev,
         devActive: devActive,
+        maintenance: {
+            reload: function () { loadMaintenance(true); },
+            current: function () { return MAINT_LAST; }
+        },
         /* Cho phép các trang đánh dấu đã xem badge / dùng tính năng. */
         mark: function (name) {
             if (global.BK && global.BK.badges) {

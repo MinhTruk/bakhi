@@ -33,11 +33,12 @@ BAKHI hướng đến việc giúp việc ôn tập trở nên:
 - **Một tài khoản, một menu**: avatar ở góc phải header thay cho menu ba gạch và nút README
   riêng. Menu gồm Hồ sơ cá nhân, Giao diện, README.md, Bá Khí Studio và Cài đặt.
 - **Hồ sơ và thành tích**: trang `/profile/` có ảnh đại diện, ảnh bìa, biệt danh, giới thiệu,
-  liên kết, khung avatar và 75 thành tích (73 tự động + 2 chỉ Administrator trao).
+  liên kết, 30 khung avatar (27 thường + 2 Developer + 1 Founder) và 78 thành tích
+  (73 tự động + 2 Administrator + 2 Developer + 1 Founder).
 - **Cài đặt tập trung**: `/settings/` gồm Hồ sơ, toàn bộ tab Trung tâm học tập, Hiển thị &
   Trợ năng, Hình nền và Nhà phát triển.
-- **What's New gọn hơn**: trang chủ hiển thị 10 cập nhật mới nhất theo số phiên bản, có
-  `Xem thêm` / `Thu gọn`.
+- **What's New gọn hơn**: chỉ hiển thị phiên bản mới nhất, tối đa 10 dòng, có
+  `Xem thêm` / `Thu gọn`; lịch sử đầy đủ vẫn mở từ nút “Xem tất cả cập nhật”.
 - **Một website, một trải nghiệm thông báo**: chuông thông báo có mặt trên trang chủ, mọi
   trang môn học/bài học/đề kiểm tra và cả Studio. Giáo viên đăng thông báo là máy học sinh
   nhận được ngay, kể cả khi đang làm bài; toàn bộ giao diện thông báo dùng chung một theme tối.
@@ -46,7 +47,7 @@ BAKHI hướng đến việc giúp việc ôn tập trở nên:
 - **Học tập local-first**: tiến trình, ghi chú, đánh dấu, thành tích lưu trên máy trước;
   Supabase chỉ là lớp đồng bộ tuỳ chọn, không bắt buộc tài khoản.
 - **Không áp lực thời gian**: không đồng hồ đếm ngược, không tính giờ, không xếp hạng thi.
-- **Quản trị tập trung**: Administrator Dashboard 13 mô-đun, có xem trước thông báo/changelog
+- **Quản trị tập trung**: Administrator Dashboard 14 mô-đun (thêm Bảo trì), có xem trước thông báo/changelog
   trước khi push, quản lý học sinh, nhật ký, giám sát, cấu hình và dữ liệu.
 - **Công cụ học tập đi kèm**: Trung tâm học tập 7 tab, Music Player, Bá Khí Studio (Word & Paint),
   Developer Playground 2.0. Favicon tĩnh dùng chung trên toàn site.
@@ -235,7 +236,7 @@ script và không sửa nội dung gốc.
 | 🎧 Music Player dùng chung | 🟢 Đã có |
 | 🎨 Bá Khí Studio (Word & Paint) | 🟢 Đã có |
 | 🔔 Thông báo realtime toàn website (kể cả trang bài học, Studio) | 🟢 Đã có (3.2.0) |
-| 🛠️ Administrator Dashboard 4.2 (13 mô-đun, hồ sơ, thành tích, chat, What's New) | 🟢 Đã có (3.8.0) |
+| 🛠️ Administrator Dashboard 5.0 (14 mô-đun, hồ sơ, thành tích, chat, What's New, bảo trì) | 🟢 Đã có (5.0.0) |
 | 🔄 Đồng bộ CHANGELOG.md tự động qua GitHub Actions | 🟢 Đã có (3.3.0) |
 | 🌙 Giao diện thông báo tối thống nhất | 🟢 Đã có (3.3.0) |
 | 🖼️ Favicon tĩnh SVG/PNG/ICO toàn site | 🟢 Đã có (3.3.0) |
@@ -263,7 +264,7 @@ script và không sửa nội dung gốc.
 - [x] Đồng bộ `CHANGELOG.md` lên Supabase bằng GitHub Actions, chống trùng thông báo
 - [x] Giao diện thông báo tối thống nhất và favicon tĩnh SVG/PNG/ICO toàn site
 - [x] Lớp shell dùng chung: avatar + menu tài khoản thay menu ba gạch, thay nút README riêng
-- [x] Trang Hồ sơ và Cài đặt local-first; 75 thành tích và khung avatar; What's New 10 mục
+- [x] Trang Hồ sơ và Cài đặt local-first; 78 thành tích và 30 khung avatar; What's New một phiên bản
 
 ### 🔨 Đang phát triển
 
@@ -480,7 +481,7 @@ Chín mô-đun:
 
 ### Giao diện 4.1
 
-- **13 mô-đun trong sidebar thu gọn được**, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng.
+- **14 mô-đun trong sidebar thu gọn được**, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng.
 - **Bảng dữ liệu** có tìm kiếm, lọc, sắp xếp và phân trang phía máy chủ; bảng rộng cuộn trong
   khung, không đẩy vỡ bố cục.
 - **Lịch sử phiên bản dạng cột dọc**: biểu mẫu tạo/sửa chiếm toàn chiều rộng, danh sách bên dưới.
@@ -505,21 +506,21 @@ có kiểm tra phiên quản trị.
 ```
 /                       index.html (trung tâm) + bakhi-v4.js (lớp V4 cũ)
 /admin                  admin/index.html — Administrator Dashboard (Administrator Code)
-/profile                profile/index.html — Hồ sơ cá nhân + 75 thành tích
+/profile                profile/index.html — Hồ sơ cá nhân + 78 thành tích
 /settings               settings/index.html — Hồ sơ, Trung tâm học tập, hiển thị, hình nền, quyền
 /assets/bakhi/
   bk-core.js|css        Kho dữ liệu local-first, UI kit, tìm kiếm
   bk-version.js         Nguồn phiên bản duy nhất (window.BAKHI_VERSION, BK.release)
   bk-shell.js|css       Avatar + menu tài khoản, trợ năng toàn site, chrome cũ
   bk-profile.js|css     Hồ sơ local-first, ảnh đại diện/bìa, khung avatar
-  bk-badges.js          75 thành tích (73 tự động + 2 Administrator)
+  bk-badges.js          78 thành tích (73 tự động + 5 Administrator/độc quyền)
   bk-profile-ui.js      Component hồ sơ/badge dùng chung cho profile và settings
   bk-settings.js|css    5 tab Cài đặt
   bk-learn.js|css       Trung tâm học tập, ôn tập, ghi chú, đánh dấu, thành tích
   bk-dev.js|css         Developer Playground 2.0
   bk-music.js|css       Music Player dùng chung
   bk-cloud.js|css       Nhận diện, thông báo realtime, changelog, đồng bộ (Supabase)
-  bk-devboard.js        Administrator Dashboard 13 mô-đun + menu Administrator
+  bk-devboard.js        Administrator Dashboard 14 mô-đun + menu Administrator
   bk-admin-dashboard.css Giao diện dashboard 4.1 (sidebar thu gọn, bảng phân trang)
   bk-admin.css|bk-admin-theme.js  Trang đăng nhập quản trị + theme
   bk-supabase.config.js Nơi duy nhất chứa Project URL + Publishable key

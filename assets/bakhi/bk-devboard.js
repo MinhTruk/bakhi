@@ -36,6 +36,7 @@
         ['monitoring', 'Giám sát', 'fa-heart-pulse'],
         ['permissions', 'Quyền & bảo mật', 'fa-shield-halved'],
         ['settings', 'Cấu hình', 'fa-gear'],
+        ['maintenance', 'Bảo trì', 'fa-screwdriver-wrench'],
         ['data', 'Dữ liệu & sao lưu', 'fa-database']
     ];
     var TAB_SUBS = {
@@ -51,6 +52,7 @@
         monitoring: 'Sức khoẻ máy chủ, đồng bộ và lỗi gần đây',
         permissions: 'Mô hình quyền hiện tại và phiên quản trị',
         settings: 'Kết nối, feature flag, giao diện và phiên làm việc',
+        maintenance: 'Bật/tắt bảo trì toàn website và soạn thông báo đóng cửa tạm thời',
         data: 'Kiểm tra toàn vẹn, xuất dữ liệu an toàn'
     };
     var TYPE_META = {
@@ -780,6 +782,7 @@
             monitoring: renderMonitoring,
             permissions: renderPermissions,
             settings: renderSettings,
+            maintenance: renderMaintenance,
             data: renderData
         }[tab] || renderOverview)(pane);
         S.body.scrollTop = 0;
@@ -2386,7 +2389,7 @@
         var catalog = badgeCatalog();
         var adminIds = ['admin-chosen', 'admin-legend'];
         var catalogCard = card('Danh mục thành tích', null,
-            'Badge tự động do máy chủ tính lại; trang quản trị chỉ trao và thu hồi hai badge Administrator.');
+            'Administrator có thể trao mọi badge trong danh mục. Badge tự động vẫn được máy chủ tính lại độc lập.');
         pane.appendChild(catalogCard.root);
 
         var infoGrid = h('div', 'bkc-status-grid');
@@ -2394,17 +2397,16 @@
             var autoCount = catalog.filter(function (b) { return !b.adminOnly; }).length;
             infoGrid.appendChild(infoItem('Tổng badge', catalog.length, 'Danh mục trong bk-badges.js', 'ok'));
             infoGrid.appendChild(infoItem('Tự động', autoCount, 'Máy chủ tính từ tiến trình đã đồng bộ', 'info'));
-            infoGrid.appendChild(infoItem('Administrator', catalog.length - autoCount, 'Chỉ trao tay được hai badge này', 'warn'));
+            infoGrid.appendChild(infoItem('Administrator', catalog.length - autoCount, 'Trao tay mọi badge; badge độc quyền có quy tắc riêng', 'warn'));
         } else {
             infoGrid.appendChild(infoItem('Danh mục', 'Chưa nạp', 'Trang quản trị không nạp bk-badges.js', 'warn'));
-            infoGrid.appendChild(infoItem('Administrator', 2, 'admin-chosen và admin-legend', 'warn'));
+            infoGrid.appendChild(infoItem('Administrator', '—', 'Không đọc được danh mục badge', 'warn'));
         }
         catalogCard.body.appendChild(infoGrid);
 
-        var lockNotice = alertBox(
-            'Máy chủ chỉ nhận đúng admin-chosen và admin-legend; mọi badge tự động bị từ chối với NOT_ADMIN_BADGE. ' +
-            'Badge tự động không thể trao tay, kể cả bởi Administrator.', 'warn');
-        catalogCard.body.appendChild(lockNotice);
+        catalogCard.body.appendChild(alertBox(
+            'Badge tự động đạt và badge Administrator trao tay được lưu TÁCH BIỆT: thu hồi trao tay không xoá kết quả tự động. ' +
+            'Badge Founder chỉ trao được cho hồ sơ Người sáng lập đã xác minh; hai khung Developer đi kèm badge Developer tương ứng.', 'info'));
 
         /* Chọn học sinh */
         var pickerCard = card('Chọn học sinh', [
@@ -2521,14 +2523,68 @@
             selectedHost.appendChild(head);
 
             var grantBox = h('div', 'bkc-grant-box');
-            var badgeSelect = selectBox(adminIds.map(function (id) {
-                var meta = badgeMeta(id);
-                return [id, meta.name + ' — ' + id];
-            }), S.badges.badgeId || 'admin-chosen', function (v) { S.badges.badgeId = v; });
+
+            /* Tìm + lọc trong TOÀN BỘ danh mục badge. */
+            var badgeSearch = input('search', 'Tìm badge theo tên, mô tả hoặc mã…', '');
+            var raritySel = selectBox([['all', 'Mọi độ hiếm']].concat(
+                ((global.BK && global.BK.badges && global.BK.badges.RARITIES) || [])
+                    .map(function (r) { return [r.id, r.name]; })), 'all');
+            var grantFilter = h('div', 'bkc-filters');
+            badgeSearch.className = 'bkc-input bkc-grow';
+            grantFilter.appendChild(badgeSearch);
+            grantFilter.appendChild(raritySel);
+            grantBox.appendChild(grantFilter);
+
+            var selectHost = h('div');
+            grantBox.appendChild(selectHost);
+            var previewHost = h('p', 'bkc-hint');
+            grantBox.appendChild(previewHost);
+
+            function paintPreview() {
+                var meta = badgeMeta(S.badges.badgeId);
+                var rar = ((global.BK && global.BK.badges && global.BK.badges.RARITIES) || [])
+                    .filter(function (x) { return x.id === meta.rarity; })[0];
+                var scope = meta.adminOnly
+                    ? (meta.exclusive === 'founder' ? 'chỉ hồ sơ Founder' : meta.exclusive === 'dev' ? 'khung Developer' : 'Administrator')
+                    : 'tự động';
+                previewHost.textContent = 'Xem trước: ' + meta.name + ' — ' + (meta.desc || '') +
+                    ' · ' + (rar ? rar.name : (meta.rarity || '')) +
+                    (meta.goal > 1 ? ' · mục tiêu ' + meta.goal : '') + ' · ' + scope;
+            }
+            function paintBadgeSelect() {
+                selectHost.textContent = '';
+                var q = String(badgeSearch.value || '').trim().toLowerCase();
+                var rarity = raritySel.value || 'all';
+                var list = (catalog.length ? catalog : []).filter(function (b) {
+                    if (b.id === 'none') return false;
+                    if (rarity !== 'all' && b.rarity !== rarity) return false;
+                    if (!q) return true;
+                    return (b.id + ' ' + b.name + ' ' + (b.desc || '')).toLowerCase().indexOf(q) !== -1;
+                });
+                if (!list.length) {
+                    selectHost.appendChild(alertBox('Không có badge nào khớp bộ lọc.', 'info'));
+                    previewHost.textContent = '';
+                    return;
+                }
+                var current = S.badges.badgeId;
+                if (!list.some(function (b) { return b.id === current; })) current = list[0].id;
+                S.badges.badgeId = current;
+                var badgeSelect = selectBox(list.map(function (b) {
+                    var mark = b.adminOnly
+                        ? (b.exclusive === 'founder' ? '★ Founder' : b.exclusive === 'dev' ? '◆ Dev' : '✦ Admin')
+                        : '• Tự động';
+                    return [b.id, mark + ' · ' + b.name];
+                }), current, function (v) { S.badges.badgeId = v; paintPreview(); });
+                selectHost.appendChild(fieldRow('Badge cần trao', badgeSelect));
+                paintPreview();
+            }
+            badgeSearch.addEventListener('input', paintBadgeSelect);
+            raritySel.addEventListener('change', paintBadgeSelect);
+            paintBadgeSelect();
+
             var reason = input('text', 'Lý do trao (không bắt buộc, tối đa 200 ký tự)…', S.badges.reason || '');
             reason.maxLength = 200;
             reason.addEventListener('input', function () { S.badges.reason = reason.value; });
-            grantBox.appendChild(fieldRow('Badge Administrator', badgeSelect));
             grantBox.appendChild(fieldRow('Lý do', reason));
             var grantBtn = btn('Trao badge', 'bkc-btn-primary', function () {
                 grantBtn.disabled = true;
@@ -2580,14 +2636,15 @@
                     var body = h('div', 'bkc-badge-body');
                     body.appendChild(h('b', null, meta.name));
                     body.appendChild(h('span', 'bkc-row-sub',
-                        (b.kind === 'admin' ? 'Administrator trao' : 'Tự động') + ' · ' + fmt(b.awarded_at)));
+                        (b.manual_granted || b.kind === 'admin' ? 'Administrator trao' : 'Tự động') +
+                        (b.auto_earned ? ' + tự động đạt' : '') + ' · ' + fmt(b.awarded_at)));
                     if (b.reason) body.appendChild(h('span', 'bkc-hint', b.reason));
                     tile.appendChild(body);
 
                     var tileActs = h('div', 'bkc-badge-acts');
-                    if (b.kind === 'admin' && meta.adminOnly) {
+                    if (b.manual_granted || b.kind === 'admin') {
                         tileActs.appendChild(btn('Thu hồi', 'bkc-btn-danger bkc-btn-xs', function () {
-                            confirmDelete('badge Administrator', meta.name, function () {
+                            confirmDelete('badge Administrator trao tay', meta.name, function () {
                                 api('badges.revoke', { id: row.id, badge_id: b.badge_id }).then(function () {
                                     toast('Đã thu hồi badge ' + meta.name, 'success');
                                     api('badges.list', { id: row.id }).then(function (fresh) {
@@ -3406,6 +3463,125 @@
     }
 
     /* --------------------------------- Settings --------------------------- */
+    /* ------------------------------ Bảo trì ------------------------------- */
+    function renderMaintenance(pane) {
+        var cardEl = card('Bảo trì toàn website', [
+            iconBtn('fa-rotate', 'Tải lại cấu hình bảo trì', function () { load(); })
+        ], 'Khi bật, mọi trang public hiển thị thông báo bảo trì. Administrator đã đăng nhập vẫn vào được Dashboard.');
+        pane.appendChild(cardEl.root);
+        cardEl.body.appendChild(alertBox(
+            'Trạng thái được lưu ở app_settings.public.maintenance và đọc qua Supabase. Tắt bảo trì không xoá dữ liệu, ' +
+            'không vô hiệu hoá đăng nhập. Chỉ phiên Administrator hợp lệ mới ghi được.', 'info'));
+
+        var host = h('div', 'bkc-form');
+        cardEl.body.appendChild(host);
+
+        var form = {};
+        function toLocal(iso) {
+            if (!iso) return '';
+            var d = new Date(iso);
+            if (isNaN(d.getTime())) return '';
+            var p = function (n) { return n < 10 ? '0' + n : String(n); };
+            return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
+        }
+        function preview() {
+            var box = h('div', 'bkc-maint-preview');
+            box.appendChild(h('h3', null, form.title.value || 'Bá Khí đang bảo trì'));
+            box.appendChild(h('p', null, form.message.value || 'Website tạm đóng để nâng cấp. Dữ liệu học tập của bạn được giữ nguyên.'));
+            if (form.reason.value) box.appendChild(h('p', 'bkc-row-sub', 'Lý do: ' + form.reason.value));
+            if (form.startAt.value || form.endAt.value) {
+                box.appendChild(h('p', 'bkc-row-sub',
+                    (form.startAt.value ? 'Bắt đầu: ' + form.startAt.value : '') +
+                    (form.startAt.value && form.endAt.value ? ' · ' : '') +
+                    (form.endAt.value ? 'Dự kiến mở lại: ' + form.endAt.value : '')));
+            }
+            return box;
+        }
+
+        function paint(data) {
+            host.textContent = '';
+            var value = (data && data.value) || {};
+            form = {};
+            var enabled = checkbox('Đang bật bảo trì', value.enabled === true, function () { });
+            host.appendChild(enabled);
+            form.title = input('text', 'Tiêu đề thông báo…', value.title || 'Bá Khí đang bảo trì');
+            form.title.maxLength = 120;
+            host.appendChild(fieldRow('Tiêu đề', form.title));
+            form.message = textarea('Nội dung hiển thị cho học sinh…', value.message || '', 3);
+            form.message.maxLength = 1200;
+            host.appendChild(fieldRow('Nội dung', form.message));
+            form.reason = input('text', 'Lý do bảo trì…', value.reason || '');
+            form.reason.maxLength = 400;
+            host.appendChild(fieldRow('Lý do', form.reason));
+            form.startAt = input('datetime-local', '', toLocal(value.startAt));
+            host.appendChild(fieldRow('Bắt đầu', form.startAt));
+            form.endAt = input('datetime-local', '', toLocal(value.endAt));
+            host.appendChild(fieldRow('Dự kiến mở lại', form.endAt));
+
+            var status = h('p', 'bkc-hint', value.enabled
+                ? 'Trạng thái: ĐANG BẬT · cập nhật ' + (value.updatedAt ? fmt(value.updatedAt) : '—')
+                : 'Trạng thái: đang tắt · cập nhật ' + (value.updatedAt ? fmt(value.updatedAt) : '—'));
+            host.appendChild(status);
+
+            var previewHost = h('div');
+            previewHost.appendChild(preview());
+            host.appendChild(previewHost);
+            [form.title, form.message, form.reason, form.startAt, form.endAt].forEach(function (elx) {
+                elx.addEventListener('input', function () {
+                    previewHost.textContent = '';
+                    previewHost.appendChild(preview());
+                });
+            });
+
+            var actions = h('div', 'bkc-actions');
+            actions.appendChild(btn('Lưu cấu hình', 'bkc-btn-primary', function () { save(false); }, 'fa-floppy-disk'));
+            actions.appendChild(btn('Bật bảo trì', 'bkc-btn-danger', function () { confirmSave(true); }, 'fa-lock'));
+            actions.appendChild(btn('Tắt bảo trì', 'bkc-btn-ghost', function () { save(false, true); }, 'fa-lock-open'));
+            host.appendChild(actions);
+
+            function payload(on) {
+                return {
+                    key: 'public.maintenance',
+                    enabled: on,
+                    title: form.title.value.trim(),
+                    message: form.message.value.trim(),
+                    reason: form.reason.value.trim(),
+                    startAt: form.startAt.value || null,
+                    endAt: form.endAt.value || null
+                };
+            }
+            function save(on, forceOff) {
+                var body = payload(forceOff ? false : (on || enabled.checked));
+                api('settings.set', body).then(function () {
+                    toast(forceOff ? 'Đã tắt bảo trì.' : (body.enabled ? 'Đã bật bảo trì.' : 'Đã lưu cấu hình bảo trì.'), 'success');
+                    load();
+                }).catch(function (err) { fail(err); });
+            }
+            function confirmSave(on) {
+                if (global.BK && global.BK.ui && global.BK.ui.confirm) {
+                    global.BK.ui.confirm({
+                        title: 'Bật bảo trì toàn website?',
+                        message: 'Mọi trang public sẽ hiển thị thông báo bảo trì ngay khi lưu. Administrator vẫn vào được Dashboard.',
+                        ok: 'Bật bảo trì', danger: true
+                    }).then(function (yes) { if (yes) save(on); });
+                } else if (global.confirm('Bật bảo trì toàn website?')) save(on);
+            }
+        }
+
+        function load() {
+            host.textContent = '';
+            loading(host, 'Đang tải cấu hình bảo trì…');
+            api('settings.get').then(function (data) {
+                var row = (data.settings || []).filter(function (x) { return x.key === 'public.maintenance'; })[0];
+                paint(row || null);
+            }).catch(function (err) {
+                host.textContent = '';
+                host.appendChild(alertBox((err && err.message) || 'Không tải được cấu hình bảo trì.', 'error'));
+            });
+        }
+        load();
+    }
+
     function renderSettings(pane) {
         var appearance = card('Giao diện', null, 'Lựa chọn được lưu riêng cho Administrator Dashboard.');
         paintThemeSettings(appearance.body);

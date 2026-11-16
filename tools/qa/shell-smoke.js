@@ -165,14 +165,20 @@ ok('chặn liên kết javascript:', !/javascript:/i.test(JSON.stringify(P.get()
 ok('avatarNode dùng chung trả về .bk-avatar', !!P.avatarNode({ size: 40 }).classList.contains('bk-avatar'));
 ok('equipFrame từ chối khung chưa mở', P.equipFrame('crown').ok === false);
 ok('equipFrame nhận khung cơ bản', P.equipFrame('leaf').ok === true && P.get().frame === 'leaf');
+ok('có đúng 30 khung avatar', P.frames.length === 30, String(P.frames.length));
+ok('27 khung thường + 2 Developer + 1 Founder',
+  P.framesByTier('normal').length === 27 && P.framesByTier('dev').length === 2 && P.framesByTier('founder').length === 1);
+ok('khung Developer/Founder chưa mở mặc định',
+  !P.canEquip('dev-aurora') && !P.canEquip('dev-void') && !P.canEquip('founder'));
+ok('khung SVG vẽ thật cho khung hoa văn', !!P.frameOverlay('crown') && !!P.frameOverlay('founder'));
 void saved;
 
-/* ========================= 2. 75 badge ========================= */
-console.log('\n[2] Hệ badge — 75 badge, 73 tự động + 2 quản trị');
+/* ========================= 2. 78 badge ========================= */
+console.log('\n[2] Hệ badge — 78 badge, 73 tự động + 5 quản trị/độc quyền');
 const B = iw.BK.badges;
-ok('đúng 75 badge', B.CATALOG.length === 75, String(B.CATALOG.length));
-ok('id badge không trùng', new Set(B.CATALOG.map((b) => b.id)).size === 75);
-ok('đúng 2 badge chỉ Administrator trao', B.CATALOG.filter((b) => b.adminOnly).length === 2);
+ok('đúng 78 badge', B.CATALOG.length === 78, String(B.CATALOG.length));
+ok('id badge không trùng', new Set(B.CATALOG.map((b) => b.id)).size === 78);
+ok('đúng 5 badge chỉ Administrator trao', B.CATALOG.filter((b) => b.adminOnly).length === 5);
 ok('73 badge tự động', B.CATALOG.filter((b) => !b.adminOnly).length === 73);
 ok('8 danh mục', B.CATEGORIES.length === 8, String(B.CATEGORIES.length));
 ok('6 bậc độ hiếm', B.RARITIES.length === 6, String(B.RARITIES.length));
@@ -180,7 +186,7 @@ ok('mọi badge thuộc danh mục đã khai báo',
   B.CATALOG.every((b) => B.CATEGORIES.some((c) => c.id === b.category)));
 ok('mọi badge có độ hiếm hợp lệ',
   B.CATALOG.every((b) => B.RARITIES.some((r) => r.id === b.rarity)));
-ok('progress() trả đủ 75 dòng', B.progress().length === 75);
+ok('progress() trả đủ 78 dòng', B.progress().length === 78);
 ok('badge admin không tự mở', B.check({ silent: true }).every((b) => !b.adminOnly));
 ok('khung cơ bản luôn sở hữu', B.ownedFrames().indexOf('none') !== -1 && B.ownedFrames().indexOf('leaf') !== -1);
 

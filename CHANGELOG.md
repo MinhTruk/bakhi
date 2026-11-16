@@ -2,6 +2,57 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [5.0.0] — 2026-11-16
+
+### Tính năng
+
+- **30 khung avatar thật bằng SVG**: 27 khung thường, 2 khung Developer độc quyền và
+  1 khung Founder. Mỗi khung có cấu trúc hoa văn riêng (vương miện, cánh, nguyệt quế,
+  pha lê, cyber, gothic, hoả ngục, thiên hà…), phần trung tâm trong suốt để ảnh đại diện
+  hiển thị bên dưới. Khung hiển thị nhất quán ở header, hồ sơ, Chat và Profile Card.
+- **Danh mục thành tích mở rộng 78 badge**: 73 badge tự động + 2 badge Administrator +
+  2 badge Developer (kèm khung Cực quang/Hư không) + 1 badge Founder.
+- **Administrator trao mọi badge**: tab Thành tích có tìm kiếm, lọc theo độ hiếm, xem
+  trước và trao bất kỳ badge nào trong danh mục. Badge tự động đạt và badge trao tay
+  được lưu tách biệt (`auto_earned` / `manual_granted`); thu hồi trao tay không xoá
+  kết quả tự động. Badge Founder chỉ trao được cho hồ sơ đã xác minh `is_founder`.
+- **Bảo trì toàn website**: tab **Bảo trì** trong Administrator Dashboard (bật/tắt, tiêu
+  đề, nội dung, lý do, thời gian bắt đầu/dự kiến mở lại, xem trước). Trạng thái lưu ở
+  `app_settings.public.maintenance`; mọi trang public hiển thị trang bảo trì, Admin đã
+  đăng nhập vẫn vào được Dashboard.
+- **Danh vị học sinh**: bảng `student_roles` (khoá theo canonical student_id) và module
+  dùng chung `bk-roles.js`. Hiển thị Lớp trưởng, Bí thư, Người sáng lập ở menu tài khoản,
+  chip nhận diện, Chat và danh sách Admin. Danh vị chỉ là nhãn hiển thị, không cấp quyền.
+- **What's New chỉ bản mới nhất**: hiển thị đúng một phiên bản, tối đa 10 dòng nội dung,
+  có `Xem thêm` / `Thu gọn`; lịch sử cũ vẫn nằm trong trung tâm cập nhật.
+- **Hồ sơ ẩn badge mặc định**: ban đầu chỉ hiện tổng quan và số badge; nút `Hiện badge` /
+  `Ẩn badge` ghi nhớ lựa chọn theo từng tài khoản.
+- **Chat**: bố cục tin nhắn tách hàng avatar/bong bóng/reaction (avatar không bị reaction
+  kéo lệch); bảng emoji có tìm kiếm và danh mục; khung avatar SVG trong Chat; nhãn danh vị
+  cạnh tên người gửi; bố cục mobile một khung với nút quay lại.
+- **Đồng bộ đổi học sinh**: mỗi học sinh có kho thành tích cục bộ riêng; đổi học sinh phát
+  sự kiện `bk:identity` để hồ sơ, bảng thành tích, Trung tâm học tập và menu cập nhật ngay
+  không cần tải lại trang. Đổi học sinh không trộn dữ liệu hai tài khoản.
+- **Administrator Code không tự chuyển trang**: xác thực xong chỉ báo thành công và hiện
+  nút mở Dashboard trong tab mới (`target=_blank`, `rel="noopener noreferrer"`), giữ nguyên
+  tab Cài đặt. Chat cũng mở tab mới từ menu tài khoản.
+
+### Sửa lỗi
+
+- Ô nhập Dev Code/Administrator Code không còn đè lên nút trên màn hình hẹp; layout dọc
+  dưới 520px, thông báo xác thực có vị trí riêng.
+- Không còn tràn ngang ở Chat mobile; khung chat dùng `100dvh` và safe-area cho thanh nhập.
+
+### Cải tiến
+
+- Migration `20261121000000_bakhi_platform_5.sql`: thêm `students.is_founder`,
+  `student_badges.auto_earned/manual_granted`, bảng `student_roles`, mở rộng
+  `bakhi_owned_frames` cho 30 khung, cấu trúc `public.maintenance` và realtime.
+- `admin-actions` thêm `roles.list/roles.set`, trao/thu hồi badge theo cơ chế trao tay;
+  `student-profile` chỉ tính lại badge tự động và giữ nguyên trao tay.
+- QA cập nhật cho 78 badge, 30 khung, 14 tab quản trị và What's New một phiên bản.
+- Cache-busting toàn website lên `5.0.0`.
+
 ## [3.9.0] — 2026-11-16
 
 ### Tính năng

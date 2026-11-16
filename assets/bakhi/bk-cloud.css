@@ -644,3 +644,33 @@ html.bk-hdr-tight .bkc-identity-chip { padding-left: .55rem; padding-right: .55r
 @media (max-width: 720px) {
     html.bk-hdr-tight header h1 { font-size: .95rem !important; }
 }
+
+/* ------------------------ What's New: chỉ bản mới nhất ------------------- */
+.bkc-wn-lines {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    margin-top: .55rem;
+    animation: bkc-wn-fade .18s ease-out;
+}
+.bkc-wn-line-item {
+    display: flex;
+    align-items: flex-start;
+    gap: .45rem;
+    min-width: 0;
+    font-size: .8rem;
+    line-height: 1.5;
+}
+.bkc-wn-line-item .bkc-tag { flex: 0 0 auto; margin-top: .05rem; }
+.bkc-wn-line-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--bkc-text, #e2e8f0);
+}
+@keyframes bkc-wn-fade {
+    from { opacity: 0; transform: translateY(-2px); }
+    to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .bkc-wn-lines { animation: none; }
+}

@@ -38,8 +38,9 @@ function main() {
   };
   w.eval(fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-badges.js'), 'utf8'));
   const catalog = w.BK.badges.CATALOG;
-  if (!Array.isArray(catalog) || catalog.length !== 75) {
-    throw new Error('Danh mục badge không đúng 75 mục: ' + (catalog && catalog.length));
+  /* 78 = 73 tự động + 5 chỉ Administrator trao (2 admin + 2 Developer + 1 Founder). */
+  if (!Array.isArray(catalog) || catalog.length !== 78) {
+    throw new Error('Danh mục badge không đúng 78 mục: ' + (catalog && catalog.length));
   }
 
   const rows = catalog.map((x) => ({

@@ -240,3 +240,94 @@ html.bk-a11y-links a:not(.bk-menu-row):not(.bk-chipx) {
     .bk-user-slot { gap: .35rem; }
     .bk-user-btn-caret { display: none; }
 }
+
+/* --------------------------- Danh vị học sinh --------------------------- */
+.bk-menu-role {
+    display: inline-block;
+    align-self: flex-start;
+    margin-top: .2rem;
+    padding: .08rem .45rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--bkl-primary, #6366f1) 45%, transparent);
+    background: color-mix(in srgb, var(--bkl-primary, #6366f1) 14%, transparent);
+    color: var(--bkl-text, #e2e8f0);
+    font-size: .64rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+.bk-menu-role[hidden] { display: none; }
+.bkc-chip-role {
+    margin-left: .35rem;
+    padding: .06rem .4rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, #fbbf24 50%, transparent);
+    background: color-mix(in srgb, #fbbf24 16%, transparent);
+    font-size: .62rem;
+    font-weight: 700;
+    white-space: nowrap;
+    max-width: 40vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ----------------------------- Bảo trì toàn site ------------------------ */
+body.bk-maintenance-on { overflow: hidden; }
+.bk-maint {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.2rem;
+    overflow-y: auto;
+    background:
+        radial-gradient(120% 90% at 50% 0%, rgba(99, 102, 241, .28), transparent 60%),
+        radial-gradient(90% 80% at 50% 100%, rgba(168, 85, 247, .22), transparent 60%),
+        #0b1020;
+    color: #e2e8f0;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
+.bk-maint-card {
+    width: min(560px, 100%);
+    max-width: 100%;
+    padding: clamp(1.1rem, 4vw, 2rem);
+    border: 1px solid rgba(148, 163, 184, .28);
+    border-radius: 20px;
+    background: rgba(15, 23, 42, .92);
+    box-shadow: 0 24px 70px rgba(2, 6, 23, .6);
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+.bk-maint-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 68px;
+    height: 68px;
+    margin-bottom: .6rem;
+    border-radius: 50%;
+    color: #fbbf24;
+    background: color-mix(in srgb, #fbbf24 16%, transparent);
+    border: 1px solid color-mix(in srgb, #fbbf24 40%, transparent);
+}
+.bk-maint-title { margin: .2rem 0 .55rem; font-size: clamp(1.2rem, 4vw, 1.7rem); line-height: 1.25; }
+.bk-maint-msg { margin: 0 0 .6rem; font-size: .95rem; line-height: 1.6; color: #cbd5e1; }
+.bk-maint-reason { margin: 0 0 .5rem; font-size: .82rem; color: #94a3b8; }
+.bk-maint-time { margin: 0 0 .9rem; font-size: .8rem; color: #93c5fd; }
+.bk-maint-actions { display: flex; justify-content: center; gap: .6rem; flex-wrap: wrap; }
+.bk-maint-btn {
+    padding: .55rem 1.1rem;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+.bk-maint-btn:hover { filter: brightness(1.08); }
+.bk-maint-foot { margin: .9rem 0 0; font-size: .72rem; color: #64748b; }

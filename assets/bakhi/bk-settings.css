@@ -173,12 +173,24 @@ html.dark .bk-wall-preview > span { background: rgba(15, 23, 42, .65); color: #e
 
 .bk-auth-box {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .45rem;
+    min-width: 0;
+    max-width: 100%;
     gap: .5rem;
     flex-wrap: wrap;
     align-items: center;
     margin-top: .5rem;
 }
-.bk-auth-box input { flex: 1 1 12rem; }
+.bk-auth-box input { flex: 1 1 12rem; min-width: 0; max-width: 100%; }
+.bk-auth-box .bk-btn { flex: 0 0 auto; max-width: 100%; white-space: normal; }
+.bk-auth-msg { overflow-wrap: anywhere; }
+@media (max-width: 520px) {
+    .bk-auth-box { flex-direction: column; align-items: stretch; }
+    .bk-auth-box input,
+    .bk-auth-box .bk-btn { width: 100%; flex: 1 1 auto; }
+}
 .bk-auth-msg { font-size: .74rem; margin-top: .45rem; min-height: 1.1rem; }
 .bk-auth-msg.err { color: #e11d48; }
 .bk-auth-msg.ok { color: #059669; }

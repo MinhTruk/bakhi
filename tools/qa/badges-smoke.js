@@ -3,7 +3,7 @@
  * Bá Khí — QA cho hồ sơ + thành tích xác minh phía máy chủ (jsdom + TypeScript).
  *
  * Kiểm tra:
- *   1. Danh mục 75 badge phía máy chủ khớp nguồn duy nhất bk-badges.js.
+ *   1. Danh mục 78 badge phía máy chủ khớp nguồn duy nhất bk-badges.js.
  *   2. Máy chủ tính lại chỉ số và badge y như client (không tin client).
  *   3. applyServer chỉ nhận id hợp lệ, chỉ nhận badge admin khi kind='admin',
  *      không xoá badge cục bộ.
@@ -124,14 +124,15 @@ function main() {
   const w = client.w;
   const clientCatalog = w.BK.badges.CATALOG;
   const server = loadTs('supabase/functions/_shared/badge-catalog.ts');
-  ok('client có 75 badge', clientCatalog.length === 75, String(clientCatalog.length));
-  ok('máy chủ có 75 badge', server.BADGE_CATALOG.length === 75, String(server.BADGE_CATALOG.length));
+  ok('client có 78 badge', clientCatalog.length === 78, String(clientCatalog.length));
+  ok('máy chủ có 78 badge', server.BADGE_CATALOG.length === 78, String(server.BADGE_CATALOG.length));
   const clientIds = clientCatalog.map((b) => b.id).join(',');
   const serverIds = server.BADGE_CATALOG.map((b) => b.id).join(',');
   ok('id và thứ tự khớp nhau', clientIds === serverIds);
   ok('máy chủ có đúng 73 badge tự động', server.AUTO_BADGES.length === 73, String(server.AUTO_BADGES.length));
-  ok('máy chủ có đúng 2 badge admin', server.ADMIN_BADGES.length === 2 &&
-    server.ADMIN_BADGES.every((b) => b.admin_only));
+  ok('máy chủ có đúng 5 badge admin/độc quyền', server.ADMIN_BADGES.length === 5 &&
+    server.ADMIN_BADGES.every((b) => b.admin_only) &&
+    ['founder', 'dev-exclusive-aurora', 'dev-exclusive-void'].every((id) => !!server.BADGE_BY_ID[id]));
   const mismatched = clientCatalog.filter((c) => {
     const s = server.BADGE_BY_ID[c.id];
     return !s || s.goal !== c.goal || (s.metric || null) !== (c.key || null) ||
@@ -239,6 +240,8 @@ function main() {
 
   console.log('\n[5] Migration và bảo mật cơ sở dữ liệu');
   const sql = fs.readFileSync(path.join(ROOT, 'supabase/migrations/20261119000000_bakhi_profile_badges.sql'), 'utf8');
+  /* Bản 5.0 định nghĩa lại bakhi_owned_frames với đủ 30 khung; đây là bản có hiệu lực. */
+  const frameSql = fs.readFileSync(path.join(ROOT, 'supabase/migrations/20261121000000_bakhi_platform_5.sql'), 'utf8');
   ok('bật RLS cho hồ sơ và thành tích',
     /alter table public\.student_profiles enable row level security/i.test(sql) &&
     /alter table public\.student_badges enable row level security/i.test(sql));
@@ -255,7 +258,7 @@ function main() {
   const sqlFrames = {};
   const re = /when '([a-z0-9-]+)' then '([a-z0-9-]+)'/g;
   let m;
-  while ((m = re.exec(sql))) sqlFrames[m[1]] = m[2];
+  while ((m = re.exec(frameSql))) sqlFrames[m[1]] = m[2];
   const catalogFrames = clientCatalog.filter((b) => b.frame);
   const frameDiffs = catalogFrames.filter((b) => sqlFrames[b.id] !== b.frame);
   ok('khung trong SQL khớp danh mục badge', frameDiffs.length === 0,

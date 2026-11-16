@@ -1,11 +1,11 @@
 'use strict';
 /**
- * Bá Khí — QA cho Administrator Dashboard 4.2 (13 mô-đun).
+ * Bá Khí — QA cho Administrator Dashboard 5.0 (14 mô-đun).
  *
  * Kiểm tra:
- *   1. 13 tab đúng thứ tự, gồm Hồ sơ, Thành tích, Chat, What's New.
+ *   1. 14 tab đúng thứ tự, gồm Hồ sơ, Thành tích, Chat, What's New, Bảo trì.
  *   2. Hồ sơ: danh sách, chi tiết, badge đã xác minh.
- *   3. Thành tích: chỉ hai badge Administrator được trao, có thu hồi.
+ *   3. Thành tích: Administrator trao được mọi badge trong danh mục, có thu hồi.
  *   4. Chat: phòng chung không xoá được; nhóm có tạm khoá, gỡ thành viên,
  *      xoá tin và xoá phòng; mọi thao tác đi qua admin-actions.
  *   5. What's New: công tắc public.whatsnew + xem trước changelog.
@@ -146,14 +146,14 @@ const CHANGELOG = [{
   load('assets/bakhi/bk-devboard.js');
 
   /* ------------------------------------------------------------------ */
-  console.log('\n[1] Mở dashboard và 13 mô-đun');
+  console.log('\n[1] Mở dashboard và 14 mô-đun');
   w.openDevDashboard();
   const dash = await until(() => D.querySelector('.bkc-dash'));
   ok('dashboard mở được khi có phiên quản trị', !!dash);
   const tabs = Array.from(D.querySelectorAll('.bkc-nav .bkc-tab'));
-  ok('sidebar có đúng 13 tab', tabs.length === 13, String(tabs.length));
+  ok('sidebar có đúng 14 tab', tabs.length === 14, String(tabs.length));
   const tabIds = tabs.map((b) => b.getAttribute('data-tab'));
-  ok('thứ tự tab đúng', tabIds.join(',') === 'overview,students,profiles,badges,chat,notifications,whatsnew,changelog,logs,monitoring,permissions,settings,data', tabIds.join(','));
+  ok('thứ tự tab đúng', tabIds.join(',') === 'overview,students,profiles,badges,chat,notifications,whatsnew,changelog,logs,monitoring,permissions,settings,maintenance,data', tabIds.join(','));
   ok('tab mới có nhãn tiếng Việt', /Hồ sơ/.test(tabs[2].textContent) && /Thành tích/.test(tabs[3].textContent) &&
     /Chat/.test(tabs[4].textContent) && /What's New/.test(tabs[6].textContent), tabs.map((b) => b.textContent.trim()).join(' | '));
   ok('Alt+1…9 chuyển tab được khai báo', /altKey && \/\^\[1-9\]\$\/\.test/.test(read('assets/bakhi/bk-devboard.js')));
@@ -202,10 +202,13 @@ const CHANGELOG = [{
     chooseBtn.click();
     const grantBox = await until(() => D.querySelector('.bkc-grant-box'));
     ok('hiện khối trao badge sau khi chọn', !!grantBox);
-    const select = grantBox && grantBox.querySelector('select');
+    const selects = grantBox ? Array.from(grantBox.querySelectorAll('select')) : [];
+    const select = selects.find((s) => Array.from(s.options).some((o) => o.value === 'admin-chosen'));
     const values = select ? Array.from(select.options).map((o) => o.value) : [];
-    ok('chỉ có hai badge Administrator trong ô chọn', values.join(',') === 'admin-chosen,admin-legend', values.join(','));
-    ok('nêu rõ chỉ Administrator trao tay được', /NOT_ADMIN_BADGE/.test(D.querySelector('.bkc-pane').textContent));
+    ok('ô chọn có toàn bộ danh mục badge', values.length >= 75 &&
+      ['admin-chosen', 'admin-legend', 'learn-first-lesson', 'dev-exclusive-aurora', 'founder']
+        .every((id) => values.includes(id)), String(values.length));
+    ok('nêu rõ tách biệt badge tự động và trao tay', /TÁCH BIỆT/.test(D.querySelector('.bkc-pane').textContent));
 
     const grantBtn = buttonByText(grantBox, /^Trao badge$/);
     ok('có nút trao badge', !!grantBtn);
@@ -343,8 +346,10 @@ const CHANGELOG = [{
     .every((a) => adminActions.includes("case '" + a + "'")));
   ok('admin-actions có đủ hành động kiểm duyệt chat', ['chat.rooms', 'chat.messages', 'chat.delete', 'chat.room.delete', 'chat.member.remove', 'chat.mute']
     .every((a) => adminActions.includes("case '" + a + "'")));
-  ok('chỉ hai badge Administrator được trao/thu hồi', /ADMIN_BADGE_IDS\s*=\s*\['admin-chosen',\s*'admin-legend'\]/.test(adminActions) &&
-    !/ADMIN_BADGE_IDS\s*=\s*\[[^\]]*streak/.test(adminActions));
+  ok('admin-actions cho trao mọi badge và chặn Founder sai hồ sơ',
+    /BADGE_ID_RE/.test(adminActions) && /FOUNDER_BADGE_ID/.test(adminActions) &&
+    /FOUNDER_ONLY/.test(adminActions) && /manual_granted/.test(adminActions) &&
+    !/ADMIN_BADGE_IDS/.test(adminActions));
   const loggedDeletes = ['chat.delete', 'chat.room.delete', 'chat.member.remove']
     .every((a) => adminActions.includes("logAction(client, '" + a + "'"));
   const muteLogged = /logAction\(client, muted \? 'chat\.mute' : 'chat\.unmute'/.test(adminActions);
@@ -357,9 +362,9 @@ const CHANGELOG = [{
   ok('bucket chat chỉ nhận ảnh ≤ 3 MB', /chat-images/.test(migration) && /3145728/.test(migration) &&
     /image\/png/.test(migration) && /image\/jpeg/.test(migration) && /image\/webp/.test(migration) && /image\/gif/.test(migration));
 
-  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=3\.9\.0/.test(adminPage));
-  ok('trang admin dùng dashboard 4.2.0', /bk-admin-dashboard\.css\?v=4\.2\.0/.test(adminPage) &&
-    /bk-devboard\.js\?v=4\.2\.0/.test(adminPage));
+  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=5\.0\.0/.test(adminPage));
+  ok('trang admin dùng dashboard 5.0.0', /bk-admin-dashboard\.css\?v=5\.0\.0/.test(adminPage) &&
+    /bk-devboard\.js\?v=5\.0\.0/.test(adminPage));
 
   const clients = ['assets/bakhi/bk-devboard.js', 'admin/index.html'];
   const leaks = [];

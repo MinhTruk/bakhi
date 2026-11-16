@@ -6,7 +6,7 @@ Hệ thống Supabase của Bá Khí gồm 4 phần:
 |---|---|---|
 | Cấu hình công khai | `assets/bakhi/bk-supabase.config.js` | **Nơi duy nhất** chứa Project URL + Publishable key |
 | Lớp client | `assets/bakhi/bk-cloud.js` | Một Supabase client duy nhất: Anonymous Auth, nhận diện học sinh, thông báo, changelog, đồng bộ |
-| Administrator Dashboard | `assets/bakhi/bk-devboard.js` + `admin/index.html` | 13 mô-đun quản trị, xác thực Administrator Code qua Edge Function |
+| Administrator Dashboard | `assets/bakhi/bk-devboard.js` + `admin/index.html` | 14 mô-đun quản trị, xác thực Administrator Code qua Edge Function |
 | Backend | `supabase/migrations/`, `supabase/functions/` | Schema + RLS + 10 Edge Function (7 đang chạy, 3 mới chờ deploy) |
 | Đồng bộ changelog | `.github/workflows/changelog-sync.yml` + `supabase/functions/changelog-sync` | GitHub Actions xuất bản `CHANGELOG.md` lên Supabase |
 

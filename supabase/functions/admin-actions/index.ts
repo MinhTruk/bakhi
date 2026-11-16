@@ -129,8 +129,11 @@ function cleanDisplayName(input: unknown): string {
 const ANNOUNCEMENT_TYPES = ['general', 'announcement', 'update', 'important', 'maintenance'];
 const PRIORITIES = ['low', 'normal', 'high', 'critical'];
 const CATEGORIES = ['features', 'improvements', 'fixes', 'ui', 'performance', 'security', 'notice', 'other'];
-/* Hai badge chỉ Administrator trao; Edge Function student-profile không bao giờ ghi hai id này. */
-const ADMIN_BADGE_IDS = ['admin-chosen', 'admin-legend'];
+/* Administrator có thể trao MỌI badge trong danh mục. Hai badge dưới đây có
+   quy tắc riêng và không bao giờ do student-profile tự ghi. */
+const BADGE_ID_RE = /^[a-z0-9][a-z0-9-]{2,63}$/;
+const FOUNDER_BADGE_ID = 'founder';
+const DEV_BADGE_IDS = ['dev-exclusive-aurora', 'dev-exclusive-void'];
 
 function str(v: unknown, max: number): string {
     return String(v ?? '').trim().slice(0, max);
@@ -379,7 +382,15 @@ Deno.serve(async (req) => {
                 const ids = (students ?? []).map((s) => s.id);
                 const profiles: Record<string, Record<string, unknown>> = {};
                 const badgeCounts: Record<string, number> = {};
+                const roleMap: Record<string, { role_key: string; role_label: string }> = {};
                 if (ids.length) {
+                    const { data: roleRows } = await client
+                        .from('student_roles')
+                        .select('student_id, role_key, role_label')
+                        .in('student_id', ids);
+                    for (const row of roleRows ?? []) {
+                        roleMap[row.student_id] = { role_key: row.role_key, role_label: row.role_label };
+                    }
                     const { data: rows } = await client
                         .from('student_profiles')
                         .select('student_id, nickname, avatar_url, frame, updated_at')
@@ -400,6 +411,7 @@ Deno.serve(async (req) => {
                     profiles: (students ?? []).map((s) => ({
                         ...s,
                         profile: profiles[s.id] ?? null,
+                        role: roleMap[s.id] ?? null,
                         badges: badgeCounts[s.id] ?? 0
                     }))
                 });
@@ -414,10 +426,12 @@ Deno.serve(async (req) => {
                     .from('student_profiles').select('*').eq('student_id', id).maybeSingle();
                 const { data: badges } = await client
                     .from('student_badges')
-                    .select('badge_id, kind, awarded_at, awarded_by, reason')
+                    .select('badge_id, kind, auto_earned, manual_granted, awarded_at, awarded_by, reason')
                     .eq('student_id', id)
                     .order('awarded_at', { ascending: false });
-                return json({ ok: true, student, profile: profile ?? null, badges: badges ?? [] });
+                const { data: role } = await client
+                    .from('student_roles').select('role_key, role_label').eq('student_id', id).maybeSingle();
+                return json({ ok: true, student, profile: profile ?? null, role: role ?? null, badges: badges ?? [] });
             }
 
             case 'badges.list': {
@@ -425,7 +439,7 @@ Deno.serve(async (req) => {
                 if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
                 const { data: badges, error } = await client
                     .from('student_badges')
-                    .select('badge_id, kind, awarded_at, awarded_by, reason')
+                    .select('badge_id, kind, auto_earned, manual_granted, awarded_at, awarded_by, reason')
                     .eq('student_id', id)
                     .order('awarded_at', { ascending: false });
                 if (error) throw error;
@@ -436,25 +450,35 @@ Deno.serve(async (req) => {
                 const id = str(body.id, 40);
                 const badgeId = str(body.badge_id, 64);
                 if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
-                if (!ADMIN_BADGE_IDS.includes(badgeId)) {
-                    return fail(400, 'NOT_ADMIN_BADGE', 'Chỉ trao được badge dành riêng cho Administrator.');
+                if (!BADGE_ID_RE.test(badgeId)) {
+                    return fail(400, 'BAD_BADGE_ID', 'Mã badge không hợp lệ.');
                 }
-                const { data: student } = await client.from('students').select('id').eq('id', id).maybeSingle();
+                const { data: student } = await client
+                    .from('students').select('id, is_founder').eq('id', id).maybeSingle();
                 if (!student) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+                if (badgeId === FOUNDER_BADGE_ID && student.is_founder !== true) {
+                    return fail(403, 'FOUNDER_ONLY',
+                        'Badge Người sáng lập chỉ dành cho hồ sơ chính thức đã được xác minh.');
+                }
                 const reason = cleanDisplayName(body.reason).slice(0, 200);
+                /* manual_granted là nguồn riêng: không ghi đè auto_earned.awarded_at
+                   của kết quả tự động — chỉ đánh dấu trao tay và ghi người trao. */
                 const { error } = await client.from('student_badges').upsert({
                     student_id: id,
                     badge_id: badgeId,
                     kind: 'admin',
+                    manual_granted: true,
                     awarded_at: new Date().toISOString(),
                     awarded_by: sessionId,
                     reason
                 }, { onConflict: 'student_id,badge_id' });
                 if (error) throw error;
-                await logAction(client, 'badges.grant', 'student', id, { badge_id: badgeId, reason });
+                await logAction(client, 'badges.grant', 'student', id, {
+                    badge_id: badgeId, reason, exclusive: DEV_BADGE_IDS.includes(badgeId) || badgeId === FOUNDER_BADGE_ID
+                });
                 const { data: badges } = await client
                     .from('student_badges')
-                    .select('badge_id, kind, awarded_at, awarded_by, reason')
+                    .select('badge_id, kind, auto_earned, manual_granted, awarded_at, awarded_by, reason')
                     .eq('student_id', id)
                     .order('awarded_at', { ascending: false });
                 return json({ ok: true, badges: badges ?? [] });
@@ -464,16 +488,61 @@ Deno.serve(async (req) => {
                 const id = str(body.id, 40);
                 const badgeId = str(body.badge_id, 64);
                 if (!id || !badgeId) return fail(400, 'MISSING_ID', 'Thiếu id học sinh hoặc badge.');
-                if (!ADMIN_BADGE_IDS.includes(badgeId)) {
-                    return fail(400, 'NOT_ADMIN_BADGE', 'Chỉ thu hồi được badge do Administrator trao.');
+                if (!BADGE_ID_RE.test(badgeId)) {
+                    return fail(400, 'BAD_BADGE_ID', 'Mã badge không hợp lệ.');
                 }
-                const { error } = await client.from('student_badges')
-                    .delete()
-                    .eq('student_id', id)
-                    .eq('badge_id', badgeId)
-                    .eq('kind', 'admin');
-                if (error) throw error;
+                /* Chỉ thu hồi phần trao tay. Badge tự động đạt vẫn được giữ. */
+                const { data: row } = await client.from('student_badges')
+                    .select('badge_id, auto_earned, manual_granted')
+                    .eq('student_id', id).eq('badge_id', badgeId).maybeSingle();
+                if (!row) return fail(404, 'NOT_FOUND', 'Học sinh chưa có badge này.');
+                if (!row.manual_granted) {
+                    return fail(400, 'NOT_MANUAL', 'Badge này do hệ thống tự đạt, không thu hồi thủ công.');
+                }
+                if (row.auto_earned) {
+                    const { error } = await client.from('student_badges')
+                        .update({ manual_granted: false, awarded_by: null, reason: '' })
+                        .eq('student_id', id).eq('badge_id', badgeId);
+                    if (error) throw error;
+                } else {
+                    const { error } = await client.from('student_badges')
+                        .delete().eq('student_id', id).eq('badge_id', badgeId);
+                    if (error) throw error;
+                }
                 await logAction(client, 'badges.revoke', 'student', id, { badge_id: badgeId });
+                return json({ ok: true });
+            }
+
+            /* ------------------------------ Danh vị học sinh ----------------------------- */
+            case 'roles.list': {
+                const { data, error } = await client
+                    .from('student_roles')
+                    .select('student_id, role_key, role_label, updated_at')
+                    .order('updated_at', { ascending: false })
+                    .limit(Math.min(500, Math.max(1, Number(body.limit) || 200)));
+                if (error) throw error;
+                return json({ ok: true, roles: data ?? [] });
+            }
+
+            case 'roles.set': {
+                const id = str(body.id, 40);
+                const roleKey = str(body.role_key, 40) || 'member';
+                const roleLabel = str(body.role_label, 80);
+                if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                if (!/^[a-z0-9-]{2,40}$/.test(roleKey)) {
+                    return fail(400, 'BAD_ROLE_KEY', 'Mã danh vị không hợp lệ.');
+                }
+                const { data: student } = await client.from('students').select('id').eq('id', id).maybeSingle();
+                if (!student) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+                const { error } = await client.from('student_roles').upsert({
+                    student_id: id,
+                    role_key: roleKey,
+                    role_label: roleLabel,
+                    updated_at: new Date().toISOString(),
+                    updated_by: sessionId
+                }, { onConflict: 'student_id' });
+                if (error) throw error;
+                await logAction(client, 'roles.set', 'student', id, { role_key: roleKey, role_label: roleLabel });
                 return json({ ok: true });
             }
 
@@ -959,11 +1028,22 @@ Deno.serve(async (req) => {
                     value = { enabled: body.enabled !== false };
                     description = 'Hiển thị khối "Cập nhật gần đây" trên trang chủ';
                 } else {
+                    const iso = (v: unknown) => {
+                        const s = str(v, 40);
+                        if (!s) return null;
+                        const d = new Date(s);
+                        return Number.isNaN(d.getTime()) ? null : d.toISOString();
+                    };
                     value = {
                         enabled: body.enabled === true,
-                        message: str(body.message, 240)
+                        title: str(body.title, 120) || 'Bá Khí đang bảo trì',
+                        message: str(body.message, 1200),
+                        reason: str(body.reason, 400),
+                        startAt: iso(body.startAt),
+                        endAt: iso(body.endAt),
+                        updatedAt: new Date().toISOString()
                     };
-                    description = 'Thông báo bảo trì toàn website (hiển thị cho mọi trang)';
+                    description = 'Bảo trì toàn website: bật/tắt, tiêu đề, nội dung, lý do và thời gian';
                 }
                 const { data, error } = await client.from('app_settings')
                     .upsert({ key, value, description, updated_at: new Date().toISOString() }, { onConflict: 'key' })

@@ -1,7 +1,7 @@
 /* TỆP SINH TỰ ĐỘNG — đừng sửa tay.
    Nguồn: assets/bakhi/bk-badges.js (CATALOG).
    Sinh lại: node tools/gen-badge-catalog.js
-   75 badge: 73 tự động + 2 chỉ Administrator trao. */
+   78 badge: 73 tự động + 5 chỉ Administrator trao. */
 
 export interface BadgeDef {
     id: string;
@@ -50,7 +50,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "uncommon",
         "goal": 15,
         "metric": "lessons",
-        "frame": null,
+        "frame": "celestial",
         "admin_only": false
     },
     {
@@ -86,7 +86,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "rare",
         "goal": 5,
         "metric": "subjects",
-        "frame": null,
+        "frame": "divine",
         "admin_only": false
     },
     {
@@ -134,7 +134,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "epic",
         "goal": 500,
         "metric": "practice",
-        "frame": null,
+        "frame": "royal",
         "admin_only": false
     },
     {
@@ -158,7 +158,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "rare",
         "goal": 100,
         "metric": "correct",
-        "frame": null,
+        "frame": "infernal",
         "admin_only": false
     },
     {
@@ -182,7 +182,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "rare",
         "goal": 10,
         "metric": "mastered",
-        "frame": null,
+        "frame": "legendary",
         "admin_only": false
     },
     {
@@ -266,7 +266,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "uncommon",
         "goal": 1,
         "metric": "palette",
-        "frame": null,
+        "frame": "ancient",
         "admin_only": false
     },
     {
@@ -350,7 +350,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "rare",
         "goal": 14,
         "metric": "days",
-        "frame": null,
+        "frame": "eternal",
         "admin_only": false
     },
     {
@@ -470,7 +470,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "uncommon",
         "goal": 1,
         "metric": "shuffleUsed",
-        "frame": null,
+        "frame": "neon",
         "admin_only": false
     },
     {
@@ -590,7 +590,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "uncommon",
         "goal": 1,
         "metric": "focusUsed",
-        "frame": null,
+        "frame": "cyber",
         "admin_only": false
     },
     {
@@ -722,7 +722,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "common",
         "goal": 1,
         "metric": "studioExports",
-        "frame": null,
+        "frame": "phoenix",
         "admin_only": false
     },
     {
@@ -734,7 +734,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "rare",
         "goal": 500,
         "metric": "studioWords",
-        "frame": null,
+        "frame": "crystal",
         "admin_only": false
     },
     {
@@ -794,7 +794,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "secret",
         "goal": 1,
         "metric": "earlyBird",
-        "frame": null,
+        "frame": "frost",
         "admin_only": false
     },
     {
@@ -830,7 +830,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "epic",
         "goal": 50,
         "metric": "bookmarks",
-        "frame": null,
+        "frame": "gothic",
         "admin_only": false
     },
     {
@@ -854,7 +854,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "rare",
         "goal": 10,
         "metric": "lessonsOneSubject",
-        "frame": null,
+        "frame": "galactic",
         "admin_only": false
     },
     {
@@ -915,6 +915,42 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "crown",
+        "admin_only": true
+    },
+    {
+        "id": "dev-exclusive-aurora",
+        "name": "Developer · Cực quang",
+        "desc": "Khung Cực quang dành riêng cho Developer của Bá Khí.",
+        "icon": "fa-code",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "dev-aurora",
+        "admin_only": true
+    },
+    {
+        "id": "dev-exclusive-void",
+        "name": "Developer · Hư không",
+        "desc": "Khung Hư không dành riêng cho Developer của Bá Khí.",
+        "icon": "fa-terminal",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "dev-void",
+        "admin_only": true
+    },
+    {
+        "id": "founder",
+        "name": "Người sáng lập",
+        "desc": "Danh hiệu tối cao dành cho người sáng lập Bá Khí — Minh Trúc.",
+        "icon": "fa-crown",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder",
         "admin_only": true
     }
 ];

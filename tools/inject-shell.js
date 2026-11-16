@@ -15,7 +15,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const TAG = '3.4.0';
+const TAG = '5.0.0';
 const MARKER = 'assets/bakhi/shell';
 /* Trang quản trị có hệ giao diện riêng (bkAdminTheme) — không chèn shell. */
 const SKIP = new Set(['admin/index.html', 'images/anh/1.html']);
@@ -26,6 +26,7 @@ const FILES = [
   'bk-version.js',
   'bk-profile.js',
   'bk-badges.js',
+  'bk-roles.js',
   'bk-shell.js'
 ];
 
@@ -43,7 +44,16 @@ function inject(file) {
   const rel = path.relative(ROOT, file).split(path.sep).join('/');
   if (SKIP.has(rel) || OWNS.has(rel)) return 'skip';
   let html = fs.readFileSync(file, 'utf8');
-  if (html.includes('bk-shell.js')) return 'already';
+  if (html.includes('bk-shell.js')) {
+    /* Trang đã có shell từ bản cũ: chỉ bổ sung bk-roles.js nếu thiếu. */
+    if (html.includes('bk-roles.js')) return 'already';
+    const m = html.match(/^[ \t]*<script src="([^"]*bk-shell\.js[^"]*)"[^>]*><\/script>[ \t]*$/m);
+    if (!m) return 'already';
+    const rolesSrc = m[1].replace('bk-shell.js', 'bk-roles.js').replace(/\?v=[^"&]*/, '?v=' + TAG);
+    html = html.replace(m[0], '    <script src="' + rolesSrc + '" defer></script>\n' + m[0]);
+    fs.writeFileSync(file, html);
+    return 'injected';
+  }
 
   const depth = rel.split('/').length - 1;
   const prefix = depth === 0 ? '' : '../'.repeat(depth);

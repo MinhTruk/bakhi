@@ -410,9 +410,11 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
         /v3\.1\.1/.test((wn.querySelector('.bkc-wn-list > .bkc-cl-card') || {}).textContent || ''),
         wn && wn.textContent.slice(0, 60));
     ok('nhóm nội dung theo danh mục', !!wn && /Sửa lỗi|Tính năng mới|Cải tiến/.test(wn.textContent));
-    ok('danh sách What\'s New có đủ mục đang tải',
-        !!wn && wn.querySelectorAll('.bkc-wn-list > .bkc-cl-card').length === 3,
+    ok('What\'s New chỉ hiển thị đúng một phiên bản mới nhất',
+        !!wn && wn.querySelectorAll('.bkc-wn-list > .bkc-cl-card').length === 1,
         wn && String(wn.querySelectorAll('.bkc-wn-list > .bkc-cl-card').length));
+    ok('không liệt kê phiên bản cũ trong khối What\'s New',
+        !!wn && !/v3\.1\.0/.test(wn.querySelector('.bkc-wn-list').textContent));
     ok('dưới giới hạn 10 mục thì không hiện nút Xem thêm',
         !!wn && !wn.querySelector('#bkcWhatsNewMore'));
     ok('giới hạn hiển thị What\'s New là 10', w.BKCloud.state().wnLimit === 10,
@@ -476,7 +478,7 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
         return node && node.hidden === false ? node : null;
     });
     ok('dashboard mở sau khi xác thực', !!dash);
-    ok('dashboard có 13 tab', !!dash && dash.querySelectorAll('.bkc-tab').length === 13, dash && String(dash.querySelectorAll('.bkc-tab').length));
+    ok('dashboard có 14 tab', !!dash && dash.querySelectorAll('.bkc-tab').length === 14, dash && String(dash.querySelectorAll('.bkc-tab').length));
     const stats = await until(() => w.document.querySelectorAll('.bkc-stat').length);
     ok('tab Overview hiển thị số liệu', !!stats && stats === 8, String(stats));
     ok('Overview có Recent Activity', /admin\.login/.test((w.document.querySelector('.bkc-activity') || {}).textContent || ''));

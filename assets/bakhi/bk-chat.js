@@ -19,7 +19,15 @@
     if (!D || global.BKChatLoaded) return;
     global.BKChatLoaded = true;
 
-    var EMOJI = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🎉', '👏', '🙏', '✅', '⭐', '💯'];
+    var EMOJI_GROUPS = [
+        { id: 'faces', name: 'Mặt', list: ['😀', '😄', '😁', '😂', '😊', '😍', '😘', '😎', '🤩', '🥳', '😮', '😢', '😭', '😡', '🤔', '😴'] },
+        { id: 'hands', name: 'Cử chỉ', list: ['👍', '👎', '👏', '🙏', '👌', '✌️', '🤝', '💪', '🫶', '🙌'] },
+        { id: 'hearts', name: 'Cảm xúc', list: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '💔', '💖', '💯'] },
+        { id: 'study', name: 'Học tập', list: ['📚', '📖', '✏️', '📝', '🎓', '🧠', '💡', '🔬', '🧮', '📐'] },
+        { id: 'symbols', name: 'Biểu tượng', list: ['🔥', '⭐', '✨', '🎉', '🎯', '✅', '❌', '⚡', '🌟', '🏆', '🚀', '🌈'] }
+    ];
+    var EMOJI = [];
+    EMOJI_GROUPS.forEach(function (g) { EMOJI = EMOJI.concat(g.list); });
     var IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
     var MAX_IMAGE = 3 * 1024 * 1024;
 
@@ -140,10 +148,12 @@
         try {
             if (global.BKProfile && global.BKProfile.frameById) frame = global.BKProfile.frameById(card && card.frame);
         } catch (e) { }
-        if (frame && frame.id !== 'none' && frame.glyph) {
-            var ring = el('span', 'bkchat-avatar-frame', frame.glyph);
-            ring.style.borderColor = frame.ring || '';
-            wrap.appendChild(ring);
+        if (frame && frame.id !== 'none' && global.BKProfile && global.BKProfile.frameOverlay) {
+            var art = global.BKProfile.frameOverlay(frame.id);
+            if (art) {
+                art.classList.add('bkchat-avatar-frame-svg');
+                wrap.appendChild(art);
+            }
         }
         return wrap;
     }
@@ -167,6 +177,74 @@
 
     function cloudReady() {
         return !!(global.BKCloud && global.BKCloud.configured && global.BKCloud.configured());
+    }
+
+    /* Bảng emoji có tìm kiếm + danh mục; không chiếm toàn màn hình điện thoại. */
+    function buildEmojiTray(tray) {
+        tray.textContent = '';
+        var head = el('div', 'bkchat-emoji-head');
+        var search = el('input', 'bkchat-emoji-search');
+        search.type = 'search';
+        search.placeholder = 'Tìm emoji…';
+        search.setAttribute('aria-label', 'Tìm emoji');
+        search.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') e.preventDefault();
+        });
+        head.appendChild(search);
+        tray.appendChild(head);
+
+        var cats = el('div', 'bkchat-emoji-cats');
+        var grid = el('div', 'bkchat-emoji-grid');
+        var active = 'all';
+
+        function paint() {
+            grid.textContent = '';
+            var q = String(search.value || '').trim().toLowerCase();
+            var shown = 0;
+            EMOJI_GROUPS.forEach(function (g) {
+                if (active !== 'all' && active !== g.id) return;
+                var list = g.list.filter(function (emoji) {
+                    return !q || emoji.indexOf(q) !== -1 || g.name.toLowerCase().indexOf(q) !== -1;
+                });
+                if (!list.length) return;
+                grid.appendChild(el('div', 'bkchat-emoji-catname', g.name));
+                var row = el('div', 'bkchat-emoji-row');
+                list.forEach(function (emoji) {
+                    var b = el('button', 'bkchat-emoji', emoji);
+                    b.type = 'button';
+                    b.setAttribute('data-insert-emoji', emoji);
+                    b.setAttribute('aria-label', 'Chèn ' + emoji);
+                    row.appendChild(b);
+                    shown++;
+                });
+                grid.appendChild(row);
+            });
+            if (!shown) grid.appendChild(el('p', 'bkchat-emoji-empty', 'Không có emoji phù hợp.'));
+        }
+
+        function chip(id, label) {
+            var b = el('button', 'bkchat-emoji-cat' + (active === id ? ' is-active' : ''), label);
+            b.type = 'button';
+            b.setAttribute('data-emoji-cat', id);
+            b.setAttribute('aria-pressed', active === id ? 'true' : 'false');
+            b.addEventListener('click', function () {
+                active = id;
+                Array.prototype.forEach.call(cats.querySelectorAll('[data-emoji-cat]'), function (n) {
+                    var on = n.getAttribute('data-emoji-cat') === id;
+                    n.classList.toggle('is-active', on);
+                    n.setAttribute('aria-pressed', on ? 'true' : 'false');
+                });
+                paint();
+            });
+            cats.appendChild(b);
+        }
+        chip('all', 'Tất cả');
+        EMOJI_GROUPS.forEach(function (g) { chip(g.id, g.name); });
+
+        search.addEventListener('input', paint);
+        tray.appendChild(cats);
+        tray.appendChild(grid);
+        paint();
     }
 
     /* ---------------------------------------------------------------------
@@ -275,13 +353,9 @@
         var emojiTray = el('div', 'bkchat-emoji-tray');
         emojiTray.id = 'bkChatEmojiTray';
         emojiTray.hidden = true;
-        EMOJI.forEach(function (emoji) {
-            var b = el('button', 'bkchat-emoji', emoji);
-            b.type = 'button';
-            b.setAttribute('data-insert-emoji', emoji);
-            b.setAttribute('aria-label', 'Chèn ' + emoji);
-            emojiTray.appendChild(b);
-        });
+        emojiTray.setAttribute('role', 'dialog');
+        emojiTray.setAttribute('aria-label', 'Chọn biểu tượng cảm xúc');
+        buildEmojiTray(emojiTray);
         composer.appendChild(emojiTray);
 
         main.appendChild(composer);
@@ -664,9 +738,12 @@
         var wrap = el('article', 'bkchat-msg' + (own ? ' is-own' : '') + (sameSender ? ' is-continuation' : ''));
         wrap.setAttribute('data-message', m.id);
 
+        /* Hàng chính: avatar + bong bóng. Avatar căn theo đáy BONG BÓNG, không
+           theo reaction/meta (những thứ đó nằm ở hàng riêng bên dưới). */
+        var mainRow = el('div', 'bkchat-msg-main');
         if (!own) {
-            if (sameSender) wrap.appendChild(el('span', 'bkchat-msg-avatar-space'));
-            else wrap.appendChild(avatarFor(m.sender, 34, true));
+            if (sameSender) mainRow.appendChild(el('span', 'bkchat-msg-avatar-space'));
+            else mainRow.appendChild(avatarFor(m.sender, 34, true));
         }
 
         var bubbleWrap = el('div', 'bkchat-msg-body');
@@ -675,6 +752,10 @@
             nameRow.type = 'button';
             nameRow.setAttribute('data-profile', m.student_id);
             nameRow.textContent = nameOf(m.sender);
+            var roleLabel = (global.BKRoles && global.BKRoles.labelFor) ? global.BKRoles.labelFor(m.student_id) : '';
+            if (roleLabel) {
+                nameRow.appendChild(el('span', 'bkchat-role', roleLabel));
+            }
             bubbleWrap.appendChild(nameRow);
         }
 
@@ -703,12 +784,17 @@
             }
         }
         bubbleWrap.appendChild(bubble);
+        mainRow.appendChild(bubbleWrap);
+        wrap.appendChild(mainRow);
+
+        /* Hàng phụ: reaction và thời gian, thụt lề bằng avatar để thẳng bong bóng. */
+        var extra = el('div', 'bkchat-msg-extra');
 
         var reactionRows = S.reactions[m.id] || [];
         if (reactionRows.length) {
             var chips = el('div', 'bkchat-reactions');
             chips.appendChild(chipGroup(m, reactionRows, me));
-            bubbleWrap.appendChild(chips);
+            extra.appendChild(chips);
         }
 
         var meta = el('div', 'bkchat-meta');
@@ -725,8 +811,8 @@
             del.setAttribute('aria-label', 'Xoá tin nhắn');
             meta.appendChild(del);
         }
-        bubbleWrap.appendChild(meta);
-        wrap.appendChild(bubbleWrap);
+        extra.appendChild(meta);
+        wrap.appendChild(extra);
         return wrap;
     }
 

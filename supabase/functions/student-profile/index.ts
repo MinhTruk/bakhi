@@ -186,26 +186,48 @@ Deno.serve(async (req) => {
 
         const { data: existing } = await client
             .from('student_badges')
-            .select('badge_id, kind')
+            .select('badge_id, kind, auto_earned, manual_granted')
             .eq('student_id', student.id);
-        const already = new Set<string>((existing ?? []).map((r) => r.badge_id));
+        /* Chỉ badge đã đạt TỰ ĐỘNG mới chặn việc tính lại. Badge trao tay
+           (manual_granted) không thay thế kết quả tự động. */
+        const already = new Set<string>((existing ?? [])
+            .filter((r) => r.auto_earned || r.kind === 'auto')
+            .map((r) => r.badge_id));
+        const existingIds = new Set<string>((existing ?? []).map((r) => r.badge_id));
 
         const metrics = computeMetrics(snapshot as StudentSnapshot);
         const fresh = badgesEarned(BADGE_CATALOG, metrics, already);
         if (fresh.length) {
+            const stamp = new Date().toISOString();
             const rows = fresh.map((b) => ({
                 student_id: student.id,
                 badge_id: b.id,
                 kind: 'auto',
-                awarded_at: new Date().toISOString(),
+                auto_earned: true,
+                manual_granted: false,
+                awarded_at: stamp,
                 awarded_by: null,
                 reason: '',
                 evidence: { metric: b.metric, goal: b.goal, value: metrics[b.metric || ''] ?? 0 }
             }));
-            const { error: insertError } = await client
-                .from('student_badges')
-                .upsert(rows, { onConflict: 'student_id,badge_id', ignoreDuplicates: true });
-            if (insertError) return fail(500, 'BADGE_WRITE_FAILED', 'Không lưu được thành tích.');
+            /* Dòng đã tồn tại do Administrator trao tay: chỉ bật auto_earned,
+               giữ nguyên người trao, lý do và manual_granted. */
+            const promote = fresh.filter((b) => existingIds.has(b.id)).map((b) => b.id);
+            const insertRows = rows.filter((r) => !existingIds.has(r.badge_id));
+            if (insertRows.length) {
+                const { error: insertError } = await client
+                    .from('student_badges')
+                    .upsert(insertRows, { onConflict: 'student_id,badge_id', ignoreDuplicates: true });
+                if (insertError) return fail(500, 'BADGE_WRITE_FAILED', 'Không lưu được thành tích.');
+            }
+            if (promote.length) {
+                const { error: promoteError } = await client
+                    .from('student_badges')
+                    .update({ auto_earned: true })
+                    .eq('student_id', student.id)
+                    .in('badge_id', promote);
+                if (promoteError) return fail(500, 'BADGE_WRITE_FAILED', 'Không lưu được thành tích.');
+            }
             earned = fresh.map((b) => b.id);
         }
     }
@@ -213,11 +235,11 @@ Deno.serve(async (req) => {
     // ---- Trạng thái cuối cùng ------------------------------------------
     const { data: badges } = await client
         .from('student_badges')
-        .select('badge_id, kind, awarded_at, awarded_by, reason')
+        .select('badge_id, kind, auto_earned, manual_granted, awarded_at, awarded_by, reason')
         .eq('student_id', student.id)
         .order('awarded_at', { ascending: true });
 
-    const rows = (badges ?? []).filter((b) => BADGE_BY_ID[b.badge_id]);
+    const rows = (badges ?? []).filter((b) => BADGE_BY_ID[b.badge_id] && (b.auto_earned || b.manual_granted || b.kind));
     const catalogHash = (await sha256Hex(BADGE_CATALOG.map((b) => b.id).join(','))).slice(0, 12);
 
     return json({
@@ -233,7 +255,7 @@ Deno.serve(async (req) => {
             updatedAt: new Date(profileRow.updated_at).getTime()
         },
         frameRejected,
-        frames: framesFromBadges(rows, BADGE_CATALOG),
+        frames: framesFromBadges(rows.filter((b) => b.auto_earned || b.manual_granted), BADGE_CATALOG),
         badges: rows,
         earned,
         serverTime: new Date().toISOString()

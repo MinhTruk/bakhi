@@ -275,13 +275,19 @@
 
 .bkchat-msg {
     display: flex;
-    align-items: flex-end;
-    gap: .5rem;
+    flex-direction: column;
     margin-top: .5rem;
     max-width: 100%;
 }
 .bkchat-msg.is-continuation { margin-top: .12rem; }
-.bkchat-msg.is-own { flex-direction: row-reverse; }
+
+.bkchat-msg-main {
+    display: flex;
+    align-items: flex-end;
+    gap: .5rem;
+    max-width: 100%;
+}
+.bkchat-msg.is-own .bkchat-msg-main { flex-direction: row-reverse; }
 
 .bkchat-msg-avatar-space { width: 34px; flex: 0 0 34px; }
 
@@ -294,6 +300,23 @@
     min-width: 0;
 }
 .bkchat-msg.is-own .bkchat-msg-body { align-items: flex-end; }
+
+/* Reaction + thời gian ở hàng riêng, thẳng hàng với bong bóng (bỏ qua avatar). */
+.bkchat-msg-extra {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .15rem;
+    max-width: min(560px, 78%);
+    min-width: 0;
+    padding-left: calc(34px + .5rem);
+}
+.bkchat-msg.is-own .bkchat-msg-extra {
+    align-self: flex-end;
+    align-items: flex-end;
+    padding-left: 0;
+    padding-right: calc(34px + .5rem);
+}
 
 .bkchat-msg-name {
     border: 0;
@@ -449,18 +472,76 @@
 
 .bkchat-emoji-tray {
     position: absolute;
-    right: .8rem;
+    right: .6rem;
     bottom: calc(100% - .2rem);
     z-index: 15;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: .15rem;
-    padding: .4rem;
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    width: min(320px, calc(100vw - 1.4rem));
+    max-height: min(46vh, 320px);
+    padding: .45rem;
     border: 1px solid var(--bkl-line);
     border-radius: 12px;
     background: var(--bkl-surface);
     box-shadow: var(--bkl-shadow);
+    overflow: hidden;
 }
+.bkchat-emoji-head { display: flex; }
+.bkchat-emoji-search {
+    width: 100%;
+    min-width: 0;
+    padding: .32rem .5rem;
+    border: 1px solid var(--bkl-line);
+    border-radius: 8px;
+    background: var(--bkl-surface-2);
+    color: var(--bkl-text);
+    font: inherit;
+    font-size: .76rem;
+}
+.bkchat-emoji-cats {
+    display: flex;
+    gap: .2rem;
+    overflow-x: auto;
+    padding-bottom: .12rem;
+    scrollbar-width: thin;
+}
+.bkchat-emoji-cat {
+    flex: 0 0 auto;
+    padding: .18rem .45rem;
+    border: 1px solid var(--bkl-line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--bkl-muted);
+    font: inherit;
+    font-size: .68rem;
+    cursor: pointer;
+}
+.bkchat-emoji-cat.is-active {
+    border-color: var(--bkl-primary);
+    color: var(--bkl-primary);
+    background: color-mix(in srgb, var(--bkl-primary) 12%, transparent);
+}
+.bkchat-emoji-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+.bkchat-emoji-catname {
+    font-size: .64rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--bkl-muted);
+    margin: .25rem 0 .1rem;
+}
+.bkchat-emoji-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: .12rem;
+}
+.bkchat-emoji-empty { font-size: .72rem; color: var(--bkl-muted); margin: .3rem 0; }
 .bkchat-emoji {
     width: 34px;
     height: 34px;
@@ -679,7 +760,10 @@ button.bkchat-avatar { cursor: pointer; }
     .bkchat-shell:has(.bkchat-card:not([hidden])) {
         grid-template-columns: minmax(0, 1fr);
         height: calc(100vh - 150px);
-        min-height: 460px;
+        height: calc(100dvh - 150px);
+        min-height: 380px;
+        max-width: 100%;
+        overflow: hidden;
     }
     .bkchat-side { border-right: 0; }
     .bkchat-main { display: none; }
@@ -692,9 +776,51 @@ button.bkchat-avatar { cursor: pointer; }
         z-index: 30;
         border-left: 0;
     }
-    .bkchat-msg-body { max-width: 84%; }
+    .bkchat-msg-body,
+    .bkchat-msg-extra { max-width: 84%; }
+    .bkchat-composer { padding-bottom: max(.45rem, env(safe-area-inset-bottom)); }
+    .bkchat-emoji-tray {
+        left: .4rem;
+        right: .4rem;
+        width: auto;
+        max-height: 42vh;
+    }
+}
+
+@media (max-width: 420px) {
+    .bkchat-msg-main { gap: .35rem; }
+    .bkchat-msg-extra { padding-left: calc(30px + .35rem); }
+    .bkchat-msg.is-own .bkchat-msg-extra { padding-right: calc(30px + .35rem); }
+    .bkchat-image-link img { max-width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .bkchat * { transition: none !important; animation: none !important; }
+}
+
+/* Khung avatar SVG trong chat */
+.bkchat-avatar { position: relative; overflow: visible; }
+.bkchat-avatar-frame-svg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 150%;
+    height: 150%;
+    transform: translate(-50%, -50%);
+    overflow: visible;
+    pointer-events: none;
+    z-index: 2;
+}
+.bkchat-role {
+    margin-left: .35rem;
+    padding: .02rem .36rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--bkl-primary) 45%, transparent);
+    background: color-mix(in srgb, var(--bkl-primary) 12%, transparent);
+    font-size: .6rem;
+    font-weight: 700;
+    white-space: nowrap;
+    max-width: 46vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

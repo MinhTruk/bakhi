@@ -1726,6 +1726,18 @@
         BK.store.on('practice', function () {
             if ((hub.modal || hub.inline) && (hub.tab === 'overview' || hub.tab === 'review')) renderTab();
         });
+        /* Đổi học sinh: làm mới thành tích/tiến độ đang mở, không cần F5. */
+        global.addEventListener('bk:identity', function () {
+            try {
+                if (hub.modal || hub.inline) renderTab();
+                BK.achievements.check();
+            } catch (e) { }
+        });
+        global.addEventListener('bkprofile', function () {
+            try {
+                if ((hub.modal || hub.inline) && hub.tab === 'achievements') renderTab();
+            } catch (e) { }
+        });
     }
 
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', init);

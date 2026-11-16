@@ -353,36 +353,44 @@
         var owned = api.ownedFrames();
         var current = api.get().frame;
         var b = B();
-        api.frames.forEach(function (f) {
-            var isOwned = owned.indexOf(f.id) !== -1;
-            var cell = el('button', 'bk-frame');
-            cell.type = 'button';
-            cell.setAttribute('aria-pressed', current === f.id ? 'true' : 'false');
-            cell.setAttribute('title', f.name + ' · ' + rarityMeta(f.rarity).name);
-            if (!isOwned) {
-                cell.disabled = true;
-                var badge = b ? b.CATALOG.filter(function (x) { return x.frame === f.id; })[0] : null;
-                cell.title = 'Mở khóa bằng badge' + (badge ? ': ' + badge.name : ' hiếm');
-            }
-            var prev = api.avatarNode({ size: 44, showFrame: false });
-            if (f.id !== 'none') {
-                prev.classList.add('bk-avatar-framed');
-                prev.style.setProperty('--bk-avatar-ring', f.ring);
-                if (f.glyph) {
-                    var orn = el('span', 'bk-avatar-orn', f.glyph);
-                    prev.appendChild(orn);
+        var TIERS = [['normal', 'Bộ sưu tập'], ['dev', 'Developer độc quyền'], ['founder', 'Người sáng lập']];
+        TIERS.forEach(function (t) {
+            var list = api.framesByTier ? api.framesByTier(t[0]) : api.frames;
+            if (!list.length) return;
+            var heading = el('div', 'bk-frame-tier', t[1]);
+            grid.appendChild(heading);
+            list.forEach(function (f) {
+                var isOwned = owned.indexOf(f.id) !== -1;
+                var cell = el('button', 'bk-frame');
+                cell.type = 'button';
+                cell.setAttribute('data-tier', f.tier || 'normal');
+                cell.setAttribute('aria-pressed', current === f.id ? 'true' : 'false');
+                cell.setAttribute('title', f.name + ' · ' + rarityMeta(f.rarity).name);
+                if (!isOwned) {
+                    cell.disabled = true;
+                    var badge = b ? b.CATALOG.filter(function (x) { return x.frame === f.id; })[0] : null;
+                    cell.title = 'Chưa sở hữu — mở khóa bằng badge' + (badge ? ': ' + badge.name : ' hiếm');
+                    cell.setAttribute('aria-disabled', 'true');
                 }
-            }
-            cell.appendChild(prev);
-            cell.appendChild(el('span', null, f.name));
-            cell.addEventListener('click', function () {
-                var res = api.equipFrame(f.id);
-                if (!res.ok) return toast(res.error, 'error');
-                toast('Đã trang bị khung "' + f.name + '".', 'success');
-                if (global.BKShell) global.BKShell.refresh();
-                renderFramesInto(cell.parentNode);
+                var prev = api.avatarNode({ size: 46, showFrame: false });
+                if (f.id !== 'none') {
+                    prev.classList.add('bk-avatar-framed');
+                    prev.setAttribute('data-tier', f.tier || 'normal');
+                    prev.style.setProperty('--bk-avatar-ring', f.ring);
+                    var art = api.frameOverlay(f.id);
+                    if (art) prev.appendChild(art);
+                }
+                cell.appendChild(prev);
+                cell.appendChild(el('span', 'bk-frame-label', f.name));
+                cell.addEventListener('click', function () {
+                    var res = api.equipFrame(f.id);
+                    if (!res.ok) return toast(res.error, 'error');
+                    toast('Đã trang bị khung "' + f.name + '".', 'success');
+                    if (global.BKShell) global.BKShell.refresh();
+                    renderFramesInto(cell.parentNode);
+                });
+                grid.appendChild(cell);
             });
-            grid.appendChild(cell);
         });
         return grid;
     }
@@ -395,6 +403,30 @@
        Bảng badge
        ------------------------------------------------------------------ */
     var badgeState = { category: 'all', rarity: 'all', status: 'all', query: '' };
+    var BOARD_OPEN_KEY = 'bakhiBadgesOpen.v1';
+
+    function boardOpenKey() {
+        try {
+            var idc = P() && P().identity ? P().identity() : null;
+            return (idc && idc.key) || 'local';
+        } catch (e) { return 'local'; }
+    }
+    function boardExpanded() {
+        try {
+            var raw = global.localStorage.getItem(BOARD_OPEN_KEY);
+            var data = raw ? JSON.parse(raw) : {};
+            return !!(data && data[boardOpenKey()]);
+        } catch (e) { return false; }
+    }
+    function setBoardExpanded(open) {
+        try {
+            var raw = global.localStorage.getItem(BOARD_OPEN_KEY);
+            var data = raw ? JSON.parse(raw) : {};
+            if (!data || typeof data !== 'object') data = {};
+            data[boardOpenKey()] = !!open;
+            global.localStorage.setItem(BOARD_OPEN_KEY, JSON.stringify(data));
+        } catch (e) { }
+    }
 
     function renderBadgeBoard(container) {
         var b = B();
@@ -413,8 +445,22 @@
         head.appendChild(el('span', null, have + '/' + total));
         container.appendChild(head);
         var pbar = progressBar(total ? (have / total) * 100 : 0);
-        pbar.style.margin = '.5rem 0 .85rem';
+        pbar.style.margin = '.5rem 0 .6rem';
         container.appendChild(pbar);
+
+        /* Mặc định thu gọn: chỉ hiện tổng quan + nút "Hiện badge". */
+        var expanded = boardExpanded();
+        var toggleRow = el('div', 'bk-row');
+        toggleRow.style.margin = '.1rem 0 .9rem';
+        var toggle = btn(expanded ? 'Ẩn badge' : 'Hiện badge', expanded ? 'fa-chevron-up' : 'fa-chevron-down', 'bk-btn bk-btn-ghost', function () {
+            setBoardExpanded(!expanded);
+            renderBadgeBoard(container);
+        });
+        toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        toggleRow.appendChild(toggle);
+        toggleRow.appendChild(el('span', null, have + ' thành tích đã mở khóa'));
+        container.appendChild(toggleRow);
+        if (!expanded) return;
 
         /* Bộ lọc */
         var toolbar = el('div', 'bk-badges-toolbar');
@@ -543,4 +589,21 @@
         rarityMeta: rarityMeta,
         categoryMeta: categoryMeta
     };
+
+    /* Đổi học sinh: vẽ lại hồ sơ và bảng thành tích ngay, không cần F5. */
+    if (global.addEventListener) {
+        global.addEventListener('bk:identity', function () {
+            try {
+                var hero = D.getElementById('bkProfileHero');
+                if (hero) renderHero(hero);
+                var board = D.getElementById('bkBadges');
+                if (board) renderBadgeBoard(board);
+                var frames = D.getElementById('bkProfileFrames');
+                if (frames) {
+                    frames.textContent = '';
+                    frames.appendChild(renderFrames());
+                }
+            } catch (e) { }
+        });
+    }
 })(typeof window !== 'undefined' ? window : this);

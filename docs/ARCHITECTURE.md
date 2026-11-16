@@ -182,7 +182,7 @@ DOMContentLoaded
   ảnh đại diện/bìa (canvas resize rồi lưu data URL), tối đa 6 liên kết chỉ nhận `http(s)`,
   khung avatar đang dùng. Hồ sơ gắn với danh tính `bakhiStudent.v1`; bản cục bộ vẫn là
   nguồn dùng ngay khi ngoại tuyến, còn bản máy chủ (3.6.0) chỉ ghi đè khi mới hơn.
-- **Thành tích** (`bk-badges.js`, khoá `bakhiBadges.v1`): đúng 75 badge — 73 tự động theo
+- **Thành tích** (`bk-badges.js`, khoá `bakhiBadges.v1.<studentId>`): đúng 78 badge — 73 tự động theo
   chỉ số học tập/khám phá/chuỗi ngày/âm nhạc/tương tác/hồ sơ/Studio/bí mật, 2 badge chỉ
   Administrator trao. 8 danh mục, 6 bậc độ hiếm; badge đã mở thưởng khung avatar
   (`ownedFrames`). Từ 3.6.0, badge tự động được máy chủ xác minh lại (xem 2.6).
@@ -293,7 +293,7 @@ DOMContentLoaded
 - `admin/index.html` nạp `bk-admin-dashboard.css` + `bk-devboard.js` + `bk-badges.js` (chỉ để đọc
   danh mục badge; `BK_ADMIN_ONLY` chặn ghi `bakhiBadges.v1` trong trình duyệt quản trị); mọi
   thao tác ghi đi qua Edge Function `admin-actions` với header `x-admin-token`.
-- **13 mô-đun**: Tổng quan, Học sinh, Hồ sơ, Thành tích, Chat, Thông báo, What's New,
+- **14 mô-đun**: Tổng quan, Học sinh, Hồ sơ, Thành tích, Chat, Thông báo, What's New,
   Lịch sử phiên bản, Nhật ký, Giám sát, Quyền & bảo mật, Cấu hình, Dữ liệu & sao lưu.
   Sidebar thu gọn được, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng; bảng có
   lọc, sắp xếp, phân trang phía máy chủ.
@@ -441,7 +441,7 @@ Kết quả sau nâng cấp: **122/122 tệp không đổi nội dung** (`verify
 | Lịch sử phiên bản | bảng `changelog` | Hiển thị trong trung tâm thông báo và khối “Cập nhật gần đây” chỉ bật ở trang chủ, xếp theo số phiên bản |
 | Đồng bộ changelog | `.github/workflows/changelog-sync.yml` + `supabase/functions/changelog-sync` | GitHub Actions đọc `CHANGELOG.md`, gọi hàm bằng `CHANGELOG_SYNC_TOKEN`; hàm dùng RPC `bakhi_publish_changelog` để ghi và tạo thông báo một lần |
 | Cấu hình site | bảng `app_settings` | Chỉ đọc khoá `public.*`; `public.whatsnew`, `public.maintenance`; realtime; ghi qua `admin-actions` |
-| Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html` | 13 mô-đun, xác thực Administrator Code qua `admin-auth`; mọi thao tác kiểm tra lại ở `admin-actions` |
+| Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html` | 14 mô-đun, xác thực Administrator Code qua `admin-auth`; mọi thao tác kiểm tra lại ở `admin-actions` |
 | Dev Code | `assets/bakhi/bk-settings.js`, `bk-cloud.js`, `supabase/functions/dev-auth`, bảng `dev_sessions` | Xác minh mã ở máy chủ, giới hạn tần suất, chỉ trả token + hạn dùng; tách hoàn toàn khỏi phiên quản trị |
 
 Ghi chú triển khai:

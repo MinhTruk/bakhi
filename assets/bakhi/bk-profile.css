@@ -39,16 +39,45 @@
 .bk-avatar-framed {
     box-shadow: 0 0 0 2px var(--bk-avatar-ring, #94a3b8), 0 0 0 4px color-mix(in srgb, var(--bk-avatar-ring, #94a3b8) 28%, transparent);
 }
-.bk-avatar-orn {
+.bk-avatar-img,
+.bk-avatar-fallback { position: relative; z-index: 1; }
+.bk-avatar-frame-svg {
     position: absolute;
-    top: calc(var(--bk-avatar-size, 36px) * -.30);
-    right: calc(var(--bk-avatar-size, 36px) * -.22);
-    font-size: calc(var(--bk-avatar-size, 36px) * .40);
-    line-height: 1;
-    filter: drop-shadow(0 2px 4px rgba(2, 6, 23, .35));
+    left: 50%;
+    top: 50%;
+    width: 146%;
+    height: 146%;
+    transform: translate(-50%, -50%);
+    overflow: visible;
     pointer-events: none;
     z-index: 2;
+    filter: drop-shadow(0 2px 5px rgba(2, 6, 23, .42));
 }
+.bk-avatar[data-tier="dev"] .bk-avatar-frame-svg { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--bk-avatar-ring) 65%, transparent)); }
+.bk-avatar[data-tier="founder"] .bk-avatar-frame-svg { filter: drop-shadow(0 0 7px rgba(251, 191, 36, .75)); }
+.bk-avatar-frame-svg.is-animated { animation: bk-frame-breathe 5s ease-in-out infinite; }
+@keyframes bk-frame-breathe {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: .96; }
+    50% { transform: translate(-50%, -50%) scale(1.035); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .bk-avatar-frame-svg.is-animated { animation: none; }
+}
+
+/* Bộ sưu tập khung: phân nhóm thường / Developer / Founder */
+.bk-frame-tier {
+    grid-column: 1 / -1;
+    margin: .35rem 0 -.15rem;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--bkl-muted, #64748b);
+}
+.bk-frame-tier:first-child { margin-top: 0; }
+.bk-frame[data-tier="dev"] { border-color: color-mix(in srgb, #22d3ee 55%, var(--bkl-line, #334155)); }
+.bk-frame[data-tier="founder"] { border-color: rgba(251, 191, 36, .65); }
+.bk-frame-label { display: block; font-size: .64rem; line-height: 1.25; text-align: center; overflow-wrap: anywhere; }
 
 /* --------------------------- Thẻ hồ sơ / badge -------------------------- */
 .bk-page {
