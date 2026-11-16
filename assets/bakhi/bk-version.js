@@ -12,7 +12,7 @@
 
     var V = {
         /* Phiên bản phát hành (khớp mục mới nhất trong CHANGELOG.md). */
-        app: '6.1.4',
+        app: '6.1.5',
         channel: 'stable',
         releasedAt: '2026-11-16',
         /* Thông tin thương hiệu dùng chung cho header/footer/profile. */
@@ -24,7 +24,7 @@
 
     V.label = 'v' + V.app;
     V.full = V.brand + ' ' + V.label;
-    V.dataVersion = '6.1.4';   /* phiên bản bộ dữ liệu cục bộ (không phải bản phát hành) */
+    V.dataVersion = '6.1.5';   /* phiên bản bộ dữ liệu cục bộ (không phải bản phát hành) */
 
     global.BAKHI_VERSION = V;
 

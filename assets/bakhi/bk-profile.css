@@ -128,6 +128,8 @@
     margin: 0 auto;
     padding: 1.25rem clamp(.75rem, 3vw, 1.5rem) 4rem;
 }
+/* Trang hồ sơ cần rộng hơn để tên + biệt danh và các nút không chen vào banner. */
+.bk-profile-page { max-width: 1120px; }
 .bk-page-head {
     display: flex;
     align-items: flex-end;
@@ -163,26 +165,44 @@
 }
 .bk-profile-bar {
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     gap: 1rem;
-    padding: 0 1.25rem 1rem;
-    margin-top: -46px;
+    padding: .85rem 1.25rem 1rem;
+    margin-top: 0;
     flex-wrap: wrap;
 }
-.bk-profile-bar .bk-avatar {
+.bk-profile-bar > .bk-avatar {
+    margin-top: -46px;
     border: 4px solid var(--bkl-surface);
     background: var(--bkl-surface);
 }
-.bk-profile-meta { min-width: 0; flex: 1; }
+.bk-profile-meta { min-width: 0; flex: 1 1 13rem; padding-top: .1rem; }
 .bk-profile-name {
     font: 700 1.15rem/1.25 Lexend, system-ui, sans-serif;
     color: var(--bkl-text);
     display: flex;
-    align-items: center;
-    gap: .5rem;
+    align-items: baseline;
+    gap: .4rem .55rem;
     flex-wrap: wrap;
 }
-.bk-profile-nick { color: var(--bkl-muted); font-weight: 500; font-size: .9rem; }
+.bk-profile-name > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.bk-profile-nick {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: .12rem .5rem;
+    border-radius: 999px;
+    background: var(--bkl-surface-2);
+    border: 1px solid var(--bkl-line);
+    color: var(--bkl-muted);
+    font-weight: 500;
+    font-size: .82rem;
+    line-height: 1.35;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.bk-profile-bar > .bk-row { align-self: flex-end; margin-top: auto; }
 .bk-profile-bio { color: var(--bkl-text); opacity: .85; font-size: .88rem; margin: .4rem 0 0; white-space: pre-wrap; }
 .bk-profile-links { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .55rem; }
 
@@ -305,7 +325,9 @@
 
 @media (max-width: 640px) {
     .bk-page { padding-bottom: 6rem; }
-    .bk-profile-bar { margin-top: -38px; padding: 0 .85rem .85rem; }
+    .bk-profile-bar { padding: .7rem .85rem .85rem; }
+    .bk-profile-bar > .bk-avatar { margin-top: -38px; }
+    .bk-profile-bar > .bk-row { margin-left: 0 !important; }
     .bk-badge-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
 }
 

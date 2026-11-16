@@ -2,6 +2,16 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [6.1.5] — 2026-11-16
+
+### Sửa lỗi
+
+- **Hồ sơ rộng và thoáng hơn**: vùng nội dung tăng lên 1120px; avatar vẫn chồng
+  nhẹ lên ảnh bìa nhưng tên, biệt danh và phần giới thiệu bắt đầu bên dưới banner,
+  không còn đè chữ lên ảnh.
+- **Biệt danh có chỗ riêng**: tên dài được xuống dòng gọn, biệt danh hiển thị dạng
+  chip riêng cạnh tên và không bị ép tràn ra ngoài thẻ hồ sơ.
+
 ## [6.1.4] — 2026-11-16
 
 ### Sửa lỗi
