@@ -185,6 +185,7 @@ w.BKLearn.toggleFocus(true);
 ok('focus mode class applied', w.document.documentElement.classList.contains('bk-focus'));
 w.BKLearn.toggleFocus(false);
 
+ok('dev panel bị khoá khi chưa có phiên Dev', w.BKDev.authorized() === false && w.BKDev.open() === false);
 const authed = w.BKDev.open(true);
 ok('dev panel opens (force)', authed === true && !!w.document.getElementById('bkDevPanel'));
 
@@ -195,10 +196,21 @@ const devPanelEl = w.document.getElementById('bkDevPanel');
 ok('dev panel hides on close', devPanelEl.hidden === true && devPanelEl.style.display === 'none');
 ok('dev panel reopens after close', w.BKDev.open(true) === true && devPanelEl.style.display === '');
 const tabButtons = Array.from(w.document.querySelectorAll('#bkDevPanel .bkdev-tab'));
-ok('dev panel has 11 tabs', tabButtons.length === 11, String(tabButtons.length));
+ok('dev panel has 14 tabs', tabButtons.length === 14, String(tabButtons.length));
+const tabIds = Array.from(w.document.querySelectorAll('#bkDevPanel .bkdev-tab')).map((b) => b.getAttribute('data-tab'));
+ok('dev panel đủ 14 tab theo danh mục', ['inspector', 'css', 'anim', 'perf', 'storage', 'console', 'network', 'theme', 'components', 'backup', 'music', 'studio', 'data', 'debug'].every((id) => tabIds.indexOf(id) >= 0), tabIds.join(','));
+const devExit = w.document.querySelector('#bkDevPanel .bkdev-exit');
+const devMin = w.document.querySelector('#bkDevPanel .bkdev-hbtn[aria-label="Thu nhỏ"]');
+ok('dev panel có nút Thoát Dev màu đỏ trước Thu nhỏ', !!devExit && /Thoát Dev/.test(devExit.textContent) &&
+  devExit.classList.contains('bkdev-exit') && !!(devMin && devExit.compareDocumentPosition(devMin) & w.Node.DOCUMENT_POSITION_FOLLOWING));
+const faviconBefore = Array.from(w.document.querySelectorAll('link[rel*="icon"]')).map((l) => l.getAttribute('href')).join('|');
 tabButtons.forEach((b) => {
   try { b.click(); } catch (e) { failures++; console.log('  FAIL dev tab threw ' + b.textContent + ' :: ' + e.message); }
 });
+const faviconAfter = Array.from(w.document.querySelectorAll('link[rel*="icon"]')).map((l) => l.getAttribute('href')).join('|');
+ok('dev panel không đổi favicon khi chuyển tab', faviconBefore === faviconAfter);
+ok('dev panel không có Highlight Manager độc lập', !w.document.getElementById('bkHighlightManager') &&
+  !w.document.querySelector('.bk-highlight-manager, .bkdev-highlight'));
 ok('dev inspector pane built', !!w.document.querySelector('[data-pane="inspector"] .bkdev-boxmodel'));
 
 /* ---------------- Music player ---------------- */

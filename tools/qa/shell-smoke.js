@@ -244,10 +244,19 @@ ok('tab Hình nền có ảnh mẫu', sdoc.querySelectorAll('#bkSetPanel-wallpap
 
 sdoc.getElementById('bkSetTab-dev').click();
 const devPanel = sdoc.getElementById('bkSetPanel-dev');
-ok('tab Nhà phát triển yêu cầu Administrator Code', !!devPanel.querySelector('input[type="password"]'));
-ok('không có Dev Code xác thực phía client trong Cài đặt', !/Dev Code/i.test(devPanel.textContent) ||
-  /máy chủ/i.test(devPanel.textContent));
-ok('nêu rõ Dev Playground cần xác minh máy chủ', /máy chủ/.test(devPanel.textContent));
+const devHeads = Array.from(devPanel.querySelectorAll('h2')).map((h) => h.textContent.trim());
+ok('tab Nhà phát triển đặt Dev Code trước Administrator Code',
+  devHeads[0] === 'Dev Code' && devHeads.indexOf('Administrator Code') > 0, JSON.stringify(devHeads));
+ok('Dev Code có ô nhập riêng và nêu xác minh máy chủ',
+  devPanel.querySelectorAll('input[type="password"]').length === 2 && /dev-auth/.test(devPanel.textContent));
+ok('nêu rõ chỉ lưu token phiên, không lưu mã',
+  /sessionStorage/i.test(devPanel.textContent) && /không lưu mã/i.test(devPanel.textContent));
+const settingsSrc = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-settings.js'), 'utf8');
+ok('Cài đặt không lưu Dev Code/Administrator Code trong localStorage',
+  !/localStorage\.(get|set)Item\(\s*['"](devToken|adminToken|bakhiDev)/.test(settingsSrc) &&
+  !/Administrator Code[\s\S]{0,80}localStorage/.test(settingsSrc));
+ok('mọi xác thực Dev/Admin đều gọi BKCloud',
+  /cloud\.devLogin\(/.test(settingsSrc) && /cloud\.adminLogin\(/.test(settingsSrc));
 
 ok('không có lỗi runtime ở shell/hồ sơ/badge', I.errors.length === 0, I.errors[0]);
 ok('không có lỗi runtime ở trang Cài đặt', St.errors.length === 0, St.errors[0]);

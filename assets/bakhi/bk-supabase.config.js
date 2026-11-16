@@ -42,6 +42,7 @@
         functions: {
             adminAuth: 'admin-auth',
             adminActions: 'admin-actions',
+            devAuth: 'dev-auth',
             importStudents: 'import-students',
             searchStudents: 'search-students',
             bindSession: 'bind-student-session',

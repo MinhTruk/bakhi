@@ -2,6 +2,45 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [3.5.0] — 2026-11-16
+
+### Tính năng
+
+- **Dev Code trong Cài đặt**: tab Nhà phát triển có mục Dev Code riêng, đặt trước
+  Administrator Code. Mã được xác minh ở Edge Function `dev-auth`; trình duyệt chỉ
+  giữ token + hạn dùng trong `sessionStorage` (`bakhiDev.v1`), không lưu mã và không
+  dùng menu ba gạch cũ. Phiên Dev tách hoàn toàn khỏi phiên Administrator.
+- **Developer Playground 2.1 — đủ 14 tab**: thêm Studio (trạng thái tài liệu + lối mở
+  nhanh), Dữ liệu (chỉ đọc kho dùng chung, xuất JSON từng khoá) và Gỡ lỗi (chẩn đoán
+  môi trường, phiên, viewport, cloud, shell; không chứa token hay mã).
+- **Thoát Dev**: nút đỏ `Thoát Dev` nằm bên trái nút Thu nhỏ, có hộp xác nhận; thoát
+  sẽ xoá phiên Dev, đóng panel và ẩn biểu tượng công cụ. Thu nhỏ giữ nguyên tab,
+  kích thước và trạng thái panel.
+- **Nút Dev góc dưới bên trái**: chỉ xuất hiện sau khi Dev Code được máy chủ xác minh,
+  nằm ngay trên Music Player; tải `bk-dev.js` theo nhu cầu từ `bk-shell.js`.
+- **Backend Dev Code**: migration `dev_sessions` (RLS bật, không policy, thu hồi quyền
+  anon/authenticated), Edge Function `dev-auth` giới hạn 10 lần/10 phút theo IP, thời
+  hạn phiên 1–12 giờ (mặc định 4). `dev-auth` không cấp quyền gọi `admin-actions`.
+
+### Sửa lỗi
+
+- `BK.ui.confirm()` luôn trả về `false` vì `onClose` được gọi trước khi nút đồng ý
+  phân giải Promise; nay nút Đồng ý trả về `true`, nút Huỷ trả về `false`. Sửa lỗi
+  này khôi phục mọi hộp xác nhận dùng chung (đổi học sinh, thoát Dev, xoá dữ liệu).
+- Hộp xác nhận bị Developer Playground che do z-index panel cao hơn overlay; panel
+  nay nằm dưới `.bk-overlay` để luôn bấm được.
+- `BK.signals.get()` tự đổi `updatedAt` mỗi lần đọc; nay giữ nguyên mốc đã lưu.
+- Trang Cài đặt nạp `bk-cloud.js` trước `bk-settings.js` để mở trực tiếp
+  `?tab=dev` thấy đúng trạng thái cấu hình máy chủ.
+
+### Cải tiến
+
+- Cache-busting toàn website lên `3.5.0`; `bk-dev.js` trên trang chủ dùng chung số
+  phiên bản với `bk-version.js`.
+- QA mới `tools/qa/dev-smoke.js`: xác thực Dev, 14 tab, Thoát Dev + xác nhận, thu nhỏ
+  giữ trạng thái, FAB trên Music Player, không đổi favicon, không có Highlight Manager
+  độc lập, không lưu mã; `smoke.js` và `shell-smoke.js` cập nhật theo hành vi mới.
+
 ## [3.4.0] — 2026-11-16
 
 ### Tính năng

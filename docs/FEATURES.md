@@ -1,4 +1,4 @@
-# Tính năng Bá Khí 3.4
+# Tính năng Bá Khí 3.5
 
 Tài liệu liệt kê toàn bộ tính năng đang có, trạng thái và ghi chú triển khai. Ký hiệu:
 ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị chặn
@@ -25,11 +25,15 @@ Trung tâm học tập, hồ sơ/cài đặt, Developer Playground, Administrato
 | 13 | Đồng bộ Supabase | ✅ | Adapter + migration + Edge Function; bật bằng cấu hình, không bắt buộc |
 | 14 | AI hỗ trợ | 🟡 | Adapter + cấu hình endpoint; cần proxy (không có key trong trình duyệt) |
 
-## B. Developer Playground 2.0 (`Ctrl+Shift+G`, sau khi xác thực Developer)
+## B. Developer Playground 2.1 — 14 tab (`Ctrl+Shift+G`, sau khi xác thực Dev Code)
+
+Dev Code nằm trong **Cài đặt → Nhà phát triển → Dev Code**, xác minh ở Edge Function
+`dev-auth`; mã không lưu, chỉ token phiên trong `sessionStorage`. Nút công cụ chỉ xuất hiện
+sau khi xác thực, ở góc dưới bên trái ngay trên Music Player.
 
 | # | Công cụ | Trạng thái | Chi tiết |
 |---|---|---|---|
-| 1 | Cửa sổ nổi | ✅ | Kéo, đổi kích thước, thu nhỏ, phóng to, nhớ vị trí/kích thước/tab; chuyển tab có chuyển động nhẹ (tôn trọng reduced-motion) |
+| 1 | Cửa sổ nổi | ✅ | Kéo, đổi kích thước, thu nhỏ, phóng to, nhớ vị trí/kích thước/tab; thu nhỏ giữ trạng thái |
 | 2 | Inspector 2.0 | ✅ | Chọn phần tử, highlight, breadcrumb DOM, thuộc tính/class, computed styles, kích thước, box model, copy selector/HTML, sửa style tạm thời + khôi phục |
 | 3 | CSS Studio | ✅ | Live CSS, rule builder (màu/chữ/khoảng cách/bo góc/bóng), undo/redo, reset, xuất CSS |
 | 4 | Animation Studio | ✅ | 7 preset, keyframes, duration/delay/easing (kể cả cubic-bezier), hướng, lặp, timeline, play/pause/restart, xuất CSS, lưu/nhập preset, tôn trọng reduced-motion |
@@ -41,10 +45,12 @@ Trung tâm học tập, hồ sơ/cài đặt, Developer Playground, Administrato
 | 10 | Component Library | ✅ | 11 nhóm thành phần có demo + mã mẫu |
 | 11 | Backup Manager | ✅ | Tạo/xem trước/khôi phục/xuất/nhập, kiểm tra phiên bản, xác nhận trước khi khôi phục |
 | 12 | Music (tab) | ✅ | Trạng thái trực tiếp theo sự kiện, mở/phóng to/thu nhỏ/đặt lại bố cục trình phát, kiểm tra file, thư viện 5 bài |
-| 13 | Studio (Word & Paint) | ✅ | Ứng dụng tĩnh độc lập `studio/word-paint.html`, mở từ menu 3 gạch hoặc command palette |
+| 13 | Studio (tab) | ✅ | Chỉ đọc trạng thái `bakhiStudio.v1`, mở nhanh Studio/Word & Paint, tải JSON; không nhân bản Studio |
+| 14 | Dữ liệu | ✅ | Chỉ đọc 6 khoá dùng chung, xuất JSON từng khoá hoặc toàn bộ; không tự ghi đè dữ liệu |
+| 15 | Gỡ lỗi | ✅ | Chẩn đoán phiên bản, viewport, theme, cloud, shell, trợ năng, phiên Admin/Dev; không chứa token hay mã |
 
-Panel Developer cũ (11 tab `fx/tools/data/ui/debug/anim/adv/insp/perf/studio/bk`) vẫn hoạt động
-nguyên vẹn và mở bằng nút trong menu 3 gạch hoặc lệnh trong palette.
+Thoát Dev: nút đỏ bên trái Thu nhỏ, có hộp xác nhận; thoát xoá phiên, đóng panel và gỡ FAB.
+Không có animation favicon và không có Highlight Manager độc lập.
 
 ## C. Music Player dùng chung
 

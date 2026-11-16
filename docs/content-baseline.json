@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-15T06:30:20.423Z",
+  "generatedAt": "2026-11-16T04:03:10.194Z",
   "algorithm": "sha256(strip(assets/bakhi lines))",
   "files": {
     "admin/index.html": {
       "hash": "5ddfbec7c6f3cea1f5c38a82c94cd85b89b913e85f5eb4a34dc88c97cd5c0154",
-      "bytes": 12299,
+      "bytes": 12900,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -18,7 +18,7 @@
     },
     "images/anh/1.html": {
       "hash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
-      "bytes": 1,
+      "bytes": 2,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -31,8 +31,8 @@
       }
     },
     "index.html": {
-      "hash": "e925ca5d4e8440f9b68a52402dcfd9b03f53ce1ba72db979d577bf43e0d7c514",
-      "bytes": 203880,
+      "hash": "12915adc4bcd0003829a0e5e0b2a6460240c0aada68ebe66e61b74effce808d6",
+      "bytes": 195479,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -46,7 +46,7 @@
     },
     "ktck1/anh/indexanh.html": {
       "hash": "e7b7fd1d5f995332303ec5680fa5b967022b871876d8d1173f93e8c6862dcc1f",
-      "bytes": 4914,
+      "bytes": 6102,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -60,7 +60,7 @@
     },
     "ktck1/gddp/indexgddp.html": {
       "hash": "fc6fc6b0beb0c7677058a9dd01bf73bf2a1c718231ca440db3193331b95f5b00",
-      "bytes": 4902,
+      "bytes": 6090,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -74,7 +74,7 @@
     },
     "ktck1/gdqp/indexqp.html": {
       "hash": "8e966d18f9a8d7484746dd09f041d586200ad52f11b8bc5dbf2a2b291b9742bc",
-      "bytes": 4900,
+      "bytes": 6088,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -88,7 +88,7 @@
     },
     "ktck1/hoa/indexhoa.html": {
       "hash": "9401acc76c176e12cc1909266d8d75ed281701ef5c103f1b71591f15cdc9f58a",
-      "bytes": 4912,
+      "bytes": 6100,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -102,7 +102,7 @@
     },
     "ktck1/ly/indexly.html": {
       "hash": "8a4c435063f2ac4acbe0e15871337efc5d40d32c575bacebf63b5f9cabc0bc36",
-      "bytes": 4910,
+      "bytes": 6098,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -116,7 +116,7 @@
     },
     "ktck1/sinh/indexsinh.html": {
       "hash": "ecce05cf5ca40fbef7a6b67a8a8653f86de4e3b4ff7694d0f07ff75ebd157b28",
-      "bytes": 4912,
+      "bytes": 6100,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -130,7 +130,7 @@
     },
     "ktck1/su/indexsu.html": {
       "hash": "6e9e6b6b65c641ad5f37013e304ba3695d124a7bf2d38de1b9398af97d10b128",
-      "bytes": 4914,
+      "bytes": 6102,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -144,7 +144,7 @@
     },
     "ktck1/tin/indextin.html": {
       "hash": "095a86ef076f9ab8e03d311fe8480c4ce0f5360a934d7876db58c0612a800220",
-      "bytes": 4910,
+      "bytes": 6098,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -158,7 +158,7 @@
     },
     "ktck1/toan/indextoan.html": {
       "hash": "8e303d2be2481b902df2fcd992d0245efcb8d2189d7384ab7b68325cd1bae9a9",
-      "bytes": 4914,
+      "bytes": 6102,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -172,7 +172,7 @@
     },
     "ktck1/van/indexvan.html": {
       "hash": "35b49f9ad367de4828b726653010851f2cffaec397cf2cc2a9145519ab53a38a",
-      "bytes": 4912,
+      "bytes": 6100,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -186,7 +186,7 @@
     },
     "ktck2/anh/indexanh.html": {
       "hash": "55fd6dc77efd54b2ee1f0fa9ce20c137d2853c93300cd39565856608faf3d0c5",
-      "bytes": 4914,
+      "bytes": 6102,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -200,7 +200,7 @@
     },
     "ktck2/gddp/indexgddp.html": {
       "hash": "f6b3a6b4e78e041228aa536a8971795d2dd2488d6392eccbd9533e02853cace1",
-      "bytes": 4902,
+      "bytes": 6090,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -214,7 +214,7 @@
     },
     "ktck2/gdqp/indexqp.html": {
       "hash": "5998a6fad00663c3e3b1afb778fc6abe94c18e3a08df46a2012f9cbae6670eaf",
-      "bytes": 4900,
+      "bytes": 6088,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -228,7 +228,7 @@
     },
     "ktck2/hoa/indexhoa.html": {
       "hash": "781237a079c431265b4f190b7aaefb53bafec78c41070965fa32371ebe55b6b2",
-      "bytes": 4912,
+      "bytes": 6100,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -242,7 +242,7 @@
     },
     "ktck2/ly/indexly.html": {
       "hash": "2c0cc210a66d686efa09826813e5bf3a3091097ba671eb8b267096cbc8b03e03",
-      "bytes": 4910,
+      "bytes": 6098,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -256,7 +256,7 @@
     },
     "ktck2/sinh/indexsinh.html": {
       "hash": "9e98f6754fb8faaf1e5e93f4a576952f78ce75cf662892b4791c4a6b7ccd4513",
-      "bytes": 4912,
+      "bytes": 6100,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -270,7 +270,7 @@
     },
     "ktck2/su/indexsu.html": {
       "hash": "440854547017e394ed986d5b55ccfc8eba0007beb4518ad759e463a3c6509ce8",
-      "bytes": 4914,
+      "bytes": 6102,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -284,7 +284,7 @@
     },
     "ktck2/tin/indextin.html": {
       "hash": "ca41e2752d16098472c7983c305e77b563f10066636ed0716b74d6a75b5e3446",
-      "bytes": 4910,
+      "bytes": 6098,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -298,7 +298,7 @@
     },
     "ktck2/toan/indextoan.html": {
       "hash": "8cd9d61b18923314cdc882e7b6233182f965313ea6b320f61b19f52fb8af743b",
-      "bytes": 4914,
+      "bytes": 6102,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -312,7 +312,7 @@
     },
     "ktck2/van/indexvan.html": {
       "hash": "ffbe20e8672b3c56c9e7c836937e9308ef4a1a18c4bdb3bd6a4ad96038363434",
-      "bytes": 4912,
+      "bytes": 6100,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -326,7 +326,7 @@
     },
     "ktgk1/anh/anh1.html": {
       "hash": "683bf5398d7a974f75bb036df4ec7479a73d1d8abb64426f463a6ea900ca5d90",
-      "bytes": 80875,
+      "bytes": 82009,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -340,7 +340,7 @@
     },
     "ktgk1/anh/indexanh.html": {
       "hash": "cce8832ef935458cebdc2457fab23e8650da757b8cdc5e710ca34b7e42010d25",
-      "bytes": 6683,
+      "bytes": 7817,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -354,7 +354,7 @@
     },
     "ktgk1/gddp/indexgddp.html": {
       "hash": "3dcfde9c053f2c4a5980e3f12dff10fd1b06c696a99874bf6ec61d66a317880f",
-      "bytes": 4902,
+      "bytes": 6090,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -368,7 +368,7 @@
     },
     "ktgk1/gdqp/indexqp.html": {
       "hash": "488cf092ecd671789ca76ed21de772b1182deb82c94f2f06009f679b514b89ae",
-      "bytes": 9637,
+      "bytes": 10940,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -382,7 +382,7 @@
     },
     "ktgk1/gdqp/qp1.html": {
       "hash": "523f46a9f762f98dedbe4e488860b10d613632e19a614ac6847db8bbb6fd5791",
-      "bytes": 46011,
+      "bytes": 47607,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -396,7 +396,7 @@
     },
     "ktgk1/hoa/indexhoa.html": {
       "hash": "414f97b7ef3c0e15f7fd1e7f27719e1a3ef984a1de009bf7fd406e53271cb5d8",
-      "bytes": 4912,
+      "bytes": 6100,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -410,7 +410,7 @@
     },
     "ktgk1/ly/congthuc.html": {
       "hash": "956bb3982f6394cdf10482f23000315458aa0cdc7ff4024ab63b0e6d8afcc6eb",
-      "bytes": 64499,
+      "bytes": 66533,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -424,7 +424,7 @@
     },
     "ktgk1/ly/indexly.html": {
       "hash": "0a3bcc1390109bf3dd067541d3cd76e0fe399b3577285c0f4a66b2d86e52fedd",
-      "bytes": 8589,
+      "bytes": 9863,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -438,7 +438,7 @@
     },
     "ktgk1/ly/ly1.html": {
       "hash": "36c5ad673140a4fd7369d578e3d83138b795836351152c093d1a86a641fd0a5d",
-      "bytes": 95275,
+      "bytes": 98144,
       "stats": {
         "correctAnswer": 29,
         "correctField": 0,
@@ -452,7 +452,7 @@
     },
     "ktgk1/sinh/indexsinh.html": {
       "hash": "7f7b227014eb3f36ff9237ddc2c3fd875613ff27d99d10e9b52fcd82f9824dca",
-      "bytes": 74550,
+      "bytes": 76497,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -466,7 +466,7 @@
     },
     "ktgk1/su/indexsu.html": {
       "hash": "1e03b564ad8fb345dc5caa06f40196f5736ed36b3011d1b0efdcfe309c017215",
-      "bytes": 8654,
+      "bytes": 9929,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -480,7 +480,7 @@
     },
     "ktgk1/su/su1.html": {
       "hash": "1e0c5ce30c5edb01a895be0c793775ae524adfd3f6869ca4b5eccec0e631ce9b",
-      "bytes": 147209,
+      "bytes": 150263,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -494,7 +494,7 @@
     },
     "ktgk1/tin/indextin.html": {
       "hash": "d99f9ffc1815af67e932cf61983e2d498cee1d8d249177956ac09c8a627c01a3",
-      "bytes": 8477,
+      "bytes": 9751,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -508,7 +508,7 @@
     },
     "ktgk1/tin/tin1.html": {
       "hash": "068a5a54ea765561cbf3a789113a30b5552818677d0a2172b3af85ebf30bc2a2",
-      "bytes": 125255,
+      "bytes": 128752,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -522,7 +522,7 @@
     },
     "ktgk1/toan/indextoan.html": {
       "hash": "573fae2e1cbf4e9ba986acd34a84255b408813063382c902471773b54d7157e6",
-      "bytes": 8601,
+      "bytes": 9875,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -536,7 +536,7 @@
     },
     "ktgk1/toan/toan1.html": {
       "hash": "2391bfb961bf1c3eb2e7369952c97d7ef16f9989cc804cb69727e529b8b79703",
-      "bytes": 62870,
+      "bytes": 65092,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -550,7 +550,7 @@
     },
     "ktgk1/van/indexvan.html": {
       "hash": "32102bce59c17e1e42106ed29ff940e533d5aab6eb8a3daef918aa9fd4768c8c",
-      "bytes": 6662,
+      "bytes": 7913,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -564,7 +564,7 @@
     },
     "ktgk1/van/matran.html": {
       "hash": "5aa0d14de8b74c6920be59793aa0abdd6fa3e3f9e2ffa611cdfddb65f0eb90fd",
-      "bytes": 49804,
+      "bytes": 51542,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -578,7 +578,7 @@
     },
     "ktgk1/van/van.html": {
       "hash": "4c422897fecf4304bb6b5740a8c7a203d9e2b7b9c50accf05635e395fdb9d248",
-      "bytes": 27588,
+      "bytes": 29004,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -592,7 +592,7 @@
     },
     "ktgk2/anh/indexanh.html": {
       "hash": "8ae8fdc358383c1bed1fa978cf6a814e5b5005c817a0d553724c3a52c257216c",
-      "bytes": 4914,
+      "bytes": 6102,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -606,7 +606,7 @@
     },
     "ktgk2/gddp/indexgddp.html": {
       "hash": "a3bee3525b024dd8ac6175550664ee6d81a0ca3977faae6a8352df71c9101fa8",
-      "bytes": 4902,
+      "bytes": 6090,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -620,7 +620,7 @@
     },
     "ktgk2/gdqp/indexqp.html": {
       "hash": "f2e26290ae728cc986cb332399dea67f309f6bc7d6f7ff76dd72139639552014",
-      "bytes": 4900,
+      "bytes": 6088,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -634,7 +634,7 @@
     },
     "ktgk2/hoa/indexhoa.html": {
       "hash": "26fadc0bfd9accfc1a1385bfadfdc286b3c7ab50087b159b9cf2eb24d10df31d",
-      "bytes": 4912,
+      "bytes": 6100,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -648,7 +648,7 @@
     },
     "ktgk2/ly/indexly.html": {
       "hash": "20d7a8cde033e079725cc5b7869a2dd34253903d2e80ff9458efafb66b82be31",
-      "bytes": 4910,
+      "bytes": 6098,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -662,7 +662,7 @@
     },
     "ktgk2/sinh/indexsinh.html": {
       "hash": "f8215688dd84858da802537f85c3185eab586f36c1e481523d0122296bf3639e",
-      "bytes": 4912,
+      "bytes": 6100,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -676,7 +676,7 @@
     },
     "ktgk2/su/indexsu.html": {
       "hash": "3a17f71309087103d66974eb98b7793a2e57583cc155d337c6978332ee40cbce",
-      "bytes": 4914,
+      "bytes": 6102,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -690,7 +690,7 @@
     },
     "ktgk2/tin/indextin.html": {
       "hash": "20944aae9d335340abe2654cf73f1aa338fc8c3d06de0ec74fa359de71ace11f",
-      "bytes": 4910,
+      "bytes": 6098,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -704,7 +704,7 @@
     },
     "ktgk2/toan/indextoan.html": {
       "hash": "4b91923a380cb157a63cdf8879299d43c97b512812e6552bc70d5877d780005a",
-      "bytes": 4914,
+      "bytes": 6102,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -718,7 +718,7 @@
     },
     "ktgk2/van/indexvan.html": {
       "hash": "ae52eed4132544544b6cb90b19d45ce9db86fd9b3c51c008af351899e77d43e7",
-      "bytes": 4912,
+      "bytes": 6100,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -732,7 +732,7 @@
     },
     "kttx/ck1/anh/indexanh.html": {
       "hash": "0f5a6527dd0639a419c59d38b70e835b777c1f7bb67fc60806ab845abda56593",
-      "bytes": 4920,
+      "bytes": 6141,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -746,7 +746,7 @@
     },
     "kttx/ck1/gddp/indexgddp.html": {
       "hash": "31541376810a19a97d117de11054120ca368ffcb762b637b87433e7e9c38548f",
-      "bytes": 4908,
+      "bytes": 6129,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -760,7 +760,7 @@
     },
     "kttx/ck1/gdqp/indexqp.html": {
       "hash": "b1b13a9aa2d3a0da4db7a7bb0eaa4a307937aeb7a67737acd8efc584c1fd5a1a",
-      "bytes": 4906,
+      "bytes": 6127,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -774,7 +774,7 @@
     },
     "kttx/ck1/hoa/indexhoa.html": {
       "hash": "1f1dd66871351b599e07cf75548b6dc6e35da4daffbf5b4b7de36a60ec295fdd",
-      "bytes": 4918,
+      "bytes": 6139,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -788,7 +788,7 @@
     },
     "kttx/ck1/ly/indexly.html": {
       "hash": "52acdd73389afa038bc48a50903ac8ff79b462edaa450e1c8458608e5365ce01",
-      "bytes": 4916,
+      "bytes": 6137,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -802,7 +802,7 @@
     },
     "kttx/ck1/sinh/indexsinh.html": {
       "hash": "d1b13670522ade2186db393c374c2181469e4f6a46043e9c88567e80c40ae85e",
-      "bytes": 4918,
+      "bytes": 6139,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -816,7 +816,7 @@
     },
     "kttx/ck1/su/indexsu.html": {
       "hash": "43dd3f15899bf9e748fba729f2373a94a457c9dfdbe3b66dd476b595e1a271b5",
-      "bytes": 4920,
+      "bytes": 6141,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -830,7 +830,7 @@
     },
     "kttx/ck1/tin/indextin.html": {
       "hash": "5114504926c27814f8b3936425adfa336ea8d370ca87b617b719472212f0e572",
-      "bytes": 4916,
+      "bytes": 6137,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -844,7 +844,7 @@
     },
     "kttx/ck1/toan/indextoan.html": {
       "hash": "33bcb09bba3a2b127848fed976508adc15959342e1dfcee0bd2d7db7d6d58f60",
-      "bytes": 4920,
+      "bytes": 6141,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -858,7 +858,7 @@
     },
     "kttx/ck1/van/indexvan.html": {
       "hash": "3b3859c8c91d15dc763f3dd66e867158b9bb366fb3f557a884d39d4b6ff96d76",
-      "bytes": 4918,
+      "bytes": 6139,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -872,7 +872,7 @@
     },
     "kttx/ck2/anh/indexanh.html": {
       "hash": "d6e0b3325e56ee1fe626d2b8dfca9fee309eb372215e98d234682f33f65b636c",
-      "bytes": 4920,
+      "bytes": 6141,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -886,7 +886,7 @@
     },
     "kttx/ck2/gddp/indexgddp.html": {
       "hash": "ee27c2a5d15a57b353343b0b8eca2b74af63f4f128d8887ffac32e92dfd814a6",
-      "bytes": 4908,
+      "bytes": 6129,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -900,7 +900,7 @@
     },
     "kttx/ck2/gdqp/indexqp.html": {
       "hash": "1d8571a665b6a81320fca5600073b0addeb23626b06a4f32c75ffd0453f34f0e",
-      "bytes": 4906,
+      "bytes": 6127,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -914,7 +914,7 @@
     },
     "kttx/ck2/hoa/indexhoa.html": {
       "hash": "b273a3ed8c8a5610200b87dd5c0247ea9bea98cb2887557630cf8b2b941e2aa4",
-      "bytes": 4918,
+      "bytes": 6139,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -928,7 +928,7 @@
     },
     "kttx/ck2/ly/indexly.html": {
       "hash": "5be3a20f12bd8abf8e443c6f2e9cd2630596aad051bb80ad32f2dc5627818a37",
-      "bytes": 4916,
+      "bytes": 6137,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -942,7 +942,7 @@
     },
     "kttx/ck2/sinh/indexsinh.html": {
       "hash": "a5dbbad0b7a7afd70e5198cd9a0d6619445bec6eee176aa6ce093a7220b0a345",
-      "bytes": 4918,
+      "bytes": 6139,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -956,7 +956,7 @@
     },
     "kttx/ck2/su/indexsu.html": {
       "hash": "b96cda2804d9afaff9a071a715de4c01a9125484005ef3dd5a403eb25a2a0a8a",
-      "bytes": 4920,
+      "bytes": 6141,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -970,7 +970,7 @@
     },
     "kttx/ck2/tin/indextin.html": {
       "hash": "b9027f718965be1ac1fe27365bfbb4edcd88a46d8ae13ae5352e387ffe580759",
-      "bytes": 4916,
+      "bytes": 6137,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -984,7 +984,7 @@
     },
     "kttx/ck2/toan/indextoan.html": {
       "hash": "7f231d5dfd0708b0fcae6586bdd61c5c5999c0a9dd3823d809a4e39469a3267a",
-      "bytes": 4920,
+      "bytes": 6141,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -998,7 +998,7 @@
     },
     "kttx/ck2/van/indexvan.html": {
       "hash": "21d52d47ca149ad5ff418123f990ed45c66df9d05cf2d8739aed16c772f8eb23",
-      "bytes": 4918,
+      "bytes": 6139,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1012,7 +1012,7 @@
     },
     "kttx/gk1/anh/gram.html": {
       "hash": "a0f4d93a721d56071f8622c9e540e776c9c030f278d5b5d957fca8b5c1bc13d3",
-      "bytes": 22257,
+      "bytes": 23810,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1026,7 +1026,7 @@
     },
     "kttx/gk1/anh/indexanh.html": {
       "hash": "382ec345e3ad34355f831d42e847093957651815d2170bfe38f051d3e37dc4e1",
-      "bytes": 5407,
+      "bytes": 6670,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1040,7 +1040,7 @@
     },
     "kttx/gk1/anh/vocab.html": {
       "hash": "2c80cdf54e96a43da94015c925a36ba0192b1543ada0136f8d96fed91be5cdb7",
-      "bytes": 21521,
+      "bytes": 23060,
       "stats": {
         "correctAnswer": 0,
         "correctField": 20,
@@ -1054,7 +1054,7 @@
     },
     "kttx/gk1/gddp/indexgddp.html": {
       "hash": "2c32b941b1733c9632afea8034f9e4bf6071f62662514c42f8c8830a97dc7d0a",
-      "bytes": 4908,
+      "bytes": 6129,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1068,7 +1068,7 @@
     },
     "kttx/gk1/gdqp/indexqp.html": {
       "hash": "638fdbea10f515b735054aca5a19a5aaf498241ae30f33fbc13d86eb3a79f791",
-      "bytes": 7291,
+      "bytes": 8576,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1082,7 +1082,7 @@
     },
     "kttx/gk1/gdqp/qp1.html": {
       "hash": "0e68d15c6e2c56d60768df73e6156118899f6191388da04c4825b62c3545a0eb",
-      "bytes": 24622,
+      "bytes": 26112,
       "stats": {
         "correctAnswer": 0,
         "correctField": 16,
@@ -1096,7 +1096,7 @@
     },
     "kttx/gk1/gdqp/qp2.html": {
       "hash": "0d60f2f45984bc2a1e060182f682c577c403b39d6ec450f73dc3b3b7b9490f36",
-      "bytes": 28239,
+      "bytes": 29869,
       "stats": {
         "correctAnswer": 0,
         "correctField": 16,
@@ -1110,7 +1110,7 @@
     },
     "kttx/gk1/gdqp/qp3.html": {
       "hash": "1915d388f9e5b798487455097b4d0b918bf939057617f56020bcd22313808cd5",
-      "bytes": 21946,
+      "bytes": 23426,
       "stats": {
         "correctAnswer": 0,
         "correctField": 16,
@@ -1124,7 +1124,7 @@
     },
     "kttx/gk1/hoa/indexhoa.html": {
       "hash": "7817f1d0cf56aa523c177e16696bd0886a1837eadca1fa91150de2515923b07b",
-      "bytes": 4918,
+      "bytes": 6139,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1138,7 +1138,7 @@
     },
     "kttx/gk1/ly/bai_thi_1.html": {
       "hash": "a415055379f7ac91f972c1aebaf0df4f65cf756960183d00f762a3abd9730501",
-      "bytes": 33365,
+      "bytes": 34907,
       "stats": {
         "correctAnswer": 0,
         "correctField": 12,
@@ -1152,7 +1152,7 @@
     },
     "kttx/gk1/ly/bai_thi_2.html": {
       "hash": "e21381ac96ac8a5a96fd44eab9e2f8dd0c720ac9fee78e04a059ea3e7eb331e6",
-      "bytes": 33342,
+      "bytes": 34884,
       "stats": {
         "correctAnswer": 0,
         "correctField": 12,
@@ -1166,7 +1166,7 @@
     },
     "kttx/gk1/ly/congthuc1.html": {
       "hash": "b9ea0be79831c8494bd5074550e156b3d28f7406e51e80313eee3628074c719d",
-      "bytes": 35201,
+      "bytes": 36783,
       "stats": {
         "correctAnswer": 0,
         "correctField": 24,
@@ -1180,7 +1180,7 @@
     },
     "kttx/gk1/ly/congthuc2.html": {
       "hash": "ff7370e18961dede9a2adef2eb11fc9f2275464bd174d0949095c9623dbb8388",
-      "bytes": 39342,
+      "bytes": 40919,
       "stats": {
         "correctAnswer": 0,
         "correctField": 24,
@@ -1194,7 +1194,7 @@
     },
     "kttx/gk1/ly/congthuc3.html": {
       "hash": "213b985c5ca9fa411bbc5f9d99a3b67aa91ddcd9b826fc456b90f53d5723ed39",
-      "bytes": 40287,
+      "bytes": 41864,
       "stats": {
         "correctAnswer": 0,
         "correctField": 24,
@@ -1208,7 +1208,7 @@
     },
     "kttx/gk1/ly/indexly.html": {
       "hash": "ba3b3f2fac70c3e95fd32b77efbac8e6df04983216bdfe0bcdd24ab5511f104e",
-      "bytes": 17082,
+      "bytes": 18515,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1222,7 +1222,7 @@
     },
     "kttx/gk1/ly/lythuyet1.html": {
       "hash": "b09497d887a127e4094949fdb0ffa253bcfd293b810ca9ace57b72f14717dc7d",
-      "bytes": 42515,
+      "bytes": 44097,
       "stats": {
         "correctAnswer": 0,
         "correctField": 24,
@@ -1236,7 +1236,7 @@
     },
     "kttx/gk1/ly/lythuyet2.html": {
       "hash": "283d4fc7c45e0ab7a3a04faf41dfffd3b9aa5ea326aad4e45390d4fd2165cd9c",
-      "bytes": 45160,
+      "bytes": 46757,
       "stats": {
         "correctAnswer": 0,
         "correctField": 24,
@@ -1250,7 +1250,7 @@
     },
     "kttx/gk1/ly/lythuyet3.html": {
       "hash": "a89186b20688abb5af5352b089abfa2a6374e5836ad36de0bf8875cb2fea1663",
-      "bytes": 41707,
+      "bytes": 43284,
       "stats": {
         "correctAnswer": 0,
         "correctField": 24,
@@ -1264,7 +1264,7 @@
     },
     "kttx/gk1/sinh/indexsinh.html": {
       "hash": "616d86e773416b793f292809cea994651e9bd6ba7cb05042e8858ccdcb656250",
-      "bytes": 6078,
+      "bytes": 7351,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1278,7 +1278,7 @@
     },
     "kttx/gk1/sinh/tuduy.html": {
       "hash": "34db02e6f4b481d8f60cc87a8307c9cf5eed152af6666b730f6c0ce9848b2e9a",
-      "bytes": 10232,
+      "bytes": 11622,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1292,7 +1292,7 @@
     },
     "kttx/gk1/su/indexsu.html": {
       "hash": "9c2ab83cc0530fefa2220a162ddefc8d853653d6babdd00fe20c74d3d6c0b2e2",
-      "bytes": 10300,
+      "bytes": 11638,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1306,7 +1306,7 @@
     },
     "kttx/gk1/su/su.html": {
       "hash": "3ad3c3fa2f16e1329085543be138bdb900ef2221aeee0a877de6f48552eedd1d",
-      "bytes": 22482,
+      "bytes": 23649,
       "stats": {
         "correctAnswer": 0,
         "correctField": 14,
@@ -1320,7 +1320,7 @@
     },
     "kttx/gk1/su/su2.html": {
       "hash": "b7be129cf106cdc521c2a5af91fd640b94753db6d80eeddbfa92562f530a0f1b",
-      "bytes": 22219,
+      "bytes": 23610,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1334,7 +1334,7 @@
     },
     "kttx/gk1/su/su3.html": {
       "hash": "6282d5b2b25ff74683d410d7a3fe12a4ab19bffb0aa9d5f27b41644f556c561a",
-      "bytes": 21764,
+      "bytes": 23154,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1348,7 +1348,7 @@
     },
     "kttx/gk1/su/su4.html": {
       "hash": "744e3c26e8925dd69bae0e2308686f40faee909f8e8238b5f48cf7020a3246e9",
-      "bytes": 16814,
+      "bytes": 18248,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1362,7 +1362,7 @@
     },
     "kttx/gk1/tin/indextin.html": {
       "hash": "9fb8aab7a237071d6a91484ffbd3da908f45f0beb2c69f6e67dec7cccae15612",
-      "bytes": 7718,
+      "bytes": 9033,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1376,7 +1376,7 @@
     },
     "kttx/gk1/tin/tin.html": {
       "hash": "a6e67baefd8278818c59e9d25ddde1831653dc8d4425228180806c780f1c5356",
-      "bytes": 29026,
+      "bytes": 30193,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1390,7 +1390,7 @@
     },
     "kttx/gk1/toan/csc.html": {
       "hash": "ac0f187e8b8ea81cdb7aa7c0383eaf7e30213fdadb921dce69160cfd47cf2ecd",
-      "bytes": 34082,
+      "bytes": 35782,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1404,7 +1404,7 @@
     },
     "kttx/gk1/toan/csn.html": {
       "hash": "7797492d4d085381e062ae013ddee2855ca14afa46eba11d4ad568bb5c5d981e",
-      "bytes": 37286,
+      "bytes": 39012,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1418,7 +1418,7 @@
     },
     "kttx/gk1/toan/dayso.html": {
       "hash": "b6b7a81c42afb0f134dafcd7287020f8c8d063f4242626a8ca747c6f114e13e7",
-      "bytes": 32990,
+      "bytes": 34692,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1432,7 +1432,7 @@
     },
     "kttx/gk1/toan/indextoan.html": {
       "hash": "c830529a1aa78a7b928370410ad776762b70670f7108f9e567e275f956dc36c0",
-      "bytes": 6814,
+      "bytes": 8091,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1446,7 +1446,7 @@
     },
     "kttx/gk1/van/indexvan.html": {
       "hash": "751e7592cd6b59b0b3956861dec0fea91590cf0984f2ea1254bd830660064b00",
-      "bytes": 10558,
+      "bytes": 11914,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1460,7 +1460,7 @@
     },
     "kttx/gk1/van/pht_tranggiang.html": {
       "hash": "9271ba7924b3abac1a9076668d244c6df1cf6bab5b3af6d2336b0953dbf2ed02",
-      "bytes": 18471,
+      "bytes": 19916,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1474,7 +1474,7 @@
     },
     "kttx/gk1/van/van_118.html": {
       "hash": "8d53ad7795d04eac3fcbadc07ff540bcae6ab65f3c3cb7e01f1662242b3f2376",
-      "bytes": 16599,
+      "bytes": 17976,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1488,7 +1488,7 @@
     },
     "kttx/gk1/van/van_119.html": {
       "hash": "601a2cbd4226fb68c30338ab327212e38bf5a5e85b60db5385cde386b9fec93d",
-      "bytes": 24077,
+      "bytes": 25501,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1502,7 +1502,7 @@
     },
     "kttx/gk2/anh/indexanh.html": {
       "hash": "53ef0e785c87db929efe6001e4f4788ef1598db0bb4e6124a4251941f56b4339",
-      "bytes": 4920,
+      "bytes": 6141,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1516,7 +1516,7 @@
     },
     "kttx/gk2/gddp/indexgddp.html": {
       "hash": "f1f94fccb1afb20eff80e12c34d74798a1248b5f147a82840900d1ca0628b65e",
-      "bytes": 4908,
+      "bytes": 6129,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1530,7 +1530,7 @@
     },
     "kttx/gk2/gdqp/indexqp.html": {
       "hash": "dc2625b91961d73dab929a2b100c6902a82b0fa38ff815a05ba4654dd1321a8a",
-      "bytes": 4906,
+      "bytes": 6127,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1544,7 +1544,7 @@
     },
     "kttx/gk2/hoa/indexhoa.html": {
       "hash": "0711c314e51a580fd5da902b36b5bfb5e0991666f4f7d5186bca26cd53e62de2",
-      "bytes": 4918,
+      "bytes": 6139,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1558,7 +1558,7 @@
     },
     "kttx/gk2/ly/indexly.html": {
       "hash": "ffa540840aac3c26df2c501adfcda0bb9a9db4d792600a9f360e435175abe433",
-      "bytes": 4916,
+      "bytes": 6137,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1572,7 +1572,7 @@
     },
     "kttx/gk2/sinh/indexsinh.html": {
       "hash": "12334cadf7bb0a967d6cbb33ab59436e5fc7c6de67646ba1e591bde06b9779ed",
-      "bytes": 4918,
+      "bytes": 6139,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1586,7 +1586,7 @@
     },
     "kttx/gk2/su/indexsu.html": {
       "hash": "994a909c4e8420995ff331e24b5580b9f960d69c9f5d8e0b84004d27f7557d6a",
-      "bytes": 4920,
+      "bytes": 6141,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1600,7 +1600,7 @@
     },
     "kttx/gk2/tin/indextin.html": {
       "hash": "c634278cb9d3dc7abd6e2a4b7bf04a30de2ad458cb46bb2ecf48a371f0f61e66",
-      "bytes": 4916,
+      "bytes": 6137,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1614,7 +1614,7 @@
     },
     "kttx/gk2/toan/indextoan.html": {
       "hash": "3654f09df97a2366ae2451f8f546d0ba250a61fdbc46dcd57b821f37839be74e",
-      "bytes": 4920,
+      "bytes": 6141,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1628,7 +1628,35 @@
     },
     "kttx/gk2/van/indexvan.html": {
       "hash": "a1f662264dcdf9adce11f7095c7e5c2eb6540f5f0272f288ab0893ef21173b86",
-      "bytes": 4918,
+      "bytes": 6139,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "profile/index.html": {
+      "hash": "59849526278fb11bfc57324b4e4411d0ff4974ee24e9733fe1a4ca17a31424bd",
+      "bytes": 4267,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "settings/index.html": {
+      "hash": "21d181a3ee2b38396864ec75a6d286da41b358e52f6f36bb091fcb6cf19454dc",
+      "bytes": 3128,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1642,7 +1670,7 @@
     },
     "studio/index.html": {
       "hash": "9404a3e86c3c9e4cf0fa139be2e39dfd0af8559343e5e2a8c2270d88b63c383d",
-      "bytes": 53455,
+      "bytes": 54556,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1656,7 +1684,7 @@
     },
     "studio/word-paint.html": {
       "hash": "c9e01333ebc45480b795c7de6ade445ca9062852e570ee28d5d0561382b64575",
-      "bytes": 49804,
+      "bytes": 52021,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,

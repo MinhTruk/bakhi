@@ -114,6 +114,8 @@
                 var host = S.panels[id];
                 if (host && host.__refresh) host.__refresh();
             }
+            /* Trạng thái phiên Dev/Admin có thể đổi từ nơi khác → dựng lại khi mở tab. */
+            if (id === 'dev') buildDev(S.panels[id]);
             return;
         }
         S.mounted[id] = true;
@@ -428,84 +430,207 @@
     /* ---------------------------------------------------------------------
        5. Nhà phát triển
        ------------------------------------------------------------------ */
+    function devHint(text) {
+        var s = el('small', null, text);
+        s.style.cssText = 'display:block;font-size:.72rem;color:var(--bkl-muted);margin:-.5rem 0 .9rem';
+        return s;
+    }
+
     function buildDev(panel) {
         panel.textContent = '';
-        panel.appendChild(el('h2', null, 'Administrator Code'));
-        panel.appendChild(el('p', 'bk-set-lead', 'Mã được gửi tới máy chủ để xác minh, không lưu trong trình duyệt, không ghi vào URL hay nhật ký. Phiên quản trị có thời hạn và chỉ lưu token.'));
-        panel.appendChild(el('small', null, 'Cần quyền Administrator.')).style.cssText = 'display:block;font-size:.72rem;color:var(--bkl-muted);margin-top:-.6rem';
+        var cloud = global.BKCloud;
+        var configured = !!(cloud && cloud.configured && cloud.configured());
+        var session = null;
+        try { session = (cloud && cloud.devSession) ? cloud.devSession() : null; } catch (e) { session = null; }
 
-        var box = el('div', 'bk-auth-box');
-        var input = el('input', 'bk-input');
-        input.type = 'password';
-        input.autocomplete = 'off';
-        input.spellcheck = false;
-        input.placeholder = 'Administrator Code…';
-        input.setAttribute('aria-label', 'Administrator Code');
-        var submit = el('button', 'bk-btn');
-        submit.type = 'button';
-        submit.appendChild(icon('fa-shield-halved'));
-        submit.appendChild(el('span', null, 'Xác thực'));
-        box.appendChild(input);
-        box.appendChild(submit);
-        panel.appendChild(box);
+        /* ------------------------- Dev Code ------------------------- */
+        panel.appendChild(el('h2', null, 'Dev Code'));
+        panel.appendChild(el('p', 'bk-set-lead',
+            'Dev Code mở Developer Playground. Mã được gửi tới Edge Function dev-auth để xác minh; trình duyệt chỉ giữ token phiên trong sessionStorage của tab này, không lưu mã.'));
+        panel.appendChild(devHint('Mã phía máy chủ: DEV_PLAYGROUND_CODE (Supabase → Edge Functions → Secrets).'));
 
-        var msg = el('p', 'bk-auth-msg');
-        panel.appendChild(msg);
+        if (session) {
+            var when = '';
+            try {
+                when = new Date(session.expiresAt).toLocaleString('vi-VN', {
+                    hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit'
+                });
+            } catch (e) { }
+            var okMsg = el('p', 'bk-auth-msg ok',
+                'Đã xác thực Dev Code' + (when ? ' — phiên hết hạn lúc ' + when : '') + '.');
+            panel.appendChild(okMsg);
 
-        function say(text, kind) {
-            msg.textContent = text;
-            msg.className = 'bk-auth-msg' + (kind ? ' ' + kind : '');
-        }
-
-        function submitCode() {
-            var code = input.value.trim();
-            input.value = '';
-            if (!code) return say('Nhập Administrator Code.', 'err');
-            if (!global.BKCloud || !global.BKCloud.configured || !global.BKCloud.configured()) {
-                return say('Supabase chưa được cấu hình trên trang này.', 'err');
-            }
-            submit.disabled = true;
-            say('Đang xác thực…');
-            global.BKCloud.adminLogin(code).then(function () {
-                say('Xác thực thành công. Đang mở Administrator Dashboard…', 'ok');
-                global.location.href = base() + 'admin/';
-            }).catch(function (err) {
-                var m = (err && err.message) || '';
-                if (/429|rate|nhiều/i.test(m)) say('Quá nhiều lần thử. Vui lòng đợi vài phút.', 'err');
-                else if (/INVALID|sai|không đúng|401/i.test(m)) say('Administrator Code không đúng.', 'err');
-                else say('Không xác thực được: ' + (m || 'lỗi mạng'), 'err');
-            }).then(function () { submit.disabled = false; });
-        }
-        submit.addEventListener('click', submitCode);
-        input.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') { e.preventDefault(); submitCode(); }
-        });
-
-        /* Dev Playground: trạng thái thực tế, không có nút giả. */
-        panel.appendChild(el('h2', null, 'Dev Playground')).style.marginTop = '1.4rem';
-        var status = el('p', 'bk-set-lead');
-        var devRow = (global.BKDev && global.BKDev.authorized) ? (function () {
-            try { return global.BKDev.authorized(); } catch (e) { return false; }
-        })() : false;
-        status.textContent = devRow
-            ? 'Thiết bị này đang có quyền Developer. Biểu tượng Developer Playground nằm ở góc dưới bên trái, ngay trên Music Player.'
-            : 'Developer Playground chỉ mở sau khi Dev Code được xác minh ở máy chủ. Máy chủ chưa cấu hình Dev Code nên khu vực này đang tắt; khi triển khai xong Edge Function, biểu tượng sẽ xuất hiện ở góc dưới bên trái.';
-        panel.appendChild(status);
-
-        if (devRow) {
-            var out = el('button', 'bk-btn bk-btn-ghost');
-            out.type = 'button';
-            out.appendChild(icon('fa-right-from-bracket'));
-            out.appendChild(el('span', null, 'Thu hồi quyền Developer trên thiết bị này'));
-            out.addEventListener('click', function () {
-                try {
-                    global.localStorage.removeItem('devToken');
-                    global.localStorage.removeItem('bakhiDev.v1');
-                } catch (e) { }
-                toast('Đã thu hồi quyền Developer trên thiết bị này.', 'success');
-                global.setTimeout(function () { global.location.reload(); }, 600);
+            var devRow = el('div', 'bk-auth-box');
+            var openBtn = el('button', 'bk-btn');
+            openBtn.type = 'button';
+            openBtn.appendChild(icon('fa-screwdriver-wrench'));
+            openBtn.appendChild(el('span', null, 'Mở Developer Playground'));
+            openBtn.addEventListener('click', function () {
+                if (global.BKShell && global.BKShell.openDev) global.BKShell.openDev();
+                else if (global.BKDev && global.BKDev.open) global.BKDev.open();
+                else toast('Không tải được Developer Playground.', 'error');
             });
-            panel.appendChild(out);
+            var outBtn = el('button', 'bk-btn bk-btn-ghost');
+            outBtn.type = 'button';
+            outBtn.appendChild(icon('fa-right-from-bracket'));
+            outBtn.appendChild(el('span', null, 'Thoát Dev'));
+            outBtn.addEventListener('click', function () {
+                function done() {
+                    try { if (global.BKCloud && global.BKCloud.devLogout) global.BKCloud.devLogout(); } catch (e) { }
+                    toast('Đã thoát Developer Playground.', 'success');
+                    buildDev(panel);
+                }
+                if (global.BK && global.BK.ui && global.BK.ui.confirm) {
+                    global.BK.ui.confirm({
+                        title: 'Thoát Developer Playground',
+                        message: 'Phiên Dev trên tab này sẽ kết thúc và biểu tượng công cụ biến mất. Dữ liệu học tập không bị ảnh hưởng.',
+                        ok: 'Thoát Dev',
+                        danger: true
+                    }).then(function (yes) { if (yes) done(); });
+                } else done();
+            });
+            devRow.appendChild(openBtn);
+            devRow.appendChild(outBtn);
+            panel.appendChild(devRow);
+            panel.appendChild(devHint('Biểu tượng Developer nằm ở góc dưới bên trái, ngay trên Music Player. Đóng tab cũng kết thúc phiên.'));
+        } else {
+            if (!configured) {
+                panel.appendChild(el('p', 'bk-auth-msg err',
+                    'Supabase chưa được cấu hình trên trang này, nên Dev Code không thể xác minh.'));
+            }
+            var box = el('div', 'bk-auth-box');
+            var input = el('input', 'bk-input');
+            input.type = 'password';
+            input.autocomplete = 'off';
+            input.spellcheck = false;
+            input.placeholder = 'Dev Code…';
+            input.setAttribute('aria-label', 'Dev Code');
+            var submit = el('button', 'bk-btn');
+            submit.type = 'button';
+            submit.appendChild(icon('fa-code'));
+            submit.appendChild(el('span', null, 'Xác thực Dev Code'));
+            box.appendChild(input);
+            box.appendChild(submit);
+            panel.appendChild(box);
+
+            var msg = el('p', 'bk-auth-msg');
+            panel.appendChild(msg);
+
+            function say(text, kind) {
+                msg.textContent = text;
+                msg.className = 'bk-auth-msg' + (kind ? ' ' + kind : '');
+            }
+
+            function submitCode() {
+                var code = input.value.trim();
+                input.value = '';
+                if (!code) return say('Nhập Dev Code.', 'err');
+                if (!configured) return say('Supabase chưa được cấu hình trên trang này.', 'err');
+                submit.disabled = true;
+                say('Đang xác thực ở máy chủ…');
+                cloud.devLogin(code).then(function () {
+                    toast('Xác thực Dev Code thành công.', 'success');
+                    buildDev(panel);
+                }).catch(function (err) {
+                    var codeName = (err && err.code) || '';
+                    var m = (err && err.message) || '';
+                    if (codeName === 'NO_DEV_PLAYGROUND_CODE' || /NO_DEV_PLAYGROUND_CODE/.test(m)) {
+                        say('Máy chủ chưa đặt DEV_PLAYGROUND_CODE nên Dev Playground đang tắt.', 'err');
+                    } else if (codeName === 'TOO_MANY_ATTEMPTS' || /429|rate|nhiều/i.test(m)) {
+                        say('Quá nhiều lần thử. Vui lòng đợi vài phút.', 'err');
+                    } else if (codeName === 'BAD_DEV_CODE' || /sai|không đúng|401/i.test(m)) {
+                        say('Dev Code không đúng.', 'err');
+                    } else {
+                        say('Không xác thực được: ' + (m || 'lỗi mạng'), 'err');
+                    }
+                }).then(function () { submit.disabled = false; });
+            }
+            submit.addEventListener('click', submitCode);
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); submitCode(); }
+            });
+        }
+
+        /* ---------------------- Administrator Code ------------------ */
+        panel.appendChild(el('h2', null, 'Administrator Code')).style.marginTop = '1.8rem';
+        panel.appendChild(el('p', 'bk-set-lead',
+            'Administrator Code mở Administrator Dashboard. Mã được gửi tới máy chủ để xác minh và không bao giờ được lưu trong trình duyệt — chỉ token phiên có thời hạn.'));
+        panel.appendChild(devHint('Cần quyền Administrator. Phiên Admin không cấp quyền Dev và ngược lại.'));
+
+        var hasAdmin = false;
+        try { hasAdmin = !!(cloud && cloud.adminToken && cloud.adminToken()); } catch (e) { }
+
+        if (hasAdmin) {
+            panel.appendChild(el('p', 'bk-auth-msg ok', 'Đang có phiên Administrator trên tab này.'));
+            var adminRow = el('div', 'bk-auth-box');
+            var dash = el('a', 'bk-btn');
+            dash.href = base() + 'admin/';
+            dash.appendChild(icon('fa-gauge-high'));
+            dash.appendChild(el('span', null, 'Mở Administrator Dashboard'));
+            var adminOut = el('button', 'bk-btn bk-btn-ghost');
+            adminOut.type = 'button';
+            adminOut.appendChild(icon('fa-right-from-bracket'));
+            adminOut.appendChild(el('span', null, 'Đăng xuất Administrator'));
+            adminOut.addEventListener('click', function () {
+                try { if (cloud.adminLogout) cloud.adminLogout(); } catch (e) { }
+                toast('Đã đăng xuất Administrator.', 'success');
+                buildDev(panel);
+            });
+            adminRow.appendChild(dash);
+            adminRow.appendChild(adminOut);
+            panel.appendChild(adminRow);
+        } else {
+            var aBox = el('div', 'bk-auth-box');
+            var aInput = el('input', 'bk-input');
+            aInput.type = 'password';
+            aInput.autocomplete = 'off';
+            aInput.spellcheck = false;
+            aInput.placeholder = 'Administrator Code…';
+            aInput.setAttribute('aria-label', 'Administrator Code');
+            var aSubmit = el('button', 'bk-btn');
+            aSubmit.type = 'button';
+            aSubmit.appendChild(icon('fa-shield-halved'));
+            aSubmit.appendChild(el('span', null, 'Xác thực'));
+            aBox.appendChild(aInput);
+            aBox.appendChild(aSubmit);
+            panel.appendChild(aBox);
+
+            var aMsg = el('p', 'bk-auth-msg');
+            panel.appendChild(aMsg);
+
+            function sayAdmin(text, kind) {
+                aMsg.textContent = text;
+                aMsg.className = 'bk-auth-msg' + (kind ? ' ' + kind : '');
+            }
+
+            function submitAdmin() {
+                var code = aInput.value.trim();
+                aInput.value = '';
+                if (!code) return sayAdmin('Nhập Administrator Code.', 'err');
+                if (!configured) return sayAdmin('Supabase chưa được cấu hình trên trang này.', 'err');
+                aSubmit.disabled = true;
+                sayAdmin('Đang xác thực…');
+                cloud.adminLogin(code).then(function () {
+                    sayAdmin('Xác thực thành công. Đang mở Administrator Dashboard…', 'ok');
+                    global.location.href = base() + 'admin/';
+                }).catch(function (err) {
+                    var codeName = (err && err.code) || '';
+                    var m = (err && err.message) || '';
+                    if (codeName === 'TOO_MANY_ATTEMPTS' || /429|rate|nhiều/i.test(m)) {
+                        sayAdmin('Quá nhiều lần thử. Vui lòng đợi vài phút.', 'err');
+                    } else if (codeName === 'NO_DEV_CODE') {
+                        sayAdmin('Máy chủ chưa đặt ADMIN_DEV_CODE nên Admin Dashboard đang tắt.', 'err');
+                    } else if (codeName === 'BAD_DEV_CODE' || /INVALID|sai|không đúng|401/i.test(m)) {
+                        sayAdmin('Administrator Code không đúng.', 'err');
+                    } else {
+                        sayAdmin('Không xác thực được: ' + (m || 'lỗi mạng'), 'err');
+                    }
+                }).then(function () { aSubmit.disabled = false; });
+            }
+            aSubmit.addEventListener('click', submitAdmin);
+            aInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); submitAdmin(); }
+            });
         }
     }
 

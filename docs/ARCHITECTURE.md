@@ -193,8 +193,31 @@ DOMContentLoaded
   Hình nền, Nhà phát triển. Tab Trung tâm học tập gọi `BKLearn.mountHub(container, tab)`
   nên dùng đúng bộ tab/dữ liệu của modal (7 tab), không nhân bản logic.
 - Tab Hình nền dùng chung kho IndexedDB `bakhi`/`kv` với trang chủ (khoá `bg`, `bgOpacity`).
-- Tab Nhà phát triển chỉ có **Administrator Code xác minh qua Edge Function** và mô tả đúng
-  trạng thái Dev Playground; chưa có Dev Code phía máy chủ nên không dựng ô nhập giả.
+- Tab Nhà phát triển có **hai mục tách biệt**: Dev Code (mở Developer Playground) và
+  Administrator Code (mở Administrator Dashboard). Cả hai mã đều xác minh ở Edge Function
+  và không bao giờ lưu trong trình duyệt; Dev Code chỉ giữ token + hạn dùng trong
+  `sessionStorage` (`bakhiDev.v1`), Administrator Code chỉ giữ token phiên admin.
+
+### 2.5. Developer Playground 2.1 và Dev Code (3.5.0)
+
+- **Xác thực hai lớp**: `dev-auth` nhận Dev Code, giới hạn 10 lần/10 phút theo IP
+  (`bakhi_rate_limit`), ghi phiên vào `dev_sessions` (chỉ lưu hash token), trả token +
+  hạn dùng 1–12 giờ. `dev_sessions` bật RLS, không policy, thu hồi quyền
+  `anon`/`authenticated`; `admin-actions` không đọc bảng này nên Dev Code **không** cấp
+  quyền quản trị.
+- **Một nguồn trạng thái**: `bk-cloud.js` công bố `devLogin`, `devSession`, `devToken`,
+  `devLogout` và phát sự kiện `bk:dev`. `bk-shell.js` và `bk-dev.js` chỉ phản ứng theo
+  sự kiện này; không còn `localStorage.devToken` hay kiểm tra container ẩn.
+- **Tải theo nhu cầu**: `bk-shell.js` chèn `bk-dev.js` khi có phiên Dev; trang chủ vẫn nạp
+  tĩnh `bk-dev.js` nhưng chỉ dựng FAB sau khi `authorized()` thấy token thật.
+- **14 tab**: Inspector, CSS Studio, Animation, Performance, Storage, Console, Network,
+  Theme, Components, Backup, Music, Studio, Dữ liệu, Gỡ lỗi. Tab Studio chỉ đọc trạng thái
+  và mở nhanh, không nhân bản Studio; tab Dữ liệu chỉ đọc/xuất JSON; tab Gỡ lỗi không chứa
+  token hay mã.
+- **Vòng đời**: nút `Thoát Dev` đỏ nằm trái nút Thu nhỏ, xác nhận trước khi thoát; thoát
+  xoá phiên, đóng panel, gỡ FAB. Thu nhỏ giữ tab/kích thước/trạng thái. Panel nằm dưới
+  `.bk-overlay` để hộp xác nhận luôn bấm được; không có animation favicon và không có
+  Highlight Manager độc lập.
 
 ### 2.4. Administrator Dashboard 4.1
 
@@ -313,8 +336,8 @@ Kết quả sau nâng cấp: **119/119 tệp không đổi nội dung** (`verify
   Hai badge Administrator được nhận từ danh sách trao tặng khi có API, chưa có endpoint.
 - `/chat/`, hợp nhất hai trang Studio, Dev Playground 14 tab và mở rộng dashboard A–M
   chưa triển khai; xem `CHANGELOG.md` mục 3.4.0 và báo cáo phát hành.
-- Vì menu ba gạch bị ẩn, Dev Code cũ (xác thực phía client) không còn lối vào trên giao diện;
-  Developer Playground chỉ nên mở lại khi có Dev Code xác minh phía máy chủ.
+- Vì menu ba gạch bị ẩn, Dev Code **chỉ** vào từ Cài đặt → Nhà phát triển → Dev Code;
+  Developer Playground chỉ mở khi `dev-auth` đã cấp phiên (xem 2.5).
 
 ## Lớp Supabase (nhận diện, thông báo, đồng bộ)
 
@@ -328,6 +351,7 @@ Kết quả sau nâng cấp: **119/119 tệp không đổi nội dung** (`verify
 | Đồng bộ changelog | `.github/workflows/changelog-sync.yml` + `supabase/functions/changelog-sync` | GitHub Actions đọc `CHANGELOG.md`, gọi hàm bằng `CHANGELOG_SYNC_TOKEN`; hàm dùng RPC `bakhi_publish_changelog` để ghi và tạo thông báo một lần |
 | Cấu hình site | bảng `app_settings` | Chỉ đọc khoá `public.*`; `public.whatsnew`, `public.maintenance`; realtime; ghi qua `admin-actions` |
 | Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html` | 9 mô-đun, xác thực Administrator Code qua `admin-auth`; mọi thao tác kiểm tra lại ở `admin-actions` |
+| Dev Code | `assets/bakhi/bk-settings.js`, `bk-cloud.js`, `supabase/functions/dev-auth`, bảng `dev_sessions` | Xác minh mã ở máy chủ, giới hạn tần suất, chỉ trả token + hạn dùng; tách hoàn toàn khỏi phiên quản trị |
 
 Ghi chú triển khai:
 

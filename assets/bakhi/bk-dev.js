@@ -120,7 +120,10 @@
         { id: 'theme', label: 'Theme', icon: 'fa-swatchbook', build: buildTheme },
         { id: 'components', label: 'Components', icon: 'fa-shapes', build: buildComponents },
         { id: 'backup', label: 'Backup', icon: 'fa-clock-rotate-left', build: buildBackup },
-        { id: 'music', label: 'Music', icon: 'fa-music', build: buildMusic }
+        { id: 'music', label: 'Music', icon: 'fa-music', build: buildMusic },
+        { id: 'studio', label: 'Studio', icon: 'fa-pen-ruler', build: buildStudio },
+        { id: 'data', label: 'Dữ liệu', icon: 'fa-layer-group', build: buildData },
+        { id: 'debug', label: 'Gỡ lỗi', icon: 'fa-bug', build: buildDebug }
     ];
 
     function buildPanel() {
@@ -138,12 +141,18 @@
         head.appendChild(title);
 
         var headBtns = el('div', 'bkdev-headbtns');
+        var exitBtn = el('button', 'bkdev-hbtn bkdev-exit');
+        exitBtn.type = 'button';
+        exitBtn.setAttribute('aria-label', 'Thoát Developer Playground');
+        exitBtn.title = 'Thoát Dev — xoá phiên Developer trên tab này';
+        exitBtn.innerHTML = '<i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i><span>Thoát Dev</span>';
         var minBtn = el('button', 'bkdev-hbtn');
         minBtn.type = 'button'; minBtn.setAttribute('aria-label', 'Thu nhỏ'); minBtn.innerHTML = '<i class="fa-solid fa-minus"></i>';
         var maxBtn = el('button', 'bkdev-hbtn');
         maxBtn.type = 'button'; maxBtn.setAttribute('aria-label', 'Phóng to'); maxBtn.innerHTML = '<i class="fa-solid fa-expand"></i>';
         var closeBtn = el('button', 'bkdev-hbtn');
         closeBtn.type = 'button'; closeBtn.setAttribute('aria-label', 'Đóng'); closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        headBtns.appendChild(exitBtn);
         headBtns.appendChild(minBtn); headBtns.appendChild(maxBtn); headBtns.appendChild(closeBtn);
         head.appendChild(headBtns);
         panel.appendChild(head);
@@ -175,6 +184,14 @@
         D.body.appendChild(panel);
 
         closeBtn.addEventListener('click', close);
+        exitBtn.addEventListener('click', function () {
+            BK.ui.confirm({
+                title: 'Thoát Developer Playground',
+                message: 'Thoát sẽ xoá phiên Dev trên tab này, ẩn biểu tượng công cụ và đóng cửa sổ. Dữ liệu học tập, Studio và cấu hình không bị ảnh hưởng.',
+                ok: 'Thoát Dev',
+                danger: true
+            }).then(function (ok) { if (ok) exitDev(); });
+        });
         minBtn.addEventListener('click', function () { panel.classList.toggle('bkdev-min'); saveUI({ min: panel.classList.contains('bkdev-min') }); });
         maxBtn.addEventListener('click', function () { panel.classList.toggle('bkdev-max'); saveUI({ max: panel.classList.contains('bkdev-max') }); });
 
@@ -311,12 +328,7 @@
 
     function open(force) {
         if (!force && !authorized()) {
-            BK.ui.toast('Cần xác thực Developer: menu 3 gạch → nhập mã Developer', 'error');
-            try {
-                if (typeof global.toggleHamburgerMenu === 'function') global.toggleHamburgerMenu();
-                var inp = D.getElementById('devCodeInput');
-                if (inp) setTimeout(function () { inp.focus(); }, 60);
-            } catch (e) { /* bỏ qua */ }
+            BK.ui.toast('Cần Dev Code: mở Cài đặt → Nhà phát triển → Dev Code để xác thực trên máy chủ.', 'error');
             return false;
         }
         buildPanel();
@@ -335,10 +347,27 @@
         panel.style.display = 'none';
         if (lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) { } }
     }
+    /** Dev Code chỉ có hiệu lực sau khi Edge Function dev-auth cấp token. */
     function authorized() {
-        var c = D.getElementById('devPanelBtnContainer');
-        if (c) return !c.classList.contains('hidden');
-        try { return !!localStorage.getItem('devToken'); } catch (e) { return false; }
+        try {
+            if (global.BKCloud && typeof global.BKCloud.devToken === 'function') {
+                return !!global.BKCloud.devToken();
+            }
+            if (global.BKCloud && typeof global.BKCloud.devSession === 'function') {
+                return !!global.BKCloud.devSession();
+            }
+        } catch (e) { }
+        return false;
+    }
+
+    /** Rời Developer Playground: xoá phiên Dev, ẩn FAB và đóng panel. */
+    function exitDev() {
+        try {
+            if (global.BKCloud && global.BKCloud.devLogout) global.BKCloud.devLogout();
+        } catch (e) { }
+        close();
+        removeFab();
+        BK.ui.toast('Đã thoát Developer Playground. Nhập lại Dev Code trong Cài đặt để mở lại.', 'success');
     }
 
     /* =====================================================================
@@ -1794,6 +1823,182 @@
     }
 
     /* =====================================================================
+       12. Studio — trạng thái dữ liệu và lối mở nhanh (không nhân bản Studio)
+       ================================================================== */
+    function studioDocs() {
+        var data = read('bakhiStudio.v1', {}) || {};
+        var list = Array.isArray(data.docs) ? data.docs : (Array.isArray(data) ? data : []);
+        return list;
+    }
+
+    function buildStudio(pane) {
+        var base = BK.util.basePath();
+        var docs = studioDocs();
+        pane.appendChild(h4('Bá Khí Studio'));
+        pane.appendChild(note('Studio là ứng dụng tĩnh riêng (Word, Paint, Split Mode). Tab này chỉ đọc trạng thái lưu trên thiết bị và mở nhanh — không có bản sao Studio thứ hai trong Playground.'));
+
+        var lines = [
+            'Tài liệu đã lưu: ' + docs.length,
+            'Khoá dữ liệu: bakhiStudio.v1'
+        ];
+        if (docs.length) {
+            var last = docs[docs.length - 1] || {};
+            lines.push('Tài liệu gần nhất: ' + (last.title || last.name || '(chưa đặt tên)'));
+        }
+        pane.appendChild(el('pre', 'bkdev-out', lines.join('\n')));
+
+        pane.appendChild(row(
+            btn('Mở Bá Khí Studio', 'bk-btn', 'fa-arrow-up-right-from-square', function () {
+                global.open(base + 'studio/', '_blank', 'noopener');
+            }),
+            btn('Mở Word & Paint', '', 'fa-paintbrush', function () {
+                global.open(base + 'studio/word-paint.html', '_blank', 'noopener');
+            }),
+            btn('Tải dữ liệu Studio', '', 'fa-download', function () {
+                download('bakhi-studio.json', JSON.stringify(read('bakhiStudio.v1', {}), null, 2), 'application/json');
+            })
+        ));
+    }
+
+    /* =====================================================================
+       13. Dữ liệu — chỉ đọc kho dùng chung, xuất an toàn
+       ================================================================== */
+    var DATA_STORES = [
+        ['bakhiLearn.v1', 'Học tập', function (v) {
+            return (v.questions || []).length + ' câu · ' + (v.notes || []).length + ' ghi chú · ' +
+                (v.bookmarks || []).length + ' đánh dấu';
+        }],
+        ['bakhiSignals.v1', 'Tín hiệu', function (v) {
+            return Object.keys(v || {}).length + ' chỉ số';
+        }],
+        ['bakhiProfile.v1', 'Hồ sơ', function (v) {
+            return (v && v.nickname ? '@' + v.nickname : 'chưa đặt biệt danh') + ' · khung ' + ((v && v.frame) || 'none');
+        }],
+        ['bakhiBadges.v1', 'Thành tích', function (v) {
+            var unlocked = 0;
+            Object.keys(v || {}).forEach(function (k) {
+                if (v[k] && v[k].unlockedAt) unlocked++;
+            });
+            return unlocked + ' đã mở';
+        }],
+        ['bakhiStudio.v1', 'Studio', function (v) {
+            return studioDocs().length + ' tài liệu';
+        }],
+        ['bakhiMusic.v2', 'Music', function (v) {
+            return Array.isArray(v && v.queue) ? v.queue.length + ' bài trong queue' : 'chưa có queue';
+        }]
+    ];
+
+    function buildData(pane) {
+        pane.appendChild(h4('Dữ liệu Bá Khí (chỉ đọc)'));
+        pane.appendChild(note('Chỉ xem kích thước và xuất JSON để gỡ lỗi. Muốn xoá/sửa từng khoá, dùng tab Storage và tuân theo danh sách bảo vệ. Tab này không bao giờ tự ghi đè dữ liệu.'));
+        DATA_STORES.forEach(function (item) {
+            var key = item[0];
+            var raw = null;
+            try { raw = localStorage.getItem(key); } catch (e) { }
+            var parsed = read(key, null);
+            var summary = '—';
+            try { summary = raw == null ? 'chưa có' : item[2](parsed); } catch (e) { summary = 'không đọc được'; }
+            var line = el('div', 'bkdev-row');
+            line.appendChild(el('code', 'bkdev-key', key));
+            line.appendChild(el('span', 'bkdev-meta', summary + ' · ' + bytes(raw ? raw.length : 0)));
+            line.appendChild(btn('Tải', 'bk-btn-ghost bk-btn-sm', 'fa-download', function () {
+                download(key.replace(/[^\w.-]+/g, '_') + '.json',
+                    raw == null ? 'null' : JSON.stringify(parsed, null, 2), 'application/json');
+            }));
+            pane.appendChild(line);
+        });
+        pane.appendChild(row(
+            btn('Xuất toàn bộ dữ liệu Bá Khí', 'bk-btn', 'fa-file-export', function () {
+                var all = {};
+                DATA_STORES.forEach(function (item) { all[item[0]] = read(item[0], null); });
+                all.exportedAt = new Date().toISOString();
+                all.app = (global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '';
+                download('bakhi-data-export.json', JSON.stringify(all, null, 2), 'application/json');
+            }),
+            btn('Sao chép báo cáo', '', 'fa-copy', function () {
+                var all = {};
+                DATA_STORES.forEach(function (item) { all[item[0]] = read(item[0], null); });
+                copyText(JSON.stringify(all, null, 2));
+            })
+        ));
+    }
+
+    /* =====================================================================
+       14. Gỡ lỗi — chẩn đoán môi trường và phiên
+       ================================================================== */
+    function diagnose() {
+        var cloud = null;
+        try { cloud = global.BKCloud && global.BKCloud.state ? global.BKCloud.state() : null; } catch (e) { }
+        var shell = false;
+        try { shell = !!(global.BKShell && global.BKShell.__ready); } catch (e) { }
+        var a11y = null;
+        try { a11y = global.BKShell && global.BKShell.a11y ? global.BKShell.a11y() : null; } catch (e) { }
+        var quota = null;
+        try { quota = global.navigator && global.navigator.storage && global.navigator.storage.estimate; } catch (e) { }
+        return {
+            app: (global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '',
+            core: (global.BK && global.BK.version) || '',
+            dev: (global.BKDev && global.BKDev.version) || '',
+            url: location.href,
+            title: D.title,
+            readyState: D.readyState,
+            viewport: innerWidth + '×' + innerHeight,
+            dpr: global.devicePixelRatio || 1,
+            theme: D.documentElement.classList.contains('dark') ? 'dark' : 'light',
+            cloud: cloud && {
+                configured: !!cloud.configOk, ready: !!cloud.ready, bound: !!cloud.bound,
+                realtime: cloud.realtime || null, syncError: cloud.syncError || null,
+                annError: cloud.annError || null, clError: cloud.clError || null,
+                devActive: !!cloud.devActive
+            },
+            shellReady: shell,
+            a11y: a11y,
+            sessions: {
+                admin: !!(global.BKCloud && global.BKCloud.adminToken && global.BKCloud.adminToken()),
+                dev: !!(global.BKCloud && global.BKCloud.devToken && global.BKCloud.devToken())
+            },
+            storage: {
+                localKeys: (function () { try { return Object.keys(localStorage).length; } catch (e) { return -1; } })(),
+                sessionKeys: (function () { try { return Object.keys(sessionStorage).length; } catch (e) { return -1; } })(),
+                estimate: !!quota
+            },
+            ua: navigator.userAgent
+        };
+    }
+
+    function copyText(text) {
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function () {
+                    BK.ui.toast('Đã sao chép vào clipboard.', 'success');
+                }).catch(function () { BK.ui.toast('Không sao chép được.', 'error'); });
+            } else {
+                BK.ui.toast('Trình duyệt không cho phép sao chép tự động.', 'info');
+            }
+        } catch (e) { BK.ui.toast('Không sao chép được.', 'error'); }
+    }
+
+    function buildDebug(pane) {
+        pane.appendChild(h4('Chẩn đoán nhanh'));
+        pane.appendChild(note('Không chứa token hay Administrator Code — chỉ trạng thái yes/no. Dùng thông tin này khi cần báo lỗi hoặc kiểm tra sau khi triển khai.'));
+        var out = outBox();
+        function paint() {
+            out.textContent = JSON.stringify(diagnose(), null, 2);
+        }
+        pane.appendChild(row(
+            btn('Làm mới', 'bk-btn', 'fa-rotate', paint),
+            btn('Sao chép', '', 'fa-copy', function () { copyText(out.textContent); }),
+            btn('Tải JSON', '', 'fa-download', function () {
+                download('bakhi-diagnose.json', out.textContent, 'application/json');
+            })
+        ));
+        pane.appendChild(out);
+        paint();
+        pane.appendChild(note('Phiên Developer chỉ nằm trong sessionStorage của tab này. Đóng tab hoặc bấm “Thoát Dev” để kết thúc.'));
+    }
+
+    /* =====================================================================
        Khởi động
        ================================================================== */
     var FAB_KEY = 'bk.dev.fab.v1';
@@ -1805,9 +2010,14 @@
         fab.type = 'button';
         fab.title = 'Developer Playground (Ctrl+Shift+G) — kéo để di chuyển, chuột phải để đặt lại vị trí';
         fab.setAttribute('aria-label', 'Mở Developer Playground');
-        fab.innerHTML = '<i class="fa-solid fa-screwdriver-wrench"></i>';
+        fab.innerHTML = '<i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i>';
         D.body.appendChild(fab);
         makeFabDraggable(fab);
+    }
+
+    function removeFab() {
+        var fab = D.getElementById('bkdevFab');
+        if (fab && fab.parentNode) fab.parentNode.removeChild(fab);
     }
 
     /**
@@ -1899,14 +2109,18 @@
     });
 
     function init() {
-        buildFab();
-        if (ui.min || ui.max || ui.w) { /* panel sẽ áp dụng khi mở */ }
+        if (authorized()) buildFab();
+        global.addEventListener('bk:dev', function (e) {
+            var active = !!(e && e.detail && e.detail.active);
+            if (active) buildFab();
+            else { close(); removeFab(); }
+        });
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', init);
     else init();
 
     global.BKDev = {
         open: open, close: close, activate: activate, authorized: authorized,
-        inspector: picker, version: '2.0.0'
+        exit: exitDev, inspector: picker, version: '2.1.0'
     };
 })(typeof window !== 'undefined' ? window : this);

@@ -590,6 +590,45 @@
     }
 
     /* ---------------------------------------------------------------------
+       Developer Playground: chỉ tải khi phiên Dev hợp lệ (server-verified)
+       ------------------------------------------------------------------ */
+    function devActive() {
+        try {
+            return !!(global.BKCloud && global.BKCloud.devToken && global.BKCloud.devToken());
+        } catch (e) { return false; }
+    }
+
+    function ensureDevScript(cb) {
+        if (global.BKDev) { if (cb) cb(); return; }
+        if (!global.BK || !global.BK.ui) { if (cb) cb(); return; }
+        var existing = D.getElementById('bkDevScript');
+        if (existing) {
+            existing.addEventListener('load', function () { if (cb) cb(); }, { once: true });
+            return;
+        }
+        var s = D.createElement('script');
+        s.id = 'bkDevScript';
+        s.src = S.base + 'assets/bakhi/bk-dev.js?v=' +
+            ((global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '3.5.0');
+        s.defer = true;
+        s.onload = function () { if (cb) cb(); };
+        (D.body || D.head).appendChild(s);
+    }
+
+    function openDev() {
+        if (!devActive()) {
+            if (global.BK && BK.ui && BK.ui.toast) {
+                BK.ui.toast('Dev Code chưa được xác thực. Vào Cài đặt → Nhà phát triển.', 'error');
+            }
+            return false;
+        }
+        ensureDevScript(function () {
+            if (global.BKDev && global.BKDev.open) global.BKDev.open();
+        });
+        return true;
+    }
+
+    /* ---------------------------------------------------------------------
        Khởi động
        ------------------------------------------------------------------ */
     function init() {
@@ -612,6 +651,10 @@
         hookEffects();
         hookSearch();
         paintProfileBits();
+        if (devActive()) ensureDevScript();
+        global.addEventListener('bk:dev', function (e) {
+            if (e && e.detail && e.detail.active) ensureDevScript();
+        });
 
         if (global.BKProfile && global.BKProfile.on) {
             global.BKProfile.on(function () { paintProfileBits(); });
@@ -640,6 +683,8 @@
         setA11y: setA11y,
         applyA11y: applyA11y,
         refresh: paintProfileBits,
+        openDev: openDev,
+        devActive: devActive,
         /* Cho phép các trang đánh dấu đã xem badge / dùng tính năng. */
         mark: function (name) {
             if (global.BK && global.BK.badges) {

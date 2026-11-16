@@ -207,8 +207,8 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         .lite .nebula, .lite .logo-glow, .lite .hl-card, .lite .hl-open, .lite .title-shine, .lite .badge-dot { animation: none !important; }
         .lite .nebula { display: none; }
         .lite main > *, .lite .folder-content.open .fc-inner a, .lite #hamburgerDropdown:not(.hidden), .lite .dv-pane:not(.hidden),
-        .lite #dev-panel-modal:not(.hidden), .lite #readme-modal:not(.hidden), .lite #highlight-manager-modal:not(.hidden),
-        .lite #dev-panel-modal:not(.hidden) > div, .lite #readme-modal:not(.hidden) > div, .lite #highlight-manager-modal:not(.hidden) > div { animation: none !important; }
+        .lite #dev-panel-modal:not(.hidden), .lite #readme-modal:not(.hidden),
+        .lite #dev-panel-modal:not(.hidden) > div, .lite #readme-modal:not(.hidden) > div { animation: none !important; }
         .lite .folder-content, .lite .folder-content.open, .lite .subj-ico, .lite .folder-ico { transition: none; }
         .lite .folder-header::after { display: none; }
         .lite a:hover > .subj-ico { transform: none; }
@@ -218,8 +218,8 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         .toast-animate { position: relative; overflow: hidden; }
         .toast-animate::after { content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 3px; background: rgba(255,255,255,.55); transform-origin: left; animation: tbar 3s linear forwards; }
         @keyframes tbar { to { transform: scaleX(0); } }
-        #dev-panel-modal:not(.hidden), #readme-modal:not(.hidden), #highlight-manager-modal:not(.hidden) { animation: fadeIn .2s both; }
-        #dev-panel-modal:not(.hidden) > div, #readme-modal:not(.hidden) > div, #highlight-manager-modal:not(.hidden) > div { animation: modalIn .35s cubic-bezier(.2,.9,.25,1.1) both; }
+        #dev-panel-modal:not(.hidden), #readme-modal:not(.hidden) { animation: fadeIn .2s both; }
+        #dev-panel-modal:not(.hidden) > div, #readme-modal:not(.hidden) > div { animation: modalIn .35s cubic-bezier(.2,.9,.25,1.1) both; }
         @keyframes fadeIn { from { opacity: 0; } }
         @keyframes modalIn { from { opacity: 0; transform: translateY(24px) scale(.94); } }
         .folder-header { position: relative; overflow: hidden; }
@@ -413,21 +413,9 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
 
                                 <hr class="border-slate-200 dark:border-slate-700 my-1">
 
-                                <!-- KHU VỰC NHẬP CODE FOR DEVELOPER -->
-                                <div id="devCodeSection" class="space-y-2 pt-1">
-                                    <div class="flex items-center space-x-1.5">
-                                        <input type="password" id="devCodeInput" placeholder="Mã Developer..." class="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500">
-                                        <button onclick="verifyDevCode()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition cursor-pointer shrink-0">
-                                            Gửi
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Nút bật Bảng Quản Lý Highlight (Chỉ hiện khi nhập đúng mã) -->
+                                <!-- Dev Code được xác minh phía máy chủ tại Cài đặt → Nhà phát triển.
+                                     Không còn ô nhập mã/hash trong trang chủ. -->
                                 <div id="devPanelBtnContainer" class="hidden pt-1 space-y-1.5">
-                                    <button onclick="openHighlightManagerModal()" class="w-full px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-2 cursor-pointer shadow-sm">
-                                        <i class="fa-solid fa-sliders"></i><span>Quản lý Highlight Môn Học</span>
-                                    </button>
                                     <button onclick="openDevPanel()" class="w-full px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-2 cursor-pointer shadow-sm">
                                         <i class="fa-solid fa-terminal"></i><span>Bảng điều khiển Developer</span><kbd class="text-[9px] opacity-70 hidden sm:inline">Ctrl+Shift+D</kbd>
                                     </button>
@@ -646,65 +634,6 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
 
             </div>
         </main>
-
-        <!-- Modal Quản Lý Highlight (Developer) -->
-        <div id="highlight-manager-modal" class="hidden fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4">
-            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between bg-white/90 dark:bg-slate-800/90 sticky top-0">
-                    <div class="flex items-center space-x-2.5">
-                        <i class="fa-solid fa-sliders text-indigo-500 text-xl"></i>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100">Quản Lý Highlight Môn Học</h3>
-                    </div>
-                    <button onclick="closeHighlightManagerModal()" class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer">
-                        <i class="fa-solid fa-xmark text-lg"></i>
-                    </button>
-                </div>
-
-                <div class="p-6 overflow-y-auto flex-grow space-y-4 bg-slate-50 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300">
-                    <!-- Chọn đợt kiểm tra để cấu hình -->
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Chọn Đợt Kiểm Tra:</label>
-                            <select id="selectExamCategory" onchange="renderHighlightManagerUI()" class="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500">
-                                <option value="kttx/gk1">KTTX - Giữa Kỳ 1 (GK1)</option>
-                                <option value="kttx/ck1">KTTX - Cuối Kì 1 (CK1)</option>
-                                <option value="kttx/gk2">KTTX - Giữa Kỳ 2 (GK2)</option>
-                                <option value="kttx/ck2">KTTX - Cuối Kì 2 (CK2)</option>
-                                <option value="ktgk1">KTGK - Giữa Kỳ 1</option>
-                                <option value="ktck1">KTCK - Cuối Kỳ 1</option>
-                                <option value="ktgk2">KTGK - Giữa Kỳ 2</option>
-                                <option value="ktck2">KTCK - Cuối Kỳ 2</option>
-                            </select>
-                        </div>
-                        <!-- Thanh tìm kiếm trong modal quản lý -->
-                        <div class="w-full sm:w-64">
-                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Tìm kiếm môn:</label>
-                            <input type="text" id="modalSearchInput" oninput="renderHighlightManagerUI()" placeholder="Lọc tên môn..." class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500">
-                        </div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="bulkCheck(true)" class="dv-btn alt">Chọn tất cả</button>
-                        <button onclick="bulkCheck(false)" class="dv-btn alt">Bỏ chọn tất cả</button>
-                        <button onclick="bulkCheck(null)" class="dv-btn alt">Đảo chọn</button>
-                    </div>
-                    <!-- Danh sách check môn học -->
-                    <div id="modalSubjectList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
-                        <!-- Render bằng JS -->
-                    </div>
-                </div>
-
-                <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700/80 flex items-center justify-end space-x-3 bg-white/90 dark:bg-slate-800/90">
-                    <button onclick="closeHighlightManagerModal()" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-medium transition cursor-pointer">
-                        Hủy
-                    </button>
-                    <button onclick="saveHighlightSettings()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2 cursor-pointer shadow-md">
-                        <i class="fa-solid fa-floppy-disk"></i>
-                        <span>Save & Áp dụng</span>
-                    </button>
-                </div>
-            </div>
-        </div>
 
         <!-- Bảng điều khiển Developer -->
         <div id="dev-panel-modal" class="hidden fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4">
@@ -1123,101 +1052,26 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             document.querySelectorAll('.folder-content').forEach(c => { const b = c.previousElementSibling; if (b && b.lastElementChild) b.lastElementChild.textContent = n + ' môn'; });
         }
 
-        // --- XỬ LÝ DEVELOPER CODE & MODAL QUẢN LÝ ---
-        // LƯU Ý: đây chỉ là khóa GIAO DIỆN cho site tĩnh, KHÔNG phải bảo mật thật (hash nằm trong mã nguồn, token nằm ở localStorage).
-        // Muốn bảo vệ thật phải xác thực phía server. Giới hạn nhập sai được lưu ở localStorage (devLock) với thời gian khóa tăng dần.
-        const DEV_SALT = 'bakhi::dev::v1:', DEV_HASH = 'e930b1af1c508f6aed6ad0fd022d4be6de9218f4b4d1249da9cbc4e530779796';
-        async function sha256(t) {
-            if (!(window.crypto && crypto.subtle)) throw new Error('nocrypto');
-            const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
-            return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+        // --- TRẠNG THÁI DEVELOPER (xác minh phía máy chủ) ---
+        // Dev Code được nhập ở Cài đặt → Nhà phát triển; bk-cloud giữ token phiên
+        // trong sessionStorage và phát sự kiện bk:dev. Không còn hash/mã trong mã
+        // nguồn và không tự cấp quyền bằng localStorage.
+        function devActive() {
+            try { return !!(window.BKCloud && BKCloud.devToken && BKCloud.devToken()); } catch (e) { return false; }
         }
         function setDevUI(on) {
             guardOn = !on; document.body.classList.toggle('nocopy', guardOn);
-            document.getElementById('devCodeSection').classList.toggle('hidden', on);
-            document.getElementById('devPanelBtnContainer').classList.toggle('hidden', !on);
+            const box = document.getElementById('devPanelBtnContainer');
+            if (box) box.classList.toggle('hidden', !on);
         }
-        async function checkDevSession() {
-            localStorage.removeItem('isDevAuthenticated');
-            try { setDevUI(localStorage.getItem('devToken') === await sha256(DEV_HASH + ':session')); } catch (e) { setDevUI(false); }
-        }
-        const lockGet = () => safeParse(localStorage.getItem('devLock'), { f: 0, u: 0, k: 0 }); const lockSet = o => { try { localStorage.setItem('devLock', JSON.stringify(o)); } catch (e) {} };
-        async function verifyDevCode() {
-            const L = lockGet(); if (Date.now() < L.u) { showToast('Thử lại sau ' + Math.ceil((L.u - Date.now()) / 1000) + 's', 'error'); return; }
-            const input = document.getElementById('devCodeInput');
-            try {
-                if (await sha256(DEV_SALT + input.value.trim()) === DEV_HASH) {
-                    localStorage.setItem('devToken', await sha256(DEV_HASH + ':session'));
-                    lockSet({ f: 0, u: 0, k: 0 }); input.value = ''; setDevUI(true);
-                    showToast('Xác thực Developer thành công!', 'success');
-                } else {
-                    const nf = (L.f || 0) + 1, k = L.k || 0; lockSet(nf >= 5 ? { f: 0, u: Date.now() + 30000 * Math.pow(2, Math.min(5, k)), k: k + 1 } : { f: nf, u: 0, k });
-                    showToast('Mã code không chính xác!', 'error');
-                }
-            } catch (e) { showToast('Cần mở bằng HTTPS để xác thực', 'error'); }
-        }
+        function checkDevSession() { setDevUI(devActive()); }
+        window.addEventListener('bk:dev', function (e) {
+            setDevUI(!!(e && e.detail && e.detail.active));
+        });
         function devLogout() {
-            localStorage.removeItem('devToken'); setDevUI(false); closeDevPanel(); closeHighlightManagerModal();
+            try { if (window.BKCloud && BKCloud.devLogout) BKCloud.devLogout(); } catch (e) {}
+            setDevUI(false); closeDevPanel();
             showToast('Đã thoát chế độ Developer', 'success');
-        }
-
-        function openHighlightManagerModal() {
-            document.getElementById('highlight-manager-modal').classList.remove('hidden');
-            renderHighlightManagerUI();
-        }
-
-        function closeHighlightManagerModal() {
-            document.getElementById('highlight-manager-modal').classList.add('hidden');
-        }
-
-        function renderHighlightManagerUI() {
-            const selectedExamKey = document.getElementById('selectExamCategory').value;
-            const searchKeyword = document.getElementById('modalSearchInput').value.trim().toLowerCase();
-            const highlightsMap = getHighlightsData();
-            const listContainer = document.getElementById('modalSubjectList');
-
-            const filteredSubjects = subjects.filter(sub => sub.name.toLowerCase().includes(searchKeyword));
-
-            if (filteredSubjects.length === 0) {
-                listContainer.innerHTML = `
-                    <div class="col-span-full py-6 text-center text-slate-400 text-xs">
-                        Không tìm thấy môn học phù hợp.
-                    </div>
-                `;
-                return;
-            }
-
-            listContainer.innerHTML = filteredSubjects.map(sub => {
-                const configKey = `${selectedExamKey}/${sub.id}`;
-                const isChecked = highlightsMap[configKey] === true ? 'checked' : '';
-                return `
-                    <label class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl flex items-center justify-between cursor-pointer hover:border-indigo-500 transition shadow-xs">
-                        <div class="flex items-center space-x-2.5 truncate">
-                            <i class="fa-solid ${sub.icon} ${sub.color} text-sm"></i>
-                            <span class="text-xs font-medium text-slate-800 dark:text-slate-200 truncate">${sub.name}</span>
-                        </div>
-                        <input type="checkbox" data-subid="${sub.id}" ${isChecked} class="sub-checkbox w-4 h-4 accent-indigo-600 rounded cursor-pointer">
-                    </label>
-                `;
-            }).join('');
-        }
-
-        function saveHighlightSettings() {
-            const selectedExamKey = document.getElementById('selectExamCategory').value;
-            const checkboxes = document.querySelectorAll('.sub-checkbox');
-            let highlightsMap = getHighlightsData();
-            
-            checkboxes.forEach(chk => {
-                const subId = chk.getAttribute('data-subid');
-                const configKey = `${selectedExamKey}/${subId}`;
-                highlightsMap[configKey] = chk.checked;
-            });
-
-            localStorage.setItem('appHighlightsDataMap', JSON.stringify(highlightsMap));
-
-            renderSubjectsTree();
-            closeHighlightManagerModal();
-            showToast('Đã lưu cấu hình highlight thành công!', 'success');
         }
 
         // --- XỬ LÝ MENU 3 GẠCH ---
@@ -1601,7 +1455,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             addEventListener('pointerdown', e => {
                 if (reduce) return;
                 for (const m of shooters) if (Math.hypot(m.x - e.clientX, m.y - e.clientY) < 48) { m.life = m.max; m.boom = true; return; }
-                if (fx.tapSpark && !e.target.closest('a,button,input,label,select,textarea,section,header,footer,#categoriesTree,#searchResultsSection,#dev-panel-modal,#readme-modal,#highlight-manager-modal')) boom(e.clientX, e.clientY, lite ? 6 : 10);
+                if (fx.tapSpark && !e.target.closest('a,button,input,label,select,textarea,section,header,footer,#categoriesTree,#searchResultsSection,#dev-panel-modal,#readme-modal')) boom(e.clientX, e.clientY, lite ? 6 : 10);
             }, { passive: true });
             window.__fx = {
                 cfg: fx, DEF, spawn, boom, shot,
@@ -1637,9 +1491,6 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             document.querySelectorAll('.folder-content').forEach(c => {
                 if (c.classList.contains('open') !== open) toggleFolder(c.id, c.previousElementSibling);
             });
-        }
-        function bulkCheck(v) {
-            document.querySelectorAll('.sub-checkbox').forEach(c => { c.checked = v === null ? !c.checked : v; });
         }
         async function scanLinks() {
             const out = document.getElementById('scanOut'), btn = document.getElementById('scanBtn');
@@ -1747,9 +1598,8 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         }
         document.addEventListener('keydown', e => {
             if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd' && !document.getElementById('devPanelBtnContainer').classList.contains('hidden')) { e.preventDefault(); openDevPanel(); }
-            if (e.key === 'Escape') { closeDevPanel(); closeHighlightManagerModal(); closeReadmeModal(); }
+            if (e.key === 'Escape') { closeDevPanel(); closeReadmeModal(); }
             if ((e.ctrlKey || e.metaKey) && e.key === '/') { e.preventDefault(); const dd = document.getElementById('hamburgerDropdown'); dd.classList.remove('hidden'); document.getElementById('searchInput').focus(); }
-            if (e.key === 'Enter' && e.target.id === 'devCodeInput') verifyDevCode();
         });
 
         // ===== Dev: giao diện, ẩn môn, FPS =====
@@ -2018,7 +1868,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             const rd = () => { const q = i.value.toLowerCase(), m = CMDS().filter(c => c[0].toLowerCase().includes(q)); l.innerHTML = ''; m.forEach((c, n) => { const b = document.createElement('button'); b.className = 'w-full text-left px-4 py-2 hover:bg-indigo-500/15 ' + (n ? '' : 'bg-indigo-500/10'); b.textContent = c[0]; b.onclick = () => run(c[1]); l.appendChild(b); }); l._m = m; };
             i.oninput = rd; rd(); i.focus(); i.onkeydown = e => { if (e.key === 'Escape') p.remove(); if (e.key === 'Enter' && l._m[0]) run(l._m[0][1]); }; p.onclick = e => { if (e.target === p) p.remove(); };
         }
-        [['readme-modal', closeReadmeModal], ['dev-panel-modal', closeDevPanel], ['highlight-manager-modal', closeHighlightManagerModal]].forEach(([id, fn]) => {
+        [['readme-modal', closeReadmeModal], ['dev-panel-modal', closeDevPanel]].forEach(([id, fn]) => {
             const m = document.getElementById(id); m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
             m.addEventListener('mousedown', e => { if (e.target === m) fn(); });
             new MutationObserver(() => { if (!m.classList.contains('hidden')) { m._f = document.activeElement; const b = m.querySelector('button'); if (b) b.focus(); } else if (m._f && m._f.focus) { m._f.focus(); m._f = null; } }).observe(m, { attributes: true, attributeFilter: ['class'] });
@@ -2208,19 +2058,19 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
 <!-- Bá Khí Learning Platform (chỉ thêm thẻ script, không sửa nội dung) -->
 <script src="assets/bakhi/bk-core.js?v=2.4.2" defer></script>
 <script src="assets/bakhi/bk-notify.js?v=2.4.3" defer></script>
-<script src="assets/bakhi/bk-learn.js?v=3.4.0" defer></script>
-<script src="assets/bakhi/bk-dev.js?v=2.4.2" defer></script>
+<script src="assets/bakhi/bk-learn.js?v=3.5.0" defer></script>
+<script src="assets/bakhi/bk-dev.js?v=3.5.0" defer></script>
 
 <!-- Bá Khí × Supabase: một client duy nhất, nhận diện học sinh, thông báo, changelog -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
 <script src="assets/bakhi/bk-supabase.config.js?v=3.0.0" defer></script>
-<script src="assets/bakhi/bk-cloud.js?v=3.4.0" data-bk-whatsnew="1" defer></script>
+<script src="assets/bakhi/bk-cloud.js?v=3.5.0" data-bk-whatsnew="1" defer></script>
 <script src="assets/bakhi/bk-devboard.js?v=4.1.1" defer></script>
 
 <!-- assets/bakhi/shell — avatar tài khoản dùng chung -->
-<script src="assets/bakhi/bk-version.js?v=3.4.0" defer></script>
-<script src="assets/bakhi/bk-profile.js?v=3.4.0" defer></script>
-<script src="assets/bakhi/bk-badges.js?v=3.4.0" defer></script>
-<script src="assets/bakhi/bk-shell.js?v=3.4.0" defer></script>
+<script src="assets/bakhi/bk-version.js?v=3.5.0" defer></script>
+<script src="assets/bakhi/bk-profile.js?v=3.5.0" defer></script>
+<script src="assets/bakhi/bk-badges.js?v=3.5.0" defer></script>
+<script src="assets/bakhi/bk-shell.js?v=3.5.0" defer></script>
 </body>
 </html>

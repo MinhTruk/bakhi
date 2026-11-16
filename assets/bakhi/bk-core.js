@@ -590,6 +590,8 @@
                 out[k][kk] = Math.max(0, Math.min(SIGNAL_CAP, num(src[kk], 0)));
             });
         });
+        /* Giữ nguyên mốc cập nhật đã lưu: get() không được tự đổi dữ liệu. */
+        if (typeof parsed.updatedAt === 'string') out.updatedAt = parsed.updatedAt;
         return out;
     }
     function writeSignals(sig) {
@@ -866,16 +868,24 @@
     function confirm(opts) {
         opts = opts || {};
         return new Promise(function (resolve) {
+            var settled = false;
+            function finish(value) {
+                if (settled) return;
+                settled = true;
+                resolve(value);
+            }
             var body = el('div');
             body.appendChild(el('p', 'bk-muted', opts.message || 'Bạn chắc chắn chứ?'));
             var m = modal({
                 title: opts.title || 'Xác nhận',
                 body: body,
                 actions: [
-                    { label: opts.cancel || 'Huỷ', variant: 'ghost', onClick: function (close) { close(); resolve(false); } },
-                    { label: opts.ok || 'Đồng ý', variant: opts.danger ? 'danger' : 'primary', onClick: function (close) { close(); resolve(true); } }
+                    /* finish() trước close(): close() gọi onClose → nếu để sau,
+                       Promise sẽ nhận false và nút đồng ý không bao giờ có tác dụng. */
+                    { label: opts.cancel || 'Huỷ', variant: 'ghost', onClick: function (close) { finish(false); close(); } },
+                    { label: opts.ok || 'Đồng ý', variant: opts.danger ? 'danger' : 'primary', onClick: function (close) { finish(true); close(); } }
                 ],
-                onClose: function () { resolve(false); }
+                onClose: function () { finish(false); }
             });
             setTimeout(function () { if (m) m.panel.querySelector('.bk-modal-foot .bk-btn:last-child').focus(); }, 30);
         });

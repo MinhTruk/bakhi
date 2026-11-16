@@ -21,6 +21,7 @@
     var CFG = global.BK_SUPABASE || {};
     var IDENTITY_KEY = 'bakhiStudent.v1';
     var ADMIN_KEY = 'bakhiAdmin.v1';
+    var DEV_KEY = 'bakhiDev.v1';
     var NOTIFY_READ_KEY = 'bakhiNotifyReads.v1';
     var OFFLINE_MSG = 'Không kết nối được máy chủ. Dữ liệu học tập vẫn được lưu trên thiết bị này.';
 
@@ -1964,6 +1965,49 @@
     else boot();
 
     /* ---------------------------------------------------------------------
+       Phiên Developer Playground (Dev Code)
+       Tách khỏi Administrator: token riêng, hạn riêng, không gọi admin-actions.
+       Chỉ token + hạn dùng nằm trong sessionStorage; mã không bao giờ lưu.
+       ------------------------------------------------------------------ */
+    function devSessionLocal() {
+        var saved = null;
+        try { saved = JSON.parse(global.sessionStorage.getItem(DEV_KEY) || 'null'); } catch (e) { }
+        if (!saved || !saved.token) return null;
+        var exp = new Date(saved.expiresAt).getTime();
+        if (!isFinite(exp) || exp < now()) {
+            try { global.sessionStorage.removeItem(DEV_KEY); } catch (e) { }
+            return null;
+        }
+        return { token: saved.token, expiresAt: saved.expiresAt };
+    }
+
+    function announceDev() {
+        try {
+            var active = !!devSessionLocal();
+            var admin = false;
+            try { admin = !!(global.BKCloud && global.BKCloud.adminToken && global.BKCloud.adminToken()); } catch (e) { }
+            global.dispatchEvent(new global.CustomEvent('bk:dev', {
+                detail: { active: active, hasAdmin: admin }
+            }));
+        } catch (e) { }
+    }
+
+    function devTokenNow() {
+        var s = devSessionLocal();
+        return s ? s.token : null;
+    }
+
+    function saveDevSession(data) {
+        if (!data || !data.token) throw new Error('Máy chủ không cấp được phiên Developer.');
+        try {
+            global.sessionStorage.setItem(DEV_KEY, JSON.stringify({
+                token: data.token, expiresAt: data.expiresAt
+            }));
+        } catch (e) { }
+        announceDev();
+    }
+
+    /* ---------------------------------------------------------------------
        API công khai
        ------------------------------------------------------------------ */
     global.BKCloud = {
@@ -1977,7 +2021,8 @@
                 annLoading: S.annLoading, annError: S.annError,
                 clLoading: S.clLoading, clError: S.clError,
                 flags: S.flags, flagsLoaded: S.flagsLoaded, realtime: S.realtime,
-                wnLimit: WN_LIMIT, wnExpanded: wnExpanded
+                wnLimit: WN_LIMIT, wnExpanded: wnExpanded,
+                devActive: !!devSessionLocal()
             };
         },
         identity: function () { return S.student; },
@@ -2012,6 +2057,21 @@
         adminLogout: function () {
             try { global.sessionStorage.removeItem(ADMIN_KEY); } catch (e) { }
         },
+
+        /* Dev Code — xác minh ở Edge Function dev-auth, không lưu mã. */
+        devLogin: function (code) {
+            var fn = (CFG.functions && CFG.functions.devAuth) || 'dev-auth';
+            return api(fn, { code: code }).then(function (data) {
+                saveDevSession(data);
+                return data;
+            });
+        },
+        devSession: devSessionLocal,
+        devToken: devTokenNow,
+        devLogout: function () {
+            try { global.sessionStorage.removeItem(DEV_KEY); } catch (e) { }
+            announceDev();
+        },
         adminAction: function (action, payload) {
             var token = global.BKCloud.adminToken();
             if (!token) return Promise.reject(new Error('Phiên quản trị đã hết hạn. Vui lòng nhập lại Dev Code.'));
@@ -2025,4 +2085,8 @@
             return api(CFG.functions.importStudents, { text: text }, { 'x-admin-token': token });
         }
     };
+
+    /* Cho các lớp tải trước bk-cloud (bk-dev, bk-shell) biết trạng thái Dev
+       ngay khi API sẵn sàng, không cần chờ người dùng thao tác. */
+    announceDev();
 })(typeof window !== 'undefined' ? window : this);
