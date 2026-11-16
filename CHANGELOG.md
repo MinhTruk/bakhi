@@ -2,6 +2,33 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [6.1.0] — 2026-11-16
+
+### Tính năng
+
+- **Chat kiểu Messenger**: danh sách người trò chuyện là sidebar trái; chọn một người mở
+  khung chat, icon trên header thu gọn/mở lại sidebar. Trên điện thoại, danh sách hiện
+  trước, chọn người mới vào khung chat; icon đưa về danh sách. Bố cục dùng chiều cao
+  `100dvh`, giảm thanh cuộn lồng nhau.
+- **Chi tiết thành tích**: mọi badge đều bấm được để xem mô tả, độ hiếm, tiến độ, phần
+  thưởng khung avatar và **cách lấy** — kể cả badge bí mật và badge quản trị.
+- **Tên badge mới**: 78 badge được đặt lại tên gợi cảm hứng hơn, giữ nguyên id, điều kiện
+  và khung thưởng để không mất dữ liệu đã mở.
+- **Trung tâm học tập đồng bộ hơn**: thêm danh sách huy hiệu gần mở, tiến độ từng badge và
+  gợi ý badge kế tiếp ngay trong tab Thành tích.
+
+### Sửa lỗi
+
+- **Avatar/bìa/biệt danh không sang thiết bị khác**: lần kéo hồ sơ đầu tiên không còn ghi đè
+  bản local mới hơn. Nếu vừa đổi ảnh mà chưa kịp đẩy, bản local được đẩy lên trước; sau đó
+  Supabase là nguồn chuẩn và timestamp hai bên được đồng bộ lại.
+- **Giờ Hà Nội UTC+7**: ngày giờ thông báo, chat, nhật ký quản trị, hồ sơ và mốc ngày dùng
+  `Asia/Ho_Chi_Minh`, không phụ thuộc múi giờ thiết bị.
+- **Chỉ quản trị viên gửi thông báo**: bỏ toàn bộ nhãn “giáo viên” khỏi giao diện thông báo,
+  nhận diện học sinh và tài liệu; thông báo chỉ đến từ Administrator/Founder.
+- **Bớt thanh cuộn thừa**: menu tài khoản bỏ gutter luôn chiếm chỗ, thanh cuộn toàn site mảnh
+  và trong suốt hơn; chat, hồ sơ và dashboard không còn khung cuộn lồng không cần thiết.
+
 ## [6.0.1] — 2026-11-16
 
 ### Sửa lỗi

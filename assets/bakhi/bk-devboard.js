@@ -15,7 +15,7 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var APP_VERSION = '6.0.1';
+    var APP_VERSION = '6.1.0';
 
     var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
         ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];
@@ -141,21 +141,17 @@
     }
     function fmt(iso) {
         if (!iso) return '—';
-        var d = new Date(iso);
-        if (isNaN(d.getTime())) return '—';
-        var p = function (n) { return n < 10 ? '0' + n : String(n); };
-        return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() +
-            ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+        if (global.BK && BK.util && BK.util.fmtTime) return BK.util.fmtTime(iso);
+        return '—';
     }
     function fmtDay(iso) {
         if (!iso) return '—';
-        var d = new Date(iso);
-        if (isNaN(d.getTime())) return '—';
-        var p = function (n) { return n < 10 ? '0' + n : String(n); };
-        return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear();
+        if (global.BK && BK.util && BK.util.fmtDate) return BK.util.fmtDate(iso);
+        return '—';
     }
     function greeting() {
         var hour = new Date().getHours();
+        try { if (global.BK && BK.util && BK.util.vnParts) hour = Number(BK.util.vnParts(Date.now()).hour); } catch (e) { }
         if (hour < 11) return 'Chào buổi sáng';
         if (hour < 14) return 'Chào buổi trưa';
         if (hour < 18) return 'Chào buổi chiều';

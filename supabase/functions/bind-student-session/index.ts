@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
 
     if (student.needs_review) {
         return fail(409, 'NEEDS_REVIEW',
-            'Hồ sơ này đang chờ Admin phân biệt (trùng họ tên). Vui lòng liên hệ giáo viên.');
+            'Hồ sơ này đang chờ Admin phân biệt (trùng họ tên). Vui lòng liên hệ quản trị viên.');
     }
 
     // Giới hạn: 10 lần gắn danh tính / 10 phút cho mỗi thiết bị.

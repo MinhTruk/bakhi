@@ -5,8 +5,8 @@
    ========================================================================= */
 
 .bkchat {
-    --bkchat-side: 300px;
-    --bkchat-card: 300px;
+    --bkchat-side: 284px;
+    --bkchat-card: 292px;
     position: relative;
     width: 100%;
 }
@@ -15,13 +15,19 @@
     display: grid;
     grid-template-columns: var(--bkchat-side) minmax(0, 1fr) 0;
     gap: 0;
-    height: min(780px, calc(100vh - 180px));
-    min-height: 520px;
+    height: min(760px, calc(100dvh - 132px));
+    min-height: 460px;
     border: 1px solid var(--bkl-line);
     border-radius: var(--bkl-radius);
     background: var(--bkl-surface);
     box-shadow: var(--bkl-shadow);
     overflow: hidden;
+}
+
+.bkchat-shell.is-side-collapsed { grid-template-columns: 0 minmax(0, 1fr) 0; }
+.bkchat-shell.is-side-collapsed .bkchat-side { visibility: hidden; }
+.bkchat-shell.is-side-collapsed:has(.bkchat-card:not([hidden])) {
+    grid-template-columns: 0 minmax(0, 1fr) var(--bkchat-card);
 }
 
 .bkchat-shell:has(.bkchat-card:not([hidden])) {
@@ -101,6 +107,8 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
     padding: .2rem .5rem .6rem;
 }
 
@@ -223,7 +231,7 @@
     padding: .5rem .9rem;
     border-bottom: 1px solid var(--bkl-line);
 }
-.bkchat-back { display: none; }
+.bkchat-back { display: inline-flex; flex: 0 0 34px; }
 .bkchat-head-text { flex: 1; min-width: 0; }
 .bkchat-head-title {
     font-size: .92rem;
@@ -243,6 +251,8 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
     padding: .9rem 1rem 1.2rem;
     display: flex;
     flex-direction: column;
@@ -823,4 +833,44 @@ button.bkchat-avatar { cursor: pointer; }
     max-width: 46vw;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+
+/* ------------------------------------------------------- Tinh chỉnh 6.1 */
+.bkchat-shell.is-side-collapsed .bkchat-back { color: var(--bkl-primary); }
+.bkchat-side { min-width: 0; }
+.bkchat-title { font-size: 1.04rem; }
+.bkchat-side-head { padding: .75rem .8rem .4rem; }
+.bkchat-side-foot { padding: .5rem .65rem .65rem; }
+.bkchat-room { padding: .5rem; }
+.bkchat-head { min-height: 56px; padding: .45rem .7rem; }
+.bkchat-messages { padding: .75rem .8rem 1rem; }
+.bkchat-composer { padding: .45rem .65rem .55rem; }
+
+@media (max-width: 900px) {
+    body:has(#bkChat) .bk-page { padding: 0; max-width: none; }
+    body:has(#bkChat) .bk-topbar { margin-bottom: 0; }
+    .bkchat-shell,
+    .bkchat-shell:has(.bkchat-card:not([hidden])),
+    .bkchat-shell.is-side-collapsed,
+    .bkchat-shell.is-side-collapsed:has(.bkchat-card:not([hidden])) {
+        grid-template-columns: minmax(0, 1fr);
+        height: calc(100dvh - 60px);
+        min-height: 0;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+    }
+    .bkchat-shell.is-side-collapsed .bkchat-side { visibility: visible; }
+    .bkchat-side { height: 100%; }
+    .bkchat-main { height: 100%; }
+    .bkchat-card { max-height: 100%; }
+    .bkchat-dialog { max-height: 92dvh; }
+    .bkchat-search { margin: .15rem .65rem .5rem; }
+}
+
+@media (max-width: 420px) {
+    .bkchat-msg-body,
+    .bkchat-msg-extra { max-width: 88%; }
+    .bkchat-head-sub { display: none; }
 }

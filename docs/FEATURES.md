@@ -172,7 +172,7 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 |---|---|---|---|
 | 1 | Chuông thông báo trên **mọi trang**: chủ, môn học, bài học, đề kiểm tra, Studio | ✅ | Từ 3.2.0; trang bài học dùng chuông nổi |
 | 2 | Chế độ **chỉ nhận thông báo** cho trang bài học/Studio | ✅ | `data-bk-notify-only="1"`; không nhận diện, không đồng bộ tiến trình |
-| 3 | Thông báo từ giáo viên qua Supabase Realtime | ✅ | Không cần tải lại; poll 60 giây dự phòng |
+| 3 | Thông báo từ quản trị viên qua Supabase Realtime | ✅ | Không cần tải lại; poll 60 giây dự phòng |
 | 4 | Mỗi phiên bản `## [x.y.z] — ngày` trong `CHANGELOG.md`/bảng `changelog` là một mục | ✅ | Đọc trực tiếp, không nhân bản dữ liệu |
 | 5 | Badge số chưa đọc, chấm “chưa đọc” từng mục, mức ưu tiên | ✅ | Ẩn badge khi đã đọc hết |
 | 6 | **Đánh dấu đã đọc tất cả** ngay trong bảng | ✅ | Trang chủ: Supabase; trang bài học: `bakhiNotifyReads.v1` |
@@ -267,7 +267,7 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Nhận diện bằng họ tên | ✅ | Gõ tên hoặc chọn gợi ý; máy chủ đối chiếu |
 | Phiên ẩn danh | ✅ | Không email/mật khẩu |
 | Đồng bộ tiến trình | ✅ | Tự lưu, tự thử lại, gộp hai chiều |
-| Trung tâm thông báo | ✅ | Thông báo giáo viên + toàn bộ changelog |
+| Trung tâm thông báo | ✅ | Thông báo quản trị viên + toàn bộ changelog |
 | Khối “Cập nhật gần đây” | ✅ | Chỉ trang chủ; Studio/Word & Paint không dựng |
 | Đồng bộ CHANGELOG.md | ✅ | GitHub Actions + `changelog-sync`, một thông báo mỗi phiên bản |
 | Cấu hình site | ✅ | `app_settings` (`public.whatsnew`, `public.maintenance`), realtime |

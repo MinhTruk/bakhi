@@ -124,6 +124,7 @@
 /* --------------------------- Thẻ hồ sơ / badge -------------------------- */
 .bk-page {
     max-width: 980px;
+    overflow-x: clip;
     margin: 0 auto;
     padding: 1.25rem clamp(.75rem, 3vw, 1.5rem) 4rem;
 }
@@ -306,4 +307,54 @@
     .bk-page { padding-bottom: 6rem; }
     .bk-profile-bar { margin-top: -38px; padding: 0 .85rem .85rem; }
     .bk-badge-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+
+/* ----------------------- Chi tiết badge (6.1) ------------------------- */
+.bk-badge-tappable { cursor: pointer; width: 100%; text-align: left; font: inherit; color: inherit; padding-bottom: 1.05rem; }
+.bk-badge-tappable:focus-visible { outline: 2px solid var(--bkl-primary); outline-offset: 2px; }
+.bk-badge-tappable::after {
+    content: "Xem cách lấy";
+    position: absolute;
+    left: .7rem;
+    bottom: .3rem;
+    font-size: .56rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: var(--bkl-primary);
+    opacity: 0;
+    transition: opacity .15s ease;
+}
+.bk-badge-tappable:hover::after,
+.bk-badge-tappable:focus-visible::after { opacity: .9; }
+.bk-badge-detail { display: flex; flex-direction: column; gap: .45rem; }
+.bk-badge-detail-head { display: flex; align-items: center; gap: .7rem; }
+.bk-badge-detail-icon {
+    width: 46px; height: 46px; flex: 0 0 46px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 13px; color: #fff; font-size: 1.15rem;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+}
+.bk-badge-detail-icon.is-locked { background: #64748b; filter: grayscale(.4); }
+.bk-badge-detail h3 { margin: 0; font-size: 1rem; }
+.bk-badge-detail-meta { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .2rem; }
+.bk-badge-detail-meta span {
+    padding: .1rem .42rem; border-radius: 999px;
+    border: 1px solid var(--bkl-line); font-size: .64rem; color: var(--bkl-muted);
+}
+.bk-badge-detail-label {
+    margin: .35rem 0 0; font-size: .64rem; font-weight: 700;
+    letter-spacing: .04em; text-transform: uppercase; color: var(--bkl-muted);
+}
+.bk-badge-detail p { margin: 0; font-size: .8rem; line-height: 1.55; }
+.bk-badge-detail-num { font-size: .72rem !important; color: var(--bkl-muted); }
+.bk-profile-updated {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    padding: .12rem .45rem;
+    border-radius: 999px;
+    background: var(--bkl-surface-2);
+    border: 1px solid var(--bkl-line);
+    font-size: .64rem;
+    color: var(--bkl-muted);
 }

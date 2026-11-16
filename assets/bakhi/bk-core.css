@@ -6,6 +6,24 @@
 /* Token riêng của lớp học tập (tiền tố bkl) để KHÔNG ghi đè token V4 --bk-*
    đang dùng cho giao diện hiện có (--bk-shadow của V4 là số, không phải shadow).
    Khi trang đã có token V4, lớp học tập kế thừa màu/bo góc từ đó. */
+
+/* Thanh cuộn gọn, chỉ hiện vừa đủ — tránh cảm giác hai lớp cuộn. */
+html { scrollbar-width: thin; scrollbar-color: rgba(100, 116, 139, .42) transparent; }
+body.bk-app { overflow-x: hidden; }
+html.dark { scrollbar-color: rgba(148, 163, 184, .38) transparent; }
+* { scrollbar-width: thin; }
+*::-webkit-scrollbar { width: 7px; height: 7px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, .38);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover { background-color: rgba(100, 116, 139, .62); }
+html.dark *::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, .34); background-clip: padding-box; }
+html.dark *::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 184, .58); }
+
 :root {
     --bkl-primary: var(--bk-primary, #6366f1);
     --bkl-secondary: var(--bk-secondary, #a855f7);

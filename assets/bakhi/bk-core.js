@@ -56,20 +56,48 @@
         for (; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
         return 'q' + h.toString(36);
     }
-    function dayKey(ts) {
+    /* Mọi mốc thời gian hiển thị theo giờ Hà Nội, không phụ thuộc múi giờ máy. */
+    var VN_TZ = 'Asia/Ho_Chi_Minh';
+    var vnFmt = null;
+    try {
+        vnFmt = new Intl.DateTimeFormat('en-GB', {
+            timeZone: VN_TZ, year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', hour12: false
+        });
+    } catch (e) { vnFmt = null; }
+    function vnParts(ts) {
         var d = new Date(ts || now());
-        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        if (isNaN(d.getTime())) return null;
+        var out = {};
+        if (vnFmt) {
+            vnFmt.formatToParts(d).forEach(function (p) { if (p.type !== 'literal') out[p.type] = p.value; });
+            if (out.hour === '24') out.hour = '00';
+            return out;
+        }
+        return {
+            year: String(d.getFullYear()), month: String(d.getMonth() + 1).padStart(2, '0'),
+            day: String(d.getDate()).padStart(2, '0'),
+            hour: String(d.getHours()).padStart(2, '0'), minute: String(d.getMinutes()).padStart(2, '0')
+        };
+    }
+    function dayKey(ts) {
+        var p = vnParts(ts);
+        return p ? p.year + '-' + p.month + '-' + p.day : '';
     }
     function fmtDate(ts) {
         if (!ts) return '—';
-        try { return new Date(ts).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
-        catch (e) { return '—'; }
+        var p = vnParts(ts);
+        return p ? p.day + '/' + p.month + '/' + p.year : '—';
     }
     function fmtTime(ts) {
         if (!ts) return '—';
-        try {
-            return new Date(ts).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        } catch (e) { return '—'; }
+        var p = vnParts(ts);
+        return p ? p.day + '/' + p.month + '/' + p.year + ' ' + p.hour + ':' + p.minute : '—';
+    }
+    function fmtClock(ts) {
+        if (!ts) return '';
+        var p = vnParts(ts);
+        return p ? p.hour + ':' + p.minute : '';
     }
     function download(name, text, mime) {
         try {
@@ -1275,7 +1303,7 @@
 
     BK.util = {
         uid: uid, esc: esc, norm: norm, debounce: debounce, hash: hash,
-        dayKey: dayKey, fmtDate: fmtDate, fmtTime: fmtTime, clamp: clamp,
+        dayKey: dayKey, fmtDate: fmtDate, fmtTime: fmtTime, fmtClock: fmtClock, vnParts: vnParts, clamp: clamp,
         download: download, copy: copy, basePath: basePath, now: now
     };
     BK.subjects = SUBJECTS;

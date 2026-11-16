@@ -19,7 +19,7 @@ export interface BadgeDef {
 export const BADGE_CATALOG: BadgeDef[] = [
     {
         "id": "learn-first-lesson",
-        "name": "Trang đầu tiên",
+        "name": "Chạm Ngõ Tri Thức",
         "desc": "Mở bài học đầu tiên.",
         "icon": "fa-book-open",
         "category": "learning",
@@ -31,7 +31,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "learn-lessons-5",
-        "name": "Năm bài học",
+        "name": "Lữ Khách Nhập Môn",
         "desc": "Mở 5 bài học khác nhau.",
         "icon": "fa-book",
         "category": "learning",
@@ -43,7 +43,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "learn-lessons-15",
-        "name": "Mười lăm bài học",
+        "name": "Nhà Thám Hiểm Bài Học",
         "desc": "Mở 15 bài học khác nhau.",
         "icon": "fa-book-open-reader",
         "category": "learning",
@@ -55,7 +55,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "learn-lessons-30",
-        "name": "Ba mươi bài học",
+        "name": "Học Giả Đường Dài",
         "desc": "Mở 30 bài học khác nhau.",
         "icon": "fa-graduation-cap",
         "category": "learning",
@@ -67,7 +67,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "learn-subjects-3",
-        "name": "Ba môn học",
+        "name": "Ba Cánh Cửa Mở",
         "desc": "Mở bài học ở 3 môn trở lên.",
         "icon": "fa-layer-group",
         "category": "learning",
@@ -79,7 +79,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "learn-subjects-5",
-        "name": "Năm môn học",
+        "name": "Ngũ Môn Tinh Thông",
         "desc": "Mở bài học ở 5 môn trở lên.",
         "icon": "fa-shapes",
         "category": "learning",
@@ -91,7 +91,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "learn-first-answer",
-        "name": "Câu trả lời đầu tiên",
+        "name": "Tiếng Chuông Đầu Tiên",
         "desc": "Hoàn thành lượt luyện đầu tiên.",
         "icon": "fa-circle-question",
         "category": "learning",
@@ -103,7 +103,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "learn-practice-25",
-        "name": "Hai lăm lượt luyện",
+        "name": "Tay Luyện Chăm Chỉ",
         "desc": "Hoàn thành 25 lượt luyện tập.",
         "icon": "fa-dumbbell",
         "category": "learning",
@@ -115,7 +115,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "learn-practice-100",
-        "name": "Trăm lượt luyện",
+        "name": "Bách Luyện Thành Tài",
         "desc": "Hoàn thành 100 lượt luyện tập.",
         "icon": "fa-fire",
         "category": "learning",
@@ -127,7 +127,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "learn-practice-500",
-        "name": "Năm trăm lượt luyện",
+        "name": "Ngũ Bách Tinh Anh",
         "desc": "Hoàn thành 500 lượt luyện tập.",
         "icon": "fa-bolt",
         "category": "learning",
@@ -139,7 +139,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "learn-correct-15",
-        "name": "Mười lăm câu đúng",
+        "name": "Chuỗi Đúng Đầu Tay",
         "desc": "Trả lời đúng 15 câu hỏi.",
         "icon": "fa-circle-check",
         "category": "learning",
@@ -151,7 +151,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "learn-correct-100",
-        "name": "Trăm câu đúng",
+        "name": "Bách Phát Bách Trúng",
         "desc": "Trả lời đúng 100 câu hỏi.",
         "icon": "fa-award",
         "category": "learning",
@@ -163,7 +163,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "learn-review-first",
-        "name": "Câu cần ôn đầu tiên",
+        "name": "Lần Giở Lại Đầu Tiên",
         "desc": "Có câu hỏi đầu tiên trong danh sách ôn.",
         "icon": "fa-rotate",
         "category": "learning",
@@ -175,7 +175,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "learn-mastered-10",
-        "name": "Làm chủ mười câu",
+        "name": "Mười Câu Trong Tầm Tay",
         "desc": "Đánh dấu thành thạo 10 câu từng sai.",
         "icon": "fa-check-double",
         "category": "learning",
@@ -187,7 +187,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "explore-pages-5",
-        "name": "Năm trang",
+        "name": "Bước Chân Đầu",
         "desc": "Ghé 5 trang khác nhau của Bá Khí.",
         "icon": "fa-shoe-prints",
         "category": "exploration",
@@ -199,7 +199,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "explore-pages-20",
-        "name": "Hai mươi trang",
+        "name": "Lữ Trình Khám Phá",
         "desc": "Ghé 20 trang khác nhau.",
         "icon": "fa-route",
         "category": "exploration",
@@ -211,7 +211,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "explore-pages-50",
-        "name": "Năm mươi trang",
+        "name": "Bản Đồ Bá Khí",
         "desc": "Ghé 50 trang khác nhau.",
         "icon": "fa-map",
         "category": "exploration",
@@ -223,7 +223,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "explore-studio",
-        "name": "Bước vào xưởng vẽ",
+        "name": "Mở Cửa Xưởng Sáng Tạo",
         "desc": "Mở Bá Khí Studio.",
         "icon": "fa-wand-magic-sparkles",
         "category": "exploration",
@@ -235,7 +235,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "explore-settings",
-        "name": "Sắp xếp góc học",
+        "name": "Kiến Trúc Góc Học",
         "desc": "Mở trang Cài đặt.",
         "icon": "fa-gear",
         "category": "exploration",
@@ -247,7 +247,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "explore-profile",
-        "name": "Xem hồ sơ",
+        "name": "Tấm Gương Tự Thấy",
         "desc": "Mở trang Hồ sơ cá nhân.",
         "icon": "fa-id-card",
         "category": "exploration",
@@ -259,7 +259,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "explore-palette",
-        "name": "Bảng lệnh nhanh",
+        "name": "Phím Tắt Thần Tốc",
         "desc": "Mở bảng lệnh (Ctrl/⌘ + K).",
         "icon": "fa-terminal",
         "category": "exploration",
@@ -271,7 +271,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "explore-search",
-        "name": "Người tìm kiếm",
+        "name": "Kho Báu Trong Tầm Tay",
         "desc": "Dùng tìm kiếm ít nhất một lần.",
         "icon": "fa-magnifying-glass",
         "category": "exploration",
@@ -283,7 +283,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "explore-theme",
-        "name": "Đổi ánh sáng",
+        "name": "Bật Công Tắc Ánh Sáng",
         "desc": "Chuyển giao diện sáng/tối.",
         "icon": "fa-circle-half-stroke",
         "category": "exploration",
@@ -295,7 +295,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "explore-badges",
-        "name": "Ngắm thành tích",
+        "name": "Mở Kho Báu Huy Hiệu",
         "desc": "Mở danh sách badge trong hồ sơ.",
         "icon": "fa-medal",
         "category": "exploration",
@@ -307,7 +307,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "consist-days-2",
-        "name": "Ngày thứ hai",
+        "name": "Ngày Thứ Hai Không Bỏ Cuộc",
         "desc": "Hoạt động trong 2 ngày khác nhau.",
         "icon": "fa-calendar-day",
         "category": "consistency",
@@ -319,7 +319,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "consist-days-3",
-        "name": "Ba ngày học",
+        "name": "Ba Ngày Bền Bỉ",
         "desc": "Hoạt động trong 3 ngày khác nhau.",
         "icon": "fa-calendar-days",
         "category": "consistency",
@@ -331,7 +331,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "consist-days-7",
-        "name": "Một tuần học",
+        "name": "Một Tuần Không Nghỉ",
         "desc": "Hoạt động trong 7 ngày khác nhau.",
         "icon": "fa-calendar-week",
         "category": "consistency",
@@ -343,7 +343,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "consist-days-14",
-        "name": "Hai tuần bền bỉ",
+        "name": "Nửa Tháng Kiên Tâm",
         "desc": "Hoạt động trong 14 ngày khác nhau.",
         "icon": "fa-calendar",
         "category": "consistency",
@@ -355,7 +355,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "consist-days-30",
-        "name": "Một tháng học",
+        "name": "Một Tháng Bền Bỉ",
         "desc": "Hoạt động trong 30 ngày khác nhau.",
         "icon": "fa-calendar-plus",
         "category": "consistency",
@@ -367,7 +367,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "consist-streak-3",
-        "name": "Chuỗi 3 ngày",
+        "name": "Chuỗi Ba Ngày",
         "desc": "Học liên tiếp 3 ngày.",
         "icon": "fa-link",
         "category": "consistency",
@@ -379,7 +379,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "consist-streak-7",
-        "name": "Chuỗi 7 ngày",
+        "name": "Chuỗi Bảy Ngày",
         "desc": "Học liên tiếp 7 ngày.",
         "icon": "fa-fire-flame-curved",
         "category": "consistency",
@@ -391,7 +391,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "consist-streak-30",
-        "name": "Chuỗi 30 ngày",
+        "name": "Chuỗi Ba Mươi Ngày",
         "desc": "Học liên tiếp 30 ngày.",
         "icon": "fa-infinity",
         "category": "consistency",
@@ -403,7 +403,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "music-first",
-        "name": "Giai điệu đầu tiên",
+        "name": "Nốt Nhạc Đầu Tiên",
         "desc": "Phát bài hát đầu tiên.",
         "icon": "fa-music",
         "category": "music",
@@ -415,7 +415,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "music-10",
-        "name": "Nghe nhạc khi học",
+        "name": "Giai Điệu Đồng Hành",
         "desc": "Nghe trọn 10 lượt nhạc.",
         "icon": "fa-headphones",
         "category": "music",
@@ -427,7 +427,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "music-50",
-        "name": "Năm mươi lượt nghe",
+        "name": "Năm Mươi Bản Tình Ca",
         "desc": "Nghe trọn 50 lượt nhạc.",
         "icon": "fa-volume-high",
         "category": "music",
@@ -439,7 +439,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "music-200",
-        "name": "Hai trăm lượt nghe",
+        "name": "Tai Nghe Bất Tận",
         "desc": "Nghe trọn 200 lượt nhạc.",
         "icon": "fa-record-vinyl",
         "category": "music",
@@ -451,7 +451,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "music-tracks-5",
-        "name": "Năm bản nhạc",
+        "name": "Bộ Sưu Tầm Giai Điệu",
         "desc": "Nghe trọn 5 bài khác nhau.",
         "icon": "fa-list-music",
         "category": "music",
@@ -463,7 +463,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "music-shuffle",
-        "name": "Ngẫu hứng",
+        "name": "Ngẫu Hứng Bất Tận",
         "desc": "Bật phát ngẫu nhiên.",
         "icon": "fa-shuffle",
         "category": "music",
@@ -475,7 +475,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "music-repeat",
-        "name": "Lặp lại",
+        "name": "Vòng Lặp Yêu Thương",
         "desc": "Bật chế độ lặp.",
         "icon": "fa-repeat",
         "category": "music",
@@ -487,7 +487,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "music-queue",
-        "name": "Xếp hàng chờ",
+        "name": "Hàng Đợi Giai Điệu",
         "desc": "Thêm bài hát vào hàng đợi.",
         "icon": "fa-layer-plus",
         "category": "music",
@@ -499,7 +499,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "music-same-20",
-        "name": "Một bài, hai mươi lần",
+        "name": "Một Bài Hát, Hai Mươi Lần",
         "desc": "Nghe trọn cùng một bản nhạc 20 lần.",
         "icon": "fa-repeat",
         "category": "music",
@@ -511,7 +511,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "inter-first-effect",
-        "name": "Bắn sao băng",
+        "name": "Vì Sao Đầu Tiên",
         "desc": "Dùng hiệu ứng sao băng lần đầu.",
         "icon": "fa-meteor",
         "category": "interaction",
@@ -523,7 +523,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "inter-meteor-10",
-        "name": "Mười vì sao",
+        "name": "Mười Vì Sao",
         "desc": "Bắn 10 sao băng.",
         "icon": "fa-star",
         "category": "interaction",
@@ -535,7 +535,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "inter-meteor-100",
-        "name": "Trăm vì sao",
+        "name": "Trăm Vì Sao",
         "desc": "Bắn 100 sao băng.",
         "icon": "fa-star-half-stroke",
         "category": "interaction",
@@ -547,7 +547,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "inter-meteor-1000",
-        "name": "Mưa sao",
+        "name": "Mưa Sao Băng",
         "desc": "Bắn 1.000 sao băng.",
         "icon": "fa-cloud-moon",
         "category": "interaction",
@@ -559,7 +559,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "inter-meteor-10000",
-        "name": "Bão sao băng",
+        "name": "Bão Sao Băng",
         "desc": "Bắn 10.000 sao băng.",
         "icon": "fa-meteor",
         "category": "interaction",
@@ -571,7 +571,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "inter-music-fab",
-        "name": "Mở trình phát nhạc",
+        "name": "Chạm Vào Giai Điệu",
         "desc": "Mở bảng Music Player.",
         "icon": "fa-compact-disc",
         "category": "interaction",
@@ -583,7 +583,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "inter-focus",
-        "name": "Chế độ tập trung",
+        "name": "Vùng Tập Trung",
         "desc": "Bật chế độ tập trung khi học.",
         "icon": "fa-crosshairs",
         "category": "interaction",
@@ -595,7 +595,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "inter-dark-mode",
-        "name": "Học trong đêm",
+        "name": "Người Bạn Của Bóng Đêm",
         "desc": "Bật giao diện tối.",
         "icon": "fa-moon",
         "category": "interaction",
@@ -607,7 +607,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "social-nickname",
-        "name": "Có biệt danh",
+        "name": "Dấu Ấn Riêng",
         "desc": "Đặt biệt danh cho hồ sơ.",
         "icon": "fa-signature",
         "category": "social",
@@ -619,7 +619,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "social-avatar",
-        "name": "Ảnh đại diện",
+        "name": "Khuôn Mặt Của Bạn",
         "desc": "Tải ảnh đại diện lên.",
         "icon": "fa-image-portrait",
         "category": "social",
@@ -631,7 +631,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "social-banner",
-        "name": "Ảnh bìa",
+        "name": "Bức Tranh Phía Sau",
         "desc": "Đặt ảnh bìa hồ sơ.",
         "icon": "fa-panorama",
         "category": "social",
@@ -643,7 +643,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "social-bio",
-        "name": "Vài dòng giới thiệu",
+        "name": "Lời Tự Giới Thiệu",
         "desc": "Viết giới thiệu bản thân.",
         "icon": "fa-quote-left",
         "category": "social",
@@ -655,7 +655,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "social-links-2",
-        "name": "Kết nối hai liên kết",
+        "name": "Cầu Nối Hai Chiều",
         "desc": "Thêm ít nhất 2 liên kết mạng xã hội.",
         "icon": "fa-link",
         "category": "social",
@@ -667,7 +667,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "social-frame",
-        "name": "Khung avatar",
+        "name": "Vương Miện Nhỏ",
         "desc": "Trang bị một khung avatar.",
         "icon": "fa-crown",
         "category": "social",
@@ -679,7 +679,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "studio-doc",
-        "name": "Trang giấy đầu tiên",
+        "name": "Trang Giấy Trắng Đầu Tiên",
         "desc": "Lưu tài liệu đầu tiên trong Studio.",
         "icon": "fa-file-lines",
         "category": "studio",
@@ -691,7 +691,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "studio-drawing",
-        "name": "Nét vẽ đầu tiên",
+        "name": "Nét Cọ Đầu Tiên",
         "desc": "Lưu một bản vẽ trong Studio.",
         "icon": "fa-paintbrush",
         "category": "studio",
@@ -703,7 +703,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "studio-insert",
-        "name": "Minh hoạ tài liệu",
+        "name": "Người Kể Chuyện Bằng Hình",
         "desc": "Chèn bản vẽ vào tài liệu Studio.",
         "icon": "fa-image",
         "category": "studio",
@@ -715,7 +715,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "studio-export",
-        "name": "Chia sẻ tác phẩm",
+        "name": "Tác Phẩm Ra Đời",
         "desc": "Xuất tài liệu hoặc ảnh từ Studio.",
         "icon": "fa-file-export",
         "category": "studio",
@@ -727,7 +727,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "studio-words-500",
-        "name": "Cây bút 500 từ",
+        "name": "Cây Bút Năm Trăm Từ",
         "desc": "Viết một tài liệu dài 500 từ.",
         "icon": "fa-feather-pointed",
         "category": "studio",
@@ -739,7 +739,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "studio-docs-5",
-        "name": "Năm tài liệu",
+        "name": "Thư Viện Năm Tài Liệu",
         "desc": "Lưu 5 tài liệu trong Studio.",
         "icon": "fa-folder-open",
         "category": "studio",
@@ -751,7 +751,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "studio-drawings-5",
-        "name": "Năm bản vẽ",
+        "name": "Bộ Sưu Tập Năm Bản Vẽ",
         "desc": "Lưu 5 bản vẽ trong Studio.",
         "icon": "fa-palette",
         "category": "studio",
@@ -763,7 +763,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "studio-exports-10",
-        "name": "Mười lần xuất bản",
+        "name": "Mười Lần Toả Sáng",
         "desc": "Xuất 10 tệp từ Studio.",
         "icon": "fa-file-arrow-down",
         "category": "studio",
@@ -775,7 +775,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "secret-night-owl",
-        "name": "Cú đêm",
+        "name": "Cú Đêm Bí Ẩn",
         "desc": "Học sau nửa đêm.",
         "icon": "fa-moon",
         "category": "secret",
@@ -787,7 +787,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "secret-early-bird",
-        "name": "Chim sớm",
+        "name": "Chim Sớm Tinh Khôi",
         "desc": "Học trước 6 giờ sáng.",
         "icon": "fa-sun",
         "category": "secret",
@@ -799,7 +799,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "secret-subjects-all",
-        "name": "Mười môn",
+        "name": "Nhà Bác Học Đa Môn",
         "desc": "Mở bài học ở cả 10 môn.",
         "icon": "fa-atom",
         "category": "secret",
@@ -811,7 +811,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "secret-notes-100",
-        "name": "Sổ tay trăm trang",
+        "name": "Sổ Tay Trăm Trang",
         "desc": "Tạo 100 ghi chú học tập.",
         "icon": "fa-book-bookmark",
         "category": "secret",
@@ -823,7 +823,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "secret-bookmarks-50",
-        "name": "Nhà sưu tầm",
+        "name": "Nhà Sưu Tầm Dấu Trang",
         "desc": "Lưu 50 đánh dấu.",
         "icon": "fa-bookmark",
         "category": "secret",
@@ -835,7 +835,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "secret-mastered-50",
-        "name": "Bậc thầy ôn tập",
+        "name": "Bậc Thầy Ôn Tập",
         "desc": "Làm chủ 50 câu từng sai.",
         "icon": "fa-gem",
         "category": "secret",
@@ -847,7 +847,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "secret-one-subject-10",
-        "name": "Chuyên sâu một môn",
+        "name": "Người Đào Sâu Một Môn",
         "desc": "Mở 10 bài học trong cùng một môn.",
         "icon": "fa-microscope",
         "category": "secret",
@@ -859,7 +859,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "secret-collector-40",
-        "name": "Bộ sưu tập 40",
+        "name": "Bộ Sưu Tập 40",
         "desc": "Mở khóa 40 badge.",
         "icon": "fa-trophy",
         "category": "secret",
@@ -871,7 +871,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "secret-collector-60",
-        "name": "Bộ sưu tập 60",
+        "name": "Bộ Sưu Tập 60",
         "desc": "Mở khóa 60 badge.",
         "icon": "fa-trophy-star",
         "category": "secret",
@@ -883,7 +883,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "secret-completionist",
-        "name": "Người sưu tầm trọn vẹn",
+        "name": "Người Sưu Tầm Trọn Vẹn",
         "desc": "Mở khóa 73 badge tự động.",
         "icon": "fa-diamond",
         "category": "secret",
@@ -895,8 +895,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "admin-chosen",
-        "name": "Được chọn",
-        "desc": "Badge đặc biệt do giáo viên trao tặng.",
+        "name": "Được Chọn",
+        "desc": "Badge đặc biệt do quản trị viên trao tặng.",
         "icon": "fa-hand-holding-heart",
         "category": "secret",
         "rarity": "legendary",
@@ -907,7 +907,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "admin-legend",
-        "name": "Huyền thoại Bá Khí",
+        "name": "Huyền Thoại Bá Khí",
         "desc": "Badge cao nhất, chỉ Administrator trao tặng.",
         "icon": "fa-crown",
         "category": "secret",
@@ -919,7 +919,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "dev-exclusive-aurora",
-        "name": "Developer · Cực quang",
+        "name": "Cực Quang Developer",
         "desc": "Khung Cực quang dành riêng cho Developer của Bá Khí.",
         "icon": "fa-code",
         "category": "secret",
@@ -931,7 +931,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "dev-exclusive-void",
-        "name": "Developer · Hư không",
+        "name": "Hư Không Developer",
         "desc": "Khung Hư không dành riêng cho Developer của Bá Khí.",
         "icon": "fa-terminal",
         "category": "secret",
@@ -943,7 +943,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     },
     {
         "id": "founder",
-        "name": "Người sáng lập",
+        "name": "Người Sáng Lập Bá Khí",
         "desc": "Danh hiệu tối cao dành cho người sáng lập Bá Khí — Minh Trúc.",
         "icon": "fa-crown",
         "category": "secret",

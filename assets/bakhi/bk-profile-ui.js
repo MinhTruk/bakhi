@@ -110,6 +110,12 @@
             links.appendChild(a);
         });
         if (links.children.length) meta.appendChild(links);
+        if (p.updatedAt) {
+            var upd = el('span', 'bk-profile-updated',
+                'Cập nhật ' + (global.BK && global.BK.util && global.BK.util.fmtTime
+                    ? global.BK.util.fmtTime(p.updatedAt) : new Date(p.updatedAt).toLocaleString('vi-VN')));
+            meta.appendChild(upd);
+        }
         bar.appendChild(meta);
 
         if (opts.actions !== false) {
@@ -156,6 +162,10 @@
         function refreshAll() {
             renderEditor(container);
             if (global.BKShell && global.BKShell.refresh) global.BKShell.refresh();
+            /* Đẩy ngay lên Supabase; listener 250ms chỉ là lưới an toàn. */
+            try {
+                if (global.BKCloud && global.BKCloud.syncStudent) global.BKCloud.syncStudent();
+            } catch (e) { }
         }
 
         var grid = el('div', 'bk-form-grid');
@@ -547,9 +557,78 @@
         if (global.BKShell) global.BKShell.mark('badges.viewed');
     }
 
+    function badgeHow(row) {
+        if (row.adminOnly) {
+            return row.exclusive === 'founder'
+                ? 'Chỉ hồ sơ Người sáng lập đã xác minh mới nhận được. Founder có thể trao lại từ Founder Dashboard.'
+                : row.exclusive === 'dev'
+                    ? 'Phần thưởng độc quyền của Developer Bá Khí. Chỉ Founder trao từ Founder Dashboard.'
+                    : 'Do quản trị viên trao tay từ Administrator Dashboard, không tự mở bằng tiến độ học tập.';
+        }
+        if (row.rarity === 'secret' && !row.unlockedAt) {
+            return row.desc + ' Đây là badge bí mật: điều kiện thật đã hiện ở đây, không cần đoán.';
+        }
+        return row.desc + (row.goal > 1 ? ' Tiến độ được máy chủ xác minh từ dữ liệu học tập của bạn.' : '');
+    }
+
+    function openBadge(row) {
+        if (!row) return;
+        var body = el('div', 'bk-badge-detail');
+        var head = el('div', 'bk-badge-detail-head');
+        var iconBox = el('div', 'bk-badge-detail-icon' + (row.unlockedAt ? '' : ' is-locked'));
+        iconBox.appendChild(icon(row.unlockedAt || !row.adminOnly ? row.icon : 'fa-lock'));
+        head.appendChild(iconBox);
+        var title = el('div');
+        title.appendChild(el('h3', null, row.name));
+        var meta = el('div', 'bk-badge-detail-meta');
+        meta.appendChild(el('span', null, rarityMeta(row.rarity).name));
+        meta.appendChild(el('span', null, categoryMeta(row.category).name));
+        meta.appendChild(el('span', null, row.unlockedAt ? 'Đã mở khóa' : 'Chưa mở khóa'));
+        title.appendChild(meta);
+        head.appendChild(title);
+        body.appendChild(head);
+
+        body.appendChild(el('p', 'bk-badge-detail-label', 'Mô tả'));
+        body.appendChild(el('p', null, row.desc));
+
+        body.appendChild(el('p', 'bk-badge-detail-label', 'Cách lấy'));
+        body.appendChild(el('p', null, badgeHow(row)));
+
+        if (!row.adminOnly) {
+            body.appendChild(el('p', 'bk-badge-detail-label', 'Tiến độ'));
+            var bar = el('div', 'bk-progress');
+            var fill = el('span');
+            fill.style.width = Math.max(0, Math.min(100, row.pct)) + '%';
+            bar.appendChild(fill);
+            body.appendChild(bar);
+            body.appendChild(el('p', 'bk-badge-detail-num', row.current + ' / ' + row.goal +
+                (row.unlockedAt ? ' · đã hoàn thành' : '')));
+        }
+
+        if (row.frame) {
+            body.appendChild(el('p', 'bk-badge-detail-label', 'Phần thưởng'));
+            body.appendChild(el('p', null, 'Mở khóa khung avatar “' + row.frame + '” khi đạt badge này.'));
+        }
+
+        if (global.BK && global.BK.ui && global.BK.ui.modal) {
+            global.BK.ui.modal({
+                title: 'Chi tiết thành tích',
+                body: body,
+                actions: [{ label: 'Đóng', variant: 'ghost', onClick: function (close) { close(); } }]
+            });
+        }
+    }
+
     function badgeCard(row) {
-        var card = el('div', 'bk-badge' + (row.unlockedAt ? '' : ' is-locked'));
-        card.setAttribute('title', row.desc);
+        var card = el('div', 'bk-badge bk-badge-tappable' + (row.unlockedAt ? '' : ' is-locked'));
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', row.name + ' — xem cách lấy');
+        card.setAttribute('title', 'Ấn để xem mô tả và cách lấy');
+        card.addEventListener('click', function () { openBadge(row); });
+        card.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBadge(row); }
+        });
         var ic = el('div', 'bk-badge-icon');
         ic.appendChild(icon(row.unlockedAt || !row.adminOnly ? row.icon : 'fa-lock'));
         card.appendChild(ic);
@@ -557,13 +636,13 @@
         var body = el('div', 'bk-badge-body');
         body.appendChild(el('div', 'bk-badge-name', row.name));
         var desc = el('div', 'bk-badge-desc');
-        if (row.rarity === 'secret' && !row.unlockedAt) desc.textContent = 'Badge bí mật — tiếp tục khám phá.';
+        if (row.rarity === 'secret' && !row.unlockedAt) desc.textContent = 'Bí mật — ấn để xem cách lấy.';
         else desc.textContent = row.desc;
         body.appendChild(desc);
 
         if (row.adminOnly) {
             var admin = el('div', 'bk-badge-prog');
-            admin.textContent = row.unlockedAt ? 'Được trao tặng' : 'Chỉ Administrator trao';
+            admin.textContent = row.unlockedAt ? 'Được trao tặng' : 'Quản trị viên trao';
             body.appendChild(admin);
         } else if (!row.unlockedAt) {
             var prog = el('div', 'bk-badge-prog');
@@ -585,6 +664,7 @@
         renderEditor: renderEditor,
         renderFrames: renderFrames,
         renderBadgeBoard: renderBadgeBoard,
+        openBadge: openBadge,
         badgeState: badgeState,
         rarityMeta: rarityMeta,
         categoryMeta: categoryMeta

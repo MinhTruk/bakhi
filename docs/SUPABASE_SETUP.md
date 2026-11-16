@@ -198,11 +198,11 @@ workflow dùng `CHANGELOG_SYNC_TOKEN`; cả ba đều tự kiểm tra quyền b�
 | `search-students` | Học sinh (ẩn danh) | Phiên Supabase | 40 lượt/phút/phiên |
 | `bind-student-session` | Học sinh (ẩn danh) | Phiên + họ tên đối chiếu server | 10 lượt/10 phút/thiết bị |
 | `sync-student-progress` | Học sinh (ẩn danh) | Phiên + `student_id` do server suy ra | Theo phiên |
-| `admin-auth` | Giáo viên | `ADMIN_DEV_CODE` so sánh hằng thời gian | 8 lượt/10 phút/IP |
+| `admin-auth` | Quản trị viên | `ADMIN_DEV_CODE` so sánh hằng thời gian | 8 lượt/10 phút/IP |
 | `admin-actions` | Dashboard | `x-admin-token` (hash trong `admin_sessions`) | Theo phiên quản trị |
 | `import-students` | Dashboard / script | `x-admin-token` hoặc `STUDENT_ROSTER_SECRET` | Theo phiên |
 | `changelog-sync` | GitHub Actions | `x-changelog-token` so sánh hằng thời gian với `CHANGELOG_SYNC_TOKEN` | Theo lần chạy workflow |
-| `dev-auth` | Giáo viên / Dev | `DEV_PLAYGROUND_CODE` so sánh hằng thời gian | 10 lượt/10 phút/IP |
+| `dev-auth` | Quản trị viên / Dev | `DEV_PLAYGROUND_CODE` so sánh hằng thời gian | 10 lượt/10 phút/IP |
 | `student-profile` | Học sinh (ẩn danh) | Phiên + `student_id` do server suy ra | 90 lượt/giờ/học sinh |
 | `chat-api` | Học sinh (ẩn danh) | Phiên + `student_id` do server suy ra | 300 lượt/giờ; 20 tin/phút; 120 cảm xúc/phút |
 
@@ -434,7 +434,7 @@ Hệ quả cần biết khi vận hành:
   không cần hồ sơ học sinh. Trên trang chủ, trạng thái vẫn đồng bộ theo hồ sơ.
 - Realtime dùng kênh `bakhi-public` cho hai bảng `announcements` và `changelog`. Nếu dự án
   tắt realtime, chuông vẫn cập nhật qua poll 60 giây và khi mạng có lại.
-- Thông báo mới hiện ngay khi giáo viên bấm **PUSH NOTIFICATION NOW**; không cần deploy lại
+- Thông báo mới hiện ngay khi quản trị viên bấm **PUSH NOTIFICATION NOW**; không cần deploy lại
   trang tĩnh.
 
 ### Kiểm tra thông báo realtime

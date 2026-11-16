@@ -40,7 +40,7 @@ BAKHI hướng đến việc giúp việc ôn tập trở nên:
 - **What's New gọn hơn**: chỉ hiển thị phiên bản mới nhất, tối đa 10 dòng, có
   `Xem thêm` / `Thu gọn`; lịch sử đầy đủ vẫn mở từ nút “Xem tất cả cập nhật”.
 - **Một website, một trải nghiệm thông báo**: chuông thông báo có mặt trên trang chủ, mọi
-  trang môn học/bài học/đề kiểm tra và cả Studio. Giáo viên đăng thông báo là máy học sinh
+  trang môn học/bài học/đề kiểm tra và cả Studio. Quản trị viên đăng thông báo là máy học sinh
   nhận được ngay, kể cả khi đang làm bài; toàn bộ giao diện thông báo dùng chung một theme tối.
 - **CHANGELOG.md tự lên sóng**: GitHub Actions đọc tệp khi bạn push, đồng bộ lên Supabase và
   tạo đúng một thông báo cho mỗi phiên bản mới. Không cần sửa HTML mỗi lần phát hành.
@@ -236,7 +236,7 @@ script và không sửa nội dung gốc.
 | 🎧 Music Player dùng chung | 🟢 Đã có |
 | 🎨 Bá Khí Studio (Word & Paint) | 🟢 Đã có |
 | 🔔 Thông báo realtime toàn website (kể cả trang bài học, Studio) | 🟢 Đã có (3.2.0) |
-| 🛠️ Administrator Dashboard 6.0 (12 mô-đun) + Founder Dashboard (15 mô-đun, trao mọi badge) | 🟢 Đã có (6.0.0) |
+| 🛠️ Administrator Dashboard 6.0 (12 mô-đun) + Founder Dashboard (15 mô-đun, trao mọi badge) | 🟢 Đã có (6.1.0) |
 | 🔄 Đồng bộ CHANGELOG.md tự động qua GitHub Actions | 🟢 Đã có (3.3.0) |
 | 🌙 Giao diện thông báo tối thống nhất | 🟢 Đã có (3.3.0) |
 | 🖼️ Favicon tĩnh SVG/PNG/ICO toàn site | 🟢 Đã có (3.3.0) |
@@ -305,7 +305,7 @@ Mở bằng `Ctrl/⌘ + K`, phím `/` để tìm kiếm, hoặc vào **Cài đ�
   **chuông nổi** ở góc phải dưới.
 - Bảng thông báo mở ở góc trên bên phải khi chuông ở nửa trên màn hình và **tự mở lên trên**
   khi chuông ở nửa dưới, nên không bao giờ bị cắt khỏi khung nhìn.
-- Hai nguồn thông báo: **thông báo từ giáo viên** (bảng `announcements`, realtime) và
+- Hai nguồn thông báo: **thông báo từ quản trị viên** (bảng `announcements`, realtime) và
   **phiên bản cập nhật** (bảng `changelog` / `CHANGELOG.md`).
 - Badge hiển thị số chưa đọc; **Đánh dấu đã đọc tất cả** trong bảng; bấm một mục để mở nội
   dung đầy đủ (đóng bằng ×, `Esc` hoặc bấm nền).
@@ -405,7 +405,7 @@ Chi tiết: [docs/FEATURES.md](docs/FEATURES.md) · [docs/ARCHITECTURE.md](docs/
 Bá Khí có lớp nhận diện và đồng bộ chạy trên Supabase, nhưng **không bắt học sinh tạo tài khoản**:
 
 - **Nhận diện bằng họ tên** — gõ đúng họ và tên (có dấu hay không dấu đều được), bấm **Xác nhận**
-  hoặc chọn trong danh sách gợi ý. Máy chủ đối chiếu lại với danh sách giáo viên đã import, nên
+  hoặc chọn trong danh sách gợi ý. Máy chủ đối chiếu lại với danh sách học sinh do quản trị viên import, nên
   không thể “nhận vơ” một cái tên không tồn tại.
 - **Phiên ẩn danh** — mỗi thiết bị có một phiên Supabase Anonymous Auth riêng: không email,
   không mật khẩu, không đăng nhập Google.
@@ -425,7 +425,7 @@ Hướng dẫn cài đặt, mô hình dữ liệu và cách kiểm thử: [docs/
 
 Chuông là nơi duy nhất hiển thị thông tin cập nhật, và nay có mặt trên **mọi trang**:
 
-- **Thông báo từ giáo viên** — đăng từ Administrator Dashboard, hiện ngay trên máy học sinh nhờ
+- **Thông báo từ quản trị viên** — đăng từ Administrator Dashboard, hiện ngay trên máy học sinh nhờ
   Supabase Realtime (không cần tải lại trang), có đếm số chưa đọc, mức ưu tiên và trạng thái
   đã đọc. Cơ chế dự phòng: tự tải lại mỗi 60 giây và khi mạng có lại.
 - **Cập nhật phiên bản** — toàn bộ changelog, xếp theo **số phiên bản** từ cũ đến mới
@@ -460,7 +460,7 @@ bình thường; thông báo sẽ được tải lại khi kết nối trở l�
 
 # 🛠️ Administrator Dashboard
 
-Trang quản trị dành riêng cho giáo viên, **yêu cầu Administrator Code** ở cả hai lối vào:
+Trang quản trị dành riêng cho quản trị viên, **yêu cầu Administrator Code** ở cả hai lối vào:
 
 | Lối vào | Đường dẫn | Ghi chú |
 | --- | --- | --- |
@@ -630,7 +630,7 @@ service-role key hay Administrator Code.
 # ❓ Câu hỏi thường gặp
 
 **Tôi có cần tài khoản không?**
-Không. Website dùng được ngay ở chế độ local-first. Nếu giáo viên bật Supabase, bạn chỉ cần
+Không. Website dùng được ngay ở chế độ local-first. Nếu quản trị viên bật Supabase, bạn chỉ cần
 chọn đúng họ tên để đồng bộ giữa các thiết bị.
 
 **Thông báo có hiện khi đang làm bài không?**

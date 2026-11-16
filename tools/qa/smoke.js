@@ -64,6 +64,8 @@ load(w, 'assets/bakhi/bk-music.js');
 if (w.BKMusic) w.BKMusic.buildUI();
 
 ok('BK core loaded', !!w.BK && !!w.BK.store);
+ok('giờ Hà Nội UTC+7', w.BK.util.fmtTime(Date.UTC(2026, 0, 1, 0, 0)) === '01/01/2026 07:00', w.BK.util.fmtTime(Date.UTC(2026, 0, 1, 0, 0)));
+ok('ngày Hà Nội UTC+7', w.BK.util.dayKey(Date.UTC(2026, 0, 1, 0, 0)) === '2026-01-01', w.BK.util.dayKey(Date.UTC(2026, 0, 1, 0, 0)));
 ok('BKLearn exposed', !!w.BKLearn);
 ok('BKDev exposed', !!w.BKDev);
 ok('Dock injected', !!w.document.getElementById('bkDock'));

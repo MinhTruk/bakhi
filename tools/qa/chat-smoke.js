@@ -229,6 +229,11 @@ async function main() {
   ok('cảm xúc của mình được đánh dấu', !!doc.querySelector('#bkChatMessages .bkchat-reaction.is-mine'));
   await wait(1050);
   ok('gọi read.mark khi mở phòng', H.calls.some((c) => c.action === 'read.mark'));
+  const sideToggle = doc.querySelector('.bkchat-back');
+  sideToggle.click();
+  ok('icon sidebar thu gọn được danh sách', doc.querySelector('.bkchat-shell').classList.contains('is-side-collapsed'));
+  sideToggle.click();
+  ok('icon sidebar mở lại được danh sách', !doc.querySelector('.bkchat-shell').classList.contains('is-side-collapsed'));
 
   console.log('\n[3] Gửi tin nhắn văn bản (không ảnh/emoji soạn tin)');
   const input = doc.getElementById('bkChatInput');

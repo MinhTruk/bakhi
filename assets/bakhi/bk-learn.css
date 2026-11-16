@@ -93,7 +93,6 @@
     padding: .7rem .6rem;
     border-right: 1px solid var(--bkl-line);
     background: var(--bkl-surface-2);
-    overflow: auto;
 }
 .bk-hub-tab {
     display: flex;
@@ -115,14 +114,14 @@
 .bk-hub-tab.on { background: rgba(99, 102, 241, .18); color: var(--bkl-primary); opacity: 1; }
 html.dark .bk-hub-tab.on { color: #a5b4fc; }
 .bk-hub-tab:focus-visible { outline: 2px solid var(--bkl-primary); outline-offset: -2px; }
-.bk-hub-main { padding: 1rem 1.15rem 1.5rem; overflow: auto; min-width: 0; }
+.bk-hub-main { padding: 1rem 1.15rem 1.5rem; min-width: 0; }
 .bk-hub-foot { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .55rem 1rem; border-top: 1px solid var(--bkl-line); font-size: .66rem; color: var(--bkl-muted); }
 .bk-hub h3 { font-size: .95rem; font-weight: 700; margin: 0 0 .15rem; }
 .bk-hub h4 { font-size: .8rem; font-weight: 700; margin: 1.1rem 0 .45rem; }
 .bk-hub .bk-sub { font-size: .7rem; color: var(--bkl-muted); margin-bottom: .8rem; }
 @media (max-width: 720px) {
     .bk-hub { grid-template-columns: 1fr; }
-    .bk-hub-nav { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--bkl-line); padding: .45rem; }
+    .bk-hub-nav { flex-direction: row; overflow-x: auto; overflow-y: hidden; border-right: 0; border-bottom: 1px solid var(--bkl-line); padding: .45rem; }
     .bk-hub-tab { width: auto; white-space: nowrap; }
     .bk-hub-main { padding: .8rem; }
 }
@@ -312,3 +311,16 @@ html.dark .bk-chip.on { color: #a5b4fc; }
 .bk-hub-main.bk-tab-in { animation: bk-hub-tab-in .2s ease-out; }
 @keyframes bk-hub-tab-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .bk-hub-main.bk-tab-in { animation: none !important; } }
+
+/* Huy hiệu gần mở trong Trung tâm học tập */
+.bk-item-button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+.bk-item-button:hover { border-color: var(--bkl-primary); }
+.bk-item-button:focus-visible { outline: 2px solid var(--bkl-primary); outline-offset: 2px; }
+.bk-item-button .bk-progress { margin-top: .4rem; }

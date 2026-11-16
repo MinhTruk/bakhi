@@ -102,11 +102,15 @@
     }
     function fmtDate(iso) {
         if (!iso) return '';
+        try {
+            if (global.BK && global.BK.util && global.BK.util.fmtTime) return global.BK.util.fmtTime(iso);
+        } catch (e) { }
         var d = new Date(iso);
         if (isNaN(d.getTime())) return '';
-        var p = function (n) { return n < 10 ? '0' + n : String(n); };
-        return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() +
-            ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+        return d.toLocaleString('vi-VN', {
+            timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit',
+            year: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
     }
     function relTime(iso) {
         var t = new Date(iso || 0).getTime();
@@ -399,7 +403,7 @@
 
         var foot = el('p', 'bkc-gate-foot');
         foot.appendChild(el('span', null,
-            'Danh sách học sinh do giáo viên quản lý. Tên chỉ dùng để nhận diện, ' +
+            'Danh sách học sinh do quản trị viên quản lý. Tên chỉ dùng để nhận diện, ' +
             'không phải mật khẩu — đừng chia sẻ tên của người khác.'));
         card.appendChild(foot);
 
@@ -663,7 +667,7 @@
             return;
         }
         if (code === 'NEEDS_REVIEW') {
-            gateSetMsg('Hồ sơ này đang chờ giáo viên phân biệt trùng họ tên. Hãy báo giáo viên.', 'error');
+            gateSetMsg('Hồ sơ này đang chờ quản trị viên phân biệt trùng họ tên. Hãy báo quản trị viên.', 'error');
             return;
         }
         if (code === 'TOO_MANY_BINDS') {
@@ -671,7 +675,7 @@
             return;
         }
         if (code === 'INACTIVE') {
-            gateSetMsg('Hồ sơ này đã bị vô hiệu hoá. Hãy liên hệ giáo viên.', 'error');
+            gateSetMsg('Hồ sơ này đã bị vô hiệu hoá. Hãy liên hệ quản trị viên.', 'error');
             return;
         }
         if (code === 'NAME_MISMATCH') {
@@ -1014,7 +1018,7 @@
         var head = el('div', 'bkc-panel-head');
         var titles = el('div');
         titles.appendChild(el('b', 'bkc-panel-title', 'Thông báo'));
-        titles.appendChild(el('span', 'bkc-panel-sub', 'Cập nhật tức thời từ giáo viên'));
+        titles.appendChild(el('span', 'bkc-panel-sub', 'Cập nhật tức thời từ quản trị viên'));
         head.appendChild(titles);
         var close = el('button', 'bkc-x', '×');
         close.type = 'button';
@@ -1161,7 +1165,7 @@
         }
 
         if (S.announcements.length) {
-            S.list.appendChild(panelGroup('Thông báo từ giáo viên'));
+            S.list.appendChild(panelGroup('Thông báo từ quản trị viên'));
             S.announcements.forEach(function (a) {
                 var unread = !S.reads[a.id];
                 var item = el('button', 'bkc-item' + (unread ? ' is-unread' : ''));
@@ -1852,18 +1856,25 @@
                 if (global.BKProfile && BKProfile.applyRemote && data.profile) {
                     if (!push && firstPull) {
                         /*
-                         * Hồ sơ Supabase trống (tài khoản mới) mà máy đang có
-                         * dữ liệu: giữ local và đẩy lên một lần để khởi tạo.
-                         * Ngược lại, Supabase thắng và ghi đè bản local cũ.
+                         * Lần kéo đầu tiên:
+                         *  - Supabase trống mà máy có dữ liệu → đẩy local lên.
+                         *  - Local mới hơn server (vừa đổi avatar/bìa nhưng chưa
+                         *    kịp đẩy) → giữ local và đẩy lên, KHÔNG ghi đè.
+                         *  - Còn lại → Supabase thắng, kể cả khi timestamp cũ hơn.
                          */
                         var serverEmpty = !profileHasContent(data.profile);
                         var current = BKProfile.get ? BKProfile.get() : null;
-                        if (serverEmpty && profileHasContent(current)) {
+                        var localNewer = profileHasContent(current) &&
+                            Number(current.updatedAt || 0) > Number(data.profile.updatedAt || 0);
+                        if ((serverEmpty || localNewer) && profileHasContent(current)) {
                             S.profileDirty = true;
-                            scheduleStudentSync(400);
+                            scheduleStudentSync(350);
                         } else {
                             BKProfile.applyRemote(data.profile, { force: true });
                         }
+                    } else if (push) {
+                        /* Đẩy xong: lấy timestamp máy chủ để hai bên khớp nhau. */
+                        BKProfile.applyRemote(data.profile, { force: true });
                     } else {
                         BKProfile.applyRemote(data.profile);
                     }
@@ -2096,7 +2107,7 @@
                     BKProfile.on(function (d) {
                         if (d && d.kind === 'save') {
                             S.profileDirty = true;
-                            scheduleStudentSync(1200);
+                            scheduleStudentSync(250);
                         }
                     });
                 }
@@ -2176,6 +2187,7 @@
                 ready: S.ready, bound: S.bound, student: S.student,
                 lastSyncAt: S.lastSyncAt, syncError: S.syncError ? S.syncError.message : null,
                 announcements: S.announcements.length, changelog: S.changelog.length,
+                notificationsUnread: unreadCount(),
                 annLoading: S.annLoading, annError: S.annError,
                 clLoading: S.clLoading, clError: S.clError,
                 flags: S.flags, flagsLoaded: S.flagsLoaded, realtime: S.realtime,

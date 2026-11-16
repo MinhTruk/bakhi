@@ -68,30 +68,40 @@
         return Promise.resolve(true);
     }
 
+    function vn(ts) {
+        try { if (global.BK && global.BK.util && global.BK.util.vnParts) return global.BK.util.vnParts(ts); } catch (e) { }
+        var d = new Date(ts);
+        if (isNaN(d.getTime())) return null;
+        return {
+            year: String(d.getFullYear()), month: String(d.getMonth() + 1).padStart(2, '0'),
+            day: String(d.getDate()).padStart(2, '0'),
+            hour: String(d.getHours()).padStart(2, '0'), minute: String(d.getMinutes()).padStart(2, '0')
+        };
+    }
     function fmtTime(iso) {
-        var d = new Date(iso);
-        if (isNaN(d.getTime())) return '';
-        return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        var p = vn(iso);
+        return p ? p.hour + ':' + p.minute : '';
     }
     function fmtDay(iso) {
-        var d = new Date(iso);
-        if (isNaN(d.getTime())) return '';
-        var today = new Date();
-        var yst = new Date(today.getTime() - 86400000);
-        if (d.toDateString() === today.toDateString()) return 'Hôm nay';
-        if (d.toDateString() === yst.toDateString()) return 'Hôm qua';
-        return d.toLocaleDateString('vi-VN');
+        var p = vn(iso);
+        if (!p) return '';
+        var t = vn(Date.now());
+        var y = vn(Date.now() - 86400000);
+        if (p.year === t.year && p.month === t.month && p.day === t.day) return 'Hôm nay';
+        if (p.year === y.year && p.month === y.month && p.day === y.day) return 'Hôm qua';
+        return p.day + '/' + p.month + '/' + p.year;
     }
     function sameDay(a, b) {
-        var x = new Date(a), y = new Date(b);
-        return x.toDateString() === y.toDateString();
+        var x = vn(a), y = vn(b);
+        return !!(x && y && x.year === y.year && x.month === y.month && x.day === y.day);
     }
     function shortTime(iso) {
-        var d = new Date(iso);
-        if (isNaN(d.getTime())) return '';
-        var today = new Date();
-        if (d.toDateString() === today.toDateString()) return fmtTime(iso);
-        return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+        var p = vn(iso);
+        if (!p) return '';
+        var t = vn(Date.now());
+        if (p.year === t.year && p.month === t.month && p.day === t.day) return fmtTime(iso);
+        if (p.year === t.year) return p.day + '/' + p.month;
+        return p.day + '/' + p.month + '/' + p.year.slice(2);
     }
 
     /* ---------------------------------------------------------------------
@@ -177,11 +187,12 @@
         clear(root);
 
         var shell = el('div', 'bkchat-shell');
+        S.shell = shell;
         var side = el('aside', 'bkchat-side');
         side.setAttribute('aria-label', 'Danh sách cuộc trò chuyện');
 
         var sideHead = el('div', 'bkchat-side-head');
-        sideHead.appendChild(el('h1', 'bkchat-title', 'Chat'));
+        sideHead.appendChild(el('h1', 'bkchat-title', 'Đoạn chat'));
         var groupBtn = btn('bkchat-icon-btn', '', 'fa-users');
         groupBtn.id = 'bkChatNewGroup';
         groupBtn.setAttribute('aria-label', 'Tạo nhóm chat');
@@ -334,8 +345,10 @@
             var wanted = S.active && S.active.id;
             var room = wanted && findRoom(wanted);
             if (!room) room = S.rooms.filter(function (r) { return r.kind === 'global'; })[0] || S.rooms[0] || null;
-            if (room) openRoom(room.id, true);
-            else renderThread();
+            var mobile = !!(global.matchMedia && global.matchMedia('(max-width: 900px)').matches);
+            /* Điện thoại mở danh sách trước; chọn một người mới mở khung chat. */
+            if (room && !mobile) openRoom(room.id, true);
+            else { S.active = null; renderHead(); renderThread(); renderRooms(); }
         }).catch(function (err) {
             S.loading = false;
             S.error = err;
@@ -385,7 +398,7 @@
             var back = btn('bkchat-icon-btn bkchat-back', '', 'fa-arrow-left');
             back.addEventListener('click', function () {
                 S.active = null;
-                if (S.root) S.root.classList.remove('is-thread');
+                if (S.root) (S.shell || S.root).classList.remove('is-thread');
                 renderThread();
                 renderRooms();
             });
@@ -475,7 +488,10 @@
         var room = findRoom(id);
         if (!room) return;
         S.active = room;
-        if (S.root) S.root.classList.add('is-thread');
+        if (S.root) {
+            (S.shell || S.root).classList.add('is-thread');
+            (S.shell || S.root).classList.remove('is-side-collapsed');
+        }
         S.messages = [];
         S.reactions = {};
         S.replyTo = null;
@@ -532,16 +548,28 @@
         var head = D.getElementById('bkChatHead');
         if (!head) return;
         clear(head);
-        var back = btn('bkchat-icon-btn bkchat-back', '', 'fa-arrow-left');
+        var collapsed = !!(S.root && (S.shell || S.root).classList.contains('is-side-collapsed'));
+        var back = btn('bkchat-icon-btn bkchat-back', '', collapsed ? 'fa-comments' : 'fa-bars');
+        back.type = 'button';
+        back.setAttribute('aria-label', collapsed ? 'Mở danh sách trò chuyện' : 'Thu gọn danh sách trò chuyện');
+        back.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        back.title = collapsed ? 'Mở danh sách trò chuyện' : 'Danh sách trò chuyện';
         back.addEventListener('click', function () {
-            S.active = null;
-            if (S.root) S.root.classList.remove('is-thread');
-            renderThread();
-            renderRooms();
+            var mobile = !!(global.matchMedia && global.matchMedia('(max-width: 900px)').matches);
+            if (mobile) {
+                S.active = null;
+                if (S.root) (S.shell || S.root).classList.remove('is-thread');
+                renderHead();
+                renderThread();
+                renderRooms();
+            } else if (S.root) {
+                (S.shell || S.root).classList.toggle('is-side-collapsed');
+                renderHead();
+            }
         });
         head.appendChild(back);
         if (!S.active) {
-            head.appendChild(el('div', 'bkchat-head-title', 'Chọn một cuộc trò chuyện'));
+            head.appendChild(el('div', 'bkchat-head-title', 'Chọn một cuộc trò chuyện để bắt đầu'));
             return;
         }
         var room = S.active;
@@ -572,7 +600,7 @@
         if (!box) return;
         clear(box);
         if (!S.active) {
-            box.appendChild(el('div', 'bkchat-notice', 'Chọn một cuộc trò chuyện ở cột bên trái.'));
+            box.appendChild(el('div', 'bkchat-notice', 'Chọn một cuộc trò chuyện để bắt đầu.'));
             return;
         }
         if (!S.messages.length) {
@@ -1266,7 +1294,7 @@
                     S.active = null;
                     renderRooms();
                     renderThread();
-                    if (S.root) S.root.classList.remove('is-thread');
+                    if (S.root) (S.shell || S.root).classList.remove('is-thread');
                 });
             };
         }, [
@@ -1320,7 +1348,7 @@
                 try { S.channel.unsubscribe(); } catch (e) { }
             }
             S.channel = null;
-            if (S.root) { clear(S.root); S.root.classList.remove('bkchat'); }
+            if (S.root) { clear(S.root); (S.shell || S.root).classList.remove('bkchat'); }
         }
     };
 })(typeof window !== 'undefined' ? window : this);

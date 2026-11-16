@@ -368,13 +368,42 @@
         badgeFill.style.width = (pb.total ? Math.round((pb.done / pb.total) * 100) : 0) + '%';
         badgeBar.appendChild(badgeFill);
         badgeCard.appendChild(badgeBar);
+        var frameCount = 0;
+        try { if (BK.badges && BK.badges.ownedFrames) frameCount = BK.badges.ownedFrames().length; } catch (e) { }
         badgeCard.appendChild(el('p', 'bk-small bk-muted',
-            'Tổng ' + pb.total + ' huy hiệu trong danh mục hồ sơ · đã mở ' + pb.done + '.'));
+            'Tổng ' + pb.total + ' huy hiệu · đã mở ' + pb.done +
+            (frameCount ? ' · ' + frameCount + '/30 khung avatar' : '') + '.'));
         var badgeMore = ghostBtn('Xem hồ sơ & bộ sưu tập', function () {
             global.location.href = (BK.util && BK.util.basePath ? BK.util.basePath() : '') + 'profile/';
         }, 'fa-id-card');
         badgeCard.appendChild(badgeMore);
+        var nextBadges = pb.list.filter(function (b) { return !b.unlockedAt && !b.adminOnly; })
+            .sort(function (a, b) { return (b.pct || 0) - (a.pct || 0); }).slice(0, 3);
+        if (nextBadges.length) {
+            var nextLine = el('p', 'bk-small bk-muted');
+            nextLine.style.margin = '.5rem 0 0';
+            nextLine.textContent = 'Gần mở nhất: ' + nextBadges.map(function (b) {
+                return b.name + ' (' + b.current + '/' + b.goal + ')';
+            }).join(' · ');
+            badgeCard.appendChild(nextLine);
+        }
         root.appendChild(badgeCard);
+
+        try {
+            if (global.BKCloud && BKCloud.state) {
+                var cs = BKCloud.state();
+                var notifyCard = el('div', 'bk-item');
+                notifyCard.appendChild(el('p', 'bk-item-title', 'Thông báo từ quản trị viên'));
+                notifyCard.appendChild(el('p', 'bk-small bk-muted',
+                    (cs.notificationsUnread || 0) + ' thông báo chưa đọc · ' +
+                    (cs.announcements || 0) + ' thông báo đang hiển thị.'));
+                var notifyBtn = ghostBtn('Mở trung tâm thông báo', function () {
+                    if (BKCloud.openNotifications) BKCloud.openNotifications();
+                }, 'fa-bell');
+                notifyCard.appendChild(notifyBtn);
+                root.appendChild(notifyCard);
+            }
+        } catch (e) { }
 
         /* Mốc học tập (12 mốc nội bộ của Trung tâm học tập) */
         var achs = BK.achievements.progress();
@@ -1020,6 +1049,20 @@
         b.title = n + ' trên ' + p.length + ' mốc đã đạt';
     }
 
+    function openBadgeDetail(row) {
+        if (!row || !BK.ui || !BK.ui.modal) return;
+        var body = el('div');
+        body.appendChild(el('p', null, row.desc));
+        body.appendChild(el('p', 'bk-small bk-muted', 'Cách lấy: ' +
+            (BK.badges && BK.badges.howTo ? BK.badges.howTo(row) : row.desc)));
+        if (!row.adminOnly) {
+            body.appendChild(el('p', 'bk-small', 'Tiến độ: ' + row.current + '/' + row.goal +
+                (row.unlockedAt ? ' · đã mở khóa' : '')));
+        }
+        if (row.frame) body.appendChild(el('p', 'bk-small bk-muted', 'Phần thưởng: khung avatar “' + row.frame + '”.'));
+        BK.ui.modal({ title: row.name, body: body, actions: [{ label: 'Đóng', variant: 'ghost', onClick: function (c) { c(); } }] });
+    }
+
     function renderAchievements(root) {
         var list = BK.achievements.progress();
         var count = list.filter(function (a) { return a.unlockedAt; }).length;
@@ -1051,6 +1094,32 @@
             pbCard.appendChild(pbPills);
         }
         root.appendChild(pbCard);
+
+        /* Huy hiệu gần mở + cách lấy, đồng bộ với hồ sơ và máy chủ. */
+        var next = pb.list.filter(function (b) { return !b.unlockedAt && !b.adminOnly; })
+            .sort(function (a, b) { return (b.pct || 0) - (a.pct || 0); }).slice(0, 6);
+        if (next.length) {
+            root.appendChild(el('h3', null, 'Huy hiệu gần mở'));
+            var nextList = el('div', 'bk-list');
+            next.forEach(function (row) {
+                var item = el('button', 'bk-item bk-item-button');
+                item.type = 'button';
+                item.setAttribute('aria-label', row.name + ' — xem cách lấy');
+                var head = el('div', 'bk-item-head');
+                head.appendChild(el('span', 'bk-item-title', row.name));
+                head.appendChild(badge(row.current + '/' + row.goal));
+                item.appendChild(head);
+                var bar = el('div', 'bk-progress');
+                var fill = el('span');
+                fill.style.width = Math.max(0, Math.min(100, row.pct || 0)) + '%';
+                bar.appendChild(fill);
+                item.appendChild(bar);
+                item.appendChild(el('div', 'bk-item-meta', row.desc));
+                item.addEventListener('click', function () { openBadgeDetail(row); });
+                nextList.appendChild(item);
+            });
+            root.appendChild(nextList);
+        }
 
         root.appendChild(el('h3', null, 'Mốc học tập'));
         root.appendChild(el('p', 'bk-sub', 'Mỗi mốc gắn với một việc bạn tự làm: mở bài, luyện câu hỏi, ghi chú, ôn tập, dùng Studio, nghe nhạc. Không có chuỗi ngày, không điểm danh, không áp lực thời gian.'));

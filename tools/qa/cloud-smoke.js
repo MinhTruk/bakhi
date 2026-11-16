@@ -360,7 +360,7 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     ok('bấm chuông mở lại panel sau khi bị đóng', w.document.getElementById('bkcPanel').hidden === false);
     const listText = w.document.querySelector('.bkc-panel-list').textContent;
     ok('thông báo khẩn có dấu ưu tiên', /Khẩn/.test(listText));
-    ok('có nhóm thông báo từ giáo viên', /Thông báo từ giáo viên/.test(listText));
+    ok('có nhóm thông báo từ quản trị viên', /Thông báo từ quản trị viên/.test(listText));
     ok('có nhóm cập nhật phiên bản', /Cập nhật phiên bản/.test(listText));
 
     /* Thứ tự phiên bản: 3.0.0 → 3.1.0 → 3.1.1 */
