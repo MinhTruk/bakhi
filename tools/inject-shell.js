@@ -15,7 +15,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const TAG = '6.0.0';
+const TAG = '6.0.1';
 const MARKER = 'assets/bakhi/shell';
 /* Trang quản trị có hệ giao diện riêng (bkAdminTheme) — không chèn shell. */
 const SKIP = new Set(['admin/index.html', 'images/anh/1.html']);

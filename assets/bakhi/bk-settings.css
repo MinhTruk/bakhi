@@ -45,7 +45,7 @@
     border: 1px solid var(--bkl-line);
     border-radius: var(--bkl-radius);
     background: var(--bkl-surface);
-    padding: 1rem 1.1rem 1.2rem;
+    padding: 1.15rem 1.2rem 1.3rem;
     animation: bkPanelIn .22s ease both;
 }
 @keyframes bkPanelIn { from { opacity: 0; transform: translateY(4px); } }
@@ -57,10 +57,10 @@
     color: var(--bkl-text);
 }
 .bk-set-panel > p.bk-set-lead {
-    margin: 0 0 .9rem;
+    margin: 0 0 1rem;
     font-size: .78rem;
     color: var(--bkl-muted);
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .bk-set-row {
@@ -175,19 +175,24 @@ html.dark .bk-wall-preview > span { background: rgba(15, 23, 42, .65); color: #e
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: .45rem;
+    gap: .6rem;
     min-width: 0;
     max-width: 100%;
-    gap: .5rem;
-    flex-wrap: wrap;
-    align-items: center;
-    margin-top: .5rem;
+    margin-top: .65rem;
 }
 .bk-auth-box input { flex: 1 1 12rem; min-width: 0; max-width: 100%; }
-.bk-auth-box .bk-btn { flex: 1 1 12rem; max-width: 100%; white-space: normal; justify-content: center; text-align: center; }
+.bk-auth-box .bk-btn {
+    flex: 1 1 12rem;
+    max-width: 100%;
+    min-height: 2.4rem;
+    padding: .55rem .95rem;
+    white-space: normal;
+    justify-content: center;
+    text-align: center;
+}
 .bk-auth-msg { overflow-wrap: anywhere; }
 .bk-set-panel h2 + .bk-auth-msg,
-.bk-set-panel .bk-auth-box + .bk-auth-msg { margin-top: .6rem; }
+.bk-set-panel .bk-auth-box + .bk-auth-msg { margin-top: .55rem; }
 @media (max-width: 520px) {
     .bk-auth-box { flex-direction: column; align-items: stretch; }
     .bk-auth-box input,
@@ -201,14 +206,16 @@ html.dark .bk-auth-msg.ok { color: #34d399; }
 
 .bk-btn-ghost { background: var(--bkl-surface-2); color: var(--bkl-text); border: 1px solid var(--bkl-line); }
 .bk-btn-ghost:hover { border-color: var(--bkl-primary); color: var(--bkl-primary); }
-.bk-row { display: inline-flex; gap: .45rem; flex-wrap: wrap; align-items: center; }
+.bk-row { display: inline-flex; gap: .55rem; flex-wrap: wrap; align-items: center; }
 
 /* Nút dùng chung (bk-core có .bk-btn nhưng trang chưa có core thì vẫn cần) */
 .bk-set-panel .bk-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: .4rem;
-    padding: .48rem .8rem;
+    min-height: 2.3rem;
+    padding: .5rem .85rem;
     border-radius: var(--bkl-radius-sm);
     border: 1px solid transparent;
     background: var(--bkl-primary);

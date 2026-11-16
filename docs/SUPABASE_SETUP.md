@@ -7,17 +7,18 @@ Hệ thống Supabase của Bá Khí gồm 4 phần:
 | Cấu hình công khai | `assets/bakhi/bk-supabase.config.js` | **Nơi duy nhất** chứa Project URL + Publishable key |
 | Lớp client | `assets/bakhi/bk-cloud.js` | Một Supabase client duy nhất: Anonymous Auth, nhận diện học sinh, thông báo, changelog, đồng bộ |
 | Administrator Dashboard | `assets/bakhi/bk-devboard.js` + `admin/index.html` | 14 mô-đun quản trị, xác thực Administrator Code qua Edge Function |
-| Backend | `supabase/migrations/`, `supabase/functions/` | Schema + RLS + 10 Edge Function (7 đang chạy, 3 mới chờ deploy) |
+| Backend | `supabase/migrations/`, `supabase/functions/` | Schema + RLS + 10 Edge Function đã deploy |
 | Đồng bộ changelog | `.github/workflows/changelog-sync.yml` + `supabase/functions/changelog-sync` | GitHub Actions xuất bản `CHANGELOG.md` lên Supabase |
 
 > ⚠️ **Không bao giờ** đặt `service_role` key, secret key, database password, Administrator Code
 > hay bất kỳ secret xác thực nào vào repository, HTML, JavaScript hoặc chat.
 > Tất cả secret nằm trong **Supabase → Edge Functions → Secrets**.
 
-## Founder Dashboard (6.0.0)
+## Founder Dashboard (6.0.1)
 
-1. Chạy migration `supabase/migrations/20261122000000_bakhi_founder_6.sql`.
-2. Deploy lại Edge Functions `admin-auth` và `admin-actions`.
+1. Chạy lần lượt `supabase/migrations/20261122000000_bakhi_founder_6.sql` và
+   `supabase/migrations/20261123000000_bakhi_founder_full_badges.sql`.
+2. Deploy lại Edge Functions `admin-auth` và `admin-actions` (hoặc toàn bộ 10 hàm).
 3. Migration đã seed sẵn một Founder Code (chỉ lưu SHA-256 trong `founder_config`).
    Đổi mã bằng cách cập nhật `code_hash` bằng SHA-256 của mã mới; không ghi mã gốc vào repo.
 4. Đăng nhập tại **Cài đặt → Founder**; không cần thêm secret môi trường.

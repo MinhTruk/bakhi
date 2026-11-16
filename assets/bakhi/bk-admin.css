@@ -98,7 +98,10 @@ body.bkadm::after {
     position: relative;
     z-index: 1;
     width: min(28rem, 100%);
-    padding: 1.85rem 1.7rem 1.5rem;
+    max-height: calc(100dvh - 1.5rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 1.9rem 1.7rem 1.45rem;
     border-radius: 24px;
     background: var(--adm-card);
     border: 1px solid var(--adm-line);
@@ -230,6 +233,13 @@ body.bkadm::after {
 }
 
 .bkadm-sub strong { color: var(--adm-text); font-weight: 700; }
+
+.bkadm-card form { display: flex; flex-direction: column; }
+.bkadm-card .bkadm-field { margin-bottom: .9rem; }
+.bkadm-card form > .bkadm-btn { margin-top: .1rem; }
+.bkadm-card .bkadm-msg { margin: .8rem 0 0; min-height: 1.2rem; }
+.bkadm-card .bkadm-msg:empty { min-height: .55rem; }
+.bkadm-card > .bkadm-btn + .bkadm-btn { margin-top: .6rem; }
 
 .bkadm-field { display: flex; flex-direction: column; gap: .42rem; margin-bottom: .75rem; }
 
@@ -435,7 +445,10 @@ html:not(.dark) body.bkadm .bkadm-foot a { color: #4f46e5; }
 
 @media (max-width: 420px) {
     body.bkadm { padding: .9rem; }
-    .bkadm-card { padding: 1.45rem 1.2rem 1.2rem; border-radius: 20px; }
+    .bkadm-card { padding: 1.45rem 1.2rem 1.15rem; border-radius: 20px; max-height: calc(100dvh - 1rem); }
+    .bkadm-card .bkadm-sub { margin-bottom: 1rem; }
+    .bkadm-card .bkadm-field { margin-bottom: .75rem; }
+    .bkadm-card .bkadm-msg { margin-top: .65rem; }
     .bkadm-title { font-size: 1.16rem; }
     .bkadm-foot { justify-content: center; text-align: center; }
 }

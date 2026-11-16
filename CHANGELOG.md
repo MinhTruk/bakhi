@@ -2,6 +2,26 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [6.0.1] — 2026-11-16
+
+### Sửa lỗi
+
+- **Hồ sơ và avatar lấy Supabase làm nguồn chuẩn**: trang Hồ sơ và Cài đặt chạy đầy đủ
+  chế độ đồng bộ thay vì chỉ thông báo. Lần đầu gắn học sinh luôn kéo hồ sơ/avatar từ
+  `student_profiles`; bản localStorage cũ không còn đè lên máy chủ. Thay đổi mới được đẩy
+  lên ngay, chỉ giữ local làm bộ đệm khi mất mạng.
+- **Founder nhận đúng toàn bộ thành tích**: máy chủ tự tìm hồ sơ Founder theo cờ
+  `is_founder` hoặc họ tên `Hứa Viết Minh Trúc` / `Minh Trúc` (chỉ khi khớp duy nhất),
+  tự đánh dấu rồi cấp đủ 78 badge + 30 khung. Migration 6.0.1 cấp lại idempotent cho các
+  project đã chạy migration 6.0.0.
+- **Trao badge Founder và badge độc quyền**: `founder.grantAll` không còn lỗi khi cờ
+  Founder chưa được đặt; badge Founder chỉ trao được cho đúng hồ sơ Founder đã xác minh,
+  còn Administrator vẫn bị chặn.
+- **Bố cục đăng nhập**: thẻ đăng nhập Administrator/Founder có khoảng cách field–nút–thông
+  báo thống nhất, cuộn được trên màn hình thấp và không còn nút dính sát chữ.
+- **Khoảng cách Cài đặt**: khung nhập mã/nút trong tab Quyền, khoảng cách tiêu đề, mô tả
+  và các nút được nới hợp lý; nút đủ chiều cao chạm trên điện thoại.
+
 ## [6.0.0] — 2026-11-16
 
 ### Tính năng

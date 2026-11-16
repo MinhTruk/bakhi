@@ -123,6 +123,39 @@ function normalizeName(input: unknown): string {
         .trim();
 }
 
+/**
+ * Tìm hồ sơ Founder theo cờ is_founder, nếu chưa có thì đối chiếu họ tên
+ * chuẩn hoá (Hứa Viết Minh Trúc / Minh Trúc) và chỉ tự đánh dấu khi khớp
+ * duy nhất một hồ sơ. Dùng chung cho trao badge Founder và cấp trọn bộ.
+ */
+async function findFounderStudent(client: SupabaseClient) {
+    const { data: flagged, error } = await client
+        .from('students')
+        .select('id, display_name, is_founder')
+        .eq('is_founder', true)
+        .limit(1)
+        .maybeSingle();
+    if (error) throw error;
+    if (flagged) return flagged;
+
+    const { data: candidates, error: cErr } = await client
+        .from('students')
+        .select('id, display_name, is_founder')
+        .ilike('display_name', '%Minh Trúc%')
+        .limit(30);
+    if (cErr) throw cErr;
+    const list = candidates ?? [];
+    const exact = list.filter((row) => {
+        const n = normalizeName(row.display_name);
+        return n === 'hua viet minh truc' || n === 'minh truc';
+    });
+    const picked = exact.length === 1 ? exact[0] : (list.length === 1 ? list[0] : null);
+    if (!picked) return null;
+
+    await client.from('students').update({ is_founder: true }).eq('id', picked.id);
+    return picked;
+}
+
 function cleanDisplayName(input: unknown): string {
     return String(input ?? '').replace(/\s+/g, ' ').trim();
 }
@@ -551,8 +584,11 @@ Deno.serve(async (req) => {
                     .from('students').select('id, is_founder').eq('id', id).maybeSingle();
                 if (!student) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
                 if (badgeId === FOUNDER_BADGE_ID && student.is_founder !== true) {
-                    return fail(403, 'FOUNDER_ONLY',
-                        'Badge Người sáng lập chỉ dành cho hồ sơ chính thức đã được xác minh.');
+                    const founder = await findFounderStudent(client);
+                    if (!founder || founder.id !== id) {
+                        return fail(403, 'FOUNDER_ONLY',
+                            'Badge Người sáng lập chỉ dành cho hồ sơ Hứa Viết Minh Trúc đã xác minh.');
+                    }
                 }
                 const exclusive = badgeId === FOUNDER_BADGE_ID || DEV_BADGE_IDS.includes(badgeId);
                 if (exclusive && scope !== 'founder') {
@@ -1265,12 +1301,10 @@ Deno.serve(async (req) => {
                 if (scope !== 'founder') {
                     return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder mới được cấp toàn bộ thành tích.');
                 }
-                const { data: founder, error: fErr } = await client
-                    .from('students').select('id, display_name').eq('is_founder', true).limit(1).maybeSingle();
-                if (fErr) throw fErr;
+                const founder = await findFounderStudent(client);
                 if (!founder) {
                     return fail(404, 'NO_FOUNDER_PROFILE',
-                        'Chưa có hồ sơ nào được đánh dấu is_founder = true.');
+                        'Không tìm thấy hồ sơ Hứa Viết Minh Trúc. Hãy kiểm tra họ tên trong bảng students.');
                 }
                 const nowIso = new Date().toISOString();
                 const rows = ALL_BADGE_IDS.map((badgeId) => ({

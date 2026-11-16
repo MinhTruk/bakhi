@@ -60,7 +60,7 @@
         syncTimer: null, retrying: null, syncing: false, applyingRemote: false,
         lastSyncAt: 0, syncError: null, listeners: [], channel: null,
         studentTimer: null, studentBusy: false, lastStudentAt: 0, studentError: null,
-        profileServerAt: 0, studentDisabled: false,
+        profileServerAt: 0, profilePulled: false, profileDirty: false, studentDisabled: false,
         gate: null, bell: null, badge: null, changeBtn: null, panel: null, panelOpen: false,
         article: null, pollTimer: null, searchSeq: 0, publicLoaded: false, lastAnnFetch: 0,
         binding: false, fitTimer: null
@@ -742,6 +742,10 @@
             return v && (!Array.isArray(v) || v.length) && (typeof v !== 'object' || Object.keys(v).length);
         });
         if (hasRemote) backupLocal();
+        /* Mỗi lần gắn/đổi học sinh đều kéo hồ sơ Supabase trước. */
+        S.profilePulled = false;
+        S.profileDirty = false;
+        S.profileServerAt = 0;
         setIdentity(student);
         mountIdentityUi();
         loadAnnouncements(true);
@@ -1812,13 +1816,28 @@
         S.studentTimer = setTimeout(function () { syncStudent(); }, delay || 1800);
     }
 
+    function profileHasContent(p) {
+        if (!p) return false;
+        return !!(p.nickname || p.bio || p.avatar || p.banner ||
+            (p.links && p.links.length) || (p.frame && p.frame !== 'none'));
+    }
+
     function syncStudent() {
         if (!S.bound || S.studentBusy || S.studentDisabled) return Promise.resolve(null);
         var fn = CFG.functions && CFG.functions.studentProfile;
         if (!fn) return Promise.resolve(null);
         var local = null;
         try { local = (global.BKProfile && BKProfile.get) ? BKProfile.get() : null; } catch (e) { local = null; }
-        var push = !!(local && local.updatedAt && local.updatedAt > (S.profileServerAt || 0));
+
+        /*
+         * Lần đầu sau khi gắn học sinh luôn KÉO từ Supabase (sync), không đẩy
+         * bản localStorage cũ lên. Nhờ vậy đổi máy/đổi trình duyệt vẫn thấy
+         * đúng avatar và hồ sơ. Những lần sau chỉ update khi có thay đổi local
+         * chưa được đẩy (profileDirty) hoặc bản local mới hơn server.
+         */
+        var firstPull = !S.profilePulled;
+        var push = !!(S.profileDirty ||
+            (!firstPull && local && local.updatedAt && local.updatedAt > (S.profileServerAt || 0)));
         var body = { action: push ? 'update' : 'sync' };
         if (push) body.profile = local;
         S.studentBusy = true;
@@ -1830,12 +1849,32 @@
             if (data.profile && data.profile.updatedAt) S.profileServerAt = Number(data.profile.updatedAt) || 0;
             S.applyingRemote = true;
             try {
-                if (global.BKProfile && BKProfile.applyRemote && data.profile) BKProfile.applyRemote(data.profile);
+                if (global.BKProfile && BKProfile.applyRemote && data.profile) {
+                    if (!push && firstPull) {
+                        /*
+                         * Hồ sơ Supabase trống (tài khoản mới) mà máy đang có
+                         * dữ liệu: giữ local và đẩy lên một lần để khởi tạo.
+                         * Ngược lại, Supabase thắng và ghi đè bản local cũ.
+                         */
+                        var serverEmpty = !profileHasContent(data.profile);
+                        var current = BKProfile.get ? BKProfile.get() : null;
+                        if (serverEmpty && profileHasContent(current)) {
+                            S.profileDirty = true;
+                            scheduleStudentSync(400);
+                        } else {
+                            BKProfile.applyRemote(data.profile, { force: true });
+                        }
+                    } else {
+                        BKProfile.applyRemote(data.profile);
+                    }
+                }
                 if (global.BK && BK.badges && BK.badges.applyServer) {
                     BK.badges.applyServer(data.badges || [], { authoritative: true });
                 }
             } catch (e) { /* hồ sơ/badge hỏng không được chặn đồng bộ tiến trình */ }
             S.applyingRemote = false;
+            if (firstPull && !push) S.profilePulled = true;
+            if (push) S.profileDirty = false;
             if (data.frameRejected) {
                 toast('Khung avatar chưa mở nên chưa đồng bộ được. Hãy chọn khung khác.', 'error');
             }
@@ -2054,7 +2093,12 @@
             /* Hồ sơ và thành tích: đẩy khi có thay đổi, kéo khi mở trang. */
             try {
                 if (global.BKProfile && BKProfile.on) {
-                    BKProfile.on(function (d) { if (d && d.kind === 'save') scheduleStudentSync(1500); });
+                    BKProfile.on(function (d) {
+                        if (d && d.kind === 'save') {
+                            S.profileDirty = true;
+                            scheduleStudentSync(1200);
+                        }
+                    });
                 }
                 if (global.BK && BK.badges && BK.badges.on) {
                     BK.badges.on(function (d) { if (d && d.kind === 'unlock') scheduleStudentSync(1200); });
@@ -2139,7 +2183,9 @@
                 devActive: !!devSessionLocal(),
                 studentSyncAt: S.lastStudentAt,
                 studentError: S.studentError ? S.studentError.message : null,
-                profileServerAt: S.profileServerAt
+                profileServerAt: S.profileServerAt,
+                profilePulled: S.profilePulled,
+                profileDirty: S.profileDirty
             };
         },
         identity: function () { return S.student; },
