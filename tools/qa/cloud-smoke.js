@@ -163,6 +163,36 @@ function fakeFetch(url, opts) {
             payload = { ok: true, students: [{ id: 's1', display_name: 'Nguyễn Minh Anh', student_code: 'BK-1A2B', disambiguator: null, is_active: true, needs_review: false, created_at: '2026-11-01T00:00:00Z', last_sync_at: null }] };
         } else if (body.action === 'logs.list') {
             payload = { ok: true, logs: [{ id: 'l1', action: 'admin.login', target_type: 'session', detail: {}, created_at: '2026-11-15T02:00:00Z' }] };
+        } else if (body.action === 'permissions.get') {
+            payload = {
+                ok: true,
+                mode: 'single-admin-code',
+                role: { id: 'administrator', label: 'Administrator', description: 'Một Administrator Code dùng chung.' },
+                session: {
+                    id: 'sess-1', created_at: '2026-11-16T02:00:00Z',
+                    expires_at: '2026-11-16T03:00:00Z', last_used_at: '2026-11-16T02:05:00Z'
+                },
+                capabilities: {
+                    overview: true, students: true, studentsWrite: true, notifications: true,
+                    changelog: true, logs: true, monitoring: true, settings: true,
+                    dataExport: true, roles: false
+                },
+                limitations: ['Chưa có mô hình nhiều quản trị viên hoặc phân quyền theo vai trò.'],
+                functions: [{
+                    schema_name: 'public', name: 'bakhi_current_student_id', security_definer: true,
+                    anon_execute: false, authenticated_execute: true, service_execute: true
+                }],
+                tables: [{
+                    schema_name: 'public', name: 'announcement_reads', rls_enabled: true, policy_count: 2,
+                    anon_select: false, authenticated_select: true, anon_insert: false, authenticated_insert: true
+                }],
+                policies: [{
+                    schema_name: 'public', table_name: 'announcement_reads', name: 'announcement_reads_select_own',
+                    command: 'SELECT', permissive: 'PERMISSIVE', roles: ['authenticated']
+                }],
+                report_generated_at: '2026-11-16T02:16:41Z',
+                report_error: null
+            };
         }
     }
     return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(payload) });
@@ -430,6 +460,15 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     w.BKDashboard.tab('settings');
     const status = await until(() => /service_role/.test(w.document.querySelector('.bkc-pane').textContent));
     ok('tab Settings hiển thị trạng thái secret', !!status && /ADMIN_DEV_CODE: đã đặt/.test(w.document.querySelector('.bkc-pane').textContent));
+
+    w.BKDashboard.tab('permissions');
+    const permText = await until(() => {
+        const pane = w.document.querySelector('.bkc-pane');
+        return pane && /Hàm trong schema public/.test(pane.textContent) ? pane.textContent : null;
+    }, 4000);
+    ok('tab Permissions hiển thị báo cáo hàm/bảng/policy',
+        !!permText && /Bảng & RLS/.test(permText) && /Policy đang áp dụng/.test(permText));
+    ok('tab Permissions nêu giới hạn vai trò', /nhiều quản trị viên/.test(permText || ''));
 
     console.log('\n[7] Bảo mật phía client');
     ok('không có Dev Code trong storage', !JSON.stringify(Object.assign({}, w.localStorage)).includes('test-dev-code'));
