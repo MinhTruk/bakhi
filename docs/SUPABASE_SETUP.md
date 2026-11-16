@@ -7,7 +7,7 @@ Hệ thống Supabase của Bá Khí gồm 4 phần:
 | Cấu hình công khai | `assets/bakhi/bk-supabase.config.js` | **Nơi duy nhất** chứa Project URL + Publishable key |
 | Lớp client | `assets/bakhi/bk-cloud.js` | Một Supabase client duy nhất: Anonymous Auth, nhận diện học sinh, thông báo, changelog, đồng bộ |
 | Administrator Dashboard | `assets/bakhi/bk-devboard.js` + `admin/index.html` | 9 mô-đun quản trị, xác thực Administrator Code qua Edge Function |
-| Backend | `supabase/migrations/`, `supabase/functions/` | Schema + RLS + 7 Edge Functions |
+| Backend | `supabase/migrations/`, `supabase/functions/` | Schema + RLS + 10 Edge Function (7 đang chạy, 3 mới chờ deploy) |
 | Đồng bộ changelog | `.github/workflows/changelog-sync.yml` + `supabase/functions/changelog-sync` | GitHub Actions xuất bản `CHANGELOG.md` lên Supabase |
 
 > ⚠️ **Không bao giờ** đặt `service_role` key, secret key, database password, Administrator Code
@@ -31,6 +31,15 @@ Project `wzvslyabhizsiggurwdq` **đã được cài đặt và kiểm chứng**:
 | Roster `students.txt` | ✅ 40 học sinh, 0 hồ sơ trùng tên |
 | Thông báo toàn website (3.2.0) | ✅ chuông ở trang chủ, trang bài học và Studio |
 | Đồng bộ changelog (3.3.0) | ✅ 14 phiên bản, 8 tạo mới, 1 thông báo cho 3.2.1; chạy lại 0/0 |
+| Migration `20261118000000_bakhi_dev_sessions.sql` (3.5.0) | ⏳ chờ chạy — bảng `dev_sessions` tách khỏi phiên Administrator |
+| Migration `20261119000000_bakhi_profile_badges.sql` (3.6.0) | ⏳ chờ chạy — `student_profiles`, `student_badges`, khung avatar |
+| Migration `20261120000000_bakhi_chat.sql` (3.7.0) | ⏳ chờ chạy — bốn bảng chat, view `chat_profiles`, bucket `chat-images` |
+| Edge Functions `dev-auth`, `student-profile`, `chat-api` | ⏳ chờ deploy — mã đã xong, kiểm thử cục bộ |
+
+> Ba migration và ba Edge Function mới (3.5.0–3.7.0) **chưa được chạy** trên project thật.
+> Website vẫn hoạt động local-first: `bk-cloud.js` tự tắt đồng bộ hồ sơ sau lỗi 404, còn
+> `/chat/` hiện thông báo máy chủ chưa sẵn sàng. Phần dưới là quy trình triển khai khi bạn
+> sẵn sàng bật các tính năng này.
 
 Kiểm chứng end-to-end đã chạy trực tiếp trên project (không phải mock):
 
@@ -111,6 +120,14 @@ supabase/migrations/20261117001000_app_settings_realtime.sql
 supabase/migrations/20261117002000_bakhi_permissions_report.sql
 ```
 
+Và ba migration cho Dev Code, hồ sơ/thành tích, Chat (3.5.0–3.7.0):
+
+```
+supabase/migrations/20261118000000_bakhi_dev_sessions.sql
+supabase/migrations/20261119000000_bakhi_profile_badges.sql
+supabase/migrations/20261120000000_bakhi_chat.sql
+```
+
 Hoặc dùng CLI:
 
 ```bash
@@ -128,6 +145,9 @@ supabase functions deploy search-students
 supabase functions deploy bind-student-session
 supabase functions deploy sync-student-progress
 supabase functions deploy changelog-sync
+supabase functions deploy dev-auth
+supabase functions deploy student-profile
+supabase functions deploy chat-api
 ```
 
 Bắt buộc dùng `--no-verify-jwt` cho các function tự xác thực phiên riêng:
@@ -140,6 +160,9 @@ supabase functions deploy search-students --no-verify-jwt
 supabase functions deploy bind-student-session --no-verify-jwt
 supabase functions deploy sync-student-progress --no-verify-jwt
 supabase functions deploy changelog-sync --no-verify-jwt
+supabase functions deploy dev-auth --no-verify-jwt
+supabase functions deploy student-profile --no-verify-jwt
+supabase functions deploy chat-api --no-verify-jwt
 ```
 
 Lý do: học sinh dùng Anonymous Auth, Administrator Dashboard dùng phiên quản trị riêng, và
@@ -169,6 +192,9 @@ workflow dùng `CHANGELOG_SYNC_TOKEN`; cả ba đều tự kiểm tra quyền b�
 | `admin-actions` | Dashboard | `x-admin-token` (hash trong `admin_sessions`) | Theo phiên quản trị |
 | `import-students` | Dashboard / script | `x-admin-token` hoặc `STUDENT_ROSTER_SECRET` | Theo phiên |
 | `changelog-sync` | GitHub Actions | `x-changelog-token` so sánh hằng thời gian với `CHANGELOG_SYNC_TOKEN` | Theo lần chạy workflow |
+| `dev-auth` | Giáo viên / Dev | `DEV_PLAYGROUND_CODE` so sánh hằng thời gian | 10 lượt/10 phút/IP |
+| `student-profile` | Học sinh (ẩn danh) | Phiên + `student_id` do server suy ra | 90 lượt/giờ/học sinh |
+| `chat-api` | Học sinh (ẩn danh) | Phiên + `student_id` do server suy ra | 300 lượt/giờ; 20 tin/phút; 120 cảm xúc/phút |
 
 Riêng `admin-actions` xác thực lại ở **mỗi** thao tác, không tin trạng thái đã đăng nhập ở
 client. Token quản trị chỉ nằm trong `sessionStorage`, mất khi đóng tab.
@@ -187,6 +213,8 @@ hoặc Dashboard → **Edge Functions → Secrets → Add new secret**.
 |---|---|---|
 | `ADMIN_DEV_CODE` | ✅ | Administrator Code dùng để mở Administrator Dashboard. Không lưu ở client. |
 | `ADMIN_SESSION_HOURS` | – | Thời hạn phiên quản trị (mặc định 8, tối đa 24). |
+| `DEV_PLAYGROUND_CODE` | – | Dev Code để mở Developer Playground (Cài đặt → Nhà phát triển). Tách hoàn toàn khỏi Administrator Code. |
+| `DEV_SESSION_HOURS` | – | Thời hạn phiên Dev (mặc định 4, tối đa 12). |
 
 Dev code được gửi tới `admin-auth`, so sánh theo thời gian hằng, giới hạn 8 lần / 10 phút
 mỗi IP. Khi hợp lệ, function sinh token ngẫu nhiên 256-bit, chỉ lưu **hash SHA-256**
@@ -267,9 +295,15 @@ await supabase.from('students').select('*');
 
 ## Bước 10. Storage bucket
 
-Hệ thống **không cần** bucket công khai: nội dung TXT được gửi tới
+Hệ thống **không cần** bucket công khai cho danh sách học sinh: nội dung TXT được gửi tới
 `import-students` trong body request và chỉ lưu vào bảng `students`. Nhờ vậy danh sách
 thật không bao giờ nằm trong repository hay GitHub Pages.
+
+Chat dùng **một** bucket công khai theo URL tên `chat-images`, được migration
+`20261120000000_bakhi_chat.sql` tạo sẵn với giới hạn 3 MB và chỉ nhận
+`image/png`, `image/jpeg`, `image/webp`, `image/gif`. Policy cho phép mọi người đọc ảnh và
+mỗi học sinh chỉ ghi/xoá trong thư mục uuid của chính mình; mọi thao tác ghi tin nhắn vẫn
+đi qua `chat-api`.
 
 Nếu bạn muốn lưu bản gốc TXT để đối chiếu, tạo bucket **private** tên `rosters`:
 
@@ -460,3 +494,6 @@ delete from public.changelog where version like '0.0.%';
 | Dashboard báo 401 khi push | Token hết hạn hoặc `admin_sessions` bị xoá |
 | Import báo 0 học sinh | Tệp sai UTF-8, hoặc mọi dòng bắt đầu bằng `#` |
 | Trang trắng sau khi deploy | Đường dẫn tuyệt đối thay vì tương đối; kiểm tra Console/Network |
+| `/chat/` báo “máy chủ Chat chưa được triển khai” | Chưa chạy migration `20261120000000` hoặc chưa deploy `chat-api` |
+| Gửi ảnh trong Chat báo lỗi | Bucket `chat-images` chưa có, hoặc ảnh sai định dạng/quá 3 MB |
+| Đồng bộ hồ sơ không chạy | Chưa deploy `student-profile`; `bk-cloud.js` tự tắt sau lỗi 404 (đúng thiết kế) |

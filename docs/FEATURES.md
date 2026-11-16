@@ -1,4 +1,4 @@
-# Tính năng Bá Khí 3.6
+# Tính năng Bá Khí 3.7
 
 Tài liệu liệt kê toàn bộ tính năng đang có, trạng thái và ghi chú triển khai. Ký hiệu:
 ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị chặn
@@ -206,7 +206,33 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 14 | Import `students.txt`, phát hiện trùng tên | ✅ | Xem SUPABASE_SETUP |
 | 15 | Push thông báo/changelog ngay, ẩn/đăng lại/xoá | ✅ | Realtime tới máy học sinh |
 
-## K. Không có trong sản phẩm (theo yêu cầu)
+## K. Chat — phòng chung, tin nhắn riêng, nhóm nhỏ (3.7.0)
+
+Trang `/chat/`, mở từ menu tài khoản (cạnh Hồ sơ cá nhân). Mọi thao tác ghi đi qua Edge
+Function `chat-api`; trình duyệt chỉ đọc dữ liệu phòng mình tham gia nhờ RLS.
+
+| # | Tính năng | Trạng thái | Ghi chú |
+|---|---|---|---|
+| 1 | Phòng chung cho mọi học sinh đã gắn danh tính | ⚠️ đã có mã | `chat_rooms` kind `global`, một phòng duy nhất; cần deploy |
+| 2 | Tin nhắn riêng từng cặp (DM) | ⚠️ đã có mã | `dm_key` sắp xếp cặp uuid, unique; đúng 2 thành viên |
+| 3 | Nhóm tối đa 10 người, trưởng nhóm đổi tên/thêm/xoá/rời | ⚠️ đã có mã | Trigger `bakhi_chat_member_guard`; chuyển trưởng khi người cũ rời |
+| 4 | Tin nhắn văn bản ≤ 2.000 ký tự, Enter gửi, Shift+Enter xuống dòng | ⚠️ đã có mã | `messages.send` |
+| 5 | Gửi ảnh PNG/JPEG/WEBP/GIF ≤ 3 MB | ⚠️ đã có mã | Bucket `chat-images`, đường dẫn bắt đầu bằng uuid người gửi; không nhận tệp khác |
+| 6 | 12 cảm xúc emoji, bấm lại để bỏ | ⚠️ đã có mã | `chat_reactions`, `reactions.toggle` |
+| 7 | Realtime tin nhắn, cảm xúc, tên nhóm | ⚠️ đã có mã | Bốn bảng trong `supabase_realtime`, `replica identity full` |
+| 8 | Bộ đếm tin chưa đọc theo phòng + trên tiêu đề tab | ⚠️ đã có mã | `last_read_at`, `read.mark` |
+| 9 | Profile Card: tên, biệt danh, giới thiệu, khung, số thành tích | ⚠️ đã có mã | View `chat_profiles` không lộ `student_code` |
+| 10 | Tìm học sinh để nhắn riêng hoặc thêm vào nhóm | ⚠️ đã có mã | `students.search` qua `chat-api` |
+| 11 | Xoá mềm tin của mình; trưởng nhóm xoá tin trong nhóm | ⚠️ đã có mã | `deleted_at`, hiện “Tin nhắn đã được xoá” |
+| 12 | Không có đồng hồ đếm ngược hay giới hạn thời gian | ✅ | Đúng nguyên tắc sản phẩm |
+| 13 | Kiểm thử giao diện và ràng buộc bảo mật | ✅ | `tools/qa/chat-smoke.js` (jsdom) |
+
+> Trạng thái “đã có mã” nghĩa là mã nguồn, migration và QA đã xong nhưng **chưa deploy**
+> migration `20261120000000` + Edge Function `chat-api` + bucket `chat-images` trên dự án
+> Supabase thật. Trước khi deploy, `/chat/` báo máy chủ chưa sẵn sàng và không ảnh hưởng
+> các trang học tập khác.
+
+## L. Không có trong sản phẩm (theo yêu cầu)
 
 Không đề thi thử, không bài tính giờ, không đếm ngược, không giới hạn thời gian,
 không tự nộp bài, không xếp hạng thi, không deadline, không cơ chế tạo áp lực thời gian.

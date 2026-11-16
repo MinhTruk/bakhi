@@ -2,6 +2,48 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [3.7.0] — 2026-11-16
+
+### Tính năng
+
+- **Chat toàn trường**: trang `/chat/` với phòng chung cho mọi học sinh đã gắn danh
+  tính, tin nhắn riêng từng cặp và nhóm tối đa 10 người. Danh sách phòng sắp theo hoạt
+  động gần nhất, có tìm kiếm và bộ đếm tin chưa đọc (cả trên tiêu đề tab).
+- **Tin nhắn**: nội dung tối đa 2.000 ký tự, gửi bằng Enter (Shift+Enter xuống dòng),
+  ảnh PNG/JPEG/WEBP/GIF tối đa 3 MB qua bucket `chat-images`, thả 12 cảm xúc, xoá mềm
+  tin của mình. Không nhận tệp khác ngoài ảnh.
+- **Profile Card**: bấm ảnh hoặc tên trong chat để xem biệt danh, giới thiệu, khung
+  avatar và số thành tích; từ đó mở ngay cuộc trò chuyện riêng.
+- **Realtime**: tin nhắn, cảm xúc và tên nhóm cập nhật trực tiếp qua Supabase Realtime
+  (RLS chỉ trả dữ liệu phòng mình tham gia).
+- **Quản lý nhóm**: trưởng nhóm đổi tên, thêm/xoá thành viên, rời nhóm; khi trưởng
+  nhóm rời đi, người vào sớm nhất được chuyển làm trưởng.
+- **Lối vào Chat** trong menu tài khoản, cạnh Hồ sơ cá nhân.
+
+### Sửa lỗi
+
+- Không có.
+
+### Cải tiến
+
+- **Backend Chat**: migration `20261120000000_bakhi_chat.sql` tạo `chat_rooms`,
+  `chat_members`, `chat_messages`, `chat_reactions`, view `chat_profiles` (chỉ lộ tên,
+  biệt danh, giới thiệu, ảnh, khung, số thành tích), RLS chỉ đọc và thu hồi toàn bộ
+  quyền ghi khỏi `anon`/`authenticated`.
+- **Edge Function `chat-api`**: mọi thao tác ghi chạy bằng service role sau khi xác minh
+  thiết bị đã gắn học sinh, tư cách thành viên, độ dài nội dung, quyền sở hữu ảnh và
+  giới hạn tần suất (20 tin/phút, 120 cảm xúc/phút).
+- **Storage**: bucket `chat-images` công khai theo URL, chỉ nhận `image/*` ≤ 3 MB, mỗi
+  người chỉ ghi/xoá trong thư mục uuid của chính mình.
+- Cache-busting toàn website lên `3.7.0`.
+- QA mới `tools/qa/chat-smoke.js`: dựng giao diện bằng jsdom, kiểm tra tải phòng, gửi
+  tin, ảnh, cảm xúc, Profile Card, nhắn riêng, tạo nhóm, cùng các ràng buộc RLS,
+  giới hạn nhóm và Storage.
+
+> Ghi chú triển khai: Chat cần chạy migration `20261120000000` và deploy Edge Function
+> `chat-api` trên dự án Supabase thật. Khi chưa deploy, trang `/chat/` hiển thị thông
+> báo máy chủ chưa sẵn sàng và các trang học tập khác không bị ảnh hưởng.
+
 ## [3.6.0] — 2026-11-16
 
 ### Tính năng

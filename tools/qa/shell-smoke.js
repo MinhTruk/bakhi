@@ -106,12 +106,13 @@ ok('bấm avatar mở menu', !!menu && menu.hidden === false);
 const labels = Array.from(menu.querySelectorAll('.bk-menu-row')).map((r) => r.textContent.trim());
 ok('menu đúng thứ tự mục bắt buộc',
   labels[0].indexOf('Hồ sơ cá nhân') === 0 &&
-  labels[1].indexOf('Giao diện') === 0 &&
-  labels[2].indexOf('README.md') === 0 &&
-  labels[3].indexOf('Bá Khí Studio') === 0 &&
-  labels[4].indexOf('Cài đặt') === 0,
+  labels[1].indexOf('Chat') === 0 &&
+  labels[2].indexOf('Giao diện') === 0 &&
+  labels[3].indexOf('README.md') === 0 &&
+  labels[4].indexOf('Bá Khí Studio') === 0 &&
+  labels[5].indexOf('Cài đặt') === 0,
   JSON.stringify(labels));
-ok('menu không có Chat khi /chat/ chưa tồn tại', !/Chat/.test(menu.textContent));
+ok('menu có Chat trỏ tới /chat/ đã tồn tại', !!menu.querySelector('a[href$="chat/"]'));
 ok('đường dẫn trong menu dùng gốc site đúng', menu.querySelector('a[href$="profile/"]').href === 'https://minhtruk.github.io/bakhi/profile/',
   menu.querySelector('a[href$="profile/"]').href);
 ok('menu không lặp tên học sinh ngoài avatar', !/Học sinh ·/.test(menu.textContent) || true);

@@ -1869,7 +1869,7 @@
         var link = D.createElement('link');
         link.rel = 'stylesheet';
         link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=' +
-            ((global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '3.6.0');
+            ((global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '3.7.0');
         link.setAttribute('data-bk-cloud', '1');
         (D.head || D.documentElement).appendChild(link);
     }
@@ -2101,6 +2101,17 @@
         changeStudent: changeStudent,
         syncNow: function () { return doSync(true); },
         syncStudent: syncStudent,
+        /* Chat: gọi Edge Function chat-api và mở client để đăng ký realtime. */
+        chatApi: function (body) { return api(CFG.functions.chat, body); },
+        chatClient: function () {
+            return ensureReady().then(function () { return client(); });
+        },
+        storagePublicUrl: function (bucket, path) {
+            if (!CFG.url) return '';
+            return String(CFG.url).replace(/\/$/, '') + '/storage/v1/object/public/' +
+                encodeURIComponent(bucket) + '/' +
+                String(path || '').split('/').map(encodeURIComponent).join('/');
+        },
         openNotifications: openPanel,
         openChangelogHistory: openChangelogHistory,
         refresh: function () { return Promise.all([loadAnnouncements(), loadChangelog()]); },

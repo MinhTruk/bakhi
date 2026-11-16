@@ -244,6 +244,36 @@ DOMContentLoaded
   (`student-profile`, `admin-actions`, `sync-student-progress`) **cần được deploy** trên dự án
   Supabase thật trước khi tính năng chạy trên website công khai.
 
+### 2.7. Chat phòng chung, tin nhắn riêng và nhóm nhỏ (3.7.0)
+
+- **Trang** `/chat/` (`chat/index.html`) nạp `bk-cloud.js` ở chế độ đầy đủ và `bk-chat.js` +
+  `bk-chat.css`. Bố cục ba cột (danh sách phòng — hội thoại — Profile Card), dưới 900px gộp
+  thành một cột có nút quay lại. Lối vào nằm trong menu tài khoản của `bk-shell.js`.
+- **Bảng dữ liệu** (`supabase/migrations/20261120000000_bakhi_chat.sql`):
+  - `chat_rooms` (`kind` = `global`/`dm`/`group`, `dm_key` unique cho cặp bạn, một phòng
+    `global` duy nhất), `chat_members` (khoá chính `room_id`+`student_id`, `role`, `last_read_at`),
+    `chat_messages` (nội dung ≤ 2.000 ký tự hoặc `image_path`, `reply_to`, `deleted_at` xoá mềm)
+    và `chat_reactions` (một emoji/người/tin).
+  - Trigger `bakhi_chat_member_guard` giới hạn DM đúng 2 và nhóm ≤ 10; `bakhi_chat_message_guard`
+    chặn gửi vào phòng không tham gia; `bakhi_chat_touch_room` cập nhật `last_message_at`.
+  - **RLS chỉ đọc**: bốn bảng chỉ có policy `select` (phòng chung hoặc phòng mình là thành viên),
+    không có policy ghi; `revoke insert/update/delete` khỏi `anon`/`authenticated`.
+  - View `chat_profiles` (`security_invoker = false`) chỉ lộ `display_name`, `nickname`, `bio`,
+    `avatar_url`, `frame`, `badge_count` — không lộ `student_code` hay dữ liệu học tập.
+  - `replica identity full` và đưa cả bốn bảng vào `supabase_realtime`; bucket `chat-images`
+    công khai theo URL, chỉ nhận `image/png|jpeg|webp|gif` ≤ 3 MB, mỗi người ghi/xoá trong
+    thư mục uuid của chính mình.
+- **Edge Function `chat-api`**: mọi thao tác ghi (`messages.send/delete`, `reactions.toggle`,
+  `read.mark`, `dm.open`, `group.*`, `messages.purge_own`) chạy bằng service role sau khi xác
+  minh `auth.uid()` đã gắn với học sinh đang hoạt động, tư cách thành viên và quyền sở hữu ảnh.
+  Giới hạn: 300 lượt/giờ/học sinh, 20 tin/phút, 120 cảm xúc/phút. Không tin `student_id` từ client.
+- **Máy khách** (`bk-chat.js`): đọc dữ liệu trực tiếp qua Supabase (RLS), ghi qua `BKCloud.chatApi`;
+  bộ đếm chưa đọc cả trên tiêu đề tab; realtime cho tin nhắn, cảm xúc và tên nhóm; toàn bộ nội dung
+  render bằng `textContent`. Chỉ nhận ảnh, không nhận tệp tuỳ ý; không có đồng hồ đếm ngược.
+- **Trạng thái triển khai**: mã đã hoàn tất và kiểm thử cục bộ (`tools/qa/chat-smoke.js`); cần
+  deploy migration `20261120000000`, Edge Function `chat-api` và bucket `chat-images` trên dự án
+  Supabase thật. Trước đó `/chat/` hiển thị thông báo máy chủ chưa sẵn sàng.
+
 ### 2.4. Administrator Dashboard 4.1
 
 - `admin/index.html` nạp `bk-admin-dashboard.css` + `bk-devboard.js`; mọi thao tác ghi đi qua
@@ -360,8 +390,10 @@ Kết quả sau nâng cấp: **119/119 tệp không đổi nội dung** (`verify
   đồng bộ/xác minh phía máy chủ (3.6.0) chỉ hoạt động sau khi deploy migration
   `20261119000000` và Edge Functions `student-profile`/`admin-actions`. Khi chưa deploy,
   `bk-cloud.js` tự tắt đồng bộ hồ sơ sau lỗi 404 và website giữ nguyên hành vi local-first.
-- `/chat/`, hợp nhất hai trang Studio và mở rộng dashboard A–M chưa triển khai; xem
-  `CHANGELOG.md` mục 3.6.0 và báo cáo phát hành.
+- Chat (3.7.0) đã có mã nguồn đầy đủ nhưng cần deploy migration `20261120000000` và Edge
+  Function `chat-api` cùng bucket `chat-images`; trước đó `/chat/` báo máy chủ chưa sẵn sàng.
+- Hợp nhất hai trang Studio và mở rộng dashboard A–M chưa triển khai; xem
+  `CHANGELOG.md` mục 3.7.0 và báo cáo phát hành.
 - Vì menu ba gạch bị ẩn, Dev Code **chỉ** vào từ Cài đặt → Nhà phát triển → Dev Code;
   Developer Playground chỉ mở khi `dev-auth` đã cấp phiên (xem 2.5).
 

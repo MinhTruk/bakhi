@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+<!-- Bá Khí static favicon — assets/bakhi/favicon.svg -->
+<link rel="icon" type="image/svg+xml" href="../assets/bakhi/favicon.svg" sizes="any" data-bk-favicon="1">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/bakhi/favicon-32x32.png" data-bk-favicon="1">
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/bakhi/favicon-192x192.png" data-bk-favicon="1">
+<link rel="icon" href="../assets/bakhi/favicon.ico" sizes="16x16 32x32 48x48" data-bk-favicon="1">
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/bakhi/apple-touch-icon.png" data-bk-favicon="1">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chat — Bá Khí</title>
+    <meta name="description" content="Chat Bá Khí: phòng chung cho học sinh, tin nhắn riêng, nhóm nhỏ, ảnh và cảm xúc.">
+    <meta name="theme-color" content="#0f172a">
+
+
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="../assets/bakhi/bk-core.css?v=3.7.0">
+    <link rel="stylesheet" href="../assets/bakhi/bk-chat.css?v=3.7.0">
+    <link rel="stylesheet" href="../assets/bakhi/bk-shell.css?v=3.7.0">
+</head>
+<body class="bk-app">
+    <header class="bk-topbar">
+        <div class="bk-topbar-inner">
+            <a class="bk-brand" href="../">
+                <span class="bk-brand-badge"><i class="fa-solid fa-folder-tree" aria-hidden="true"></i></span>
+                <span>Bá Khí</span>
+            </a>
+            <a class="bk-topbar-link" href="../profile/">Hồ sơ</a>
+            <a class="bk-topbar-link" href="../settings/">Cài đặt</a>
+            <a class="bk-topbar-link" href="../">Trang chủ</a>
+        </div>
+    </header>
+
+    <main class="bk-page">
+        <noscript>
+            <p class="bk-page-sub">Chat cần JavaScript. Bạn vẫn có thể học bình thường ở các trang bài học.</p>
+        </noscript>
+        <div id="bkChat"></div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+    <script src="../assets/bakhi/bk-core.js?v=3.7.0" defer></script>
+    <script src="../assets/bakhi/bk-version.js?v=3.7.0" defer></script>
+    <script src="../assets/bakhi/bk-profile.js?v=3.7.0" defer></script>
+    <script src="../assets/bakhi/bk-badges.js?v=3.7.0" defer></script>
+    <script src="../assets/bakhi/bk-shell.js?v=3.7.0" defer></script>
+    <script src="../assets/bakhi/bk-supabase.config.js?v=3.7.0" defer></script>
+    <script src="../assets/bakhi/bk-cloud.js?v=3.7.0" defer></script>
+    <script src="../assets/bakhi/bk-chat.js?v=3.7.0" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var root = document.getElementById('bkChat');
+            if (!root) return;
+            if (window.BKChat) window.BKChat.mount(root);
+        });
+    </script>
+</body>
+</html>
