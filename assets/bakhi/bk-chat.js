@@ -394,7 +394,7 @@
             if (!room) room = S.rooms.filter(function (r) { return r.kind === 'global'; })[0] || S.rooms[0] || null;
             var mobile = !!(global.matchMedia && global.matchMedia('(max-width: 900px)').matches);
             /* Điện thoại mở danh sách trước; chọn một người mới mở khung chat. */
-            if (room && !mobile) openRoom(room.id, true);
+            if (room && !mobile) openRoom(room.id);
             else { S.active = null; renderHead(); renderThread(); renderRooms(); }
         }).catch(function (err) {
             S.loading = false;
@@ -531,7 +531,7 @@
     /* ---------------------------------------------------------------------
        Mở phòng & tin nhắn
        ------------------------------------------------------------------ */
-    function openRoom(id, silent) {
+    function openRoom(id) {
         var room = findRoom(id);
         if (!room) return;
         S.active = room;
@@ -570,10 +570,6 @@
         }).catch(function (err) {
             if (S.active && S.active.id === id) renderNotice(errorText(err));
         });
-        if (!silent) {
-            var input = D.getElementById('bkChatInput');
-            if (input) setTimeout(function () { input.focus(); }, 0);
-        }
     }
 
     function markRead() {

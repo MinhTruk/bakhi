@@ -233,6 +233,8 @@ async function main() {
   console.log('\n[2] Mở phòng chung & hiển thị tin nhắn');
   const globalRow = doc.querySelector('#bkChatRooms [data-room="' + GLOBAL.id + '"]');
   globalRow.click();
+  await wait(30);
+  ok('mở đoạn chat không tự bật bàn phím', doc.activeElement !== doc.getElementById('bkChatInput'));
   const msgNodes = await until(() => doc.querySelectorAll('#bkChatMessages .bkchat-msg').length === 3 ? doc.querySelectorAll('#bkChatMessages .bkchat-msg') : null);
   ok('tải 3 tin nhắn', !!msgNodes, String(doc.querySelectorAll('#bkChatMessages .bkchat-msg').length));
   const own = doc.querySelector('#bkChatMessages .bkchat-msg.is-own');

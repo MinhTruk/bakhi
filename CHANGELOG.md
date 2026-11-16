@@ -2,6 +2,14 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [6.1.3] — 2026-11-16
+
+### Cải tiến
+
+- **Mở đoạn chat không tự bật bàn phím**: chạm vào phòng hoặc tin nhắn chỉ mở nội
+  dung để xem; con trỏ không nhảy vào ô soạn tin. Bàn phím chỉ hiện khi người học
+  chủ động chạm ô nhập, tránh che mất tin nhắn ngay khi vừa mở.
+
 ## [6.1.2] — 2026-11-16
 
 ### Sửa lỗi
