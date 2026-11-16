@@ -79,7 +79,14 @@ body.bk-app {
     flex: 0 0 auto;
     margin-left: auto;
 }
+.bk-user-avatar-wrap {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+    line-height: 0;
+}
 .bk-user-btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: .4rem;
@@ -97,10 +104,12 @@ body.bk-app {
 .bk-user-dot {
     position: absolute;
     top: -1px; right: -1px;
+    z-index: 4;
     width: 9px; height: 9px;
     border-radius: 999px;
     background: #f43f5e;
     border: 2px solid var(--bkl-surface, #fff);
+    box-sizing: content-box;
     display: none;
 }
 .bk-user-dot.on { display: block; }
@@ -159,6 +168,9 @@ body.bk-app {
     align-items: center;
     gap: .65rem;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     padding: .52rem .6rem;
     border: 0;
     border-radius: var(--bkl-radius-sm);
@@ -177,6 +189,12 @@ body.bk-app {
 .bk-menu-desc { font-size: .68rem; color: var(--bkl-muted); margin-left: auto; }
 .bk-menu-count {
     margin-left: auto;
+    flex: 0 0 auto;
+    max-width: 3.2rem;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
     min-width: 1.25rem;
     height: 1.25rem;
     padding: 0 .32rem;

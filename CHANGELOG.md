@@ -2,6 +2,17 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [6.1.4] — 2026-11-16
+
+### Sửa lỗi
+
+- **Badge số tin Chat không tràn mép menu hồ sơ**: hàng menu dùng `border-box`,
+  badge giới hạn chiều rộng và co đúng trong mọi bố cục.
+- **Chấm đỏ avatar luôn nằm ở góc avatar**: chấm được đặt trong khung bọc riêng
+  quanh ảnh, không phụ thuộc vị trí nút hay mũi tên trên từng trang.
+- **Popup Administrator/Founder Dashboard có nền đục**: popup gắn vào `body` nay
+  tự mang token màu sáng/tối thay vì kế thừa biến không tồn tại từ dashboard.
+
 ## [6.1.3] — 2026-11-16
 
 ### Cải tiến

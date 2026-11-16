@@ -114,6 +114,11 @@ ok('menu đúng thứ tự mục bắt buộc',
   JSON.stringify(labels));
 ok('menu có Chat trỏ tới /chat/ đã tồn tại', !!menu.querySelector('a[href$="chat/"]'));
 const chatCount = idoc.getElementById('bkMenuChatCount');
+const shellCss = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-shell.css'), 'utf8');
+const avatarDot = idoc.querySelector('#bkUserBtn .bk-user-dot');
+ok('chấm đỏ bám đúng khung avatar', !!avatarDot && avatarDot.parentNode.classList.contains('bk-user-avatar-wrap'));
+ok('badge Chat không tràn khỏi hàng menu', /\.bk-menu-row\s*\{[^}]*box-sizing:\s*border-box/.test(shellCss) &&
+  /\.bk-menu-count\s*\{[^}]*max-width:\s*3\.2rem/.test(shellCss));
 ok('menu Chat có chỗ hiển thị số tin chưa đọc', !!chatCount && chatCount.hidden === true);
 iw.BKCloud = {
   chatUnread: function () { return 3; },

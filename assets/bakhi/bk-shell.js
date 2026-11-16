@@ -296,13 +296,15 @@
         btn.id = 'bkUserBtn';
         btn.setAttribute('aria-haspopup', 'menu');
         btn.setAttribute('aria-expanded', 'false');
-        btn.appendChild(avatarNode(34));
+        var avatarWrap = el('span', 'bk-user-avatar-wrap');
+        avatarWrap.appendChild(avatarNode(34));
+        btn.appendChild(avatarWrap);
         var caret = D.createElement('i');
         caret.className = 'fa-solid fa-chevron-down bk-user-btn-caret';
         caret.setAttribute('aria-hidden', 'true');
         btn.appendChild(caret);
         var dot = el('span', 'bk-user-dot');
-        btn.appendChild(dot);
+        avatarWrap.appendChild(dot);
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
             toggleMenu();
@@ -518,7 +520,7 @@
         var old = S.btn.querySelector('.bk-avatar');
         if (old) {
             var fresh = avatarNode(34);
-            S.btn.replaceChild(fresh, old);
+            (old.parentNode || S.btn).replaceChild(fresh, old);
         }
         if (S.nameEl) S.nameEl.textContent = displayName();
         var roleEl = D.getElementById('bkMenuRole');

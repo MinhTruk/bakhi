@@ -687,13 +687,32 @@ html.dark .bkc-pre { background: rgba(148, 163, 184, .08); }
 .bkc-sheet-body.is-plain { padding-top: .7rem; }
 .bkc-sheet-body.is-plain .bkc-preview-card { background: transparent; border: 0; padding: 0; }
 
+/* Popup được gắn vào body, nằm ngoài .bkc-dash nên phải tự mang token màu;
+   nếu thiếu, var(--bkc-panel) không hợp lệ và khung bị trong suốt. */
+.bkc-modal {
+    --bkc-panel: #ffffff;
+    --bkc-panel-2: #f6f8fd;
+    --bkc-text: #0f172a;
+    --bkc-muted: #5f6f8a;
+    --bkc-line: rgba(100, 116, 139, .18);
+    background: rgba(2, 6, 23, .74);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+html.dark .bkc-modal {
+    --bkc-panel: #0d1526;
+    --bkc-panel-2: #111c31;
+    --bkc-text: #e7eefb;
+    --bkc-muted: #91a1bb;
+    --bkc-line: rgba(148, 163, 184, .18);
+}
 .bkc-sheet {
     width: min(34rem, 100%);
     max-height: 86vh;
     display: flex;
     flex-direction: column;
-    background: var(--bkc-panel);
-    color: var(--bkc-text);
+    background: var(--bkc-panel, #ffffff);
+    color: var(--bkc-text, #0f172a);
     border: 1px solid var(--bkc-line);
     border-radius: 18px;
     box-shadow: 0 40px 90px -40px rgba(2, 6, 23, .85);
@@ -718,7 +737,7 @@ html.dark .bkc-pre { background: rgba(148, 163, 184, .08); }
     gap: .5rem;
     padding: .7rem 1.1rem;
     border-top: 1px solid var(--bkc-line);
-    background: var(--bkc-panel-2);
+    background: var(--bkc-panel-2, #f6f8fd);
 }
 .bkc-x {
     flex: 0 0 auto;
