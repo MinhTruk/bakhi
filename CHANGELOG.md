@@ -2,6 +2,15 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [6.1.6] — 2026-11-16
+
+### Cải tiến
+
+- **Thả cảm xúc không còn icon mặt cười**: nút chữ “Thả cảm xúc” vẫn mở bảng cảm xúc
+  và gọi `reactions.toggle` như cũ; khu vực gần thanh soạn tin không còn icon emoji.
+- **Ô soạn tin gọn**: chỉ còn ô nhập chữ và nút gửi. Emoji gõ trực tiếp từ bàn phím
+  vẫn được giữ nguyên trong nội dung tin nhắn.
+
 ## [6.1.5] — 2026-11-16
 
 ### Sửa lỗi

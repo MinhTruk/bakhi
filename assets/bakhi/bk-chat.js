@@ -732,9 +732,11 @@
         var meta = el('div', 'bkchat-meta');
         meta.appendChild(el('span', 'bkchat-time', fmtTime(m.created_at)));
         if (!m.deleted) {
-            var reactBtn = btn('bkchat-msg-action', 'Thả cảm xúc', 'fa-face-smile');
+            /* Giữ thả cảm xúc nhưng không dùng icon mặt cười cạnh khung soạn tin. */
+            var reactBtn = btn('bkchat-msg-action', 'Thả cảm xúc', '');
             reactBtn.setAttribute('data-react', m.id);
             reactBtn.setAttribute('aria-label', 'Thả cảm xúc cho tin nhắn');
+            reactBtn.title = 'Thả cảm xúc';
             meta.appendChild(reactBtn);
         }
         if (own && !m.deleted) {

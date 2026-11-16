@@ -38,8 +38,8 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
 (async () => {
   console.log('\n[1] Trang Founder và mã bí mật');
   const page = read('founder/index.html');
-  ok('có trang founder/ dùng dashboard 6.1.5',
-    /bk-devboard\.js\?v=6\.1\.5/.test(page) && /BK_DASH_SCOPE\s*=\s*["']founder/.test(page));
+  ok('có trang founder/ dùng dashboard 6.1.6',
+    /bk-devboard\.js\?v=6\.1\.6/.test(page) && /BK_DASH_SCOPE\s*=\s*["']founder/.test(page));
   ok('trang Founder gọi founderLogin/founderToken',
     /founderLogin/.test(page) && /founderToken/.test(page));
   ok('không lưu Founder Code dạng plaintext trong client',

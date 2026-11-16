@@ -254,16 +254,22 @@ async function main() {
 
   console.log('\n[3] Gửi tin nhắn văn bản (không ảnh/emoji soạn tin)');
   const input = doc.getElementById('bkChatInput');
-  input.value = 'Tin mới từ kiểm thử';
+  input.value = 'Tin mới từ kiểm thử 😀';
   doc.getElementById('bkChatComposer').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
   const sent = await until(() => H.calls.filter((c) => c.action === 'messages.send').pop());
-  ok('gửi qua chat-api với nội dung đúng', !!sent && sent.body.content === 'Tin mới từ kiểm thử');
-  const appended = await until(() => /Tin mới từ kiểm thử/.test(doc.getElementById('bkChatMessages').textContent));
+  ok('gửi qua chat-api với nội dung đúng', !!sent && sent.body.content === 'Tin mới từ kiểm thử 😀');
+  const appended = await until(() => /Tin mới từ kiểm thử 😀/.test(doc.getElementById('bkChatMessages').textContent));
   ok('tin vừa gửi xuất hiện trong khung', !!appended);
   ok('ô soạn tin được xoá sau khi gửi', input.value === '');
 
   ok('đã bỏ nút gửi ảnh khỏi ô soạn tin', !doc.getElementById('bkChatAttach') && !doc.getElementById('bkChatFile'));
   ok('đã bỏ bảng emoji soạn tin', !doc.getElementById('bkChatEmoji') && !doc.getElementById('bkChatEmojiTray'));
+  const composerRow = doc.querySelector('.bkchat-composer-row');
+  ok('thanh soạn tin chỉ có ô chữ và nút gửi, không icon emoji',
+    !!composerRow && composerRow.children.length === 2 && !composerRow.querySelector('.fa-face-smile'));
+  const reactAction = doc.querySelector('#bkChatMessages [data-react]');
+  ok('nút thả cảm xúc không còn icon mặt cười', !!reactAction && !reactAction.querySelector('i') &&
+    /Thả cảm xúc/.test(reactAction.textContent));
 
   console.log('\n[4] Thả cảm xúc & xoá tin của mình');
   const reactionChip = doc.querySelector('#bkChatMessages .bkchat-reaction');
