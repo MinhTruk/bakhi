@@ -1,7 +1,8 @@
 # 🎨 Bá Khí Studio — Word & Paint
 
-Ứng dụng tĩnh độc lập: `studio/word-paint.html` (mở từ menu 3 gạch → **Bá Khí Studio — Word & Paint**,
-từ command palette `Ctrl/⌘ + K`, hoặc trực tiếp `/studio/word-paint.html`).
+Ứng dụng tĩnh độc lập: `studio/index.html` (mở từ menu 3 gạch → **Bá Khí Studio — Word & Paint**,
+từ command palette `Ctrl/⌘ + K`, hoặc trực tiếp `/studio/`). Địa chỉ cũ
+`/studio/word-paint.html` tự chuyển hướng về đây.
 
 Một chỗ làm việc gồm **soạn thảo văn bản kiểu Word** và **bảng vẽ kiểu Paint**, chuyển qua lại
 hoặc chia đôi màn hình. Không backend, không thư viện ngoài, dữ liệu nằm trên máy bạn.
@@ -94,14 +95,28 @@ Studio không xoá thành tích đã đạt — thành tích nằm trong `bakhiL
 - Ảnh/bản vẽ lớn làm tăng dung lượng lưu; nên xuất PNG riêng khi không cần nhúng.
 - Canvas không thao tác được hoàn toàn bằng bàn phím (bản chất công cụ vẽ).
 
-## 8. Hai phiên bản Studio
+## 8. Một ứng dụng duy nhất
 
-| Tệp | Mục đích | Lớp nâng cấp |
-|---|---|---|
-| `studio/word-paint.html` | Word & Paint đầy đủ, mở từ menu/palette | `bk-cloud.js` (chỉ thông báo) |
-| `studio/index.html` | Bản Studio rút gọn, giao diện tối giản | `bk-cloud.js` (chỉ thông báo) |
+| Địa chỉ | Vai trò |
+|---|---|
+| `/studio/` (`studio/index.html`) | **Ứng dụng chính** — Word, Paint và Chia đôi |
+| `/studio/word-paint.html` | Trang tương thích: chuyển hướng ngay sang `/studio/`, giữ query và hash |
 
-Cả hai đều là tệp tĩnh độc lập, không cần backend. Chuông thông báo đặt ở góc phải dưới và
+Trước 3.9.0 có hai tệp: `studio/index.html` là trình thiết kế trang A4 và
+`studio/word-paint.html` là Word & Paint. Nay chỉ còn **một** giao diện Word & Paint;
+trình thiết kế cũ đã được hợp nhất và dữ liệu của nó được nhập tự động.
+
+### Nhập dữ liệu Studio cũ
+
+- Khoá cũ `lexend-studio-doc` được đọc **một lần** khi mở `/studio/`.
+- Mỗi dự án cũ trở thành một tài liệu mới tên `<tên dự án> (Studio cũ)`:
+  hộp văn bản, ảnh (data URL) và hình vẽ (SVG) được giữ nguyên vị trí trên trang A4.
+- Khoá cũ **không bị xoá**; mốc nhập lưu trong `bakhiStudio.v1` (`migrated.legacy`)
+  nên mở lại không sinh tài liệu trùng.
+- Nếu dự án cũ có thành phần ngoài phạm vi chuyển đổi, bạn vẫn có thể mở lại tệp JSON
+  đã lưu trước đây — dữ liệu gốc còn nguyên.
+
+Tệp tĩnh độc lập, không cần backend. Chuông thông báo đặt ở góc phải dưới và
 không che thanh công cụ. Thông báo không làm gián đoạn tài liệu đang soạn: bảng chỉ mở khi
 bấm chuông.
 
@@ -112,14 +127,15 @@ bấm chuông.
 ```jsonc
 {
   "v": 1,
-  "activeId": "doc-...",
+  "active": "doc-...",          // tài liệu đang mở
+  "mode": "word",               // word | paint | split
+  "migrated": { "legacy": "..." },   // mốc đã nhập dự án Studio cũ
   "docs": [
     {
       "id": "doc-...",
       "title": "Tài liệu chưa đặt tên",
       "html": "<p>...</p>",
       "draw": "data:image/png;base64,...",   // có thể rỗng
-      "mode": "word",                          // word | paint | split
       "updated": 1760000000000
     }
   ]
@@ -161,9 +177,14 @@ Có. Giao diện xếp dọc, danh sách tài liệu mở bằng nút **Tài li�
 
 ## 11. Kiểm thử
 
-- Mở `studio/word-paint.html`, tạo tài liệu, gõ vài từ, đổi chế độ, tải lại trang → nội dung
+- Mở `/studio/`, tạo tài liệu, gõ vài từ, đổi chế độ, tải lại trang → nội dung
   còn nguyên.
+- Mở `/studio/word-paint.html` → tự chuyển sang `/studio/`, không mất dữ liệu.
+- Có dự án cũ trong `lexend-studio-doc` → thấy tài liệu `(Studio cũ)` đúng một lần,
+  khoá cũ vẫn còn.
 - Xuất HTML rồi mở tệp đã xuất ở cửa sổ ẩn danh → nội dung và định dạng hiển thị đúng.
 - Vẽ vài nét, chèn vào trang, xuất PNG → ảnh đúng.
 - Bấm chuông thông báo → bảng mở, không che thanh công cụ.
+- `NODE_PATH=... node tools/qa/studio-smoke.js` kiểm tra ba chế độ, lưu tự động,
+  nhập dữ liệu cũ và chuyển hướng địa chỉ cũ.
 - `NODE_PATH=... node tools/qa/smoke.js` (nhóm `[1]`) kiểm tra tín hiệu Studio → thành tích.

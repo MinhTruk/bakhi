@@ -206,8 +206,8 @@ nhận diện học sinh, đồng bộ giữa thiết bị và thông báo realt
 | `/index.html` | Trang chủ, điều hướng môn học, Trung tâm học tập, What's New | `bk-core`, `bk-learn`, `bk-dev`, `bk-music`, `bk-cloud` |
 | `/admin/index.html` | Administrator Dashboard (yêu cầu Administrator Code) | `bk-cloud` (admin-only), `bk-devboard` |
 | `/ktgk1`, `/ktgk2`, `/ktck1`, `/ktck2`, `/kttx` | Nội dung giáo dục theo đợt kiểm tra và môn học | `bk-core`, `bk-page`, `bk-cloud` (chỉ thông báo) |
-| `/studio/index.html` | Bá Khí Studio bản rút gọn | `bk-cloud` (chỉ thông báo) |
-| `/studio/word-paint.html` | Word & Paint đầy đủ | `bk-core`, `bk-cloud` (chỉ thông báo) |
+| `/studio/index.html` | Bá Khí Studio — Word & Paint (Word / Paint / Chia đôi) | `bk-cloud` (chỉ thông báo), shell tài khoản |
+| `/studio/word-paint.html` | Trang tương thích: chuyển hướng về `/studio/` | — |
 | `/music/` | Tệp âm thanh, lời, ảnh bìa | — |
 | `/assets/bakhi/` | Toàn bộ JavaScript/CSS dùng chung | — |
 | `/supabase/` | Migration SQL + Edge Functions | — |
@@ -366,8 +366,9 @@ phải để đặt lại). Chi tiết: [docs/MUSIC.md](docs/MUSIC.md).
 
 # 🎨 Bá Khí Studio — Word & Paint
 
-Ứng dụng tĩnh độc lập: [studio/word-paint.html](studio/word-paint.html) — mở từ menu 3 gạch
-hoặc `Ctrl/⌘ + K` → “Mở Bá Khí Studio (Word & Paint)”.
+Ứng dụng tĩnh độc lập: [studio/](studio/index.html) — mở từ menu 3 gạch
+hoặc `Ctrl/⌘ + K` → “Mở Bá Khí Studio (Word & Paint)”. Địa chỉ cũ
+`/studio/word-paint.html` tự chuyển hướng và dữ liệu Studio cũ được nhập một lần.
 
 - **Word mini**: trang giấy A4, đậm/nghiêng/gạch chân, tiêu đề, danh sách, canh lề, màu chữ,
   màu nền, liên kết, chèn ảnh, hoàn tác/làm lại, đếm từ, in/lưu PDF.
@@ -528,7 +529,7 @@ có kiểm tra phiên quản trị.
 /ktgk1, /ktgk2, /ktck1, /ktck2, /kttx
                         Nội dung giáo dục (HTML tĩnh, mỗi trang tự chứa)
 /music                  music/<slug>.mp3|txt|png
-/studio                 index.html (bản rút gọn) + word-paint.html (Word & Paint)
+/studio                 index.html (Word & Paint hợp nhất) + word-paint.html (chuyển hướng)
 /supabase/
   migrations/           Schema + RLS + realtime cho announcements & changelog
   functions/            admin-auth, admin-actions, search-students, bind-student-session,

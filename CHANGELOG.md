@@ -2,6 +2,32 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [3.9.0] — 2026-11-16
+
+### Tính năng
+
+- **Bá Khí Studio hợp nhất**: `/studio/` là một ứng dụng duy nhất với ba chế độ
+  **Word**, **Paint** và **Chia đôi**; bản Studio rút gọn trước đây đã được gộp vào.
+- **Nhập dữ liệu Studio cũ**: dự án lưu trong `lexend-studio-doc` được chuyển một lần
+  thành tài liệu `<tên> (Studio cũ)` — giữ hộp văn bản, ảnh và hình vẽ (SVG) đúng vị trí.
+  Khoá cũ vẫn còn nguyên để sao lưu.
+- **Tương thích địa chỉ cũ**: `/studio/word-paint.html` tự chuyển hướng về `/studio/`,
+  giữ query và hash; liên kết cũ và dấu trang không bị hỏng.
+
+### Sửa lỗi
+
+- Không có.
+
+### Cải tiến
+
+- Trang chủ trỏ thẳng tới `/studio/`; bớt một bước chuyển hướng.
+- Studio mang đầy đủ shell tài khoản dùng chung (avatar, menu) như các trang khác.
+- QA mới `tools/qa/studio-smoke.js`: ba chế độ, lưu tự động, nhập dữ liệu cũ,
+  chuyển hướng địa chỉ cũ, không có đồng hồ/thi cử và không có khoá bí mật.
+- Tài liệu `docs/STUDIO.md` mô tả kiến trúc một ứng dụng, cấu trúc `bakhiStudio.v1`
+  và quy trình nhập dữ liệu cũ.
+- Cache-busting toàn website lên `3.9.0`.
+
 ## [3.8.0] — 2026-11-16
 
 ### Tính năng

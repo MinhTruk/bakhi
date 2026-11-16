@@ -357,7 +357,7 @@ const CHANGELOG = [{
   ok('bucket chat chỉ nhận ảnh ≤ 3 MB', /chat-images/.test(migration) && /3145728/.test(migration) &&
     /image\/png/.test(migration) && /image\/jpeg/.test(migration) && /image\/webp/.test(migration) && /image\/gif/.test(migration));
 
-  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=3\.8\.0/.test(adminPage));
+  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=3\.9\.0/.test(adminPage));
   ok('trang admin dùng dashboard 4.2.0', /bk-admin-dashboard\.css\?v=4\.2\.0/.test(adminPage) &&
     /bk-devboard\.js\?v=4\.2\.0/.test(adminPage));
 

@@ -52,10 +52,10 @@ Hướng dẫn cho agent/developer làm việc trong repository này. Đọc h�
   bk-page.js           Cầu nối cho trang bài học
 /ktgk1, /ktgk2, /ktck1, /ktck2, /kttx   Nội dung giáo dục (HTML tĩnh)
 /music                 music/<slug>.mp3|txt|png
-/studio                index.html (bản rút gọn) + word-paint.html (Word & Paint)
+/studio                index.html (Word & Paint hợp nhất) + word-paint.html (chuyển hướng)
 /supabase/             migrations/ (schema + RLS + realtime) + functions/ (7 Edge Function)
 /.github/workflows/    changelog-sync.yml (CHANGELOG.md → Supabase)
-/tools                 content-integrity, integrate-pages, inject-favicon, make-favicon, qa/smoke, qa/cloud-smoke
+/tools                 content-integrity (+ content-integrity-refresh), integrate-pages, inject-favicon, make-favicon, qa/smoke, qa/cloud-smoke
 /docs                  Kiến trúc, tính năng, Music, Studio, Supabase, baseline nội dung
 ```
 
@@ -94,6 +94,12 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   để chèn thẻ script, sau đó chạy lại kiểm tra toàn vẹn.
 - Nếu baseline nội dung chưa tồn tại: `node tools/content-integrity.js baseline`
   **trước khi** sửa bất kỳ nội dung nào.
+- Khi một trang **không chứa nội dung giáo dục** (trang chủ, `studio/`) được viết lại
+  có chủ đích: `node tools/content-integrity-refresh.js <tệp…>`. Tool tự từ chối tệp có
+  dấu hiệu nội dung giáo dục và ghi lại lý do trong `notes` của baseline. Không bao giờ
+  chạy `baseline` để ghi đè toàn bộ 122 tệp chỉ vì vài trang giao diện đổi.
+- Hash bỏ qua khác biệt CRLF/LF (chuẩn hoá về LF trước khi băm) để checkout trên Windows
+  không báo sai; thay đổi nội dung thật vẫn bị phát hiện.
 - `integrate-pages.js` chỉ chèn thẻ script; các trang Studio không có `bk-core.js` cần
   thêm thủ công hai dòng `bk-supabase.config.js` + `bk-cloud.js` (xem mục 4).
 

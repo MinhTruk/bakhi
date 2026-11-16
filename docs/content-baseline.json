@@ -1,6 +1,6 @@
 {
   "generatedAt": "2026-11-16T04:24:33.554Z",
-  "algorithm": "sha256(strip(assets/bakhi lines))",
+  "algorithm": "sha256(strip(assets/bakhi lines, CRLF→LF))",
   "files": {
     "admin/index.html": {
       "hash": "5ddfbec7c6f3cea1f5c38a82c94cd85b89b913e85f5eb4a34dc88c97cd5c0154",
@@ -45,8 +45,8 @@
       }
     },
     "index.html": {
-      "hash": "12915adc4bcd0003829a0e5e0b2a6460240c0aada68ebe66e61b74effce808d6",
-      "bytes": 195479,
+      "hash": "df64d1796e5d1522726a13ddd6964202d4afb554c591291467d38f287b9c6ac1",
+      "bytes": 195476,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1683,8 +1683,22 @@
       }
     },
     "studio/index.html": {
-      "hash": "9404a3e86c3c9e4cf0fa139be2e39dfd0af8559343e5e2a8c2270d88b63c383d",
-      "bytes": 54556,
+      "hash": "85b459c08d74752ecf871756b6864dd9f5a08101614dd0582b4368c0d2ad5d66",
+      "bytes": 62007,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 5,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "studio/word-paint.html": {
+      "hash": "edd5060583d69c3c798d914765f19180cdaa017849a70231979d787329143140",
+      "bytes": 1234,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1695,20 +1709,25 @@
         "mcqBank": 0,
         "tfBank": 0
       }
-    },
-    "studio/word-paint.html": {
-      "hash": "c9e01333ebc45480b795c7de6ade445ca9062852e570ee28d5d0561382b64575",
-      "bytes": 52021,
-      "stats": {
-        "correctAnswer": 0,
-        "correctField": 0,
-        "explanation": 0,
-        "questionField": 4,
-        "optionsArray": 0,
-        "essayBank": 0,
-        "mcqBank": 0,
-        "tfBank": 0
-      }
     }
-  }
+  },
+  "notes": [
+    {
+      "at": "2026-11-16T04:53:58.910Z",
+      "reason": "Trang không chứa nội dung giáo dục được viết lại có chủ đích (Studio hợp nhất, liên kết /studio/). Không có tệp môn/bài học nào thay đổi.",
+      "files": [
+        "index.html",
+        "studio/index.html",
+        "studio/word-paint.html"
+      ]
+    },
+    {
+      "at": "2026-11-16T04:58:16.048Z",
+      "reason": "Trang không chứa nội dung giáo dục được viết lại có chủ đích (Studio hợp nhất, liên kết /studio/). Không có tệp môn/bài học nào thay đổi.",
+      "files": [
+        "index.html",
+        "studio/index.html"
+      ]
+    }
+  ]
 }

@@ -133,7 +133,7 @@ DOMContentLoaded
   thái tải/rỗng/lỗi. Không có thẻ trắng nào còn sót trong luồng thông báo.
 - **What's New là tuỳ chọn**: `bk-cloud.js` chỉ dựng khối cập nhật gần đây khi thẻ script
   có `data-bk-whatsnew="1"` hoặc trang đã có khung `#bkcWhatsNew`. Chỉ `index.html` bật cờ
-  này; `studio/index.html` và `studio/word-paint.html` chạy chế độ chỉ thông báo nên không
+  này; `studio/index.html` (Word & Paint hợp nhất) chạy chế độ chỉ thông báo nên không
   bao giờ hiện khối. Đây là logic, không phải CSS ẩn.
 - Feature flag đọc từ `app_settings` qua RLS `public.*`: `public.whatsnew` bật/tắt khối
   cập nhật gần đây, `public.maintenance` hiện dải bảo trì toàn site. Hai bảng `app_settings`
@@ -274,6 +274,20 @@ DOMContentLoaded
   deploy migration `20261120000000`, Edge Function `chat-api` và bucket `chat-images` trên dự án
   Supabase thật. Trước đó `/chat/` hiển thị thông báo máy chủ chưa sẵn sàng.
 
+### 2.8. Bá Khí Studio hợp nhất (3.9.0)
+
+- Trước 3.9.0 có hai tệp: `studio/index.html` (trình thiết kế trang A4, khoá
+  `lexend-studio-doc`) và `studio/word-paint.html` (Word & Paint, khoá `bakhiStudio.v1`).
+  Nay `/studio/index.html` là **ứng dụng duy nhất** với ba chế độ Word / Paint / Chia đôi.
+- `studio/word-paint.html` chỉ còn nhiệm vụ tương thích: meta refresh +
+  `location.replace('index.html' + search + hash)`, kèm liên kết dự phòng khi JavaScript bị tắt.
+  Địa chỉ cũ, dấu trang và liên kết trong tài liệu cũ vẫn hoạt động.
+- **Nhập dữ liệu cũ** chạy một lần khi mở trang: đọc `lexend-studio-doc`, dựng HTML tĩnh
+  (hộp văn bản, ảnh data URL, hình/SVG giữ toạ độ trên trang A4), thêm tài liệu
+  `<tên> (Studio cũ)` vào `bakhiStudio.v1`, ghi mốc `migrated.legacy`. Khoá cũ không bị xoá.
+- Không có đồng hồ, không có bài tính giờ; Studio vẫn là công cụ sáng tạo tự nhịp, dữ liệu
+  cục bộ, không gửi nội dung lên máy chủ. Kiểm thử: `tools/qa/studio-smoke.js`.
+
 ### 2.4. Administrator Dashboard 4.2
 
 - `admin/index.html` nạp `bk-admin-dashboard.css` + `bk-devboard.js` + `bk-badges.js` (chỉ để đọc
@@ -366,14 +380,20 @@ Không có cơ chế nào sửa DOM câu hỏi, đáp án hay giải thích.
 `tools/content-integrity.js` băm sha256 từng tệp HTML sau khi loại bỏ **đúng khối script**
 do lớp nâng cấp chèn (đánh dấu bằng bình luận + đường dẫn `assets/bakhi/`). Từ 3.2.0, bộ lọc
 chấp nhận cả thẻ script có thuộc tính bổ sung (ví dụ `data-bk-notify-only="1"`), nên việc
-thêm chế độ chỉ thông báo không làm sai lệch hash.
+thêm chế độ chỉ thông báo không làm sai lệch hash. Từ 3.9.0, kiểu xuống dòng được chuẩn hoá
+về LF **trước** khi bỏ khối: nếu không, trên Windows (checkout CRLF) regex của khối shell
+không khớp và một thẻ `</script>` bị xoá nhầm, sinh báo động giả dù nội dung không đổi.
+Chuẩn hoá chỉ bỏ khác biệt CRLF/LF — thay đổi nội dung thật vẫn bị phát hiện.
 
-Baseline lưu tại `docs/content-baseline.json` (**119 tệp**, kèm thống kê câu hỏi/giải thích).
+Baseline lưu tại `docs/content-baseline.json` (**122 tệp**, kèm thống kê câu hỏi/giải thích).
 
-Kết quả sau nâng cấp: **119/119 tệp không đổi nội dung** (`verify` thoát mã 0). Nguyên tắc:
+Kết quả sau nâng cấp: **122/122 tệp không đổi nội dung** (`verify` thoát mã 0). Nguyên tắc:
 - Dòng chứa `assets/bakhi/` là dòng của lớp nâng cấp, được phép thay đổi.
 - Mọi thay đổi khác trong tệp nội dung đều bị coi là regression.
 - Không chạy `baseline` để “che” thay đổi nội dung; chỉ chạy khi thực sự có thay đổi được duyệt.
+- Trang **không có nội dung giáo dục** được viết lại có chủ đích (trang chủ, `studio/`) thì
+  dùng `tools/content-integrity-refresh.js <tệp…>`: tool từ chối tệp có dấu hiệu nội dung
+  giáo dục và ghi lý do vào `notes` của baseline, thay vì ghi đè toàn bộ baseline.
 
 ## 6. Bảo mật
 

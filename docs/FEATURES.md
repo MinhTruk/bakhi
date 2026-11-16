@@ -1,4 +1,4 @@
-# Tính năng Bá Khí 3.8
+# Tính năng Bá Khí 3.9
 
 Tài liệu liệt kê toàn bộ tính năng đang có, trạng thái và ghi chú triển khai. Ký hiệu:
 ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị chặn
@@ -94,7 +94,8 @@ Không có animation favicon và không có Highlight Manager độc lập.
   `M` tắt tiếng (chỉ khi panel nhạc mở), `Esc` đóng.
 - **Thông báo**: bấm chuông (header ở trang chủ, góc phải dưới ở trang bài học/Studio);
   bấm “Đánh dấu tất cả đã đọc” để xoá badge; bấm một mục để đọc đầy đủ.
-- **Studio**: avatar → Bá Khí Studio, hoặc `/studio/word-paint.html`.
+- **Studio**: avatar → Bá Khí Studio, hoặc `/studio/` (địa chỉ cũ `/studio/word-paint.html`
+  tự chuyển hướng).
 
 URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bookmarks`,
 `?bk=history`, `?bk=achievements`, `?bk=settings`, `?bk=search&q=...`.
@@ -107,7 +108,7 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 3. AI chỉ tạo nội dung **tham khảo**, luôn gắn nhãn “Nội dung do AI tạo — không phải
    nội dung gốc đã kiểm duyệt”. Không có thao tác nào để AI sửa câu hỏi/đáp án gốc.
 
-## G. Bá Khí Studio — Word & Paint (`studio/word-paint.html`)
+## G. Bá Khí Studio — Word & Paint (`studio/index.html`)
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
@@ -121,6 +122,9 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 8 | Nhiều tài liệu: mới, mở, đổi tên, nhân bản, xoá | ✅ | Danh sách bên trái |
 | 9 | Lưu tự động, xuất HTML tự chứa, xuất TXT, mở `.html/.txt`, in/PDF | ✅ | `bakhiStudio.v1` |
 | 10 | Đếm từ/ký tự, trạng thái lưu, thông báo `aria-live` | ✅ | Lưu sau 0,5 giây |
+| 11 | **Một ứng dụng duy nhất** tại `/studio/`; bỏ bản Studio rút gọn | ✅ | `word-paint.html` chỉ còn trang chuyển hướng |
+| 12 | **Nhập dữ liệu Studio cũ** (`lexend-studio-doc`): văn bản, ảnh, hình SVG | ✅ | Nhập một lần, giữ khoá cũ, đánh dấu trong `migrated.legacy` |
+| 13 | **Tương thích địa chỉ cũ** `/studio/word-paint.html` | ✅ | Meta refresh + `location.replace`, giữ query/hash |
 
 ## H. Thành tích & tín hiệu dùng chung
 

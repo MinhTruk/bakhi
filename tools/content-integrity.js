@@ -39,15 +39,22 @@ function walk(dir, out = []) {
 /**
  * Bỏ đúng khối do lớp nâng cấp chèn vào (bình luận đánh dấu + các thẻ script).
  * Sau đó bỏ nốt mọi dòng còn sót tham chiếu assets/bakhi để chắc chắn.
+ *
+ * LƯU Ý: chuẩn hoá CRLF → LF TRƯỚC khi bỏ khối. Nếu không, regex của khối shell
+ * (vốn giả định "\n<!-- … -->\n") sẽ không khớp trên tệp CRLF; khi đó khối bị bỏ
+ * theo đường khác và thẻ `</script>` của trang bị "dính" vào dòng assets/bakhi
+ * nên bị xoá luôn — hash đổi dù nội dung giáo dục không đổi. Chuẩn hoá kiểu
+ * xuống dòng chỉ bỏ khác biệt CRLF/LF, không che giấu thay đổi nội dung.
  */
 function stripInjected(source) {
   return source
+    .replace(/\r\n/g, '\n')
     /* Khối shell (tools/inject-shell.js) chèn đúng chuỗi
        "\n<!-- ... -->\n<script…>\n…\n"; bỏ chính xác chuỗi đó TRƯỚC các
        bước khác để khôi phục nguyên văn bản gốc trước khi chèn. */
     .replace(/\n<!--\s*assets\/bakhi\/shell[^\n]*-->\n(?:<script src="[^"]*assets\/bakhi\/[^"]*"[^>]*><\/script>\n)*/g, '')
-    .replace(/\r?\n<!-- Bá Khí Learning Platform[\s\S]*?-->\s*(?:<script src="[^"]*assets\/bakhi\/[^"]*"[^>]*><\/script>\s*)*/g, '')
-    .split(/\r?\n/)
+    .replace(/\n<!-- Bá Khí Learning Platform[\s\S]*?-->\s*(?:<script src="[^"]*assets\/bakhi\/[^"]*"[^>]*><\/script>\s*)*/g, '')
+    .split('\n')
     .filter((line) => !/assets\/bakhi\//.test(line))
     .join('\n');
 }
@@ -73,7 +80,7 @@ function stats(source) {
 
 function snapshot() {
   const files = walk(ROOT).sort();
-  const data = { generatedAt: new Date().toISOString(), algorithm: 'sha256(strip(assets/bakhi lines))', files: {} };
+  const data = { generatedAt: new Date().toISOString(), algorithm: 'sha256(strip(assets/bakhi lines, CRLF→LF))', files: {} };
   for (const file of files) {
     const rel = path.relative(ROOT, file).split(path.sep).join('/');
     const raw = fs.readFileSync(file, 'utf8');
@@ -122,4 +129,7 @@ function main() {
   console.log('OK — không có nội dung giáo dục nào bị thay đổi.');
 }
 
-main();
+if (require.main === module) main();
+
+/* Dùng lại từ tools/content-integrity-refresh.js để hai công cụ không lệch nhau. */
+module.exports = { stripInjected, sha, stats, snapshot };
