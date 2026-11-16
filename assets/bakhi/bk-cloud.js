@@ -874,13 +874,24 @@
        ------------------------------------------------------------------ */
     function readAnnouncementIds() {
         if (NOTIFY_ONLY) return Promise.resolve(localReads());
-        if (!S.bound || !S.student) return Promise.resolve({});
+        if (!S.bound || !S.student) return Promise.resolve(localReads());
         return client().from('announcement_reads')
             .select('announcement_id, read_at')
             .eq('student_id', S.student.id)
             .then(function (res) {
                 var map = {};
                 (res.data || []).forEach(function (r) { map[r.announcement_id] = r.read_at; });
+                /*
+                 * Trang bài học chỉ có chế độ thông báo nên lưu trạng thái đã đọc
+                 * trong localStorage. Khi quay lại trang chủ, hợp nhất các mốc đó
+                 * vào bản Supabase thay vì làm thông báo "chưa đọc" trở lại.
+                 */
+                var local = localReads();
+                var localOnly = [];
+                Object.keys(local).forEach(function (id) {
+                    if (!map[id]) { map[id] = local[id]; localOnly.push(id); }
+                });
+                S.localOnlyReads = localOnly;
                 return map;
             });
     }
@@ -906,6 +917,21 @@
                 return readAnnouncementIds().catch(function () { return {}; });
             }).then(function (reads) {
                 S.reads = reads || {};
+                saveLocalReads(S.reads);
+                var pending = (S.localOnlyReads || []).filter(function (id) {
+                    return S.announcements.some(function (a) { return a.id === id; });
+                });
+                S.localOnlyReads = [];
+                if (S.bound && pending.length) {
+                    var pendingRows = pending.map(function (id) {
+                        return { student_id: S.student.id, announcement_id: id, read_at: S.reads[id] };
+                    });
+                    client().from('announcement_reads')
+                        .upsert(pendingRows, { onConflict: 'student_id,announcement_id' })
+                        .then(function (res) {
+                            if (res.error) console.warn('[BKCloud] push reads', res.error.message);
+                        });
+                }
                 S.annLoading = false;
                 paintBell();
                 if (S.panelOpen) renderPanel();
@@ -1340,6 +1366,7 @@
         }
         if (!S.bound || !S.student || S.reads[id]) return Promise.resolve();
         S.reads[id] = new Date().toISOString();
+        saveLocalReads(S.reads);
         paintBell();
         return client().from('announcement_reads').upsert({
             student_id: S.student.id,
@@ -1370,6 +1397,7 @@
             S.reads[a.id] = stamp;
             return { student_id: S.student.id, announcement_id: a.id, read_at: stamp };
         });
+        saveLocalReads(S.reads);
         paintBell();
         renderPanel();
         client().from('announcement_reads')
@@ -1827,7 +1855,13 @@
     }
 
     function syncStudent() {
-        if (!S.bound || S.studentBusy || S.studentDisabled) return Promise.resolve(null);
+        if (!S.bound || S.studentDisabled) return Promise.resolve(null);
+        if (S.studentBusy) {
+            /* Có thay đổi badge đến trong lúc đang kéo hồ sơ: hẹn lượt kế tiếp
+               thay vì bỏ mất sự kiện realtime. */
+            scheduleStudentSync(900);
+            return Promise.resolve(null);
+        }
         var fn = CFG.functions && CFG.functions.studentProfile;
         if (!fn) return Promise.resolve(null);
         var local = null;

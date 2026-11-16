@@ -258,115 +258,115 @@
 
     var CATALOG = [
         /* --- Học tập (14) --- */
-        b('learn-first-lesson', 'Chạm Ngõ Tri Thức', 'Mở bài học đầu tiên.', 'fa-book-open', 'learning', 'common', 1, 'lessons', 'leaf'),
-        b('learn-lessons-5', 'Lữ Khách Nhập Môn', 'Mở 5 bài học khác nhau.', 'fa-book', 'learning', 'common', 5, 'lessons'),
-        b('learn-lessons-15', 'Nhà Thám Hiểm Bài Học', 'Mở 15 bài học khác nhau.', 'fa-book-open-reader', 'learning', 'uncommon', 15, 'lessons', 'celestial'),
-        b('learn-lessons-30', 'Học Giả Đường Dài', 'Mở 30 bài học khác nhau.', 'fa-graduation-cap', 'learning', 'rare', 30, 'lessons', 'wreath'),
-        b('learn-subjects-3', 'Ba Cánh Cửa Mở', 'Mở bài học ở 3 môn trở lên.', 'fa-layer-group', 'learning', 'uncommon', 3, 'subjects'),
+        b('learn-first-lesson', 'Tri Thức Nhập Môn', 'Mở bài học đầu tiên.', 'fa-book-open', 'learning', 'common', 1, 'lessons', 'leaf'),
+        b('learn-lessons-5', 'Ngũ Đường Khai Giác', 'Mở 5 bài học khác nhau.', 'fa-book', 'learning', 'common', 5, 'lessons'),
+        b('learn-lessons-15', 'Thập Ngũ Kinh Hành', 'Mở 15 bài học khác nhau.', 'fa-book-open-reader', 'learning', 'uncommon', 15, 'lessons', 'celestial'),
+        b('learn-lessons-30', 'Tam Thập Thông Tuệ', 'Mở 30 bài học khác nhau.', 'fa-graduation-cap', 'learning', 'rare', 30, 'lessons', 'wreath'),
+        b('learn-subjects-3', 'Tam Môn Khai Kiến', 'Mở bài học ở 3 môn trở lên.', 'fa-layer-group', 'learning', 'uncommon', 3, 'subjects'),
         b('learn-subjects-5', 'Ngũ Môn Tinh Thông', 'Mở bài học ở 5 môn trở lên.', 'fa-shapes', 'learning', 'rare', 5, 'subjects', 'divine'),
-        b('learn-first-answer', 'Tiếng Chuông Đầu Tiên', 'Hoàn thành lượt luyện đầu tiên.', 'fa-circle-question', 'learning', 'common', 1, 'practice'),
-        b('learn-practice-25', 'Tay Luyện Chăm Chỉ', 'Hoàn thành 25 lượt luyện tập.', 'fa-dumbbell', 'learning', 'common', 25, 'practice'),
+        b('learn-first-answer', 'Sơ Chung Khải Ngộ', 'Hoàn thành lượt luyện đầu tiên.', 'fa-circle-question', 'learning', 'common', 1, 'practice'),
+        b('learn-practice-25', 'Nhị Thập Ngũ Tâm Ấn', 'Hoàn thành 25 lượt luyện tập.', 'fa-dumbbell', 'learning', 'common', 25, 'practice'),
         b('learn-practice-100', 'Bách Luyện Thành Tài', 'Hoàn thành 100 lượt luyện tập.', 'fa-fire', 'learning', 'uncommon', 100, 'practice'),
         b('learn-practice-500', 'Ngũ Bách Tinh Anh', 'Hoàn thành 500 lượt luyện tập.', 'fa-bolt', 'learning', 'epic', 500, 'practice', 'royal'),
-        b('learn-correct-15', 'Chuỗi Đúng Đầu Tay', 'Trả lời đúng 15 câu hỏi.', 'fa-circle-check', 'learning', 'common', 15, 'correct'),
+        b('learn-correct-15', 'Thập Ngũ Chính Niệm', 'Trả lời đúng 15 câu hỏi.', 'fa-circle-check', 'learning', 'common', 15, 'correct'),
         b('learn-correct-100', 'Bách Phát Bách Trúng', 'Trả lời đúng 100 câu hỏi.', 'fa-award', 'learning', 'rare', 100, 'correct', 'infernal'),
-        b('learn-review-first', 'Lần Giở Lại Đầu Tiên', 'Có câu hỏi đầu tiên trong danh sách ôn.', 'fa-rotate', 'learning', 'common', 1, 'review'),
-        b('learn-mastered-10', 'Mười Câu Trong Tầm Tay', 'Đánh dấu thành thạo 10 câu từng sai.', 'fa-check-double', 'learning', 'rare', 10, 'mastered', 'legendary'),
+        b('learn-review-first', 'Hồi Quang Sơ Chiếu', 'Có câu hỏi đầu tiên trong danh sách ôn.', 'fa-rotate', 'learning', 'common', 1, 'review'),
+        b('learn-mastered-10', 'Thập Câu Nhập Tâm', 'Đánh dấu thành thạo 10 câu từng sai.', 'fa-check-double', 'learning', 'rare', 10, 'mastered', 'legendary'),
 
         /* --- Khám phá (10) --- */
-        b('explore-pages-5', 'Bước Chân Đầu', 'Ghé 5 trang khác nhau của Bá Khí.', 'fa-shoe-prints', 'exploration', 'common', 5, 'pages'),
-        b('explore-pages-20', 'Lữ Trình Khám Phá', 'Ghé 20 trang khác nhau.', 'fa-route', 'exploration', 'uncommon', 20, 'pages'),
-        b('explore-pages-50', 'Bản Đồ Bá Khí', 'Ghé 50 trang khác nhau.', 'fa-map', 'exploration', 'epic', 50, 'pages', 'sakura'),
-        b('explore-studio', 'Mở Cửa Xưởng Sáng Tạo', 'Mở Bá Khí Studio.', 'fa-wand-magic-sparkles', 'exploration', 'common', 1, 'studioVisited'),
-        b('explore-settings', 'Kiến Trúc Góc Học', 'Mở trang Cài đặt.', 'fa-gear', 'exploration', 'common', 1, 'settingsVisited'),
-        b('explore-profile', 'Tấm Gương Tự Thấy', 'Mở trang Hồ sơ cá nhân.', 'fa-id-card', 'exploration', 'common', 1, 'profileVisited'),
-        b('explore-palette', 'Phím Tắt Thần Tốc', 'Mở bảng lệnh (Ctrl/⌘ + K).', 'fa-terminal', 'exploration', 'uncommon', 1, 'palette', 'ancient'),
-        b('explore-search', 'Kho Báu Trong Tầm Tay', 'Dùng tìm kiếm ít nhất một lần.', 'fa-magnifying-glass', 'exploration', 'common', 1, 'searchUsed'),
-        b('explore-theme', 'Bật Công Tắc Ánh Sáng', 'Chuyển giao diện sáng/tối.', 'fa-circle-half-stroke', 'exploration', 'common', 1, 'themeToggles'),
-        b('explore-badges', 'Mở Kho Báu Huy Hiệu', 'Mở danh sách badge trong hồ sơ.', 'fa-medal', 'exploration', 'uncommon', 1, 'badgesViewed'),
+        b('explore-pages-5', 'Sơ Tẩu Trần Gian', 'Ghé 5 trang khác nhau của Bá Khí.', 'fa-shoe-prints', 'exploration', 'common', 5, 'pages'),
+        b('explore-pages-20', 'Vạn Dặm Hành Vân', 'Ghé 20 trang khác nhau.', 'fa-route', 'exploration', 'uncommon', 20, 'pages'),
+        b('explore-pages-50', 'Bá Khí Thiên Đồ', 'Ghé 50 trang khác nhau.', 'fa-map', 'exploration', 'epic', 50, 'pages', 'sakura'),
+        b('explore-studio', 'Khai Môn Tạo Giới', 'Mở Bá Khí Studio.', 'fa-wand-magic-sparkles', 'exploration', 'common', 1, 'studioVisited'),
+        b('explore-settings', 'Tĩnh Thất Kiến Tâm', 'Mở trang Cài đặt.', 'fa-gear', 'exploration', 'common', 1, 'settingsVisited'),
+        b('explore-profile', 'Minh Kính Tự Chiếu', 'Mở trang Hồ sơ cá nhân.', 'fa-id-card', 'exploration', 'common', 1, 'profileVisited'),
+        b('explore-palette', 'Chỉ Quyết Thần Hành', 'Mở bảng lệnh (Ctrl/⌘ + K).', 'fa-terminal', 'exploration', 'uncommon', 1, 'palette', 'ancient'),
+        b('explore-search', 'Tầm Bảo Nhất Niệm', 'Dùng tìm kiếm ít nhất một lần.', 'fa-magnifying-glass', 'exploration', 'common', 1, 'searchUsed'),
+        b('explore-theme', 'Âm Dương Chuyển Hóa', 'Chuyển giao diện sáng/tối.', 'fa-circle-half-stroke', 'exploration', 'common', 1, 'themeToggles'),
+        b('explore-badges', 'Khải Huy Hiệu Tàng', 'Mở danh sách badge trong hồ sơ.', 'fa-medal', 'exploration', 'uncommon', 1, 'badgesViewed'),
 
         /* --- Đều đặn (8) --- */
-        b('consist-days-2', 'Ngày Thứ Hai Không Bỏ Cuộc', 'Hoạt động trong 2 ngày khác nhau.', 'fa-calendar-day', 'consistency', 'common', 2, 'days'),
-        b('consist-days-3', 'Ba Ngày Bền Bỉ', 'Hoạt động trong 3 ngày khác nhau.', 'fa-calendar-days', 'consistency', 'common', 3, 'days'),
-        b('consist-days-7', 'Một Tuần Không Nghỉ', 'Hoạt động trong 7 ngày khác nhau.', 'fa-calendar-week', 'consistency', 'uncommon', 7, 'days'),
-        b('consist-days-14', 'Nửa Tháng Kiên Tâm', 'Hoạt động trong 14 ngày khác nhau.', 'fa-calendar', 'consistency', 'rare', 14, 'days', 'eternal'),
-        b('consist-days-30', 'Một Tháng Bền Bỉ', 'Hoạt động trong 30 ngày khác nhau.', 'fa-calendar-plus', 'consistency', 'epic', 30, 'days', 'sunflower'),
-        b('consist-streak-3', 'Chuỗi Ba Ngày', 'Học liên tiếp 3 ngày.', 'fa-link', 'consistency', 'uncommon', 3, 'streak'),
-        b('consist-streak-7', 'Chuỗi Bảy Ngày', 'Học liên tiếp 7 ngày.', 'fa-fire-flame-curved', 'consistency', 'rare', 7, 'streak'),
-        b('consist-streak-30', 'Chuỗi Ba Mươi Ngày', 'Học liên tiếp 30 ngày.', 'fa-infinity', 'consistency', 'legendary', 30, 'streak', 'crown'),
+        b('consist-days-2', 'Nhị Nhật Bất Thoái', 'Hoạt động trong 2 ngày khác nhau.', 'fa-calendar-day', 'consistency', 'common', 2, 'days'),
+        b('consist-days-3', 'Tam Nhật Trường Cửu', 'Hoạt động trong 3 ngày khác nhau.', 'fa-calendar-days', 'consistency', 'common', 3, 'days'),
+        b('consist-days-7', 'Thất Nhật Vô Han', 'Hoạt động trong 7 ngày khác nhau.', 'fa-calendar-week', 'consistency', 'uncommon', 7, 'days'),
+        b('consist-days-14', 'Thập Tứ Nhật Định Tâm', 'Hoạt động trong 14 ngày khác nhau.', 'fa-calendar', 'consistency', 'rare', 14, 'days', 'eternal'),
+        b('consist-days-30', 'Tam Thập Nhật Viên Mãn', 'Hoạt động trong 30 ngày khác nhau.', 'fa-calendar-plus', 'consistency', 'epic', 30, 'days', 'sunflower'),
+        b('consist-streak-3', 'Liên Tam Chi Mạch', 'Học liên tiếp 3 ngày.', 'fa-link', 'consistency', 'uncommon', 3, 'streak'),
+        b('consist-streak-7', 'Thất Tinh Liên Châu', 'Học liên tiếp 7 ngày.', 'fa-fire-flame-curved', 'consistency', 'rare', 7, 'streak'),
+        b('consist-streak-30', 'Tam Thập Thiên Cương', 'Học liên tiếp 30 ngày.', 'fa-infinity', 'consistency', 'legendary', 30, 'streak', 'crown'),
 
         /* --- Âm nhạc (9) --- */
-        b('music-first', 'Nốt Nhạc Đầu Tiên', 'Phát bài hát đầu tiên.', 'fa-music', 'music', 'common', 1, 'musicPlays'),
-        b('music-10', 'Giai Điệu Đồng Hành', 'Nghe trọn 10 lượt nhạc.', 'fa-headphones', 'music', 'common', 10, 'musicPlays'),
-        b('music-50', 'Năm Mươi Bản Tình Ca', 'Nghe trọn 50 lượt nhạc.', 'fa-volume-high', 'music', 'uncommon', 50, 'musicPlays'),
-        b('music-200', 'Tai Nghe Bất Tận', 'Nghe trọn 200 lượt nhạc.', 'fa-record-vinyl', 'music', 'rare', 200, 'musicPlays', 'ear-cat'),
-        b('music-tracks-5', 'Bộ Sưu Tầm Giai Điệu', 'Nghe trọn 5 bài khác nhau.', 'fa-list-music', 'music', 'common', 5, 'musicTracks'),
-        b('music-shuffle', 'Ngẫu Hứng Bất Tận', 'Bật phát ngẫu nhiên.', 'fa-shuffle', 'music', 'uncommon', 1, 'shuffleUsed', 'neon'),
-        b('music-repeat', 'Vòng Lặp Yêu Thương', 'Bật chế độ lặp.', 'fa-repeat', 'music', 'uncommon', 1, 'repeatUsed'),
-        b('music-queue', 'Hàng Đợi Giai Điệu', 'Thêm bài hát vào hàng đợi.', 'fa-layer-plus', 'music', 'uncommon', 1, 'queueUsed'),
-        b('music-same-20', 'Một Bài Hát, Hai Mươi Lần', 'Nghe trọn cùng một bản nhạc 20 lần.', 'fa-repeat', 'music', 'legendary', 20, 'sameTrack', 'ear-fox'),
+        b('music-first', 'Sơ Âm Khai Khiếu', 'Phát bài hát đầu tiên.', 'fa-music', 'music', 'common', 1, 'musicPlays'),
+        b('music-10', 'Đồng Hành Hòa Khúc', 'Nghe trọn 10 lượt nhạc.', 'fa-headphones', 'music', 'common', 10, 'musicPlays'),
+        b('music-50', 'Ngũ Thập Tình Khúc', 'Nghe trọn 50 lượt nhạc.', 'fa-volume-high', 'music', 'uncommon', 50, 'musicPlays'),
+        b('music-200', 'Vô Tận Âm Trường', 'Nghe trọn 200 lượt nhạc.', 'fa-record-vinyl', 'music', 'rare', 200, 'musicPlays', 'ear-cat'),
+        b('music-tracks-5', 'Ngũ Hành Giai Điệu', 'Nghe trọn 5 bài khác nhau.', 'fa-list-music', 'music', 'common', 5, 'musicTracks'),
+        b('music-shuffle', 'Thiên Cơ Tùy Hứng', 'Bật phát ngẫu nhiên.', 'fa-shuffle', 'music', 'uncommon', 1, 'shuffleUsed', 'neon'),
+        b('music-repeat', 'Luân Hồi Tình Khúc', 'Bật chế độ lặp.', 'fa-repeat', 'music', 'uncommon', 1, 'repeatUsed'),
+        b('music-queue', 'Liệt Khúc Đãi Thời', 'Thêm bài hát vào hàng đợi.', 'fa-layer-plus', 'music', 'uncommon', 1, 'queueUsed'),
+        b('music-same-20', 'Nhất Khúc Nhị Thập Hồi', 'Nghe trọn cùng một bản nhạc 20 lần.', 'fa-repeat', 'music', 'legendary', 20, 'sameTrack', 'ear-fox'),
 
         /* --- Tương tác (8) --- */
-        b('inter-first-effect', 'Vì Sao Đầu Tiên', 'Dùng hiệu ứng sao băng lần đầu.', 'fa-meteor', 'interaction', 'common', 1, 'meteors'),
-        b('inter-meteor-10', 'Mười Vì Sao', 'Bắn 10 sao băng.', 'fa-star', 'interaction', 'common', 10, 'meteors'),
-        b('inter-meteor-100', 'Trăm Vì Sao', 'Bắn 100 sao băng.', 'fa-star-half-stroke', 'interaction', 'uncommon', 100, 'meteors'),
-        b('inter-meteor-1000', 'Mưa Sao Băng', 'Bắn 1.000 sao băng.', 'fa-cloud-moon', 'interaction', 'epic', 1000, 'meteors', 'star'),
-        b('inter-meteor-10000', 'Bão Sao Băng', 'Bắn 10.000 sao băng.', 'fa-meteor', 'interaction', 'legendary', 10000, 'meteors', 'horn-dragon'),
-        b('inter-music-fab', 'Chạm Vào Giai Điệu', 'Mở bảng Music Player.', 'fa-compact-disc', 'interaction', 'common', 1, 'musicOpened'),
-        b('inter-focus', 'Vùng Tập Trung', 'Bật chế độ tập trung khi học.', 'fa-crosshairs', 'interaction', 'uncommon', 1, 'focusUsed', 'cyber'),
-        b('inter-dark-mode', 'Người Bạn Của Bóng Đêm', 'Bật giao diện tối.', 'fa-moon', 'interaction', 'common', 1, 'themeToggles'),
+        b('inter-first-effect', 'Sơ Tinh Điểm Nhất', 'Dùng hiệu ứng sao băng lần đầu.', 'fa-meteor', 'interaction', 'common', 1, 'meteors'),
+        b('inter-meteor-10', 'Thập Tinh Liên Châu', 'Bắn 10 sao băng.', 'fa-star', 'interaction', 'common', 10, 'meteors'),
+        b('inter-meteor-100', 'Bách Tinh Huyền Vũ', 'Bắn 100 sao băng.', 'fa-star-half-stroke', 'interaction', 'uncommon', 100, 'meteors'),
+        b('inter-meteor-1000', 'Lưu Tinh Kiếm Vũ', 'Bắn 1.000 sao băng.', 'fa-cloud-moon', 'interaction', 'epic', 1000, 'meteors', 'star'),
+        b('inter-meteor-10000', 'Thiên Thạch Loạn Vũ', 'Bắn 10.000 sao băng.', 'fa-meteor', 'interaction', 'legendary', 10000, 'meteors', 'horn-dragon'),
+        b('inter-music-fab', 'Chạm Khúc Thông Linh', 'Mở bảng Music Player.', 'fa-compact-disc', 'interaction', 'common', 1, 'musicOpened'),
+        b('inter-focus', 'Định Cảnh Thiền Tâm', 'Bật chế độ tập trung khi học.', 'fa-crosshairs', 'interaction', 'uncommon', 1, 'focusUsed', 'cyber'),
+        b('inter-dark-mode', 'Dạ Hành Tri Kỷ', 'Bật giao diện tối.', 'fa-moon', 'interaction', 'common', 1, 'themeToggles'),
 
         /* --- Hồ sơ (6) --- */
-        b('social-nickname', 'Dấu Ấn Riêng', 'Đặt biệt danh cho hồ sơ.', 'fa-signature', 'social', 'common', 1, 'profileNickname'),
-        b('social-avatar', 'Khuôn Mặt Của Bạn', 'Tải ảnh đại diện lên.', 'fa-image-portrait', 'social', 'common', 1, 'profileAvatar', 'leaf'),
-        b('social-banner', 'Bức Tranh Phía Sau', 'Đặt ảnh bìa hồ sơ.', 'fa-panorama', 'social', 'uncommon', 1, 'profileBanner'),
-        b('social-bio', 'Lời Tự Giới Thiệu', 'Viết giới thiệu bản thân.', 'fa-quote-left', 'social', 'common', 1, 'profileBio'),
-        b('social-links-2', 'Cầu Nối Hai Chiều', 'Thêm ít nhất 2 liên kết mạng xã hội.', 'fa-link', 'social', 'uncommon', 2, 'profileLinks'),
-        b('social-frame', 'Vương Miện Nhỏ', 'Trang bị một khung avatar.', 'fa-crown', 'social', 'rare', 1, 'profileFrame', 'ear-bunny'),
+        b('social-nickname', 'Danh Tính Độc Tôn', 'Đặt biệt danh cho hồ sơ.', 'fa-signature', 'social', 'common', 1, 'profileNickname'),
+        b('social-avatar', 'Chân Dung Tự Tại', 'Tải ảnh đại diện lên.', 'fa-image-portrait', 'social', 'common', 1, 'profileAvatar', 'leaf'),
+        b('social-banner', 'Hậu Cảnh Thiên Thu', 'Đặt ảnh bìa hồ sơ.', 'fa-panorama', 'social', 'uncommon', 1, 'profileBanner'),
+        b('social-bio', 'Tự Ngã Chi Ngôn', 'Viết giới thiệu bản thân.', 'fa-quote-left', 'social', 'common', 1, 'profileBio'),
+        b('social-links-2', 'Song Liên Tâm Kiều', 'Thêm ít nhất 2 liên kết mạng xã hội.', 'fa-link', 'social', 'uncommon', 2, 'profileLinks'),
+        b('social-frame', 'Tiểu Quán Miện', 'Trang bị một khung avatar.', 'fa-crown', 'social', 'rare', 1, 'profileFrame', 'ear-bunny'),
 
         /* --- Sáng tạo / Studio (8) --- */
-        b('studio-doc', 'Trang Giấy Trắng Đầu Tiên', 'Lưu tài liệu đầu tiên trong Studio.', 'fa-file-lines', 'studio', 'common', 1, 'studioDocs'),
-        b('studio-drawing', 'Nét Cọ Đầu Tiên', 'Lưu một bản vẽ trong Studio.', 'fa-paintbrush', 'studio', 'common', 1, 'studioDrawings'),
-        b('studio-insert', 'Người Kể Chuyện Bằng Hình', 'Chèn bản vẽ vào tài liệu Studio.', 'fa-image', 'studio', 'uncommon', 1, 'studioInserts'),
-        b('studio-export', 'Tác Phẩm Ra Đời', 'Xuất tài liệu hoặc ảnh từ Studio.', 'fa-file-export', 'studio', 'common', 1, 'studioExports', 'phoenix'),
-        b('studio-words-500', 'Cây Bút Năm Trăm Từ', 'Viết một tài liệu dài 500 từ.', 'fa-feather-pointed', 'studio', 'rare', 500, 'studioWords', 'crystal'),
-        b('studio-docs-5', 'Thư Viện Năm Tài Liệu', 'Lưu 5 tài liệu trong Studio.', 'fa-folder-open', 'studio', 'uncommon', 5, 'studioDocs'),
-        b('studio-drawings-5', 'Bộ Sưu Tập Năm Bản Vẽ', 'Lưu 5 bản vẽ trong Studio.', 'fa-palette', 'studio', 'uncommon', 5, 'studioDrawings'),
-        b('studio-exports-10', 'Mười Lần Toả Sáng', 'Xuất 10 tệp từ Studio.', 'fa-file-arrow-down', 'studio', 'rare', 10, 'studioExports', 'antler'),
+        b('studio-doc', 'Bạch Chỉ Khai Thiên', 'Lưu tài liệu đầu tiên trong Studio.', 'fa-file-lines', 'studio', 'common', 1, 'studioDocs'),
+        b('studio-drawing', 'Sơ Bút Khai Linh', 'Lưu một bản vẽ trong Studio.', 'fa-paintbrush', 'studio', 'common', 1, 'studioDrawings'),
+        b('studio-insert', 'Họa Thuyết Nhân Gian', 'Chèn bản vẽ vào tài liệu Studio.', 'fa-image', 'studio', 'uncommon', 1, 'studioInserts'),
+        b('studio-export', 'Tác Phẩm Khai Sinh', 'Xuất tài liệu hoặc ảnh từ Studio.', 'fa-file-export', 'studio', 'common', 1, 'studioExports', 'phoenix'),
+        b('studio-words-500', 'Ngũ Bách Ngôn Phong', 'Viết một tài liệu dài 500 từ.', 'fa-feather-pointed', 'studio', 'rare', 500, 'studioWords', 'crystal'),
+        b('studio-docs-5', 'Ngũ Quyển Tàng Kinh', 'Lưu 5 tài liệu trong Studio.', 'fa-folder-open', 'studio', 'uncommon', 5, 'studioDocs'),
+        b('studio-drawings-5', 'Ngũ Họa Tàng Chân', 'Lưu 5 bản vẽ trong Studio.', 'fa-palette', 'studio', 'uncommon', 5, 'studioDrawings'),
+        b('studio-exports-10', 'Thập Độ Quang Huy', 'Xuất 10 tệp từ Studio.', 'fa-file-arrow-down', 'studio', 'rare', 10, 'studioExports', 'antler'),
 
         /* --- Bí mật / Hiếm (10) --- */
-        b('secret-night-owl', 'Cú Đêm Bí Ẩn', 'Học sau nửa đêm.', 'fa-moon', 'secret', 'secret', 1, 'nightOwl', 'star'),
-        b('secret-early-bird', 'Chim Sớm Tinh Khôi', 'Học trước 6 giờ sáng.', 'fa-sun', 'secret', 'secret', 1, 'earlyBird', 'frost'),
-        b('secret-subjects-all', 'Nhà Bác Học Đa Môn', 'Mở bài học ở cả 10 môn.', 'fa-atom', 'secret', 'legendary', 10, 'subjects', 'sakura'),
-        b('secret-notes-100', 'Sổ Tay Trăm Trang', 'Tạo 100 ghi chú học tập.', 'fa-book-bookmark', 'secret', 'epic', 100, 'notes', 'wreath'),
-        b('secret-bookmarks-50', 'Nhà Sưu Tầm Dấu Trang', 'Lưu 50 đánh dấu.', 'fa-bookmark', 'secret', 'epic', 50, 'bookmarks', 'gothic'),
-        b('secret-mastered-50', 'Bậc Thầy Ôn Tập', 'Làm chủ 50 câu từng sai.', 'fa-gem', 'secret', 'legendary', 50, 'mastered', 'ear-wolf'),
-        b('secret-one-subject-10', 'Người Đào Sâu Một Môn', 'Mở 10 bài học trong cùng một môn.', 'fa-microscope', 'secret', 'rare', 10, 'lessonsOneSubject', 'galactic'),
-        b('secret-collector-40', 'Bộ Sưu Tập 40', 'Mở khóa 40 badge.', 'fa-trophy', 'secret', 'legendary', 40, 'unlockedCount', 'sunflower'),
-        b('secret-collector-60', 'Bộ Sưu Tập 60', 'Mở khóa 60 badge.', 'fa-trophy-star', 'secret', 'legendary', 60, 'unlockedCount', 'horn-dragon'),
-        b('secret-completionist', 'Người Sưu Tầm Trọn Vẹn', 'Mở khóa 73 badge tự động.', 'fa-diamond', 'secret', 'legendary', 73, 'unlockedCount', 'crown'),
+        b('secret-night-owl', 'Dạ Ưng Vô Ảnh', 'Học sau nửa đêm.', 'fa-moon', 'secret', 'secret', 1, 'nightOwl', 'star'),
+        b('secret-early-bird', 'Tinh Khôi Thần Điểu', 'Học trước 6 giờ sáng.', 'fa-sun', 'secret', 'secret', 1, 'earlyBird', 'frost'),
+        b('secret-subjects-all', 'Bách Khoa Thông Giám', 'Mở bài học ở cả 10 môn.', 'fa-atom', 'secret', 'legendary', 10, 'subjects', 'sakura'),
+        b('secret-notes-100', 'Bách Diệp Tâm Kinh', 'Tạo 100 ghi chú học tập.', 'fa-book-bookmark', 'secret', 'epic', 100, 'notes', 'wreath'),
+        b('secret-bookmarks-50', 'Thư Xã Tàng Ấn', 'Lưu 50 đánh dấu.', 'fa-bookmark', 'secret', 'epic', 50, 'bookmarks', 'gothic'),
+        b('secret-mastered-50', 'Ôn Cố Tri Tân', 'Làm chủ 50 câu từng sai.', 'fa-gem', 'secret', 'legendary', 50, 'mastered', 'ear-wolf'),
+        b('secret-one-subject-10', 'Nhất Môn Cửu Trọng', 'Mở 10 bài học trong cùng một môn.', 'fa-microscope', 'secret', 'rare', 10, 'lessonsOneSubject', 'galactic'),
+        b('secret-collector-40', 'Tứ Thập Tinh Tập', 'Mở khóa 40 badge.', 'fa-trophy', 'secret', 'legendary', 40, 'unlockedCount', 'sunflower'),
+        b('secret-collector-60', 'Lục Thập Viên Mãn', 'Mở khóa 60 badge.', 'fa-trophy-star', 'secret', 'legendary', 60, 'unlockedCount', 'horn-dragon'),
+        b('secret-completionist', 'Thất Thập Tam Quy Tông', 'Mở khóa 73 badge tự động.', 'fa-diamond', 'secret', 'legendary', 73, 'unlockedCount', 'crown'),
 
         /* --- Chỉ Administrator trao (2) --- */
-        admin('admin-chosen', 'Được Chọn', 'Badge đặc biệt do quản trị viên trao tặng.', 'fa-hand-holding-heart'),
-        admin('admin-legend', 'Huyền Thoại Bá Khí', 'Badge cao nhất, chỉ Administrator trao tặng.', 'fa-crown'),
+        admin('admin-chosen', 'Thiên Tuyển Chi Ấn', 'Badge đặc biệt do quản trị viên trao tặng.', 'fa-hand-holding-heart'),
+        admin('admin-legend', 'Bá Khí Chí Tôn', 'Badge cao nhất, chỉ Administrator trao tặng.', 'fa-crown'),
 
         /* --- Độc quyền: Developer (2) + Founder (1) ---
            Chỉ Administrator trao; server kiểm tra quyền sở hữu khung tương ứng. */
         {
-            id: 'dev-exclusive-aurora', name: 'Cực Quang Developer',
-            desc: 'Khung Cực quang dành riêng cho Developer của Bá Khí.',
+            id: 'dev-exclusive-aurora', name: 'Dao Quang Tuyệt Ảnh',
+            desc: 'Khung Dao quang độc bản, chỉ Founder có thể trao.',
             icon: 'fa-code', category: 'secret', rarity: 'secret', goal: 1, key: null,
             frame: 'dev-aurora', adminOnly: true, exclusive: 'dev'
         },
         {
-            id: 'dev-exclusive-void', name: 'Hư Không Developer',
-            desc: 'Khung Hư không dành riêng cho Developer của Bá Khí.',
+            id: 'dev-exclusive-void', name: 'Vô Cực Hư Không',
+            desc: 'Khung Hư không độc bản, chỉ Founder có thể trao.',
             icon: 'fa-terminal', category: 'secret', rarity: 'secret', goal: 1, key: null,
             frame: 'dev-void', adminOnly: true, exclusive: 'dev'
         },
         {
-            id: 'founder', name: 'Người Sáng Lập Bá Khí',
-            desc: 'Danh hiệu tối cao dành cho người sáng lập Bá Khí — Minh Trúc.',
+            id: 'founder', name: 'Thiên Khải Sáng Thế',
+            desc: 'Ấn ký tối cao của người khai sáng Bá Khí — Minh Trúc.',
             icon: 'fa-crown', category: 'secret', rarity: 'secret', goal: 1, key: null,
             frame: 'founder', adminOnly: true, exclusive: 'founder'
         }
@@ -437,9 +437,8 @@
             } else {
                 cur = t.unlocked[x.id] ? 1 : 0;
             }
-            if (x.key === 'unlockedCount' && !x.adminOnly) {
-                /* goal 40/60/73 dùng đếm badge thường */
-            }
+            /* Badge được trao tay vẫn phải hiện đủ tiến độ, không phải 0/goal. */
+            if (t.unlocked[x.id]) cur = x.goal;
             cur = Math.max(0, Math.min(x.goal, cur));
             return {
                 id: x.id, name: x.name, desc: x.desc, icon: x.icon,
@@ -459,7 +458,7 @@
         if (!row) return '';
         if (row.adminOnly) {
             if (row.exclusive === 'founder') return 'Chỉ hồ sơ Người sáng lập đã xác minh mới nhận được.';
-            if (row.exclusive === 'dev') return 'Phần thưởng độc quyền của Developer Bá Khí, do Founder trao.';
+            if (row.exclusive === 'dev') return 'Ấn phẩm độc bản của Bá Khí, chỉ Founder có quyền trao.';
             return 'Do quản trị viên trao tay từ Administrator Dashboard.';
         }
         return row.desc + (row.goal > 1 ? ' Máy chủ xác minh tiến độ từ dữ liệu học tập của bạn.' : '');
@@ -572,18 +571,20 @@
             /* Badge Administrator chỉ hợp lệ khi máy chủ ghi rõ kind='admin'. */
             if (def.adminOnly && row.kind !== 'admin') return;
             present[id] = true;
-            if (t.unlocked[id]) return;
             var at = Date.parse(row.awarded_at);
             if (!isFinite(at) || at <= 0) at = Number(row.awarded_at) || Date.now();
-            t.unlocked[id] = at;
+            var already = !!t.unlocked[id];
+            if (!already) { t.unlocked[id] = at; added++; }
             if (def.adminOnly || row.kind === 'admin') {
-                t.granted[id] = {
-                    by: String(row.awarded_by || 'admin').slice(0, 60),
-                    at: at,
-                    reason: String(row.reason || '').slice(0, 200)
-                };
+                /* Không để bản ghi thiếu người trao ghi đè bản ghi đầy đủ. */
+                if (!t.granted[id] || row.awarded_by) {
+                    t.granted[id] = {
+                        by: String(row.awarded_by || 'admin').slice(0, 60),
+                        at: at,
+                        reason: String(row.reason || '').slice(0, 200)
+                    };
+                }
             }
-            added++;
         });
         /* Danh sách máy chủ là nguồn sự thật: thu hồi badge trao tay ở nơi khác
            phải biến mất ngay, nhưng KHÔNG bao giờ xoá badge tự động đã đạt. */

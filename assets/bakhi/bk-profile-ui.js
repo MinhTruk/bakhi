@@ -363,7 +363,7 @@
         var owned = api.ownedFrames();
         var current = api.get().frame;
         var b = B();
-        var TIERS = [['normal', 'Bộ sưu tập'], ['dev', 'Developer độc quyền'], ['founder', 'Người sáng lập']];
+        var TIERS = [['normal', 'Bộ sưu tập'], ['dev', 'Độc quyền'], ['founder', 'Người sáng lập']];
         TIERS.forEach(function (t) {
             var list = api.framesByTier ? api.framesByTier(t[0]) : api.frames;
             if (!list.length) return;
@@ -557,12 +557,19 @@
         if (global.BKShell) global.BKShell.mark('badges.viewed');
     }
 
+    function frameLabel(id) {
+        try {
+            var f = global.BKProfile && global.BKProfile.frameById ? global.BKProfile.frameById(id) : null;
+            return f && f.name ? f.name : String(id || '');
+        } catch (e) { return String(id || ''); }
+    }
+
     function badgeHow(row) {
         if (row.adminOnly) {
             return row.exclusive === 'founder'
                 ? 'Chỉ hồ sơ Người sáng lập đã xác minh mới nhận được. Founder có thể trao lại từ Founder Dashboard.'
                 : row.exclusive === 'dev'
-                    ? 'Phần thưởng độc quyền của Developer Bá Khí. Chỉ Founder trao từ Founder Dashboard.'
+                    ? 'Ấn phẩm độc quyền của Bá Khí. Chỉ Founder trao từ Founder Dashboard.'
                     : 'Do quản trị viên trao tay từ Administrator Dashboard, không tự mở bằng tiến độ học tập.';
         }
         if (row.rarity === 'secret' && !row.unlockedAt) {
@@ -607,7 +614,7 @@
 
         if (row.frame) {
             body.appendChild(el('p', 'bk-badge-detail-label', 'Phần thưởng'));
-            body.appendChild(el('p', null, 'Mở khóa khung avatar “' + row.frame + '” khi đạt badge này.'));
+            body.appendChild(el('p', null, 'Mở khóa khung avatar “' + frameLabel(row.frame) + '” khi đạt badge này.'));
         }
 
         if (global.BK && global.BK.ui && global.BK.ui.modal) {

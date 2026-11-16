@@ -406,6 +406,14 @@
 }
 .bkchat-msg:hover .bkchat-meta,
 .bkchat-msg:focus-within .bkchat-meta { opacity: 1; }
+/* Tin của chính mình luôn lộ nút Xoá — trên điện thoại không có hover. */
+.bkchat-msg.is-own .bkchat-meta { opacity: .82; }
+.bkchat-msg.is-own:hover .bkchat-meta,
+.bkchat-msg.is-own:focus-within .bkchat-meta { opacity: 1; }
+.bkchat-msg.is-own .bkchat-msg-action[data-delete] { color: #e11d48; }
+@media (hover: none), (pointer: coarse) {
+    .bkchat-meta { opacity: 1; }
+}
 .bkchat-time { font-size: .64rem; color: var(--bkl-muted); }
 .bkchat-msg-action {
     display: inline-flex;
@@ -417,7 +425,7 @@
     background: transparent;
     color: var(--bkl-muted);
     font: inherit;
-    font-size: .64rem;
+    font-size: .7rem;
     cursor: pointer;
 }
 .bkchat-msg-action:hover { background: var(--bkl-surface-2); color: var(--bkl-text); }

@@ -209,6 +209,13 @@ function main() {
   ok('applyServer không xoá badge cục bộ',
     w.BK.badges.progress().filter((p) => p.unlockedAt).length === localCount);
 
+  w.BK.badges.applyServer([
+    { badge_id: 'learn-practice-500', kind: 'admin', awarded_at: new Date().toISOString(), awarded_by: 'session-1' }
+  ]);
+  const granted = w.BK.badges.progress().find((p) => p.id === 'learn-practice-500');
+  ok('badge trao tay hiện tiến độ đầy đủ', !!granted && granted.current === granted.goal && granted.pct === 100,
+    granted && (granted.current + '/' + granted.goal + ' ' + granted.pct + '%'));
+
   const own = w.BK.badges.ownedFrames();
   ok('khung admin-legend mở khung crown', own.indexOf('crown') !== -1, own.join(','));
 

@@ -388,6 +388,8 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     articleClose.click();
     ok('đóng nội dung đầy đủ', !w.document.querySelector('.bkc-modal'));
     ok('đánh dấu đã đọc giảm badge', w.document.querySelector('.bkc-badge').textContent === '1', w.document.querySelector('.bkc-badge').textContent);
+    const savedReads = JSON.parse(w.localStorage.getItem('bakhiNotifyReads.v1') || '{}');
+    ok('đã đọc được lưu cho trang bài học', !!savedReads.a1, JSON.stringify(savedReads));
 
     /* Mở một phiên bản trong panel → xem nội dung từng mục. */
     const versionItem = w.document.querySelector('.bkc-item-version');

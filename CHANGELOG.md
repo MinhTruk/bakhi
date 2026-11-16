@@ -2,6 +2,30 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [6.1.1] — 2026-11-16
+
+### Sửa lỗi
+
+- **Xoá tin nhắn Chat**: bảng `chat_messages` không còn chặn trạng thái xoá mềm
+  (`body` rỗng, `image_path` null, `deleted_at` có giá trị). Migration
+  `20261124000000_bakhi_chat_soft_delete.sql` sửa ràng buộc; API `messages.delete`
+  đã trả `ok` và danh sách hiển thị “Tin nhắn đã được xoá”.
+- **Nút Xoá trên điện thoại**: hàng thời gian/thao tác của tin nhắn của mình luôn
+  hiện, không còn phụ thuộc hover; nút Xoá có màu đỏ và vùng chạm lớn hơn.
+- **Đồng bộ tiến độ badge được trao**: badge trao tay hiện đúng tiến độ đầy đủ,
+  không còn 0/goal; bản ghi trao từ máy chủ cập nhật cả khi badge đã có cục bộ.
+  Khi đang kéo hồ sơ mà badge thay đổi, client hẹn đồng bộ lại thay vì bỏ sự kiện.
+- **Thông báo đã đọc xuyên trang**: trạng thái đã đọc ở trang bài học được lưu
+  local, hợp nhất và đẩy lên Supabase khi về trang chủ; mở thông báo ở trang đầy
+  đủ cũng lưu local để trang bài học không hiện lại chưa đọc.
+
+### Cải tiến
+
+- **Tên badge và khung Hán-Việt**: đổi loạt tên sang hàm ý sâu hơn (Tri Thức
+  Nhập Môn, Bá Khí Thiên Đồ, Thất Tinh Liên Châu, Thiên Khải Sáng Thế…), bỏ chữ
+  “Developer” khỏi tên/khung độc quyền; khung dùng tên như Bồ Đề Sơ Diệp, Cửu
+  Trùng Miện, Ngân Hà Tinh Đồ. Id badge/khung giữ nguyên để không mất dữ liệu.
+
 ## [6.1.0] — 2026-11-16
 
 ### Tính năng

@@ -16,8 +16,9 @@ Hệ thống Supabase của Bá Khí gồm 4 phần:
 
 ## Founder Dashboard (6.0.1)
 
-1. Chạy lần lượt `supabase/migrations/20261122000000_bakhi_founder_6.sql` và
-   `supabase/migrations/20261123000000_bakhi_founder_full_badges.sql`.
+1. Chạy lần lượt `supabase/migrations/20261122000000_bakhi_founder_6.sql`,
+   `supabase/migrations/20261123000000_bakhi_founder_full_badges.sql` và
+   `supabase/migrations/20261124000000_bakhi_chat_soft_delete.sql`.
 2. Deploy lại Edge Functions `admin-auth` và `admin-actions` (hoặc toàn bộ 10 hàm).
 3. Migration đã seed sẵn một Founder Code (chỉ lưu SHA-256 trong `founder_config`).
    Đổi mã bằng cách cập nhật `code_hash` bằng SHA-256 của mã mới; không ghi mã gốc vào repo.
@@ -43,7 +44,7 @@ Project `wzvslyabhizsiggurwdq` **đã được cài đặt và kiểm chứng**:
 | Đồng bộ changelog (3.3.0) | ✅ 14 phiên bản, 8 tạo mới, 1 thông báo cho 3.2.1; chạy lại 0/0 |
 | Migration `20261118000000_bakhi_dev_sessions.sql` (3.5.0) | ⏳ chờ chạy — bảng `dev_sessions` tách khỏi phiên Administrator |
 | Migration `20261119000000_bakhi_profile_badges.sql` (3.6.0) | ⏳ chờ chạy — `student_profiles`, `student_badges`, khung avatar |
-| Migration `20261120000000_bakhi_chat.sql` (3.7.0) | ⏳ chờ chạy — bốn bảng chat, view `chat_profiles`, bucket `chat-images` |
+| Migration `20261120000000_bakhi_chat.sql` (3.7.0) | ✅ đã chạy — bốn bảng chat, view `chat_profiles`, bucket `chat-images` |
 | Edge Functions `dev-auth`, `student-profile`, `chat-api` | ⏳ chờ deploy — mã đã xong, kiểm thử cục bộ |
 
 > Ba migration và ba Edge Function mới (3.5.0–3.7.0) **chưa được chạy** trên project thật.
