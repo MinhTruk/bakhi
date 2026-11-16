@@ -1,10 +1,10 @@
-# Tính năng Bá Khí 3.3
+# Tính năng Bá Khí 3.4
 
 Tài liệu liệt kê toàn bộ tính năng đang có, trạng thái và ghi chú triển khai. Ký hiệu:
 ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị chặn
 
 Phạm vi: trang chủ, các trang môn học/bài học/đề kiểm tra, hai trang Studio, trình phát nhạc,
-Trung tâm học tập, Developer Playground, Administrator Dashboard và lớp Supabase.
+Trung tâm học tập, hồ sơ/cài đặt, Developer Playground, Administrator Dashboard và lớp Supabase.
 
 ## A. Nền tảng học tập (có trên mọi trang bài học + trang chủ)
 
@@ -76,17 +76,19 @@ nguyên vẹn và mở bằng nút trong menu 3 gạch hoặc lệnh trong palet
 
 ## E. Cách dùng nhanh
 
-- **Trung tâm học tập**: nút 🎓 ở góc phải dưới, hoặc `Ctrl+K` → “Trung tâm học tập”.
-- **Ôn câu sai**: nút ↻ trên dock; dùng `←/→` chuyển câu, `A/B/C/D` chọn đáp án.
-- **Ghi chú nhanh khi đang học**: nút 🎓 → 📝 trên trang bài học.
-- **Focus mode**: nút 🌙 hoặc `Esc` để thoát.
-- **Tìm kiếm**: phím `/` khi không ở trong ô nhập.
-- **Developer Playground**: `Ctrl+Shift+G` (cần xác thực Developer trước).
+- **Trung tâm học tập**: `Ctrl+K` → “Trung tâm học tập”, hoặc **Cài đặt → Trung tâm học tập**.
+- **Hồ sơ & thành tích**: bấm avatar ở góc phải header → Hồ sơ cá nhân (hoặc `/profile/`).
+- **Cài đặt**: avatar → Cài đặt (`/settings/`): hồ sơ, giao diện, trợ năng, hình nền, quyền.
+- **Ôn câu sai**: `Ctrl+K` → “Ôn tập câu đã sai”; dùng `←/→` chuyển câu, `A/B/C/D` chọn đáp án.
+- **Ghi chú nhanh khi đang học**: `Ctrl+K` → Ghi chú.
+- **Focus mode**: `Ctrl+K` → Chế độ tập trung, hoặc `Esc` để thoát.
+- **Tìm kiếm**: phím `/` khi không ở trong ô nhập, hoặc ô tìm kiếm trong menu tài khoản.
+- **Developer Playground**: `Ctrl+Shift+G` (chỉ khi máy đã có quyền Developer).
 - **Music Player**: logo ♪ góc trái dưới; `Space` phát/tạm dừng, `←/→` tua 5 giây,
   `M` tắt tiếng (chỉ khi panel nhạc mở), `Esc` đóng.
 - **Thông báo**: bấm chuông (header ở trang chủ, góc phải dưới ở trang bài học/Studio);
   bấm “Đánh dấu tất cả đã đọc” để xoá badge; bấm một mục để đọc đầy đủ.
-- **Studio**: menu 3 gạch → Bá Khí Studio, hoặc `/studio/word-paint.html`.
+- **Studio**: avatar → Bá Khí Studio, hoặc `/studio/word-paint.html`.
 
 URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bookmarks`,
 `?bk=history`, `?bk=achievements`, `?bk=settings`, `?bk=search&q=...`.
@@ -114,7 +116,21 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 9 | Lưu tự động, xuất HTML tự chứa, xuất TXT, mở `.html/.txt`, in/PDF | ✅ | `bakhiStudio.v1` |
 | 10 | Đếm từ/ký tự, trạng thái lưu, thông báo `aria-live` | ✅ | Lưu sau 0,5 giây |
 
-## H. Thành tích 2.3 & tín hiệu dùng chung
+## H. Thành tích & tín hiệu dùng chung
+
+### H.1. Hệ 75 thành tích (3.4.0)
+
+| # | Tính năng | Trạng thái | Ghi chú |
+|---|---|---|---|
+| 1 | Đúng 75 badge: 73 tự động + 2 chỉ Administrator trao | ✅ (cục bộ) | `bk-badges.js`, `bakhiBadges.v1` |
+| 2 | 8 danh mục: Học tập, Khám phá, Đều đặn, Âm nhạc, Tương tác, Hồ sơ, Sáng tạo, Bí mật | ✅ | Mỗi badge có danh mục + độ hiếm |
+| 3 | 6 bậc độ hiếm: Phổ biến, Ít gặp, Hiếm, Cực hiếm, Huyền thoại, Bí mật | ✅ | Hiển thị trên thẻ badge |
+| 4 | Tiến độ từng badge, thanh tiến độ, lọc danh mục/độ hiếm/trạng thái, tìm kiếm | ✅ | `BKProfileUI.renderBadgeBoard` |
+| 5 | Badge thưởng khung avatar; khung chỉ trang bị khi đã mở khoá | ✅ | 13 khung, `ownedFrames`/`canEquip` |
+| 6 | Trao badge Administrator theo danh sách máy chủ, chống trùng | ⚠️ cục bộ | `applyGrants` idempotent; chưa có API trao badge |
+| 7 | Xác minh thành tích phía máy chủ | ❌ chưa có | Cần bảng badge + Edge Function (xem ARCHITECTURE §7) |
+
+### H.2. Thành tích 2.3 trong Trung tâm học tập
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
@@ -142,7 +158,7 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 7 | Bấm một mục → cửa sổ đầy đủ nội dung phiên bản/thông báo | ✅ | Markdown an toàn, đóng bằng ×, `Esc`, bấm nền |
 | 8 | Bảng tự mở lên trên khi chuông ở nửa dưới màn hình | ✅ | Không bị cắt khỏi khung nhìn |
 | 9 | Liên kết “Xem CHANGELOG.md” đúng đường dẫn ở mọi cấp thư mục | ✅ | Dùng `basePath()` |
-| 10 | Khối “Cập nhật gần đây” tóm tắt phiên bản cao nhất, **chỉ bật ở trang chủ** | ✅ | `data-bk-whatsnew="1"`; Studio/Word & Paint không dựng khối này |
+| 10 | Khối “Cập nhật gần đây” hiển thị 10 mục mới nhất theo số phiên bản, có `Xem thêm`/`Thu gọn`, **chỉ bật ở trang chủ** | ✅ | `data-bk-whatsnew="1"`; `WN_LIMIT = 10`; Studio/Word & Paint không dựng khối này |
 | 11 | Chuông cũ `bk-notify.js` tự được gỡ khi lớp mới hoạt động | ✅ | Tránh hiện hai chuông |
 | 12 | Giao diện thông báo tối thống nhất | ✅ | Biến `--bkc-n-*` + `.bkc-dark`; không còn thẻ trắng |
 | 13 | Trạng thái tải / rỗng / lỗi rõ ràng trong bảng thông báo | ✅ | Có nút thử lại khi lỗi |

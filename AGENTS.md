@@ -28,7 +28,15 @@ Hướng dẫn cho agent/developer làm việc trong repository này. Đọc h�
 ```
 /                      index.html (trung tâm) + bakhi-v4.js (lớp V4 cũ)
 /admin                 admin/index.html — Administrator Dashboard (Administrator Code)
+/profile               profile/index.html — Hồ sơ cá nhân + 75 thành tích
+/settings              settings/index.html — Hồ sơ, Trung tâm học tập, hiển thị, hình nền, quyền
 /assets/bakhi/         Lớp nâng cấp dùng chung
+  bk-version.js        Nguồn phiên bản duy nhất (window.BAKHI_VERSION, BK.release)
+  bk-shell.js|css      Avatar + menu tài khoản, trợ năng toàn site, ẩn chrome cũ
+  bk-profile.js|css    Hồ sơ local-first, ảnh đại diện/bìa, 13 khung avatar
+  bk-badges.js         75 thành tích (73 tự động + 2 Administrator)
+  bk-profile-ui.js     Component hồ sơ/badge dùng chung (profile + settings)
+  bk-settings.js|css   5 tab Cài đặt
   bk-core.js|css       Kho dữ liệu local-first, UI kit, tìm kiếm, adapter AI/Supabase
   bk-learn.js|css      Trung tâm học tập, ôn tập, ghi chú, đánh dấu, lịch sử, thành tích
   bk-dev.js|css        Developer Playground 2.0 (11 công cụ, tab Music)
@@ -68,9 +76,11 @@ node --check assets/bakhi/bk-devboard.js
 npm install jsdom --prefix /tmp/bktest --no-save
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/cloud-smoke.js
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/shell-smoke.js
 
 # 4. Chèn thẻ script vào các trang mới (idempotent)
 node tools/integrate-pages.js
+node tools/inject-shell.js
 ```
 
 Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$env:NODE_PATH`.

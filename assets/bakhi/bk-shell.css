@@ -1,0 +1,242 @@
+/* =========================================================================
+   Bá Khí — bk-shell.css
+   Header dùng chung: avatar tài khoản + menu tài khoản + trợ năng toàn site.
+   Chỉ tiền tố .bk- để không xung đột với Tailwind của từng trang.
+   ========================================================================= */
+
+/* --------------------------- Ẩn chrome cũ ------------------------------- */
+/* Nút README và menu ba gạch cũ trên trang chủ được thay bằng avatar.
+   Vẫn giữ phần tử trong DOM để các script cũ (bk-cloud/bk-devboard) không lỗi. */
+#bkReadmeBtn { display: none !important; }
+.bk-legacy-hidden { display: none !important; }
+/* Tên học sinh không còn hiển thị độc lập ngoài avatar. */
+#bkcIdentityChip, #bkcChangeStudentIcon { display: none !important; }
+/* Tính năng hình nền rời khỏi trang chủ, chuyển vào Cài đặt. */
+.bk-legacy-wallpaper { display: none !important; }
+/* Dock nổi của Trung tâm học tập được thay bằng mục Cài đặt trong menu tài khoản.
+   Phím tắt Ctrl/⌘+K vẫn mở Trung tâm học tập như cũ. */
+#bkDock { display: none !important; }
+
+/* ----------------------- Trang mới dùng Design System ------------------- */
+body.bk-app {
+    margin: 0;
+    min-height: 100vh;
+    background:
+        radial-gradient(1200px 600px at 15% -10%, rgba(99, 102, 241, .10), transparent 60%),
+        radial-gradient(900px 500px at 110% 0%, rgba(168, 85, 247, .10), transparent 55%),
+        var(--bkl-surface-2, #f8fafc);
+    color: var(--bkl-text, #0f172a);
+    font-family: Lexend, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+.bk-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    backdrop-filter: saturate(140%) blur(10px);
+    background: color-mix(in srgb, var(--bkl-surface, #fff) 82%, transparent);
+    border-bottom: 1px solid var(--bkl-line, rgba(100, 116, 139, .22));
+}
+.bk-topbar-inner {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: .6rem clamp(.75rem, 3vw, 1.5rem);
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+.bk-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font: 700 .95rem/1 Lexend, system-ui, sans-serif;
+    color: var(--bkl-text);
+    text-decoration: none;
+    margin-right: auto;
+}
+.bk-brand-badge {
+    width: 30px; height: 30px;
+    border-radius: 9px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: #fff;
+    font-size: .85rem;
+}
+.bk-topbar-link {
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--bkl-muted);
+    text-decoration: none;
+    padding: .35rem .55rem;
+    border-radius: 8px;
+}
+.bk-topbar-link:hover { color: var(--bkl-primary); background: var(--bkl-surface-2); }
+
+/* ---------------------------- Nút avatar -------------------------------- */.bk-user-slot {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+.bk-user-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: 3px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, .38);
+    background: rgba(148, 163, 184, .14);
+    cursor: pointer;
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    color: inherit;
+}
+.bk-user-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px -12px rgba(2, 6, 23, .55); border-color: var(--bkl-primary, #6366f1); }
+.bk-user-btn:focus-visible { outline: 2px solid var(--bkl-primary, #6366f1); outline-offset: 2px; }
+.bk-user-btn-caret { font-size: .6rem; opacity: .65; padding-right: .3rem; }
+.bk-user-dot {
+    position: absolute;
+    top: -1px; right: -1px;
+    width: 9px; height: 9px;
+    border-radius: 999px;
+    background: #f43f5e;
+    border: 2px solid var(--bkl-surface, #fff);
+    display: none;
+}
+.bk-user-dot.on { display: block; }
+
+/* ---------------------------- Menu tài khoản ---------------------------- */
+.bk-user-menu {
+    position: fixed;
+    z-index: 2147481900;
+    width: min(20rem, calc(100vw - 1rem));
+    background: var(--bkl-surface, #fff);
+    color: var(--bkl-text, #0f172a);
+    border: 1px solid var(--bkl-line, rgba(100, 116, 139, .22));
+    border-radius: calc(var(--bkl-radius, 14px) + 2px);
+    box-shadow: 0 26px 60px -24px rgba(2, 6, 23, .55);
+    padding: .5rem;
+    opacity: 0;
+    transform: translateY(-6px) scale(.98);
+    transform-origin: top right;
+    transition: opacity .16s ease, transform .16s ease;
+    max-height: min(80vh, 40rem);
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+.bk-user-menu.open { opacity: 1; transform: translateY(0) scale(1); }
+.bk-user-menu[hidden] { display: none; }
+
+.bk-menu-head {
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    padding: .5rem .55rem .65rem;
+    border-bottom: 1px solid var(--bkl-line);
+    margin-bottom: .35rem;
+}
+.bk-menu-head-text { min-width: 0; flex: 1; }
+.bk-menu-name {
+    font: 700 .9rem/1.25 Lexend, system-ui, sans-serif;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bk-menu-nick { font-size: .74rem; color: var(--bkl-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bk-menu-status { font-size: .68rem; color: var(--bkl-muted); margin-top: .15rem; display: flex; align-items: center; gap: .3rem; }
+.bk-menu-status::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: #10b981; display: inline-block; }
+.bk-menu-switch {
+    border: 0; background: none; padding: 0; margin-top: .2rem;
+    font-size: .68rem; color: var(--bkl-primary); cursor: pointer; text-decoration: underline;
+}
+
+.bk-menu-row {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    width: 100%;
+    padding: .56rem .6rem;
+    border: 0;
+    border-radius: var(--bkl-radius-sm);
+    background: none;
+    color: var(--bkl-text);
+    font: 500 .82rem/1.2 Lexend, system-ui, sans-serif;
+    text-align: left;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .14s ease;
+}
+.bk-menu-row:hover, .bk-menu-row:focus-visible { background: var(--bkl-surface-2); outline: none; }
+.bk-menu-row > i { width: 1.1rem; text-align: center; color: var(--bkl-primary); font-size: .86rem; }
+.bk-menu-row[aria-checked="true"] > .bk-menu-check { color: var(--bkl-primary); }
+.bk-menu-check { margin-left: auto; font-size: .8rem; color: var(--bkl-muted); }
+.bk-menu-desc { font-size: .68rem; color: var(--bkl-muted); margin-left: auto; }
+.bk-menu-sep { height: 1px; background: var(--bkl-line); margin: .3rem .4rem; border: 0; }
+.bk-menu-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .4rem .6rem .2rem; margin-top: .3rem;
+    border-top: 1px solid var(--bkl-line);
+    font-size: .66rem; color: var(--bkl-muted);
+}
+.bk-menu-foot a { color: inherit; }
+
+.bk-menu-search { position: relative; margin: .15rem .15rem .4rem; }
+.bk-menu-search input {
+    width: 100%;
+    padding: .5rem .6rem .5rem 2rem;
+    border-radius: var(--bkl-radius-sm);
+    border: 1px solid var(--bkl-line);
+    background: var(--bkl-surface-2);
+    color: var(--bkl-text);
+    font: 500 .8rem/1.3 Lexend, system-ui, sans-serif;
+}
+.bk-menu-search i {
+    position: absolute; left: .65rem; top: 50%; transform: translateY(-50%);
+    font-size: .75rem; color: var(--bkl-muted);
+}
+
+/* ----------------------- Trợ năng toàn website -------------------------- */
+html { font-size: calc(16px * var(--bk-font-scale, 1)); }
+
+html.bk-a11y-contrast {
+    --bkl-muted: #475569;
+    --bkl-line: rgba(15, 23, 42, .45);
+}
+html.dark.bk-a11y-contrast {
+    --bkl-muted: #cbd5e1;
+    --bkl-line: rgba(226, 232, 240, .45);
+}
+
+html.bk-a11y-strong-focus *:focus-visible {
+    outline: 3px solid #f59e0b !important;
+    outline-offset: 2px !important;
+    border-radius: 4px;
+}
+
+html.bk-a11y-reduce-motion *,
+html.bk-a11y-reduce-motion *::before,
+html.bk-a11y-reduce-motion *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+}
+
+html.bk-a11y-links a:not(.bk-menu-row):not(.bk-chipx) {
+    text-decoration: underline !important;
+    text-underline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bk-user-menu, .bk-user-btn { transition: none; }
+}
+
+/* ------------------------------ Mobile --------------------------------- */
+@media (max-width: 640px) {
+    .bk-user-menu {
+        left: .5rem !important;
+        right: .5rem !important;
+        width: auto;
+        max-height: 76vh;
+    }
+    .bk-user-slot { gap: .35rem; }
+    .bk-user-btn-caret { display: none; }
+}

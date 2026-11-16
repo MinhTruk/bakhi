@@ -363,6 +363,16 @@ html.dark .bkc-sync-state { color: #94a3b8; }
 .bkc-wn-title { margin: 0 0 .25rem; font-size: 1.02rem; line-height: 1.35; color: var(--bkc-n-text); }
 .bkc-wn-sum { margin: 0; font-size: .78rem; line-height: 1.55; color: var(--bkc-n-muted); }
 .bkc-wn-body .bkc-cat:last-child { margin-bottom: 0; }
+.bkc-wn-list { display: flex; flex-direction: column; }
+.bkc-wn-list > .bkc-cl-card { padding: .8rem 0; }
+.bkc-wn-list > .bkc-cl-card:first-child { padding-top: .2rem; }
+.bkc-wn-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: .75rem; flex-wrap: wrap;
+    margin-top: .9rem; padding-top: .8rem;
+    border-top: 1px solid var(--bkc-n-line);
+}
+.bkc-wn-count { font-size: .72rem; color: var(--bkc-n-muted); }
 .bkc-md-link { font-size: .72rem; text-transform: none; letter-spacing: 0; }
 .bkc-cat { margin-bottom: .8rem; }
 .bkc-cat-title {

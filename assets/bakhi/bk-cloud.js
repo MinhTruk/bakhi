@@ -45,6 +45,10 @@
             selfScript.getAttribute('data-bk-whatsnew') === '1');
     } catch (e) { }
 
+    /* What's New: số mục hiển thị mặc định và trạng thái mở rộng. */
+    var WN_LIMIT = 10;
+    var wnExpanded = false;
+
     var S = {
         sdk: null, client: null, booting: null, session: null, ready: false,
         configOk: false, error: null, fatal: null,
@@ -1613,18 +1617,20 @@
             return;
         }
 
-        var entry = latestChangelog();
-        if (!entry) { host.hidden = true; return; }
+        var entries = S.changelog.slice().sort(function (a, b) {
+            return compareVersion(a.version, b.version);
+        }).reverse();
+        if (!entries.length) { host.hidden = true; return; }
         host.hidden = false;
 
         var head = el('div', 'bkc-wn-head');
         var left = el('div');
         var line = el('div', 'bkc-wn-line');
-        line.appendChild(el('span', 'bkc-tag bkc-tag-update', 'Phiên bản ' + entry.version));
-        if (entry.published_at) line.appendChild(el('span', 'bkc-tag', fmtDate(entry.published_at)));
+        line.appendChild(el('span', 'bkc-tag bkc-tag-update', 'v' + entries[0].version));
+        if (entries[0].published_at) line.appendChild(el('span', 'bkc-tag', fmtDate(entries[0].published_at)));
         left.appendChild(line);
-        left.appendChild(el('h2', 'bkc-wn-title', entry.title));
-        if (entry.summary) left.appendChild(el('p', 'bkc-wn-sum', entry.summary));
+        left.appendChild(el('h2', 'bkc-wn-title', 'Cập nhật gần đây'));
+        left.appendChild(el('p', 'bkc-wn-sum', 'Những thay đổi mới nhất của Bá Khí, lấy từ CHANGELOG.md.'));
         head.appendChild(left);
 
         var actions = el('div', 'bkc-wn-actions');
@@ -1636,9 +1642,47 @@
         head.appendChild(actions);
         host.appendChild(head);
 
+        /* Giới hạn hiển thị: 10 mục đầu, phần còn lại sau nút "Xem thêm". */
+        var shown = wnExpanded ? entries : entries.slice(0, WN_LIMIT);
         var body = el('div', 'bkc-wn-body');
-        body.appendChild(sectionBlock(entry));
+        body.id = 'bkcWhatsNewList';
+        var list = el('div', 'bkc-wn-list');
+        shown.forEach(function (e) { list.appendChild(wnItem(e)); });
+        body.appendChild(list);
         host.appendChild(body);
+
+        if (entries.length > WN_LIMIT) {
+            var foot = el('div', 'bkc-wn-foot');
+            var more = el('button', 'bkc-btn bkc-btn-ghost');
+            more.type = 'button';
+            more.id = 'bkcWhatsNewMore';
+            more.textContent = wnExpanded ? 'Thu gọn' : 'Xem thêm';
+            more.setAttribute('aria-expanded', wnExpanded ? 'true' : 'false');
+            more.addEventListener('click', function () {
+                wnExpanded = !wnExpanded;
+                renderWhatsNew();
+                var again = D.getElementById('bkcWhatsNew');
+                if (again && again.scrollIntoView) {
+                    try { again.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) { }
+                }
+            });
+            foot.appendChild(el('span', 'bkc-wn-count', (wnExpanded ? entries.length : WN_LIMIT) + ' / ' + entries.length + ' mục'));
+            foot.appendChild(more);
+            host.appendChild(foot);
+        }
+    }
+
+    /** Một mục What's New gọn: phiên bản, ngày, tiêu đề, tóm tắt. */
+    function wnItem(entry) {
+        var card = el('article', 'bkc-cl-card');
+        var line = el('div', 'bkc-sheet-line');
+        line.appendChild(el('span', 'bkc-tag bkc-tag-update', 'v' + entry.version));
+        if (entry.category) line.appendChild(el('span', 'bkc-tag', CAT_LABEL[entry.category] || 'Khác'));
+        if (entry.published_at) line.appendChild(el('span', 'bkc-tag', fmtDate(entry.published_at)));
+        card.appendChild(line);
+        card.appendChild(el('h3', 'bkc-cl-title', entry.title));
+        if (entry.summary) card.appendChild(el('p', 'bkc-wn-sum', entry.summary));
+        return card;
     }
 
     function entryCard(entry) {
@@ -1765,7 +1809,7 @@
         if (D.querySelector('link[data-bk-cloud]')) return;
         var link = D.createElement('link');
         link.rel = 'stylesheet';
-        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=4.1.0';
+        link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=3.4.0';
         link.setAttribute('data-bk-cloud', '1');
         (D.head || D.documentElement).appendChild(link);
     }
@@ -1932,7 +1976,8 @@
                 announcements: S.announcements.length, changelog: S.changelog.length,
                 annLoading: S.annLoading, annError: S.annError,
                 clLoading: S.clLoading, clError: S.clError,
-                flags: S.flags, flagsLoaded: S.flagsLoaded, realtime: S.realtime
+                flags: S.flags, flagsLoaded: S.flagsLoaded, realtime: S.realtime,
+                wnLimit: WN_LIMIT, wnExpanded: wnExpanded
             };
         },
         identity: function () { return S.student; },

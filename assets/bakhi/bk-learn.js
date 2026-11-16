@@ -112,7 +112,7 @@
     /* =====================================================================
        Hub
        ================================================================== */
-    var hub = { modal: null, tab: 'overview', root: null, navItems: {} };
+    var hub = { modal: null, inline: null, tab: 'overview', root: null, navItems: {} };
     var state = {
         reviewQuery: '', reviewSubject: '', reviewShowMastered: false, reviewActive: 0,
         noteQuery: '', noteCategory: '', historyQuery: '', historyKind: '',
@@ -130,17 +130,15 @@
         { id: 'settings', label: 'Cài đặt', icon: 'fa-gear' }
     ];
 
-    function openHub(tab) {
-        if (hub.modal) {
-            if (tab) setTab(tab);
-            return;
-        }
+    /* Dựng khung điều hướng + nội dung dùng chung cho cả modal và trang Cài đặt. */
+    function buildHubBody(tab) {
         var body = el('div', 'bk-hub');
         var nav = el('nav', 'bk-hub-nav');
         nav.setAttribute('aria-label', 'Khu vực học tập');
         nav.setAttribute('role', 'tablist');
         var main = el('div', 'bk-hub-main');
         main.id = 'bkHubMain';
+        hub.navItems = {};
         TABS.forEach(function (t) {
             var b = el('button', 'bk-hub-tab' + (t.id === (tab || 'overview') ? ' on' : ''));
             b.type = 'button';
@@ -185,10 +183,34 @@
         wrap.style.minHeight = '0';
         wrap.appendChild(body);
         wrap.appendChild(foot);
+        return { wrap: wrap, main: main };
+    }
+
+    /**
+     * Gắn Trung tâm học tập vào một phần tử bất kỳ (trang Cài đặt).
+     * Dùng chung đúng bộ tab và dữ liệu với modal — không có hệ thống thứ hai.
+     */
+    function mountHub(container, tab) {
+        if (!container) return null;
+        hub.inline = container;
+        container.innerHTML = '';
+        var parts = buildHubBody(tab);
+        container.appendChild(parts.wrap);
+        hub.root = parts.main;
+        setTab(tab || 'overview');
+        return { setTab: setTab, element: container };
+    }
+
+    function openHub(tab) {
+        if (hub.modal) {
+            if (tab) setTab(tab);
+            return;
+        }
+        var parts = buildHubBody(tab);
 
         hub.modal = BK.ui.modal({
             title: 'Trung tâm học tập',
-            body: wrap,
+            body: parts.wrap,
             wide: true,
             className: 'bk-hub-modal',
             labelledBy: 'bkHubTitle',
@@ -200,7 +222,7 @@
             }
         });
         hub.modal.panel.querySelector('.bk-modal-title').id = 'bkHubTitle';
-        hub.root = main;
+        hub.root = parts.main;
         setTab(tab || 'overview');
     }
 
@@ -766,7 +788,7 @@
                 else BK.updateNote(note.id, payload);
                 close();
                 BK.ui.toast(isNew ? 'Đã tạo ghi chú' : 'Đã lưu ghi chú', 'success');
-                if (hub.modal) renderTab();
+                if (hub.modal || hub.inline) renderTab();
             }
         });
 
@@ -873,7 +895,7 @@
                         });
                         close();
                         BK.ui.toast(r ? 'Đã thêm đánh dấu' : 'Đánh dấu này đã tồn tại', r ? 'success' : 'info');
-                        if (hub.modal) renderTab();
+                        if (hub.modal || hub.inline) renderTab();
                     }
                 }
             ]
@@ -1236,7 +1258,7 @@
         if (ok) {
             BK.signals.bump('backup.exports');
             BK.achievements.check();
-            if (hub.modal) renderTab();
+            if (hub.modal || hub.inline) renderTab();
         }
     }
 
@@ -1291,7 +1313,7 @@
                                 close();
                                 if (!res.ok) return BK.ui.toast(res.error || 'Nhập thất bại', 'error');
                                 BK.ui.toast('Đã nhập dữ liệu học tập', 'success');
-                                if (hub.modal) renderTab();
+                                if (hub.modal || hub.inline) renderTab();
                             }
                         }
                     ]
@@ -1702,7 +1724,7 @@
         BK.achievements.check();
         handleUrlParams();
         BK.store.on('practice', function () {
-            if (hub.modal && (hub.tab === 'overview' || hub.tab === 'review')) renderTab();
+            if ((hub.modal || hub.inline) && (hub.tab === 'overview' || hub.tab === 'review')) renderTab();
         });
     }
 
@@ -1711,6 +1733,7 @@
 
     global.BKLearn = {
         openHub: openHub, openSearch: openSearch, openPalette: openPalette,
+        mountHub: mountHub,
         openNote: openNoteEditor, openBookmark: openBookmarkEditor,
         toggleFocus: toggleFocus, exportData: exportData, importData: importData,
         applyPreferences: applyPreferences, renderTab: renderTab

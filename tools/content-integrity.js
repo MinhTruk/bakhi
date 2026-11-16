@@ -42,6 +42,10 @@ function walk(dir, out = []) {
  */
 function stripInjected(source) {
   return source
+    /* Khối shell (tools/inject-shell.js) chèn đúng chuỗi
+       "\n<!-- ... -->\n<script…>\n…\n"; bỏ chính xác chuỗi đó TRƯỚC các
+       bước khác để khôi phục nguyên văn bản gốc trước khi chèn. */
+    .replace(/\n<!--\s*assets\/bakhi\/shell[^\n]*-->\n(?:<script src="[^"]*assets\/bakhi\/[^"]*"[^>]*><\/script>\n)*/g, '')
     .replace(/\r?\n<!-- Bá Khí Learning Platform[\s\S]*?-->\s*(?:<script src="[^"]*assets\/bakhi\/[^"]*"[^>]*><\/script>\s*)*/g, '')
     .split(/\r?\n/)
     .filter((line) => !/assets\/bakhi\//.test(line))

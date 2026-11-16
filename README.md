@@ -28,8 +28,16 @@ BAKHI hướng đến việc giúp việc ôn tập trở nên:
 - 📝 **Tương tác** hơn
 - 🎯 **Tập trung vào việc ôn thi**
 
-### Điểm nổi bật ở phiên bản 3.3.0
+### Điểm nổi bật ở phiên bản 3.4.0
 
+- **Một tài khoản, một menu**: avatar ở góc phải header thay cho menu ba gạch và nút README
+  riêng. Menu gồm Hồ sơ cá nhân, Giao diện, README.md, Bá Khí Studio và Cài đặt.
+- **Hồ sơ và thành tích**: trang `/profile/` có ảnh đại diện, ảnh bìa, biệt danh, giới thiệu,
+  liên kết, khung avatar và 75 thành tích (73 tự động + 2 chỉ Administrator trao).
+- **Cài đặt tập trung**: `/settings/` gồm Hồ sơ, toàn bộ tab Trung tâm học tập, Hiển thị &
+  Trợ năng, Hình nền và Nhà phát triển.
+- **What's New gọn hơn**: trang chủ hiển thị 10 cập nhật mới nhất theo số phiên bản, có
+  `Xem thêm` / `Thu gọn`.
 - **Một website, một trải nghiệm thông báo**: chuông thông báo có mặt trên trang chủ, mọi
   trang môn học/bài học/đề kiểm tra và cả Studio. Giáo viên đăng thông báo là máy học sinh
   nhận được ngay, kể cả khi đang làm bài; toàn bộ giao diện thông báo dùng chung một theme tối.
@@ -254,6 +262,8 @@ script và không sửa nội dung gốc.
   đánh dấu đã đọc tất cả và đọc đầy đủ trong cửa sổ toàn màn hình
 - [x] Đồng bộ `CHANGELOG.md` lên Supabase bằng GitHub Actions, chống trùng thông báo
 - [x] Giao diện thông báo tối thống nhất và favicon tĩnh SVG/PNG/ICO toàn site
+- [x] Lớp shell dùng chung: avatar + menu tài khoản thay menu ba gạch, thay nút README riêng
+- [x] Trang Hồ sơ và Cài đặt local-first; 75 thành tích và khung avatar; What's New 10 mục
 
 ### 🔨 Đang phát triển
 
@@ -272,7 +282,8 @@ Lớp nâng cấp 2.0 bổ sung trải nghiệm học tập tự nhịp và bộ
 
 ### Trung tâm học tập
 
-Mở bằng nút 🎓 ở góc phải dưới (hoặc `Ctrl/⌘ + K`):
+Mở bằng `Ctrl/⌘ + K`, phím `/` để tìm kiếm, hoặc vào **Cài đặt → Trung tâm học tập**
+(menu tài khoản ở góc phải header):
 
 - 📊 **Tổng quan** — số câu đã luyện, đúng/sai, độ chính xác, tiến độ theo môn/chủ đề,
   hoạt động 14 ngày và 8 tuần, chủ đề hay sai, mốc học tập.
@@ -435,7 +446,8 @@ Chuông là nơi duy nhất hiển thị thông tin cập nhật, và nay có m�
 Chế độ chỉ thông báo được bật bằng thuộc tính trên thẻ script:
 
 ```html
-<script src="../../assets/bakhi/bk-cloud.js?v=4.1.0" data-bk-notify-only="1" defer></script>
+<script src="../../assets/bakhi/bk-supabase.config.js?v=4.0.0" defer></script>
+<script src="../../assets/bakhi/bk-cloud.js?v=3.4.0" data-bk-notify-only="1" defer></script>
 ```
 
 Nếu Supabase chưa cấu hình hoặc đang mất mạng, chuông vẫn xuất hiện và trang học hoạt động
@@ -492,8 +504,16 @@ có kiểm tra phiên quản trị.
 ```
 /                       index.html (trung tâm) + bakhi-v4.js (lớp V4 cũ)
 /admin                  admin/index.html — Administrator Dashboard (Administrator Code)
+/profile                profile/index.html — Hồ sơ cá nhân + 75 thành tích
+/settings               settings/index.html — Hồ sơ, Trung tâm học tập, hiển thị, hình nền, quyền
 /assets/bakhi/
   bk-core.js|css        Kho dữ liệu local-first, UI kit, tìm kiếm
+  bk-version.js         Nguồn phiên bản duy nhất (window.BAKHI_VERSION, BK.release)
+  bk-shell.js|css       Avatar + menu tài khoản, trợ năng toàn site, chrome cũ
+  bk-profile.js|css     Hồ sơ local-first, ảnh đại diện/bìa, khung avatar
+  bk-badges.js          75 thành tích (73 tự động + 2 Administrator)
+  bk-profile-ui.js      Component hồ sơ/badge dùng chung cho profile và settings
+  bk-settings.js|css    5 tab Cài đặt
   bk-learn.js|css       Trung tâm học tập, ôn tập, ghi chú, đánh dấu, thành tích
   bk-dev.js|css         Developer Playground 2.0
   bk-music.js|css       Music Player dùng chung
@@ -513,7 +533,8 @@ có kiểm tra phiên quản trị.
   migrations/           Schema + RLS + realtime cho announcements & changelog
   functions/            admin-auth, admin-actions, search-students, bind-student-session,
                         sync-student-progress, import-students
-/tools                  content-integrity, integrate-pages, qa/smoke, qa/cloud-smoke
+/tools                  content-integrity, integrate-pages, inject-shell,
+                        qa/smoke, qa/cloud-smoke, qa/shell-smoke
 /docs                   Kiến trúc, tính năng, Music, Studio, Supabase, baseline nội dung
 ```
 

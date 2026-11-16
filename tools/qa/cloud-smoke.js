@@ -389,8 +389,17 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     });
     ok('khu vực What\'s New hiển thị', !!wn);
     ok('hiển thị phiên bản CAO NHẤT, không theo ngày đăng',
-        !!wn && /Phiên bản 3\.1\.1/.test(wn.textContent), wn && wn.textContent.slice(0, 60));
+        !!wn && /v3\.1\.1/.test(wn.textContent) &&
+        /v3\.1\.1/.test((wn.querySelector('.bkc-wn-list > .bkc-cl-card') || {}).textContent || ''),
+        wn && wn.textContent.slice(0, 60));
     ok('nhóm nội dung theo danh mục', !!wn && /Sửa lỗi|Tính năng mới|Cải tiến/.test(wn.textContent));
+    ok('danh sách What\'s New có đủ mục đang tải',
+        !!wn && wn.querySelectorAll('.bkc-wn-list > .bkc-cl-card').length === 3,
+        wn && String(wn.querySelectorAll('.bkc-wn-list > .bkc-cl-card').length));
+    ok('dưới giới hạn 10 mục thì không hiện nút Xem thêm',
+        !!wn && !wn.querySelector('#bkcWhatsNewMore'));
+    ok('giới hạn hiển thị What\'s New là 10', w.BKCloud.state().wnLimit === 10,
+        String(w.BKCloud.state().wnLimit));
     ok('render bằng text, không HTML thô', !!wn && !/<b>/.test(wn.innerHTML.replace(/<[^>]+>/g, '')));
     const allBtn = wn && Array.from(wn.querySelectorAll('button')).find((b) => /Xem tất cả cập nhật/.test(b.textContent));
     ok('có nút mở trung tâm thông báo', !!allBtn);

@@ -2,6 +2,53 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [3.4.0] — 2026-11-16
+
+### Tính năng
+
+- **Lớp shell dùng chung toàn website**: avatar tài khoản thay cho menu ba gạch và nút
+  README riêng trên trang chủ. Menu tài khoản gồm Hồ sơ cá nhân, Giao diện, README.md,
+  Bá Khí Studio, Cài đặt; ô tìm kiếm nhanh giữ nguyên hành vi cũ. Mục Chat chưa được
+  thêm vì `/chat/` chưa tồn tại — không tạo liên kết chết.
+- **Trang `/profile/`**: ảnh đại diện, ảnh bìa, biệt danh, giới thiệu, tối đa 6 liên kết
+  http/https, 13 khung avatar và bảng 75 thành tích. Dữ liệu local-first ở
+  `bakhiProfile.v1`, ảnh được thu nhỏ bằng canvas trước khi lưu.
+- **Trang `/settings/`**: 5 tab — Hồ sơ, Trung tâm học tập (gắn đúng bộ tab đang dùng
+  qua `BKLearn.mountHub`, không có hệ thống thứ hai), Hiển thị & Trợ năng, Hình nền
+  (dùng chung kho IndexedDB `bakhi`/`kv` với trang chủ) và Nhà phát triển.
+- **75 thành tích**: 73 badge tự động theo dõi học tập, khám phá, chuỗi ngày, âm nhạc,
+  tương tác, hồ sơ, Studio và badge bí mật; 2 badge chỉ Administrator trao. Mỗi badge
+  có danh mục, độ hiếm, tiến độ và một số badge thưởng khung avatar.
+- **What's New trên trang chủ**: danh sách thống nhất, hiển thị 10 mục mới nhất theo số
+  phiên bản kèm nút `Xem thêm` / `Thu gọn` và bộ đếm `đang xem / tổng`.
+- **`bk-version.js`**: nguồn phiên bản duy nhất cho toàn website
+  (`window.BAKHI_VERSION`, `BK.release`).
+
+### Sửa lỗi
+
+- Chuẩn hoá tên trường cũ "THPT FPT" thành "THPT Huỳnh Ngọc Huệ" ngay khi chạy, chỉ
+  trong header/footer/main và không sửa bất kỳ tệp nội dung giáo dục nào.
+- Trung tâm học tập không mở lại được sau khi đóng: tham chiếu modal được giải phóng
+  đúng lúc thay vì giữ mãi.
+- Đồng bộ cache-busting của `bk-cloud.js`, `bk-cloud.css` và `bk-learn.js` về `3.4.0`
+  để trình duyệt không dùng bản JS/CSS cũ.
+- Menu tài khoản tự đóng khi chọn mục, giữ focus bàn phím và đóng bằng Esc hoặc bấm ra ngoài.
+
+### Cải tiến
+
+- Trợ năng toàn website: cỡ chữ 90–130%, tương phản cao, giảm chuyển động, viền focus
+  rõ và gạch chân liên kết; lưu ở `bakhiA11y.v1`, tôn trọng `prefers-reduced-motion`.
+- Dock nổi của Trung tâm học tập được thay bằng mục Cài đặt trong menu tài khoản;
+  phím tắt `Ctrl/⌘ + K` và `/` vẫn hoạt động như trước.
+- Câu hướng dẫn trên trang chủ được cập nhật theo giao diện avatar thay vì nhắc menu ba gạch.
+- Giao diện Cài đặt/Hồ sơ dùng chung token `--bkl-*`, hỗ trợ sáng/tối và màn hình nhỏ.
+
+### Khác
+
+- Chưa triển khai trong bản này: chat `/chat/`, hợp nhất hai trang Studio, Dev Playground
+  14 tab, xác minh badge phía máy chủ, mở rộng Administrator Dashboard A–M. Các phần này
+  cần bảng/RLS/Storage/Edge Function mới nên được tách thành giai đoạn riêng.
+
 ## [3.3.0] — 2026-11-15
 
 ### Tính năng

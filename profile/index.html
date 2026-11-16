@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hồ sơ — Bá Khí</title>
+    <meta name="description" content="Hồ sơ học sinh Bá Khí: ảnh đại diện, biệt danh, giới thiệu, liên kết, khung avatar và thành tích.">
+    <meta name="theme-color" content="#0f172a">
+
+    <link rel="icon" type="image/svg+xml" href="../assets/bakhi/favicon.svg" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/bakhi/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/bakhi/favicon-192x192.png">
+    <link rel="icon" href="../assets/bakhi/favicon.ico" sizes="16x16 32x32 48x48">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/bakhi/apple-touch-icon.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="../assets/bakhi/bk-core.css?v=3.4.0">
+    <link rel="stylesheet" href="../assets/bakhi/bk-profile.css?v=3.4.0">
+    <link rel="stylesheet" href="../assets/bakhi/bk-shell.css?v=3.4.0">
+    <link rel="stylesheet" href="../assets/bakhi/bk-settings.css?v=3.4.0">
+</head>
+<body class="bk-app">
+    <header class="bk-topbar">
+        <div class="bk-topbar-inner">
+            <a class="bk-brand" href="../">
+                <span class="bk-brand-badge"><i class="fa-solid fa-folder-tree" aria-hidden="true"></i></span>
+                <span>Bá Khí</span>
+            </a>
+            <a class="bk-topbar-link" href="../settings/">Cài đặt</a>
+            <a class="bk-topbar-link" href="../">Trang chủ</a>
+        </div>
+    </header>
+
+    <main class="bk-page">
+        <div class="bk-page-head">
+            <div>
+                <h1 class="bk-page-title">Hồ sơ cá nhân</h1>
+                <p class="bk-page-sub">Thông tin hiển thị trên header, trang hồ sơ và trong chat.</p>
+            </div>
+        </div>
+
+        <div id="bkProfileHero"></div>
+
+        <div class="bk-row" style="margin:1rem 0 1.6rem">
+            <a class="bk-btn" href="../settings/?tab=profile" style="display:inline-flex;align-items:center;gap:.4rem;padding:.48rem .8rem;border-radius:var(--bkl-radius-sm);background:var(--bkl-primary);color:#fff;font-weight:600;font-size:.79rem;text-decoration:none">
+                <i class="fa-solid fa-pen" aria-hidden="true"></i><span>Chỉnh sửa hồ sơ</span>
+            </a>
+            <a class="bk-btn bk-btn-ghost" href="../settings/?tab=display" style="display:inline-flex;align-items:center;gap:.4rem;padding:.48rem .8rem;border-radius:var(--bkl-radius-sm);border:1px solid var(--bkl-line);background:var(--bkl-surface-2);color:var(--bkl-text);font-weight:600;font-size:.79rem;text-decoration:none">
+                <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i><span>Giao diện &amp; trợ năng</span>
+            </a>
+        </div>
+
+        <section id="bkBadges" aria-label="Thành tích"></section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+    <script src="../assets/bakhi/bk-core.js?v=3.4.0" defer></script>
+    <script src="../assets/bakhi/bk-version.js?v=3.4.0" defer></script>
+    <script src="../assets/bakhi/bk-profile.js?v=3.4.0" defer></script>
+    <script src="../assets/bakhi/bk-badges.js?v=3.4.0" defer></script>
+    <script src="../assets/bakhi/bk-shell.js?v=3.4.0" defer></script>
+    <script src="../assets/bakhi/bk-profile-ui.js?v=3.4.0" defer></script>
+    <script src="../assets/bakhi/bk-supabase.config.js?v=3.4.0" defer></script>
+    <script src="../assets/bakhi/bk-cloud.js?v=3.4.0" data-bk-notify-only="1" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!window.BKProfileUI) return;
+            window.BKProfileUI.renderHero(document.getElementById('bkProfileHero'));
+            window.BKProfileUI.renderBadgeBoard(document.getElementById('bkBadges'));
+        });
+    </script>
+</body>
+</html>

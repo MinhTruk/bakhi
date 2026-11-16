@@ -1,7 +1,7 @@
 # Kiến trúc Bá Khí
 
 Tài liệu này mô tả hiện trạng repository, lớp nâng cấp dùng chung, cơ chế thông báo và các
-quyết định kỹ thuật. Cập nhật: 15/11/2026 (phiên bản 3.3.0).
+quyết định kỹ thuật. Cập nhật: 16/11/2026 (phiên bản 3.4.0).
 
 ## 1. Kiểm toán repository (trước khi nâng cấp)
 
@@ -145,7 +145,58 @@ DOMContentLoaded
 - Kênh realtime `bakhi-public` lắng nghe `announcements`, `changelog`, `app_settings`;
   trạng thái kênh được công bố qua `BKCloud.state().realtime` để dashboard giám sát.
 
-### 2.2. Administrator Dashboard 4.1
+#### Danh sách cập nhật giới hạn 10 mục (3.4.0)
+
+- Khối “Cập nhật gần đây” dùng một danh sách thống nhất thay cho việc chỉ dựng phiên bản
+  mới nhất: sắp theo **số phiên bản** (không theo ngày đăng), hiển thị tối đa `WN_LIMIT = 10`
+  mục, phần còn lại sau nút `Xem thêm` / `Thu gọn` kèm bộ đếm `đang xem / tổng`.
+- Mỗi mục là một thẻ gọn: tag phiên bản, danh mục, ngày, tiêu đề, tóm tắt. Nội dung chi tiết
+  vẫn nằm trong trung tâm thông báo, mở bằng nút “Xem tất cả cập nhật”.
+- `BKCloud.state()` công bố `wnLimit` và `wnExpanded` để QA kiểm tra giới hạn.
+
+### 2.2. Lớp shell dùng chung (3.4.0)
+
+- `bk-version.js` là nguồn phiên bản duy nhất: `window.BAKHI_VERSION` và `BK.release`.
+  `BK.version` vẫn là phiên bản thư viện core, không dùng để hiển thị bản phát hành.
+- `bk-shell.js` + `bk-shell.css` chạy trên mọi trang trừ `admin/index.html` (dashboard có
+  `bkAdminTheme` riêng) và `images/anh/1.html` (tệp rỗng):
+  - Dựng avatar ở header (trang chủ: chèn vào cụm chứa `#bkReadmeBtn`; trang bài học/Studio:
+    tìm hàng flex bên trong `<header>`; không tìm được thì chèn vào `<body>`).
+  - Menu tài khoản: **Hồ sơ cá nhân, Giao diện, README.md, Bá Khí Studio, Cài đặt**.
+    Không thêm Chat khi `/chat/` chưa tồn tại.
+  - Ẩn chrome cũ bằng CSS: `#bkReadmeBtn`, menu ba gạch (`#hamburgerDropdown`), khối hình nền
+    trên trang chủ, dock nổi `#bkDock`. DOM được giữ lại để script cũ không lỗi.
+  - “Giao diện” chỉ xuất hiện ở trang thật sự đổi được sáng/tối (`#themeIcon` hoặc `.bk-app`);
+    trang bài học và Studio dùng bảng màu cố định nên không hiện mục này.
+  - Trợ năng dùng chung `bakhiA11y.v1` (cỡ chữ 90–130%, tương phản, giảm chuyển động, viền
+    focus, gạch chân liên kết), áp bằng biến `--bk-font-scale` và lớp trên `<html>`.
+  - Chuẩn hoá `THPT FPT` → `THPT Huỳnh Ngọc Huệ` chỉ trong text node của
+    `header/footer/main` lúc chạy, nên baseline nội dung không đổi.
+- `tools/inject-shell.js` chèn bốn thẻ script (`bk-version`, `bk-profile`, `bk-badges`,
+  `bk-shell`) trước `</body>`, idempotent; mọi dòng chèn đều chứa `assets/bakhi/` nên
+  `tools/content-integrity.js` bỏ qua.
+
+### 2.3. Hồ sơ, thành tích và Cài đặt (3.4.0)
+
+- **Hồ sơ local-first** (`bk-profile.js`, khoá `bakhiProfile.v1`): biệt danh, giới thiệu,
+  ảnh đại diện/bìa (canvas resize rồi lưu data URL), tối đa 6 liên kết chỉ nhận `http(s)`,
+  khung avatar đang dùng. Hồ sơ gắn với danh tính `bakhiStudent.v1`; chưa có bảng profile
+  phía Supabase.
+- **Thành tích** (`bk-badges.js`, khoá `bakhiBadges.v1`): đúng 75 badge — 73 tự động theo
+  chỉ số học tập/khám phá/chuỗi ngày/âm nhạc/tương tác/hồ sơ/Studio/bí mật, 2 badge chỉ
+  Administrator trao (`applyGrants`, idempotent). 8 danh mục, 6 bậc độ hiếm; badge đã mở
+  thưởng khung avatar (`ownedFrames`).
+- **Component dùng chung** (`bk-profile-ui.js`): `renderHero`, `renderEditor`,
+  `renderFrames`, `renderBadgeBoard` — dùng cho cả `/profile/` và tab Hồ sơ trong `/settings/`,
+  không có hệ thống hồ sơ thứ hai.
+- **Cài đặt** (`bk-settings.js`): 5 tab — Hồ sơ, Trung tâm học tập, Hiển thị & Trợ năng,
+  Hình nền, Nhà phát triển. Tab Trung tâm học tập gọi `BKLearn.mountHub(container, tab)`
+  nên dùng đúng bộ tab/dữ liệu của modal (7 tab), không nhân bản logic.
+- Tab Hình nền dùng chung kho IndexedDB `bakhi`/`kv` với trang chủ (khoá `bg`, `bgOpacity`).
+- Tab Nhà phát triển chỉ có **Administrator Code xác minh qua Edge Function** và mô tả đúng
+  trạng thái Dev Playground; chưa có Dev Code phía máy chủ nên không dựng ô nhập giả.
+
+### 2.4. Administrator Dashboard 4.1
 
 - `admin/index.html` nạp `bk-admin-dashboard.css` + `bk-devboard.js`; mọi thao tác ghi đi qua
   Edge Function `admin-actions` với header `x-admin-token`.
@@ -257,6 +308,13 @@ Kết quả sau nâng cấp: **119/119 tệp không đổi nội dung** (`verify
 - `prefers-reduced-motion` được tôn trọng ở animation mới; các hiệu ứng cũ giữ nguyên.
 - Chế độ chỉ thông báo không đồng bộ tiến trình, nên dữ liệu học trên trang bài học chỉ nằm
   trên thiết bị. Đây là chủ ý để không cần đăng nhập khi đang học.
+- Hồ sơ và thành tích hiện chỉ nằm trên thiết bị (`bakhiProfile.v1`, `bakhiBadges.v1`);
+  chưa có bảng profile/badge, Storage bucket hay Edge Function xác minh phía máy chủ.
+  Hai badge Administrator được nhận từ danh sách trao tặng khi có API, chưa có endpoint.
+- `/chat/`, hợp nhất hai trang Studio, Dev Playground 14 tab và mở rộng dashboard A–M
+  chưa triển khai; xem `CHANGELOG.md` mục 3.4.0 và báo cáo phát hành.
+- Vì menu ba gạch bị ẩn, Dev Code cũ (xác thực phía client) không còn lối vào trên giao diện;
+  Developer Playground chỉ nên mở lại khi có Dev Code xác minh phía máy chủ.
 
 ## Lớp Supabase (nhận diện, thông báo, đồng bộ)
 
