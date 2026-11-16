@@ -476,7 +476,7 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
         return node && node.hidden === false ? node : null;
     });
     ok('dashboard mở sau khi xác thực', !!dash);
-    ok('dashboard có 9 tab', !!dash && dash.querySelectorAll('.bkc-tab').length === 9, dash && String(dash.querySelectorAll('.bkc-tab').length));
+    ok('dashboard có 13 tab', !!dash && dash.querySelectorAll('.bkc-tab').length === 13, dash && String(dash.querySelectorAll('.bkc-tab').length));
     const stats = await until(() => w.document.querySelectorAll('.bkc-stat').length);
     ok('tab Overview hiển thị số liệu', !!stats && stats === 8, String(stats));
     ok('Overview có Recent Activity', /admin\.login/.test((w.document.querySelector('.bkc-activity') || {}).textContent || ''));

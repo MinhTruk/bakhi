@@ -477,6 +477,159 @@ Deno.serve(async (req) => {
                 return json({ ok: true });
             }
 
+            /* ------------------------------ Chat kiểm duyệt ------------------------------ */
+            case 'chat.rooms': {
+                const limit = Math.min(60, Math.max(1, Number(body.limit) || 40));
+                const { data: rooms, error } = await client
+                    .from('chat_rooms')
+                    .select('id, kind, title, dm_key, created_by, created_at, last_message_at')
+                    .order('last_message_at', { ascending: false })
+                    .limit(limit);
+                if (error) throw error;
+                const summaries = await Promise.all((rooms ?? []).map(async (room) => {
+                    const [members, messages, last] = await Promise.all([
+                        client.from('chat_members').select('*', { count: 'exact', head: true }).eq('room_id', room.id),
+                        client.from('chat_messages').select('*', { count: 'exact', head: true }).eq('room_id', room.id),
+                        client.from('chat_messages')
+                            .select('student_id, body, image_path, created_at, deleted_at')
+                            .eq('room_id', room.id)
+                            .order('created_at', { ascending: false })
+                            .limit(1)
+                            .maybeSingle()
+                    ]);
+                    return {
+                        ...room,
+                        member_count: members.count ?? 0,
+                        message_count: messages.count ?? 0,
+                        last_message: last.data ?? null
+                    };
+                }));
+                return json({ ok: true, rooms: summaries });
+            }
+
+            case 'chat.messages': {
+                const roomId = str(body.room_id, 40);
+                if (!roomId) return fail(400, 'MISSING_ROOM', 'Thiếu phòng chat.');
+                const limit = Math.min(200, Math.max(1, Number(body.limit) || 100));
+                const before = str(body.before, 40);
+                const { data: room } = await client
+                    .from('chat_rooms').select('id, kind, title, dm_key').eq('id', roomId).maybeSingle();
+                if (!room) return fail(404, 'NOT_FOUND', 'Không tìm thấy phòng chat.');
+                const { data: members } = await client
+                    .from('chat_members')
+                    .select('student_id, role, muted, joined_at, last_read_at')
+                    .eq('room_id', roomId)
+                    .order('joined_at', { ascending: true })
+                    .limit(20);
+                const ids = (members ?? []).map((m) => m.student_id);
+                let query = client.from('chat_messages')
+                    .select('id, room_id, student_id, body, image_path, created_at, deleted_at')
+                    .eq('room_id', roomId)
+                    .order('created_at', { ascending: false })
+                    .limit(limit);
+                if (before) query = query.lt('created_at', before);
+                const { data: messages, error } = await query;
+                if (error) throw error;
+                const senderIds = [...new Set([...ids, ...(messages ?? []).map((m) => m.student_id)])];
+                const names: Record<string, string> = {};
+                if (senderIds.length) {
+                    const { data: students } = await client
+                        .from('students').select('id, display_name').in('id', senderIds);
+                    for (const s of students ?? []) names[s.id] = s.display_name;
+                }
+                return json({
+                    ok: true,
+                    room,
+                    members: (members ?? []).map((m) => ({
+                        ...m,
+                        display_name: names[m.student_id] || 'Học sinh'
+                    })),
+                    messages: (messages ?? []).reverse().map((m) => ({
+                        ...m,
+                        sender_name: names[m.student_id] || 'Học sinh'
+                    }))
+                });
+            }
+
+            case 'chat.delete': {
+                const messageId = str(body.message_id, 40);
+                if (!messageId) return fail(400, 'MISSING_MESSAGE', 'Thiếu tin nhắn.');
+                const { data: message } = await client
+                    .from('chat_messages')
+                    .select('id, room_id, student_id, image_path, deleted_at')
+                    .eq('id', messageId)
+                    .maybeSingle();
+                if (!message) return fail(404, 'NOT_FOUND', 'Không tìm thấy tin nhắn.');
+                const { error } = await client.from('chat_messages')
+                    .update({ body: '', image_path: null, deleted_at: new Date().toISOString() })
+                    .eq('id', messageId);
+                if (error) throw error;
+                if (message.image_path) {
+                    try {
+                        await client.storage.from('chat-images').remove([message.image_path]);
+                    } catch { /* ảnh có thể đã bị xoá trước đó */ }
+                }
+                await logAction(client, 'chat.delete', 'chat_message', messageId, {
+                    room_id: message.room_id,
+                    student_id: message.student_id
+                });
+                return json({ ok: true });
+            }
+
+            case 'chat.room.delete': {
+                const roomId = str(body.room_id, 40);
+                if (!roomId) return fail(400, 'MISSING_ROOM', 'Thiếu phòng chat.');
+                const { data: room } = await client
+                    .from('chat_rooms').select('id, kind, title').eq('id', roomId).maybeSingle();
+                if (!room) return fail(404, 'NOT_FOUND', 'Không tìm thấy phòng chat.');
+                if (room.kind === 'global') {
+                    return fail(400, 'PROTECTED_ROOM', 'Không thể xoá phòng chung.');
+                }
+                const { error } = await client.from('chat_rooms').delete().eq('id', roomId);
+                if (error) throw error;
+                await logAction(client, 'chat.room.delete', 'chat_room', roomId, {
+                    kind: room.kind, title: room.title
+                });
+                return json({ ok: true });
+            }
+
+            case 'chat.member.remove': {
+                const roomId = str(body.room_id, 40);
+                const studentId = str(body.student_id, 40);
+                if (!roomId || !studentId) return fail(400, 'MISSING_ID', 'Thiếu phòng hoặc thành viên.');
+                const { data: room } = await client
+                    .from('chat_rooms').select('id, kind').eq('id', roomId).maybeSingle();
+                if (!room) return fail(404, 'NOT_FOUND', 'Không tìm thấy phòng chat.');
+                if (room.kind === 'global') {
+                    return fail(400, 'PROTECTED_ROOM', 'Phòng chung không có danh sách thành viên để xoá.');
+                }
+                const { error } = await client.from('chat_members')
+                    .delete().eq('room_id', roomId).eq('student_id', studentId);
+                if (error) throw error;
+                await logAction(client, 'chat.member.remove', 'student', studentId, { room_id: roomId });
+                return json({ ok: true });
+            }
+
+            case 'chat.mute': {
+                const roomId = str(body.room_id, 40);
+                const studentId = str(body.student_id, 40);
+                if (!roomId || !studentId) return fail(400, 'MISSING_ID', 'Thiếu phòng hoặc thành viên.');
+                const muted = body.muted === true;
+                const { data: rows, error } = await client.from('chat_members')
+                    .update({ muted })
+                    .eq('room_id', roomId)
+                    .eq('student_id', studentId)
+                    .select('room_id, student_id, muted');
+                if (error) throw error;
+                if (!rows || !rows.length) {
+                    return fail(404, 'NOT_MEMBER', 'Học sinh không phải thành viên phòng này.');
+                }
+                await logAction(client, muted ? 'chat.mute' : 'chat.unmute', 'student', studentId, {
+                    room_id: roomId
+                });
+                return json({ ok: true, muted });
+            }
+
             /* ------------------------------ Thông báo ------------------------------ */
             case 'announcements.list': {
                 const limit = Math.min(200, Math.max(1, Number(body.limit) || 100));

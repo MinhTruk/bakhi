@@ -2,6 +2,42 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [3.8.0] — 2026-11-16
+
+### Tính năng
+
+- **Administrator Dashboard 4.2 — 13 mô-đun**: bổ sung Hồ sơ, Thành tích, Chat và
+  What's New bên cạnh 9 mô-đun cũ. Sidebar giữ nguyên phong cách, mọi thao tác ghi vẫn
+  đi qua Edge Function `admin-actions`.
+- **Hồ sơ**: danh sách học sinh có tìm kiếm/phân trang, xem biệt danh, khung avatar,
+  ảnh bìa và toàn bộ thành tích đã xác minh (`profiles.list`, `profiles.detail`).
+- **Thành tích**: chọn học sinh rồi trao/thu hồi đúng hai badge Administrator
+  (`admin-chosen`, `admin-legend`); badge tự động chỉ hiển thị để đối chiếu, không có
+  nút trao tay. Máy chủ trả `NOT_ADMIN_BADGE` cho mọi id khác.
+- **Kiểm duyệt Chat**: xem phòng, thành viên và tin nhắn; xoá mềm tin (kèm xoá ảnh
+  Storage), tạm khoá/mở khoá gửi tin, gỡ thành viên khỏi nhóm và xoá phòng riêng.
+  Phòng chung được bảo vệ bằng `PROTECTED_ROOM`.
+- **What's New**: công tắc `public.whatsnew` và bảng xem trước các phiên bản đã xuất
+  bản; chỉ đọc changelog, không tạo bản ghi mới.
+
+### Sửa lỗi
+
+- `chat-api` từ chối tin nhắn mới bằng `403 MUTED` khi học sinh đang bị tạm khoá trong
+  phòng, thay vì chỉ ẩn giao diện.
+
+### Cải tiến
+
+- **Backend quản trị**: `admin-actions` thêm `chat.rooms`, `chat.messages`, `chat.delete`,
+  `chat.room.delete`, `chat.member.remove`, `chat.mute`; mọi hành động ghi
+  `admin_activity_logs` và không tin dữ liệu phân quyền từ client.
+- **Badge**: trang quản trị nạp `bk-badges.js` chỉ để đọc tên badge; cờ `BK_ADMIN_ONLY`
+  chặn ghi `bakhiBadges.v1` trong trình duyệt quản trị.
+- **Giao diện**: thêm khối hồ sơ, lưới badge, luồng tin nhắn và khối trao badge vào
+  `bk-admin-dashboard.css`; giữ bố cục một cột dưới 640px.
+- Cache-busting toàn website lên `3.8.0`.
+- QA mới `tools/qa/admin-smoke.js`: kiểm tra 13 tab, trao/thu hồi badge, kiểm duyệt
+  chat, công tắc What's New, cùng các ràng buộc bảo mật phía máy chủ.
+
 ## [3.7.0] — 2026-11-16
 
 ### Tính năng

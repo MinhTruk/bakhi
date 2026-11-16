@@ -1869,7 +1869,7 @@
         var link = D.createElement('link');
         link.rel = 'stylesheet';
         link.href = basePath() + 'assets/bakhi/bk-cloud.css?v=' +
-            ((global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '3.7.0');
+            ((global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '3.8.0');
         link.setAttribute('data-bk-cloud', '1');
         (D.head || D.documentElement).appendChild(link);
     }

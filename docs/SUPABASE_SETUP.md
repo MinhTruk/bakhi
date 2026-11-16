@@ -6,7 +6,7 @@ Hệ thống Supabase của Bá Khí gồm 4 phần:
 |---|---|---|
 | Cấu hình công khai | `assets/bakhi/bk-supabase.config.js` | **Nơi duy nhất** chứa Project URL + Publishable key |
 | Lớp client | `assets/bakhi/bk-cloud.js` | Một Supabase client duy nhất: Anonymous Auth, nhận diện học sinh, thông báo, changelog, đồng bộ |
-| Administrator Dashboard | `assets/bakhi/bk-devboard.js` + `admin/index.html` | 9 mô-đun quản trị, xác thực Administrator Code qua Edge Function |
+| Administrator Dashboard | `assets/bakhi/bk-devboard.js` + `admin/index.html` | 13 mô-đun quản trị, xác thực Administrator Code qua Edge Function |
 | Backend | `supabase/migrations/`, `supabase/functions/` | Schema + RLS + 10 Edge Function (7 đang chạy, 3 mới chờ deploy) |
 | Đồng bộ changelog | `.github/workflows/changelog-sync.yml` + `supabase/functions/changelog-sync` | GitHub Actions xuất bản `CHANGELOG.md` lên Supabase |
 
@@ -198,6 +198,13 @@ workflow dùng `CHANGELOG_SYNC_TOKEN`; cả ba đều tự kiểm tra quyền b�
 
 Riêng `admin-actions` xác thực lại ở **mỗi** thao tác, không tin trạng thái đã đăng nhập ở
 client. Token quản trị chỉ nằm trong `sessionStorage`, mất khi đóng tab.
+
+Từ 3.8.0, `admin-actions` phục vụ thêm bốn mô-đun quản trị: `profiles.list`/`profiles.detail`
+(đọc hồ sơ và badge), `badges.list`/`badges.grant`/`badges.revoke` (chỉ nhận `admin-chosen`
+và `admin-legend`), `chat.rooms`/`chat.messages`/`chat.delete`/`chat.room.delete`/
+`chat.member.remove`/`chat.mute` (kiểm duyệt Chat, phòng `global` trả `PROTECTED_ROOM`), và
+`settings.get`/`settings.set` cho What's New. `chat-api` kiểm tra `chat_members.muted` trước
+khi nhận tin mới và trả `403 MUTED`. Mọi hành động ghi đều vào `admin_activity_logs`.
 
 ## Bước 7. Đặt Administrator Code (KHU VỰC 3)
 

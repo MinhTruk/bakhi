@@ -1,4 +1,4 @@
-# Tính năng Bá Khí 3.7
+# Tính năng Bá Khí 3.8
 
 Tài liệu liệt kê toàn bộ tính năng đang có, trạng thái và ghi chú triển khai. Ký hiệu:
 ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị chặn
@@ -186,25 +186,34 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | Realtime + poll | Có | Có |
 | Ảnh hưởng dữ liệu học | Không | Không |
 
-## J. Administrator Dashboard 4.1
+## J. Administrator Dashboard 4.2
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1 | **9 mô-đun**: Tổng quan, Học sinh, Thông báo, Lịch sử phiên bản, Nhật ký, Giám sát, Quyền, Cấu hình, Dữ liệu | ✅ | `admin/index.html` + `bk-devboard.js` |
+| 1 | **13 mô-đun**: Tổng quan, Học sinh, Hồ sơ, Thành tích, Chat, Thông báo, What's New, Lịch sử phiên bản, Nhật ký, Giám sát, Quyền & bảo mật, Cấu hình, Dữ liệu & sao lưu | ✅ | `admin/index.html` + `bk-devboard.js` |
 | 2 | Sidebar thu gọn, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng | ✅ | Bố cục không tràn ngang |
-| 3 | Bảng có tìm kiếm, lọc, sắp xếp, phân trang phía máy chủ | ✅ | Học sinh, thông báo, changelog, nhật ký |
+| 3 | Bảng có tìm kiếm, lọc, sắp xếp, phân trang phía máy chủ | ✅ | Học sinh, hồ sơ, thông báo, changelog, nhật ký |
 | 4 | Lịch sử phiên bản dạng cột dọc | ✅ | Biểu mẫu toàn chiều rộng trên, danh sách bên dưới |
 | 5 | Xem chi tiết học sinh + xuất CSV/JSON | ✅ | Dữ liệu đọc qua `admin-actions` |
 | 6 | Lưu/xuất bản changelog qua RPC dùng chung với GitHub | ✅ | Cùng quy tắc chống trùng |
 | 7 | Nhật ký thao tác quản trị + xuất | ✅ | Lọc theo hành động/đối tượng |
 | 8 | Giám sát hệ thống: độ trễ, số bản ghi, hàng đợi đồng bộ, lỗi gần đây | ✅ | `system.health` |
-| 9 | Quyền: báo cáo thật về hàm/bảng/policy | ✅ | Đọc catalog qua `bakhi_permissions_report()`; một Administrator Code dùng chung, chưa có vai trò riêng |
+| 9 | Quyền & bảo mật: báo cáo thật về hàm/bảng/policy | ✅ | Đọc catalog qua `bakhi_permissions_report()`; một Administrator Code dùng chung, chưa có vai trò riêng |
 | 10 | Cấu hình: bật/tắt What's New và bảo trì | ✅ | Chỉ hai khoá `public.*` |
-| 11 | Dữ liệu: kiểm tra toàn vẹn + xuất CSV/JSON | ✅ | Không có xoá hàng loạt |
-| 12 | Xác nhận trước thao tác ảnh hưởng dữ liệu | ✅ | Sửa/xoá thông báo, changelog |
+| 11 | Dữ liệu & sao lưu: kiểm tra toàn vẹn + xuất CSV/JSON | ✅ | Không có xoá hàng loạt |
+| 12 | Xác nhận trước thao tác ảnh hưởng dữ liệu | ✅ | Sửa/xoá thông báo, changelog, badge, tin nhắn, phòng chat |
 | 13 | Xác thực Administrator Code + phiên `sessionStorage` | ✅ | Mọi thao tác kiểm tra lại ở máy chủ |
 | 14 | Import `students.txt`, phát hiện trùng tên | ✅ | Xem SUPABASE_SETUP |
 | 15 | Push thông báo/changelog ngay, ẩn/đăng lại/xoá | ✅ | Realtime tới máy học sinh |
+| 16 | **Hồ sơ**: danh sách, tìm kiếm, chi tiết biệt danh/khung/ảnh bìa, thành tích đã xác minh | ✅ | `profiles.list`, `profiles.detail`; không lộ mã nội bộ ngoài dashboard |
+| 17 | **Thành tích**: trao/thu hồi đúng `admin-chosen` và `admin-legend` | ⚠️ đã có mã | Máy chủ từ chối `NOT_ADMIN_BADGE`; badge tự động không trao tay được |
+| 18 | **Chat**: danh sách phòng, xem thành viên/tin nhắn, xoá mềm tin, tạm khoá, gỡ thành viên, xoá phòng riêng | ⚠️ đã có mã | `chat.*` trong `admin-actions`; phòng chung được bảo vệ (`PROTECTED_ROOM`) |
+| 19 | **What's New**: bật/tắt khối cập nhật và xem trước changelog đã xuất bản | ✅ | Chỉ ghi `public.whatsnew` qua `settings.set`; không sửa changelog |
+| 20 | Kiểm thử dashboard (13 tab + bảo mật) | ✅ | `tools/qa/admin-smoke.js` (jsdom) |
+
+> Hai mô-đun Hồ sơ/Thành tích và Chat cần migration `20261119000000`/`20261120000000` cùng
+> Edge Function `student-profile`/`chat-api` đã deploy. Trước đó dashboard hiện thông báo
+> trung thực “máy chủ chưa được triển khai”, không giả lập dữ liệu.
 
 ## K. Chat — phòng chung, tin nhắn riêng, nhóm nhỏ (3.7.0)
 
@@ -248,7 +257,7 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Khối “Cập nhật gần đây” | ✅ | Chỉ trang chủ; Studio/Word & Paint không dựng |
 | Đồng bộ CHANGELOG.md | ✅ | GitHub Actions + `changelog-sync`, một thông báo mỗi phiên bản |
 | Cấu hình site | ✅ | `app_settings` (`public.whatsnew`, `public.maintenance`), realtime |
-| Administrator Dashboard | ✅ | `admin/index.html`, yêu cầu Administrator Code, 9 mô-đun |
+| Administrator Dashboard | ✅ | `admin/index.html`, yêu cầu Administrator Code, 13 mô-đun |
 | Import danh sách học sinh | ✅ | Từ `students.txt`, phát hiện trùng tên |
 | Nhật ký thao tác quản trị | ✅ | Ai làm gì, lúc nào; chỉ đọc trong dashboard |
 | Thông báo trên trang bài học/Studio | ✅ | Chế độ chỉ thông báo, không cần đăng nhập |

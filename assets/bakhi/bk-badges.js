@@ -566,6 +566,9 @@
        Khởi động: đếm ngày, trang, khung giờ
        ------------------------------------------------------------------ */
     function boot() {
+        /* Trang quản trị chỉ nạp danh mục badge để hiển thị tên; không đếm
+           trang/ngày và không ghi bakhiBadges.v1 vào trình duyệt quản trị. */
+        if (global.BK_ADMIN_ONLY) return;
         markDay();
         try {
             var path = global.location.pathname.replace(/\/index\.html$/, '/').replace(/(\/[^/]+\/[^/]+)$/, '$1');

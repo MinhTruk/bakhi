@@ -274,13 +274,26 @@ DOMContentLoaded
   deploy migration `20261120000000`, Edge Function `chat-api` và bucket `chat-images` trên dự án
   Supabase thật. Trước đó `/chat/` hiển thị thông báo máy chủ chưa sẵn sàng.
 
-### 2.4. Administrator Dashboard 4.1
+### 2.4. Administrator Dashboard 4.2
 
-- `admin/index.html` nạp `bk-admin-dashboard.css` + `bk-devboard.js`; mọi thao tác ghi đi qua
-  Edge Function `admin-actions` với header `x-admin-token`.
-- **9 mô-đun**: Tổng quan, Học sinh, Thông báo, Lịch sử phiên bản, Nhật ký, Giám sát,
-  Quyền, Cấu hình, Dữ liệu. Sidebar thu gọn được, breadcrumb, tìm kiếm, trạng thái
-  tải/thành công/lỗi/rỗng; bảng có lọc, sắp xếp, phân trang phía máy chủ.
+- `admin/index.html` nạp `bk-admin-dashboard.css` + `bk-devboard.js` + `bk-badges.js` (chỉ để đọc
+  danh mục badge; `BK_ADMIN_ONLY` chặn ghi `bakhiBadges.v1` trong trình duyệt quản trị); mọi
+  thao tác ghi đi qua Edge Function `admin-actions` với header `x-admin-token`.
+- **13 mô-đun**: Tổng quan, Học sinh, Hồ sơ, Thành tích, Chat, Thông báo, What's New,
+  Lịch sử phiên bản, Nhật ký, Giám sát, Quyền & bảo mật, Cấu hình, Dữ liệu & sao lưu.
+  Sidebar thu gọn được, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng; bảng có
+  lọc, sắp xếp, phân trang phía máy chủ.
+- **Hồ sơ**: `profiles.list` (tìm, phân trang, đếm badge) và `profiles.detail` (hồ sơ,
+  khung avatar, danh sách badge kèm loại `auto`/`admin`, lý do và thời điểm).
+- **Thành tích**: `badges.list` + `badges.grant` + `badges.revoke`. Máy chủ chỉ nhận
+  `admin-chosen`/`admin-legend`; mọi id khác trả `NOT_ADMIN_BADGE`. Không có quyền tự mở
+  badge tự động — chúng do `student-profile` tính lại từ tiến trình đã đồng bộ.
+- **Chat**: `chat.rooms`/`chat.messages` đọc phòng, thành viên, tin nhắn;
+  `chat.delete` xoá mềm + xoá ảnh Storage; `chat.room.delete` chặn phòng `global`;
+  `chat.member.remove`; `chat.mute` bật/tắt cột `chat_members.muted` và được `chat-api`
+  kiểm tra trước khi nhận tin mới. Mọi hành động ghi `admin_activity_logs`.
+- **What's New**: công tắc `public.whatsnew` qua `settings.get`/`settings.set` và bảng xem
+  trước các phiên bản đã xuất bản. Chỉ đọc changelog, không tạo bản ghi mới.
 - Bố cục nội dung `.bkc-pane` rộng 100% (tối đa 82rem). Tab Lịch sử phiên bản dùng
   `.bkc-stack`: biểu mẫu tạo/sửa chiếm toàn chiều rộng phía trên, danh sách phiên bản bên
   dưới. Tab Thông báo vẫn dùng `.bkc-split` hai cột; dưới 1180px lưới gộp thành một cột.
@@ -408,7 +421,7 @@ Kết quả sau nâng cấp: **119/119 tệp không đổi nội dung** (`verify
 | Lịch sử phiên bản | bảng `changelog` | Hiển thị trong trung tâm thông báo và khối “Cập nhật gần đây” chỉ bật ở trang chủ, xếp theo số phiên bản |
 | Đồng bộ changelog | `.github/workflows/changelog-sync.yml` + `supabase/functions/changelog-sync` | GitHub Actions đọc `CHANGELOG.md`, gọi hàm bằng `CHANGELOG_SYNC_TOKEN`; hàm dùng RPC `bakhi_publish_changelog` để ghi và tạo thông báo một lần |
 | Cấu hình site | bảng `app_settings` | Chỉ đọc khoá `public.*`; `public.whatsnew`, `public.maintenance`; realtime; ghi qua `admin-actions` |
-| Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html` | 9 mô-đun, xác thực Administrator Code qua `admin-auth`; mọi thao tác kiểm tra lại ở `admin-actions` |
+| Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html` | 13 mô-đun, xác thực Administrator Code qua `admin-auth`; mọi thao tác kiểm tra lại ở `admin-actions` |
 | Dev Code | `assets/bakhi/bk-settings.js`, `bk-cloud.js`, `supabase/functions/dev-auth`, bảng `dev_sessions` | Xác minh mã ở máy chủ, giới hạn tần suất, chỉ trả token + hạn dùng; tách hoàn toàn khỏi phiên quản trị |
 
 Ghi chú triển khai:

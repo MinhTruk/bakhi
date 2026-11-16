@@ -46,7 +46,7 @@ BAKHI hướng đến việc giúp việc ôn tập trở nên:
 - **Học tập local-first**: tiến trình, ghi chú, đánh dấu, thành tích lưu trên máy trước;
   Supabase chỉ là lớp đồng bộ tuỳ chọn, không bắt buộc tài khoản.
 - **Không áp lực thời gian**: không đồng hồ đếm ngược, không tính giờ, không xếp hạng thi.
-- **Quản trị tập trung**: Administrator Dashboard 9 mô-đun, có xem trước thông báo/changelog
+- **Quản trị tập trung**: Administrator Dashboard 13 mô-đun, có xem trước thông báo/changelog
   trước khi push, quản lý học sinh, nhật ký, giám sát, cấu hình và dữ liệu.
 - **Công cụ học tập đi kèm**: Trung tâm học tập 7 tab, Music Player, Bá Khí Studio (Word & Paint),
   Developer Playground 2.0. Favicon tĩnh dùng chung trên toàn site.
@@ -235,7 +235,7 @@ script và không sửa nội dung gốc.
 | 🎧 Music Player dùng chung | 🟢 Đã có |
 | 🎨 Bá Khí Studio (Word & Paint) | 🟢 Đã có |
 | 🔔 Thông báo realtime toàn website (kể cả trang bài học, Studio) | 🟢 Đã có (3.2.0) |
-| 🛠️ Administrator Dashboard 4.1 (9 mô-đun, xem trước, lệnh nhanh) | 🟢 Đã có (3.3.0) |
+| 🛠️ Administrator Dashboard 4.2 (13 mô-đun, hồ sơ, thành tích, chat, What's New) | 🟢 Đã có (3.8.0) |
 | 🔄 Đồng bộ CHANGELOG.md tự động qua GitHub Actions | 🟢 Đã có (3.3.0) |
 | 🌙 Giao diện thông báo tối thống nhất | 🟢 Đã có (3.3.0) |
 | 🖼️ Favicon tĩnh SVG/PNG/ICO toàn site | 🟢 Đã có (3.3.0) |
@@ -479,7 +479,7 @@ Chín mô-đun:
 
 ### Giao diện 4.1
 
-- **9 mô-đun trong sidebar thu gọn được**, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng.
+- **13 mô-đun trong sidebar thu gọn được**, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng.
 - **Bảng dữ liệu** có tìm kiếm, lọc, sắp xếp và phân trang phía máy chủ; bảng rộng cuộn trong
   khung, không đẩy vỡ bố cục.
 - **Lịch sử phiên bản dạng cột dọc**: biểu mẫu tạo/sửa chiếm toàn chiều rộng, danh sách bên dưới.
@@ -518,7 +518,7 @@ có kiểm tra phiên quản trị.
   bk-dev.js|css         Developer Playground 2.0
   bk-music.js|css       Music Player dùng chung
   bk-cloud.js|css       Nhận diện, thông báo realtime, changelog, đồng bộ (Supabase)
-  bk-devboard.js        Administrator Dashboard 9 mô-đun + menu Administrator
+  bk-devboard.js        Administrator Dashboard 13 mô-đun + menu Administrator
   bk-admin-dashboard.css Giao diện dashboard 4.1 (sidebar thu gọn, bảng phân trang)
   bk-admin.css|bk-admin-theme.js  Trang đăng nhập quản trị + theme
   bk-supabase.config.js Nơi duy nhất chứa Project URL + Publishable key

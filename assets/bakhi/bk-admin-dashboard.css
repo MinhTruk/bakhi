@@ -995,3 +995,134 @@ html.dark .bkc-shortcut-row { background: rgba(148, 163, 184, .1); }
         padding-bottom: max(1.1rem, env(safe-area-inset-bottom));
     }
 }
+
+/* ===================== Hồ sơ, thành tích, Chat (3.8.0) ===================== */
+
+/* --- Hồ sơ chi tiết --- */
+.bkc-profile-head {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    padding: .85rem .9rem;
+    border-radius: 15px;
+    background: var(--bkc-panel-2);
+    border: 1px solid var(--bkc-line);
+}
+.bkc-profile-avatar {
+    flex: 0 0 auto;
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font: 800 1.05rem/1 Lexend, system-ui, sans-serif;
+    color: #fff;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    overflow: hidden;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, .22);
+}
+.bkc-profile-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bkc-profile-avatar.frame-leaf { box-shadow: 0 0 0 3px rgba(16, 185, 129, .45); }
+.bkc-profile-avatar.frame-sakura { box-shadow: 0 0 0 3px rgba(249, 168, 212, .6); }
+.bkc-profile-avatar.frame-sunflower { box-shadow: 0 0 0 3px rgba(245, 158, 11, .5); }
+.bkc-profile-avatar.frame-wreath { box-shadow: 0 0 0 3px rgba(34, 197, 94, .5); }
+.bkc-profile-avatar.frame-ear-cat { box-shadow: 0 0 0 3px rgba(251, 146, 60, .55); }
+.bkc-profile-avatar.frame-ear-fox { box-shadow: 0 0 0 3px rgba(249, 115, 22, .55); }
+.bkc-profile-avatar.frame-ear-bunny { box-shadow: 0 0 0 3px rgba(232, 121, 249, .55); }
+.bkc-profile-avatar.frame-ear-wolf { box-shadow: 0 0 0 3px rgba(100, 116, 139, .55); }
+.bkc-profile-avatar.frame-antler { box-shadow: 0 0 0 3px rgba(161, 98, 7, .55); }
+.bkc-profile-avatar.frame-horn-dragon { box-shadow: 0 0 0 3px rgba(239, 68, 68, .6); }
+.bkc-profile-avatar.frame-crown { box-shadow: 0 0 0 3px rgba(234, 179, 8, .7); }
+.bkc-profile-avatar.frame-star { box-shadow: 0 0 0 3px rgba(139, 92, 246, .65); }
+.bkc-profile-head-info { display: flex; flex-direction: column; gap: .18rem; min-width: 0; }
+.bkc-profile-head-info b { font-size: .95rem; }
+.bkc-profile-head-info .bkc-row-sub,
+.bkc-profile-head-info .bkc-hint { word-break: break-word; }
+.bkc-profile-bio p { margin: .3rem 0 0; font-size: .74rem; line-height: 1.55; white-space: pre-wrap; }
+
+/* --- Badge --- */
+.bkc-badge-grid {
+    display: grid;
+    gap: .55rem;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+}
+.bkc-badge-tile {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    padding: .65rem .7rem;
+    border-radius: 13px;
+    background: var(--bkc-panel);
+    border: 1px solid var(--bkc-line);
+    flex-wrap: wrap;
+}
+.bkc-badge-tile.is-admin {
+    background: linear-gradient(135deg, rgba(234, 179, 8, .12), rgba(168, 85, 247, .1));
+    border-color: rgba(234, 179, 8, .38);
+}
+.bkc-badge-ic {
+    flex: 0 0 auto;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .85rem;
+    color: #fff;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+}
+.bkc-badge-tile.is-admin .bkc-badge-ic { background: linear-gradient(135deg, #f59e0b, #d946ef); }
+.bkc-badge-body { display: flex; flex-direction: column; gap: .15rem; min-width: 0; flex: 1 1 8rem; }
+.bkc-badge-body b { font-size: .76rem; }
+.bkc-badge-acts { flex: 1 1 100%; display: flex; justify-content: flex-end; gap: .3rem; }
+
+/* --- Chọn học sinh để trao badge --- */
+.bkc-picker-head {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .6rem .7rem;
+    border-radius: 12px;
+    background: var(--bkc-panel-2);
+    border: 1px solid var(--bkc-line);
+}
+.bkc-picker-head > div { display: flex; flex-direction: column; gap: .12rem; min-width: 0; }
+.bkc-grant-box {
+    padding: .7rem .75rem;
+    border-radius: 13px;
+    background: var(--bkc-panel-2);
+    border: 1px dashed var(--bkc-ring);
+}
+
+/* --- Chat kiểm duyệt --- */
+.bkc-chat-members { margin-bottom: .85rem; }
+.bkc-thread { display: flex; flex-direction: column; gap: .5rem; }
+.bkc-thread .bkc-sec-title { margin-top: 0; }
+.bkc-msg {
+    padding: .55rem .65rem;
+    border-radius: 12px;
+    background: var(--bkc-panel-2);
+    border: 1px solid var(--bkc-line);
+}
+.bkc-msg.is-deleted { opacity: .62; border-style: dashed; }
+.bkc-msg-head { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; }
+.bkc-msg-head b { font-size: .74rem; }
+.bkc-msg-body { margin-top: .25rem; font-size: .76rem; line-height: 1.5; word-break: break-word; }
+.bkc-msg-body p { margin: 0; white-space: pre-wrap; }
+.bkc-msg-img {
+    display: block;
+    max-width: min(100%, 18rem);
+    max-height: 14rem;
+    border-radius: 9px;
+    border: 1px solid var(--bkc-line);
+    object-fit: cover;
+}
+.bkc-msg-acts { display: flex; justify-content: flex-end; margin-top: .3rem; }
+
+@media (max-width: 640px) {
+    .bkc-profile-head { flex-direction: column; align-items: flex-start; }
+    .bkc-badge-grid { grid-template-columns: 1fr; }
+}
+

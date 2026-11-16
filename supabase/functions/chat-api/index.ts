@@ -332,6 +332,15 @@ Deno.serve(async (req) => {
                 if (!roomId) return fail(400, 'BAD_ROOM', 'Thiếu phòng chat.');
                 const room = await readableRoom(ctx, roomId);
                 if (!room) return fail(403, 'NO_ACCESS', 'Bạn không ở trong phòng này.');
+                const { data: membership } = await client
+                    .from('chat_members')
+                    .select('muted')
+                    .eq('room_id', roomId)
+                    .eq('student_id', ctx.studentId)
+                    .maybeSingle();
+                if (membership && membership.muted) {
+                    return fail(403, 'MUTED', 'Bạn đang bị tạm khoá gửi tin trong phòng này.');
+                }
                 const text = cleanBody(body.content ?? body.body);
                 const image = body.image_path ? str(body.image_path, 300) : '';
                 if (!text && !image) return fail(400, 'EMPTY', 'Tin nhắn trống.');
