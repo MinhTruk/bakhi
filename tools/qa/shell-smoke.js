@@ -113,6 +113,17 @@ ok('menu đúng thứ tự mục bắt buộc',
   labels[5].indexOf('Cài đặt') === 0,
   JSON.stringify(labels));
 ok('menu có Chat trỏ tới /chat/ đã tồn tại', !!menu.querySelector('a[href$="chat/"]'));
+const chatCount = idoc.getElementById('bkMenuChatCount');
+ok('menu Chat có chỗ hiển thị số tin chưa đọc', !!chatCount && chatCount.hidden === true);
+iw.BKCloud = {
+  chatUnread: function () { return 3; },
+  on: function () { return function () { }; },
+  refreshChatUnread: function () { return Promise.resolve(); }
+};
+iw.BKShell.refresh();
+ok('menu Chat hiện số tin chưa đọc', !!chatCount && chatCount.textContent === '3' && chatCount.hidden === false &&
+  idoc.querySelector('#bkUserBtn .bk-user-dot').classList.contains('on'));
+delete iw.BKCloud;
 ok('đường dẫn trong menu dùng gốc site đúng', menu.querySelector('a[href$="profile/"]').href === 'https://minhtruk.github.io/bakhi/profile/',
   menu.querySelector('a[href$="profile/"]').href);
 ok('menu không lặp tên học sinh ngoài avatar', !/Học sinh ·/.test(menu.textContent) || true);

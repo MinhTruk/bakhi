@@ -407,10 +407,15 @@
         }));
 
         /* --- Chat: phòng chung, tin nhắn riêng, nhóm nhỏ --- */
-        menu.appendChild(row('a', 'fa-comments', 'Chat', {
+        var chatRow = row('a', 'fa-comments', 'Chat', {
             href: S.base + 'chat/', role: 'menuitem', external: true,
             onClick: function () { closeMenu(); }
-        }));
+        });
+        var chatCount = el('span', 'bk-menu-count');
+        chatCount.id = 'bkMenuChatCount';
+        chatCount.hidden = true;
+        chatRow.appendChild(chatCount);
+        menu.appendChild(chatRow);
 
         menu.appendChild(el('hr', 'bk-menu-sep'));
 
@@ -492,6 +497,22 @@
         r.setAttribute('aria-checked', dark ? 'true' : 'false');
     }
 
+    function paintChatUnread() {
+        if (!S.btn) return;
+        var n = 0;
+        try {
+            n = Number(global.BKCloud && global.BKCloud.chatUnread ? global.BKCloud.chatUnread() : 0) || 0;
+        } catch (e) { n = 0; }
+        var count = D.getElementById('bkMenuChatCount');
+        if (count) {
+            count.textContent = n > 99 ? '99+' : String(n);
+            count.hidden = !n;
+            count.setAttribute('aria-label', n + ' tin nhắn chưa đọc');
+        }
+        var dot = S.btn.querySelector('.bk-user-dot');
+        if (dot) dot.classList.toggle('on', n > 0);
+    }
+
     function paintProfileBits() {
         if (!S.btn) return;
         var old = S.btn.querySelector('.bk-avatar');
@@ -520,6 +541,7 @@
             } catch (e) { }
             S.nickEl.textContent = nick ? '@' + nick : (base.displayName ? 'Học sinh · ' + (synced ? 'đã đồng bộ' : 'lưu trên thiết bị') : '');
         }
+        paintChatUnread();
     }
 
     function placeMenu() {
@@ -558,6 +580,9 @@
         S.open = true;
         if (S.btn) S.btn.setAttribute('aria-expanded', 'true');
         paintProfileBits();
+        if (global.BKCloud && global.BKCloud.refreshChatUnread) {
+            try { global.BKCloud.refreshChatUnread(); } catch (e) { }
+        }
         var first = S.menu.querySelector('.bk-menu-row, .bk-menu-search input');
         if (first && first.focus) {
             try { first.focus({ preventScroll: true }); } catch (e) { }
@@ -829,6 +854,18 @@
             if (e.key === 'bakhiProfile.v1' || e.key === 'bakhiStudent.v1') paintProfileBits();
             if (e.key === A11Y_KEY) applyA11y();
         });
+
+        /* bk-cloud nạp sau bk-shell: nối sự kiện chưa đọc khi nó sẵn sàng. */
+        function hookChatUnread() {
+            if (!global.BKCloud || !global.BKCloud.on || S.chatHooked) return;
+            S.chatHooked = true;
+            global.BKCloud.on(function (evt) {
+                if (evt === 'chat-unread') paintChatUnread();
+            });
+            paintChatUnread();
+        }
+        setTimeout(hookChatUnread, 0);
+        setTimeout(hookChatUnread, 700);
     }
 
     global.BKShell = {

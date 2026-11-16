@@ -175,6 +175,21 @@ body.bk-app {
 .bk-menu-row[aria-checked="true"] > .bk-menu-check { color: var(--bkl-primary); }
 .bk-menu-check { margin-left: auto; font-size: .8rem; color: var(--bkl-muted); }
 .bk-menu-desc { font-size: .68rem; color: var(--bkl-muted); margin-left: auto; }
+.bk-menu-count {
+    margin-left: auto;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 .32rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #fff;
+    font: 700 .64rem/1 Lexend, system-ui, sans-serif;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, .35);
+}
+.bk-menu-count[hidden] { display: none; }
 .bk-menu-sep { height: 1px; background: var(--bkl-line); margin: .3rem .4rem; border: 0; }
 .bk-menu-foot {
     display: flex; align-items: center; justify-content: space-between;

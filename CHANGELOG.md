@@ -2,6 +2,22 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [6.1.2] — 2026-11-16
+
+### Sửa lỗi
+
+- **Bàn phím ảo không còn đẩy cả trang Chat**: khung chat lấy chiều cao từ
+  `visualViewport` và `interactive-widget=resizes-content`; trên mobile chỉ vùng
+  tin nhắn cuộn, trang không bị đẩy lên khi focus ô soạn tin. Khi bàn phím đóng,
+  chiều cao tự trở lại.
+- **Dễ thấy tin nhắn mới**: mục Chat trong menu hồ sơ thu nhỏ có số tin chưa đọc,
+  avatar có chấm đỏ; số này đồng bộ từ Chat và cập nhật qua realtime khi có tin mới.
+
+### Cải tiến
+
+- Ô soạn tin và header Chat giữ nguyên vị trí trong lúc bàn phím mở; giảm giật
+  trang khi lướt tin nhắn cũ.
+
 ## [6.1.1] — 2026-11-16
 
 ### Sửa lỗi

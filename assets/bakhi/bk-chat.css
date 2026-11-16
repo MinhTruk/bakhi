@@ -778,8 +778,8 @@ button.bkchat-avatar { cursor: pointer; }
     .bkchat-shell:has(.bkchat-card:not([hidden])) {
         grid-template-columns: minmax(0, 1fr);
         height: calc(100vh - 150px);
-        height: calc(100dvh - 150px);
-        min-height: 380px;
+        height: calc(var(--bkchat-vh, 100dvh) - var(--bkchat-top, 60px));
+        min-height: 0;
         max-width: 100%;
         overflow: hidden;
     }
@@ -856,6 +856,8 @@ button.bkchat-avatar { cursor: pointer; }
 .bkchat-composer { padding: .45rem .65rem .55rem; }
 
 @media (max-width: 900px) {
+    html:has(#bkChat),
+    body:has(#bkChat) { overflow: hidden; overscroll-behavior: none; }
     body:has(#bkChat) .bk-page { padding: 0; max-width: none; }
     body:has(#bkChat) .bk-topbar { margin-bottom: 0; }
     .bkchat-shell,
@@ -863,7 +865,7 @@ button.bkchat-avatar { cursor: pointer; }
     .bkchat-shell.is-side-collapsed,
     .bkchat-shell.is-side-collapsed:has(.bkchat-card:not([hidden])) {
         grid-template-columns: minmax(0, 1fr);
-        height: calc(100dvh - 60px);
+        height: calc(var(--bkchat-vh, 100dvh) - var(--bkchat-top, 60px));
         min-height: 0;
         border-radius: 0;
         border-left: 0;
@@ -873,8 +875,10 @@ button.bkchat-avatar { cursor: pointer; }
     .bkchat-side { height: 100%; }
     .bkchat-main { height: 100%; }
     .bkchat-card { max-height: 100%; }
-    .bkchat-dialog { max-height: 92dvh; }
+    .bkchat-dialog { max-height: calc(var(--bkchat-vh, 100dvh) - 24px); }
     .bkchat-search { margin: .15rem .65rem .5rem; }
+    /* Chỉ vùng tin nhắn cuộn; trang không bị đẩy khi bàn phím mở. */
+    .bkchat-messages { min-height: 0; overscroll-behavior: contain; }
 }
 
 @media (max-width: 420px) {

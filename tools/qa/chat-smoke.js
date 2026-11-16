@@ -114,6 +114,12 @@ function makeHarness() {
     url: SITE + 'chat/', runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole: vc
   });
   const w = dom.window;
+  let vvResize = null;
+  w.visualViewport = {
+    height: 700, offsetTop: 0,
+    addEventListener(type, fn) { if (type === 'resize') vvResize = fn; },
+    removeEventListener() { }
+  };
   w.matchMedia = w.matchMedia || ((q) => ({ matches: false, media: q, addEventListener() { }, removeEventListener() { } }));
   const calls = [];
   let uploadCount = 0;
@@ -194,7 +200,10 @@ function makeHarness() {
   };
 
   w.eval(fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-chat.js'), 'utf8'));
-  return { w, calls, errors, uploadCount: () => uploadCount };
+  return {
+    w, calls, errors, uploadCount: () => uploadCount,
+    resizeViewport: (height) => { w.visualViewport.height = height; if (vvResize) vvResize(); }
+  };
 }
 
 async function main() {
@@ -207,6 +216,12 @@ async function main() {
   console.log('\n[1] Dựng giao diện & tải phòng');
   ok('dựng được khung chat', !!root.querySelector('.bkchat-shell'));
   ok('có danh sách phòng', !!doc.getElementById('bkChatRooms'));
+  const vhBefore = parseInt(doc.documentElement.style.getPropertyValue('--bkchat-vh'), 10);
+  ok('chat đặt chiều cao theo visualViewport', Number.isFinite(vhBefore), String(vhBefore));
+  H.resizeViewport(420);
+  await wait(40);
+  const vhAfter = parseInt(doc.documentElement.style.getPropertyValue('--bkchat-vh'), 10);
+  ok('bàn phím mở làm khung chat co lại', Number.isFinite(vhAfter) && vhAfter < vhBefore, vhBefore + ' → ' + vhAfter);
   ok('có ô soạn tin', !!doc.getElementById('bkChatInput'));
   const rooms = await until(() => doc.querySelectorAll('#bkChatRooms [data-room]').length === 3 ? doc.querySelectorAll('#bkChatRooms [data-room]') : null);
   ok('tải đủ 3 phòng (chung, riêng, nhóm)', !!rooms, String(doc.querySelectorAll('#bkChatRooms [data-room]').length));

@@ -61,6 +61,7 @@
         lastSyncAt: 0, syncError: null, listeners: [], channel: null,
         studentTimer: null, studentBusy: false, lastStudentAt: 0, studentError: null,
         profileServerAt: 0, profilePulled: false, profileDirty: false, studentDisabled: false,
+        chatUnread: 0, chatUnreadTimer: null, chatUnreadBusy: false,
         gate: null, bell: null, badge: null, changeBtn: null, panel: null, panelOpen: false,
         article: null, pollTimer: null, searchSeq: 0, publicLoaded: false, lastAnnFetch: 0,
         binding: false, fitTimer: null
@@ -1854,6 +1855,36 @@
             (p.links && p.links.length) || (p.frame && p.frame !== 'none'));
     }
 
+    /* Số tin nhắn Chat chưa đọc, dùng cho chấm đỏ trên avatar và menu hồ sơ.
+       Chat-api bootstrap là nguồn chuẩn; trang Chat có thể đẩy số đã tính sẵn. */
+    function setChatUnread(n) {
+        var next = Math.max(0, Number(n) || 0);
+        if (next === S.chatUnread) return;
+        S.chatUnread = next;
+        emit('chat-unread', { count: next });
+    }
+
+    function refreshChatUnread() {
+        if (!S.bound || S.chatUnreadBusy) return Promise.resolve(S.chatUnread);
+        var fn = CFG.functions && CFG.functions.chat;
+        if (!fn) return Promise.resolve(S.chatUnread);
+        S.chatUnreadBusy = true;
+        return api(fn, { action: 'bootstrap' }).then(function (data) {
+            S.chatUnreadBusy = false;
+            setChatUnread(data && data.totalUnread);
+            return S.chatUnread;
+        }).catch(function () {
+            S.chatUnreadBusy = false;
+            return S.chatUnread;
+        });
+    }
+
+    function scheduleChatUnread(delay) {
+        if (!S.bound) return;
+        clearTimeout(S.chatUnreadTimer);
+        S.chatUnreadTimer = setTimeout(refreshChatUnread, delay || 1500);
+    }
+
     function syncStudent() {
         if (!S.bound || S.studentDisabled) return Promise.resolve(null);
         if (S.studentBusy) {
@@ -2020,6 +2051,11 @@
                     /* Trao/thu hồi badge ở tab hoặc thiết bị khác → tải lại hồ sơ ngay. */
                     syncStudent();
                 })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, function (payload) {
+                    var row = payload && (payload.new || payload.old);
+                    if (!row || !S.student || row.student_id === S.student.id) return;
+                    scheduleChatUnread(1200);
+                })
                 .subscribe(function (status) {
                     if (status === 'SUBSCRIBED') S.realtime = 'connected';
                     else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') S.realtime = 'error';
@@ -2150,8 +2186,9 @@
                 }
             } catch (e) { }
             scheduleStudentSync(1200);
+            scheduleChatUnread(2200);
             global.addEventListener('online', function () {
-                if (S.bound) { doSync(true); syncStudent(); }
+                if (S.bound) { doSync(true); syncStudent(); refreshChatUnread(); }
                 loadAnnouncements(true);
             });
             emit('ready', { bound: S.bound });
@@ -2222,6 +2259,7 @@
                 lastSyncAt: S.lastSyncAt, syncError: S.syncError ? S.syncError.message : null,
                 announcements: S.announcements.length, changelog: S.changelog.length,
                 notificationsUnread: unreadCount(),
+                chatUnread: S.chatUnread,
                 annLoading: S.annLoading, annError: S.annError,
                 clLoading: S.clLoading, clError: S.clError,
                 flags: S.flags, flagsLoaded: S.flagsLoaded, realtime: S.realtime,
@@ -2235,6 +2273,9 @@
             };
         },
         identity: function () { return S.student; },
+        chatUnread: function () { return S.chatUnread; },
+        refreshChatUnread: refreshChatUnread,
+        setChatUnread: setChatUnread,
         changeStudent: changeStudent,
         syncNow: function () { return doSync(true); },
         syncStudent: syncStudent,

@@ -272,8 +272,55 @@
         root.appendChild(shell);
 
         bindEvents();
+        watchViewport();
         boot();
         return S;
+    }
+
+    /* Bàn phím ảo làm visualViewport nhỏ lại nhưng layout viewport (100dvh)
+       trên iOS vẫn giữ nguyên. Đặt chiều cao theo vùng nhìn thấy để chỉ khung
+       chat co lại, không đẩy cả trang và không làm trang bị cuộn. */
+    function fitViewport() {
+        var vv = global.visualViewport;
+        var h = vv && vv.height ? vv.height : (global.innerHeight || 0);
+        var top = 60;
+        var bar = D.querySelector('.bk-topbar');
+        if (bar && bar.getBoundingClientRect) {
+            var measured = bar.getBoundingClientRect().height;
+            if (measured > 0) top = measured;
+        }
+        var rootStyle = D.documentElement.style;
+        rootStyle.setProperty('--bkchat-vh', Math.round(h) + 'px');
+        rootStyle.setProperty('--bkchat-top', Math.round(top) + 'px');
+        /* Trang Chat không có cuộn dọc; nếu iOS còn pan trang để lôi ô nhập
+           vào tầm nhìn, đưa trang về đỉnh để header không bị đẩy khỏi màn hình. */
+        try { if (global.scrollY) global.scrollTo(0, 0); } catch (e) { }
+    }
+
+    function watchViewport() {
+        if (S.vvWatched) return;
+        S.vvWatched = true;
+        var schedule = function () {
+            if (S.vvFrame) return;
+            S.vvFrame = (global.requestAnimationFrame || function (fn) { return setTimeout(fn, 16); })(function () {
+                S.vvFrame = 0;
+                fitViewport();
+            });
+        };
+        S.vvSchedule = schedule;
+        if (global.visualViewport) {
+            global.visualViewport.addEventListener('resize', schedule);
+            global.visualViewport.addEventListener('scroll', schedule);
+        }
+        global.addEventListener('resize', schedule);
+        global.addEventListener('orientationchange', schedule);
+        D.addEventListener('focusin', function (e) {
+            if (e.target && e.target.id === 'bkChatInput') setTimeout(fitViewport, 240);
+        });
+        D.addEventListener('focusout', function (e) {
+            if (e.target && e.target.id === 'bkChatInput') setTimeout(fitViewport, 120);
+        });
+        fitViewport();
     }
 
     function bindEvents() {
