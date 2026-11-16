@@ -15,7 +15,7 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var APP_VERSION = '4.2.0';
+    var APP_VERSION = '6.0.0';
 
     var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
         ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];
@@ -23,7 +23,7 @@
     var CATEGORIES = [['features', 'Tính năng mới'], ['improvements', 'Cải tiến'], ['fixes', 'Sửa lỗi'],
         ['ui', 'Giao diện'], ['performance', 'Hiệu năng'], ['security', 'Bảo mật'],
         ['notice', 'Thông báo'], ['other', 'Khác']];
-    var TABS = [
+    var ALL_TABS = [
         ['overview', 'Tổng quan', 'fa-gauge-high'],
         ['students', 'Học sinh', 'fa-user-graduate'],
         ['profiles', 'Hồ sơ', 'fa-id-card'],
@@ -53,8 +53,30 @@
         permissions: 'Mô hình quyền hiện tại và phiên quản trị',
         settings: 'Kết nối, feature flag, giao diện và phiên làm việc',
         maintenance: 'Bật/tắt bảo trì toàn website và soạn thông báo đóng cửa tạm thời',
-        data: 'Kiểm tra toàn vẹn, xuất dữ liệu an toàn'
+        data: 'Kiểm tra toàn vẹn, xuất dữ liệu an toàn',
+        founder: 'Toàn quyền Founder: cấp trọn bộ badge, khung và đồng bộ tức thời'
     };
+
+    /* Founder Dashboard = đủ 14 mô-đun + tab Founder. Administrator thường
+       không thấy các mô-đun tối mật (bảo trì, dữ liệu); máy chủ cũng chặn. */
+    function dashboardScope() {
+        if (global.BK_DASH_SCOPE === 'founder') return 'founder';
+        try {
+            var raw = global.sessionStorage.getItem('bakhiAdmin.v1');
+            var saved = raw ? JSON.parse(raw) : null;
+            return saved && saved.token && saved.scope === 'founder' ? 'founder' : 'admin';
+        } catch (e) { return 'admin'; }
+    }
+    function isFounder() { return dashboardScope() === 'founder'; }
+    function isExclusiveBadge(id) {
+        return id === 'founder' || String(id).indexOf('dev-exclusive-') === 0;
+    }
+    var TABS = ALL_TABS.filter(function (t) {
+        if (isFounder()) return true;
+        return t[0] !== 'maintenance' && t[0] !== 'data';
+    });
+    if (isFounder()) TABS.push(['founder', 'Founder', 'fa-crown']);
+    var tabState = isFounder() ? 'founder' : 'admin';
     var TYPE_META = {
         general: { icon: 'fa-circle-info' }, announcement: { icon: 'fa-bullhorn' },
         update: { icon: 'fa-arrow-up-right-dots' }, important: { icon: 'fa-triangle-exclamation' },
@@ -783,7 +805,8 @@
             permissions: renderPermissions,
             settings: renderSettings,
             maintenance: renderMaintenance,
-            data: renderData
+            data: renderData,
+            founder: renderFounder
         }[tab] || renderOverview)(pane);
         S.body.scrollTop = 0;
     }
@@ -2387,6 +2410,9 @@
     /* ------------------------------ Thành tích ---------------------------- */
     function renderBadges(pane) {
         var catalog = badgeCatalog();
+        if (!isFounder()) {
+            catalog = catalog.filter(function (b) { return !isExclusiveBadge(b.id); });
+        }
         var adminIds = ['admin-chosen', 'admin-legend'];
         var catalogCard = card('Danh mục thành tích', null,
             'Administrator có thể trao mọi badge trong danh mục. Badge tự động vẫn được máy chủ tính lại độc lập.');
@@ -2397,7 +2423,12 @@
             var autoCount = catalog.filter(function (b) { return !b.adminOnly; }).length;
             infoGrid.appendChild(infoItem('Tổng badge', catalog.length, 'Danh mục trong bk-badges.js', 'ok'));
             infoGrid.appendChild(infoItem('Tự động', autoCount, 'Máy chủ tính từ tiến trình đã đồng bộ', 'info'));
-            infoGrid.appendChild(infoItem('Administrator', catalog.length - autoCount, 'Trao tay mọi badge; badge độc quyền có quy tắc riêng', 'warn'));
+            infoGrid.appendChild(infoItem(isFounder() ? 'Founder' : 'Administrator',
+                catalog.length - autoCount,
+                isFounder()
+                    ? 'Founder trao được mọi badge, kể cả Founder/Developer'
+                    : 'Administrator chỉ trao badge thường; badge độc quyền thuộc Founder',
+                'warn'));
         } else {
             infoGrid.appendChild(infoItem('Danh mục', 'Chưa nạp', 'Trang quản trị không nạp bk-badges.js', 'warn'));
             infoGrid.appendChild(infoItem('Administrator', '—', 'Không đọc được danh mục badge', 'warn'));
@@ -2405,8 +2436,10 @@
         catalogCard.body.appendChild(infoGrid);
 
         catalogCard.body.appendChild(alertBox(
-            'Badge tự động đạt và badge Administrator trao tay được lưu TÁCH BIỆT: thu hồi trao tay không xoá kết quả tự động. ' +
-            'Badge Founder chỉ trao được cho hồ sơ Người sáng lập đã xác minh; hai khung Developer đi kèm badge Developer tương ứng.', 'info'));
+            'Badge tự động đạt và badge trao tay được lưu TÁCH BIỆT: thu hồi trao tay không xoá kết quả tự động. ' +
+            (isFounder()
+                ? 'Founder trao được toàn bộ 78 badge, kể cả Founder và hai badge Developer; badge Founder vẫn chỉ áp dụng cho hồ sơ is_founder = true.'
+                : 'Badge Founder/Developer là độc quyền và chỉ xuất hiện trong Founder Dashboard.'), 'info'));
 
         /* Chọn học sinh */
         var pickerCard = card('Chọn học sinh', [
@@ -3371,6 +3404,58 @@
     }
 
     /* ---------------------------------- Data ------------------------------ */
+    /* ------------------------------- Founder ------------------------------ */
+    function renderFounder(pane) {
+        var catalog = badgeCatalog();
+        var cardTop = card('Toàn quyền Người sáng lập', null,
+            'Founder Dashboard kế thừa toàn bộ 14 mô-đun của Administrator và mở thêm các quyền tối mật: trao mọi badge, bảo trì, danh vị và cấp trọn bộ thành tích.');
+        pane.appendChild(cardTop.root);
+
+        var grid = h('div', 'bkc-status-grid');
+        grid.appendChild(infoItem('Phiên hiện tại', 'Founder', 'Xác thực bằng Founder Code phía máy chủ', 'ok'));
+        grid.appendChild(infoItem('Danh mục badge', catalog.length || '—', 'Bao gồm Founder và 2 badge Developer', 'info'));
+        grid.appendChild(infoItem('Khung avatar', 30, 'Mở khóa khi sở hữu badge tương ứng', 'info'));
+        grid.appendChild(infoItem('Quyền riêng', 'Bảo trì · Danh vị · Dữ liệu', 'Administrator thường bị chặn ở máy chủ', 'warn'));
+        cardTop.body.appendChild(grid);
+
+        var grantCard = card('Cấp trọn bộ cho hồ sơ Founder', null,
+            'Trao tất cả badge trong danh mục và mở toàn bộ 30 khung cho hồ sơ có is_founder = true. Thao tác không ảnh hưởng học sinh khác.');
+        pane.appendChild(grantCard.root);
+
+        var host = h('div', 'bkc-form');
+        var actions = h('div', 'bkc-row-actions');
+        var run = btn('Cấp toàn bộ badge & khung', 'bkc-btn-primary', function () {
+            run.disabled = true;
+            host.textContent = '';
+            loading(host, 'Đang cấp toàn bộ thành tích…');
+            api('founder.grantAll', {}).then(function (data) {
+                host.textContent = '';
+                var done = alertBox('Đã cấp ' + (data.count || 0) +
+                    ' badge cho hồ sơ Founder. Toàn bộ khung avatar đã mở khóa.', 'success');
+                host.appendChild(done);
+                if (global.BK && global.BK.badges && data.badges) {
+                    try { global.BK.badges.applyServer(data.badges, { authoritative: true }); } catch (e) { }
+                }
+                toast('Đã cấp trọn bộ thành tích cho Founder.', 'success');
+            }).catch(function (err) {
+                host.textContent = '';
+                host.appendChild(alertBox((err && err.message) || 'Không cấp được bộ thành tích.', 'error'));
+            }).then(function () { run.disabled = false; });
+        }, 'fa-gift');
+        run.classList.add('bkc-btn-primary');
+        actions.appendChild(run);
+        actions.appendChild(btn('Mở hồ sơ của tôi', '', function () {
+            global.open(basePath() + 'profile/', '_blank', 'noopener');
+        }, 'fa-id-card'));
+        actions.appendChild(btn('Mở trang chủ', '', function () {
+            global.open(basePath(), '_blank', 'noopener');
+        }, 'fa-house'));
+        host.appendChild(actions);
+        grantCard.body.appendChild(host);
+        grantCard.body.appendChild(alertBox(
+            'Sau khi cấp, mọi tab đang mở tự cập nhật qua realtime student_badges. Nếu vẫn thấy thiếu, bấm Làm mới hoặc mở lại hồ sơ.', 'info'));
+    }
+
     function renderData(pane) {
         var integrityCard = card('Toàn vẹn dữ liệu', [
             btn('Kiểm tra lại', 'bkc-btn-ghost', function () { load(); }, 'fa-shield-halved')
@@ -3821,10 +3906,12 @@
             icon: 'fa-heart-pulse', label: 'Kiểm tra sức khoẻ hệ thống', hint: 'Monitoring',
             run: function () { switchTab('monitoring'); }
         });
-        list.push({
-            icon: 'fa-shield-halved', label: 'Kiểm tra toàn vẹn dữ liệu', hint: 'Data',
-            run: function () { switchTab('data'); }
-        });
+        if (isFounder()) {
+            list.push({
+                icon: 'fa-shield-halved', label: 'Kiểm tra toàn vẹn dữ liệu', hint: 'Data',
+                run: function () { switchTab('data'); }
+            });
+        }
         if (global.BKAdminTheme) {
             list.push({
                 icon: 'fa-circle-half-stroke', label: 'Đổi giao diện sáng / tối', hint: 'Theme',

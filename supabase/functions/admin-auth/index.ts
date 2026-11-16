@@ -18,18 +18,13 @@ Deno.serve(async (req) => {
     const pre = preflight(req);
     if (pre) return pre;
 
-    const { code } = await readJson<{ code?: string }>(req);
-    const devCode = Deno.env.get('ADMIN_DEV_CODE') ?? '';
-
-    if (!devCode) {
-        return fail(500, 'NO_DEV_CODE', 'Chưa cấu hình ADMIN_DEV_CODE trong Edge Function Secrets.');
-    }
-
+    const { code, scope } = await readJson<{ code?: string; scope?: string }>(req);
+    const wanted = scope === 'founder' ? 'founder' : 'admin';
     const client = adminClient();
 
-    // Giới hạn tốc độ theo IP: 8 lần / 10 phút.
+    // Giới hạn tốc độ theo IP: 8 lần / 10 phút cho mỗi loại phiên.
     const { data: allowed, error: rlError } = await client.rpc('bakhi_rate_limit', {
-        p_key: 'admin-auth:' + clientIp(req),
+        p_key: wanted + '-auth:' + clientIp(req),
         p_limit: 8,
         p_window_seconds: 600
     });
@@ -37,27 +32,57 @@ Deno.serve(async (req) => {
     if (!allowed) return fail(429, 'TOO_MANY_ATTEMPTS', 'Bạn đã thử quá nhiều lần. Vui lòng đợi vài phút.');
 
     const submitted = String(code ?? '');
-    if (!submitted || !safeEqual(submitted, devCode)) {
-        return fail(401, 'BAD_DEV_CODE', 'Administrator Code không đúng.');
+    if (!submitted) {
+        return fail(401, wanted === 'founder' ? 'BAD_FOUNDER_CODE' : 'BAD_DEV_CODE',
+            wanted === 'founder' ? 'Founder Code không đúng.' : 'Administrator Code không đúng.');
     }
 
-    const hours = Math.min(24, Math.max(1, Number(Deno.env.get('ADMIN_SESSION_HOURS') ?? 8) || 8));
+    if (wanted === 'founder') {
+        /* Founder Code chỉ tồn tại dưới dạng băm SHA-256 trong founder_config.
+           Không đọc/ghi mã gốc, không đưa mã vào biến môi trường hay repo. */
+        const { data: cfg, error: cfgError } = await client
+            .from('founder_config')
+            .select('code_hash')
+            .eq('id', 1)
+            .maybeSingle();
+        if (cfgError) return fail(500, 'DB_ERROR', 'Không đọc được cấu hình Founder.');
+        if (!cfg || !cfg.code_hash) {
+            return fail(500, 'NO_FOUNDER_CODE', 'Chưa cấu hình Founder Code trong bảng founder_config.');
+        }
+        const submittedHash = await sha256Hex(submitted);
+        if (!safeEqual(submittedHash, String(cfg.code_hash))) {
+            return fail(401, 'BAD_FOUNDER_CODE', 'Founder Code không đúng.');
+        }
+    } else {
+        const devCode = Deno.env.get('ADMIN_DEV_CODE') ?? '';
+        if (!devCode) {
+            return fail(500, 'NO_DEV_CODE', 'Chưa cấu hình ADMIN_DEV_CODE trong Edge Function Secrets.');
+        }
+        if (!safeEqual(submitted, devCode)) {
+            return fail(401, 'BAD_DEV_CODE', 'Administrator Code không đúng.');
+        }
+    }
+
+    const hours = wanted === 'founder'
+        ? Math.min(24, Math.max(1, Number(Deno.env.get('FOUNDER_SESSION_HOURS') ?? 12) || 12))
+        : Math.min(24, Math.max(1, Number(Deno.env.get('ADMIN_SESSION_HOURS') ?? 8) || 8));
     const token = randomToken();
     const tokenHash = await sha256Hex(token);
     const expiresAt = new Date(Date.now() + hours * 3600 * 1000).toISOString();
 
     const { error } = await client.from('admin_sessions').insert({
         token_hash: tokenHash,
+        scope: wanted,
         expires_at: expiresAt
     });
     if (error) return fail(500, 'SESSION_ERROR', 'Không tạo được phiên quản trị.');
 
     await client.from('admin_activity_logs').insert({
-        action: 'admin.login',
+        action: wanted === 'founder' ? 'founder.login' : 'admin.login',
         target_type: 'session',
         target_id: null,
-        detail: { ip: clientIp(req) }
+        detail: { ip: clientIp(req), scope: wanted }
     });
 
-    return json({ ok: true, token, expiresAt, hours });
+    return json({ ok: true, token, expiresAt, hours, scope: wanted });
 });

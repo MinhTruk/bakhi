@@ -43,7 +43,7 @@ Hướng dẫn cho agent/developer làm việc trong repository này. Đọc h�
   bk-dev.js|css        Developer Playground 2.0 (11 công cụ, tab Music)
   bk-music.js|css      Music Player dùng chung (queue, shuffle, repeat, lyrics)
   bk-cloud.js|css      Nhận diện, thông báo realtime, changelog, đồng bộ (Supabase)
-  bk-devboard.js       Administrator Dashboard 14 mô-đun (có Bảo trì)
+  bk-devboard.js       Administrator (12) / Founder (15) Dashboard
   bk-admin-dashboard.css  Giao diện dashboard 4.2
   bk-admin.css|bk-admin-theme.js  Trang đăng nhập quản trị + theme
   bk-supabase.config.js  Nơi duy nhất chứa URL + publishable key

@@ -120,9 +120,11 @@ body.bk-app {
     transform: translateY(-6px) scale(.98);
     transform-origin: top right;
     transition: opacity .16s ease, transform .16s ease;
-    max-height: min(80vh, 40rem);
-    overflow: auto;
+    max-height: min(76vh, 34rem);
+    overflow-y: auto;
+    overflow-x: hidden;
     overscroll-behavior: contain;
+    scrollbar-gutter: stable;
 }
 .bk-user-menu.open { opacity: 1; transform: translateY(0) scale(1); }
 .bk-user-menu[hidden] { display: none; }
@@ -134,6 +136,10 @@ body.bk-app {
     padding: .5rem .55rem .65rem;
     border-bottom: 1px solid var(--bkl-line);
     margin-bottom: .35rem;
+    position: sticky;
+    top: -.5rem;
+    z-index: 2;
+    background: var(--bkl-surface, #fff);
 }
 .bk-menu-head-text { min-width: 0; flex: 1; }
 .bk-menu-name {
@@ -234,8 +240,11 @@ html.bk-a11y-links a:not(.bk-menu-row):not(.bk-chipx) {
     .bk-user-menu {
         left: .5rem !important;
         right: .5rem !important;
+        top: auto !important;
+        bottom: calc(.5rem + env(safe-area-inset-bottom, 0px)) !important;
         width: auto;
-        max-height: 76vh;
+        max-height: 72vh;
+        transform-origin: bottom center;
     }
     .bk-user-slot { gap: .35rem; }
     .bk-user-btn-caret { display: none; }

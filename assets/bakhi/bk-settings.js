@@ -15,7 +15,8 @@
         { id: 'learning', label: 'Trung tâm học tập', icon: 'fa-graduation-cap' },
         { id: 'display', label: 'Hiển thị & Trợ năng', icon: 'fa-circle-half-stroke' },
         { id: 'wallpaper', label: 'Hình nền', icon: 'fa-image' },
-        { id: 'dev', label: 'Nhà phát triển', icon: 'fa-code' }
+        { id: 'dev', label: 'Nhà phát triển', icon: 'fa-code' },
+        { id: 'founder', label: 'Founder', icon: 'fa-crown' }
     ];
 
     var S = { tab: 'profile', mounted: {}, nav: null, panels: {} };
@@ -114,8 +115,9 @@
                 var host = S.panels[id];
                 if (host && host.__refresh) host.__refresh();
             }
-            /* Trạng thái phiên Dev/Admin có thể đổi từ nơi khác → dựng lại khi mở tab. */
+            /* Trạng thái phiên Dev/Admin/Founder có thể đổi từ nơi khác → dựng lại khi mở tab. */
             if (id === 'dev') buildDev(S.panels[id]);
+            if (id === 'founder') buildFounder(S.panels[id]);
             return;
         }
         S.mounted[id] = true;
@@ -125,6 +127,7 @@
         else if (id === 'display') buildDisplay(panel);
         else if (id === 'wallpaper') buildWallpaper(panel);
         else if (id === 'dev') buildDev(panel);
+        else if (id === 'founder') buildFounder(panel);
     }
 
     /* ---------------------------------------------------------------------
@@ -432,7 +435,7 @@
        ------------------------------------------------------------------ */
     function devHint(text) {
         var s = el('small', null, text);
-        s.style.cssText = 'display:block;font-size:.72rem;color:var(--bkl-muted);margin:-.5rem 0 .9rem';
+        s.style.cssText = 'display:block;font-size:.72rem;line-height:1.55;color:var(--bkl-muted);margin:.15rem 0 .9rem';
         return s;
     }
 
@@ -641,6 +644,124 @@
                 if (e.key === 'Enter') { e.preventDefault(); submitAdmin(); }
             });
         }
+    }
+
+    /* ---------------------------------------------------------------------
+       6. Founder Dashboard (mã riêng, xác thực phía máy chủ)
+       ------------------------------------------------------------------ */
+    function buildFounder(panel) {
+        panel.textContent = '';
+        var cloud = global.BKCloud;
+        var configured = !!(cloud && cloud.configured && cloud.configured());
+        var scope = null;
+        try { scope = cloud && cloud.adminScope ? cloud.adminScope() : null; } catch (e) { scope = null; }
+        var isFounder = scope === 'founder';
+
+        panel.appendChild(el('h2', null, 'Founder Dashboard'));
+        panel.appendChild(el('p', 'bk-set-lead',
+            'Khu vực toàn quyền của Người sáng lập: đầy đủ 14 mô-đun quản trị, trao mọi badge (kể cả badge độc quyền), bảo trì, danh vị và cấp trọn bộ thành tích. Mã Founder được xác thực ở máy chủ và chỉ lưu dạng băm trong Supabase.'));
+        panel.appendChild(devHint('Founder Code không nằm trong mã nguồn. Quản trị viên thường không mở được các mục dành riêng cho Founder.'));
+
+        if (isFounder) {
+            panel.appendChild(el('p', 'bk-auth-msg ok', 'Đang có phiên Founder trên tab này.'));
+            var row = el('div', 'bk-auth-box');
+            var open = el('a', 'bk-btn');
+            open.href = base() + 'founder/';
+            open.target = '_blank';
+            open.rel = 'noopener noreferrer';
+            open.appendChild(icon('fa-crown'));
+            open.appendChild(el('span', null, 'Mở Founder Dashboard'));
+            open.addEventListener('click', function (e) {
+                if (open.getAttribute('data-opening') === '1') { e.preventDefault(); return; }
+                open.setAttribute('data-opening', '1');
+                setTimeout(function () { open.removeAttribute('data-opening'); }, 1500);
+            });
+            var out = el('button', 'bk-btn bk-btn-ghost');
+            out.type = 'button';
+            out.appendChild(icon('fa-right-from-bracket'));
+            out.appendChild(el('span', null, 'Đăng xuất Founder'));
+            out.addEventListener('click', function () {
+                try { if (cloud.founderLogout) cloud.founderLogout(); } catch (e) { }
+                toast('Đã đăng xuất Founder.', 'success');
+                buildFounder(panel);
+            });
+            row.appendChild(open);
+            row.appendChild(out);
+            panel.appendChild(row);
+
+            var grant = el('button', 'bk-btn');
+            grant.type = 'button';
+            grant.appendChild(icon('fa-gift'));
+            grant.appendChild(el('span', null, 'Cấp toàn bộ badge & khung cho tôi'));
+            grant.addEventListener('click', function () {
+                grant.disabled = true;
+                var label = grant.querySelector('span');
+                if (label) label.textContent = 'Đang cấp…';
+                cloud.adminAction('founder.grantAll', {}).then(function (data) {
+                    if (global.BK && global.BK.badges && data && data.badges) {
+                        global.BK.badges.applyServer(data.badges, { authoritative: true });
+                    }
+                    toast('Đã cấp ' + ((data && data.count) || 0) + ' badge và toàn bộ khung cho hồ sơ Founder.', 'success');
+                }).catch(function (err) {
+                    toast((err && err.message) || 'Không cấp được bộ thành tích.', 'error');
+                }).then(function () {
+                    grant.disabled = false;
+                    if (label) label.textContent = 'Cấp toàn bộ badge & khung cho tôi';
+                });
+            });
+            panel.appendChild(grant);
+            panel.appendChild(devHint('Thao tác này chỉ áp dụng cho hồ sơ có is_founder = true; các hồ sơ khác không bị ảnh hưởng.'));
+            return;
+        }
+
+        if (!configured) {
+            panel.appendChild(el('p', 'bk-auth-msg err', 'Supabase chưa được cấu hình nên không thể xác thực Founder Code.'));
+            return;
+        }
+
+        var box = el('div', 'bk-auth-box');
+        var input = el('input', 'bk-input');
+        input.type = 'password';
+        input.autocomplete = 'off';
+        input.spellcheck = false;
+        input.placeholder = 'Founder Code…';
+        input.setAttribute('aria-label', 'Founder Code');
+        var submit = el('button', 'bk-btn');
+        submit.type = 'button';
+        submit.appendChild(icon('fa-crown'));
+        submit.appendChild(el('span', null, 'Xác thực Founder'));
+        box.appendChild(input);
+        box.appendChild(submit);
+        panel.appendChild(box);
+
+        var msg = el('p', 'bk-auth-msg');
+        panel.appendChild(msg);
+        function say(text, kind) {
+            msg.textContent = text;
+            msg.className = 'bk-auth-msg' + (kind ? ' ' + kind : '');
+        }
+        function submitCode() {
+            var code = input.value.trim();
+            input.value = '';
+            if (!code) return say('Nhập Founder Code.', 'err');
+            submit.disabled = true;
+            say('Đang xác thực ở máy chủ…');
+            cloud.founderLogin(code).then(function () {
+                toast('Xác thực Founder thành công.', 'success');
+                buildFounder(panel);
+            }).catch(function (err) {
+                var codeName = (err && err.code) || '';
+                var m = (err && err.message) || '';
+                if (codeName === 'NO_FOUNDER_CODE') say('Máy chủ chưa có Founder Code trong bảng founder_config.', 'err');
+                else if (codeName === 'TOO_MANY_ATTEMPTS' || /429|rate|nhiều/i.test(m)) say('Quá nhiều lần thử. Vui lòng đợi vài phút.', 'err');
+                else if (codeName === 'BAD_FOUNDER_CODE' || /sai|không đúng|401/i.test(m)) say('Founder Code không đúng.', 'err');
+                else say('Không xác thực được: ' + (m || 'lỗi mạng'), 'err');
+            }).then(function () { submit.disabled = false; });
+        }
+        submit.addEventListener('click', submitCode);
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); submitCode(); }
+        });
     }
 
     /* ---------------------------------------------------------------------

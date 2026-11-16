@@ -14,6 +14,15 @@ Hệ thống Supabase của Bá Khí gồm 4 phần:
 > hay bất kỳ secret xác thực nào vào repository, HTML, JavaScript hoặc chat.
 > Tất cả secret nằm trong **Supabase → Edge Functions → Secrets**.
 
+## Founder Dashboard (6.0.0)
+
+1. Chạy migration `supabase/migrations/20261122000000_bakhi_founder_6.sql`.
+2. Deploy lại Edge Functions `admin-auth` và `admin-actions`.
+3. Migration đã seed sẵn một Founder Code (chỉ lưu SHA-256 trong `founder_config`).
+   Đổi mã bằng cách cập nhật `code_hash` bằng SHA-256 của mã mới; không ghi mã gốc vào repo.
+4. Đăng nhập tại **Cài đặt → Founder**; không cần thêm secret môi trường.
+5. Sau khi đăng nhập, bấm **Cấp toàn bộ badge & khung** nếu muốn cấp lại trọn bộ.
+
 ## Trạng thái project hiện tại (15/11/2026)
 
 Project `wzvslyabhizsiggurwdq` **đã được cài đặt và kiểm chứng**:
@@ -502,5 +511,5 @@ delete from public.changelog where version like '0.0.%';
 | Import báo 0 học sinh | Tệp sai UTF-8, hoặc mọi dòng bắt đầu bằng `#` |
 | Trang trắng sau khi deploy | Đường dẫn tuyệt đối thay vì tương đối; kiểm tra Console/Network |
 | `/chat/` báo “máy chủ Chat chưa được triển khai” | Chưa chạy migration `20261120000000` hoặc chưa deploy `chat-api` |
-| Gửi ảnh trong Chat báo lỗi | Bucket `chat-images` chưa có, hoặc ảnh sai định dạng/quá 3 MB |
+| Chat báo `IMAGES_DISABLED` | Từ 6.0.0 Chat chỉ gửi văn bản; ảnh cũ vẫn hiển thị nhưng không nhận ảnh mới |
 | Đồng bộ hồ sơ không chạy | Chưa deploy `student-profile`; `bk-cloud.js` tự tắt sau lỗi 404 (đúng thiết kế) |

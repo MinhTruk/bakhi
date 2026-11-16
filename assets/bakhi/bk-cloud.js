@@ -1831,7 +1831,9 @@
             S.applyingRemote = true;
             try {
                 if (global.BKProfile && BKProfile.applyRemote && data.profile) BKProfile.applyRemote(data.profile);
-                if (global.BK && BK.badges && BK.badges.applyServer) BK.badges.applyServer(data.badges || []);
+                if (global.BK && BK.badges && BK.badges.applyServer) {
+                    BK.badges.applyServer(data.badges || [], { authoritative: true });
+                }
             } catch (e) { /* hồ sơ/badge hỏng không được chặn đồng bộ tiến trình */ }
             S.applyingRemote = false;
             if (data.frameRejected) {
@@ -1928,6 +1930,11 @@
                 })
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, function () {
                     loadSiteFlags();
+                    try { global.dispatchEvent(new global.CustomEvent('bk:settings-changed')); } catch (e) { }
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'student_badges' }, function () {
+                    /* Trao/thu hồi badge ở tab hoặc thiết bị khác → tải lại hồ sơ ngay. */
+                    syncStudent();
                 })
                 .subscribe(function (status) {
                     if (status === 'SUBSCRIBED') S.realtime = 'connected';
@@ -2156,15 +2163,29 @@
         on: function (fn) { S.listeners.push(fn); return function () { S.listeners = S.listeners.filter(function (f) { return f !== fn; }); }; },
 
         /* Dùng cho Dev Dashboard (bk-devboard.js). */
-        adminLogin: function (code) {
-            return api(CFG.functions.adminAuth, { code: code }).then(function (data) {
+        adminLogin: function (code, scope) {
+            var wanted = scope === 'founder' ? 'founder' : 'admin';
+            return api(CFG.functions.adminAuth, { code: code, scope: wanted }).then(function (data) {
                 try {
                     global.sessionStorage.setItem(ADMIN_KEY, JSON.stringify({
-                        token: data.token, expiresAt: data.expiresAt
+                        token: data.token, expiresAt: data.expiresAt,
+                        scope: data.scope === 'founder' ? 'founder' : wanted
                     }));
                 } catch (e) { }
                 return data;
             });
+        },
+        founderLogin: function (code) { return this.adminLogin(code, 'founder'); },
+        adminScope: function () {
+            var saved = null;
+            try { saved = JSON.parse(global.sessionStorage.getItem(ADMIN_KEY) || 'null'); } catch (e) { }
+            return saved && saved.token ? (saved.scope === 'founder' ? 'founder' : 'admin') : null;
+        },
+        founderToken: function () {
+            return global.BKCloud.adminScope() === 'founder' ? global.BKCloud.adminToken() : null;
+        },
+        founderLogout: function () {
+            try { global.sessionStorage.removeItem(ADMIN_KEY); } catch (e) { }
         },
         adminToken: function () {
             var saved = null;

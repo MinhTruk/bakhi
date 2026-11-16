@@ -266,14 +266,85 @@
         var NS = 'http://www.w3.org/2000/svg';
         var svg = D.createElementNS(NS, 'svg');
         svg.setAttribute('viewBox', '0 0 100 100');
-        svg.setAttribute('class', 'bk-avatar-frame-svg' + (f.anim ? ' is-animated' : ''));
+        svg.setAttribute('class', 'bk-avatar-frame-svg bk-frame-premium' + (f.anim ? ' is-animated' : ''));
         svg.setAttribute('aria-hidden', 'true');
         svg.setAttribute('focusable', 'false');
         svg.setAttribute('data-frame', f.id);
+        svg.setAttribute('data-rarity', f.rarity || 'common');
         var P = safeColor(f.pc, safeColor(f.ring, '#eab308'));
         var S = safeColor(f.sc, '#7f1d1d');
+        var gid = 'bkfg-' + String(f.id).replace(/[^a-z0-9-]/g, '');
+        var seed = 0;
+        String(f.id).split('').forEach(function (ch) { seed = (seed * 31 + ch.charCodeAt(0)) >>> 0; });
+        function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+
         var inner = '';
+        /* Gradient + vòng kép: lớp nền dùng chung cho cả 30 khung. */
+        inner += '<defs>' +
+            '<linearGradient id="' + gid + '" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0" stop-color="' + P + '"/>' +
+            '<stop offset=".46" stop-color="#ffffff" stop-opacity=".95"/>' +
+            '<stop offset=".62" stop-color="' + P + '"/>' +
+            '<stop offset="1" stop-color="' + S + '"/>' +
+            '</linearGradient>' +
+            '<radialGradient id="' + gid + '-r" cx=".5" cy=".5" r=".5">' +
+            '<stop offset=".62" stop-color="' + P + '" stop-opacity="0"/>' +
+            '<stop offset="1" stop-color="' + P + '" stop-opacity=".3"/>' +
+            '</radialGradient>' +
+            '</defs>';
+        inner += '<circle cx="50" cy="50" r="48.6" fill="none" stroke="url(#' + gid + ')" stroke-width="1.7" opacity=".95"/>';
+        inner += '<circle cx="50" cy="50" r="50.4" fill="none" stroke="' + P + '" stroke-width=".45" opacity=".58"/>';
+        inner += '<g class="bk-frame-orbit" fill="none" stroke="' + P + '" stroke-linecap="round">' +
+            '<circle cx="50" cy="50" r="45.4" stroke-width=".8" stroke-dasharray="1.5 6" opacity=".8"/>' +
+            '<circle cx="50" cy="50" r="51.2" stroke-width=".7" stroke-dasharray="10 26" opacity=".55"/>';
+        /* 12 vạch sáng nhỏ, xoay chậm như vòng cơ khí. */
+        for (var t = 0; t < 12; t++) {
+            var at = (Math.PI * 2 * t) / 12;
+            var ax = 50 + Math.cos(at) * 45.4, ay = 50 + Math.sin(at) * 45.4;
+            inner += '<path d="M' + ax.toFixed(2) + ' ' + ay.toFixed(2) +
+                'L' + (50 + Math.cos(at) * 48.4).toFixed(2) + ' ' + (50 + Math.sin(at) * 48.4).toFixed(2) +
+                '" stroke-width=".9" opacity="' + (t % 3 ? '.35' : '.75') + '"/>';
+        }
+        inner += '</g>';
+
+        /* Hoạ tiết riêng của từng khung. */
+        inner += '<g class="bk-frame-art">';
         f.orn.forEach(function (n) { inner += prim(n, P, S); });
+        inner += '</g>';
+
+        /* Tia sáng / hạt lấp lánh phân bố tất định theo id khung. */
+        inner += '<g class="bk-frame-spark" fill="' + P + '">';
+        for (var k = 0; k < 9; k++) {
+            var a = rnd() * Math.PI * 2;
+            var r = 43 + rnd() * 8;
+            var x = 50 + Math.cos(a) * r, y = 50 + Math.sin(a) * r;
+            var sz = 0.55 + rnd() * 0.9;
+            inner += '<path d="M' + x.toFixed(2) + ' ' + (y - sz * 2.6).toFixed(2) +
+                'l' + (sz * 0.75).toFixed(2) + ' ' + (sz * 1.7).toFixed(2) +
+                ' ' + (sz * 1.7).toFixed(2) + ' ' + (sz * 0.75).toFixed(2) +
+                ' ' + (-sz * 1.7).toFixed(2) + ' ' + (sz * 1.7).toFixed(2) +
+                ' ' + (-sz * 1.7).toFixed(2) + ' ' + (-sz * 0.75).toFixed(2) +
+                ' ' + (-sz * 1.7).toFixed(2) + ' ' + (-sz * 1.7).toFixed(2) +
+                ' ' + (-sz * 0.75).toFixed(2) + ' ' + (-sz * 1.7).toFixed(2) +
+                'z" opacity="' + (0.45 + rnd() * 0.5).toFixed(2) + '"/>';
+        }
+        inner += '</g>';
+
+        /* Developer/Founder: thêm quỹ đạo phát sáng để khác biệt rõ. */
+        if (f.tier === 'dev' || f.tier === 'founder') {
+            inner += '<g class="bk-frame-aura" fill="none" stroke="' + P + '" stroke-linecap="round">' +
+                '<ellipse cx="50" cy="50" rx="53" ry="25" transform="rotate(-26 50 50)" stroke-width="1.1" opacity=".75"/>' +
+                '<ellipse cx="50" cy="50" rx="53" ry="25" transform="rotate(26 50 50)" stroke-width="1.1" opacity=".55"/>' +
+                '<circle cx="50" cy="50" r="47" stroke="' + S + '" stroke-width="2.4" stroke-dasharray="1 12" opacity=".8"/>' +
+                '</g>';
+            if (f.tier === 'founder') {
+                inner += '<g class="bk-frame-crown" fill="' + P + '" stroke="' + S + '" stroke-width="1">' +
+                    '<path d="M31 12l4 12 7-10 8 12 8-12 7 10 4-12 2 15H29z"/>' +
+                    '<circle cx="50" cy="9" r="2.4"/></g>';
+            }
+        }
+
+        svg.style.setProperty('--bk-frame-glow', P);
         svg.innerHTML = inner;
         return svg;
     }

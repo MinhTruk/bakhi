@@ -544,10 +544,14 @@
      * badge Administrator chỉ được ghi khi máy chủ trả kind='admin'. Hàm này
      * không bao giờ xoá badge cục bộ (giữ được tiến trình khi ngoại tuyến).
      */
-    function applyServer(list) {
-        if (!Array.isArray(list) || !list.length) return 0;
+    function applyServer(list, opts) {
+        if (!Array.isArray(list)) return 0;
+        var authoritative = !!(opts && opts.authoritative);
+        if (!list.length && !authoritative) return 0;
         var t = load();
         var added = 0;
+        var removed = 0;
+        var present = {};
         list.forEach(function (row) {
             if (!row) return;
             var id = String(row.badge_id || row.id || '').slice(0, 64);
@@ -555,6 +559,7 @@
             if (!def) return;
             /* Badge Administrator chỉ hợp lệ khi máy chủ ghi rõ kind='admin'. */
             if (def.adminOnly && row.kind !== 'admin') return;
+            present[id] = true;
             if (t.unlocked[id]) return;
             var at = Date.parse(row.awarded_at);
             if (!isFinite(at) || at <= 0) at = Number(row.awarded_at) || Date.now();
@@ -568,12 +573,35 @@
             }
             added++;
         });
-        if (added) {
+        /* Danh sách máy chủ là nguồn sự thật: thu hồi badge trao tay ở nơi khác
+           phải biến mất ngay, nhưng KHÔNG bao giờ xoá badge tự động đã đạt. */
+        if (authoritative) {
+            Object.keys(t.unlocked).forEach(function (id) {
+                if (present[id]) return;
+                var def = BY_ID[id];
+                if (def && def.adminOnly) {
+                    delete t.unlocked[id];
+                    delete t.granted[id];
+                    removed++;
+                }
+            });
+            Object.keys(t.granted).forEach(function (id) {
+                if (!present[id]) { delete t.granted[id]; removed++; }
+            });
+        }
+        if (added || removed) {
             save();
             emit('sync', { badges: [] });
             check({ silent: true });
         }
         return added;
+    }
+
+    /** Đọc lại kho cục bộ ngay (dùng sau khi tab khác hoặc máy chủ thay đổi). */
+    function refresh() {
+        cache = null;
+        emit('sync', { badges: [] });
+        check({ silent: true });
     }
 
     /* ---------------------------------------------------------------------
@@ -601,6 +629,16 @@
         /* Trang quản trị chỉ nạp danh mục badge để hiển thị tên; không đếm
            trang/ngày và không ghi bakhiBadges.v1 vào trình duyệt quản trị. */
         if (global.BK_ADMIN_ONLY) return;
+        /* Đổi học sinh hoặc tab khác ghi badge → đọc lại ngay, không cần F5. */
+        global.addEventListener('storage', function (e) {
+            if (!e || !e.key || e.key.indexOf(KEY) !== 0) return;
+            cache = null;
+            emit('sync', { badges: [] });
+        });
+        global.addEventListener('bk:identity', function () {
+            cache = null;
+            emit('sync', { badges: [] });
+        });
         markDay();
         try {
             var path = global.location.pathname.replace(/\/index\.html$/, '/').replace(/(\/[^/]+\/[^/]+)$/, '$1');
@@ -629,6 +667,7 @@
         markDay: markDay,
         applyGrants: applyGrants,
         applyServer: applyServer,
+        refresh: refresh,
         snapshot: snapshot,
         ownedFrames: ownedFrames,
         canEquip: canEquip,

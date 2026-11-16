@@ -1,6 +1,6 @@
 /* =========================================================================
    Bá Khí — bk-chat.js
-   Chat dùng chung: phòng chung, tin nhắn riêng, nhóm ≤ 10, ảnh, cảm xúc,
+   Chat dùng chung: phòng chung, tin nhắn riêng, nhóm ≤ 10, cảm xúc,
    realtime, bộ đếm chưa đọc và Profile Card.
 
    Nguyên tắc:
@@ -19,23 +19,11 @@
     if (!D || global.BKChatLoaded) return;
     global.BKChatLoaded = true;
 
-    var EMOJI_GROUPS = [
-        { id: 'faces', name: 'Mặt', list: ['😀', '😄', '😁', '😂', '😊', '😍', '😘', '😎', '🤩', '🥳', '😮', '😢', '😭', '😡', '🤔', '😴'] },
-        { id: 'hands', name: 'Cử chỉ', list: ['👍', '👎', '👏', '🙏', '👌', '✌️', '🤝', '💪', '🫶', '🙌'] },
-        { id: 'hearts', name: 'Cảm xúc', list: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '💔', '💖', '💯'] },
-        { id: 'study', name: 'Học tập', list: ['📚', '📖', '✏️', '📝', '🎓', '🧠', '💡', '🔬', '🧮', '📐'] },
-        { id: 'symbols', name: 'Biểu tượng', list: ['🔥', '⭐', '✨', '🎉', '🎯', '✅', '❌', '⚡', '🌟', '🏆', '🚀', '🌈'] }
-    ];
-    var EMOJI = [];
-    EMOJI_GROUPS.forEach(function (g) { EMOJI = EMOJI.concat(g.list); });
-    var IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
-    var MAX_IMAGE = 3 * 1024 * 1024;
-
     var S = {
         root: null, booted: false, loading: false, error: null,
         me: null, rooms: [], active: null, messages: [], reactions: {},
         members: [], cards: {}, totalUnread: 0, maxGroup: 10,
-        channel: null, client: null, filter: '', pendingImage: null,
+        channel: null, client: null, filter: '',
         replyTo: null, readTimer: null, searchTimer: null, destroyed: false
     };
 
@@ -179,74 +167,6 @@
         return !!(global.BKCloud && global.BKCloud.configured && global.BKCloud.configured());
     }
 
-    /* Bảng emoji có tìm kiếm + danh mục; không chiếm toàn màn hình điện thoại. */
-    function buildEmojiTray(tray) {
-        tray.textContent = '';
-        var head = el('div', 'bkchat-emoji-head');
-        var search = el('input', 'bkchat-emoji-search');
-        search.type = 'search';
-        search.placeholder = 'Tìm emoji…';
-        search.setAttribute('aria-label', 'Tìm emoji');
-        search.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') e.preventDefault();
-        });
-        head.appendChild(search);
-        tray.appendChild(head);
-
-        var cats = el('div', 'bkchat-emoji-cats');
-        var grid = el('div', 'bkchat-emoji-grid');
-        var active = 'all';
-
-        function paint() {
-            grid.textContent = '';
-            var q = String(search.value || '').trim().toLowerCase();
-            var shown = 0;
-            EMOJI_GROUPS.forEach(function (g) {
-                if (active !== 'all' && active !== g.id) return;
-                var list = g.list.filter(function (emoji) {
-                    return !q || emoji.indexOf(q) !== -1 || g.name.toLowerCase().indexOf(q) !== -1;
-                });
-                if (!list.length) return;
-                grid.appendChild(el('div', 'bkchat-emoji-catname', g.name));
-                var row = el('div', 'bkchat-emoji-row');
-                list.forEach(function (emoji) {
-                    var b = el('button', 'bkchat-emoji', emoji);
-                    b.type = 'button';
-                    b.setAttribute('data-insert-emoji', emoji);
-                    b.setAttribute('aria-label', 'Chèn ' + emoji);
-                    row.appendChild(b);
-                    shown++;
-                });
-                grid.appendChild(row);
-            });
-            if (!shown) grid.appendChild(el('p', 'bkchat-emoji-empty', 'Không có emoji phù hợp.'));
-        }
-
-        function chip(id, label) {
-            var b = el('button', 'bkchat-emoji-cat' + (active === id ? ' is-active' : ''), label);
-            b.type = 'button';
-            b.setAttribute('data-emoji-cat', id);
-            b.setAttribute('aria-pressed', active === id ? 'true' : 'false');
-            b.addEventListener('click', function () {
-                active = id;
-                Array.prototype.forEach.call(cats.querySelectorAll('[data-emoji-cat]'), function (n) {
-                    var on = n.getAttribute('data-emoji-cat') === id;
-                    n.classList.toggle('is-active', on);
-                    n.setAttribute('aria-pressed', on ? 'true' : 'false');
-                });
-                paint();
-            });
-            cats.appendChild(b);
-        }
-        chip('all', 'Tất cả');
-        EMOJI_GROUPS.forEach(function (g) { chip(g.id, g.name); });
-
-        search.addEventListener('input', paint);
-        tray.appendChild(cats);
-        tray.appendChild(grid);
-        paint();
-    }
-
     /* ---------------------------------------------------------------------
        Dựng giao diện
        ------------------------------------------------------------------ */
@@ -311,11 +231,6 @@
         reply.hidden = true;
         composer.appendChild(reply);
 
-        var pending = el('div', 'bkchat-pending');
-        pending.id = 'bkChatPending';
-        pending.hidden = true;
-        composer.appendChild(pending);
-
         var row = el('div', 'bkchat-composer-row');
         var input = D.createElement('textarea');
         input.id = 'bkChatInput';
@@ -325,23 +240,6 @@
         input.setAttribute('aria-label', 'Nội dung tin nhắn');
         row.appendChild(input);
 
-        var emojiBtn = btn('bkchat-icon-btn', '', 'fa-face-smile');
-        emojiBtn.id = 'bkChatEmoji';
-        emojiBtn.setAttribute('aria-label', 'Chèn biểu tượng cảm xúc');
-        row.appendChild(emojiBtn);
-
-        var attachBtn = btn('bkchat-icon-btn', '', 'fa-image');
-        attachBtn.id = 'bkChatAttach';
-        attachBtn.setAttribute('aria-label', 'Gửi ảnh');
-        row.appendChild(attachBtn);
-
-        var file = D.createElement('input');
-        file.type = 'file';
-        file.accept = 'image/png,image/jpeg,image/webp,image/gif';
-        file.id = 'bkChatFile';
-        file.hidden = true;
-        row.appendChild(file);
-
         var sendBtn = btn('bkchat-send', '', 'fa-paper-plane');
         sendBtn.type = 'submit';
         sendBtn.id = 'bkChatSend';
@@ -349,14 +247,6 @@
         row.appendChild(sendBtn);
 
         composer.appendChild(row);
-
-        var emojiTray = el('div', 'bkchat-emoji-tray');
-        emojiTray.id = 'bkChatEmojiTray';
-        emojiTray.hidden = true;
-        emojiTray.setAttribute('role', 'dialog');
-        emojiTray.setAttribute('aria-label', 'Chọn biểu tượng cảm xúc');
-        buildEmojiTray(emojiTray);
-        composer.appendChild(emojiTray);
 
         main.appendChild(composer);
 
@@ -394,24 +284,6 @@
             }
         });
         on(D.getElementById('bkChatInput'), 'input', autoGrow);
-        on(D.getElementById('bkChatEmoji'), 'click', function () {
-            var tray = D.getElementById('bkChatEmojiTray');
-            if (tray) tray.hidden = !tray.hidden;
-        });
-        on(D.getElementById('bkChatEmojiTray'), 'click', function (e) {
-            var b = e.target.closest ? e.target.closest('[data-insert-emoji]') : null;
-            if (!b) return;
-            insertAtCursor(String(b.getAttribute('data-insert-emoji') || ''));
-        });
-        on(D.getElementById('bkChatAttach'), 'click', function () {
-            var f = D.getElementById('bkChatFile');
-            if (f) f.click();
-        });
-        on(D.getElementById('bkChatFile'), 'change', function (e) {
-            var file = e.target.files && e.target.files[0];
-            if (file) pickImage(file);
-            e.target.value = '';
-        });
         on(D.getElementById('bkChatMessages'), 'click', onMessageClick);
         on(D.getElementById('bkChatRooms'), 'click', function (e) {
             var row = e.target.closest ? e.target.closest('[data-room]') : null;
@@ -434,17 +306,6 @@
         if (!input) return;
         input.style.height = 'auto';
         input.style.height = Math.min(140, input.scrollHeight) + 'px';
-    }
-
-    function insertAtCursor(text) {
-        var input = D.getElementById('bkChatInput');
-        if (!input) return;
-        var start = input.selectionStart == null ? input.value.length : input.selectionStart;
-        var end = input.selectionEnd == null ? input.value.length : input.selectionEnd;
-        input.value = input.value.slice(0, start) + text + input.value.slice(end);
-        input.selectionStart = input.selectionEnd = start + text.length;
-        input.focus();
-        autoGrow();
     }
 
     /* ---------------------------------------------------------------------
@@ -855,27 +716,24 @@
     }
 
     /* ---------------------------------------------------------------------
-       Gửi tin nhắn, ảnh, cảm xúc
+       Gửi tin nhắn và cảm xúc
        ------------------------------------------------------------------ */
     function send() {
         if (!S.active || S.loadingSend) return;
         var input = D.getElementById('bkChatInput');
         var text = input ? String(input.value || '').trim() : '';
-        var image = S.pendingImage && S.pendingImage.path;
-        if (!text && !image) return;
+        if (!text) return;
         S.loadingSend = true;
         var sendBtn = D.getElementById('bkChatSend');
         if (sendBtn) sendBtn.disabled = true;
         api({
             action: 'messages.send',
             room_id: S.active.id,
-            content: text,
-            image_path: image || ''
+            content: text
         }).then(function (data) {
             S.loadingSend = false;
             if (sendBtn) sendBtn.disabled = false;
             if (input) { input.value = ''; autoGrow(); }
-            clearPendingImage();
             if (data && data.message) {
                 appendMessage(data.message);
                 touchRoom(S.active.id, data.message);
@@ -921,55 +779,6 @@
         }
         renderRooms();
         paintUnread();
-    }
-
-    function pickImage(file) {
-        if (IMAGE_TYPES.indexOf(file.type) === -1) {
-            toast('Chỉ gửi được ảnh PNG, JPEG, WEBP hoặc GIF.', 'error');
-            return;
-        }
-        if (file.size > MAX_IMAGE) {
-            toast('Ảnh tối đa 3 MB.', 'error');
-            return;
-        }
-        if (!S.me || !S.me.student_id) {
-            toast('Chưa xác định được học sinh.', 'error');
-            return;
-        }
-        var box = D.getElementById('bkChatPending');
-        if (!box) return;
-        box.hidden = false;
-        clear(box);
-        box.appendChild(el('span', 'bkchat-pending-name', file.name));
-        box.appendChild(el('span', 'bkchat-pending-state', 'Đang tải ảnh…'));
-        var ext = (file.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
-        var id = makeId();
-        var path = S.me.student_id + '/' + id + '.' + ext;
-        global.BKCloud.chatClient().then(function (client) {
-            return client.storage.from('chat-images').upload(path, file, {
-                contentType: file.type, upsert: false
-            });
-        }).then(function (res) {
-            if (res && res.error) throw new Error(res.error.message || 'Tải ảnh thất bại.');
-            S.pendingImage = { path: path, name: file.name };
-            clear(box);
-            box.hidden = false;
-            box.appendChild(el('span', 'bkchat-pending-name', file.name));
-            var remove = btn('bkchat-icon-btn', '', 'fa-xmark');
-            remove.setAttribute('aria-label', 'Bỏ ảnh đã chọn');
-            remove.addEventListener('click', clearPendingImage);
-            box.appendChild(remove);
-        }).catch(function (err) {
-            clear(box);
-            box.hidden = true;
-            toast(err && err.message ? err.message : 'Không tải được ảnh.', 'error');
-        });
-    }
-
-    function clearPendingImage() {
-        S.pendingImage = null;
-        var box = D.getElementById('bkChatPending');
-        if (box) { clear(box); box.hidden = true; }
     }
 
     function makeId() {

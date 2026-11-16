@@ -3,8 +3,8 @@
  * Bá Khí — QA cho Chat (jsdom, không cần Supabase thật).
  *
  * Kiểm tra:
- *   1. Giao diện: danh sách phòng, bộ đếm chưa đọc, mở phòng, tin nhắn, ảnh,
- *      cảm xúc, gửi tin, chèn emoji, Profile Card, xoá tin của mình.
+ *   1. Giao diện: danh sách phòng, bộ đếm chưa đọc, mở phòng, tin nhắn,
+ *      cảm xúc, gửi văn bản, Profile Card, xoá tin của mình.
  *   2. Luồng nhắn riêng và tạo nhóm gọi đúng hành động chat-api.
  *   3. Bảo mật: client không ghi trực tiếp bảng chat_*, không dùng innerHTML,
  *      không có service-role key.
@@ -28,7 +28,7 @@ function ok(name, cond, extra) {
   else { failures++; console.log('  FAIL ' + name + (extra ? ' :: ' + extra : '')); }
 }
 function wait(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
-async function until(fn, timeout = 2500) {
+async function until(fn, timeout = 5000) {
   const start = Date.now();
   while (Date.now() - start < timeout) {
     const v = fn();
@@ -230,7 +230,7 @@ async function main() {
   await wait(1050);
   ok('gọi read.mark khi mở phòng', H.calls.some((c) => c.action === 'read.mark'));
 
-  console.log('\n[3] Gửi tin nhắn và emoji');
+  console.log('\n[3] Gửi tin nhắn văn bản (không ảnh/emoji soạn tin)');
   const input = doc.getElementById('bkChatInput');
   input.value = 'Tin mới từ kiểm thử';
   doc.getElementById('bkChatComposer').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
@@ -240,12 +240,8 @@ async function main() {
   ok('tin vừa gửi xuất hiện trong khung', !!appended);
   ok('ô soạn tin được xoá sau khi gửi', input.value === '');
 
-  doc.getElementById('bkChatEmoji').click();
-  const tray = doc.getElementById('bkChatEmojiTray');
-  ok('mở bảng emoji', !!tray && tray.hidden === false);
-  const emojiBtn = tray.querySelector('[data-insert-emoji="🔥"]');
-  emojiBtn.click();
-  ok('chèn emoji vào ô soạn tin', input.value.indexOf('🔥') !== -1, input.value);
+  ok('đã bỏ nút gửi ảnh khỏi ô soạn tin', !doc.getElementById('bkChatAttach') && !doc.getElementById('bkChatFile'));
+  ok('đã bỏ bảng emoji soạn tin', !doc.getElementById('bkChatEmoji') && !doc.getElementById('bkChatEmojiTray'));
 
   console.log('\n[4] Thả cảm xúc & xoá tin của mình');
   const reactionChip = doc.querySelector('#bkChatMessages .bkchat-reaction');
@@ -320,7 +316,7 @@ async function main() {
   ok('không ghi trực tiếp bảng chat_*', !/\.from\(\s*['"]chat_/.test(src));
   ok('không chứa khoá bí mật', !/service_role|SERVICE_ROLE|eyJhbGciOi/.test(src));
   ok('không có bộ đếm thời gian tự động', !/setInterval\s*\(/.test(src));
-  ok('ảnh chỉ nhận bốn định dạng', /image\/png/.test(src) && /image\/jpeg/.test(src) && /image\/webp/.test(src) && /image\/gif/.test(src));
+  ok('client đã bỏ tải ảnh lên', !/storage\.from\(['"]chat-images['"]\)/.test(src) && !/image\/png/.test(src));
   ok('không có lỗi runtime jsdom', H.errors.length === 0, H.errors.slice(0, 2).join(' | '));
 
   console.log('\n[8] Migration: RLS, giới hạn và Storage');
@@ -354,7 +350,7 @@ async function main() {
     ['bootstrap', 'messages.list', 'messages.send', 'reactions.toggle', 'read.mark', 'dm.open', 'group.create', 'group.add', 'group.leave']
       .every((a) => fn.indexOf("'" + a + "'") !== -1));
   ok('giới hạn tần suất gửi tin', /chat-send:/.test(fn) && /20, 60/.test(fn));
-  ok('kiểm tra ảnh thuộc về người gửi', /startsWith\(ctx\.studentId \+ '\/'\)/.test(fn));
+  ok('server chặn gửi ảnh mới', /IMAGES_DISABLED/.test(fn));
 
   console.log('\n[10] Lối vào & trang Chat');
   const shell = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-shell.js'), 'utf8');

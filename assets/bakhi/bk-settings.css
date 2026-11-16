@@ -184,8 +184,10 @@ html.dark .bk-wall-preview > span { background: rgba(15, 23, 42, .65); color: #e
     margin-top: .5rem;
 }
 .bk-auth-box input { flex: 1 1 12rem; min-width: 0; max-width: 100%; }
-.bk-auth-box .bk-btn { flex: 0 0 auto; max-width: 100%; white-space: normal; }
+.bk-auth-box .bk-btn { flex: 1 1 12rem; max-width: 100%; white-space: normal; justify-content: center; text-align: center; }
 .bk-auth-msg { overflow-wrap: anywhere; }
+.bk-set-panel h2 + .bk-auth-msg,
+.bk-set-panel .bk-auth-box + .bk-auth-msg { margin-top: .6rem; }
 @media (max-width: 520px) {
     .bk-auth-box { flex-direction: column; align-items: stretch; }
     .bk-auth-box input,

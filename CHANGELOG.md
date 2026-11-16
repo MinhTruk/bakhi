@@ -2,6 +2,42 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [6.0.0] — 2026-11-16
+
+### Tính năng
+
+- **Founder Dashboard**: khu vực toàn quyền tại `founder/` và tab **Founder** trong Cài đặt.
+  Founder Code được xác thực ở Edge Function `admin-auth` bằng băm SHA-256 lưu trong bảng
+  `founder_config`; mã gốc không nằm trong mã nguồn, localStorage hay chat. Phiên Founder
+  có phạm vi riêng (`admin_sessions.scope = 'founder'`) và hạn 12 giờ.
+- **Founder kế thừa toàn bộ Administrator Dashboard** (14 mô-đun) và mở thêm quyền tối mật:
+  Bảo trì, Dữ liệu & sao lưu, đặt danh vị, trao **mọi** badge kể cả Founder/Developer.
+  Administrator thường bị ẩn và bị máy chủ chặn các mục này.
+- **Cấp trọn bộ thành tích**: nút trong Founder Dashboard trao đủ 78 badge và mở 30/30 khung
+  cho hồ sơ `is_founder = true`; migration 6.0.0 cũng tự cấp trọn bộ cho hồ sơ Founder.
+- **Khung avatar thế hệ mới**: cả 30 khung có vòng gradient, quỹ đạo xoay, hạt sáng, glow
+  theo độ hiếm; khung Developer/Founder thêm quỹ đạo và vương miện chuyển động.
+- **Đồng bộ tức thời**: realtime `student_badges` + sự kiện `storage`/`bk:identity` cập nhật
+  badge, khung và Trung tâm học tập ngay khi trao/thu hồi hoặc đổi học sinh; bảo trì và
+  What's New áp dụng ngay khi Founder/Administrator lưu.
+- **Trung tâm học tập đếm đúng**: tab Thành tích hiển thị `đã mở/78` huy hiệu hồ sơ, tách
+  khỏi 12 mốc học tập nội bộ.
+
+### Sửa lỗi
+
+- Menu hồ sơ thu nhỏ tự đóng khi cuộn trang (vẫn cuộn được bên trong menu), bố cục desktop
+  và bottom-sheet mobile không còn tràn/che nội dung.
+- Cài đặt Nhà phát triển: nút mở/Thoát Dev không còn đè lên dòng hướng dẫn; bố cục xuống
+  hàng gọn trên màn hình hẹp.
+- Thu hồi badge trao tay ở thiết bị khác được phản ánh đúng, không giữ badge cũ.
+
+### Cải tiến
+
+- **Chat chỉ gửi văn bản**: bỏ nút gửi ảnh, hộp chọn tệp và bảng emoji soạn tin; vẫn giữ
+  cảm xúc cho tin nhắn và hiển thị ảnh cũ đã có.
+- Migration `20261122000000_bakhi_founder_6.sql` thêm `founder_config`, `admin_sessions.scope`
+  và seed toàn bộ badge/khung cho Founder; không xoá dữ liệu cũ.
+
 ## [5.0.0] — 2026-11-16
 
 ### Tính năng

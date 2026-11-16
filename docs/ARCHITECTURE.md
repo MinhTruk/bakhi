@@ -265,11 +265,11 @@ DOMContentLoaded
     thư mục uuid của chính mình.
 - **Edge Function `chat-api`**: mọi thao tác ghi (`messages.send/delete`, `reactions.toggle`,
   `read.mark`, `dm.open`, `group.*`, `messages.purge_own`) chạy bằng service role sau khi xác
-  minh `auth.uid()` đã gắn với học sinh đang hoạt động, tư cách thành viên và quyền sở hữu ảnh.
+  minh `auth.uid()` đã gắn với học sinh đang hoạt động và tư cách thành viên.
   Giới hạn: 300 lượt/giờ/học sinh, 20 tin/phút, 120 cảm xúc/phút. Không tin `student_id` từ client.
 - **Máy khách** (`bk-chat.js`): đọc dữ liệu trực tiếp qua Supabase (RLS), ghi qua `BKCloud.chatApi`;
   bộ đếm chưa đọc cả trên tiêu đề tab; realtime cho tin nhắn, cảm xúc và tên nhóm; toàn bộ nội dung
-  render bằng `textContent`. Chỉ nhận ảnh, không nhận tệp tuỳ ý; không có đồng hồ đếm ngược.
+  render bằng `textContent`. Từ 6.0.0 chỉ nhận văn bản (bỏ gửi ảnh/emoji soạn tin); không có đồng hồ đếm ngược.
 - **Trạng thái triển khai**: mã đã hoàn tất và kiểm thử cục bộ (`tools/qa/chat-smoke.js`); cần
   deploy migration `20261120000000`, Edge Function `chat-api` và bucket `chat-images` trên dự án
   Supabase thật. Trước đó `/chat/` hiển thị thông báo máy chủ chưa sẵn sàng.
@@ -293,7 +293,7 @@ DOMContentLoaded
 - `admin/index.html` nạp `bk-admin-dashboard.css` + `bk-devboard.js` + `bk-badges.js` (chỉ để đọc
   danh mục badge; `BK_ADMIN_ONLY` chặn ghi `bakhiBadges.v1` trong trình duyệt quản trị); mọi
   thao tác ghi đi qua Edge Function `admin-actions` với header `x-admin-token`.
-- **14 mô-đun**: Tổng quan, Học sinh, Hồ sơ, Thành tích, Chat, Thông báo, What's New,
+- **12 mô-đun Administrator (Founder thấy 15, thêm Bảo trì, Dữ liệu và tab Founder)**: Tổng quan, Học sinh, Hồ sơ, Thành tích, Chat, Thông báo, What's New,
   Lịch sử phiên bản, Nhật ký, Giám sát, Quyền & bảo mật, Cấu hình, Dữ liệu & sao lưu.
   Sidebar thu gọn được, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng; bảng có
   lọc, sắp xếp, phân trang phía máy chủ.
@@ -441,7 +441,7 @@ Kết quả sau nâng cấp: **122/122 tệp không đổi nội dung** (`verify
 | Lịch sử phiên bản | bảng `changelog` | Hiển thị trong trung tâm thông báo và khối “Cập nhật gần đây” chỉ bật ở trang chủ, xếp theo số phiên bản |
 | Đồng bộ changelog | `.github/workflows/changelog-sync.yml` + `supabase/functions/changelog-sync` | GitHub Actions đọc `CHANGELOG.md`, gọi hàm bằng `CHANGELOG_SYNC_TOKEN`; hàm dùng RPC `bakhi_publish_changelog` để ghi và tạo thông báo một lần |
 | Cấu hình site | bảng `app_settings` | Chỉ đọc khoá `public.*`; `public.whatsnew`, `public.maintenance`; realtime; ghi qua `admin-actions` |
-| Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html` | 14 mô-đun, xác thực Administrator Code qua `admin-auth`; mọi thao tác kiểm tra lại ở `admin-actions` |
+| Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html`, `founder/index.html` | 12 mô-đun Administrator; 15 mô-đun Founder, xác thực mã qua `admin-auth`; mọi thao tác kiểm tra lại ở `admin-actions` |
 | Dev Code | `assets/bakhi/bk-settings.js`, `bk-cloud.js`, `supabase/functions/dev-auth`, bảng `dev_sessions` | Xác minh mã ở máy chủ, giới hạn tần suất, chỉ trả token + hạn dùng; tách hoàn toàn khỏi phiên quản trị |
 
 Ghi chú triển khai:

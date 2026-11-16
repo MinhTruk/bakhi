@@ -25,6 +25,16 @@ Trung tâm học tập, hồ sơ/cài đặt, Developer Playground, Administrato
 | 13 | Đồng bộ Supabase | ✅ | Adapter + migration + Edge Function; bật bằng cấu hình, không bắt buộc |
 | 14 | AI hỗ trợ | 🟡 | Adapter + cấu hình endpoint; cần proxy (không có key trong trình duyệt) |
 
+## A2. Founder Dashboard (6.0.0)
+
+- Mở từ **Cài đặt → Founder** hoặc trực tiếp `founder/`; xác thực bằng Founder Code riêng.
+- Founder Code chỉ lưu dạng băm SHA-256 trong `founder_config`; Edge Function `admin-auth`
+  so sánh băm và cấp phiên `scope = founder`.
+- Founder thấy đủ 14 mô-đun Administrator, thêm tab **Founder** để cấp trọn bộ 78 badge và
+  30 khung cho hồ sơ `is_founder = true`.
+- Các quyền tối mật chỉ Founder: bảo trì, dữ liệu & sao lưu, đặt danh vị, trao badge
+  Founder/Developer. Máy chủ chặn Administrator thường bằng `FOUNDER_ONLY`.
+
 ## B. Developer Playground 2.1 — 14 tab (`Ctrl+Shift+G`, sau khi xác thực Dev Code)
 
 Dev Code nằm trong **Cài đặt → Nhà phát triển → Dev Code**, xác minh ở Edge Function
@@ -194,7 +204,7 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1 | **14 mô-đun**: Tổng quan, Học sinh, Hồ sơ, Thành tích, Chat, Thông báo, What's New, Lịch sử phiên bản, Nhật ký, Giám sát, Quyền & bảo mật, Cấu hình, Bảo trì, Dữ liệu & sao lưu | ✅ | `admin/index.html` + `bk-devboard.js` |
+| 1 | **12 mô-đun Administrator**: Tổng quan, Học sinh, Hồ sơ, Thành tích, Chat, Thông báo, What's New, Lịch sử phiên bản, Nhật ký, Giám sát, Quyền & bảo mật, Cấu hình. Founder thấy thêm Bảo trì, Dữ liệu và tab Founder (15) | ✅ | `admin/index.html`, `founder/index.html` + `bk-devboard.js` |
 | 2 | Sidebar thu gọn, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng | ✅ | Bố cục không tràn ngang |
 | 3 | Bảng có tìm kiếm, lọc, sắp xếp, phân trang phía máy chủ | ✅ | Học sinh, hồ sơ, thông báo, changelog, nhật ký |
 | 4 | Lịch sử phiên bản dạng cột dọc | ✅ | Biểu mẫu toàn chiều rộng trên, danh sách bên dưới |
@@ -230,7 +240,7 @@ Function `chat-api`; trình duyệt chỉ đọc dữ liệu phòng mình tham g
 | 2 | Tin nhắn riêng từng cặp (DM) | ⚠️ đã có mã | `dm_key` sắp xếp cặp uuid, unique; đúng 2 thành viên |
 | 3 | Nhóm tối đa 10 người, trưởng nhóm đổi tên/thêm/xoá/rời | ⚠️ đã có mã | Trigger `bakhi_chat_member_guard`; chuyển trưởng khi người cũ rời |
 | 4 | Tin nhắn văn bản ≤ 2.000 ký tự, Enter gửi, Shift+Enter xuống dòng | ⚠️ đã có mã | `messages.send` |
-| 5 | Gửi ảnh PNG/JPEG/WEBP/GIF ≤ 3 MB | ⚠️ đã có mã | Bucket `chat-images`, đường dẫn bắt đầu bằng uuid người gửi; không nhận tệp khác |
+| 5 | Chat chỉ gửi văn bản (6.0.0 bỏ gửi ảnh và bảng emoji soạn tin) | ✅ | Ảnh cũ vẫn hiển thị; server trả `IMAGES_DISABLED` nếu client cố gửi ảnh mới |
 | 6 | 12 cảm xúc emoji, bấm lại để bỏ | ⚠️ đã có mã | `chat_reactions`, `reactions.toggle` |
 | 7 | Realtime tin nhắn, cảm xúc, tên nhóm | ⚠️ đã có mã | Bốn bảng trong `supabase_realtime`, `replica identity full` |
 | 8 | Bộ đếm tin chưa đọc theo phòng + trên tiêu đề tab | ⚠️ đã có mã | `last_read_at`, `read.mark` |

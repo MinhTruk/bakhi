@@ -14,7 +14,6 @@ import { adminClient, callerUserId } from '../_shared/supabase.ts';
 const MAX_BODY = 2000;
 const MAX_ROOMS = 60;
 const HISTORY = 50;
-const IMAGE_PATH = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[A-Za-z0-9._-]{1,160}$/;
 
 /* Bộ emoji giới hạn để không lưu chuỗi lạ và giữ giao diện gọn. */
 const EMOJI = new Set([
@@ -342,14 +341,12 @@ Deno.serve(async (req) => {
                     return fail(403, 'MUTED', 'Bạn đang bị tạm khoá gửi tin trong phòng này.');
                 }
                 const text = cleanBody(body.content ?? body.body);
-                const image = body.image_path ? str(body.image_path, 300) : '';
-                if (!text && !image) return fail(400, 'EMPTY', 'Tin nhắn trống.');
-                if (image && !IMAGE_PATH.test(image)) {
-                    return fail(400, 'BAD_IMAGE', 'Ảnh không hợp lệ.');
+                /* 6.0.0: Chat chỉ nhận văn bản. Ảnh cũ vẫn được đọc/hiển thị
+                   nhưng client không thể gửi ảnh mới, kể cả khi gọi API trực tiếp. */
+                if (body.image_path) {
+                    return fail(400, 'IMAGES_DISABLED', 'Chat 6.0 chỉ gửi được văn bản.');
                 }
-                if (image && !image.startsWith(ctx.studentId + '/')) {
-                    return fail(403, 'BAD_IMAGE_OWNER', 'Ảnh không thuộc về bạn.');
-                }
+                if (!text) return fail(400, 'EMPTY', 'Tin nhắn trống.');
                 if (!(await limited(ctx, 'chat-send:' + ctx.studentId, 20, 60))) {
                     return fail(429, 'TOO_MANY_MESSAGES', 'Bạn gửi hơi nhanh. Chờ một chút nhé.');
                 }
@@ -360,7 +357,7 @@ Deno.serve(async (req) => {
                         room_id: roomId,
                         student_id: ctx.studentId,
                         body: text,
-                        image_path: image || null,
+                        image_path: null,
                         reply_to: replyTo
                     })
                     .select('id, room_id, student_id, body, image_path, reply_to, created_at, deleted_at')

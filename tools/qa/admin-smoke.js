@@ -1,9 +1,9 @@
 'use strict';
 /**
- * Bá Khí — QA cho Administrator Dashboard 5.0 (14 mô-đun).
+ * Bá Khí — QA cho Administrator Dashboard 6.0 (12 mô-đun).
  *
  * Kiểm tra:
- *   1. 14 tab đúng thứ tự, gồm Hồ sơ, Thành tích, Chat, What's New, Bảo trì.
+ *   1. 12 tab Administrator đúng thứ tự; Founder có thêm Bảo trì/Dữ liệu/Founder.
  *   2. Hồ sơ: danh sách, chi tiết, badge đã xác minh.
  *   3. Thành tích: Administrator trao được mọi badge trong danh mục, có thu hồi.
  *   4. Chat: phòng chung không xoá được; nhóm có tạm khoá, gỡ thành viên,
@@ -146,14 +146,14 @@ const CHANGELOG = [{
   load('assets/bakhi/bk-devboard.js');
 
   /* ------------------------------------------------------------------ */
-  console.log('\n[1] Mở dashboard và 14 mô-đun');
+  console.log('\n[1] Mở dashboard và 12 mô-đun Administrator');
   w.openDevDashboard();
   const dash = await until(() => D.querySelector('.bkc-dash'));
   ok('dashboard mở được khi có phiên quản trị', !!dash);
   const tabs = Array.from(D.querySelectorAll('.bkc-nav .bkc-tab'));
-  ok('sidebar có đúng 14 tab', tabs.length === 14, String(tabs.length));
+  ok('sidebar Administrator có đúng 12 tab', tabs.length === 12, String(tabs.length));
   const tabIds = tabs.map((b) => b.getAttribute('data-tab'));
-  ok('thứ tự tab đúng', tabIds.join(',') === 'overview,students,profiles,badges,chat,notifications,whatsnew,changelog,logs,monitoring,permissions,settings,maintenance,data', tabIds.join(','));
+  ok('thứ tự tab đúng', tabIds.join(',') === 'overview,students,profiles,badges,chat,notifications,whatsnew,changelog,logs,monitoring,permissions,settings', tabIds.join(','));
   ok('tab mới có nhãn tiếng Việt', /Hồ sơ/.test(tabs[2].textContent) && /Thành tích/.test(tabs[3].textContent) &&
     /Chat/.test(tabs[4].textContent) && /What's New/.test(tabs[6].textContent), tabs.map((b) => b.textContent.trim()).join(' | '));
   ok('Alt+1…9 chuyển tab được khai báo', /altKey && \/\^\[1-9\]\$\/\.test/.test(read('assets/bakhi/bk-devboard.js')));
@@ -205,9 +205,9 @@ const CHANGELOG = [{
     const selects = grantBox ? Array.from(grantBox.querySelectorAll('select')) : [];
     const select = selects.find((s) => Array.from(s.options).some((o) => o.value === 'admin-chosen'));
     const values = select ? Array.from(select.options).map((o) => o.value) : [];
-    ok('ô chọn có toàn bộ danh mục badge', values.length >= 75 &&
-      ['admin-chosen', 'admin-legend', 'learn-first-lesson', 'dev-exclusive-aurora', 'founder']
-        .every((id) => values.includes(id)), String(values.length));
+    ok('ô chọn có 75 badge thường (3 badge độc quyền thuộc Founder)', values.length === 75 &&
+      ['admin-chosen', 'admin-legend', 'learn-first-lesson'].every((id) => values.includes(id)) &&
+      !values.includes('dev-exclusive-aurora') && !values.includes('founder'), String(values.length));
     ok('nêu rõ tách biệt badge tự động và trao tay', /TÁCH BIỆT/.test(D.querySelector('.bkc-pane').textContent));
 
     const grantBtn = buttonByText(grantBox, /^Trao badge$/);
@@ -362,9 +362,17 @@ const CHANGELOG = [{
   ok('bucket chat chỉ nhận ảnh ≤ 3 MB', /chat-images/.test(migration) && /3145728/.test(migration) &&
     /image\/png/.test(migration) && /image\/jpeg/.test(migration) && /image\/webp/.test(migration) && /image\/gif/.test(migration));
 
-  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=5\.0\.0/.test(adminPage));
-  ok('trang admin dùng dashboard 5.0.0', /bk-admin-dashboard\.css\?v=5\.0\.0/.test(adminPage) &&
-    /bk-devboard\.js\?v=5\.0\.0/.test(adminPage));
+  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=6\.0\.0/.test(adminPage));
+  ok('trang admin dùng dashboard 6.0.0', /bk-admin-dashboard\.css\?v=6\.0\.0/.test(adminPage) &&
+    /bk-devboard\.js\?v=6\.0\.0/.test(adminPage));
+
+  const founderPage = read('founder/index.html');
+  ok('có trang Founder Dashboard riêng', /BK_DASH_SCOPE\s*=\s*["']founder/.test(founderPage) &&
+    /bk-devboard\.js\?v=6\.0\.0/.test(founderPage) && /founderLogin/.test(founderPage));
+  ok('Founder Dashboard có quyền cấp trọn bộ và bảo trì', /founder\.grantAll/.test(read('assets/bakhi/bk-devboard.js')) &&
+    /FOUNDER_ONLY/.test(adminActions) && /founder_config/.test(read('supabase/functions/admin-auth/index.ts')));
+  ok('migration 6.0.0 tạo founder_config và scope', /founder_config/.test(read('supabase/migrations/20261122000000_bakhi_founder_6.sql')) &&
+    /add column if not exists scope/.test(read('supabase/migrations/20261122000000_bakhi_founder_6.sql')));
 
   const clients = ['assets/bakhi/bk-devboard.js', 'admin/index.html'];
   const leaks = [];

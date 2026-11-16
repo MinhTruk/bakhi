@@ -206,7 +206,7 @@ iw.BKShell.mark('badges.viewed');
 ok('ghi nhận đã xem badge', B.metrics().badgesViewed >= 1);
 
 /* ====================== 3. Trang Cài đặt ====================== */
-console.log('\n[3] Trang Cài đặt — 5 tab và nội dung thật');
+console.log('\n[3] Trang Cài đặt — 6 tab và nội dung thật');
 const settingsHtml = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Cài đặt</title></head><body class="bk-app">
 <header><div class="bk-topbar-inner"><a class="bk-brand" href="../">Bá Khí</a></div></header>
 <main class="bk-page" id="bkSettingsRoot">
@@ -228,7 +228,7 @@ load(sw, 'assets/bakhi/bk-settings.js');
 
 const sdoc = sw.document;
 const tabs = Array.from(sdoc.querySelectorAll('.bk-set-tab')).map((t) => t.textContent.trim());
-ok('Cài đặt có đúng 5 tab', tabs.length === 5, JSON.stringify(tabs));
+ok('Cài đặt có đúng 6 tab', tabs.length === 6, JSON.stringify(tabs));
 ok('tab Hồ sơ mở mặc định', sdoc.getElementById('bkSetTab-profile').getAttribute('aria-selected') === 'true');
 ok('tab Hồ sơ có trình chỉnh sửa', !!sdoc.querySelector('#bkSetPanel-profile .bk-input'));
 

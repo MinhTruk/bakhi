@@ -359,10 +359,27 @@
             root.appendChild(row);
         });
 
-        /* Mốc học tập */
+        /* Huy hiệu hồ sơ: đếm đúng danh mục 78 badge, không dùng mốc nội bộ. */
+        var pb = profileBadgeStats();
+        root.appendChild(el('h4', null, 'Huy hiệu hồ sơ (' + pb.done + '/' + pb.total + ')'));
+        var badgeCard = el('div', 'bk-item');
+        var badgeBar = el('div', 'bk-progress');
+        var badgeFill = el('span');
+        badgeFill.style.width = (pb.total ? Math.round((pb.done / pb.total) * 100) : 0) + '%';
+        badgeBar.appendChild(badgeFill);
+        badgeCard.appendChild(badgeBar);
+        badgeCard.appendChild(el('p', 'bk-small bk-muted',
+            'Tổng ' + pb.total + ' huy hiệu trong danh mục hồ sơ · đã mở ' + pb.done + '.'));
+        var badgeMore = ghostBtn('Xem hồ sơ & bộ sưu tập', function () {
+            global.location.href = (BK.util && BK.util.basePath ? BK.util.basePath() : '') + 'profile/';
+        }, 'fa-id-card');
+        badgeCard.appendChild(badgeMore);
+        root.appendChild(badgeCard);
+
+        /* Mốc học tập (12 mốc nội bộ của Trung tâm học tập) */
         var achs = BK.achievements.progress();
         var achieved = achs.filter(function (a) { return a.unlockedAt; });
-        root.appendChild(el('h4', null, 'Thành tích (' + achieved.length + '/' + achs.length + ')'));
+        root.appendChild(el('h4', null, 'Mốc học tập (' + achieved.length + '/' + achs.length + ')'));
         var achCard = el('div', 'bk-item');
         var bar = el('div', 'bk-progress');
         var fill = el('span');
@@ -972,9 +989,31 @@
     }
 
     /* --------------------------- Thành tích ----------------------------- */
+    function profileBadgeProgress() {
+        try {
+            if (BK.badges && typeof BK.badges.progress === 'function') return BK.badges.progress();
+        } catch (e) { }
+        return [];
+    }
+
+    function profileBadgeStats() {
+        var list = profileBadgeProgress();
+        return {
+            list: list,
+            total: list.length,
+            done: list.filter(function (b) { return b.unlockedAt; }).length
+        };
+    }
+
     function syncAchBadge() {
         var b = D.getElementById('bkAchCount');
         if (!b) return;
+        var pb = profileBadgeStats();
+        if (pb.total) {
+            b.textContent = pb.done + '/' + pb.total;
+            b.title = pb.done + ' trên ' + pb.total + ' huy hiệu hồ sơ đã mở';
+            return;
+        }
         var p = BK.achievements.progress();
         var n = p.filter(function (a) { return a.unlockedAt; }).length;
         b.textContent = n + '/' + p.length;
@@ -986,7 +1025,34 @@
         var count = list.filter(function (a) { return a.unlockedAt; }).length;
         syncAchBadge();
 
-        root.appendChild(el('h3', null, 'Thành tích học tập'));
+        var pb = profileBadgeStats();
+        root.appendChild(el('h3', null, 'Huy hiệu hồ sơ'));
+        root.appendChild(el('p', 'bk-sub',
+            'Danh mục hồ sơ có ' + pb.total + ' huy hiệu, bạn đã mở ' + pb.done +
+            '. Huy hiệu tự động do máy chủ xác minh; huy hiệu độc quyền do Founder/Administrator trao.'));
+        var pbCard = el('div', 'bk-item');
+        var pbBar = el('div', 'bk-progress');
+        var pbFill = el('span');
+        pbFill.style.width = (pb.total ? Math.round((pb.done / pb.total) * 100) : 0) + '%';
+        pbBar.appendChild(pbFill);
+        pbCard.appendChild(pbBar);
+        if (pb.list.length) {
+            var pbGroups = {};
+            pb.list.forEach(function (b) {
+                var g = b.category || 'Khác';
+                pbGroups[g] = pbGroups[g] || { done: 0, total: 0 };
+                pbGroups[g].total++;
+                if (b.unlockedAt) pbGroups[g].done++;
+            });
+            var pbPills = el('div', 'bk-pill-row');
+            Object.keys(pbGroups).forEach(function (g) {
+                pbPills.appendChild(badge(g + ' ' + pbGroups[g].done + '/' + pbGroups[g].total));
+            });
+            pbCard.appendChild(pbPills);
+        }
+        root.appendChild(pbCard);
+
+        root.appendChild(el('h3', null, 'Mốc học tập'));
         root.appendChild(el('p', 'bk-sub', 'Mỗi mốc gắn với một việc bạn tự làm: mở bài, luyện câu hỏi, ghi chú, ôn tập, dùng Studio, nghe nhạc. Không có chuỗi ngày, không điểm danh, không áp lực thời gian.'));
 
         var progress = el('div', 'bk-item');
@@ -1332,9 +1398,11 @@
 
     function achLabel() {
         try {
+            var pb = profileBadgeStats();
+            if (pb.total) return 'Huy hiệu hồ sơ (' + pb.done + '/' + pb.total + ')';
             var p = BK.achievements.progress();
             var n = p.filter(function (a) { return a.unlockedAt; }).length;
-            return 'Thành tích (' + n + '/' + p.length + ')';
+            return 'Mốc học tập (' + n + '/' + p.length + ')';
         } catch (e) { return 'Thành tích'; }
     }
 
@@ -1727,6 +1795,9 @@
             if ((hub.modal || hub.inline) && (hub.tab === 'overview' || hub.tab === 'review')) renderTab();
         });
         /* Đổi học sinh: làm mới thành tích/tiến độ đang mở, không cần F5. */
+        global.addEventListener('bkbadges', function () {
+            try { syncAchBadge(); } catch (e) { }
+        });
         global.addEventListener('bk:identity', function () {
             try {
                 if (hub.modal || hub.inline) renderTab();

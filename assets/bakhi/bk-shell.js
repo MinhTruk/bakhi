@@ -536,15 +536,16 @@
         }
         S.menu.style.bottom = '';
         S.menu.style.right = 'auto';
-        var width = 320;
+        var width = Math.min(352, vw - 16);
         var left = Math.min(vw - width - 8, Math.max(8, r.right - width));
         S.menu.style.left = left + 'px';
         var top = r.bottom + 8;
-        var estimated = S.menu.offsetHeight || 380;
+        var estimated = Math.min(S.menu.offsetHeight || 380, vh - 16);
         if (top + estimated > vh - 8) {
             top = Math.max(8, r.top - estimated - 8);
         }
         S.menu.style.top = top + 'px';
+        S.menu.style.maxHeight = Math.max(180, vh - top - 8) + 'px';
     }
 
     function openMenu() {
@@ -564,7 +565,9 @@
         D.addEventListener('keydown', onKey, true);
         D.addEventListener('click', onDocClick, true);
         global.addEventListener('resize', placeMenu);
-        global.addEventListener('scroll', placeMenu, true);
+        /* Cuộn trang (bên ngoài menu) thì đóng hẳn menu; cuộn bên trong menu
+           vẫn giữ menu mở để đọc hết danh sách. */
+        global.addEventListener('scroll', onScrollHide, true);
     }
 
     function closeMenu() {
@@ -581,7 +584,14 @@
         D.removeEventListener('keydown', onKey, true);
         D.removeEventListener('click', onDocClick, true);
         global.removeEventListener('resize', placeMenu);
-        global.removeEventListener('scroll', placeMenu, true);
+        global.removeEventListener('scroll', onScrollHide, true);
+    }
+
+    function onScrollHide(e) {
+        if (!S.open || !S.menu) return;
+        var target = e && e.target;
+        if (target && target !== D && S.menu.contains(target)) return;
+        closeMenu();
     }
 
     function toggleMenu() { if (S.open) closeMenu(); else openMenu(); }
@@ -796,6 +806,7 @@
             }, 120000);
         }
         global.addEventListener('focus', function () { loadMaintenance(); });
+        global.addEventListener('bk:settings-changed', function () { loadMaintenance(true); });
         global.addEventListener('bk:identity', function () { paintProfileBits(); });
         if (global.BKRoles && global.BKRoles.onReady) global.BKRoles.onReady(paintProfileBits);
         global.addEventListener('bk:maintenance', function (e) {

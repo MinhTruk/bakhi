@@ -55,13 +55,55 @@
 }
 .bk-avatar[data-tier="dev"] .bk-avatar-frame-svg { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--bk-avatar-ring) 65%, transparent)); }
 .bk-avatar[data-tier="founder"] .bk-avatar-frame-svg { filter: drop-shadow(0 0 7px rgba(251, 191, 36, .75)); }
+.bk-avatar-frame-svg.bk-frame-premium {
+    filter: drop-shadow(0 2px 4px rgba(2, 6, 23, .45)) drop-shadow(0 0 3px var(--bk-frame-glow, #fbbf24));
+}
+.bk-avatar[data-tier="dev"] .bk-avatar-frame-svg.bk-frame-premium {
+    filter: drop-shadow(0 0 5px var(--bk-frame-glow, #5eead4)) drop-shadow(0 0 11px var(--bk-frame-glow, #5eead4));
+}
+.bk-avatar[data-tier="founder"] .bk-avatar-frame-svg.bk-frame-premium {
+    filter: drop-shadow(0 0 6px #fbbf24) drop-shadow(0 0 14px rgba(251, 191, 36, .8));
+}
+.bk-avatar-frame-svg .bk-frame-orbit {
+    transform-box: view-box;
+    transform-origin: 50px 50px;
+    animation: bk-frame-spin 22s linear infinite;
+}
+.bk-avatar-frame-svg .bk-frame-spark {
+    transform-box: view-box;
+    transform-origin: 50px 50px;
+    animation: bk-frame-twinkle 3.8s ease-in-out infinite;
+}
+.bk-avatar-frame-svg .bk-frame-aura {
+    transform-box: view-box;
+    transform-origin: 50px 50px;
+    animation: bk-frame-spin 14s linear infinite reverse;
+}
+.bk-avatar-frame-svg .bk-frame-crown {
+    transform-box: view-box;
+    transform-origin: 50px 50px;
+    animation: bk-frame-hover 4.2s ease-in-out infinite;
+}
 .bk-avatar-frame-svg.is-animated { animation: bk-frame-breathe 5s ease-in-out infinite; }
+@keyframes bk-frame-spin { to { transform: rotate(360deg); } }
+@keyframes bk-frame-twinkle {
+    0%, 100% { opacity: .55; transform: rotate(0deg) scale(.985); }
+    50% { opacity: 1; transform: rotate(11deg) scale(1.03); }
+}
+@keyframes bk-frame-hover {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-1.2px); }
+}
 @keyframes bk-frame-breathe {
     0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: .96; }
     50% { transform: translate(-50%, -50%) scale(1.035); opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .bk-avatar-frame-svg.is-animated { animation: none; }
+    .bk-avatar-frame-svg.is-animated,
+    .bk-avatar-frame-svg .bk-frame-orbit,
+    .bk-avatar-frame-svg .bk-frame-spark,
+    .bk-avatar-frame-svg .bk-frame-aura,
+    .bk-avatar-frame-svg .bk-frame-crown { animation: none; }
 }
 
 /* Bộ sưu tập khung: phân nhóm thường / Developer / Founder */

@@ -84,7 +84,7 @@ async function requireAdmin(req: Request, client: SupabaseClient) {
     const hash = await sha256Hex(token);
     const { data, error } = await client
         .from('admin_sessions')
-        .select('id, expires_at')
+        .select('id, expires_at, scope')
         .eq('token_hash', hash)
         .maybeSingle();
     if (error) return { error: fail(500, 'DB_ERROR', 'Không kiểm tra được phiên quản trị.') };
@@ -93,7 +93,8 @@ async function requireAdmin(req: Request, client: SupabaseClient) {
         return { error: fail(401, 'EXPIRED_DEV_SESSION', 'Phiên quản trị đã hết hạn. Vui lòng nhập lại Administrator Code.') };
     }
     await client.from('admin_sessions').update({ last_used_at: new Date().toISOString() }).eq('id', data.id);
-    return { sessionId: data.id as string };
+    const scope = (data as { scope?: string }).scope === 'founder' ? 'founder' : 'admin';
+    return { sessionId: data.id as string, scope };
 }
 
 async function logAction(
@@ -134,6 +135,86 @@ const CATEGORIES = ['features', 'improvements', 'fixes', 'ui', 'performance', 's
 const BADGE_ID_RE = /^[a-z0-9][a-z0-9-]{2,63}$/;
 const FOUNDER_BADGE_ID = 'founder';
 const DEV_BADGE_IDS = ['dev-exclusive-aurora', 'dev-exclusive-void'];
+const ALL_BADGE_IDS = [
+    "learn-first-lesson",
+    "learn-lessons-5",
+    "learn-lessons-15",
+    "learn-lessons-30",
+    "learn-subjects-3",
+    "learn-subjects-5",
+    "learn-first-answer",
+    "learn-practice-25",
+    "learn-practice-100",
+    "learn-practice-500",
+    "learn-correct-15",
+    "learn-correct-100",
+    "learn-review-first",
+    "learn-mastered-10",
+    "explore-pages-5",
+    "explore-pages-20",
+    "explore-pages-50",
+    "explore-studio",
+    "explore-settings",
+    "explore-profile",
+    "explore-palette",
+    "explore-search",
+    "explore-theme",
+    "explore-badges",
+    "consist-days-2",
+    "consist-days-3",
+    "consist-days-7",
+    "consist-days-14",
+    "consist-days-30",
+    "consist-streak-3",
+    "consist-streak-7",
+    "consist-streak-30",
+    "music-first",
+    "music-10",
+    "music-50",
+    "music-200",
+    "music-tracks-5",
+    "music-shuffle",
+    "music-repeat",
+    "music-queue",
+    "music-same-20",
+    "inter-first-effect",
+    "inter-meteor-10",
+    "inter-meteor-100",
+    "inter-meteor-1000",
+    "inter-meteor-10000",
+    "inter-music-fab",
+    "inter-focus",
+    "inter-dark-mode",
+    "social-nickname",
+    "social-avatar",
+    "social-banner",
+    "social-bio",
+    "social-links-2",
+    "social-frame",
+    "studio-doc",
+    "studio-drawing",
+    "studio-insert",
+    "studio-export",
+    "studio-words-500",
+    "studio-docs-5",
+    "studio-drawings-5",
+    "studio-exports-10",
+    "secret-night-owl",
+    "secret-early-bird",
+    "secret-subjects-all",
+    "secret-notes-100",
+    "secret-bookmarks-50",
+    "secret-mastered-50",
+    "secret-one-subject-10",
+    "secret-collector-40",
+    "secret-collector-60",
+    "secret-completionist",
+    "admin-chosen",
+    "admin-legend",
+    "dev-exclusive-aurora",
+    "dev-exclusive-void",
+    "founder"
+];
 
 function str(v: unknown, max: number): string {
     return String(v ?? '').trim().slice(0, max);
@@ -178,9 +259,22 @@ Deno.serve(async (req) => {
     const auth = await requireAdmin(req, client);
     if ('error' in auth) return auth.error;
     const sessionId = auth.sessionId;
+    const scope = auth.scope;
 
     const body = await readJson<Record<string, unknown>>(req);
     const action = str(body.action, 60);
+
+    /* Các mô-đun tối mật chỉ Founder mở được; Administrator thường bị chặn
+       ngay ở máy chủ, không phụ thuộc giao diện. */
+    const founderOnly = new Set([
+        'roles.set', 'founder.grantAll', 'students.export', 'logs.export', 'data.integrity'
+    ]);
+    if (founderOnly.has(action) && scope !== 'founder') {
+        return fail(403, 'FOUNDER_ONLY', 'Chức năng này chỉ dành cho Founder Dashboard.');
+    }
+    if (action === 'settings.set' && str(body.key, 80) === 'public.maintenance' && scope !== 'founder') {
+        return fail(403, 'FOUNDER_ONLY', 'Bật/tắt bảo trì chỉ dành cho Founder Dashboard.');
+    }
 
     try {
         switch (action) {
@@ -459,6 +553,11 @@ Deno.serve(async (req) => {
                 if (badgeId === FOUNDER_BADGE_ID && student.is_founder !== true) {
                     return fail(403, 'FOUNDER_ONLY',
                         'Badge Người sáng lập chỉ dành cho hồ sơ chính thức đã được xác minh.');
+                }
+                const exclusive = badgeId === FOUNDER_BADGE_ID || DEV_BADGE_IDS.includes(badgeId);
+                if (exclusive && scope !== 'founder') {
+                    return fail(403, 'FOUNDER_ONLY',
+                        'Badge độc quyền (Founder/Developer) chỉ Founder mới được trao.');
                 }
                 const reason = cleanDisplayName(body.reason).slice(0, 200);
                 /* manual_granted là nguồn riêng: không ghi đè auto_earned.awarded_at
@@ -1159,6 +1258,47 @@ Deno.serve(async (req) => {
                     report_generated_at: (report && report.generated_at) || null,
                     report_error: reportError
                 });
+            }
+
+            /* ----------------------- Founder: cấp trọn bộ ------------------------ */
+            case 'founder.grantAll': {
+                if (scope !== 'founder') {
+                    return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder mới được cấp toàn bộ thành tích.');
+                }
+                const { data: founder, error: fErr } = await client
+                    .from('students').select('id, display_name').eq('is_founder', true).limit(1).maybeSingle();
+                if (fErr) throw fErr;
+                if (!founder) {
+                    return fail(404, 'NO_FOUNDER_PROFILE',
+                        'Chưa có hồ sơ nào được đánh dấu is_founder = true.');
+                }
+                const nowIso = new Date().toISOString();
+                const rows = ALL_BADGE_IDS.map((badgeId) => ({
+                    student_id: founder.id,
+                    badge_id: badgeId,
+                    kind: 'admin',
+                    manual_granted: true,
+                    awarded_at: nowIso,
+                    awarded_by: sessionId,
+                    reason: 'Founder: cấp toàn bộ badge và khung'
+                }));
+                const { error: gErr } = await client.from('student_badges')
+                    .upsert(rows, { onConflict: 'student_id,badge_id' });
+                if (gErr) throw gErr;
+                await client.from('student_roles').upsert({
+                    student_id: founder.id,
+                    role_key: 'founder',
+                    role_label: 'Người sáng lập · Kẻ chủ mưu',
+                    updated_at: nowIso,
+                    updated_by: sessionId
+                }, { onConflict: 'student_id' });
+                await logAction(client, 'founder.grantAll', 'student', founder.id, {
+                    badges: rows.length
+                });
+                const { data: badges } = await client.from('student_badges')
+                    .select('badge_id, kind, auto_earned, manual_granted, awarded_at, awarded_by, reason')
+                    .eq('student_id', founder.id).order('awarded_at', { ascending: false });
+                return json({ ok: true, studentId: founder.id, count: rows.length, badges: badges ?? [] });
             }
 
             /* --------------------------- Toàn vẹn dữ liệu -------------------------- */

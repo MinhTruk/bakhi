@@ -590,20 +590,27 @@
         categoryMeta: categoryMeta
     };
 
-    /* Đổi học sinh: vẽ lại hồ sơ và bảng thành tích ngay, không cần F5. */
+    function repaintProfile() {
+        try {
+            var hero = D.getElementById('bkProfileHero');
+            if (hero) renderHero(hero);
+            var board = D.getElementById('bkBadges');
+            if (board) renderBadgeBoard(board);
+            var frames = D.getElementById('bkProfileFrames');
+            if (frames) {
+                frames.textContent = '';
+                frames.appendChild(renderFrames());
+            }
+        } catch (e) { }
+    }
+
+    /* Đổi học sinh hoặc badge thay đổi ở tab/máy khác: vẽ lại ngay, không F5. */
     if (global.addEventListener) {
-        global.addEventListener('bk:identity', function () {
-            try {
-                var hero = D.getElementById('bkProfileHero');
-                if (hero) renderHero(hero);
-                var board = D.getElementById('bkBadges');
-                if (board) renderBadgeBoard(board);
-                var frames = D.getElementById('bkProfileFrames');
-                if (frames) {
-                    frames.textContent = '';
-                    frames.appendChild(renderFrames());
-                }
-            } catch (e) { }
+        global.addEventListener('bk:identity', repaintProfile);
+        var badgeRepaint = null;
+        D.addEventListener('bkbadges', function () {
+            clearTimeout(badgeRepaint);
+            badgeRepaint = setTimeout(repaintProfile, 120);
         });
     }
 })(typeof window !== 'undefined' ? window : this);

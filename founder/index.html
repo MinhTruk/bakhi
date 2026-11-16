@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Founder Dashboard — Bá Khí</title>
+    <script src="../assets/bakhi/bk-admin-theme.js?v=6.0.0"></script>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://wzvslyabhizsiggurwdq.supabase.co" crossorigin>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/bakhi/bk-core.css?v=6.0.0">
+    <link rel="stylesheet" href="../assets/bakhi/bk-cloud.css?v=6.0.0" data-bk-cloud="1">
+    <link rel="stylesheet" href="../assets/bakhi/bk-admin-dashboard.css?v=6.0.0" data-bk-admin-dash="1">
+    <link rel="stylesheet" href="../assets/bakhi/bk-admin.css?v=6.0.0">
+    <script>window.BK_ADMIN_ONLY = true; window.BK_DASH_SCOPE = "founder";</script>
+<!-- Bá Khí static favicon — assets/bakhi/favicon.svg -->
+<link rel="icon" type="image/svg+xml" href="../assets/bakhi/favicon.svg" sizes="any" data-bk-favicon="1">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/bakhi/favicon-32x32.png" data-bk-favicon="1">
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/bakhi/favicon-192x192.png" data-bk-favicon="1">
+<link rel="icon" href="../assets/bakhi/favicon.ico" sizes="16x16 32x32 48x48" data-bk-favicon="1">
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/bakhi/apple-touch-icon.png" data-bk-favicon="1">
+</head>
+<body class="bkadm">
+    <main class="bkadm-card" id="bkAdmCard">
+        <div class="bkadm-topbar">
+            <div class="bkadm-brandrow">
+                <span class="bkadm-logo" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
+                <div>
+                    <span class="bkadm-brand">Bá Khí</span>
+                    <span class="bkadm-brand-name">Founder Console</span>
+                </div>
+            </div>
+            <button class="bkadm-theme-btn" type="button" data-bk-theme-toggle
+                    aria-label="Đổi giao diện sáng/tối" title="Đổi giao diện sáng/tối">
+                <i class="fa-solid fa-sun" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <span class="bkadm-eyebrow"><span class="dot" aria-hidden="true"></span>Khu vực Người sáng lập</span>
+        <h1 class="bkadm-title">Đăng nhập Founder</h1>
+        <p class="bkadm-sub">
+            Nhập <strong>Founder Code</strong> để mở Founder Dashboard với toàn quyền.
+            Mã được xác thực trên máy chủ và chỉ lưu dạng băm trong Supabase.
+        </p>
+
+        <form id="bkAdmForm" autocomplete="off" novalidate>
+            <div class="bkadm-field">
+                <label class="bkadm-label" for="bkAdmCode">
+                    <span>Founder Code</span>
+                    <span class="opt">bắt buộc</span>
+                </label>
+                <div class="bkadm-inputwrap">
+                    <i class="fa-solid fa-key" aria-hidden="true"></i>
+                    <input class="bkadm-input" id="bkAdmCode" type="password" inputmode="text"
+                           autocomplete="off" spellcheck="false" placeholder="Nhập Founder Code…"
+                           aria-describedby="bkAdmMsg">
+                    <button class="bkadm-reveal" id="bkAdmReveal" type="button"
+                            aria-label="Hiện Founder Code" title="Hiện / ẩn mã">
+                        <i class="fa-regular fa-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="bkadm-caps" id="bkAdmCaps">
+                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                <span>Caps Lock đang bật</span>
+            </div>
+            <button class="bkadm-btn" id="bkAdmSubmit" type="submit">
+                <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
+                <span>Mở Founder Dashboard</span>
+            </button>
+            <p class="bkadm-msg" id="bkAdmMsg" role="status" aria-live="polite"></p>
+        </form>
+
+        <button class="bkadm-btn" id="bkAdmReopen" type="button" hidden>
+            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+            <span>Mở lại Founder Dashboard</span>
+        </button>
+        <button class="bkadm-btn bkadm-btn-danger" id="bkAdmLogout" type="button" hidden>
+            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+            <span>Đăng xuất Founder</span>
+        </button>
+
+        <div class="bkadm-note">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            <span>Phiên Founder chỉ tồn tại trong tab này và tự hết hạn theo máy chủ. Không có mã nào được ghi vào localStorage.</span>
+        </div>
+
+        <p class="bkadm-foot">
+            <span class="bkadm-statusline" id="bkAdmConn"><span class="dot" aria-hidden="true"></span><span>Đang kiểm tra kết nối…</span></span>
+            <a href="../index.html"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Về trang chủ Bá Khí</a>
+        </p>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+    <script src="../assets/bakhi/bk-supabase.config.js?v=6.0.0" defer></script>
+    <script src="../assets/bakhi/bk-core.js?v=6.0.0" defer></script>
+    <script src="../assets/bakhi/bk-badges.js?v=6.0.0" defer></script>
+    <script src="../assets/bakhi/bk-cloud.js?v=6.0.0" defer></script>
+    <script src="../assets/bakhi/bk-devboard.js?v=6.0.0" defer></script>
+    <script>
+        (function () {
+            'use strict';
+            var D = document;
+            var form = D.getElementById('bkAdmForm');
+            var input = D.getElementById('bkAdmCode');
+            var submit = D.getElementById('bkAdmSubmit');
+            var msg = D.getElementById('bkAdmMsg');
+            var logout = D.getElementById('bkAdmLogout');
+            var reopen = D.getElementById('bkAdmReopen');
+            var card = D.getElementById('bkAdmCard');
+            var reveal = D.getElementById('bkAdmReveal');
+            var caps = D.getElementById('bkAdmCaps');
+            var conn = D.getElementById('bkAdmConn');
+            var busy = false;
+
+            function say(text, kind) {
+                msg.textContent = text || '';
+                msg.className = 'bkadm-msg' + (kind ? ' is-' + kind : '');
+            }
+            function shake() {
+                card.classList.remove('is-shake');
+                void card.offsetWidth;
+                card.classList.add('is-shake');
+                setTimeout(function () { card.classList.remove('is-shake'); }, 520);
+            }
+            function setConn(kind, text) {
+                conn.className = 'bkadm-statusline' + (kind ? ' is-' + kind : '');
+                var label = conn.querySelector('span:last-child');
+                if (label) label.textContent = text;
+            }
+            function setBusy(state) {
+                busy = state;
+                submit.disabled = state;
+                var label = submit.querySelector('span');
+                if (label) label.textContent = state ? 'Đang xác thực…' : 'Mở Founder Dashboard';
+                var ic = submit.querySelector('i');
+                if (ic) ic.className = state ? 'fa-solid fa-circle-notch fa-spin' : 'fa-solid fa-arrow-right-to-bracket';
+            }
+
+            function dashboardReady() {
+                var root = D.getElementById('bkDevDashboard');
+                return !!root && root.hidden === false;
+            }
+
+            function openDashboard() {
+                if (typeof window.openDevDashboard !== 'function') {
+                    say('Bảng quản trị chưa tải xong. Hãy tải lại trang.', 'error');
+                    return false;
+                }
+                if (!window.BKCloud || !window.BKCloud.founderToken()) {
+                    say('Phiên quản trị không còn hiệu lực. Hãy đăng nhập lại.', 'warn');
+                    return false;
+                }
+                card.hidden = true;
+                form.hidden = true;
+                logout.hidden = false;
+                reopen.hidden = true;
+                try { window.openDevDashboard(); } catch (e) { }
+                if (!dashboardReady()) {
+                    card.hidden = false;
+                    form.hidden = true;
+                    logout.hidden = false;
+                    reopen.hidden = false;
+                    say('Không mở được bảng quản trị. Hãy thử lại.', 'error');
+                    return false;
+                }
+                return true;
+            }
+
+            window.BK_ON_DASH_CLOSE = function () {
+                card.hidden = false;
+                form.hidden = true;
+                logout.hidden = false;
+                reopen.hidden = false;
+                say('Bảng quản trị đã đóng. Phiên đăng nhập vẫn còn trong tab này.', '');
+            };
+
+            function authenticate(e) {
+                if (e) e.preventDefault();
+                if (busy) return;
+                var code = (input.value || '').trim();
+                if (!code) {
+                    say('Hãy nhập Founder Code.', 'warn');
+                    shake();
+                    input.focus();
+                    return;
+                }
+                if (!window.BKCloud || !window.BKCloud.configured()) {
+                    say('Chưa cấu hình Supabase cho trang này.', 'error');
+                    setConn('error', 'Chưa cấu hình Supabase');
+                    shake();
+                    return;
+                }
+                setBusy(true);
+                say('Đang xác thực Founder ở máy chủ…', '');
+                window.BKCloud.founderLogin(code).then(function () {
+                    input.value = '';
+                    setBusy(false);
+                    setConn('ok', 'Supabase đã kết nối');
+                    say('Đã xác thực. Đang mở bảng quản trị…', 'ok');
+                    openDashboard();
+                }).catch(function (err) {
+                    setBusy(false);
+                    say((err && err.message) || 'Founder Code không đúng.', 'error');
+                    shake();
+                    input.focus();
+                    input.select();
+                });
+            }
+
+            form.addEventListener('submit', authenticate);
+
+            reveal.addEventListener('click', function () {
+                var show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                reveal.setAttribute('aria-label', show ? 'Ẩn Founder Code' : 'Hiện Founder Code');
+                var ic = reveal.querySelector('i');
+                if (ic) ic.className = show ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+                input.focus();
+            });
+
+            input.addEventListener('keyup', function (e) {
+                if (typeof e.getModifierState !== 'function') return;
+                caps.classList.toggle('is-on', e.getModifierState('CapsLock'));
+            });
+            input.addEventListener('blur', function () { caps.classList.remove('is-on'); });
+
+            reopen.addEventListener('click', function () {
+                if (!openDashboard()) {
+                    card.hidden = false;
+                    form.hidden = true;
+                    reopen.hidden = false;
+                }
+            });
+
+            logout.addEventListener('click', function () {
+                if (window.BKCloud) window.BKCloud.founderLogout();
+                window.location.reload();
+            });
+
+            window.addEventListener('load', function () {
+                if (window.BKCloud && window.BKCloud.configured()) {
+                    setConn('ok', 'Supabase đã kết nối');
+                } else {
+                    setConn('error', 'Chưa cấu hình Supabase');
+                }
+                var hasSession = !!(window.BKCloud && window.BKCloud.founderToken && window.BKCloud.founderToken());
+                if (hasSession) {
+                    setTimeout(function () {
+                        if (!openDashboard()) {
+                            form.hidden = false;
+                            setTimeout(function () { try { input.focus(); } catch (err) { } }, 40);
+                        }
+                    }, 30);
+                } else {
+                    setTimeout(function () { try { input.focus(); } catch (err) { } }, 60);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
