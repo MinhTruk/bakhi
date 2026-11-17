@@ -67,65 +67,148 @@
 .bk-avatar-frame-svg .bk-frame-orbit {
     transform-box: view-box;
     transform-origin: 50px 50px;
-    animation: bk-frame-spin 22s linear infinite;
+    animation: bk-frame-spin 20s linear infinite;
 }
 .bk-avatar-frame-svg .bk-frame-spark {
     transform-box: view-box;
     transform-origin: 50px 50px;
-    animation: bk-frame-twinkle 3.8s ease-in-out infinite;
+    animation: bk-frame-twinkle 3.5s ease-in-out infinite;
 }
 .bk-avatar-frame-svg .bk-frame-aura {
     transform-box: view-box;
     transform-origin: 50px 50px;
-    animation: bk-frame-spin 14s linear infinite reverse;
+    animation: bk-frame-spin 12s linear infinite reverse;
 }
 .bk-avatar-frame-svg .bk-frame-crown {
     transform-box: view-box;
     transform-origin: 50px 50px;
-    animation: bk-frame-hover 4.2s ease-in-out infinite;
+    animation: bk-frame-hover 4s ease-in-out infinite;
 }
-.bk-avatar-frame-svg.is-animated { animation: bk-frame-breathe 5s ease-in-out infinite; }
+.bk-avatar-frame-svg.is-animated {
+    animation: bk-frame-breathe 4.5s ease-in-out infinite;
+}
+
+/* Per-animStyle animations on the SVG root. */
+.bk-anim-float { animation: bk-frame-float 5s ease-in-out infinite; }
+.bk-anim-pulse { animation: bk-frame-pulse 3s ease-in-out infinite; }
+.bk-anim-bounce { animation: bk-frame-bounce 2.5s ease-in-out infinite; }
+.bk-anim-shimmer { animation: bk-frame-shimmer 4s ease-in-out infinite; }
+.bk-anim-orbit { animation: bk-frame-orbit-slow 16s linear infinite; }
+.bk-anim-spin { animation: bk-frame-spin 14s linear infinite; }
+.bk-anim-none { animation: none; }
+
+/* Glow & depth for framed avatars. */
+.bk-avatar-framed {
+    position: relative;
+}
+.bk-avatar-framed::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 150%;
+    height: 150%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--bk-frame-glow, #fbbf24) 35%, transparent) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity .35s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+.bk-avatar-framed:hover::before,
+.bk-avatar-framed[data-anim="pulse"]::before,
+.bk-avatar-framed[data-anim="shimmer"]::before,
+.bk-avatar-framed[data-anim="orbit"]::before {
+    opacity: .55;
+}
+.bk-avatar-framed[data-tier="dev"] .bk-avatar-frame-svg {
+    filter: drop-shadow(0 0 5px var(--bk-frame-glow, #5eead4)) drop-shadow(0 0 12px var(--bk-frame-glow, #5eead4));
+}
+.bk-avatar-framed[data-tier="founder"] .bk-avatar-frame-svg {
+    filter: drop-shadow(0 0 7px #fbbf24) drop-shadow(0 0 16px rgba(251, 191, 36, .85));
+}
+
 .bk-frame-static .bk-avatar-frame-svg,
 .bk-frame-static .bk-avatar-frame-svg.is-animated,
 .bk-frame-static .bk-avatar-frame-svg .bk-frame-orbit,
 .bk-frame-static .bk-avatar-frame-svg .bk-frame-spark,
 .bk-frame-static .bk-avatar-frame-svg .bk-frame-aura,
-.bk-frame-static .bk-avatar-frame-svg .bk-frame-crown { animation: none !important; }
+.bk-frame-static .bk-avatar-frame-svg .bk-frame-crown,
+.bk-frame-static .bk-anim-float,
+.bk-frame-static .bk-anim-pulse,
+.bk-frame-static .bk-anim-bounce,
+.bk-frame-static .bk-anim-shimmer,
+.bk-frame-static .bk-anim-orbit,
+.bk-frame-static .bk-anim-spin { animation: none !important; }
+
 @keyframes bk-frame-spin { to { transform: rotate(360deg); } }
 @keyframes bk-frame-twinkle {
     0%, 100% { opacity: .55; transform: rotate(0deg) scale(.985); }
-    50% { opacity: 1; transform: rotate(11deg) scale(1.03); }
+    50% { opacity: 1; transform: rotate(12deg) scale(1.04); }
 }
 @keyframes bk-frame-hover {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-1.2px); }
+    50% { transform: translateY(-1.5px); }
 }
 @keyframes bk-frame-breathe {
     0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: .96; }
-    50% { transform: translate(-50%, -50%) scale(1.035); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.04); opacity: 1; }
+}
+@keyframes bk-frame-float {
+    0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+    50% { transform: translate(-50%, -50%) translateY(-6px); }
+}
+@keyframes bk-frame-pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: .95; }
+    50% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+}
+@keyframes bk-frame-bounce {
+    0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+    50% { transform: translate(-50%, -50%) translateY(-8px); }
+}
+@keyframes bk-frame-shimmer {
+    0%, 100% { opacity: .85; filter: brightness(1); }
+    50% { opacity: 1; filter: brightness(1.3); }
+}
+@keyframes bk-frame-orbit-slow {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 @media (prefers-reduced-motion: reduce) {
     .bk-avatar-frame-svg.is-animated,
     .bk-avatar-frame-svg .bk-frame-orbit,
     .bk-avatar-frame-svg .bk-frame-spark,
     .bk-avatar-frame-svg .bk-frame-aura,
-    .bk-avatar-frame-svg .bk-frame-crown { animation: none; }
+    .bk-avatar-frame-svg .bk-frame-crown,
+    .bk-anim-float,
+    .bk-anim-pulse,
+    .bk-anim-bounce,
+    .bk-anim-shimmer,
+    .bk-anim-orbit,
+    .bk-anim-spin { animation: none !important; }
 }
 
 /* Bộ sưu tập khung: phân nhóm thường / Developer / Founder */
 .bk-frame-tier {
     grid-column: 1 / -1;
-    margin: .35rem 0 -.15rem;
+    margin: .45rem 0 -.2rem;
     font-size: .7rem;
     font-weight: 700;
     letter-spacing: .06em;
     text-transform: uppercase;
     color: var(--bkl-muted, #64748b);
+    display: flex; align-items: center; gap: .5rem;
 }
 .bk-frame-tier:first-child { margin-top: 0; }
-.bk-frame[data-tier="dev"] { border-color: color-mix(in srgb, #22d3ee 55%, var(--bkl-line, #334155)); }
-.bk-frame[data-tier="founder"] { border-color: rgba(251, 191, 36, .65); }
-.bk-frame-label { display: block; font-size: .64rem; line-height: 1.25; text-align: center; overflow-wrap: anywhere; }
+.bk-frame-tier[data-tier="dev"] { color: #22d3ee; }
+.bk-frame-tier[data-tier="founder"] { color: #fbbf24; }
+.bk-frame-tier::before {
+    content: '';
+    width: .55rem; height: .55rem; border-radius: 50%;
+    background: currentColor; opacity: .7;
+}
+.bk-frame-label { display: block; font-size: .66rem; line-height: 1.25; text-align: center; overflow-wrap: anywhere; margin-top: .05rem; }
 
 /* --------------------------- Thẻ hồ sơ / badge -------------------------- */
 .bk-page {
@@ -293,30 +376,52 @@
 /* --------------------------- Khung avatar grid -------------------------- */
 .bk-frame-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-    gap: .6rem;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: .7rem;
 }
 .bk-frame {
-    display: flex; flex-direction: column; align-items: center; gap: .4rem;
-    padding: .6rem .4rem;
+    display: flex; flex-direction: column; align-items: center; gap: .45rem;
+    padding: .7rem .5rem;
     border-radius: var(--bkl-radius-sm);
     border: 1px solid var(--bkl-line);
     background: var(--bkl-surface);
     cursor: pointer;
     font-size: .7rem;
     color: var(--bkl-muted);
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    position: relative;
+    overflow: visible;
 }
-.bk-frame[aria-pressed="true"] { border-color: var(--bkl-primary); box-shadow: 0 0 0 1px var(--bkl-primary) inset; color: var(--bkl-text); }
+.bk-frame:hover {
+    transform: translateY(-2px);
+    border-color: var(--bkl-primary);
+    box-shadow: 0 4px 12px rgba(2, 6, 23, .12);
+}
+.bk-frame[aria-pressed="true"] {
+    border-color: var(--bkl-primary);
+    box-shadow: 0 0 0 2px var(--bkl-primary) inset, 0 4px 12px rgba(2, 6, 23, .15);
+    color: var(--bkl-text);
+    background: color-mix(in srgb, var(--bkl-primary) 8%, var(--bkl-surface));
+}
 .bk-frame[disabled] { opacity: .45; cursor: not-allowed; }
-.bk-frame { position: relative; }
 .bk-frame.is-locked { opacity: .82; }
 .bk-frame.is-locked:hover { opacity: 1; border-color: var(--bkl-primary); }
+
+/* Màu viền theo tier. */
+.bk-frame[data-tier="normal"] { border-color: var(--bkl-line); }
+.bk-frame[data-tier="normal"]:hover { border-color: color-mix(in srgb, var(--bkl-primary) 60%, var(--bkl-line)); }
+.bk-frame[data-tier="dev"] { border-color: color-mix(in srgb, #22d3ee 55%, var(--bkl-line)); }
+.bk-frame[data-tier="dev"]:hover { border-color: #22d3ee; box-shadow: 0 4px 16px color-mix(in srgb, #22d3ee 35%, transparent); }
+.bk-frame[data-tier="founder"] { border-color: rgba(251, 191, 36, .55); }
+.bk-frame[data-tier="founder"]:hover { border-color: #fbbf24; box-shadow: 0 4px 18px color-mix(in srgb, #fbbf24 40%, transparent); }
+
 .bk-frame-lock {
     position: absolute; top: .3rem; right: .3rem;
     display: inline-flex; align-items: center; justify-content: center;
-    width: 1.05rem; height: 1.05rem; border-radius: 50%;
-    background: rgba(15, 23, 42, .72); color: #f8fafc;
-    font-size: .52rem; line-height: 1; z-index: 2;
+    width: 1.1rem; height: 1.1rem; border-radius: 50%;
+    background: rgba(15, 23, 42, .75); color: #f8fafc;
+    font-size: .55rem; line-height: 1; z-index: 3;
+    box-shadow: 0 1px 4px rgba(0,0,0,.3);
 }
 .bk-frame:focus-visible { outline: 2px solid var(--bkl-primary); outline-offset: 2px; }
 
