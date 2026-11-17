@@ -33,8 +33,8 @@ BAKHI hướng đến việc giúp việc ôn tập trở nên:
 - **Một tài khoản, một menu**: avatar ở góc phải header thay cho menu ba gạch và nút README
   riêng. Menu gồm Hồ sơ cá nhân, Giao diện, README.md, Bá Khí Studio và Cài đặt.
 - **Hồ sơ và thành tích**: trang `/profile/` có ảnh đại diện, ảnh bìa, biệt danh, giới thiệu,
-  liên kết, 30 khung avatar (27 thường + 2 Developer + 1 Founder) và 78 thành tích
-  (73 tự động + 2 Administrator + 2 Developer + 1 Founder).
+  liên kết, 46 khung avatar (27 thường + 2 Developer + 17 Founder) và 99 thành tích
+  (74 tự động + 25 trao tay: Administrator, Developer và Founder).
 - **Cài đặt tập trung**: `/settings/` gồm Hồ sơ, toàn bộ tab Trung tâm học tập, Hiển thị &
   Trợ năng, Hình nền và Nhà phát triển.
 - **What's New gọn hơn**: chỉ hiển thị phiên bản mới nhất, tối đa 10 dòng, có
@@ -265,7 +265,7 @@ script và không sửa nội dung gốc.
 - [x] Đồng bộ `CHANGELOG.md` lên Supabase bằng GitHub Actions, chống trùng thông báo
 - [x] Giao diện thông báo tối thống nhất và favicon tĩnh SVG/PNG/ICO toàn site
 - [x] Lớp shell dùng chung: avatar + menu tài khoản thay menu ba gạch, thay nút README riêng
-- [x] Trang Hồ sơ và Cài đặt local-first; 78 thành tích và 30 khung avatar; What's New một phiên bản
+- [x] Trang Hồ sơ và Cài đặt local-first; 99 thành tích và 46 khung avatar; What's New một phiên bản
 
 ### 🔨 Đang phát triển
 

@@ -163,105 +163,951 @@ function cleanDisplayName(input: unknown): string {
 const ANNOUNCEMENT_TYPES = ['general', 'announcement', 'update', 'important', 'maintenance'];
 const PRIORITIES = ['low', 'normal', 'high', 'critical'];
 const CATEGORIES = ['features', 'improvements', 'fixes', 'ui', 'performance', 'security', 'notice', 'other'];
-/* Administrator có thể trao MỌI badge trong danh mục. Hai badge dưới đây có
-   quy tắc riêng và không bao giờ do student-profile tự ghi. */
+/* ---------------------------------------------------------------------------
+   Danh mục badge — SINH TỰ ĐỘNG từ assets/bakhi/bk-badges.js.
+
+   Không sửa tay khối giữa hai mốc generated bên dưới; chạy:
+       node tools/gen-badge-catalog.js
+   để đồng bộ với _shared/badge-catalog.ts. Nhờ vậy máy chủ không còn giữ một
+   danh sách badge thứ hai bị lệch với client (lỗi của 7.4.0).
+   ------------------------------------------------------------------------ */
 const BADGE_ID_RE = /^[a-z0-9][a-z0-9-]{2,63}$/;
 const FOUNDER_BADGE_ID = 'founder';
-const DEV_BADGE_IDS = ['dev-exclusive-aurora', 'dev-exclusive-void'];
-/* 13 badge độc quyền tuyệt đối không được trao tặng hàng loạt (bulk gift).
-   Gồm: founder (1) + founder-* (10) + dev-exclusive-* (2). admin-chosen và
-   admin-legend KHÔNG nằm trong danh sách này (được trao tay Administrator). */
-const EXCLUSIVE_BADGE_IDS = [
-    FOUNDER_BADGE_ID,
-    'founder-yin-yang', 'founder-cyberpunk', 'founder-ancient', 'founder-samurai',
-    'founder-void-emperor', 'founder-celestial-dragon', 'founder-golden-ratio',
-    'founder-ember-core', 'founder-crystal-mind', 'founder-neon-lotus',
-    'dev-exclusive-aurora', 'dev-exclusive-void'
+
+interface BadgeMeta {
+    id: string;
+    name: string;
+    category: string;
+    rarity: string;
+    frame: string | null;
+    admin_only: boolean;
+    exclusive: string | null;
+}
+
+/* <generated:badge-catalog> */
+const BADGE_CATALOG: BadgeMeta[] = [
+    {
+        "id": "learn-first-lesson",
+        "name": "Tri Thức Nhập Môn",
+        "category": "learning",
+        "rarity": "common",
+        "frame": "leaf",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "learn-lessons-5",
+        "name": "Ngũ Đường Khai Giác",
+        "category": "learning",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "learn-lessons-15",
+        "name": "Thập Ngũ Kinh Hành",
+        "category": "learning",
+        "rarity": "uncommon",
+        "frame": "celestial",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "learn-lessons-30",
+        "name": "Tam Thập Thông Tuệ",
+        "category": "learning",
+        "rarity": "rare",
+        "frame": "wreath",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "learn-subjects-3",
+        "name": "Tam Môn Khai Kiến",
+        "category": "learning",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "learn-subjects-5",
+        "name": "Ngũ Môn Tinh Thông",
+        "category": "learning",
+        "rarity": "rare",
+        "frame": "divine",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "learn-first-answer",
+        "name": "Sơ Chung Khải Ngộ",
+        "category": "learning",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "learn-practice-25",
+        "name": "Nhị Thập Ngũ Tâm Ấn",
+        "category": "learning",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "learn-practice-100",
+        "name": "Bách Luyện Thành Tài",
+        "category": "learning",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "learn-practice-500",
+        "name": "Ngũ Bách Tinh Anh",
+        "category": "learning",
+        "rarity": "epic",
+        "frame": "royal",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "learn-correct-15",
+        "name": "Thập Ngũ Chính Niệm",
+        "category": "learning",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "learn-correct-100",
+        "name": "Bách Phát Bách Trúng",
+        "category": "learning",
+        "rarity": "rare",
+        "frame": "infernal",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "learn-review-first",
+        "name": "Hồi Quang Sơ Chiếu",
+        "category": "learning",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "learn-mastered-10",
+        "name": "Thập Câu Nhập Tâm",
+        "category": "learning",
+        "rarity": "rare",
+        "frame": "legendary",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "explore-pages-5",
+        "name": "Sơ Tẩu Trần Gian",
+        "category": "exploration",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "explore-pages-20",
+        "name": "Vạn Dặm Hành Vân",
+        "category": "exploration",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "explore-pages-50",
+        "name": "Bá Khí Thiên Đồ",
+        "category": "exploration",
+        "rarity": "epic",
+        "frame": "sakura",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "explore-studio",
+        "name": "Khai Môn Tạo Giới",
+        "category": "exploration",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "explore-settings",
+        "name": "Tĩnh Thất Kiến Tâm",
+        "category": "exploration",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "explore-profile",
+        "name": "Minh Kính Tự Chiếu",
+        "category": "exploration",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "explore-palette",
+        "name": "Chỉ Quyết Thần Hành",
+        "category": "exploration",
+        "rarity": "uncommon",
+        "frame": "ancient",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "explore-search",
+        "name": "Tầm Bảo Nhất Niệm",
+        "category": "exploration",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "explore-theme",
+        "name": "Âm Dương Chuyển Hóa",
+        "category": "exploration",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "explore-badges",
+        "name": "Khải Huy Hiệu Tàng",
+        "category": "exploration",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "consist-days-2",
+        "name": "Nhị Nhật Bất Thoái",
+        "category": "consistency",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "consist-days-3",
+        "name": "Tam Nhật Trường Cửu",
+        "category": "consistency",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "consist-days-7",
+        "name": "Thất Nhật Vô Han",
+        "category": "consistency",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "consist-days-14",
+        "name": "Thập Tứ Nhật Định Tâm",
+        "category": "consistency",
+        "rarity": "rare",
+        "frame": "eternal",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "consist-days-30",
+        "name": "Tam Thập Nhật Viên Mãn",
+        "category": "consistency",
+        "rarity": "epic",
+        "frame": "sunflower",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "consist-streak-3",
+        "name": "Liên Tam Chi Mạch",
+        "category": "consistency",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "consist-streak-7",
+        "name": "Thất Tinh Liên Châu",
+        "category": "consistency",
+        "rarity": "rare",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "consist-streak-30",
+        "name": "Tam Thập Thiên Cương",
+        "category": "consistency",
+        "rarity": "legendary",
+        "frame": "crown",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "music-first",
+        "name": "Sơ Âm Khai Khiếu",
+        "category": "music",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "music-10",
+        "name": "Đồng Hành Hòa Khúc",
+        "category": "music",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "music-50",
+        "name": "Ngũ Thập Tình Khúc",
+        "category": "music",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "music-200",
+        "name": "Vô Tận Âm Trường",
+        "category": "music",
+        "rarity": "rare",
+        "frame": "ear-cat",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "music-tracks-5",
+        "name": "Ngũ Hành Giai Điệu",
+        "category": "music",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "music-shuffle",
+        "name": "Thiên Cơ Tùy Hứng",
+        "category": "music",
+        "rarity": "uncommon",
+        "frame": "neon",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "music-repeat",
+        "name": "Luân Hồi Tình Khúc",
+        "category": "music",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "music-queue",
+        "name": "Liệt Khúc Đãi Thời",
+        "category": "music",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "music-same-20",
+        "name": "Nhất Khúc Nhị Thập Hồi",
+        "category": "music",
+        "rarity": "legendary",
+        "frame": "ear-fox",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "inter-first-effect",
+        "name": "Sơ Tinh Điểm Nhất",
+        "category": "interaction",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "inter-meteor-10",
+        "name": "Thập Tinh Liên Châu",
+        "category": "interaction",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "inter-meteor-100",
+        "name": "Bách Tinh Huyền Vũ",
+        "category": "interaction",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "inter-meteor-1000",
+        "name": "Lưu Tinh Kiếm Vũ",
+        "category": "interaction",
+        "rarity": "epic",
+        "frame": "star",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "inter-meteor-10000",
+        "name": "Thiên Thạch Loạn Vũ",
+        "category": "interaction",
+        "rarity": "legendary",
+        "frame": "horn-dragon",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "inter-music-fab",
+        "name": "Chạm Khúc Thông Linh",
+        "category": "interaction",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "inter-focus",
+        "name": "Định Cảnh Thiền Tâm",
+        "category": "interaction",
+        "rarity": "uncommon",
+        "frame": "cyber",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "inter-dark-mode",
+        "name": "Dạ Hành Tri Kỷ",
+        "category": "interaction",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "social-nickname",
+        "name": "Danh Tính Độc Tôn",
+        "category": "social",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "social-avatar",
+        "name": "Chân Dung Tự Tại",
+        "category": "social",
+        "rarity": "common",
+        "frame": "leaf",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "social-banner",
+        "name": "Hậu Cảnh Thiên Thu",
+        "category": "social",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "social-bio",
+        "name": "Tự Ngã Chi Ngôn",
+        "category": "social",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "social-links-2",
+        "name": "Song Liên Tâm Kiều",
+        "category": "social",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "social-frame",
+        "name": "Tiểu Quán Miện",
+        "category": "social",
+        "rarity": "rare",
+        "frame": "ear-bunny",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "studio-doc",
+        "name": "Bạch Chỉ Khai Thiên",
+        "category": "studio",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "studio-drawing",
+        "name": "Sơ Bút Khai Linh",
+        "category": "studio",
+        "rarity": "common",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "studio-insert",
+        "name": "Họa Thuyết Nhân Gian",
+        "category": "studio",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "studio-export",
+        "name": "Tác Phẩm Khai Sinh",
+        "category": "studio",
+        "rarity": "common",
+        "frame": "phoenix",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "studio-words-500",
+        "name": "Ngũ Bách Ngôn Phong",
+        "category": "studio",
+        "rarity": "rare",
+        "frame": "crystal",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "studio-docs-5",
+        "name": "Ngũ Quyển Tàng Kinh",
+        "category": "studio",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "studio-drawings-5",
+        "name": "Ngũ Họa Tàng Chân",
+        "category": "studio",
+        "rarity": "uncommon",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "studio-exports-10",
+        "name": "Thập Độ Quang Huy",
+        "category": "studio",
+        "rarity": "rare",
+        "frame": "antler",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "secret-night-owl",
+        "name": "Dạ Ưng Vô Ảnh",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "star",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "secret-early-bird",
+        "name": "Tinh Khôi Thần Điểu",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "frost",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "secret-subjects-all",
+        "name": "Bách Khoa Thông Giám",
+        "category": "secret",
+        "rarity": "legendary",
+        "frame": "sakura",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "secret-notes-100",
+        "name": "Bách Diệp Tâm Kinh",
+        "category": "secret",
+        "rarity": "epic",
+        "frame": "wreath",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "secret-bookmarks-50",
+        "name": "Thư Xã Tàng Ấn",
+        "category": "secret",
+        "rarity": "epic",
+        "frame": "gothic",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "secret-mastered-50",
+        "name": "Ôn Cố Tri Tân",
+        "category": "secret",
+        "rarity": "legendary",
+        "frame": "ear-wolf",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "secret-one-subject-10",
+        "name": "Nhất Môn Cửu Trọng",
+        "category": "secret",
+        "rarity": "rare",
+        "frame": "galactic",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "secret-collector-40",
+        "name": "Tứ Thập Tinh Tập",
+        "category": "secret",
+        "rarity": "legendary",
+        "frame": "sunflower",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "secret-collector-60",
+        "name": "Lục Thập Viên Mãn",
+        "category": "secret",
+        "rarity": "legendary",
+        "frame": "horn-dragon",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "secret-completionist",
+        "name": "Thất Thập Tam Quy Tông",
+        "category": "secret",
+        "rarity": "legendary",
+        "frame": "crown",
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "ke-suu-tam",
+        "name": "Kẻ sưu tầm",
+        "category": "secret",
+        "rarity": "legendary",
+        "frame": null,
+        "admin_only": false,
+        "exclusive": null
+    },
+    {
+        "id": "admin-chosen",
+        "name": "Thiên Tuyển Chi Ấn",
+        "category": "secret",
+        "rarity": "legendary",
+        "frame": "star",
+        "admin_only": true,
+        "exclusive": null
+    },
+    {
+        "id": "admin-legend",
+        "name": "Bá Khí Chí Tôn",
+        "category": "secret",
+        "rarity": "legendary",
+        "frame": "crown",
+        "admin_only": true,
+        "exclusive": null
+    },
+    {
+        "id": "dev-exclusive-aurora",
+        "name": "Dao Quang Tuyệt Ảnh",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "dev-aurora",
+        "admin_only": true,
+        "exclusive": "dev"
+    },
+    {
+        "id": "dev-exclusive-void",
+        "name": "Vô Cực Hư Không",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "dev-void",
+        "admin_only": true,
+        "exclusive": "dev"
+    },
+    {
+        "id": "founder",
+        "name": "Thiên Khải Sáng Thế",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-yin-yang",
+        "name": "Âm Dương Thái Cực",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-yin-yang",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-cyberpunk",
+        "name": "Sát Thủ Tương Lai",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-cyberpunk",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-ancient",
+        "name": "Cổ Khí Thần Ấn",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-ancient",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-samurai",
+        "name": "Bushido",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-samurai",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-void-emperor",
+        "name": "Vô Cực Hoàng Đế",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-void-emperor",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-celestial-dragon",
+        "name": "Thiên Long",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-celestial-dragon",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-golden-ratio",
+        "name": "Vàng Nguyên Tắc",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-golden-ratio",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-ember-core",
+        "name": "Lòng Nôc",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-ember-core",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-crystal-mind",
+        "name": "Tinh Thần Tinh Thạch",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-crystal-mind",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-neon-lotus",
+        "name": "Sen Neon",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-neon-lotus",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-genesis",
+        "name": "Genesis",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": null,
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-architect",
+        "name": "Architect",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-frost-emperor",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-eternal-flame",
+        "name": "Eternal Flame",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-phoenix-rebirth",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-nexus",
+        "name": "Nexus",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": null,
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-celestial",
+        "name": "Celestial",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-astral-observatory",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-chronos",
+        "name": "Chronos",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-chrono-mechanical",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-void-sentinel",
+        "name": "Void Sentinel",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-abyssal",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-prime-code",
+        "name": "Prime Code",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": null,
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-legacy",
+        "name": "Legacy",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": null,
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-ascendant",
+        "name": "Ascendant",
+        "category": "secret",
+        "rarity": "secret",
+        "frame": "founder-crystal-sovereign",
+        "admin_only": true,
+        "exclusive": "founder"
+    }
 ];
-const ALL_BADGE_IDS = [
-    "learn-first-lesson",
-    "learn-lessons-5",
-    "learn-lessons-15",
-    "learn-lessons-30",
-    "learn-subjects-3",
-    "learn-subjects-5",
-    "learn-first-answer",
-    "learn-practice-25",
-    "learn-practice-100",
-    "learn-practice-500",
-    "learn-correct-15",
-    "learn-correct-100",
-    "learn-review-first",
-    "learn-mastered-10",
-    "explore-pages-5",
-    "explore-pages-20",
-    "explore-pages-50",
-    "explore-studio",
-    "explore-settings",
-    "explore-profile",
-    "explore-palette",
-    "explore-search",
-    "explore-theme",
-    "explore-badges",
-    "consist-days-2",
-    "consist-days-3",
-    "consist-days-7",
-    "consist-days-14",
-    "consist-days-30",
-    "consist-streak-3",
-    "consist-streak-7",
-    "consist-streak-30",
-    "music-first",
-    "music-10",
-    "music-50",
-    "music-200",
-    "music-tracks-5",
-    "music-shuffle",
-    "music-repeat",
-    "music-queue",
-    "music-same-20",
-    "inter-first-effect",
-    "inter-meteor-10",
-    "inter-meteor-100",
-    "inter-meteor-1000",
-    "inter-meteor-10000",
-    "inter-music-fab",
-    "inter-focus",
-    "inter-dark-mode",
-    "social-nickname",
-    "social-avatar",
-    "social-banner",
-    "social-bio",
-    "social-links-2",
-    "social-frame",
-    "studio-doc",
-    "studio-drawing",
-    "studio-insert",
-    "studio-export",
-    "studio-words-500",
-    "studio-docs-5",
-    "studio-drawings-5",
-    "studio-exports-10",
-    "secret-night-owl",
-    "secret-early-bird",
-    "secret-subjects-all",
-    "secret-notes-100",
-    "secret-bookmarks-50",
-    "secret-mastered-50",
-    "secret-one-subject-10",
-    "secret-collector-40",
-    "secret-collector-60",
-    "secret-completionist",
-    "ke-suu-tam",
-    "founder-yin-yang", "founder-cyberpunk", "founder-ancient", "founder-samurai",
-    "founder-void-emperor", "founder-celestial-dragon", "founder-golden-ratio",
-    "founder-ember-core", "founder-crystal-mind", "founder-neon-lotus",
-    "admin-chosen",
-    "admin-legend",
-    "dev-exclusive-aurora",
-    "dev-exclusive-void",
-    "founder"
-];
+/* </generated:badge-catalog> */
+
+const BADGE_BY_ID = new Map<string, BadgeMeta>(BADGE_CATALOG.map((b) => [b.id, b]));
+const ALL_BADGE_IDS: string[] = BADGE_CATALOG.map((b) => b.id);
+
+/* Badge độc quyền = chỉ trao tay, không bao giờ tự động và không nằm trong
+   "trao toàn bộ badge". Suy ra từ cờ `exclusive` của danh mục thay vì viết
+   cứng 13 mã như 7.4.0 (danh mục đã tăng lên 23 mã ở 7.5.0). */
+const EXCLUSIVE_BADGE_IDS: string[] = BADGE_CATALOG
+    .filter((b) => !!b.exclusive).map((b) => b.id);
+const DEV_BADGE_IDS: string[] = BADGE_CATALOG
+    .filter((b) => b.exclusive === 'dev').map((b) => b.id);
+
+/* Khung avatar -> badge sở hữu khung. Một khung chỉ được mở bằng đúng một
+   badge; trao khung = trao badge đó, nên không cần bảng sở hữu khung riêng và
+   không bao giờ ghi đè khung đang trang bị. */
+const FRAME_OWNER_BADGE = new Map<string, string>();
+for (const badge of BADGE_CATALOG) {
+    if (badge.frame && !FRAME_OWNER_BADGE.has(badge.frame)) {
+        FRAME_OWNER_BADGE.set(badge.frame, badge.id);
+    }
+}
+
+function isFounderExclusive(badgeId: string): boolean {
+    const def = BADGE_BY_ID.get(badgeId);
+    return !!def && def.exclusive === 'founder';
+}
+function isFounderBadge(badgeId: string): boolean {
+    return badgeId === FOUNDER_BADGE_ID || isFounderExclusive(badgeId);
+}
 
 function str(v: unknown, max: number): string {
     return String(v ?? '').trim().slice(0, max);
@@ -298,6 +1144,229 @@ function validIsoDate(value: unknown): string | null {
     return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null;
 }
 
+
+/* ---------------------------------------------------------------------------
+   Trao vật phẩm (badge / khung avatar) — dùng chung cho mọi đường ghi.
+
+   Nguyên tắc:
+   * Mọi badge phải có trong danh mục; không nhận id lạ từ client.
+   * Trao khung = trao badge sở hữu khung (FRAME_OWNER_BADGE). Không ghi vào
+     student_profiles.frame, nên không bao giờ đổi khung đang trang bị.
+   * Ghi qua RPC bakhi_grant_badges: một câu lệnh insert ... on conflict do
+     nothing, nguyên tử theo lô và không ghi đè quyền sở hữu cũ.
+   * Mỗi yêu cầu có request_id để chạy lại an toàn và chống gửi trùng.
+   ------------------------------------------------------------------------ */
+
+function newRequestId(): string {
+    try {
+        return crypto.randomUUID();
+    } catch {
+        return 'req-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    }
+}
+
+function requestIdOf(value: unknown): string {
+    const s = String(value ?? '').trim();
+    if (/^[A-Za-z0-9_-]{8,64}$/.test(s)) return s;
+    return newRequestId();
+}
+
+/** Badge mở khoá một khung; rỗng nếu khung không tồn tại hoặc không trao được. */
+function badgeForFrame(frameId: string): string {
+    if (!frameId || frameId === 'none') return '';
+    return FRAME_OWNER_BADGE.get(frameId) || '';
+}
+
+interface GrantResult {
+    added: string[];
+    alreadyOwned: string[];
+}
+
+class GrantError extends Error {
+    status: number;
+    code: string;
+    constructor(status: number, code: string, message: string) {
+        super(message);
+        this.status = status;
+        this.code = code;
+    }
+}
+
+async function grantBadgeIds(
+    client: SupabaseClient,
+    studentId: string,
+    badgeIds: string[],
+    reason: string,
+    actor: string
+): Promise<GrantResult> {
+    const unique = Array.from(new Set(badgeIds.filter((b) => !!BADGE_BY_ID.get(b))));
+    const added: string[] = [];
+    if (!unique.length) return { added, alreadyOwned: [] };
+
+    for (let i = 0; i < unique.length; i += 100) {
+        const chunk = unique.slice(i, i + 100);
+        const { data, error } = await client.rpc('bakhi_grant_badges', {
+            p_student: studentId,
+            p_badges: chunk,
+            p_reason: reason.slice(0, 200),
+            p_actor: actor
+        });
+        if (error) {
+            const code = String((error as { code?: string }).code || '');
+            const message = String(error.message || '');
+            if (code === '42883' || /does not exist|not find the function/i.test(message)) {
+                throw new GrantError(500, 'MIGRATION_REQUIRED',
+                    'Chưa áp dụng migration 7.5.0 (hàm bakhi_grant_badges). Hãy chạy migration trước khi trao vật phẩm.');
+            }
+            if (/STUDENT_INACTIVE/.test(message)) {
+                throw new GrantError(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
+            }
+            if (/STUDENT_NOT_FOUND/.test(message)) {
+                throw new GrantError(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+            }
+            throw error;
+        }
+        for (const row of (data ?? []) as Array<{ badge_id: string; inserted: boolean }>) {
+            if (row && row.inserted) added.push(String(row.badge_id));
+        }
+    }
+    const addedSet = new Set(added);
+    return { added, alreadyOwned: unique.filter((b) => !addedSet.has(b)) };
+}
+
+async function writeGrantHistory(
+    client: SupabaseClient,
+    requestId: string,
+    actorScope: string,
+    actorId: string,
+    studentId: string,
+    itemType: 'badge' | 'frame',
+    badgeIds: string[],
+    reason: string
+): Promise<void> {
+    if (!badgeIds.length) return;
+    const rows = badgeIds.map((badgeId) => {
+        const def = BADGE_BY_ID.get(badgeId);
+        const frame = def && def.frame ? def.frame : null;
+        return {
+            request_id: requestId,
+            actor_id: actorId,
+            actor_scope: actorScope,
+            target_student: studentId,
+            item_type: itemType,
+            item_id: itemType === 'frame' && frame ? frame : badgeId,
+            badge_id: badgeId,
+            item_name: def ? def.name : badgeId,
+            reason
+        };
+    });
+    await client.from('admin_grant_history')
+        .upsert(rows, { onConflict: 'request_id,target_student,item_id', ignoreDuplicates: true });
+}
+
+async function writeGrantBatch(
+    client: SupabaseClient,
+    row: Record<string, unknown>
+): Promise<void> {
+    await client.from('admin_grant_batches')
+        .upsert(row, { onConflict: 'request_id', ignoreDuplicates: true });
+}
+
+/** Trao một vật phẩm cho một học sinh; trả về Response cho switch case. */
+async function grantSingleItem(
+    client: SupabaseClient,
+    params: {
+        sessionId: string;
+        scope: string;
+        studentId: string;
+        itemType: 'badge' | 'frame';
+        itemId: string;
+        reason: string;
+        requestId: string;
+    }
+): Promise<Response> {
+    if (!params.studentId) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+    if (!params.itemId) return fail(400, 'MISSING_ITEM', 'Thiếu mã vật phẩm.');
+    if (!BADGE_ID_RE.test(params.itemId)) {
+        return fail(400, 'BAD_ITEM_ID', 'Mã vật phẩm không hợp lệ.');
+    }
+
+    const badgeId = params.itemType === 'frame'
+        ? badgeForFrame(params.itemId)
+        : params.itemId;
+    if (!badgeId) {
+        return fail(400, 'ITEM_NOT_GRANTABLE',
+            'Khung này không gắn với badge nào nên không thể trao riêng.');
+    }
+    const def = BADGE_BY_ID.get(badgeId);
+    if (!def) {
+        return fail(400, 'UNKNOWN_ITEM', 'Vật phẩm không có trong danh mục chính thức.');
+    }
+
+    const { data: target } = await client
+        .from('students')
+        .select('id, display_name, is_active, is_founder')
+        .eq('id', params.studentId)
+        .maybeSingle();
+    if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+    if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
+
+    if (def.exclusive === 'founder' && target.is_founder !== true) {
+        return fail(403, 'FOUNDER_PROFILE_REQUIRED',
+            'Badge và khung Founder chỉ cấp cho hồ sơ Người sáng lập (is_founder = true).');
+    }
+    if (def.exclusive === 'dev' && params.scope !== 'founder') {
+        return fail(403, 'FOUNDER_ONLY', 'Badge Developer chỉ Founder mới được trao.');
+    }
+
+    let result: GrantResult;
+    try {
+        result = await grantBadgeIds(client, params.studentId, [badgeId],
+            params.reason || 'Founder trao tặng', params.sessionId);
+    } catch (err) {
+        if (err instanceof GrantError) return fail(err.status, err.code, err.message);
+        throw err;
+    }
+
+    const status = result.added.length ? 'granted' : 'already_owned';
+    if (result.added.length) {
+        await writeGrantHistory(client, params.requestId, params.scope, params.sessionId,
+            params.studentId, params.itemType, [badgeId], params.reason);
+    }
+    await writeGrantBatch(client, {
+        request_id: params.requestId,
+        actor_scope: params.scope,
+        actor_id: params.sessionId,
+        target_student: params.studentId,
+        item_type: params.itemType,
+        requested: 1,
+        added: result.added.length,
+        already_owned: result.alreadyOwned.length,
+        failed: 0
+    });
+    await logAction(client, 'founder.grantItem', 'student', params.studentId, {
+        request_id: params.requestId,
+        item_type: params.itemType,
+        item_id: params.itemId,
+        badge_id: badgeId,
+        status
+    });
+
+    return json({
+        ok: true,
+        status,
+        requestId: params.requestId,
+        studentId: params.studentId,
+        studentName: target.display_name,
+        item_type: params.itemType,
+        item_id: params.itemId,
+        badge_id: badgeId,
+        item_name: def.name,
+        added: result.added,
+        alreadyOwned: result.alreadyOwned
+    });
+}
+
 Deno.serve(async (req) => {
     const pre = preflight(req);
     if (pre) return pre;
@@ -315,8 +1384,8 @@ Deno.serve(async (req) => {
        ngay ở máy chủ, không phụ thuộc giao diện. */
     const founderOnly = new Set([
         'roles.set', 'founder.grantAll', 'founder.grantItem', 'avatar.grant',
-        'students.export', 'logs.export', 'data.integrity', 'maintenance.history',
-        'admin.grantHistory'
+        'students.inventory', 'admin.items.list', 'students.export', 'logs.export',
+        'data.integrity', 'maintenance.history', 'admin.grantHistory'
     ]);
     if (founderOnly.has(action) && scope !== 'founder') {
         return fail(403, 'FOUNDER_ONLY', 'Chức năng này chỉ dành cho Founder Dashboard.');
@@ -408,25 +1477,77 @@ Deno.serve(async (req) => {
 
             /* Tìm học sinh nhẹ cho Founder chọn người nhận (gợi ý autocomplete). */
             case 'students.search': {
-                const q = normalizeName(str(body.q, 80));
+                /* Tìm theo tên đã chuẩn hoá (bỏ dấu, chữ thường) hoặc tên hiển thị.
+                   Chỉ học sinh đang hoạt động, tối đa 20 dòng, không trả dữ liệu
+                   nhạy cảm và không bao giờ tải cả bảng về trình duyệt. */
+                const raw = str(body.q, 80);
+                const q = normalizeName(raw)
+                    .replace(/[^a-z0-9 ]/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
                 const limit = Math.min(20, Math.max(1, Number(body.limit) || 8));
                 let query = client.from('students')
-                    .select('id, display_name, disambiguator, student_code, avatar_url, is_active')
-                    .order('display_name', { ascending: true })
+                    .select('id, display_name, disambiguator, student_code, avatar_url, is_active, is_founder')
+                    .eq('is_active', true)
+                    .order('normalized_name', { ascending: true })
                     .limit(limit);
-                if (q) query = query.ilike('normalized_name', `%${q}%`);
+                if (q) {
+                    query = query.or('normalized_name.ilike.%' + q + '%,display_name.ilike.%' + q + '%');
+                }
                 const { data, error } = await query;
                 if (error) throw error;
+                const students = (data ?? []).map((s) => ({
+                    id: s.id,
+                    display_name: s.display_name,
+                    disambiguator: s.disambiguator || '',
+                    student_code: s.student_code || '',
+                    avatar_url: s.avatar_url || '',
+                    is_founder: !!s.is_founder
+                }));
+                return json({ ok: true, query: q, count: students.length, students });
+            }
+
+            /* Tồn kho vật phẩm của một học sinh — để dashboard biết món nào đã
+               sở hữu trước khi trao. Chỉ đọc, chỉ Founder. */
+            case 'students.inventory': {
+                if (scope !== 'founder') {
+                    return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder xem được tồn kho vật phẩm.');
+                }
+                const id = str(body.id, 40);
+                if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                const { data: target } = await client
+                    .from('students').select('id, display_name, is_founder, is_active')
+                    .eq('id', id).maybeSingle();
+                if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+
+                const { data: rows, error } = await client
+                    .from('student_badges')
+                    .select('badge_id, kind, auto_earned, manual_granted, awarded_at')
+                    .eq('student_id', id);
+                if (error) throw error;
+                const badges = (rows ?? [])
+                    .filter((r) => !!BADGE_BY_ID.get(String(r.badge_id)))
+                    .map((r) => ({
+                        id: String(r.badge_id),
+                        name: (BADGE_BY_ID.get(String(r.badge_id)) || { name: '' }).name,
+                        source: r.manual_granted ? 'granted' : (r.auto_earned || r.kind === 'auto' ? 'auto' : 'granted'),
+                        awardedAt: r.awarded_at || null
+                    }));
+
+                const { data: frameRows } = await client.rpc('bakhi_owned_frames', { p_student: id });
+                const { data: profile } = await client.from('student_profiles')
+                    .select('frame').eq('student_id', id).maybeSingle();
+
                 return json({
                     ok: true,
-                    students: (data ?? []).map((s) => ({
-                        id: s.id,
-                        display_name: s.display_name,
-                        disambiguator: s.disambiguator || '',
-                        student_code: s.student_code || '',
-                        avatar_url: s.avatar_url || '',
-                        is_active: !!s.is_active
-                    }))
+                    studentId: id,
+                    studentName: target.display_name,
+                    isFounder: !!target.is_founder,
+                    isActive: !!target.is_active,
+                    badges,
+                    frames: Array.isArray(frameRows) ? frameRows : ['none', 'leaf'],
+                    equippedFrame: (profile && profile.frame) || 'none',
+                    catalogTotal: ALL_BADGE_IDS.length
                 });
             }
 
@@ -695,12 +1816,17 @@ Deno.serve(async (req) => {
                 const id = str(body.id, 40);
                 if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
                 const { data: target } = await client
-                    .from('students').select('id, is_active').eq('id', id).maybeSingle();
+                    .from('students').select('id, display_name, is_active').eq('id', id).maybeSingle();
                 if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
                 if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
 
-                /* Dùng lại toàn bộ quy tắc badge của student-profile thay vì
-                   sao chép điều kiện. Chỉ service_role gọi được đường nội bộ. */
+                /* Ảnh chụp trước khi xét, để báo cáo chính xác badge nào MỚI được cấp. */
+                const { data: beforeRows } = await client
+                    .from('student_badges').select('badge_id').eq('student_id', id);
+                const before = new Set<string>((beforeRows ?? []).map((r) => String(r.badge_id)));
+
+                /* Dùng lại toàn bộ quy tắc badge của student-profile thay vì sao
+                   chép điều kiện. Chỉ service_role gọi được đường nội bộ này. */
                 const url = Deno.env.get('SUPABASE_URL') ?? '';
                 const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
                 if (!url || !serviceKey) {
@@ -719,79 +1845,146 @@ Deno.serve(async (req) => {
                     });
                     payload = await res.json().catch(() => null);
                     if (!res.ok || !payload || payload.ok !== true) {
-                        return fail(502, 'AUTO_GRANT_FAILED', 'Không tính được thành tích tự động.');
+                        return fail(502, 'AUTO_GRANT_FAILED',
+                            'Không tính được thành tích tự động. Kiểm tra Edge Function student-profile.');
                     }
                 } catch {
                     return fail(502, 'AUTO_GRANT_FAILED', 'Không kết nối được dịch vụ thành tích.');
                 }
 
-                const earned = Array.isArray(payload.earned) ? payload.earned : [];
+                const { data: afterRows } = await client
+                    .from('student_badges').select('badge_id').eq('student_id', id);
+                const after = new Set<string>((afterRows ?? []).map((r) => String(r.badge_id)));
+
+                const autoBadges = BADGE_CATALOG.filter((b) => !b.admin_only);
+                const autoIds = autoBadges.map((b) => b.id);
+                const earned = autoIds.filter((b) => after.has(b) && !before.has(b));
+                const alreadyOwned = autoIds.filter((b) => before.has(b));
+                const notEligible = autoBadges
+                    .filter((b) => !after.has(b))
+                    .map((b) => ({ id: b.id, name: b.name, reason: 'Chưa đủ điều kiện theo dữ liệu học tập đã đồng bộ.' }));
+                const excluded = BADGE_CATALOG
+                    .filter((b) => b.admin_only)
+                    .map((b) => ({
+                        id: b.id,
+                        name: b.name,
+                        reason: b.exclusive === 'founder'
+                            ? 'Badge Founder độc quyền — chỉ trao tay từ Founder Dashboard.'
+                            : b.exclusive === 'dev'
+                                ? 'Badge Developer độc quyền — chỉ Founder trao tay.'
+                                : 'Badge chỉ nhận qua trao tặng của quản trị viên.'
+                    }));
+
                 await logAction(client, 'badges.autoGrant', 'student', id, {
-                    earned: earned.length, badges: Array.isArray(payload.badges) ? payload.badges.length : 0
+                    earned: earned.length,
+                    alreadyOwned: alreadyOwned.length,
+                    notEligible: notEligible.length,
+                    excluded: excluded.length
                 });
+
                 return json({
                     ok: true,
                     studentId: id,
+                    studentName: target.display_name,
                     earned,
-                    badges: Array.isArray(payload.badges) ? payload.badges : [],
+                    alreadyOwned,
+                    notEligible,
+                    excluded,
+                    totalOwned: after.size,
+                    autoTotal: autoIds.length,
                     frames: Array.isArray(payload.frames) ? payload.frames : []
+                });
+            }
+
+            case 'badges.grantAllPreview': {
+                /* CHỈ ĐỌC. 7.4.0 dùng chính badges.grantAll cho bản xem trước nên
+                   chỉ mở xem đã cấp badge thật — lỗi này được tách hẳn ở đây. */
+                const id = str(body.id, 40);
+                if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                const { data: target } = await client
+                    .from('students').select('id, display_name, is_active').eq('id', id).maybeSingle();
+                if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+                if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
+
+                const grantable = ALL_BADGE_IDS.filter((b) => !EXCLUSIVE_BADGE_IDS.includes(b));
+                const { data: rows, error } = await client
+                    .from('student_badges').select('badge_id').eq('student_id', id);
+                if (error) throw error;
+                const owned = new Set<string>((rows ?? []).map((r) => String(r.badge_id)));
+
+                const toGrant = grantable.filter((b) => !owned.has(b));
+                const already = grantable.filter((b) => owned.has(b));
+                return json({
+                    ok: true,
+                    dryRun: true,
+                    studentId: id,
+                    studentName: target.display_name,
+                    totalGrantable: grantable.length,
+                    toGrant: toGrant.map((b) => ({
+                        id: b, name: (BADGE_BY_ID.get(b) || { name: b }).name
+                    })),
+                    toAddCount: toGrant.length,
+                    alreadyOwned: already,
+                    alreadyOwnedCount: already.length,
+                    excluded: EXCLUSIVE_BADGE_IDS,
+                    excludedCount: EXCLUSIVE_BADGE_IDS.length
                 });
             }
 
             case 'badges.grantAll': {
                 const id = str(body.id, 40);
                 if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                const requestId = requestIdOf(body.request_id);
                 const { data: target } = await client
-                    .from('students').select('id, is_active').eq('id', id).maybeSingle();
+                    .from('students').select('id, display_name, is_active').eq('id', id).maybeSingle();
                 if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
                 if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
 
-                /* 13 badge độc quyền KHÔNG bao giờ nằm trong "cấp trọn bộ",
-                   kể cả khi gọi API trực tiếp. admin-chosen và admin-legend
-                   vẫn có thể trao vì chúng thuộc Administrator, không phải Founder
-                   / Developer độc quyền. */
+                /* Badge độc quyền (Founder + Developer) KHÔNG bao giờ nằm trong
+                   "cấp toàn bộ", kể cả khi gọi API trực tiếp. Danh sách suy ra từ
+                   cờ `exclusive` của danh mục, không viết cứng số lượng. */
                 const grantable = ALL_BADGE_IDS.filter((b) => !EXCLUSIVE_BADGE_IDS.includes(b));
+                const reason = 'Cấp toàn bộ badge đồng bộ (trừ badge độc quyền)';
 
-                const { data: existing, error: existError } = await client
-                    .from('student_badges').select('badge_id').eq('student_id', id);
-                if (existError) throw existError;
-                const owned = new Set<string>((existing ?? []).map((r) => String(r.badge_id)));
-                const missing = grantable.filter((b) => !owned.has(b));
-
-                const nowIso = new Date().toISOString();
-                const reason = 'Cấp toàn bộ badge đồng bộ (trừ 13 badge độc quyền)';
-                const failed: string[] = [];
-                let added = 0;
-                for (let i = 0; i < missing.length; i += 40) {
-                    const chunk = missing.slice(i, i + 40);
-                    const rows = chunk.map((badgeId) => ({
-                        student_id: id,
-                        badge_id: badgeId,
-                        kind: 'admin',
-                        manual_granted: true,
-                        awarded_at: nowIso,
-                        awarded_by: sessionId,
-                        reason
-                    }));
-                    const { error } = await client.from('student_badges')
-                        .upsert(rows, { onConflict: 'student_id,badge_id', ignoreDuplicates: true });
-                    if (error) failed.push(...chunk);
-                    else added += chunk.length;
+                let result: GrantResult;
+                try {
+                    result = await grantBadgeIds(client, id, grantable, reason, sessionId);
+                } catch (err) {
+                    if (err instanceof GrantError) return fail(err.status, err.code, err.message);
+                    throw err;
                 }
 
-                await logAction(client, 'badges.grantAll', 'student', id, {
-                    added,
-                    alreadyOwned: grantable.length - missing.length,
-                    failed: failed.length,
-                    excluded: EXCLUSIVE_BADGE_IDS
+                await writeGrantHistory(client, requestId, scope, sessionId, id,
+                    'badge', result.added, reason);
+                await writeGrantBatch(client, {
+                    request_id: requestId,
+                    actor_scope: scope,
+                    actor_id: sessionId,
+                    target_student: id,
+                    item_type: 'badge',
+                    requested: grantable.length,
+                    added: result.added.length,
+                    already_owned: result.alreadyOwned.length,
+                    failed: 0
                 });
+                await logAction(client, 'badges.grantAll', 'student', id, {
+                    request_id: requestId,
+                    added: result.added.length,
+                    alreadyOwned: result.alreadyOwned.length,
+                    excluded: EXCLUSIVE_BADGE_IDS.length
+                });
+
                 return json({
-                    ok: failed.length === 0,
+                    ok: true,
+                    requestId,
                     studentId: id,
-                    added,
-                    alreadyOwned: grantable.length - missing.length,
-                    failed,
+                    studentName: target.display_name,
+                    added: result.added.length,
+                    addedIds: result.added,
+                    alreadyOwned: result.alreadyOwned.length,
+                    failed: [],
                     excluded: EXCLUSIVE_BADGE_IDS,
+                    excludedCount: EXCLUSIVE_BADGE_IDS.length,
                     totalGrantable: grantable.length
                 });
             }
@@ -1589,52 +2782,113 @@ Deno.serve(async (req) => {
 
             /* ----------------------- Founder: cấp trọn bộ ------------------------ */
             case 'founder.grantAll': {
-                if (scope !== 'founder') {
-                    return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder mới được cấp toàn bộ thành tích.');
+                /* Cấp TOÀN BỘ danh mục badge (kể cả Founder/Developer) cho hồ sơ
+                   Người sáng lập. Idempotent nhờ request_id + primary key của
+                   student_badges, nên chạy lại không nhân đôi bản ghi. */
+                const requestId = requestIdOf(body.request_id);
+                let targetId = str(body.id, 40);
+                let targetName = '';
+
+                if (targetId) {
+                    const { data: target } = await client
+                        .from('students').select('id, display_name, is_active, is_founder')
+                        .eq('id', targetId).maybeSingle();
+                    if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+                    if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
+                    if (target.is_founder !== true) {
+                        return fail(403, 'FOUNDER_PROFILE_REQUIRED',
+                            'Chỉ cấp trọn bộ cho hồ sơ có is_founder = true.');
+                    }
+                    targetName = target.display_name;
+                } else {
+                    const { data: founders } = await client
+                        .from('students').select('id, display_name, is_founder')
+                        .eq('is_founder', true).eq('is_active', true).limit(3);
+                    if (!founders || founders.length === 0) {
+                        return fail(404, 'FOUNDER_NOT_FOUND',
+                            'Không có hồ sơ nào có is_founder = true. Hãy đặt cờ Founder cho tài khoản Minh Trúc.');
+                    }
+                    if (founders.length > 1) {
+                        return fail(409, 'FOUNDER_AMBIGUOUS',
+                            'Có nhiều hồ sơ Founder. Hãy chọn đúng người nhận trong danh sách.');
+                    }
+                    targetId = String(founders[0].id);
+                    targetName = founders[0].display_name;
                 }
-                const founder = await findFounderStudent(client);
-                if (!founder) {
-                    return fail(404, 'NO_FOUNDER_PROFILE',
-                        'Không tìm thấy hồ sơ Hứa Viết Minh Trúc. Hãy kiểm tra họ tên trong bảng students.');
+
+                let result: GrantResult;
+                try {
+                    result = await grantBadgeIds(client, targetId, ALL_BADGE_IDS,
+                        'Founder: cấp toàn bộ badge và khung', sessionId);
+                } catch (err) {
+                    if (err instanceof GrantError) return fail(err.status, err.code, err.message);
+                    throw err;
                 }
-                const nowIso = new Date().toISOString();
-                /* Cấp toàn bộ 89 badge, bao gồm cả Founder-exclusive và Developer. */
-                const rows = ALL_BADGE_IDS.map((badgeId) => ({
-                    student_id: founder.id,
-                    badge_id: badgeId,
-                    kind: 'admin',
-                    manual_granted: true,
-                    awarded_at: nowIso,
-                    awarded_by: sessionId,
-                    reason: 'Founder: cấp toàn bộ badge và khung'
-                }));
-                const { error: gErr } = await client.from('student_badges')
-                    .upsert(rows, { onConflict: 'student_id,badge_id', ignoreDuplicates: false });
-                if (gErr) throw gErr;
-                /* Cập nhật khung avatar mặc định trong profile nếu chưa có khung founder. */
+
+                /* Trang bị khung Founder mặc định chỉ khi hồ sơ chưa chọn khung. */
+                let equippedFrame = 'none';
                 const { data: profile } = await client
-                    .from('student_profiles').select('frame').eq('student_id', founder.id).maybeSingle();
-                if (!profile || !profile.frame) {
-                    await client.from('student_profiles').upsert({
-                        student_id: founder.id,
-                        frame: 'founder',
-                        updated_at: nowIso
-                    }, { onConflict: 'student_id' });
+                    .from('student_profiles').select('frame').eq('student_id', targetId).maybeSingle();
+                if (!profile) {
+                    const { error: profileError } = await client.from('student_profiles')
+                        .insert({ student_id: targetId, frame: 'founder' });
+                    if (!profileError) equippedFrame = 'founder';
+                } else if (!profile.frame || profile.frame === 'none') {
+                    const { error: frameError } = await client.from('student_profiles')
+                        .update({ frame: 'founder' }).eq('student_id', targetId);
+                    if (!frameError) equippedFrame = 'founder';
+                } else {
+                    equippedFrame = profile.frame;
                 }
-                await client.from('student_roles').upsert({
-                    student_id: founder.id,
-                    role_key: 'founder',
-                    role_label: 'Người sáng lập · Kẻ chủ mưu',
-                    updated_at: nowIso,
-                    updated_by: sessionId
-                }, { onConflict: 'student_id' });
-                await logAction(client, 'founder.grantAll', 'student', founder.id, {
-                    badges: rows.length
+
+                const { data: ownedFrames } = await client.rpc('bakhi_owned_frames', { p_student: targetId });
+                const { data: roleCheck } = await client.from('student_roles')
+                    .select('role_key').eq('student_id', targetId).eq('role_key', 'founder').maybeSingle();
+                if (!roleCheck) {
+                    /* student_roles có khoá chính student_id (một danh vị mỗi
+                       người), nên chỉ thêm khi chưa có và dùng đúng tên cột. */
+                    await client.from('student_roles').insert({
+                        student_id: targetId,
+                        role_key: 'founder',
+                        role_label: 'Người sáng lập',
+                        updated_by: 'founder-console'
+                    });
+                }
+
+                const badgeTotal = ALL_BADGE_IDS.length;
+                await writeGrantHistory(client, requestId, scope, sessionId, targetId,
+                    'badge', result.added, 'Founder: cấp toàn bộ badge và khung');
+                await writeGrantBatch(client, {
+                    request_id: requestId,
+                    actor_scope: scope,
+                    actor_id: sessionId,
+                    target_student: targetId,
+                    item_type: 'badge',
+                    requested: badgeTotal,
+                    added: result.added.length,
+                    already_owned: result.alreadyOwned.length,
+                    failed: 0
                 });
-                const { data: badges } = await client.from('student_badges')
-                    .select('badge_id, kind, auto_earned, manual_granted, awarded_at, awarded_by, reason')
-                    .eq('student_id', founder.id).order('awarded_at', { ascending: false });
-                return json({ ok: true, studentId: founder.id, count: rows.length, badges: badges ?? [] });
+                await logAction(client, 'founder.grantAll', 'student', targetId, {
+                    request_id: requestId,
+                    added: result.added.length,
+                    badgeTotal
+                });
+
+                return json({
+                    ok: true,
+                    requestId,
+                    studentId: targetId,
+                    studentName: targetName,
+                    target: badgeTotal,
+                    badgeTotal,
+                    added: result.added.length,
+                    alreadyOwned: result.alreadyOwned.length,
+                    failed: [],
+                    frames: Array.isArray(ownedFrames) ? ownedFrames : [],
+                    frameCount: Array.isArray(ownedFrames) ? ownedFrames.length : 0,
+                    equippedFrame
+                });
             }
 
             /* --------------------------- Toàn vẹn dữ liệu -------------------------- */
@@ -1729,148 +2983,120 @@ Deno.serve(async (req) => {
 
             /* ------------------- Founder: trao một vật phẩm (badge/frame) -------- */
             case 'founder.grantItem': {
-                if (scope !== 'founder') {
-                    return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder mới được trao vật phẩm.');
-                }
-                const targetId = str(body.id, 40);
-                const itemType = str(body.item_type, 20);
-                const itemId = str(body.item_id, 64);
-                const reason = cleanDisplayName(body.reason).slice(0, 200);
-                if (!targetId) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
-                if (!itemType || !['badge', 'frame'].includes(itemType)) {
-                    return fail(400, 'BAD_ITEM_TYPE', 'item_type phải là badge hoặc frame.');
-                }
-                if (!itemId || !BADGE_ID_RE.test(itemId)) {
-                    return fail(400, 'BAD_ITEM_ID', 'Mã vật phẩm không hợp lệ.');
-                }
-                const { data: target } = await client
-                    .from('students').select('id, is_active, is_founder').eq('id', targetId).maybeSingle();
-                if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
-                if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
-
-                if (itemType === 'badge') {
-                    /* Founder badge chỉ cấp cho hồ sơ is_founder = true. */
-                    const isFounderExclusive = itemId === FOUNDER_BADGE_ID ||
-                        itemId.startsWith('founder-');
-                    if (isFounderExclusive && target.is_founder !== true) {
-                        return fail(403, 'FOUNDER_ONLY',
-                            'Badge Founder chỉ được cấp cho hồ sơ Người sáng lập.');
-                    }
-                    /* Developer badge cũng chỉ Founder cấp được. */
-                    if (DEV_BADGE_IDS.includes(itemId) && scope !== 'founder') {
-                        return fail(403, 'FOUNDER_ONLY',
-                            'Badge Developer chỉ Founder mới được trao.');
-                    }
-                    const { error } = await client.from('student_badges').upsert({
-                        student_id: targetId,
-                        badge_id: itemId,
-                        kind: 'admin',
-                        manual_granted: true,
-                        awarded_at: new Date().toISOString(),
-                        awarded_by: sessionId,
-                        reason
-                    }, { onConflict: 'student_id,badge_id', ignoreDuplicates: false });
-                    if (error) throw error;
-                } else {
-                    /* Cấp khung avatar: ghi vào student_profiles.frame. */
-                    const { error } = await client.from('student_profiles').upsert({
-                        student_id: targetId,
-                        frame: itemId,
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'student_id' });
-                    if (error) throw error;
-                }
-
-                await logAction(client, 'founder.grantItem', 'student', targetId, {
-                    item_type: itemType, item_id: itemId, reason
+                return await grantSingleItem(client, {
+                    sessionId,
+                    scope,
+                    studentId: str(body.id, 40),
+                    itemType: str(body.item_type, 20) === 'frame' ? 'frame' : 'badge',
+                    itemId: str(body.item_id, 64),
+                    reason: cleanDisplayName(body.reason).slice(0, 200),
+                    requestId: requestIdOf(body.request_id)
                 });
-                return json({ ok: true, studentId: targetId, item_type: itemType, item_id: itemId });
             }
 
             /* ------------------- Founder: trao khung avatar (alias) -------------- */
             case 'avatar.grant': {
-                if (scope !== 'founder') {
-                    return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder mới được trao khung avatar.');
-                }
-                const targetId = str(body.student_id, 40);
-                const frameId = str(body.frame_id, 64);
-                const reason = cleanDisplayName(body.reason).slice(0, 200);
-                if (!targetId) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
-                if (!frameId || !BADGE_ID_RE.test(frameId)) {
-                    return fail(400, 'BAD_FRAME_ID', 'Mã khung không hợp lệ.');
-                }
-                const { data: target } = await client
-                    .from('students').select('id, is_active').eq('id', targetId).maybeSingle();
-                if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
-                if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
-                const { error } = await client.from('student_profiles').upsert({
-                    student_id: targetId,
-                    frame: frameId,
-                    updated_at: new Date().toISOString()
-                }, { onConflict: 'student_id' });
-                if (error) throw error;
-                await logAction(client, 'avatar.grant', 'student', targetId, {
-                    item_type: 'frame', item_id: frameId, reason
+                /* Alias tương thích: trao khung = trao badge sở hữu khung. */
+                return await grantSingleItem(client, {
+                    sessionId,
+                    scope,
+                    studentId: str(body.student_id, 40) || str(body.id, 40),
+                    itemType: 'frame',
+                    itemId: str(body.frame_id, 64) || str(body.item_id, 64),
+                    reason: cleanDisplayName(body.reason).slice(0, 200),
+                    requestId: requestIdOf(body.request_id)
                 });
-                return json({ ok: true, studentId: targetId, frame_id: frameId });
             }
 
             /* ------------------- Xem lịch sử cấp vật phẩm ------------------------ */
             case 'admin.grantHistory': {
-                if (scope !== 'founder') {
-                    return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder mới xem lịch sử cấp.');
-                }
                 const limit = Math.min(100, Math.max(1, Number(body.limit) || 50));
                 const offset = Math.max(0, Number(body.offset) || 0);
-                const { data, error, count } = await client
+                const { data, error } = await client
                     .from('admin_grant_history')
-                    .select('id, actor_scope, target_student, item_type, item_id, item_name, reason, created_at')
+                    .select('id, request_id, actor_scope, target_student, item_type, item_id, badge_id, item_name, reason, created_at, students:target_student(display_name, disambiguator, student_code)')
                     .order('created_at', { ascending: false })
                     .range(offset, offset + limit - 1);
                 if (error) throw error;
-                return json({ ok: true, total: count ?? (data ?? []).length, offset, history: data ?? [] });
+                const history = (data ?? []).map((row) => {
+                    const rel = (row as { students?: { display_name?: string; disambiguator?: string } | null }).students;
+                    return {
+                        id: row.id,
+                        requestId: row.request_id || '',
+                        actorScope: row.actor_scope,
+                        targetStudent: row.target_student,
+                        studentName: rel && rel.display_name ? rel.display_name : '',
+                        disambiguator: rel && rel.disambiguator ? rel.disambiguator : '',
+                        itemType: row.item_type,
+                        itemId: row.item_id,
+                        badgeId: row.badge_id || '',
+                        itemName: row.item_name,
+                        reason: row.reason || '',
+                        createdAt: row.created_at
+                    };
+                });
+                return json({ ok: true, offset, limit, history });
             }
 
             /* ------------------- Danh sách vật phẩm có thể trao ------------------ */
             case 'admin.items.list': {
-                if (scope !== 'founder') {
-                    return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder mới xem danh sách vật phẩm.');
+                const type = str(body.type, 20) === 'frame' ? 'frame' : 'badge';
+                const targetId = str(body.id, 40);
+
+                let owned: Set<string> | null = null;
+                if (targetId) {
+                    const { data: rows, error } = await client
+                        .from('student_badges').select('badge_id').eq('student_id', targetId);
+                    if (error) throw error;
+                    owned = new Set<string>((rows ?? []).map((r) => String(r.badge_id)));
                 }
-                const type = str(body.type, 20);
-                if (type === 'badge' || !type) {
-                    /* Trả về danh mục badge từ file tĩnh (đã nạp trong admin-actions qua BKCloud?).
-                       Ở đây chỉ trả về ID + tên từ ALL_BADGE_IDS kèm phân loại. */
-                    const badges = ALL_BADGE_IDS.map((bid) => ({
-                        id: bid,
+
+                if (type === 'badge') {
+                    const items = BADGE_CATALOG.map((b) => ({
+                        id: b.id,
                         type: 'badge',
-                        exclusive: EXCLUSIVE_BADGE_IDS.includes(bid),
-                        founderOnly: bid === FOUNDER_BADGE_ID || bid.startsWith('founder-') ||
-                            DEV_BADGE_IDS.includes(bid)
+                        name: b.name,
+                        category: b.category,
+                        rarity: b.rarity,
+                        frame: b.frame,
+                        exclusive: !!b.exclusive,
+                        founderOnly: b.exclusive === 'founder',
+                        devOnly: b.exclusive === 'dev',
+                        adminOnly: b.admin_only,
+                        grantable: true,
+                        owned: owned ? owned.has(b.id) : null
                     }));
-                    return json({ ok: true, items: badges, total: badges.length });
+                    return json({ ok: true, type, total: items.length, items });
                 }
-                if (type === 'frame') {
-                    /* Danh sách khung avatar từ 39 ánh xạ badge→frame + none/leaf. */
-                    const frameIds = [
-                        'none', 'leaf', 'wreath', 'sakura', 'sunflower', 'crown', 'star',
-                        'horn-dragon', 'ear-bunny', 'antler', 'ear-wolf', 'celestial', 'divine',
-                        'royal', 'infernal', 'legendary', 'eternal', 'neon', 'cyber', 'ancient',
-                        'phoenix', 'crystal', 'frost', 'gothic', 'galactic', 'ear-cat', 'ear-fox',
-                        'dev-aurora', 'dev-void', 'founder',
-                        'founder-yin-yang', 'founder-cyberpunk', 'founder-ancient',
-                        'founder-samurai', 'founder-void-emperor', 'founder-celestial-dragon',
-                        'founder-golden-ratio', 'founder-ember-core', 'founder-crystal-mind',
-                        'founder-neon-lotus'
-                    ];
-                    const frames = frameIds.map((fid) => ({
-                        id: fid,
-                        type: 'frame',
-                        founderOnly: fid.startsWith('founder-') || fid === 'founder',
-                        devOnly: fid.startsWith('dev-')
-                    }));
-                    return json({ ok: true, items: frames, total: frames.length });
+
+                /* Khung avatar: dựng từ ánh xạ badge -> khung của danh mục. */
+                const frames = new Map<string, { id: string; badgeId: string; founderOnly: boolean; devOnly: boolean }>();
+                for (const b of BADGE_CATALOG) {
+                    if (!b.frame || frames.has(b.frame)) continue;
+                    frames.set(b.frame, {
+                        id: b.frame,
+                        badgeId: b.id,
+                        founderOnly: b.exclusive === 'founder',
+                        devOnly: b.exclusive === 'dev'
+                    });
                 }
-                return fail(400, 'BAD_ITEM_TYPE', 'type phải là badge hoặc frame.');
+                const items = [
+                    { id: 'none', badgeId: '', founderOnly: false, devOnly: false },
+                    ...Array.from(frames.values())
+                ].map((f) => ({
+                    id: f.id,
+                    type: 'frame',
+                    badgeId: f.badgeId,
+                    founderOnly: f.founderOnly,
+                    devOnly: f.devOnly,
+                    exclusive: f.founderOnly || f.devOnly,
+                    grantable: !!f.badgeId,
+                    /* 'none' và 'leaf' luôn sở hữu (khớp bakhi_owned_frames). */
+                    owned: owned
+                        ? (f.id === 'none' || f.id === 'leaf' ? true : !!f.badgeId && owned.has(f.badgeId))
+                        : null
+                }));
+                return json({ ok: true, type, total: items.length, items });
             }
 
             default:

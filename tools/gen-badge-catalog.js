@@ -2,10 +2,12 @@
 /**
  * Bá Khí — sinh danh mục badge phía máy chủ từ nguồn duy nhất.
  *
- * Nguồn sự thật của 75 badge là `assets/bakhi/bk-badges.js`. Edge Function
- * `student-profile` cần cùng danh mục để xác minh phía máy chủ, nên tệp này
- * sinh ra `supabase/functions/_shared/badge-catalog.ts`. QA (`badges-smoke.js`)
- * so sánh lại hai bên để phát hiện lệch.
+ * Nguồn sự thật duy nhất của danh mục badge là `assets/bakhi/bk-badges.js`.
+ * Tệp này sinh ra hai artifact phía máy chủ:
+ *   1. `supabase/functions/_shared/badge-catalog.ts` (student-profile).
+ *   2. Khối `generated:badge-catalog` trong `admin-actions/index.ts`, để
+ *      admin-actions vẫn là một tệp tự chứa khi upload qua Management API.
+ * QA (`badges-smoke.js`, `founder-rework-smoke.js`) so lại ba bên.
  *
  * Cách dùng (jsdom cài ngoài repo, giống QA):
  *   npm install jsdom --prefix /tmp/bktest --no-save
@@ -17,6 +19,8 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'supabase', 'functions', '_shared', 'badge-catalog.ts');
+const ADMIN_ACTIONS = path.join(ROOT, 'supabase', 'functions', 'admin-actions', 'index.ts');
+const EXPECTED_COUNT = 99;
 
 function main() {
   const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
@@ -38,10 +42,14 @@ function main() {
   };
   w.eval(fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-badges.js'), 'utf8'));
   const catalog = w.BK.badges.CATALOG;
-  /* 89 = 74 tự động + 15 chỉ Administrator trao (2 admin + 2 Developer + 11 Founder + 1 Kẻ sưu tầm). */
-  if (!Array.isArray(catalog) || catalog.length !== 89) {
-    throw new Error('Danh mục badge không đúng 89 mục: ' + (catalog && catalog.length));
+  /* 99 = 74 tự động + 25 badge chỉ trao tay (2 Administrator + 2 Developer
+     + 11 Founder thế hệ 7.4 + 10 Founder Badge 7.5.0). */
+  if (!Array.isArray(catalog) || catalog.length !== EXPECTED_COUNT) {
+    throw new Error('Danh mục badge không đúng ' + EXPECTED_COUNT + ' mục: ' +
+      (catalog && catalog.length));
   }
+  const ids = catalog.map((x) => x.id);
+  if (new Set(ids).size !== ids.length) throw new Error('Danh mục badge có id trùng.');
 
   const rows = catalog.map((x) => ({
     id: x.id,
@@ -91,8 +99,32 @@ export const ADMIN_BADGES = BADGE_CATALOG.filter((b) => b.admin_only);
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   fs.writeFileSync(OUT, ts, 'utf8');
-  console.log('Đã ghi ' + path.relative(ROOT, OUT) + ' — ' + rows.length +
-    ' badge (' + auto + ' tự động, ' + adminOnly + ' admin).');
+
+  /* Khối nhúng trong admin-actions (tệp tự chứa, không import). */
+  const meta = rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    category: r.category,
+    rarity: r.rarity,
+    frame: r.frame,
+    admin_only: r.admin_only,
+    exclusive: r.exclusive
+  }));
+  const startMark = '/* <generated:badge-catalog> */';
+  const endMark = '/* </generated:badge-catalog> */';
+  const adminSrc = fs.readFileSync(ADMIN_ACTIONS, 'utf8');
+  const start = adminSrc.indexOf(startMark);
+  const end = adminSrc.indexOf(endMark);
+  if (start < 0 || end < start) {
+    throw new Error('admin-actions/index.ts thiếu mốc generated:badge-catalog.');
+  }
+  const block = startMark + '\n' +
+    'const BADGE_CATALOG: BadgeMeta[] = ' + JSON.stringify(meta, null, 4) + ';\n' +
+    endMark;
+  fs.writeFileSync(ADMIN_ACTIONS, adminSrc.slice(0, start) + block + adminSrc.slice(end + endMark.length), 'utf8');
+
+  console.log('Đã ghi ' + path.relative(ROOT, OUT) + ' và khối nhúng trong admin-actions — ' +
+    rows.length + ' badge (' + auto + ' tự động, ' + adminOnly + ' trao tay).');
 }
 
 main();

@@ -1,7 +1,7 @@
 /* TỆP SINH TỰ ĐỘNG — đừng sửa tay.
    Nguồn: assets/bakhi/bk-badges.js (CATALOG).
    Sinh lại: node tools/gen-badge-catalog.js
-   89 badge: 74 tự động + 15 chỉ Administrator trao. */
+   99 badge: 74 tự động + 25 chỉ Administrator trao. */
 
 export interface BadgeDef {
     id: string;
@@ -1172,6 +1172,136 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "founder-neon-lotus",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-genesis",
+        "name": "Genesis",
+        "desc": "Khởi nguyên — lõi năng lượng đầu tiên và quỹ đạo hình thành nên Bá Khí.",
+        "icon": "fa-circle-dot",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": null,
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-architect",
+        "name": "Architect",
+        "desc": "Người kiến tạo — bản thiết kế hình học của toàn bộ hệ thống.",
+        "icon": "fa-compass-drafting",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-frost-emperor",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-eternal-flame",
+        "name": "Eternal Flame",
+        "desc": "Ngọn lửa vĩnh cửu — nhiệt huyết không tắt của người khai sáng.",
+        "icon": "fa-fire-flame-curved",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-phoenix-rebirth",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-nexus",
+        "name": "Nexus",
+        "desc": "Trung tâm liên kết — nơi mọi luồng năng lượng và dữ liệu gặp nhau.",
+        "icon": "fa-diagram-project",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": null,
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-celestial",
+        "name": "Celestial",
+        "desc": "Thiên hà và tinh tú — tầm nhìn vượt khỏi đường chân trời.",
+        "icon": "fa-galaxy",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-astral-observatory",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-chronos",
+        "name": "Chronos",
+        "desc": "Thời gian — đồng hồ cổ và cơ khí ghi dấu từng giai đoạn phát triển.",
+        "icon": "fa-clock",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-chrono-mechanical",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-void-sentinel",
+        "name": "Void Sentinel",
+        "desc": "Người canh giữ hư không — lá chắn đứng giữa khoảng trống vô tận.",
+        "icon": "fa-shield",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-abyssal",
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-prime-code",
+        "name": "Prime Code",
+        "desc": "Công nghệ và dữ liệu — dòng mã nguồn gốc của nền tảng.",
+        "icon": "fa-code",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": null,
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-legacy",
+        "name": "Legacy",
+        "desc": "Di sản — vương miện và nguyệt quế của những gì còn lại mãi.",
+        "icon": "fa-crown",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": null,
+        "admin_only": true,
+        "exclusive": "founder"
+    },
+    {
+        "id": "founder-ascendant",
+        "name": "Ascendant",
+        "desc": "Thăng hoa — pha lê và ánh sáng của bước tiến cuối cùng.",
+        "icon": "fa-gem",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-crystal-sovereign",
         "admin_only": true,
         "exclusive": "founder"
     }

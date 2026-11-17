@@ -453,3 +453,30 @@
     .bk-frame-detail-head { align-items: flex-start; }
     .bk-frame-detail-preview { padding: .4rem; border-radius: 14px; }
 }
+
+/* ---------------------------------------------------------------------------
+   Founder Badge 7.5.0 — hình tượng SVG thay cho icon Font Awesome.
+   Khung bao giữ đúng kích thước icon cũ để lưới badge không nhảy.
+   ------------------------------------------------------------------------ */
+.bk-badge-icon.is-art,
+.bk-badge-detail-icon.is-art {
+    background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, .16), transparent 62%);
+}
+
+.bk-badge-icon.is-art .bk-badge-artwrap,
+.bk-badge-detail-icon.is-art .bk-badge-artwrap {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.bk-badge-art {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.bk-badge.is-locked .bk-badge-art {
+    filter: grayscale(.72) brightness(.72);
+    opacity: .8;
+}

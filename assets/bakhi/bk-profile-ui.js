@@ -682,12 +682,30 @@
         return row.desc + (row.goal > 1 ? ' Tiến độ được máy chủ xác minh từ dữ liệu học tập của bạn.' : '');
     }
 
+    /* Hình tượng SVG của 10 Founder Badge 7.5.0. Markup là hằng số trong
+       bk-badges.js (không chứa dữ liệu người dùng), nên chèn được an toàn. */
+    function badgeArtNode(row) {
+        var b = B();
+        if (!row || !row.art || !b || typeof b.art !== 'function') return null;
+        var svg = b.art(row.art);
+        if (!svg) return null;
+        var box = el('span', 'bk-badge-artwrap');
+        box.innerHTML = svg;
+        return box;
+    }
+
+    function paintBadgeIcon(host, row) {
+        var art = badgeArtNode(row);
+        if (art) { host.classList.add('is-art'); host.appendChild(art); return; }
+        host.appendChild(icon(row.unlockedAt || !row.adminOnly ? row.icon : 'fa-lock'));
+    }
+
     function openBadge(row) {
         if (!row) return;
         var body = el('div', 'bk-badge-detail');
         var head = el('div', 'bk-badge-detail-head');
         var iconBox = el('div', 'bk-badge-detail-icon' + (row.unlockedAt ? '' : ' is-locked'));
-        iconBox.appendChild(icon(row.unlockedAt || !row.adminOnly ? row.icon : 'fa-lock'));
+        paintBadgeIcon(iconBox, row);
         head.appendChild(iconBox);
         var title = el('div');
         title.appendChild(el('h3', null, row.name));
@@ -741,7 +759,7 @@
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBadge(row); }
         });
         var ic = el('div', 'bk-badge-icon');
-        ic.appendChild(icon(row.unlockedAt || !row.adminOnly ? row.icon : 'fa-lock'));
+        paintBadgeIcon(ic, row);
         card.appendChild(ic);
 
         var body = el('div', 'bk-badge-body');

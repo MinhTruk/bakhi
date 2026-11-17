@@ -187,9 +187,9 @@ DOMContentLoaded
   ảnh đại diện/bìa (canvas resize rồi lưu data URL), tối đa 6 liên kết chỉ nhận `http(s)`,
   khung avatar đang dùng. Hồ sơ gắn với danh tính `bakhiStudent.v1`; bản cục bộ vẫn là
   nguồn dùng ngay khi ngoại tuyến, còn bản máy chủ (3.6.0) chỉ ghi đè khi mới hơn.
-- **Thành tích** (`bk-badges.js`, khoá `bakhiBadges.v1.<studentId>`): đúng 78 badge — 73 tự động theo
-  chỉ số học tập/khám phá/chuỗi ngày/âm nhạc/tương tác/hồ sơ/Studio/bí mật, 2 badge chỉ
-  Administrator trao. 8 danh mục, 6 bậc độ hiếm; badge đã mở thưởng khung avatar
+- **Thành tích** (`bk-badges.js`, khoá `bakhiBadges.v1.<studentId>`): đúng 99 badge — 74 tự động theo
+  chỉ số học tập/khám phá/chuỗi ngày/âm nhạc/tương tác/hồ sơ/Studio/bí mật, 25 badge chỉ trao tay
+  (2 Administrator + 2 Developer + 11 Founder 7.4 + 10 Founder Badge 7.5 có SVG riêng). 8 danh mục, 6 bậc độ hiếm; badge đã mở thưởng khung avatar
   (`ownedFrames`). Từ 3.6.0, badge tự động được máy chủ xác minh lại (xem 2.6).
 - **Component dùng chung** (`bk-profile-ui.js`): `renderHero`, `renderEditor`,
   `renderFrames`, `renderBadgeBoard` — dùng cho cả `/profile/` và tab Hồ sơ trong `/settings/`,
@@ -232,8 +232,13 @@ DOMContentLoaded
   - `student_badges` (khoá chính `student_id` + `badge_id`, cột `kind` = `auto`/`admin`):
     RLS chỉ có policy đọc của chính mình; **thu hồi toàn bộ quyền ghi** khỏi
     `anon`/`authenticated`. Chỉ service role trong Edge Function ghi được.
-  - `bakhi_owned_frames(uuid)`: 2 khung cơ bản + khung thưởng của badge đã xác minh;
-    trigger `bakhi_profile_frame_guard` chặn gán khung chưa sở hữu (`FRAME_NOT_OWNED`).
+  - `bakhi_owned_frames(uuid)`: 2 khung cơ bản + khung thưởng của badge đã xác minh, đọc từ
+    bảng ánh xạ `bakhi_badge_frames`; trigger `bakhi_profile_frame_guard` chặn gán khung chưa
+    sở hữu (`FRAME_NOT_OWNED`).
+  - `bakhi_grant_badges(uuid, text[], text, text)`: cấp một lô badge trong một câu lệnh
+    (`on conflict do nothing`, trả về badge thực sự được thêm); chỉ `service_role` execute.
+  - `admin_grant_history` + `admin_grant_batches`: audit cấp vật phẩm, chống trùng theo
+    `request_id`; không cấp quyền đọc cho `anon`/`authenticated`.
 - **Edge Function `student-profile`** (`sync` | `update` | `get`): đọc `student_progress`
   đã đồng bộ, dựng ảnh chụp, tính lại chỉ số bằng `_shared/badge-rules.ts` rồi ghi badge
   `auto` đủ điều kiện. Client **không** gửi danh sách badge đã mở; `applyServer()` chỉ nhận

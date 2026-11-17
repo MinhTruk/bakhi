@@ -2,6 +2,84 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.5.0] — 2026-11-17
+
+### Tính năng mới
+
+- **10 Founder Badge 7.5.0 có hình tượng riêng**: Genesis, Architect, Eternal Flame, Nexus,
+  Celestial, Chronos, Void Sentinel, Prime Code, Legacy, Ascendant. Mỗi badge có SVG nhiều lớp,
+  bảng màu và silhouette riêng (`BK.badges.art`), hiển thị cả trong lưới thành tích và
+  hộp xem chi tiết. Tổng danh mục: **99 badge** (74 tự động + 25 trao tay).
+- **6 khung Founder concept mới**: Thiên Văn Đài, Vực Thẳm, Phượng Hoàng Tái Sinh,
+  Pha Lê Đế Vương, Cỗ Máy Thời Gian, Băng Đế — mỗi khung có bộ vẽ bespoke thay vì
+  ghép primitive dùng chung. Tổng **46 khung** (27 thường + 2 Developer + 17 Founder).
+- **Bộ chọn người nhận dùng chung** cho mọi thao tác trao: debounce 280 ms, trạng thái
+  loading/empty/error, avatar + tên + mã phân biệt + nhãn Founder, bỏ chọn và đổi người nhận.
+- **Bộ chọn vật phẩm thống nhất** với 4 nhóm (Badge / Founder Badge / Khung / Khung Founder),
+  lọc theo tên hoặc mã, tuỳ chọn "chỉ món chưa sở hữu", xem trước lớn, nhãn trạng thái sở hữu.
+- **Hộp xác nhận trước mọi thao tác ghi** (người nhận, loại, vật phẩm, hiện trạng, lý do) và
+  khoá nút khi đang gửi; mỗi yêu cầu có `request_id`.
+- **Báo cáo tự động xét badge đầy đủ**: mới cấp / đã sở hữu / chưa đủ điều kiện / bị loại trừ kèm lý do.
+- **Lịch sử cấp vật phẩm thật**: bảng `admin_grant_history` + `admin_grant_batches`, lọc theo
+  người nhận, có nút tải thêm.
+
+### Tính năng được tái cấu trúc
+
+- **Founder Dashboard tách mô-đun** `assets/bakhi/bk-founder.js` (tìm người nhận, bộ chọn vật phẩm,
+  dịch vụ trao, báo cáo, lịch sử). `renderFounder` trong `bk-devboard.js` còn 15 dòng ủy quyền,
+  xoá ba khối tìm kiếm trùng nhau và các listener gắn lặp.
+- **Ánh xạ badge → khung chuyển sang bảng** `bakhi_badge_frames`; `bakhi_owned_frames` không còn
+  CASE 39 nhánh viết cứng.
+- **Danh mục badge phía máy chủ sinh tự động** vào `admin-actions` (khối `generated:badge-catalog`)
+  từ `bk-badges.js`, hết lệch giữa client và Edge Function.
+- **Quy tắc độc quyền suy ra từ danh mục** (`exclusive`), không còn danh sách 13 mã viết cứng.
+
+### Sửa lỗi
+
+- **Xem trước "trao toàn bộ badge" đã cấp badge thật**: 7.4.0 dùng chung `badges.grantAll` cho cả
+  xem trước; nay tách `badges.grantAllPreview` chỉ đọc.
+- **Trao khung ghi đè khung đang trang bị**: 7.4.0 ghi thẳng `student_profiles.frame`. Nay trao khung
+  = trao badge sở hữu khung; khung đang dùng không bị đổi.
+- **Lịch sử cấp chưa từng được ghi**: 7.4.0 chỉ đọc `admin_grant_history` mà không insert.
+- **Nhận badge id lạ**: `founder.grantItem` chỉ kiểm tra định dạng mã; nay bắt buộc có trong danh mục.
+- **Trao đè quyền sở hữu cũ**: upsert `ignoreDuplicates: false` ghi đè `awarded_at/awarded_by/reason`;
+  nay dùng `on conflict do nothing`.
+- **Tab "Founder Badge/Founder Khung" hiện toàn bộ danh mục** và danh sách chỉ có id, không tên/mô tả.
+- **Tự động cấp badge chạy ngay khi chọn tài khoản**; nay phải bấm chạy và có báo cáo trước/sau.
+- **`student_roles` ghi sai cột/khoá** (`assigned_by`, `onConflict student_id,role_key` trong khi
+  khoá chính là `student_id`).
+
+### Thay đổi cơ sở dữ liệu
+
+- Migration `20261130000000_bakhi_v750_founder_rework.sql` (idempotent, tương thích ngược):
+  `admin_grant_history.request_id/badge_id` + unique index chống trùng; bảng `admin_grant_batches`;
+  bảng `bakhi_badge_frames` (54 ánh xạ); RPC `bakhi_grant_badges(uuid, text[], text, text)` cấp
+  nguyên tử theo lô; chỉ mục tìm kiếm; seed 99 badge cho hồ sơ `is_founder = true`.
+- `bakhi_owned_frames` viết lại theo bảng ánh xạ; giữ nguyên chữ ký và quyền gọi.
+
+### Cải tiến bảo mật
+
+- **Đóng rò rỉ lịch sử cấp**: 7.4.0 cấp `select` cho `anon/authenticated` trên `admin_grant_history`
+  (ai cũng đọc được); nay thu hồi, chỉ `service_role`.
+- RPC cấp badge chỉ `service_role` được execute; client không gọi trực tiếp được.
+- `students.inventory`, `admin.items.list`, `founder.grantItem`, `avatar.grant` kiểm tra scope
+  Founder ở máy chủ; badge Founder bắt buộc hồ sơ `is_founder = true`.
+- Tìm kiếm người nhận chỉ trả học sinh đang hoạt động, tối đa 20 dòng, không trả dữ liệu nhạy cảm.
+
+### Cải tiến hiệu năng
+
+- Tìm kiếm có debounce + sequence token (bỏ kết quả cũ), không tải cả bảng học sinh.
+- Danh mục vật phẩm tải một lần theo nhóm, lọc phía client; không N+1 khi chọn người nhận.
+- Cấp hàng loạt dùng một câu lệnh insert cho mỗi 100 badge thay vì vòng upsert từng badge.
+
+### Giới hạn đã biết
+
+- Chưa chạy E2E trên Supabase production: migration và Edge Function cần được deploy thủ công.
+- Hình tượng badge/khung là SVG dựng bằng mã (không dùng tệp PNG), đã kiểm tra bằng jsdom nhưng
+  chưa được duyệt thị giác trên thiết bị thật.
+- `admin.items.list` trả tối đa toàn bộ danh mục (99 badge / 46 khung); nếu danh mục tăng rất lớn
+  cần phân trang phía máy chủ.
+
 ## [7.4.0] — 2026-11-17
 
 ### Tính năng

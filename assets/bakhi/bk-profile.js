@@ -33,8 +33,9 @@
     /* ---------------------------------------------------------------------
        Khung avatar (trang trí, không thay ảnh gốc)
        ------------------------------------------------------------------ */
-    /* 30 khung avatar thật (SVG vẽ bằng path, phần trung tâm trong suốt):
-       27 khung thường + 2 khung độc quyền + 1 khung Thiên Khải. */
+    /* 46 khung avatar thật (SVG vẽ bằng path, phần trung tâm trong suốt):
+       27 khung thường + 2 khung Developer + 1 khung Thiên Khải + 10 khung
+       Founder 7.5.0 + 6 khung Founder thế hệ 7.3.0 (legacy, vẫn dùng được). */
     var FRAMES = [
         { id: 'none', name: 'Mặc định', tier: 'normal', rarity: 'common', ring: '#94a3b8', orn: [] },
         { id: 'leaf', name: 'Bồ Đề Sơ Diệp', tier: 'normal', rarity: 'common', ring: '#10b981', pc: '#34d399', sc: '#065f46', orn: ['ring', 'laurel'] },
@@ -66,17 +67,33 @@
         { id: 'dev-aurora', name: 'Dao Quang Tuyệt Ảnh', tier: 'dev', rarity: 'secret', ring: '#5eead4', pc: '#67e8f9', sc: '#a855f7', orn: ['aurora', 'stars', 'sigil'], anim: true },
         { id: 'dev-void', name: 'Vô Cực Hư Không', tier: 'dev', rarity: 'secret', ring: '#c084fc', pc: '#e9d5ff', sc: '#6d28d9', orn: ['void', 'spikes', 'runes'], anim: true },
         { id: 'founder', name: 'Thiên Khải Sáng Thế', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#b91c1c', orn: ['founderCrown', 'wings', 'laurel', 'gem', 'sigil'], anim: true },
-        /* 10 khung Founder độc quyền — chỉ Người sáng lập mới trao được. */
-        { id: 'founder-yin-yang', name: 'Âm Dương Thái Cực', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#b91c1c', orn: ['ring', 'yinyang', 'sigil'], anim: true },
-        { id: 'founder-cyberpunk', name: 'Sát Thủ Tương Lai', tier: 'founder', rarity: 'secret', ring: '#22d3ee', pc: '#06b6d4', sc: '#0c4a6e', orn: ['ring', 'cyber', 'spikes', 'sigil'], anim: true },
-        { id: 'founder-ancient', name: 'Cổ Khí Thần Ấn', tier: 'founder', rarity: 'secret', ring: '#d6d3d1', pc: '#e7e5e4', sc: '#44403c', orn: ['ring', 'ancient-rune', 'sigil'], anim: true },
-        { id: 'founder-samurai', name: 'Bushido', tier: 'founder', rarity: 'secret', ring: '#ef4444', pc: '#f87171', sc: '#7f1d1d', orn: ['ring', 'sword', 'spikes', 'sigil'], anim: true },
-        { id: 'founder-void-emperor', name: 'Vô Cực Hoàng Đế', tier: 'founder', rarity: 'secret', ring: '#0f172a', pc: '#c084fc', sc: '#6d28d9', orn: ['ring', 'void', 'stars', 'sigil'], anim: true },
-        { id: 'founder-celestial-dragon', name: 'Thiên Long', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#facc15', sc: '#a16207', orn: ['ring', 'horns', 'wings', 'sigil'], anim: true },
-        { id: 'founder-golden-ratio', name: 'Vàng Nguyên Tắc', tier: 'founder', rarity: 'secret', ring: '#f59e0b', pc: '#fbbf24', sc: '#92400e', orn: ['ring', 'orbit', 'halo', 'stars'], anim: true },
-        { id: 'founder-ember-core', name: 'Lòng Nôc', tier: 'founder', rarity: 'secret', ring: '#fb7185', pc: '#fda4af', sc: '#881337', orn: ['ring', 'flames', 'ember-core', 'sigil'], anim: true },
-        { id: 'founder-crystal-mind', name: 'Tinh Thần Tinh Thạch', tier: 'founder', rarity: 'secret', ring: '#38bdf8', pc: '#7dd3fc', sc: '#0c4a6e', orn: ['ring', 'crystal', 'halo', 'sigil'], anim: true },
-        { id: 'founder-neon-lotus', name: 'Sen Neon', tier: 'founder', rarity: 'secret', ring: '#e879f9', pc: '#f0abfc', sc: '#701a75', orn: ['ring', 'petals', 'neon-lotus', 'sigil'], anim: true }
+        /* ------------------------------------------------------------------
+           10 khung Founder độc quyền — THIẾT KẾ LẠI ở 7.5.0.
+
+           Mỗi khung dùng một bộ vẽ riêng trong FOUNDER_FRAME_ART (nhiều lớp,
+           silhouette riêng, phần giữa trong suốt để không che avatar). Các
+           khung cũ có hình tượng trùng concept được giữ nguyên id để dữ liệu
+           sở hữu không bị mất; 6 khung cũ còn lại chuyển sang `legacy` và vẫn
+           trang bị được nhưng không còn nằm trong danh mục trao mới.
+           ------------------------------------------------------------------ */
+        { id: 'founder-yin-yang', name: 'Âm Dương Thái Cực', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#141414', orn: ['ring', 'sigil'], art: 'yin-yang', anim: true, desc: 'Âm dương, thái cực và vòng năng lượng xoắn — ánh kim vàng nhạt trên nền đen trắng.' },
+        { id: 'founder-cyberpunk', name: 'Cyberpunk Overdrive', tier: 'founder', rarity: 'secret', ring: '#22d3ee', pc: '#22d3ee', sc: '#d946ef', orn: ['ring', 'spikes'], art: 'cyberpunk', anim: true, desc: 'Holographic nhiều lớp, mạch điện tử, neon cyan — electric blue — magenta và glitch dữ liệu.' },
+        { id: 'founder-ancient', name: 'Đế Chế Cổ Đại', tier: 'founder', rarity: 'secret', ring: '#d6d3d1', pc: '#fbbf24', sc: '#7c2d12', orn: ['ring', 'runes'], art: 'ancient-empire', anim: true, desc: 'Đồng cổ và vàng cổ, họa tiết chạm khắc, đền đài, đá quý và ký hiệu cổ.' },
+        { id: 'founder-samurai', name: 'Bushido — Kiếm Sĩ', tier: 'founder', rarity: 'secret', ring: '#ef4444', pc: '#f87171', sc: '#0c0a09', orn: ['ring', 'spikes'], art: 'samurai', anim: true, desc: 'Giáp samurai sơn mài đen, đỏ thẫm và vàng, gia huy Nhật Bản và dây buộc giáp.' },
+        { id: 'founder-astral-observatory', name: 'Thiên Văn Đài', tier: 'founder', rarity: 'secret', ring: '#818cf8', pc: '#c7d2fe', sc: '#1e1b4b', orn: ['ring'], art: 'astral-observatory', anim: true, desc: 'Quỹ đạo thiên thể, chòm sao, xanh đêm — tím vũ trụ — bạc và ngôi sao trung tâm.' },
+        { id: 'founder-abyssal', name: 'Vực Thẳm', tier: 'founder', rarity: 'secret', ring: '#06b6d4', pc: '#67e8f9', sc: '#0c4a6e', orn: ['ring'], art: 'abyssal', anim: true, desc: 'Đại dương sâu, san hô, pha lê biển và ánh sáng sinh học xanh cyan.' },
+        { id: 'founder-phoenix-rebirth', name: 'Phượng Hoàng Tái Sinh', tier: 'founder', rarity: 'secret', ring: '#fb7185', pc: '#fbbf24', sc: '#7f1d1d', orn: ['ring'], art: 'phoenix-rebirth', anim: true, desc: 'Lông vũ phượng hoàng, ngọn lửa đỏ — cam — vàng kim, dáng vươn lên từ tro tàn.' },
+        { id: 'founder-crystal-sovereign', name: 'Pha Lê Đế Vương', tier: 'founder', rarity: 'secret', ring: '#a78bfa', pc: '#e9d5ff', sc: '#4c1d95', orn: ['ring'], art: 'crystal-sovereign', anim: true, desc: 'Pha lê nhiều mặt, tím amethyst và xanh sapphire, khúc xạ ánh sáng.' },
+        { id: 'founder-chrono-mechanical', name: 'Cỗ Máy Thời Gian', tier: 'founder', rarity: 'secret', ring: '#d97706', pc: '#fcd34d', sc: '#57534e', orn: ['ring'], art: 'chrono-mechanical', anim: true, desc: 'Bánh răng, đồng hồ, kim loại đồng và bạc với chi tiết cơ khí nhiều lớp.' },
+        { id: 'founder-frost-emperor', name: 'Băng Đế', tier: 'founder', rarity: 'secret', ring: '#93c5fd', pc: '#e0f2fe', sc: '#1e3a8a', orn: ['ring'], art: 'frost-emperor', anim: true, desc: 'Băng giá, tinh thể tuyết, xanh băng và bạc với hiệu ứng khúc xạ lạnh.' },
+
+        /* Khung Founder thế hệ 7.3.0 — giữ nguyên để không mất quyền sở hữu. */
+        { id: 'founder-void-emperor', name: 'Vô Cực Hoàng Đế', tier: 'founder', rarity: 'secret', ring: '#0f172a', pc: '#c084fc', sc: '#6d28d9', orn: ['ring', 'void', 'stars', 'sigil'], anim: true, legacy: true },
+        { id: 'founder-celestial-dragon', name: 'Thiên Long', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#facc15', sc: '#a16207', orn: ['ring', 'horns', 'wings', 'sigil'], anim: true, legacy: true },
+        { id: 'founder-golden-ratio', name: 'Vàng Nguyên Tắc', tier: 'founder', rarity: 'secret', ring: '#f59e0b', pc: '#fbbf24', sc: '#92400e', orn: ['ring', 'orbit', 'halo', 'stars'], anim: true, legacy: true },
+        { id: 'founder-ember-core', name: 'Lòng Nõn', tier: 'founder', rarity: 'secret', ring: '#fb7185', pc: '#fda4af', sc: '#881337', orn: ['ring', 'flames', 'ember-core', 'sigil'], anim: true, legacy: true },
+        { id: 'founder-crystal-mind', name: 'Tinh Thần Tinh Thạch', tier: 'founder', rarity: 'secret', ring: '#38bdf8', pc: '#7dd3fc', sc: '#0c4a6e', orn: ['ring', 'crystal', 'halo', 'sigil'], anim: true, legacy: true },
+        { id: 'founder-neon-lotus', name: 'Sen Neon', tier: 'founder', rarity: 'secret', ring: '#e879f9', pc: '#f0abfc', sc: '#701a75', orn: ['ring', 'petals', 'neon-lotus', 'sigil'], anim: true, legacy: true }
     ];
 
     function frameById(id) {
@@ -320,6 +337,244 @@
         return '';
     }
 
+    /* ---------------------------------------------------------------------
+       Hình tượng riêng cho 10 khung Founder 7.5.0.
+
+       Mỗi concept là một bộ vẽ độc lập (nhiều lớp, silhouette riêng) chứ không
+       phải một template tô lại màu. Mọi hình đều nằm ngoài bán kính 36 để
+       không che ảnh đại diện ở giữa khung.
+       ------------------------------------------------------------------ */
+    function pol(r, deg) {
+        var a = (deg * Math.PI) / 180;
+        return (50 + Math.cos(a) * r).toFixed(1) + ' ' + (50 + Math.sin(a) * r).toFixed(1);
+    }
+    function eachAround(count, fn) {
+        var out = '';
+        for (var i = 0; i < count; i++) out += fn((360 * i) / count, i);
+        return out;
+    }
+
+    var FOUNDER_FRAME_ART = {
+        /* 01 Âm Dương — vòng chia đôi đen/trắng, thái cực đỉnh, hai luồng xoắn. */
+        'yin-yang': function (P, S, gid) {
+            var swirl = '';
+            for (var i = 0; i < 3; i++) {
+                swirl += '<path d="M' + pol(45, 200 + i * 8) + 'A45 45 0 0 1 ' + pol(45, 250 + i * 8) + '" stroke-width="' + (2.4 - i * 0.6) + '" opacity="' + (0.8 - i * 0.2) + '"/>';
+            }
+            return '<defs><linearGradient id="' + gid + '-yy" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#f8fafc"/><stop offset=".5" stop-color="' + P + '"/>' +
+                '<stop offset="1" stop-color="#111"/></linearGradient></defs>' +
+                '<circle cx="50" cy="50" r="49" fill="none" stroke="url(#' + gid + '-yy)" stroke-width="2.6"/>' +
+                '<path d="M50 1a49 49 0 0 1 0 98a24.5 24.5 0 0 1 0-49a24.5 24.5 0 0 0 0-49z" fill="#0b0b0b" opacity=".92"/>' +
+                '<g fill="none" stroke="' + P + '" stroke-linecap="round">' + swirl + '</g>' +
+                '<g transform="translate(50 9)"><circle r="7.4" fill="#0b0b0b" stroke="' + P + '" stroke-width="1"/>' +
+                '<path d="M0-7.4a7.4 7.4 0 0 1 0 14.8a3.7 3.7 0 0 1 0-7.4a3.7 3.7 0 0 0 0-7.4z" fill="' + P + '"/>' +
+                '<circle cy="-3.7" r="1.5" fill="#0b0b0b"/><circle cy="3.7" r="1.5" fill="' + P + '"/></g>' +
+                '<g fill="' + P + '" opacity=".85"><circle cx="50" cy="95" r="1.8"/><circle cx="9" cy="50" r="1.5"/><circle cx="91" cy="50" r="1.5"/></g>';
+        },
+        /* 02 Cyberpunk — panel holographic, mạch neon, glitch, module cơ khí. */
+        'cyberpunk': function (P, S, gid) {
+            var circuits = eachAround(8, function (a) {
+                return '<path d="M' + pol(36, a) + 'L' + pol(43, a) + 'l3-3" stroke-width="1.2" opacity=".9"/>';
+            });
+            var glitch = '';
+            [12, 26, 40, 58].forEach(function (deg, i) {
+                glitch += '<rect x="' + (i % 2 ? 78 : 4) + '" y="' + (14 + i * 6) + '" width="' + (9 + i) + '" height="2" fill="' + (i % 2 ? S : P) + '" opacity="' + (0.5 + i * 0.1) + '"/>';
+            });
+            return '<defs><linearGradient id="' + gid + '-cp" x1="0" y1="0" x2="1" y2="0">' +
+                '<stop offset="0" stop-color="' + P + '"/><stop offset=".5" stop-color="' + S + '"/>' +
+                '<stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>' +
+                '<g fill="none" stroke="url(#' + gid + '-cp)">' +
+                '<rect x="4" y="4" width="92" height="92" rx="12" stroke-width="1.6"/>' +
+                '<rect x="8" y="8" width="84" height="84" rx="9" stroke-width=".7" stroke-dasharray="4 6" opacity=".7"/>' + circuits + '</g>' +
+                '<g stroke="' + P + '" stroke-width="1.4" fill="none">' +
+                '<path d="M50 2v8l-6 3M50 98v-8l6-3"/>' +
+                '<path d="M2 50h8l3-6M98 50h-8l-3 6"/></g>' +
+                glitch +
+                '<g fill="' + S + '"><rect x="41" y="1" width="5" height="5" rx="1"/><rect x="54" y="1" width="5" height="5" rx="1"/>' +
+                '<rect x="41" y="94" width="5" height="5" rx="1"/><rect x="54" y="94" width="5" height="5" rx="1"/></g>' +
+                '<g fill="#67e8f9"><circle cx="50" cy="6" r="1.5"/><circle cx="94" cy="50" r="1.5"/><circle cx="6" cy="50" r="1.5"/></g>';
+        },
+        /* 03 Đế chế cổ đại — đền đài, cột, họa tiết meander, đá quý. */
+        'ancient-empire': function (P, S, gid) {
+            var meander = eachAround(24, function (a, i) {
+                return i % 2 === 0
+                    ? '<path d="M' + pol(44, a) + 'L' + pol(48, a) + '" stroke-width="1.4"/>'
+                    : '<path d="M' + pol(44, a) + 'l1.6 2.6h2.2" stroke-width="1.1"/>';
+            });
+            return '<defs><linearGradient id="' + gid + '-ae" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="' + P + '"/><stop offset="1" stop-color="#7c2d12"/></linearGradient></defs>' +
+                '<g fill="none" stroke="url(#' + gid + '-ae)" stroke-width="1.6">' +
+                '<circle cx="50" cy="50" r="49"/>' + meander + '</g>' +
+                /* đền đài phía trên: tam giác + 4 cột */
+                '<path d="M30 15L50 3l20 12z" fill="' + P + '" stroke="' + S + '" stroke-width="1"/>' +
+                '<path d="M33 16h34v3H33z" fill="' + S + '"/>' +
+                '<g fill="' + P + '" opacity=".95"><rect x="35" y="19" width="3" height="11"/><rect x="43" y="19" width="3" height="11"/>' +
+                '<rect x="54" y="19" width="3" height="11"/><rect x="62" y="19" width="3" height="11"/></g>' +
+                '<g fill="' + S + '"><circle cx="32" cy="60" r="2.6"/><circle cx="68" cy="60" r="2.6"/>' +
+                '<circle cx="50" cy="82" r="3"/></g>' +
+                '<g stroke="' + P + '" stroke-width=".9" opacity=".65"><path d="M20 40l4 4M76 40l4 4M20 66l4-4M76 66l4-4"/></g>' +
+                '<path d="M34 92h32" stroke="' + P + '" stroke-width="2" opacity=".8"/>';
+        },
+        /* 04 Samurai — kabuto và maedate trên đỉnh, sode hai bên, dây buộc giáp. */
+        'samurai': function (P, S, gid) {
+            var lacing = '';
+            for (var i = 0; i < 5; i++) {
+                var x = 14 + i * 2.2;
+                lacing += '<path d="M' + x + ' 52l5 4M' + x + ' 60l5 4" stroke-width="1"/>';
+                lacing += '<path d="M' + (86 - i * 2.2) + ' 52l-5 4M' + (86 - i * 2.2) + ' 60l-5 4" stroke-width="1"/>';
+            }
+            return '<defs><linearGradient id="' + gid + '-sm" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="' + P + '"/><stop offset="1" stop-color="#7f1d1d"/></linearGradient></defs>' +
+                '<g fill="none" stroke="url(#' + gid + '-sm)" stroke-width="1.5">' +
+                '<circle cx="50" cy="50" r="48.4"/><circle cx="50" cy="50" r="41" stroke-dasharray="2 7"/></g>' +
+                /* kabuto */
+                '<path d="M26 22c0-11 11-18 24-18s24 7 24 18c-7-4-15-6-24-6s-17 2-24 6z" fill="#111" stroke="' + P + '" stroke-width="1.4"/>' +
+                '<path d="M28 21c4-6 12-9 22-9s18 3 22 9" stroke="' + P + '" stroke-width="1.1" fill="none"/>' +
+                '<path d="M50 4c-4 6-6 13-5 20M50 4c4 6 6 13 5 20" stroke="' + P + '" stroke-width="1.6" fill="none"/>' +
+                '<circle cx="50" cy="30" r="4.6" fill="' + P + '" stroke="' + S + '" stroke-width="1"/>' +
+                '<path d="M45.4 30h9.2M50 25.4v9.2" stroke="#7f1d1d" stroke-width=".9"/>' +
+                /* sode (giáp vai) */
+                '<path d="M8 40l10-5 3 17-10 4zM92 40l-10-5-3 17 10 4z" fill="#1c1917" stroke="' + P + '" stroke-width="1.2"/>' +
+                '<g stroke="' + P + '" opacity=".8">' + lacing + '</g>' +
+                '<path d="M36 88h28" stroke="' + P + '" stroke-width="2"/>' +
+                '<path d="M40 84l10 8 10-8" stroke="' + P + '" stroke-width="1.2" fill="none"/>';
+        },
+        /* 05 Thiên văn đài — mái vòm + kính viễn vọng, quỹ đạo, chòm sao. */
+        'astral-observatory': function (P, S, gid) {
+            var stars = '';
+            var pts = [[14, 20], [22, 12], [78, 16], [88, 28], [20, 78], [76, 82], [90, 62], [10, 44]];
+            pts.forEach(function (p, i) {
+                stars += '<path d="M' + p[0] + ' ' + (p[1] - 2.4) + 'l1 1.8 1.8 1-1.8 1-1 1.8-1-1.8-1.8-1 1.8-1z" opacity="' + (0.6 + (i % 3) * 0.2) + '"/>';
+            });
+            return '<defs><linearGradient id="' + gid + '-ao" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#c7d2fe"/><stop offset="1" stop-color="#4338ca"/></linearGradient></defs>' +
+                '<circle cx="50" cy="50" r="49" fill="none" stroke="url(#' + gid + '-ao)" stroke-width="1.5"/>' +
+                '<g fill="none" stroke="' + P + '" stroke-width="1.1" opacity=".8">' +
+                '<ellipse cx="50" cy="50" rx="48" ry="17" transform="rotate(-22 50 50)"/>' +
+                '<ellipse cx="50" cy="50" rx="48" ry="17" transform="rotate(28 50 50)" opacity=".6"/></g>' +
+                /* mái vòm + kính */
+                '<path d="M28 24a22 22 0 0 1 44 0z" fill="#1e1b4b" stroke="' + P + '" stroke-width="1.4"/>' +
+                '<path d="M35 24a15 15 0 0 1 30 0" stroke="' + P + '" stroke-width=".9" fill="none" opacity=".85"/>' +
+                '<path d="M50 24l17-13" stroke="' + P + '" stroke-width="2.6" stroke-linecap="round"/>' +
+                '<circle cx="68" cy="10" r="3.4" fill="' + P + '"/>' +
+                '<rect x="44" y="12" width="3.4" height=".9" fill="' + P + '"/>' +
+                '<g fill="' + P + '">' + stars + '</g>' +
+                '<circle cx="50" cy="50" r="4" fill="none" stroke="' + P + '" stroke-width="1.2"/>' +
+                '<circle cx="50" cy="50" r="1.4" fill="' + P + '"/>';
+        },
+        /* 06 Vực thẳm — san hô, sóng sâu, pha lê biển, sinh quang. */
+        'abyssal': function (P, S, gid) {
+            var coral = '';
+            [18, 26, 34].forEach(function (x, i) {
+                coral += '<path d="M' + x + ' 96c0-' + (8 + i * 3) + ' ' + (i % 2 ? -4 : 4) + '-' + (10 + i * 2) + ' ' + (i % 2 ? -2 : 2) + '-' + (16 + i * 3) + '" stroke-width="2"/>';
+                coral += '<path d="M' + x + ' ' + (80 - i * 4) + 'l' + (i % 2 ? -4 : 4) + '-5" stroke-width="1.4"/>';
+                coral += '<path d="M' + (100 - x) + ' 96c0-' + (8 + i * 3) + ' ' + (i % 2 ? 4 : -4) + '-' + (10 + i * 2) + ' ' + (i % 2 ? 2 : -2) + '-' + (16 + i * 3) + '" stroke-width="2"/>';
+            });
+            return '<defs><radialGradient id="' + gid + '-ab" cx=".5" cy=".5" r=".5">' +
+                '<stop offset=".55" stop-color="#06b6d4" stop-opacity="0"/>' +
+                '<stop offset="1" stop-color="#06b6d4" stop-opacity=".38"/></radialGradient></defs>' +
+                '<circle cx="50" cy="50" r="49" fill="url(#' + gid + '-ab)"/>' +
+                '<circle cx="50" cy="50" r="48" fill="none" stroke="' + P + '" stroke-width="1.4" opacity=".9"/>' +
+                '<g fill="none" stroke="' + P + '" stroke-linecap="round">' + coral + '</g>' +
+                '<g fill="none" stroke="' + P + '" opacity=".55">' +
+                '<path d="M6 62q12-7 24 0t24 0 24 0" stroke-width="1.3"/>' +
+                '<path d="M6 72q12-7 24 0t24 0 24 0" stroke-width=".9"/>' +
+                '<path d="M6 82q12-7 24 0t24 0 24 0" stroke-width=".7"/></g>' +
+                '<g fill="' + P + '" opacity=".85">' +
+                '<path d="M50 2l4 8-4 5-4-5z"/><circle cx="18" cy="40" r="1.7"/><circle cx="82" cy="40" r="1.7"/>' +
+                '<circle cx="30" cy="30" r="1.1"/><circle cx="70" cy="30" r="1.1"/><circle cx="50" cy="20" r="1.4"/></g>' +
+                '<circle cx="50" cy="50" r="3" fill="none" stroke="' + P + '" stroke-width="1" opacity=".7"/>';
+        },
+        /* 07 Phượng hoàng — cánh lửa hai bên, mào đỉnh, lông đuôi dưới. */
+        'phoenix-rebirth': function (P, S, gid) {
+            var feathers = '';
+            [0, 1, 2, 3, 4].forEach(function (i) {
+                feathers += '<path d="M50 52Q' + (50 - 12 - i * 6) + ' ' + (40 - i * 2) + ' ' + (14 + i * 2) + ' ' + (36 + i * 7) + '" stroke-width="' + (2.6 - i * 0.35) + '" opacity="' + (0.95 - i * 0.12) + '"/>';
+                feathers += '<path d="M50 52Q' + (50 + 12 + i * 6) + ' ' + (40 - i * 2) + ' ' + (86 - i * 2) + ' ' + (36 + i * 7) + '" stroke-width="' + (2.6 - i * 0.35) + '" opacity="' + (0.95 - i * 0.12) + '"/>';
+            });
+            return '<defs><linearGradient id="' + gid + '-px" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="#fbbf24"/><stop offset=".55" stop-color="#f97316"/>' +
+                '<stop offset="1" stop-color="#7f1d1d"/></linearGradient></defs>' +
+                '<circle cx="50" cy="50" r="48.6" fill="none" stroke="url(#' + gid + '-px)" stroke-width="1.8"/>' +
+                '<g fill="none" stroke="url(#' + gid + '-px)" stroke-linecap="round">' + feathers + '</g>' +
+                /* mào lửa */
+                '<path d="M50 4c3 5 1 7 4 10 2-1 2-4 2-6 3 4 3 9 0 13-2 3-4 4-6 4s-5-1-6-4c-3-4-2-9 1-13 0 2 0 5 2 6 2-3 1-5 3-10z" fill="url(#' + gid + '-px)"/>' +
+                /* đuôi */
+                '<g stroke="' + P + '" stroke-linecap="round" fill="none">' +
+                '<path d="M44 88q-6 8-2 10" stroke-width="2.2"/><path d="M50 90v10" stroke-width="2.2"/>' +
+                '<path d="M56 88q6 8 2 10" stroke-width="2.2"/></g>' +
+                '<circle cx="50" cy="46" r="3.4" fill="' + P + '"/>' +
+                '<g fill="#fde68a" opacity=".9"><circle cx="20" cy="22" r="1.6"/><circle cx="80" cy="22" r="1.6"/>' +
+                '<circle cx="12" cy="54" r="1.2"/><circle cx="88" cy="54" r="1.2"/></g>';
+        },
+        /* 08 Pha lê đế vương — vành đa giác khúc xạ, vương miện pha lê. */
+        'crystal-sovereign': function (P, S, gid) {
+            var facets = eachAround(12, function (a, i) {
+                var r1 = i % 2 ? 38 : 36;
+                return '<path d="M' + pol(r1, a) + 'L' + pol(49, a + 5) + 'L' + pol(44, a + 15) + 'L' + pol(r1, a + 30) + 'z" fill="' + (i % 3 ? P : '#7dd3fc') + '" opacity="' + (i % 2 ? 0.34 : 0.5) + '" stroke="' + P + '" stroke-width=".5"/>';
+            });
+            return '<defs><linearGradient id="' + gid + '-cs" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#f5f3ff"/><stop offset=".45" stop-color="#a78bfa"/>' +
+                '<stop offset="1" stop-color="#1e40af"/></linearGradient></defs>' +
+                '<g>' + facets + '</g>' +
+                '<circle cx="50" cy="50" r="48.4" fill="none" stroke="url(#' + gid + '-cs)" stroke-width="1.6"/>' +
+                /* vương miện pha lê */
+                '<path d="M32 18l6-13 6 10 6-14 6 14 6-10 6 13z" fill="url(#' + gid + '-cs)" stroke="#ede9fe" stroke-width=".8" opacity=".95"/>' +
+                '<path d="M32 18h36" stroke="#c4b5fd" stroke-width="1.4"/>' +
+                '<g stroke="#f5f3ff" stroke-width=".7" opacity=".7"><path d="M50 18v-9M38 18v-5M62 18v-5"/></g>' +
+                '<g fill="#e9d5ff"><circle cx="38" cy="5" r="1.4"/><circle cx="50" cy="1.6" r="1.6"/><circle cx="62" cy="5" r="1.4"/></g>' +
+                '<g stroke="#bfdbfe" stroke-width=".8" opacity=".6"><path d="M20 78l14-6M80 78l-14-6M14 44l10 3M86 44l-10 3"/></g>';
+        },
+        /* 09 Cỗ máy thời gian — vành bánh răng, vạch số, đĩa cơ khí. */
+        'chrono-mechanical': function (P, S, gid) {
+            var teeth = eachAround(24, function (a, i) {
+                return '<path d="M' + pol(45, a) + 'L' + pol(51, a) + '" stroke="' + (i % 2 ? P : S) + '" stroke-width="' + (i % 2 ? 2.4 : 1.4) + '"/>' +
+                    '<path d="M' + pol(51, a) + 'l2.6 ' + (i % 2 ? 1.6 : -1.6) + '" stroke="' + P + '" stroke-width="1"/>';
+            });
+            var ticks = eachAround(12, function (a, i) {
+                return '<path d="M' + pol(i % 3 ? 41 : 39, a) + 'L' + pol(44, a) + '" stroke-width="' + (i % 3 ? 0.8 : 1.6) + '"/>';
+            });
+            return '<defs><linearGradient id="' + gid + '-cm" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#fcd34d"/><stop offset=".5" stop-color="#d97706"/>' +
+                '<stop offset="1" stop-color="#78716c"/></linearGradient></defs>' +
+                '<g stroke="url(#' + gid + '-cm)" stroke-linecap="round">' + teeth + '</g>' +
+                '<circle cx="50" cy="50" r="45" fill="none" stroke="url(#' + gid + '-cm)" stroke-width="2.6"/>' +
+                '<circle cx="50" cy="50" r="37.5" fill="none" stroke="' + S + '" stroke-width="1" opacity=".8"/>' +
+                '<g stroke="' + P + '" stroke-linecap="round">' + ticks + '</g>' +
+                /* bánh răng nhỏ góc trên */
+                '<g transform="translate(50 5)"><circle r="8" fill="none" stroke="' + P + '" stroke-width="1.6"/>' +
+                '<circle r="3" fill="' + P + '" opacity=".8"/>' +
+                '<g stroke="' + P + '" stroke-width="1.6">' + eachAround(8, function (a) { var r = a * Math.PI / 180; return '<path d="M' + (Math.cos(r) * 8).toFixed(1) + ' ' + (Math.sin(r) * 8).toFixed(1) + 'L' + (Math.cos(r) * 11).toFixed(1) + ' ' + (Math.sin(r) * 11).toFixed(1) + '"/>'; }) + '</g></g>' +
+                '<g fill="' + P + '" opacity=".9"><circle cx="20" cy="86" r="2.2"/><circle cx="80" cy="86" r="2.2"/></g>' +
+                '<path d="M32 92h36" stroke="' + P + '" stroke-width="1.6" opacity=".7"/>';
+        },
+        /* 10 Băng đế — vương miện băng, tinh thể tuyết, khúc xạ lạnh. */
+        'frost-emperor': function (P, S, gid) {
+            var flakes = '';
+            [[15, 30], [85, 30], [22, 78], [78, 78]].forEach(function (p, k) {
+                var s = k % 2 ? 0.9 : 1.2;
+                flakes += '<g transform="translate(' + p[0] + ' ' + p[1] + ') scale(' + s + ')" stroke="' + P + '" stroke-width="1.1">' +
+                    eachAround(3, function (a) {
+                        var r = (a * Math.PI) / 180;
+                        return '<path d="M0 0L' + (Math.cos(r) * 6).toFixed(1) + ' ' + (Math.sin(r) * 6).toFixed(1) + '"/>';
+                    }) + '</g>';
+            });
+            return '<defs><linearGradient id="' + gid + '-fe" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#f8fafc"/><stop offset=".5" stop-color="#93c5fd"/>' +
+                '<stop offset="1" stop-color="#1e3a8a"/></linearGradient></defs>' +
+                '<circle cx="50" cy="50" r="48.4" fill="none" stroke="url(#' + gid + '-fe)" stroke-width="1.8"/>' +
+                '<circle cx="50" cy="50" r="44" fill="none" stroke="' + P + '" stroke-width=".6" stroke-dasharray="1 6" opacity=".85"/>' +
+                /* vương miện băng */
+                '<path d="M30 22l5-16 6 11 9-15 9 15 6-11 5 16z" fill="url(#' + gid + '-fe)" stroke="#e0f2fe" stroke-width=".8" opacity=".95"/>' +
+                '<path d="M30 22h40" stroke="#bfdbfe" stroke-width="1.3"/>' +
+                '<g fill="#f0f9ff" opacity=".9"><path d="M50 2l2 5-2 4-2-4z"/><circle cx="35" cy="6" r="1.2"/><circle cx="65" cy="6" r="1.2"/></g>' +
+                '<g fill="none" stroke="' + P + '" stroke-linecap="round">' + flakes + '</g>' +
+                '<g stroke="#bfdbfe" stroke-width=".9" opacity=".55"><path d="M8 56q14-8 26-2M92 56q-14-8-26-2"/></g>' +
+                '<path d="M38 92h24" stroke="' + P + '" stroke-width="1.7" opacity=".75"/>';
+        }
+    };
+
     /** Trả về phần tử SVG khung hoặc null cho khung mặc định. */
     function frameOverlay(frameId) {
         var f = frameById(frameId);
@@ -368,9 +623,12 @@
         }
         inner += '</g>';
 
-        /* Hoạ tiết riêng của từng khung. */
+        /* Hoạ tiết riêng của từng khung. Khung Founder 7.5.0 dùng bộ vẽ riêng
+           (nhiều lớp) thay cho các primitive dùng chung. */
         inner += '<g class="bk-frame-art">';
-        f.orn.forEach(function (n) { inner += prim(n, P, S); });
+        var bespoke = f.art && FOUNDER_FRAME_ART[f.art];
+        if (bespoke) inner += bespoke(P, S, gid);
+        else f.orn.forEach(function (n) { inner += prim(n, P, S); });
         inner += '</g>';
 
         /* Tia sáng / hạt lấp lánh phân bố tất định theo id khung. */
@@ -398,7 +656,9 @@
                 '<ellipse cx="50" cy="50" rx="53" ry="25" transform="rotate(26 50 50)" stroke-width="1.1" opacity=".55"/>' +
                 '<circle cx="50" cy="50" r="47" stroke="' + S + '" stroke-width="2.4" stroke-dasharray="1 12" opacity=".8"/>' +
                 '</g>';
-            if (f.tier === 'founder') {
+            /* Khung Founder 7.5.0 đã có vương miện/hình tượng riêng trong bộ vẽ
+               bespoke — không chồng thêm vương miện dùng chung. */
+            if (f.tier === 'founder' && !(f.art && FOUNDER_FRAME_ART[f.art])) {
                 inner += '<g class="bk-frame-crown" fill="' + P + '" stroke="' + S + '" stroke-width="1">' +
                     '<path d="M31 12l4 12 7-10 8 12 8-12 7 10 4-12 2 15H29z"/>' +
                     '<circle cx="50" cy="9" r="2.4"/></g>';

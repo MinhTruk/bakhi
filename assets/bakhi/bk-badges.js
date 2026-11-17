@@ -1,6 +1,8 @@
 /* =========================================================================
    Bá Khí — bk-badges.js
-   Hệ thống thành tích 75 badge (73 tự động + 2 chỉ Administrator trao).
+   Hệ thống thành tích 99 badge (74 tự động + 25 chỉ được trao tay).
+   25 badge trao tay = 2 Administrator + 2 Developer + 11 Founder cũ + 10
+   Founder Badge 7.5.0 (có hình tượng SVG riêng qua BK.badges.art).
 
    - Dữ liệu badge là data-driven: mỗi badge có điều kiện đọc từ chỉ số cục bộ.
    - Tiến độ và badge đã đạt lưu ở `bakhiBadges.v1` (có phiên bản + validate).
@@ -432,11 +434,267 @@
             desc: 'Khung Sen Neon độc bản, chỉ Founder có thể trao.',
             icon: 'fa-lotus', category: 'secret', rarity: 'secret', goal: 1, key: null,
             frame: 'founder-neon-lotus', adminOnly: true, exclusive: 'founder'
+        },
+
+        /* --- 10 Founder Badge 7.5.0 — ấn phẩm độc quyền, có hình tượng riêng ---
+           Mỗi badge dùng `art` (SVG dựng sẵn trong badgeArt) thay cho icon Font
+           Awesome. Không badge nào trong nhóm này tự động mở hoặc nằm trong
+           chức năng "trao toàn bộ badge". */
+        {
+            id: 'founder-genesis', name: 'Genesis',
+            desc: 'Khởi nguyên — lõi năng lượng đầu tiên và quỹ đạo hình thành nên Bá Khí.',
+            icon: 'fa-circle-dot', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: null, adminOnly: true, exclusive: 'founder', art: 'genesis'
+        },
+        {
+            id: 'founder-architect', name: 'Architect',
+            desc: 'Người kiến tạo — bản thiết kế hình học của toàn bộ hệ thống.',
+            icon: 'fa-compass-drafting', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-frost-emperor', adminOnly: true, exclusive: 'founder', art: 'architect'
+        },
+        {
+            id: 'founder-eternal-flame', name: 'Eternal Flame',
+            desc: 'Ngọn lửa vĩnh cửu — nhiệt huyết không tắt của người khai sáng.',
+            icon: 'fa-fire-flame-curved', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-phoenix-rebirth', adminOnly: true, exclusive: 'founder', art: 'eternal-flame'
+        },
+        {
+            id: 'founder-nexus', name: 'Nexus',
+            desc: 'Trung tâm liên kết — nơi mọi luồng năng lượng và dữ liệu gặp nhau.',
+            icon: 'fa-diagram-project', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: null, adminOnly: true, exclusive: 'founder', art: 'nexus'
+        },
+        {
+            id: 'founder-celestial', name: 'Celestial',
+            desc: 'Thiên hà và tinh tú — tầm nhìn vượt khỏi đường chân trời.',
+            icon: 'fa-galaxy', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-astral-observatory', adminOnly: true, exclusive: 'founder', art: 'celestial'
+        },
+        {
+            id: 'founder-chronos', name: 'Chronos',
+            desc: 'Thời gian — đồng hồ cổ và cơ khí ghi dấu từng giai đoạn phát triển.',
+            icon: 'fa-clock', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-chrono-mechanical', adminOnly: true, exclusive: 'founder', art: 'chronos'
+        },
+        {
+            id: 'founder-void-sentinel', name: 'Void Sentinel',
+            desc: 'Người canh giữ hư không — lá chắn đứng giữa khoảng trống vô tận.',
+            icon: 'fa-shield', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-abyssal', adminOnly: true, exclusive: 'founder', art: 'void-sentinel'
+        },
+        {
+            id: 'founder-prime-code', name: 'Prime Code',
+            desc: 'Công nghệ và dữ liệu — dòng mã nguồn gốc của nền tảng.',
+            icon: 'fa-code', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: null, adminOnly: true, exclusive: 'founder', art: 'prime-code'
+        },
+        {
+            id: 'founder-legacy', name: 'Legacy',
+            desc: 'Di sản — vương miện và nguyệt quế của những gì còn lại mãi.',
+            icon: 'fa-crown', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: null, adminOnly: true, exclusive: 'founder', art: 'legacy'
+        },
+        {
+            id: 'founder-ascendant', name: 'Ascendant',
+            desc: 'Thăng hoa — pha lê và ánh sáng của bước tiến cuối cùng.',
+            icon: 'fa-gem', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-crystal-sovereign', adminOnly: true, exclusive: 'founder', art: 'ascendant'
         }
     ];
 
     var BY_ID = {};
     CATALOG.forEach(function (x) { BY_ID[x.id] = x; });
+
+    /* ---------------------------------------------------------------------
+       Hình tượng SVG cho 10 Founder Badge 7.5.0.
+
+       Đây là markup hằng số (không chứa dữ liệu người dùng), mỗi badge có
+       hình tượng, silhouette và bảng màu riêng — không dùng chung template.
+       Trả về chuỗi SVG để profile UI và dashboard cùng hiển thị một asset.
+       ------------------------------------------------------------------ */
+    var ART_NS = 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img"';
+
+    function artWraps(id, body) {
+        return '<svg ' + ART_NS + ' data-badge-art="' + id + '" class="bk-badge-art">' + body + '</svg>';
+    }
+
+    var ART_PAINTERS = {
+        /* Genesis — lõi năng lượng + hai quỹ đạo nghiêng, tia sáng ngắn. */
+        genesis: function () {
+            return '<defs><radialGradient id="bka-gen-core" cx=".5" cy=".5" r=".5">' +
+                '<stop offset="0" stop-color="#f0fdfa"/><stop offset=".45" stop-color="#5eead4"/>' +
+                '<stop offset="1" stop-color="#0f766e" stop-opacity="0"/></radialGradient>' +
+                '<linearGradient id="bka-gen-ring" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#99f6e4"/><stop offset="1" stop-color="#0e7490"/></linearGradient></defs>' +
+                '<circle cx="32" cy="32" r="17" fill="url(#bka-gen-core)" opacity=".9"/>' +
+                '<circle cx="32" cy="32" r="7.4" fill="#ccfbf1"/>' +
+                '<circle cx="32" cy="32" r="3.1" fill="#134e4a"/>' +
+                '<g stroke="url(#bka-gen-ring)" stroke-width="1.5">' +
+                '<ellipse cx="32" cy="32" rx="27" ry="10.5" transform="rotate(-24 32 32)"/>' +
+                '<ellipse cx="32" cy="32" rx="27" ry="10.5" transform="rotate(38 32 32)" opacity=".65"/></g>' +
+                '<g fill="#a7f3d0"><circle cx="8" cy="23" r="1.7"/><circle cx="54" cy="20" r="1.4"/>' +
+                '<circle cx="47" cy="51" r="1.6"/></g>' +
+                '<g stroke="#5eead4" stroke-width="1" opacity=".6">' +
+                '<path d="M32 5v4M32 55v4M5 32h4M55 32h4"/></g>';
+        },
+        /* Architect — khối lập phương isometric + compa + thước chia độ. */
+        architect: function () {
+            return '<defs><linearGradient id="bka-arc-a" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#fde68a"/><stop offset="1" stop-color="#b45309"/></linearGradient></defs>' +
+                '<g stroke="url(#bka-arc-a)" stroke-width="1.6" stroke-linejoin="round">' +
+                '<path d="M32 8l19 11v26L32 56 13 45V19z"/>' +
+                '<path d="M32 8v48M13 19l19 11 19-11M13 45l19-15 19 15"/></g>' +
+                '<g stroke="#fcd34d" stroke-width=".9" opacity=".5">' +
+                '<path d="M17 24l6 3M41 38l6 3M20 41l5-3M39 23l5-3"/></g>' +
+                '<circle cx="32" cy="32" r="4.6" fill="#fef3c7"/>' +
+                '<path d="M32 32l14-9" stroke="#7c2d12" stroke-width="1.6"/>' +
+                '<circle cx="46" cy="23" r="1.9" fill="#7c2d12"/>' +
+                '<g fill="#fbbf24" opacity=".9"><rect x="30" y="2" width="4" height="3" rx="1"/>' +
+                '<rect x="30" y="59" width="4" height="3" rx="1"/></g>';
+        },
+        /* Eternal Flame — ba lớp lửa với lõi sáng, tàn lửa bay. */
+        'eternal-flame': function () {
+            return '<defs><linearGradient id="bka-fl-outer" x1=".5" y1="1" x2=".5" y2="0">' +
+                '<stop offset="0" stop-color="#9a3412"/><stop offset=".55" stop-color="#f97316"/>' +
+                '<stop offset="1" stop-color="#fde68a"/></linearGradient>' +
+                '<linearGradient id="bka-fl-inner" x1=".5" y1="1" x2=".5" y2="0">' +
+                '<stop offset="0" stop-color="#fdba74"/><stop offset="1" stop-color="#fffbeb"/></linearGradient></defs>' +
+                '<path d="M32 4c8 11 2 15 8 22 5-2 6-7 6-11 6 9 7 20 2 28-4 6-10 9-16 9s-13-3-17-9c-5-9-3-20 4-28 0 5 1 9 5 11-1-8-1-12 8-22z" fill="url(#bka-fl-outer)"/>' +
+                '<path d="M32 20c4 7 1 10 5 14 3-2 3-5 3-8 4 6 4 13 0 18-3 3-6 4-9 4s-7-1-9-4c-4-5-3-12 1-18 0 3 .5 6 3 8 0-5 1-9 6-14z" fill="url(#bka-fl-inner)" opacity=".95"/>' +
+                '<ellipse cx="31" cy="44" rx="5" ry="9" fill="#fffbeb" opacity=".75"/>' +
+                '<g fill="#fdba74"><circle cx="16" cy="16" r="1.6"/><circle cx="49" cy="13" r="1.2"/>' +
+                '<circle cx="52" cy="30" r="1"/><circle cx="13" cy="33" r="1"/></g>' +
+                '<path d="M20 58h24" stroke="#9a3412" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>';
+        },
+        /* Nexus — nút trung tâm nối 6 nhánh qua vòng lục giác. */
+        nexus: function () {
+            var spokes = '';
+            for (var i = 0; i < 6; i++) {
+                var a = (Math.PI * 2 * i) / 6 - Math.PI / 2;
+                var x = 32 + Math.cos(a) * 23, y = 32 + Math.sin(a) * 23;
+                spokes += '<path d="M32 32L' + x.toFixed(1) + ' ' + y.toFixed(1) + '"/>';
+                spokes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2.6" fill="#f5d0fe"/>';
+            }
+            return '<defs><linearGradient id="bka-nx" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#f0abfc"/><stop offset="1" stop-color="#7e22ce"/></linearGradient></defs>' +
+                '<g stroke="url(#bka-nx)" stroke-width="1.4" opacity=".85">' + spokes + '</g>' +
+                '<path d="M32 9l19 11v22L32 55 13 44V20z" stroke="#a855f7" stroke-width="1" stroke-dasharray="3 4" opacity=".7"/>' +
+                '<circle cx="32" cy="32" r="11" fill="#4c1d95" opacity=".55"/>' +
+                '<circle cx="32" cy="32" r="7" fill="#e879f9"/>' +
+                '<circle cx="32" cy="32" r="3" fill="#fdf4ff"/>' +
+                '<path d="M32 25v-8M32 47v-8M25 32h-8M47 32h-8" stroke="#f5d0fe" stroke-width="1.2" opacity=".8"/>';
+        },
+        /* Celestial — xoắn ốc thiên hà + chòm sao + ngôi sao trung tâm. */
+        celestial: function () {
+            return '<defs><radialGradient id="bka-cel" cx=".5" cy=".5" r=".5">' +
+                '<stop offset="0" stop-color="#e0e7ff"/><stop offset=".5" stop-color="#818cf8"/>' +
+                '<stop offset="1" stop-color="#312e81" stop-opacity="0"/></radialGradient></defs>' +
+                '<circle cx="32" cy="32" r="24" fill="url(#bka-cel)" opacity=".65"/>' +
+                '<g stroke="#a5b4fc" stroke-width="1.3" stroke-linecap="round" opacity=".9">' +
+                '<path d="M32 32c10-8 22-4 20 5s-17 12-25 5-4-18 6-19"/>' +
+                '<path d="M32 32c-9 7-20 4-18-4s15-11 22-5"/></g>' +
+                '<path d="M32 26l2.1 4.4 4.9.7-3.5 3.5.8 4.9-4.3-2.3-4.3 2.3.8-4.9-3.5-3.5 4.9-.7z" fill="#fef9c3"/>' +
+                '<g fill="#c7d2fe"><circle cx="48" cy="15" r="1.5"/><circle cx="15" cy="22" r="1"/>' +
+                '<circle cx="20" cy="47" r="1.4"/><circle cx="45" cy="50" r="1"/><circle cx="54" cy="35" r="1.2"/></g>' +
+                '<path d="M42 12l2 3 3 1-3 1-2 3-1-3-3-1 3-1z" fill="#e0e7ff" opacity=".9"/>';
+        },
+        /* Chronos — mặt đồng hồ, vạch giờ, bánh răng sau lớp mặt. */
+        chronos: function () {
+            var ticks = '';
+            for (var i = 0; i < 12; i++) {
+                var a = (Math.PI * 2 * i) / 12;
+                var r1 = i % 3 === 0 ? 17 : 19.5;
+                ticks += '<path d="M' + (32 + Math.cos(a) * r1).toFixed(1) + ' ' + (32 + Math.sin(a) * r1).toFixed(1) +
+                    'L' + (32 + Math.cos(a) * 22).toFixed(1) + ' ' + (32 + Math.sin(a) * 22).toFixed(1) + '"/>';
+            }
+            var teeth = '';
+            for (var t = 0; t < 10; t++) {
+                var at = (Math.PI * 2 * t) / 10;
+                teeth += '<rect x="-2.2" y="-29" width="4.4" height="5" rx="1" transform="translate(32 32) rotate(' +
+                    ((at * 180) / Math.PI).toFixed(1) + ')" fill="#a16207"/>';
+            }
+            return '<defs><linearGradient id="bka-ch" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#fde68a"/><stop offset="1" stop-color="#92400e"/></linearGradient></defs>' +
+                teeth + '<circle cx="32" cy="32" r="23" fill="#1c1917"/>' +
+                '<circle cx="32" cy="32" r="23" stroke="url(#bka-ch)" stroke-width="2.2"/>' +
+                '<circle cx="32" cy="32" r="17" stroke="#78350f" stroke-width="1" opacity=".8"/>' +
+                '<g stroke="#fbbf24" stroke-width="1.3" stroke-linecap="round">' + ticks + '</g>' +
+                '<path d="M32 32V19M32 32l9 6" stroke="#fef3c7" stroke-width="2" stroke-linecap="round"/>' +
+                '<circle cx="32" cy="32" r="2.4" fill="#fef3c7"/>';
+        },
+        /* Void Sentinel — obelisk + khiên hư không + một khe mắt bạc. */
+        'void-sentinel': function () {
+            return '<defs><linearGradient id="bka-vs" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#c4b5fd"/><stop offset="1" stop-color="#4c1d95"/></linearGradient>' +
+                '<radialGradient id="bka-vs-core" cx=".5" cy=".5" r=".5">' +
+                '<stop offset="0" stop-color="#a78bfa" stop-opacity=".9"/>' +
+                '<stop offset="1" stop-color="#1e1b4b" stop-opacity="0"/></radialGradient></defs>' +
+                '<circle cx="32" cy="30" r="26" fill="url(#bka-vs-core)" opacity=".7"/>' +
+                '<path d="M32 5l16 9v20c0 10-7 18-16 25-9-7-16-15-16-25V14z" fill="#0c0a1d" stroke="url(#bka-vs)" stroke-width="1.8"/>' +
+                '<path d="M32 13l9 5v15c0 6-4 11-9 16-5-5-9-10-9-16V18z" fill="#1e1b4b" stroke="#7c3aed" stroke-width=".9" opacity=".9"/>' +
+                '<path d="M23 30c6-3 12-3 18 0-6 3-12 3-18 0z" fill="#e9d5ff"/>' +
+                '<circle cx="32" cy="30" r="1.7" fill="#312e81"/>' +
+                '<g stroke="#a78bfa" stroke-width=".9" opacity=".55"><path d="M14 22h6M44 22h6M14 40h5M45 40h5"/></g>' +
+                '<path d="M32 3v4" stroke="#c4b5fd" stroke-width="1.4"/>';
+        },
+        /* Prime Code — ngoặc nhọn, lưới dữ liệu, mạch điện neon. */
+        'prime-code': function () {
+            var dots = '';
+            for (var y = 0; y < 4; y++) for (var x = 0; x < 4; x++) {
+                dots += '<circle cx="' + (24 + x * 5.4).toFixed(1) + '" cy="' + (34 + y * 5.4).toFixed(1) + '" r="1.1" opacity="' + (0.35 + ((x + y) % 3) * 0.2).toFixed(2) + '"/>';
+            }
+            return '<defs><linearGradient id="bka-pc" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#67e8f9"/><stop offset="1" stop-color="#15803d"/></linearGradient></defs>' +
+                '<rect x="9" y="9" width="46" height="46" rx="7" stroke="#22d3ee" stroke-width="1.2" opacity=".55"/>' +
+                '<path d="M24 18l-8 14 8 14M40 18l8 14-8 14" stroke="url(#bka-pc)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+                '<g fill="#5eead4">' + dots + '</g>' +
+                '<path d="M9 32h4M51 32h4M32 9v4M32 51v4" stroke="#22d3ee" stroke-width="1.2" opacity=".8"/>' +
+                '<path d="M30 26l-4 6 4 6M34 26l4 6-4 6" stroke="#ecfeff" stroke-width="1.4" stroke-linecap="round"/>';
+        },
+        /* Legacy — vương miện trên nguyệt quế, dải băng dưới. */
+        legacy: function () {
+            var leaves = '';
+            var pts = [[20, 46, -40], [15, 38, -60], [14, 30, -80], [17, 22, -105]];
+            pts.forEach(function (p) {
+                leaves += '<ellipse cx="' + p[0] + '" cy="' + p[1] + '" rx="3.4" ry="1.8" transform="rotate(' + p[2] + ' ' + p[0] + ' ' + p[1] + ')"/>';
+                var mx = 64 - p[0];
+                leaves += '<ellipse cx="' + mx + '" cy="' + p[1] + '" rx="3.4" ry="1.8" transform="rotate(' + (-p[2]) + ' ' + mx + ' ' + p[1] + ')"/>';
+            });
+            return '<defs><linearGradient id="bka-lg" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#fef08a"/><stop offset=".5" stop-color="#eab308"/>' +
+                '<stop offset="1" stop-color="#a16207"/></linearGradient></defs>' +
+                '<path d="M13 30l6 16 6-12 7 12 7-12 7 12 6-12 5 12 6-16-3 24H16z" fill="url(#bka-lg)" stroke="#713f12" stroke-width="1.1" stroke-linejoin="round" opacity=".35"/>' +
+                '<path d="M18 20l5 16 5-11 4 11 5-11 4 11 5-11 4 11 5-16" fill="none" stroke="url(#bka-lg)" stroke-width="3" stroke-linejoin="round"/>' +
+                '<g fill="#fde68a" stroke="#713f12" stroke-width=".5">' + leaves + '</g>' +
+                '<path d="M22 42c4 10 16 14 22 12" stroke="#22c55e" stroke-width="1.2" fill="none" opacity=".7"/>' +
+                '<path d="M24 48h16" stroke="#facc15" stroke-width="1.4" stroke-linecap="round" opacity=".8"/>' +
+                '<circle cx="32" cy="14" r="2.2" fill="#fef9c3"/>';
+        },
+        /* Ascendant — chùm tinh thể bay lên + tia sáng hội tụ. */
+        ascendant: function () {
+            return '<defs><linearGradient id="bka-as" x1="0" y1="1" x2="1" y2="0">' +
+                '<stop offset="0" stop-color="#0891b2"/><stop offset=".55" stop-color="#bae6fd"/>' +
+                '<stop offset="1" stop-color="#fffbeb"/></linearGradient>' +
+                '<radialGradient id="bka-as-glow" cx=".5" cy=".5" r=".5">' +
+                '<stop offset="0" stop-color="#fef9c3" stop-opacity=".95"/>' +
+                '<stop offset="1" stop-color="#fef9c3" stop-opacity="0"/></radialGradient></defs>' +
+                '<circle cx="32" cy="26" r="20" fill="url(#bka-as-glow)" opacity=".55"/>' +
+                '<g stroke="#fef3c7" stroke-width="1" opacity=".55">' +
+                '<path d="M32 3v9M12 8l6 7M52 8l-6 7M4 26h9M51 26h9"/></g>' +
+                '<path d="M32 8l9 16-9 11-9-11z" fill="url(#bka-as)" stroke="#e0f2fe" stroke-width=".9"/>' +
+                '<path d="M32 8l-4 16 4 11 4-11z" fill="#ecfeff" opacity=".55"/>' +
+                '<path d="M18 30l6 10-6 7-6-7z" fill="#7dd3fc" stroke="#e0f2fe" stroke-width=".7" opacity=".9"/>' +
+                '<path d="M46 30l6 10-6 7-6-7z" fill="#38bdf8" stroke="#e0f2fe" stroke-width=".7" opacity=".9"/>' +
+                '<path d="M24 53h16" stroke="#bae6fd" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>' +
+                '<circle cx="32" cy="1.8" r="1.6" fill="#fef9c3"/>';
+        }
+    };
+
+    /** SVG của một Founder Badge 7.5.0 (chuỗi hằng số) hoặc chuỗi rỗng. */
+    function badgeArt(key) {
+        var painter = ART_PAINTERS[String(key || '')];
+        return painter ? artWraps(key, painter()) : '';
+    }
 
     function metricValue(key) {
         if (!key) return 0;
@@ -510,6 +768,7 @@
                 unlockedAt: t.unlocked[x.id] || null,
                 adminOnly: x.adminOnly,
                 exclusive: x.exclusive || null,
+                art: x.art || null,
                 frame: x.frame,
                 server: t.granted[x.id] || null
             };
@@ -743,6 +1002,8 @@
         CATEGORIES: CATEGORIES,
         RARITIES: RARITIES,
         byId: function (id) { return BY_ID[id] || null; },
+        art: badgeArt,
+        ART_KEYS: Object.keys(ART_PAINTERS),
         progress: progress,
         check: check,
         metrics: metrics,

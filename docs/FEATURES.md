@@ -30,8 +30,8 @@ Trung tâm học tập, hồ sơ/cài đặt, Developer Playground, Administrato
 - Mở từ **Cài đặt → Founder** hoặc trực tiếp `founder/`; xác thực bằng Founder Code riêng.
 - Founder Code chỉ lưu dạng băm SHA-256 trong `founder_config`; Edge Function `admin-auth`
   so sánh băm và cấp phiên `scope = founder`.
-- Founder thấy đủ 14 mô-đun Administrator, thêm tab **Founder** để cấp trọn bộ 78 badge và
-  30 khung cho hồ sơ `is_founder = true`.
+- Founder thấy đủ 14 mô-đun Administrator, thêm tab **Founder** (`bk-founder.js`) để tìm người nhận,
+  trao badge/khung, cấp trọn bộ 99 badge và toàn bộ 46 khung cho hồ sơ `is_founder = true`.
 - Các quyền tối mật chỉ Founder: bảo trì, dữ liệu & sao lưu, đặt danh vị, trao badge
   Founder/Developer. Máy chủ chặn Administrator thường bằng `FOUNDER_ONLY`.
 
@@ -167,11 +167,11 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1 | Đúng 78 badge: 73 tự động + 2 Administrator + 2 Developer + 1 Founder | ✅ | `bk-badges.js`, `bakhiBadges.v1.<studentId>` |
+| 1 | Đúng 99 badge: 74 tự động + 25 trao tay (2 Administrator + 2 Developer + 21 Founder) | ✅ | `bk-badges.js`, `bakhiBadges.v1.<studentId>` |
 | 2 | 8 danh mục: Học tập, Khám phá, Đều đặn, Âm nhạc, Tương tác, Hồ sơ, Sáng tạo, Bí mật | ✅ | Mỗi badge có danh mục + độ hiếm |
 | 3 | 6 bậc độ hiếm: Phổ biến, Ít gặp, Hiếm, Cực hiếm, Huyền thoại, Bí mật | ✅ | Hiển thị trên thẻ badge |
 | 4 | Tiến độ từng badge, thanh tiến độ, lọc danh mục/độ hiếm/trạng thái, tìm kiếm | ✅ | `BKProfileUI.renderBadgeBoard` |
-| 5 | 30 khung avatar SVG (27 thường + 2 Developer + 1 Founder); chỉ trang bị khi đã mở khoá | ✅ | `ownedFrames`/`canEquip`, trigger `bakhi_profile_frame_guard` |
+| 5 | 46 khung avatar SVG (27 thường + 2 Developer + 17 Founder); chỉ trang bị khi đã mở khoá | ✅ | `ownedFrames`/`canEquip`, trigger `bakhi_profile_frame_guard` |
 | 6 | Trao/thu hồi badge Administrator có kiểm tra phiên, ghi audit log | ✅ | `admin-actions` `badges.grant`/`badges.revoke` |
 | 7 | Xác minh thành tích phía máy chủ, không tin danh sách client gửi | ✅ | `student-profile` + `_shared/badge-rules.ts` + bảng `student_badges` |
 | 8 | Đồng bộ hồ sơ và thành tích giữa các thiết bị | ✅ | `student_profiles` + `BKProfile.applyRemote`/`BK.badges.applyServer` |
