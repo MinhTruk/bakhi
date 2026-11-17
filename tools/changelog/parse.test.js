@@ -41,7 +41,7 @@ test('phân tích phiên bản, ngày và thứ tự', () => {
     assert.equal(entries.length, 2);
     assert.equal(entries[0].version, '3.3.0');
     assert.equal(entries[0].date, '2026-12-01');
-    assert.equal(entries[0].published_at, '2026-12-01T00:00:00.000Z');
+    assert.equal(entries[0].published_at, '2026-12-01T00:00:00.000+07:00');
     assert.equal(entries[1].version, '3.2.1');
 });
 
