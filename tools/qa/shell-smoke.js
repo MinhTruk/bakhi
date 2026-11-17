@@ -62,6 +62,13 @@ const indexHtml = `<!DOCTYPE html><html lang="vi"><head><title>Bá Khí</title><
   </div>
 </header>
 <main>
+  <section id="bkGreeting" class="bk-greeting" hidden>
+    <p class="bk-greeting-line">
+      <span data-bk-greet-time>Chào bạn</span><span class="bk-greeting-comma">,</span>
+      <strong data-bk-greet-name></strong>
+    </p>
+    <p class="bk-greeting-date" data-bk-greet-date></p>
+  </section>
   <p>Bấm vào biểu tượng <b>3 gạch ở góc trên phải</b> để tìm kiếm nhanh.</p>
   <section id="folders"></section>
 </main>
@@ -97,6 +104,20 @@ ok('câu hướng dẫn cũ không còn nhắc 3 gạch', !/3\s*gạch/i.test(id
   idoc.querySelector('main p').textContent);
 ok('tên trường cũ được chuẩn hoá', /THPT Huỳnh Ngọc Huệ/.test(idoc.querySelector('footer').textContent) &&
   !/THPT FPT/.test(idoc.querySelector('footer').textContent));
+
+/* Lời chào theo giờ Việt Nam (chỉ trang chủ có #bkGreeting). */
+const greeting = idoc.getElementById('bkGreeting');
+ok('lời chào ẩn khi chưa nhận diện học sinh', !!greeting && greeting.hidden === true);
+iw.localStorage.setItem('bakhiStudent.v1', JSON.stringify({ displayName: 'Minh Anh' }));
+iw.dispatchEvent(new iw.Event('bk:identity'));
+ok('lời chào hiện sau khi nhận diện', greeting.hidden === false);
+const greetTime = greeting.querySelector('[data-bk-greet-time]').textContent;
+const greetName = greeting.querySelector('[data-bk-greet-name]').textContent;
+ok('lời chào đúng tên hiển thị', greetName === 'Minh Anh', greetName);
+ok('lời chào theo buổi trong ngày', /^Chào (buổi sáng|buổi trưa|buổi chiều|buổi tối|đêm khuya)$/.test(greetTime), greetTime);
+ok('lời chào có ngày Việt Nam', /\d{1,2}\/\d{1,2}\/\d{4}/.test(greeting.querySelector('[data-bk-greet-date]').textContent),
+  greeting.querySelector('[data-bk-greet-date]').textContent);
+ok('lời chào không hiện tên "Khách"', !/Khách/.test(greeting.textContent));
 
 /* Menu */
 const btn = idoc.getElementById('bkUserBtn');

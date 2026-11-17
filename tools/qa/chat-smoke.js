@@ -123,6 +123,10 @@ function makeHarness() {
   w.matchMedia = w.matchMedia || ((q) => ({ matches: false, media: q, addEventListener() { }, removeEventListener() { } }));
   const calls = [];
   let uploadCount = 0;
+  const prefState = new Map();
+  const prefFor = (roomId) => prefState.get(roomId) || {
+    pinned: false, pinned_at: null, archived: false, archived_at: null
+  };
 
   const channel = {
     on() { return this; },
@@ -167,6 +171,22 @@ function makeHarness() {
           });
         case 'read.mark':
           return Promise.resolve({ ok: true, last_read_at: body.through });
+        case 'conversation.pin': {
+          const pref = Object.assign({}, prefFor(body.room_id), {
+            pinned: body.value === true,
+            pinned_at: body.value === true ? new Date(now).toISOString() : null
+          });
+          prefState.set(body.room_id, pref);
+          return Promise.resolve({ ok: true, pref });
+        }
+        case 'conversation.archive': {
+          const pref = Object.assign({}, prefFor(body.room_id), {
+            archived: body.value === true,
+            archived_at: body.value === true ? new Date(now).toISOString() : null
+          });
+          prefState.set(body.room_id, pref);
+          return Promise.resolve({ ok: true, pref });
+        }
         case 'presence.ping':
           return Promise.resolve({
             ok: true,
@@ -318,6 +338,59 @@ async function main() {
     ok('có nút nhắn riêng', !!card && !!card.querySelector('[data-dm]'));
     card.querySelector('[data-close-card]').click();
     ok('đóng được Profile Card', doc.getElementById('bkChatCard').hidden === true);
+  }
+
+  console.log('\n[5b] Ghim, lưu trữ và bộ lọc hội thoại');
+  const liveDmRow = doc.querySelector('#bkChatRooms [data-room="' + DM.id + '"]');
+  liveDmRow.click();
+  const activeRow = await until(() => doc.querySelector('#bkChatRooms [data-room="' + DM.id + '"].is-active'));
+  ok('mở được hội thoại nhắn riêng', !!activeRow);
+  await wait(120);
+  const optionsBtn = await until(() => doc.querySelector('#bkChatHead [data-room-menu]'));
+  ok('mở phòng có nút tuỳ chọn hội thoại', !!optionsBtn);
+  if (optionsBtn) {
+    optionsBtn.click();
+    const optionsDialog = await until(() => doc.getElementById('bkChatDialog'));
+    const pinBtn = optionsDialog && Array.from(optionsDialog.querySelectorAll('button'))
+      .find((b) => /Ghim hội thoại/.test(b.textContent));
+    ok('menu có thao tác ghim', !!pinBtn);
+    if (pinBtn) {
+      pinBtn.click();
+      const pinCall = await until(() => H.calls.filter((c) => c.action === 'conversation.pin').pop());
+      ok('ghim gọi conversation.pin', !!pinCall && pinCall.body.room_id === DM.id && pinCall.body.value === true);
+      await wait(40);
+      const firstRoom = doc.querySelector('#bkChatRooms [data-room]');
+      ok('phòng đã ghim đứng đầu danh sách', !!firstRoom && firstRoom.getAttribute('data-room') === DM.id,
+        firstRoom && firstRoom.getAttribute('data-room'));
+      ok('phòng đã ghim có dấu ghim',
+        !!doc.querySelector('#bkChatRooms [data-room="' + DM.id + '"] .bkchat-pin-mark'));
+    }
+  }
+
+  const optionsAgain = doc.querySelector('#bkChatHead [data-room-menu]');
+  if (optionsAgain) {
+    optionsAgain.click();
+    const optionsDialog = await until(() => doc.getElementById('bkChatDialog'));
+    const archiveBtn = optionsDialog && Array.from(optionsDialog.querySelectorAll('button'))
+      .find((b) => /Lưu trữ hội thoại/.test(b.textContent));
+    ok('menu có thao tác lưu trữ', !!archiveBtn);
+    if (archiveBtn) {
+      archiveBtn.click();
+      const archiveCall = await until(() => H.calls.filter((c) => c.action === 'conversation.archive').pop());
+      ok('lưu trữ gọi conversation.archive', !!archiveCall && archiveCall.body.value === true);
+      await wait(40);
+      ok('hội thoại đã lưu trữ ẩn khỏi danh sách chính',
+        !doc.querySelector('#bkChatRooms [data-room="' + DM.id + '"]'));
+      const archiveToggle = doc.getElementById('bkChatArchiveToggle');
+      ok('có bộ lọc hội thoại đã lưu trữ', !!archiveToggle);
+      if (archiveToggle) {
+        archiveToggle.click();
+        ok('bộ lọc hiện hội thoại đã lưu trữ',
+          !!doc.querySelector('#bkChatRooms [data-room="' + DM.id + '"]'));
+        archiveToggle.click();
+        ok('bộ lọc trở lại danh sách chính', !doc.querySelector('#bkChatRooms [data-room="' + DM.id + '"]'));
+      }
+    }
   }
 
   console.log('\n[6] Nhắn riêng & tạo nhóm');
