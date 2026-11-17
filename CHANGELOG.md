@@ -2,6 +2,54 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.5.2] — 2026-11-17
+
+### Sửa lỗi
+
+- **Cơ cấu badge thống nhất toàn website — 99 badge = 74 tự động + 21 Founder + 2 Developer
+  + 2 Administrator**: thêm `BK.badges.breakdown()` và `BK.badges.summaryText()` suy ra trực tiếp
+  từ danh mục, nên mọi nơi hiển thị cùng một con số. Hết cảnh 89/78 badge ở trang hồ sơ,
+  Cài đặt và dashboard.
+- **Thông báo tặng badge ở tab Badge và tab Founder**: bản xem trước, hộp kết quả và toast đều
+  nêu rõ danh mục (74 tự động · 21 Founder · 2 Developer · 2 Administrator) và số badge bị loại
+  trừ (21 Founder + 2 Developer); không còn hiện `undefined` khi cấp trọn bộ.
+- **Máy chủ trả kèm cơ cấu danh mục** trong `founder.grantAll`, `badges.grantAll`,
+  `badges.grantAllPreview` và `students.inventory` (`catalog: { total, auto, founder, dev, admin }`)
+  để giao diện không phải tự đếm và không lệch với `bk-badges.js`.
+- **Founder Dashboard (tab Thành tích)**: bảng số liệu tách đủ 5 ô — Tổng 99, Tự động 74,
+  Founder 21, Developer 2, Administrator 2 — tính trên toàn danh mục, kể cả khi Administrator
+  chỉ trao được badge thường.
+- **Giữ nguyên các fix đã có ở 7.5.1**: `students.search` đọc avatar từ `student_profiles`,
+  `admin.grantHistory` bỏ kiểu nhúng `students:target_student` + fallback schema 7.4.0,
+  kiểm tra UUID cho `id` (chuỗi "undefined" không còn gây lỗi 22P02) và ghi lịch sử cấp
+  không còn nuốt lỗi.
+
+## [7.5.1] — 2026-11-17
+
+### Sửa lỗi
+
+- **`students.search` luôn lỗi**: câu truy vấn chọn `avatar_url` từ `public.students` — cột này
+  nằm ở `student_profiles`, nên PostgREST trả 42703 và Founder Dashboard không tìm được người
+  nhận. Nay tách thành hai bước: tìm hồ sơ, rồi đọc avatar từ `student_profiles`.
+- **Danh mục badge chỉ còn 89 trên toàn website**: mọi trang vẫn nạp `bk-badges.js?v=7.1.0`
+  (bản 89 badge) nên trình duyệt dùng bản cache cũ. Đồng bộ toàn bộ chuỗi phiên bản tài sản
+  lên `7.5.1` ở 122 tệp HTML/JS; khôi phục đủ **99 badge** (74 tự động + 25 trao tay).
+- **Founder/Administrator Dashboard ghi cứng "89 badge"**: nay lấy `catalog.length` từ danh mục,
+  không còn số viết tay lệch với `bk-badges.js`.
+- **`admin.grantHistory` hỏng khi đọc lịch sử cấp**: bỏ kiểu nhúng `students:target_student(...)`
+  (chỉ cần FK/policy khác là PostgREST trả PGRST200 và mất cả bảng), tra tên người nhận bằng
+  truy vấn thứ hai; nếu cơ sở dữ liệu chưa chạy migration 7.5.0 thì đọc lại theo cột của 7.4.0.
+- **Ghi lịch sử cấp thất bại âm thầm**: `admin_grant_history`/`admin_grant_batches` không còn
+  nuốt lỗi; khi thiếu cột/bảng mới, lịch sử được ghi theo đúng các cột 7.4.0 để không mất dấu vết.
+- **Cấp toàn bộ badge cho "undefined"**: mọi action nhận `id` nay kiểm tra UUID (chuỗi "undefined"
+  không còn được gửi vào `.eq('id', …)` và gây lỗi 22P02), `founder.grantAll` coi id không hợp lệ
+  là "để máy chủ tự xác định hồ sơ Founder", và thông báo trên giao diện lấy đúng trường
+  `added`/`badgeTotal`/`studentName` thay vì hiện `undefined`.
+
+### Cải tiến
+
+- Sau khi cấp trọn bộ ở Cài đặt, danh sách badge hiển thị được đồng bộ lại từ `students.inventory`.
+
 ## [7.5.0] — 2026-11-17
 
 ### Tính năng mới

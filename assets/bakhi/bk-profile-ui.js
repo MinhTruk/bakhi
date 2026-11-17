@@ -142,6 +142,11 @@
             top.appendChild(el('span', null, have + '/' + total + ' badge'));
             card.appendChild(top);
             card.appendChild(progressBar(total ? (have / total) * 100 : 0));
+            if (typeof b.summaryText === 'function') {
+                var mix = el('p', null, b.summaryText());
+                mix.style.cssText = 'margin:.45rem 0 0;color:var(--bkl-muted);font-size:.72rem';
+                card.appendChild(mix);
+            }
             container.appendChild(card);
         }
     }
@@ -558,6 +563,11 @@
         var have = b.unlockedCount();
         head.appendChild(el('span', null, have + '/' + total));
         container.appendChild(head);
+        if (typeof b.summaryText === 'function') {
+            var summary = el('p', null, b.summaryText());
+            summary.style.cssText = 'margin:.15rem 0 0;color:var(--bkl-muted);font-size:.78rem';
+            container.appendChild(summary);
+        }
         var pbar = progressBar(total ? (have / total) * 100 : 0);
         pbar.style.margin = '.5rem 0 .6rem';
         container.appendChild(pbar);

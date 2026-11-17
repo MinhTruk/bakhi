@@ -15,7 +15,7 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var APP_VERSION = '7.5.0';
+    var APP_VERSION = '7.5.2';
 
     var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
         ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];
@@ -2572,7 +2572,11 @@
 
     /* ------------------------------ Thành tích ---------------------------- */
     function renderBadges(pane) {
-        var catalog = badgeCatalog();
+        var fullCatalog = badgeCatalog();
+        var mix = (global.BK && global.BK.badges && typeof global.BK.badges.breakdown === 'function')
+            ? global.BK.badges.breakdown()
+            : { total: fullCatalog.length, auto: 0, founder: 0, dev: 0, admin: 0 };
+        var catalog = fullCatalog;
         if (!isFounder()) {
             catalog = catalog.filter(function (b) { return !isExclusiveBadge(b.id); });
         }
@@ -2582,16 +2586,17 @@
         pane.appendChild(catalogCard.root);
 
         var infoGrid = h('div', 'bkc-status-grid');
-        if (catalog.length) {
-            var autoCount = catalog.filter(function (b) { return !b.adminOnly; }).length;
-            infoGrid.appendChild(infoItem('Tổng badge', catalog.length, 'Danh mục trong bk-badges.js', 'ok'));
-            infoGrid.appendChild(infoItem('Tự động', autoCount, 'Máy chủ tính từ tiến trình đã đồng bộ', 'info'));
-            infoGrid.appendChild(infoItem(isFounder() ? 'Founder' : 'Administrator',
-                catalog.length - autoCount,
-                isFounder()
-                    ? 'Founder trao được mọi badge, kể cả Founder/Developer'
-                    : 'Administrator chỉ trao badge thường; badge độc quyền thuộc Founder',
-                'warn'));
+        if (fullCatalog.length) {
+            infoGrid.appendChild(infoItem('Tổng badge', mix.total || fullCatalog.length,
+                'Danh mục trong bk-badges.js', 'ok'));
+            infoGrid.appendChild(infoItem('Tự động', mix.auto,
+                'Máy chủ tính từ tiến trình đã đồng bộ', 'info'));
+            infoGrid.appendChild(infoItem('Founder', mix.founder,
+                'Chỉ trao cho hồ sơ is_founder = true', 'warn'));
+            infoGrid.appendChild(infoItem('Developer', mix.dev,
+                'Hai badge độc quyền của Bá Khí', 'warn'));
+            infoGrid.appendChild(infoItem('Administrator', mix.admin,
+                'Trao tay từ Administrator Dashboard', 'warn'));
         } else {
             infoGrid.appendChild(infoItem('Danh mục', 'Chưa nạp', 'Trang quản trị không nạp bk-badges.js', 'warn'));
             infoGrid.appendChild(infoItem('Administrator', '—', 'Không đọc được danh mục badge', 'warn'));
@@ -2601,7 +2606,9 @@
         catalogCard.body.appendChild(alertBox(
             'Badge tự động đạt và badge trao tay được lưu TÁCH BIỆT: thu hồi trao tay không xoá kết quả tự động. ' +
             (isFounder()
-                ? 'Founder trao được toàn bộ 89 badge, kể cả Founder và hai badge Developer; badge Founder vẫn chỉ áp dụng cho hồ sơ is_founder = true.'
+                ? 'Founder trao được toàn bộ ' + (mix.total || fullCatalog.length || 'danh mục') + ' badge (' +
+                    mix.auto + ' tự động + ' + mix.founder + ' Founder + ' + mix.dev + ' Developer + ' +
+                    mix.admin + ' Administrator), kể cả Founder và hai badge Developer; badge Founder vẫn chỉ áp dụng cho hồ sơ is_founder = true.'
                 : 'Badge Founder/Developer là độc quyền và chỉ xuất hiện trong Founder Dashboard.'), 'info'));
 
         /* Chọn học sinh */

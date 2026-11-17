@@ -135,6 +135,13 @@ function main() {
   ok('máy chủ có đúng 25 badge trao tay', server.ADMIN_BADGES.length === 25 &&
     server.ADMIN_BADGES.every((b) => b.admin_only) &&
     ['founder', 'dev-exclusive-aurora', 'dev-exclusive-void'].every((id) => !!server.BADGE_BY_ID[id]));
+  /* Cơ cấu hiển thị trên toàn web: 99 = 74 tự động + 21 Founder + 2 Developer + 2 Administrator. */
+  const mix = w.BK.badges.breakdown();
+  ok('cơ cấu danh mục 99 = 74 + 21 + 2 + 2',
+    mix.total === 99 && mix.auto === 74 && mix.founder === 21 && mix.dev === 2 && mix.admin === 2,
+    JSON.stringify(mix));
+  ok('summaryText nêu đủ bốn nhóm', /99 badge.*74 tự động.*21 Founder.*2 Developer.*2 Administrator/.test(w.BK.badges.summaryText()),
+    w.BK.badges.summaryText());
   const mismatched = clientCatalog.filter((c) => {
     const s = server.BADGE_BY_ID[c.id];
     return !s || s.goal !== c.goal || (s.metric || null) !== (c.key || null) ||
@@ -282,6 +289,34 @@ function main() {
   ok('client không gọi bảng student_badges trực tiếp', !/from\(\s*['"]student_badges/.test(cloudSrc));
   ok('client chỉ gửi ảnh chụp, không gửi danh sách badge đã mở',
     /BK\.badges\.snapshot/.test(cloudSrc) && !/unlocked\s*:/.test(cloudSrc));
+
+  /* Chống tái phát lỗi 7.5.1: trang còn nạp bk-badges.js với ?v= cũ thì trình
+     duyệt dùng bản cache 89 badge, và dashboard ghi cứng số badge. */
+  ok('danh mục badge đủ 99 mục', clientCatalog.length === 99, 'có ' + clientCatalog.length);
+  const releaseSrc = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-version.js'), 'utf8');
+  const release = (releaseSrc.match(/app:\s*'([0-9.]+)'/) || [])[1] || '';
+  const htmlFiles = [];
+  (function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === '.git' || entry.name === 'node_modules') continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith('.html')) htmlFiles.push(full);
+    }
+  })(ROOT);
+  const stale = [];
+  for (const file of htmlFiles) {
+    const src = fs.readFileSync(file, 'utf8');
+    const found = src.match(/bk-badges\.js\?v=([0-9.]+)/g) || [];
+    for (const tag of found) {
+      const version = tag.split('=')[1];
+      if (release && version !== release) stale.push(path.relative(ROOT, file) + '→' + version);
+    }
+  }
+  ok('mọi trang nạp bk-badges.js đúng phiên bản phát hành', stale.length === 0,
+    stale.slice(0, 5).join(', '));
+  ok('dashboard không ghi cứng số badge',
+    !/\b89 badge\b|\b78 badge\b/.test(fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-devboard.js'), 'utf8')));
 
   console.log(failures ? `\n=== ${failures} FAILURE(S) ===` : '\n=== ALL CHECKS PASSED ===');
   process.exitCode = failures ? 1 : 0;

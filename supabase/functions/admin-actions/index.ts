@@ -1091,6 +1091,19 @@ const EXCLUSIVE_BADGE_IDS: string[] = BADGE_CATALOG
 const DEV_BADGE_IDS: string[] = BADGE_CATALOG
     .filter((b) => b.exclusive === 'dev').map((b) => b.id);
 
+/* Cơ cấu danh mục: 99 = 74 tự động + 21 Founder + 2 Developer + 2 Administrator.
+   Trả kèm mọi phản hồi trao tặng để giao diện không phải tự đếm hay viết cứng. */
+function badgeBreakdown() {
+    const mix = { total: BADGE_CATALOG.length, auto: 0, founder: 0, dev: 0, admin: 0 };
+    for (const b of BADGE_CATALOG) {
+        if (b.exclusive === 'founder') mix.founder++;
+        else if (b.exclusive === 'dev') mix.dev++;
+        else if (b.admin_only) mix.admin++;
+        else mix.auto++;
+    }
+    return mix;
+}
+
 /* Khung avatar -> badge sở hữu khung. Một khung chỉ được mở bằng đúng một
    badge; trao khung = trao badge đó, nên không cần bảng sở hữu khung riêng và
    không bao giờ ghi đè khung đang trang bị. */
@@ -1163,6 +1176,24 @@ function newRequestId(): string {
     } catch {
         return 'req-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
     }
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Id hồ sơ hợp lệ; chuỗi rỗng khi thiếu hoặc không phải UUID (vd. "undefined"). */
+function uuidOf(value: unknown): string {
+    const s = str(value, 40);
+    return UUID_RE.test(s) ? s : '';
+}
+
+/** Lỗi do cơ sở dữ liệu chưa chạy migration mới (thiếu cột/bảng/quan hệ). */
+function isSchemaGap(error: unknown): boolean {
+    const code = String((error as { code?: string } | null)?.code || '');
+    const message = String((error as { message?: string } | null)?.message || '');
+    if (code === '42703' || code === '42P01' || code === 'PGRST204' || code === 'PGRST205' || code === 'PGRST200') {
+        return true;
+    }
+    return /column .* does not exist|could not find the table|could not find a relationship|schema cache/i.test(message);
 }
 
 function requestIdOf(value: unknown): string {
@@ -1260,16 +1291,40 @@ async function writeGrantHistory(
             reason
         };
     });
-    await client.from('admin_grant_history')
+    const first = await client.from('admin_grant_history')
         .upsert(rows, { onConflict: 'request_id,target_student,item_id', ignoreDuplicates: true });
+    if (!first.error) return;
+    if (!isSchemaGap(first.error)) {
+        console.error('admin_grant_history insert failed:', first.error.message);
+        return;
+    }
+    /* Cơ sở dữ liệu chưa chạy migration 7.5.0 (thiếu request_id/badge_id và
+       unique index). Ghi lại theo đúng các cột của 7.4.0 để lịch sử cấp không
+       bị mất thay vì lỗi âm thầm. */
+    const legacy = rows.map((row) => ({
+        actor_id: row.actor_id,
+        actor_scope: row.actor_scope,
+        target_student: row.target_student,
+        item_type: row.item_type,
+        item_id: row.item_id,
+        item_name: row.item_name,
+        reason: row.reason
+    }));
+    const retry = await client.from('admin_grant_history').insert(legacy);
+    if (retry.error) console.error('admin_grant_history legacy insert failed:', retry.error.message);
 }
 
 async function writeGrantBatch(
     client: SupabaseClient,
     row: Record<string, unknown>
 ): Promise<void> {
-    await client.from('admin_grant_batches')
+    const { error } = await client.from('admin_grant_batches')
         .upsert(row, { onConflict: 'request_id', ignoreDuplicates: true });
+    /* Bảng lô cấp chỉ có từ 7.5.0; thiếu bảng thì bỏ qua, không làm hỏng thao tác
+       trao vật phẩm (lịch sử chi tiết vẫn được ghi ở admin_grant_history). */
+    if (error && !isSchemaGap(error)) {
+        console.error('admin_grant_batches upsert failed:', error.message);
+    }
 }
 
 /** Trao một vật phẩm cho một học sinh; trả về Response cho switch case. */
@@ -1285,7 +1340,8 @@ async function grantSingleItem(
         requestId: string;
     }
 ): Promise<Response> {
-    if (!params.studentId) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+    const studentId = uuidOf(params.studentId);
+    if (!studentId) return fail(400, 'MISSING_ID', 'Thiếu hoặc sai id học sinh.');
     if (!params.itemId) return fail(400, 'MISSING_ITEM', 'Thiếu mã vật phẩm.');
     if (!BADGE_ID_RE.test(params.itemId)) {
         return fail(400, 'BAD_ITEM_ID', 'Mã vật phẩm không hợp lệ.');
@@ -1306,7 +1362,7 @@ async function grantSingleItem(
     const { data: target } = await client
         .from('students')
         .select('id, display_name, is_active, is_founder')
-        .eq('id', params.studentId)
+        .eq('id', studentId)
         .maybeSingle();
     if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
     if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
@@ -1331,20 +1387,20 @@ async function grantSingleItem(
     const status = result.added.length ? 'granted' : 'already_owned';
     if (result.added.length) {
         await writeGrantHistory(client, params.requestId, params.scope, params.sessionId,
-            params.studentId, params.itemType, [badgeId], params.reason);
+            studentId, params.itemType, [badgeId], params.reason);
     }
     await writeGrantBatch(client, {
         request_id: params.requestId,
         actor_scope: params.scope,
         actor_id: params.sessionId,
-        target_student: params.studentId,
+        target_student: studentId,
         item_type: params.itemType,
         requested: 1,
         added: result.added.length,
         already_owned: result.alreadyOwned.length,
         failed: 0
     });
-    await logAction(client, 'founder.grantItem', 'student', params.studentId, {
+    await logAction(client, 'founder.grantItem', 'student', studentId, {
         request_id: params.requestId,
         item_type: params.itemType,
         item_id: params.itemId,
@@ -1356,7 +1412,7 @@ async function grantSingleItem(
         ok: true,
         status,
         requestId: params.requestId,
-        studentId: params.studentId,
+        studentId: studentId,
         studentName: target.display_name,
         item_type: params.itemType,
         item_id: params.itemId,
@@ -1487,7 +1543,10 @@ Deno.serve(async (req) => {
                     .trim();
                 const limit = Math.min(20, Math.max(1, Number(body.limit) || 8));
                 let query = client.from('students')
-                    .select('id, display_name, disambiguator, student_code, avatar_url, is_active, is_founder')
+                    /* Không có cột avatar_url trên public.students (nằm ở
+                       student_profiles). Chọn avatar_url ở đây làm PostgREST trả
+                       42703 nên tìm kiếm người nhận luôn lỗi ở 7.5.0. */
+                    .select('id, display_name, disambiguator, student_code, is_active, is_founder')
                     .eq('is_active', true)
                     .order('normalized_name', { ascending: true })
                     .limit(limit);
@@ -1496,12 +1555,24 @@ Deno.serve(async (req) => {
                 }
                 const { data, error } = await query;
                 if (error) throw error;
-                const students = (data ?? []).map((s) => ({
+                const rows = data ?? [];
+                const avatars = new Map<string, string>();
+                const ids = rows.map((s) => String(s.id));
+                if (ids.length) {
+                    const { data: profiles } = await client
+                        .from('student_profiles')
+                        .select('student_id, avatar_url')
+                        .in('student_id', ids);
+                    for (const p of profiles ?? []) {
+                        avatars.set(String(p.student_id), String(p.avatar_url || ''));
+                    }
+                }
+                const students = rows.map((s) => ({
                     id: s.id,
                     display_name: s.display_name,
                     disambiguator: s.disambiguator || '',
                     student_code: s.student_code || '',
-                    avatar_url: s.avatar_url || '',
+                    avatar_url: avatars.get(String(s.id)) || '',
                     is_founder: !!s.is_founder
                 }));
                 return json({ ok: true, query: q, count: students.length, students });
@@ -1513,7 +1584,7 @@ Deno.serve(async (req) => {
                 if (scope !== 'founder') {
                     return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder xem được tồn kho vật phẩm.');
                 }
-                const id = str(body.id, 40);
+                const id = uuidOf(body.id);
                 if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
                 const { data: target } = await client
                     .from('students').select('id, display_name, is_founder, is_active')
@@ -1547,7 +1618,8 @@ Deno.serve(async (req) => {
                     badges,
                     frames: Array.isArray(frameRows) ? frameRows : ['none', 'leaf'],
                     equippedFrame: (profile && profile.frame) || 'none',
-                    catalogTotal: ALL_BADGE_IDS.length
+                    catalogTotal: ALL_BADGE_IDS.length,
+                    catalog: badgeBreakdown()
                 });
             }
 
@@ -1899,8 +1971,8 @@ Deno.serve(async (req) => {
             case 'badges.grantAllPreview': {
                 /* CHỈ ĐỌC. 7.4.0 dùng chính badges.grantAll cho bản xem trước nên
                    chỉ mở xem đã cấp badge thật — lỗi này được tách hẳn ở đây. */
-                const id = str(body.id, 40);
-                if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                const id = uuidOf(body.id);
+                if (!id) return fail(400, 'MISSING_ID', 'Thiếu hoặc sai id học sinh.');
                 const { data: target } = await client
                     .from('students').select('id, display_name, is_active').eq('id', id).maybeSingle();
                 if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
@@ -1927,13 +1999,14 @@ Deno.serve(async (req) => {
                     alreadyOwned: already,
                     alreadyOwnedCount: already.length,
                     excluded: EXCLUSIVE_BADGE_IDS,
-                    excludedCount: EXCLUSIVE_BADGE_IDS.length
+                    excludedCount: EXCLUSIVE_BADGE_IDS.length,
+                    catalog: badgeBreakdown()
                 });
             }
 
             case 'badges.grantAll': {
-                const id = str(body.id, 40);
-                if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                const id = uuidOf(body.id);
+                if (!id) return fail(400, 'MISSING_ID', 'Thiếu hoặc sai id học sinh.');
                 const requestId = requestIdOf(body.request_id);
                 const { data: target } = await client
                     .from('students').select('id, display_name, is_active').eq('id', id).maybeSingle();
@@ -1985,7 +2058,8 @@ Deno.serve(async (req) => {
                     failed: [],
                     excluded: EXCLUSIVE_BADGE_IDS,
                     excludedCount: EXCLUSIVE_BADGE_IDS.length,
-                    totalGrantable: grantable.length
+                    totalGrantable: grantable.length,
+                    catalog: badgeBreakdown()
                 });
             }
 
@@ -2786,7 +2860,7 @@ Deno.serve(async (req) => {
                    Người sáng lập. Idempotent nhờ request_id + primary key của
                    student_badges, nên chạy lại không nhân đôi bản ghi. */
                 const requestId = requestIdOf(body.request_id);
-                let targetId = str(body.id, 40);
+                let targetId = uuidOf(body.id);
                 let targetName = '';
 
                 if (targetId) {
@@ -2882,6 +2956,7 @@ Deno.serve(async (req) => {
                     studentName: targetName,
                     target: badgeTotal,
                     badgeTotal,
+                    catalog: badgeBreakdown(),
                     added: result.added.length,
                     alreadyOwned: result.alreadyOwned.length,
                     failed: [],
@@ -3012,25 +3087,54 @@ Deno.serve(async (req) => {
             case 'admin.grantHistory': {
                 const limit = Math.min(100, Math.max(1, Number(body.limit) || 50));
                 const offset = Math.max(0, Number(body.offset) || 0);
-                const { data, error } = await client
-                    .from('admin_grant_history')
-                    .select('id, request_id, actor_scope, target_student, item_type, item_id, badge_id, item_name, reason, created_at, students:target_student(display_name, disambiguator, student_code)')
+                /* Đọc thẳng các cột rồi tra tên người nhận ở câu thứ hai.
+                   Bản 7.5.0 nhúng `students:target_student(...)` nên chỉ cần FK
+                   hoặc policy khác đi là PostgREST trả PGRST200 và cả bảng lịch
+                   sử hỏng. Nếu cơ sở dữ liệu chưa chạy migration 7.5.0 thì
+                   request_id/badge_id chưa có, đọc lại theo cột của 7.4.0. */
+                const modernCols = 'id, request_id, actor_scope, target_student, item_type, item_id, badge_id, item_name, reason, created_at';
+                const legacyCols = 'id, actor_scope, target_student, item_type, item_id, item_name, reason, created_at';
+                let query = await client.from('admin_grant_history')
+                    .select(modernCols)
                     .order('created_at', { ascending: false })
                     .range(offset, offset + limit - 1);
-                if (error) throw error;
-                const history = (data ?? []).map((row) => {
-                    const rel = (row as { students?: { display_name?: string; disambiguator?: string } | null }).students;
+                if (query.error && isSchemaGap(query.error)) {
+                    query = await client.from('admin_grant_history')
+                        .select(legacyCols)
+                        .order('created_at', { ascending: false })
+                        .range(offset, offset + limit - 1);
+                }
+                if (query.error) throw query.error;
+                const rows = (query.data ?? []) as Array<Record<string, unknown>>;
+                const targetIds = Array.from(new Set(rows
+                    .map((r) => String(r.target_student || ''))
+                    .filter((id) => UUID_RE.test(id))));
+                const people = new Map<string, { name: string; disambiguator: string }>();
+                if (targetIds.length) {
+                    const { data: students } = await client.from('students')
+                        .select('id, display_name, disambiguator')
+                        .in('id', targetIds);
+                    for (const s of students ?? []) {
+                        people.set(String(s.id), {
+                            name: String(s.display_name || ''),
+                            disambiguator: String(s.disambiguator || '')
+                        });
+                    }
+                }
+                const history = rows.map((row) => {
+                    const target = String(row.target_student || '');
+                    const person = people.get(target);
                     return {
                         id: row.id,
                         requestId: row.request_id || '',
                         actorScope: row.actor_scope,
                         targetStudent: row.target_student,
-                        studentName: rel && rel.display_name ? rel.display_name : '',
-                        disambiguator: rel && rel.disambiguator ? rel.disambiguator : '',
+                        studentName: person ? person.name : '',
+                        disambiguator: person ? person.disambiguator : '',
                         itemType: row.item_type,
                         itemId: row.item_id,
                         badgeId: row.badge_id || '',
-                        itemName: row.item_name,
+                        itemName: row.item_name || row.item_id || '',
                         reason: row.reason || '',
                         createdAt: row.created_at
                     };

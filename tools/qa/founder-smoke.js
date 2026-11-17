@@ -40,8 +40,8 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
 (async () => {
   console.log('\n[1] Trang Founder, mô-đun và mã bí mật');
   const page = read('founder/index.html');
-  ok('trang founder dùng dashboard + mô-đun 7.5.0',
-    /bk-devboard\.js\?v=7\.5\.0/.test(page) && /bk-founder\.js\?v=7\.5\.0/.test(page) &&
+  ok('trang founder dùng dashboard + mô-đun 7.5.2',
+    /bk-devboard\.js\?v=7\.5\.2/.test(page) && /bk-founder\.js\?v=7\.5\.2/.test(page) &&
     /BK_DASH_SCOPE\s*=\s*["']founder/.test(page));
   ok('trang Founder gọi founderLogin/founderToken',
     /founderLogin/.test(page) && /founderToken/.test(page));

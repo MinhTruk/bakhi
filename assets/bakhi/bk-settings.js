@@ -810,10 +810,26 @@
                 var label = grant.querySelector('span');
                 if (label) label.textContent = 'Đang cấp…';
                 cloud.adminAction('founder.grantAll', {}).then(function (data) {
-                    if (global.BK && global.BK.badges && data && data.badges) {
-                        global.BK.badges.applyServer(data.badges, { authoritative: true });
+                    /* 7.5.0 trả added/badgeTotal/studentId, không còn count/badges.
+                       Đọc đúng trường để thông báo không hiện "undefined". */
+                    var added = data && typeof data.added === 'number' ? data.added : 0;
+                    var total = data && typeof data.badgeTotal === 'number' ? data.badgeTotal : 0;
+                    var who = (data && data.studentName) || 'hồ sơ Founder';
+                    toast('Đã cấp ' + added + ' badge' + (total ? ' trên ' + total : '') +
+                        ' và toàn bộ khung cho ' + who + '.', 'success');
+                    if (data && data.studentId) {
+                        cloud.adminAction('students.inventory', { id: data.studentId }).then(function (inv) {
+                            var B = global.BK && global.BK.badges;
+                            if (!B || !Array.isArray(inv.badges)) return;
+                            B.applyServer(inv.badges.map(function (b) {
+                                return {
+                                    badge_id: b.id,
+                                    kind: b.source === 'auto' ? 'auto' : 'admin',
+                                    awarded_at: b.awardedAt
+                                };
+                            }), { authoritative: true });
+                        }).catch(function () { });
                     }
-                    toast('Đã cấp ' + ((data && data.count) || 0) + ' badge và toàn bộ khung cho hồ sơ Founder.', 'success');
                 }).catch(function (err) {
                     toast((err && err.message) || 'Không cấp được bộ thành tích.', 'error');
                 }).then(function () {

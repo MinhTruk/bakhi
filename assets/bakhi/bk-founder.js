@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-founder.js  (7.5.0)
+   Bá Khí — bk-founder.js  (7.5.2)
 
    Mô-đun Founder Dashboard: tìm người nhận, chọn vật phẩm, trao badge/khung,
    trao toàn bộ badge, tự động xét badge và xem lịch sử cấp.
@@ -119,7 +119,7 @@
             if (!pane || !kit || !kit.h) return;
             build(pane, kit);
         },
-        version: '7.5.0'
+        version: '7.5.2'
     };
 
     function build(pane, kit) {
@@ -315,6 +315,19 @@
         var def = P && typeof P.frameById === 'function' ? P.frameById(id) : null;
         if (!def) return { id: id, name: id, desc: '' };
         return def;
+    }
+
+    /* Cơ cấu danh mục dùng chung cho mọi thông báo trao tặng. */
+    function catalogMix(fromServer) {
+        if (fromServer && typeof fromServer.total === 'number') return fromServer;
+        var B = global.BK && global.BK.badges ? global.BK.badges : null;
+        if (B && typeof B.breakdown === 'function') return B.breakdown();
+        return { total: 0, auto: 0, founder: 0, dev: 0, admin: 0 };
+    }
+
+    function mixText(mix) {
+        return mix.auto + ' tự động · ' + mix.founder + ' Founder · ' +
+            mix.dev + ' Developer · ' + mix.admin + ' Administrator';
     }
 
     function itemName(item) {
@@ -667,8 +680,10 @@
         var state = ctx.state;
         var toast = ctx.toast;
 
+        var mix = catalogMix();
         var box = kit.card('Trao tặng toàn bộ badge', null,
-            'Cấp mọi badge có thể trao cho một tài khoản, tự động trừ badge độc quyền. Có bản xem trước chỉ đọc trước khi xác nhận.');
+            'Cấp mọi badge có thể trao cho một tài khoản, tự động trừ badge độc quyền. Có bản xem trước chỉ đọc trước khi xác nhận. ' +
+            'Danh mục hiện có ' + mix.total + ' badge: ' + mixText(mix) + '.');
         pane.appendChild(box.root);
         var host = h('div', 'bkf-section');
         box.body.appendChild(host);
@@ -706,6 +721,10 @@
                     'Có thể trao ' + data.totalGrantable + ' · đã sở hữu ' + data.alreadyOwnedCount +
                     ' · loại trừ ' + data.excludedCount + ' badge độc quyền'));
                 previewHost.appendChild(head);
+                var mixPreview = catalogMix(data.catalog);
+                previewHost.appendChild(h('p', 'bkf-hint',
+                    'Danh mục ' + mixPreview.total + ' badge: ' + mixText(mixPreview) +
+                    ' — cấp hàng loạt chỉ áp dụng cho nhóm tự động.'));
 
                 var chips = h('div', 'bkf-chips');
                 (data.excluded || []).forEach(function (id) {
@@ -760,14 +779,16 @@
                 kit.api('badges.grantAll', { id: student.id, request_id: newRequestId() }).then(function (data) {
                     reportHost.textContent = '';
                     var boxEl = h('div', 'bkf-report');
+                    var mixAfter = catalogMix(data.catalog);
                     boxEl.appendChild(resultBox(h, true,
-                        'Đã cấp ' + data.added + ' badge cho ' + data.studentName +
-                        ' (đã có ' + data.alreadyOwned + ', loại trừ ' + data.excludedCount + ').'));
+                        'Đã cấp ' + data.added + ' badge cho ' + (data.studentName || student.display_name) +
+                        ' (đã có ' + data.alreadyOwned + ', loại trừ ' + data.excludedCount + ' badge độc quyền: ' +
+                        mixAfter.founder + ' Founder + ' + mixAfter.dev + ' Developer).'));
                     if (data.failed && data.failed.length) {
                         boxEl.appendChild(kit.alertBox('Không cấp được: ' + data.failed.join(', '), 'error'));
                     }
                     reportHost.appendChild(boxEl);
-                    toast('Đã cấp ' + data.added + ' badge.', 'success');
+                    toast('Đã cấp ' + data.added + ' badge trong ' + mixAfter.total + ' badge danh mục.', 'success');
                     loadPreview(student.id);
                 }).catch(function (err) {
                     reportHost.textContent = '';
@@ -884,12 +905,13 @@
         var B = global.BK && global.BK.badges ? global.BK.badges : null;
         var P = global.BKProfile;
 
-        var badgeTotal = B && B.CATALOG ? B.CATALOG.length : 0;
+        var mix = catalogMix();
+        var badgeTotal = B && B.CATALOG ? B.CATALOG.length : mix.total;
         var frameTotal = P && P.frames ? P.frames.length : 0;
 
         var box = kit.card('Cấp trọn bộ cho hồ sơ Founder', null,
-            'Trao toàn bộ ' + badgeTotal + ' badge trong danh mục và mở toàn bộ ' + frameTotal +
-            ' khung avatar cho hồ sơ Người sáng lập. Thao tác idempotent: chạy lại không tạo bản ghi trùng.');
+            'Trao toàn bộ ' + badgeTotal + ' badge trong danh mục (' + mixText(mix) + ') và mở toàn bộ ' +
+            frameTotal + ' khung avatar cho hồ sơ Người sáng lập. Thao tác idempotent: chạy lại không tạo bản ghi trùng.');
         pane.appendChild(box.root);
         var host = h('div', 'bkf-section');
         box.body.appendChild(host);
@@ -911,7 +933,7 @@
             var student = full.student;
             var rows = [
                 ['Người nhận', student ? (student.display_name + (student.student_code ? ' · ' + student.student_code : '')) : 'Hồ sơ Founder duy nhất (máy chủ tự xác định)'],
-                ['Số badge', String(badgeTotal) + ' (gồm cả badge độc quyền)'],
+                ['Số badge', String(badgeTotal) + ' (' + mixText(mix) + ')'],
                 ['Số khung', String(frameTotal) + ' khung avatar'],
                 ['Ghi chú', 'Không ghi đè quyền sở hữu cũ; chỉ thêm bản ghi còn thiếu.']
             ];
@@ -926,17 +948,23 @@
                 kit.api('founder.grantAll', payload).then(function (data) {
                     reportHost.textContent = '';
                     var report = h('div', 'bkf-report');
+                    var who = data.studentName || (student ? student.display_name : 'hồ sơ Founder');
                     report.appendChild(resultBox(h, true,
-                        'Đã cấp ' + data.added + ' badge mới cho ' + data.studentName + '.'));
+                        'Đã cấp ' + data.added + ' badge mới cho ' + who + '.'));
+                    var mixDone = catalogMix(data.catalog);
                     var grid = h('div', 'bkf-report-grid');
-                    grid.appendChild(h('span', 'bkf-tag', 'Danh mục: ' + data.badgeTotal + ' badge'));
+                    grid.appendChild(h('span', 'bkf-tag', 'Danh mục: ' + (data.badgeTotal || mixDone.total) + ' badge'));
+                    grid.appendChild(h('span', 'bkf-tag', 'Tự động: ' + mixDone.auto));
+                    grid.appendChild(h('span', 'bkf-tag is-exclusive', 'Founder: ' + mixDone.founder));
+                    grid.appendChild(h('span', 'bkf-tag is-exclusive', 'Developer: ' + mixDone.dev));
+                    grid.appendChild(h('span', 'bkf-tag is-exclusive', 'Administrator: ' + mixDone.admin));
                     grid.appendChild(h('span', 'bkf-tag is-owned', 'Mới cấp: ' + data.added));
                     grid.appendChild(h('span', 'bkf-tag', 'Đã có: ' + data.alreadyOwned));
                     grid.appendChild(h('span', 'bkf-tag', 'Khung: ' + data.frameCount));
                     if (data.equippedFrame) grid.appendChild(h('span', 'bkf-tag is-owned', 'Đang dùng: ' + data.equippedFrame));
                     report.appendChild(grid);
                     reportHost.appendChild(report);
-                    toast('Đã cấp trọn bộ cho ' + data.studentName + '.', 'success');
+                    toast('Đã cấp trọn bộ cho ' + who + '.', 'success');
                 }).catch(function (err) {
                     reportHost.textContent = '';
                     reportHost.appendChild(kit.alertBox((err && err.message) || 'Không cấp được trọn bộ.', 'error'));

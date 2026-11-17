@@ -347,7 +347,7 @@
         b('secret-collector-40', 'Tứ Thập Tinh Tập', 'Mở khóa 40 badge.', 'fa-trophy', 'secret', 'legendary', 40, 'unlockedCount', 'sunflower'),
         b('secret-collector-60', 'Lục Thập Viên Mãn', 'Mở khóa 60 badge.', 'fa-trophy-star', 'secret', 'legendary', 60, 'unlockedCount', 'horn-dragon'),
         b('secret-completionist', 'Thất Thập Tam Quy Tông', 'Mở khóa 73 badge tự động.', 'fa-diamond', 'secret', 'legendary', 73, 'unlockedCount', 'crown'),
-        b('ke-suu-tam', 'Kẻ sưu tầm', 'Thu thập toàn bộ thành tích (ngoại trừ 11 badge Founder và 2 badge Developer).', 'fa-bag-shopping', 'secret', 'legendary', 75, 'unlockedCount', null),
+        b('ke-suu-tam', 'Kẻ sưu tầm', 'Thu thập toàn bộ thành tích (ngoại trừ 21 badge Founder và 2 badge Developer).', 'fa-bag-shopping', 'secret', 'legendary', 75, 'unlockedCount', null),
 
         /* --- Chỉ Administrator trao (2) --- */
         admin('admin-chosen', 'Thiên Tuyển Chi Ấn', 'Badge đặc biệt do quản trị viên trao tặng.', 'fa-hand-holding-heart'),
@@ -791,6 +791,30 @@
         return Object.keys(t.unlocked).filter(function (id) { return !!BY_ID[id]; }).length;
     }
 
+    /* ---------------------------------------------------------------------
+       Cơ cấu danh mục — một nguồn số duy nhất cho mọi nơi hiển thị.
+       99 = 74 tự động + 21 Founder + 2 Developer + 2 Administrator.
+       Suy ra từ cờ `exclusive`/`adminOnly` của danh mục nên thêm badge mới
+       không phải sửa bất kỳ con số nào trong giao diện.
+       ------------------------------------------------------------------ */
+    function breakdown() {
+        var counts = { total: CATALOG.length, auto: 0, founder: 0, dev: 0, admin: 0 };
+        CATALOG.forEach(function (x) {
+            if (x.exclusive === 'founder') counts.founder++;
+            else if (x.exclusive === 'dev') counts.dev++;
+            else if (x.adminOnly) counts.admin++;
+            else counts.auto++;
+        });
+        return counts;
+    }
+
+    /** "99 badge: 74 tự động · 21 Founder · 2 Developer · 2 Administrator" */
+    function summaryText() {
+        var c = breakdown();
+        return c.total + ' badge: ' + c.auto + ' tự động · ' + c.founder + ' Founder · ' +
+            c.dev + ' Developer · ' + c.admin + ' Administrator';
+    }
+
     function emit(kind, extra) {
         try {
             D.dispatchEvent(new CustomEvent('bkbadges', { detail: Object.assign({ kind: kind }, extra || {}) }));
@@ -1004,6 +1028,8 @@
         byId: function (id) { return BY_ID[id] || null; },
         art: badgeArt,
         ART_KEYS: Object.keys(ART_PAINTERS),
+        breakdown: breakdown,
+        summaryText: summaryText,
         progress: progress,
         check: check,
         metrics: metrics,

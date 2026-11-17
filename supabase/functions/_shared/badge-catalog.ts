@@ -970,7 +970,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
     {
         "id": "ke-suu-tam",
         "name": "Kẻ sưu tầm",
-        "desc": "Thu thập toàn bộ thành tích (ngoại trừ 11 badge Founder và 2 badge Developer).",
+        "desc": "Thu thập toàn bộ thành tích (ngoại trừ 21 badge Founder và 2 badge Developer).",
         "icon": "fa-bag-shopping",
         "category": "secret",
         "rarity": "legendary",
