@@ -192,16 +192,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.bkchat-unread {
+.bkchat-unread-dot {
     flex: 0 0 auto;
-    min-width: 20px;
-    padding: .08rem .35rem;
+    width: 9px;
+    height: 9px;
+    margin-right: .15rem;
     border-radius: 999px;
     background: var(--bkl-primary);
-    color: #fff;
-    font-size: .68rem;
-    font-weight: 700;
-    text-align: center;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--bkl-primary) 22%, transparent);
 }
 
 .bkchat-side-foot {
@@ -436,23 +434,60 @@
 .bkchat-reactions {
     display: flex;
     flex-wrap: wrap;
-    gap: .25rem;
+    align-items: center;
+    gap: .22rem;
+    margin-top: .12rem;
 }
 .bkchat-reaction {
     display: inline-flex;
     align-items: center;
-    gap: .2rem;
-    padding: .1rem .42rem;
+    gap: .22rem;
+    min-height: 24px;
+    padding: .1rem .45rem .1rem .4rem;
     border: 1px solid var(--bkl-line);
     border-radius: 999px;
     background: var(--bkl-surface);
     color: var(--bkl-text);
-    font-size: .72rem;
+    font: inherit;
+    font-size: .7rem;
+    line-height: 1;
     cursor: pointer;
+    transition: border-color .14s, background .14s, transform .14s;
+}
+.bkchat-reaction:hover {
+    border-color: color-mix(in srgb, var(--bkl-primary) 55%, var(--bkl-line));
+    transform: translateY(-1px);
+}
+.bkchat-reaction-emoji { font-size: .82rem; line-height: 1; }
+.bkchat-reaction-count {
+    font-size: .68rem;
+    font-weight: 700;
+    color: var(--bkl-muted);
+    font-variant-numeric: tabular-nums;
 }
 .bkchat-reaction.is-mine {
+    border-color: color-mix(in srgb, var(--bkl-primary) 70%, var(--bkl-line));
+    background: color-mix(in srgb, var(--bkl-primary) 15%, transparent);
+}
+.bkchat-reaction.is-mine .bkchat-reaction-count { color: var(--bkl-primary); }
+.bkchat-reaction-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px dashed var(--bkl-line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--bkl-muted);
+    font-size: .62rem;
+    cursor: pointer;
+}
+.bkchat-reaction-add:hover {
+    border-style: solid;
     border-color: var(--bkl-primary);
-    background: color-mix(in srgb, var(--bkl-primary) 14%, transparent);
+    color: var(--bkl-primary);
 }
 
 .bkchat-meta {
@@ -502,6 +537,15 @@
     cursor: pointer;
 }
 .bkchat-msg-action:hover { background: var(--bkl-surface-2); color: var(--bkl-text); }
+.bkchat-msg-action.bkchat-react-btn {
+    padding: .12rem .26rem;
+    border-radius: 999px;
+}
+.bkchat-msg-action.bkchat-react-btn i { font-size: .78rem; }
+.bkchat-msg-action.bkchat-react-btn[aria-expanded="true"] {
+    background: color-mix(in srgb, var(--bkl-primary) 14%, transparent);
+    color: var(--bkl-primary);
+}
 
 .bkchat-pop {
     position: absolute;
@@ -1044,61 +1088,45 @@ button.bkchat-avatar { cursor: pointer; }
 }
 .bkchat-retry:hover { border-color: var(--bkl-primary); color: var(--bkl-primary); }
 
-/* Popover chi tiết cảm xúc (không dùng lưới 6 cột của picker). */
-.bkchat-pop.bkchat-reaction-pop {
-    display: flex;
-    flex-direction: column;
-    gap: .45rem;
-    padding: .55rem .6rem;
+/* Bảng chọn cảm xúc: 12 biểu tượng, 6 cột × 2 hàng, nổi trên nội dung. */
+.bkchat-pop.bkchat-react-picker {
+    position: fixed;
+    z-index: 21000;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: .16rem;
+    padding: .38rem;
+    border-radius: 14px;
+    animation: bkchat-react-in .14s ease-out;
 }
-.bkchat-reaction-head {
-    display: flex;
-    align-items: center;
-    gap: .4rem;
-}
-.bkchat-reaction-head .bkchat-reaction-emoji { font-size: 1.1rem; }
-.bkchat-reaction-head .bkchat-reaction-count {
-    font-size: .72rem;
-    color: var(--bkl-muted);
-}
-.bkchat-reaction-people {
-    display: flex;
-    flex-direction: column;
-    gap: .22rem;
-    max-height: 190px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-}
-.bkchat-reaction-person {
-    display: flex;
-    align-items: center;
-    gap: .45rem;
-    font-size: .78rem;
-    padding: .12rem 0;
-    min-width: 0;
-}
-.bkchat-reaction-person > span:last-child {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.bkchat-reaction-toggle {
-    align-self: flex-start;
+.bkchat-react-choice {
+    width: 100%;
+    aspect-ratio: 1 / 1;
     display: inline-flex;
     align-items: center;
-    gap: .3rem;
-    padding: .3rem .6rem;
-    border: 1px solid var(--bkl-line);
-    border-radius: 999px;
-    background: var(--bkl-surface-2);
-    color: var(--bkl-text);
-    font: inherit;
-    font-size: .72rem;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    font-size: 1.28rem;
+    line-height: 1;
     cursor: pointer;
+    transition: transform .12s, background .12s, border-color .12s;
 }
-.bkchat-reaction-toggle:hover {
-    border-color: var(--bkl-primary);
-    color: var(--bkl-primary);
+.bkchat-react-choice:hover,
+.bkchat-react-choice:focus-visible {
+    transform: scale(1.12);
+    background: var(--bkl-surface-2);
+    outline: none;
+}
+.bkchat-react-choice.is-mine {
+    border-color: color-mix(in srgb, var(--bkl-primary) 65%, transparent);
+    background: color-mix(in srgb, var(--bkl-primary) 15%, transparent);
+}
+@keyframes bkchat-react-in {
+    from { opacity: 0; transform: translateY(4px) scale(.96); }
+    to { opacity: 1; transform: none; }
 }
 
 

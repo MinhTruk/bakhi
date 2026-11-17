@@ -196,6 +196,18 @@ body.bk-app {
     box-shadow: 0 2px 6px rgba(239, 68, 68, .35);
 }
 .bk-menu-count[hidden] { display: none; }
+/* Chỉ chấm báo có tin chưa đọc — không hiện số. */
+.bk-menu-count.is-dot {
+    min-width: .5rem;
+    width: .5rem;
+    max-width: .5rem;
+    height: .5rem;
+    margin-right: .2rem;
+    padding: 0;
+    border-radius: 999px;
+    font-size: 0;
+    line-height: 0;
+}
 .bk-menu-sep { height: 1px; background: var(--bkl-line); margin: .3rem .4rem; border: 0; }
 .bk-menu-foot {
     display: flex; align-items: center; justify-content: space-between;

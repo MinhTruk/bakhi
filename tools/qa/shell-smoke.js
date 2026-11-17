@@ -145,14 +145,17 @@ const avatarDot = idoc.querySelector('#bkUserBtn .bk-user-dot');
 ok('avatar không còn chấm đỏ thông báo', !avatarDot);
 ok('badge Chat không tràn khỏi hàng menu', /\.bk-menu-row\s*\{[^}]*box-sizing:\s*border-box/.test(shellCss) &&
   /\.bk-menu-count\s*\{[^}]*max-width:\s*3\.2rem/.test(shellCss));
-ok('menu Chat có chỗ hiển thị số tin chưa đọc', !!chatCount && chatCount.hidden === true);
+ok('menu Chat có chỗ báo tin chưa đọc nhưng ẩn khi rỗng', !!chatCount && chatCount.hidden === true);
 iw.BKCloud = {
   chatUnread: function () { return 3; },
   on: function () { return function () { }; },
   refreshChatUnread: function () { return Promise.resolve(); }
 };
 iw.BKShell.refresh();
-ok('menu Chat hiện số tin chưa đọc', !!chatCount && chatCount.textContent === '3' && chatCount.hidden === false);
+ok('menu Chat chỉ hiện chấm báo, không hiện số',
+  !!chatCount && chatCount.hidden === false && chatCount.classList.contains('is-dot') &&
+  chatCount.textContent === '' && /tin nhắn chưa đọc/.test(chatCount.getAttribute('aria-label') || ''),
+  chatCount && (chatCount.className + '|' + chatCount.textContent));
 delete iw.BKCloud;
 ok('đường dẫn trong menu dùng gốc site đúng', menu.querySelector('a[href$="profile/"]').href === 'https://minhtruk.github.io/bakhi/profile/',
   menu.querySelector('a[href$="profile/"]').href);

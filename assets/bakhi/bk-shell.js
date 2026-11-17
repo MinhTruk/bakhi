@@ -557,10 +557,19 @@
             n = Number(global.BKCloud && global.BKCloud.chatUnread ? global.BKCloud.chatUnread() : 0) || 0;
         } catch (e) { n = 0; }
         var count = D.getElementById('bkMenuChatCount');
-        if (count) {
-            count.textContent = n > 99 ? '99+' : String(n);
-            count.hidden = !n;
-            count.setAttribute('aria-label', n + ' tin nhắn chưa đọc');
+        if (!count) return;
+        /* Chỉ chấm báo, không hiện số tin chưa đọc. */
+        count.textContent = '';
+        count.hidden = !n;
+        count.classList.toggle('is-dot', !!n);
+        if (n) {
+            count.setAttribute('role', 'status');
+            count.setAttribute('aria-label', 'Có tin nhắn chưa đọc trong Chat');
+            count.title = 'Có tin nhắn chưa đọc trong Chat';
+        } else {
+            count.removeAttribute('role');
+            count.removeAttribute('aria-label');
+            count.removeAttribute('title');
         }
     }
 

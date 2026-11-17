@@ -2,6 +2,19 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.1.1] — 2026-11-17
+
+### Tính năng
+
+- **Chat: bảng chọn cảm xúc 12 biểu tượng**: bấm biểu tượng mặt cười bên cạnh tin nhắn để mở bảng chọn, thả/bỏ cảm xúc ngay trên tin, hiển thị danh sách người đã thả (tối đa 4 tên + dấu …), chip của bạn tô màu xanh. Chọn lại biểu tượng của mình = bỏ cảm xúc.
+- **Chat: đánh dấu đã đọc chỉ biểu tượng**: nút ở đầu hội thoại chỉ giữ icon ✓✓, không có dòng chữ; chuyển màu xanh khi không còn tin chưa đọc.
+
+### Cải tiến
+
+- **Chat: không hiển thị số tin nhắn chưa đọc**: danh sách phòng chỉ hiện chấm màu, không hiện con số; tiêu đề trang không gắn số đếm.
+- **Chat: lưu đã đọc theo từng học sinh**: mốc `last_read_at` lưu trong `chat_members` cho mỗi thành viên, nhãn ✓/✓✓ của tin bạn gửi cập nhật ngay khi người khác đọc (realtime) và khi bấm nút đánh dấu đã đọc.
+- **Chat: đồng bộ trạng thái chưa đọc toàn trang**: tổng số chưa đọc đẩy sang lớp Cloud (menu tài khoản) qua `setChatUnread`.
+
 ## [7.1.0] — 2026-11-17
 
 ### Tính năng

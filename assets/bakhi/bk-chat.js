@@ -28,6 +28,10 @@
         presenceTimer: null, searchTimer: null, destroyed: false
     };
 
+    /* Đúng 12 cảm xúc máy chủ chấp nhận (chat-api). Giữ khớp tuyệt đối để
+       không gửi lên chuỗi bị từ chối. */
+    var EMOJI = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🎉', '👏', '🙏', '✅', '⭐', '💯'];
+
     /* ---------------------------------------------------------------------
        Tiện ích DOM
        ------------------------------------------------------------------ */
@@ -572,9 +576,12 @@
             row.appendChild(body);
 
             if (room.unread) {
-                var badge = el('span', 'bkchat-unread', room.unread > 99 ? '99+' : String(room.unread));
-                badge.setAttribute('aria-label', room.unread + ' tin chưa đọc');
-                row.appendChild(badge);
+                /* Chỉ chấm báo có tin mới, không hiện số đếm. */
+                var dot = el('span', 'bkchat-unread-dot');
+                dot.setAttribute('role', 'img');
+                dot.setAttribute('aria-label', 'Có tin nhắn chưa đọc');
+                dot.title = 'Có tin nhắn chưa đọc';
+                row.appendChild(dot);
             }
             box.appendChild(row);
         });
@@ -593,16 +600,15 @@
             if (!r.archived) total += Number(r.unread) || 0;
         });
         S.totalUnread = total;
-        /* Chỉ đẩy số chưa đọc sang lớp Cloud cho bộ đếm trong menu tài khoản.
-           Không còn chấm đỏ trên avatar. */
+        /* Chỉ đẩy trạng thái "còn tin chưa đọc" sang lớp Cloud cho chấm báo
+           trong menu tài khoản. Không còn số đếm ở bất kỳ đâu. */
         try {
             if (global.BKCloud && global.BKCloud.setChatUnread) {
                 global.BKCloud.setChatUnread(total);
             }
         } catch (e) { }
         try {
-            var base = 'Chat — Bá Khí';
-            D.title = total ? '(' + total + ') ' + base : base;
+            D.title = 'Chat — Bá Khí';
         } catch (e) { }
     }
 
@@ -896,6 +902,7 @@
                 updateMemberRead(roomId, S.me && S.me.student_id, room.last_read_at);
                 renderRooms();
                 paintUnread();
+                updateMarkReadButton();
                 if (notify) toast('Đã đánh dấu đã đọc.', 'success');
             }).catch(function () {
                 if (seq !== S.readSeq) return;
@@ -906,6 +913,17 @@
         };
         if (immediate) send();
         else S.readTimer = setTimeout(send, 400);
+    }
+
+    /* Nút đánh dấu đã đọc ở đầu hội thoại chỉ là biểu tượng ✓✓; khi phòng
+       không còn tin chưa đọc thì chuyển sang màu xanh và đổi nhãn trợ năng. */
+    function updateMarkReadButton() {
+        var markBtn = D.querySelector('#bkChatHead .bkchat-mark-read');
+        if (!markBtn) return;
+        var done = !(S.active && S.active.unread);
+        markBtn.classList.toggle('is-read-done', done);
+        markBtn.title = done ? 'Đã đọc hết tin nhắn' : 'Đánh dấu đã đọc';
+        markBtn.setAttribute('aria-label', 'Đánh dấu đã đọc');
     }
 
     function presenceLabel(person) {
@@ -1032,9 +1050,9 @@
         info.appendChild(el('div', 'bkchat-head-sub', sub));
         head.appendChild(info);
 
-        var markBtn = btn('bkchat-icon-btn', 'Đánh dấu đã đọc', 'fa-check-double');
+        var markBtn = btn('bkchat-icon-btn bkchat-mark-read', '', 'fa-check-double');
         markBtn.type = 'button';
-        markBtn.title = 'Đánh dấu đã đọc';
+        markBtn.title = room.unread ? 'Đánh dấu đã đọc' : 'Đã đọc hết tin nhắn';
         markBtn.setAttribute('aria-label', 'Đánh dấu đã đọc');
         markBtn.classList.toggle('is-read-done', !room.unread);
         markBtn.addEventListener('click', function () { markRead(true, true); });
@@ -1162,10 +1180,12 @@
             meta.appendChild(readRow);
         }
         if (!m.deleted) {
-            /* Giữ thả cảm xúc nhưng không dùng icon mặt cười cạnh khung soạn tin. */
-            var reactBtn = btn('bkchat-msg-action', 'Thả cảm xúc', '');
+            /* Nút thả cảm xúc gọn: chỉ biểu tượng, hiện khi rê chuột/focus. */
+            var reactBtn = btn('bkchat-msg-action bkchat-react-btn', '', 'fa-face-smile');
             reactBtn.setAttribute('data-react', m.id);
-            reactBtn.setAttribute('aria-label', 'Thả cảm xúc cho tin nhắn');
+            reactBtn.setAttribute('aria-label', 'Thả cảm xúc');
+            reactBtn.setAttribute('aria-haspopup', 'menu');
+            reactBtn.setAttribute('aria-expanded', 'false');
             reactBtn.title = 'Thả cảm xúc';
             meta.appendChild(reactBtn);
         }
@@ -1183,24 +1203,60 @@
     function chipGroup(message, rows, me) {
         var frag = D.createDocumentFragment();
         var grouped = {};
+        var order = [];
         rows.forEach(function (r) {
             var emoji = String(r.emoji || '');
             if (!emoji) return;
-            grouped[emoji] = grouped[emoji] || { count: 0, mine: false };
+            if (!grouped[emoji]) {
+                grouped[emoji] = { count: 0, mine: false, names: [] };
+                order.push(emoji);
+            }
             grouped[emoji].count++;
-            if (r.student_id === me) grouped[emoji].mine = true;
+            if (String(r.student_id) === String(me)) grouped[emoji].mine = true;
+            grouped[emoji].names.push(nameOf(cardOf(String(r.student_id))));
         });
-        Object.keys(grouped).forEach(function (emoji) {
-            var chip = el('button', 'bkchat-reaction' + (grouped[emoji].mine ? ' is-mine' : ''));
+        order.forEach(function (emoji) {
+            var g = grouped[emoji];
+            var chip = el('button', 'bkchat-reaction' + (g.mine ? ' is-mine' : ''));
             chip.type = 'button';
             chip.setAttribute('data-emoji', emoji);
             chip.setAttribute('data-message', message.id);
-            chip.textContent = emoji + ' ' + grouped[emoji].count;
-            var label = emoji + ', ' + grouped[emoji].count + ' người thả';
+            chip.setAttribute('aria-pressed', g.mine ? 'true' : 'false');
+            chip.appendChild(el('span', 'bkchat-reaction-emoji', emoji));
+            chip.appendChild(el('span', 'bkchat-reaction-count', String(g.count)));
+            var names = g.names.slice(0, 4).join(', ');
+            if (g.names.length > 4) names += '…';
+            var label = emoji + ' ' + g.count + ' người: ' + names;
             chip.setAttribute('aria-label', label);
+            chip.title = label;
             frag.appendChild(chip);
         });
+        /* Chip "+" nhỏ cuối hàng để thêm cảm xúc khác. */
+        var add = el('button', 'bkchat-reaction-add');
+        add.type = 'button';
+        add.setAttribute('data-react', message.id);
+        add.setAttribute('aria-label', 'Thêm cảm xúc');
+        add.title = 'Thêm cảm xúc';
+        add.appendChild(icon('fa-plus'));
+        frag.appendChild(add);
         return frag;
+    }
+
+    /* Vẽ lại đúng một tin nhắn khi thả/bỏ cảm xúc, giữ nguyên vị trí cuộn
+       thay vì dựng lại cả khung. */
+    function renderMessageNode(messageId) {
+        var box = D.getElementById('bkChatMessages');
+        if (!box) return;
+        var old = box.querySelector('[data-message="' + messageId + '"]');
+        if (!old) return;
+        var index = -1;
+        for (var i = 0; i < S.messages.length; i++) {
+            if (String(S.messages[i].id) === String(messageId)) { index = i; break; }
+        }
+        if (index < 0) return;
+        var me = S.me && S.me.student_id;
+        var next = messageNode(S.messages[index], index > 0 ? S.messages[index - 1] : null, me);
+        old.parentNode.replaceChild(next, old);
     }
 
     function imageUrl(path) {
@@ -1310,7 +1366,7 @@
         }
         var chip = target.closest && target.closest('[data-emoji]');
         if (chip) {
-            showReactionDetails(chip, String(chip.getAttribute('data-message')), String(chip.getAttribute('data-emoji')));
+            toggleReaction(String(chip.getAttribute('data-message')), String(chip.getAttribute('data-emoji')));
             return;
         }
         var del = target.closest && target.closest('[data-delete]');
@@ -1339,83 +1395,16 @@
             });
         }
         S.reactions[messageId] = optimistic;
-        renderThread();
+        renderMessageNode(messageId);
 
         api({ action: 'reactions.toggle', message_id: messageId, emoji: emoji }).then(function (data) {
             S.reactions[messageId] = Array.isArray(data.reactions) ? data.reactions : [];
-            renderThread();
+            renderMessageNode(messageId);
         }).catch(function (err) {
             S.reactions[messageId] = before;
-            renderThread();
+            renderMessageNode(messageId);
             toast(errorText(err), 'error');
         });
-    }
-
-    function showReactionDetails(anchor, messageId, emoji) {
-        closePopovers();
-        var rows = (S.reactions[messageId] || []).filter(function (r) {
-            return String(r.emoji) === emoji;
-        });
-        if (!rows.length) return;
-
-        var missing = rows.map(function (r) { return String(r.student_id); })
-            .filter(function (id, index, list) { return list.indexOf(id) === index && !S.cards[id]; });
-        if (missing.length) {
-            api({ action: 'profiles.cards', ids: missing }).then(function (data) {
-                if (data && data.profiles) rememberCards(data.profiles);
-                renderReactionDetails(anchor, messageId, emoji, rows);
-            }).catch(function () { renderReactionDetails(anchor, messageId, emoji, rows); });
-            return;
-        }
-        renderReactionDetails(anchor, messageId, emoji, rows);
-    }
-
-    function renderReactionDetails(anchor, messageId, emoji, rows) {
-        closePopovers();
-        var me = S.me && S.me.student_id;
-        var mine = rows.some(function (r) { return String(r.student_id) === String(me); });
-
-        var pop = el('div', 'bkchat-pop bkchat-reaction-pop');
-        pop.setAttribute('role', 'dialog');
-        pop.setAttribute('aria-label', 'Người đã thả cảm xúc');
-        var head = el('div', 'bkchat-reaction-head');
-        head.appendChild(el('span', 'bkchat-reaction-emoji', emoji));
-        head.appendChild(el('span', 'bkchat-reaction-count', rows.length + ' người đã thả'));
-        pop.appendChild(head);
-
-        var list = el('div', 'bkchat-reaction-people');
-        rows.forEach(function (r) {
-            var person = cardOf(String(r.student_id));
-            var item = el('div', 'bkchat-reaction-person');
-            item.appendChild(avatarFor(person, 26));
-            var label = nameOf(person);
-            if (String(r.student_id) === String(me)) label += ' (Bạn)';
-            item.appendChild(el('span', null, label));
-            list.appendChild(item);
-        });
-        pop.appendChild(list);
-
-        var toggle = btn('bkchat-reaction-toggle', mine ? 'Bỏ cảm xúc' : 'Thả cảm xúc', mine ? 'fa-xmark' : 'fa-plus');
-        toggle.addEventListener('click', function () {
-            closePopovers();
-            toggleReaction(messageId, emoji);
-        });
-        pop.appendChild(toggle);
-
-        var host = D.getElementById('bkChatMessages');
-        if (!host) return;
-        host.appendChild(pop);
-        var rect = anchor.getBoundingClientRect();
-        var hostRect = host.getBoundingClientRect();
-        var width = Math.min(260, Math.max(180, hostRect.width - 16));
-        pop.style.width = width + 'px';
-        pop.style.top = Math.max(4, rect.top - hostRect.top + host.scrollTop - 120) + 'px';
-        pop.style.left = Math.max(4, Math.min(rect.left - hostRect.left, hostRect.width - width - 8)) + 'px';
-        setTimeout(function () {
-            global.addEventListener('click', function (e) {
-                if (!pop.contains(e.target)) closePopovers();
-            }, { once: true });
-        }, 0);
     }
 
     function deleteMessage(messageId) {
@@ -1433,29 +1422,63 @@
         }).catch(function (err) { toast(errorText(err), 'error'); });
     }
 
+    /* Bảng cảm xúc: 12 biểu tượng máy chủ chấp nhận, mở thành popover cố định
+       để không bị cắt bởi khung tin nhắn. Chọn lại biểu tượng đang có = bỏ. */
     function openReactionPicker(anchor, messageId) {
         closePopovers();
-        var pop = el('div', 'bkchat-pop');
+        var me = S.me && S.me.student_id;
+        var mine = {};
+        (S.reactions[messageId] || []).forEach(function (r) {
+            if (me && String(r.student_id) === String(me)) mine[String(r.emoji)] = true;
+        });
+        var pop = el('div', 'bkchat-pop bkchat-react-picker');
+        pop.id = 'bkChatReactPicker';
         pop.setAttribute('role', 'menu');
+        pop.setAttribute('aria-label', 'Chọn cảm xúc cho tin nhắn');
         EMOJI.forEach(function (emoji) {
-            var b = el('button', 'bkchat-emoji', emoji);
+            var b = el('button', 'bkchat-react-choice' + (mine[emoji] ? ' is-mine' : ''), emoji);
             b.type = 'button';
-            b.setAttribute('role', 'menuitem');
+            b.setAttribute('role', 'menuitemcheckbox');
+            b.setAttribute('aria-checked', mine[emoji] ? 'true' : 'false');
+            b.setAttribute('aria-label', (mine[emoji] ? 'Bỏ cảm xúc ' : 'Thả cảm xúc ') + emoji);
             b.addEventListener('click', function () {
                 closePopovers();
                 toggleReaction(messageId, emoji);
             });
             pop.appendChild(b);
         });
-        var host = D.getElementById('bkChatMessages');
-        host.appendChild(pop);
-        var rect = anchor.getBoundingClientRect();
-        var hostRect = host.getBoundingClientRect();
-        pop.style.top = Math.max(4, rect.top - hostRect.top + host.scrollTop - 46) + 'px';
-        pop.style.left = Math.max(4, Math.min(rect.left - hostRect.left, hostRect.width - 300)) + 'px';
+        D.body.appendChild(pop);
+        placeReactionPicker(pop, anchor);
+        if (anchor) {
+            anchor.setAttribute('aria-expanded', 'true');
+            anchor.setAttribute('aria-haspopup', 'menu');
+        }
         setTimeout(function () {
-            global.addEventListener('click', closePopovers, { once: true });
+            global.addEventListener('click', function (e) {
+                if (!pop.contains(e.target)) closePopovers();
+            }, { once: true });
+            global.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') closePopovers();
+            }, { once: true });
         }, 0);
+    }
+
+    function placeReactionPicker(pop, anchor) {
+        var vw = Math.max(260, global.innerWidth || 360);
+        var vh = Math.max(320, global.innerHeight || 640);
+        var width = Math.min(300, vw - 16);
+        var height = 100;
+        var rect = anchor && anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : null;
+        var left = 8;
+        var top = 8;
+        if (rect) {
+            left = Math.min(Math.max(8, rect.left + rect.width / 2 - width / 2), vw - width - 8);
+            top = rect.top - height - 8;
+            if (top < 8) top = Math.min(rect.bottom + 8, vh - height - 8);
+        }
+        pop.style.width = width + 'px';
+        pop.style.left = left + 'px';
+        pop.style.top = top + 'px';
     }
 
     function closePopovers() {

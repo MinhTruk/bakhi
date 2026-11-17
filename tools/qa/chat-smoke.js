@@ -285,8 +285,10 @@ async function main() {
   ok('tải đủ 3 phòng (chung, riêng, nhóm)', !!rooms, String(doc.querySelectorAll('#bkChatRooms [data-room]').length));
   const dmRow = doc.querySelector('#bkChatRooms [data-room="' + DM.id + '"]');
   ok('phòng nhắn riêng hiện tên đối phương', !!dmRow && /Bảo Long/.test(dmRow.textContent), dmRow && dmRow.textContent);
-  ok('phòng có tin chưa đọc hiện bộ đếm', !!dmRow && !!dmRow.querySelector('.bkchat-unread'), dmRow && dmRow.textContent);
-  ok('bộ đếm tổng nằm ở tiêu đề trang', /^\(2\)/.test(w.document.title), w.document.title);
+  ok('phòng có tin chưa đọc hiện chấm báo, không hiện số',
+    !!dmRow && !!dmRow.querySelector('.bkchat-unread-dot') && !dmRow.querySelector('.bkchat-unread'),
+    dmRow && dmRow.textContent);
+  ok('tiêu đề trang không còn số tin chưa đọc', w.document.title === 'Chat — Bá Khí', w.document.title);
 
   console.log('\n[2] Mở phòng chung & hiển thị tin nhắn');
   const globalRow = doc.querySelector('#bkChatRooms [data-room="' + GLOBAL.id + '"]');
@@ -319,11 +321,19 @@ async function main() {
     !!otherMsg && !otherMsg.querySelector('.bkchat-read-row'));
   const markReadBtn = doc.querySelector('.bkchat-head .bkchat-icon-btn[aria-label="Đánh dấu đã đọc"]');
   ok('có nút đánh dấu đã đọc ở đầu hội thoại', !!markReadBtn);
+  ok('nút đánh dấu đã đọc chỉ có icon hai dấu tick, không chữ',
+    !!markReadBtn && markReadBtn.textContent.trim() === '' && !!markReadBtn.querySelector('.fa-check-double'),
+    markReadBtn && markReadBtn.textContent);
   const readBeforeManual = H.calls.filter((c) => c.action === 'read.mark').length;
   if (markReadBtn) {
     markReadBtn.click();
     const manualRead = await until(() => H.calls.filter((c) => c.action === 'read.mark').length > readBeforeManual);
     ok('bấm nút gọi read.mark ngay lập tức', !!manualRead);
+    await wait(80);
+    ok('bấm nút xong nút chuyển trạng thái đã đọc', markReadBtn.classList.contains('is-read-done'));
+    ok('đọc xong không còn chấm báo ở phòng đang mở',
+      !doc.querySelector('#bkChatRooms [data-room="' + GLOBAL.id + '"] .bkchat-unread-dot'));
+    ok('đọc xong tiêu đề vẫn không có số', w.document.title === 'Chat — Bá Khí', w.document.title);
   }
   ok('chat gửi nhịp hoạt động', H.calls.some((c) => c.action === 'presence.ping'));
   const liveDot = await until(() => dmRow && dmRow.querySelector('.bkchat-presence'));
@@ -349,21 +359,45 @@ async function main() {
   const composerRow = doc.querySelector('.bkchat-composer-row');
   ok('thanh soạn tin chỉ có ô chữ và nút gửi, không icon emoji',
     !!composerRow && composerRow.children.length === 2 && !composerRow.querySelector('.fa-face-smile'));
-  const reactAction = doc.querySelector('#bkChatMessages [data-react]');
-  ok('nút thả cảm xúc không còn icon mặt cười', !!reactAction && !reactAction.querySelector('i') &&
-    /Thả cảm xúc/.test(reactAction.textContent));
+  const reactAction = doc.querySelector('#bkChatMessages .bkchat-react-btn');
+  ok('nút thả cảm xúc là icon gọn, không nhãn chữ',
+    !!reactAction && !!reactAction.querySelector('.fa-face-smile') && reactAction.textContent.trim() === '',
+    reactAction && reactAction.textContent);
 
   console.log('\n[4] Thả cảm xúc & xoá tin của mình');
   const reactionChip = doc.querySelector('#bkChatMessages .bkchat-reaction');
   const chipEmoji = reactionChip && reactionChip.getAttribute('data-emoji');
-  reactionChip.click();
-  const reactionCard = await until(() => doc.querySelector('.bkchat-reaction-pop'));
-  ok('bấm cảm xúc mở danh sách người đã thả', !!reactionCard && reactionCard.textContent.indexOf('người đã thả') >= 0,
-    reactionCard && reactionCard.textContent.slice(0, 80));
-  const reactToggle = reactionCard && reactionCard.querySelector('.bkchat-reaction-toggle');
-  if (reactToggle) reactToggle.click();
-  const toggled = await until(() => H.calls.filter((c) => c.action === 'reactions.toggle').pop());
-  ok('nút trong danh sách gọi reactions.toggle', !!toggled && toggled.body.emoji === chipEmoji);
+  ok('chip cảm xúc hiện biểu tượng và số người, không lặp nhãn chữ',
+    !!reactionChip && !!reactionChip.querySelector('.bkchat-reaction-emoji') &&
+    reactionChip.querySelector('.bkchat-reaction-count').textContent === '2',
+    reactionChip && reactionChip.textContent);
+  ok('chip cảm xúc có nhãn trợ năng kèm tên người thả',
+    !!reactionChip && /người:/.test(reactionChip.getAttribute('aria-label') || ''),
+    reactionChip && reactionChip.getAttribute('aria-label'));
+  if (reactionChip) {
+    const chipBefore = H.calls.filter((c) => c.action === 'reactions.toggle').length;
+    reactionChip.click();
+    const chipToggle = await until(() => H.calls.filter((c) => c.action === 'reactions.toggle').length > chipBefore
+      ? H.calls.filter((c) => c.action === 'reactions.toggle').pop() : null);
+    ok('bấm chip cảm xúc thả/bỏ ngay, không mở hộp thoại', !!chipToggle && chipToggle.body.emoji === chipEmoji);
+  }
+
+  const pickerTrigger = doc.querySelector('#bkChatMessages .bkchat-msg.is-own .bkchat-react-btn');
+  if (pickerTrigger) {
+    pickerTrigger.click();
+    const picker = await until(() => doc.getElementById('bkChatReactPicker'));
+    const choices = picker ? picker.querySelectorAll('.bkchat-react-choice') : [];
+    ok('nút cảm xúc mở bảng 12 biểu tượng', !!picker && choices.length === 12, String(choices.length));
+    if (choices.length) {
+      const choiceEmoji = choices[0].textContent;
+      const before = H.calls.filter((c) => c.action === 'reactions.toggle').length;
+      choices[0].click();
+      const toggled = await until(() => H.calls.filter((c) => c.action === 'reactions.toggle').length > before
+        ? H.calls.filter((c) => c.action === 'reactions.toggle').pop() : null);
+      ok('chọn biểu tượng trong bảng gọi reactions.toggle', !!toggled && toggled.body.emoji === choiceEmoji,
+        toggled && toggled.body.emoji);
+    }
+  }
 
   const delBtn = doc.querySelector('#bkChatMessages .bkchat-msg.is-own [data-delete]');
   ok('tin của mình có nút xoá', !!delBtn);
