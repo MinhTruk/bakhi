@@ -109,7 +109,7 @@ function validateEntry(raw: unknown, index: number): { entry?: Entry; error?: st
         return { error: `entries[${index}]: version không hợp lệ` };
     }
     const date = str(e.date, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(new Date(date + 'T00:00:00Z').getTime())) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(new Date(date + 'T00:00:00+07:00').getTime())) {
         return { error: `entries[${index}]: ngày không hợp lệ (${date})` };
     }
     const title = str(e.title, 160);
@@ -120,7 +120,7 @@ function validateEntry(raw: unknown, index: number): { entry?: Entry; error?: st
 
     const category = CATEGORIES.includes(String(e.category)) ? String(e.category) : 'other';
     const summary = str(e.summary, 400);
-    const published_at = `${date}T00:00:00.000Z`;
+    const published_at = `${date}T00:00:00.000+07:00`;
     const content_hash = /^[a-f0-9]{64}$/i.test(String(e.content_hash || ''))
         ? String(e.content_hash).toLowerCase()
         : '';
@@ -128,6 +128,43 @@ function validateEntry(raw: unknown, index: number): { entry?: Entry; error?: st
     return {
         entry: { version, date, published_at, title, summary, category, sections, content_hash }
     };
+}
+
+/* 7.0.1 — Chuẩn hoá mốc ngày cũ về nửa đêm giờ Việt Nam.
+ *
+ * Trước 7.0.1, changelog lưu published_at = YYYY-MM-DDT00:00:00Z. Khi hiển thị
+ * theo Asia/Ho_Chi_Minh, mốc đó thành 07:00 cùng ngày. RPC chỉ gán published_at
+ * lúc tạo mới nên các bản ghi đã có không tự sửa. Đồng bộ lại CHANGELOG.md sẽ
+ * dịch đúng những dòng còn ở mốc 00:00Z sang 00:00+07:00 — không đụng mốc đăng
+ * tay có giờ cụ thể.
+ */
+async function normalizeLegacyDate(
+    client: ReturnType<typeof createClient>,
+    entry: Entry
+): Promise<boolean> {
+    const legacy = `${entry.date}T00:00:00+00:00`;
+    const fixed = `${entry.date}T00:00:00.000+07:00`;
+    let changed = false;
+
+    const changelog = await client
+        .from('changelog')
+        .update({ published_at: fixed })
+        .eq('version', entry.version)
+        .eq('published_at', legacy)
+        .select('id');
+    if (!changelog.error && Array.isArray(changelog.data) && changelog.data.length) changed = true;
+
+    const announcements = await client
+        .from('announcements')
+        .update({ published_at: fixed })
+        .eq('changelog_version', entry.version)
+        .eq('published_at', legacy)
+        .select('id');
+    if (!announcements.error && Array.isArray(announcements.data) && announcements.data.length) {
+        changed = true;
+    }
+
+    return changed;
 }
 
 Deno.serve(async (req) => {
@@ -225,13 +262,15 @@ Deno.serve(async (req) => {
         const result = (data ?? {}) as Record<string, unknown>;
         if (result.created) created += 1;
         if (result.announcement_created) announcements += 1;
+        const normalized = await normalizeLegacyDate(client, entry);
         results.push({
             version: entry.version,
             created: !!result.created,
             updated: !!result.updated,
             announcement_created: !!result.announcement_created,
             announcement_id: result.announcement_id ?? null,
-            published_at: result.published_at ?? null
+            published_at: result.published_at ?? null,
+            normalized_date: normalized
         });
     }
 

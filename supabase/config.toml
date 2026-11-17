@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.passkey-api]
 verify_jwt = false
+
+[functions.changelog-sync]
+verify_jwt = false

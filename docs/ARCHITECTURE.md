@@ -143,6 +143,12 @@ DOMContentLoaded
   liên kết `http(s)`.
 - Kênh realtime `bakhi-public` lắng nghe `announcements`, `changelog`, `app_settings`;
   trạng thái kênh được công bố qua `BKCloud.state().realtime` để dashboard giám sát.
+- Từ 7.0.1, ngày trong `CHANGELOG.md` (`## [x.y.z] — YYYY-MM-DD`) được hiểu là **nửa đêm
+  giờ Việt Nam** ở cả `tools/changelog/parse.js`, Edge Function `changelog-sync` và giao diện
+  (`+07:00`). Migration `20261127000000_bakhi_changelog_vn_time.sql` dịch các mốc cũ đúng
+  `00:00:00Z` về `00:00+07:00`; không đụng thông báo đăng tay có giờ cụ thể. Edge Function
+  `changelog-sync` cũng tự chuẩn hoá những dòng còn ở mốc `00:00Z` sau mỗi lần đồng bộ,
+  nên cơ sở dữ liệu đang chạy không cần chạy migration thủ công vẫn hiển thị đúng.
 
 #### Danh sách cập nhật giới hạn 10 mục (3.4.0)
 
@@ -268,8 +274,9 @@ DOMContentLoaded
 - **Edge Function `chat-api`**: mọi thao tác ghi (`messages.send/delete`, `reactions.toggle`,
   `read.mark`, `presence.ping`, `dm.open`, `group.*`, `messages.purge_own`) chạy bằng service role
   sau khi xác minh `auth.uid()` đã gắn với học sinh đang hoạt động và tư cách thành viên. Mỗi
-  request cập nhật `student_devices.last_seen_at`; `read.mark` nhận mốc `through` của tin cuối
-  client đã tải và chỉ tăng `last_read_at`, không lùi về sau.
+  request cập nhật `student_devices.last_seen_at`; `read.mark` nhận nguyên chuỗi `through`
+  (độ chính xác microseconds của PostgreSQL) của tin cuối client đã tải và chỉ tăng
+  `last_read_at`, không lùi về sau. Bộ đếm chưa đọc bỏ qua tin do chính học sinh gửi.
   Giới hạn: 300 lượt/giờ/học sinh, 20 tin/phút, 120 cảm xúc/phút. Không tin `student_id` từ client.
 - **Máy khách** (`bk-chat.js`): đọc dữ liệu trực tiếp qua Supabase (RLS), ghi qua `BKCloud.chatApi`;
   bộ đếm chưa đọc cả trên tiêu đề tab; realtime cho tin nhắn, cảm xúc và tên nhóm; toàn bộ nội dung
@@ -281,6 +288,12 @@ DOMContentLoaded
   phòng đã lưu trữ. Giao diện có bộ lọc “Đã lưu trữ”, phòng ghim xếp trước, thả cảm xúc
   tối ưu (hoàn tác khi lỗi) và popover xem ai đã thả. Mọi mốc thời gian hiển thị theo
   `Asia/Ho_Chi_Minh` (UTC+7).
+- **Đã đọc 7.0.1**: mỗi tin hiện nhãn “Đã gửi/Đã đọc” (tin của mình, dựa trên
+  `last_read_at` lớn nhất của thành viên khác) hoặc “Bạn đã đọc/Chưa đọc” (tin của người
+  khác, dựa trên mốc của mình). Nút “Đánh dấu đã đọc” ở đầu hội thoại gọi `read.mark` ngay;
+  mở phòng vẫn tự đánh dấu sau 500 ms. Kênh realtime `bakhi-chat` lắng nghe cả
+  `chat_members` để nhãn đổi ngay khi thành viên khác đọc. Trang Chat đẩy tổng chưa đọc
+  sang `BKCloud.setChatUnread` để chấm đỏ avatar/menu tắt tức thời.
 - **Passkey (6.2.0)**: Edge Function `passkey-api` dùng `@simplewebauthn/server` để tạo/xác minh
   credential. RP ID/origin lấy từ secret `PASSKEY_RP_ID`/`PASSKEY_ORIGIN`, không lấy từ Host.
   Khi hồ sơ đã có passkey, `bind-student-session` trả `passkey_required` + challenge thay vì

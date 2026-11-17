@@ -571,10 +571,87 @@
             if (!r.archived) total += Number(r.unread) || 0;
         });
         S.totalUnread = total;
+        /* Đẩy số chưa đọc sang lớp Cloud để chấm đỏ trên avatar/menu hồ sơ
+           đổi ngay, không phải chờ lần bootstrap kế tiếp. */
+        try {
+            if (global.BKCloud && global.BKCloud.setChatUnread) {
+                global.BKCloud.setChatUnread(total);
+            }
+        } catch (e) { }
         try {
             var base = 'Chat — Bá Khí';
             D.title = total ? '(' + total + ') ' + base : base;
         } catch (e) { }
+    }
+
+    /* Mốc đã đọc do máy chủ lưu trong chat_members.last_read_at. So sánh theo
+       thời điểm để biết tin của mình đã được người khác đọc hay chưa, và tin
+       của người khác đã được mình đọc hay chưa. */
+    function memberRows() {
+        if (S.members && S.members.length) return S.members;
+        return (S.active && S.active.members) || [];
+    }
+    function memberRow(id) {
+        var list = memberRows();
+        for (var i = 0; i < list.length; i++) {
+            if (String(list[i].student_id) === String(id)) return list[i];
+        }
+        return null;
+    }
+    function readAtOf(id) {
+        var row = memberRow(id);
+        var at = row ? Date.parse(row.last_read_at || '') : NaN;
+        return Number.isFinite(at) ? at : null;
+    }
+    function readStateOf(message) {
+        if (!message || !message.created_at) return null;
+        var at = Date.parse(message.created_at);
+        if (!Number.isFinite(at)) return null;
+        var me = S.me && S.me.student_id;
+        if (me && String(message.student_id) === String(me)) {
+            var newest = null;
+            memberRows().forEach(function (m) {
+                if (!m || String(m.student_id) === String(me)) return;
+                var other = Date.parse(m.last_read_at || '');
+                if (Number.isFinite(other) && (newest === null || other > newest)) newest = other;
+            });
+            if (newest === null) return { own: true, read: false, label: 'Đã gửi' };
+            return newest >= at
+                ? { own: true, read: true, label: 'Đã đọc' }
+                : { own: true, read: false, label: 'Đã gửi' };
+        }
+        var mine = me ? readAtOf(me) : null;
+        if (mine === null && S.active && S.active.last_read_at) {
+            var roomAt = Date.parse(S.active.last_read_at);
+            mine = Number.isFinite(roomAt) ? roomAt : null;
+        }
+        if (mine === null) return null;
+        return mine >= at
+            ? { own: false, read: true, label: 'Bạn đã đọc' }
+            : { own: false, read: false, label: 'Chưa đọc' };
+    }
+    function updateMemberRead(roomId, studentId, lastReadAt) {
+        if (!roomId || !studentId || !lastReadAt) return;
+        var mine = S.me && String(studentId) === String(S.me.student_id);
+        if (mine) {
+            var room = findRoom(roomId);
+            if (room) room.last_read_at = lastReadAt;
+        }
+        if (!S.active || S.active.id !== roomId) return;
+        S.members.forEach(function (m) {
+            if (String(m.student_id) === String(studentId)) m.last_read_at = lastReadAt;
+        });
+        if (!S.members.some(function (m) { return String(m.student_id) === String(studentId); })) {
+            var known = cardOf(studentId);
+            if (known && known.student_id) {
+                S.members.push({
+                    student_id: known.student_id, display_name: known.display_name,
+                    avatar: known.avatar, role: known.role, last_read_at: lastReadAt
+                });
+            }
+        }
+        renderThread();
+        if (mine) paintUnread();
     }
 
     function openConversationOptions() {
@@ -713,33 +790,50 @@
 
     function newestMessageAt() {
         var newest = 0;
+        var raw = '';
         (S.messages || []).forEach(function (m) {
             var at = Date.parse(m && m.created_at);
-            if (Number.isFinite(at) && at > newest) newest = at;
+            /* Giữ nguyên chuỗi created_at gốc: PostgreSQL lưu microseconds,
+               cắt về milliseconds sẽ khiến tin cuối vẫn bị tính là chưa đọc. */
+            if (Number.isFinite(at) && (at > newest || (at === newest && m.created_at))) {
+                newest = at;
+                raw = m.created_at;
+            }
         });
-        return newest ? new Date(newest).toISOString() : '';
+        return raw;
     }
 
     /* Chỉ đánh dấu đã đọc khi tab đang hiện và gửi đúng mốc tin cuối đã tải.
-       Nhờ vậy tin đến trong lúc gọi API không bị coi là đã đọc oan. */
-    function markRead() {
+       Nhờ vậy tin đến trong lúc gọi API không bị coi là đã đọc oan.
+       immediate = bấm nút thủ công; notify = hiện xác nhận. */
+    function markRead(immediate, notify) {
         if (!S.active || D.visibilityState === 'hidden') return;
         var roomId = S.active.id;
         var through = newestMessageAt();
         if (!through) return;
         clearTimeout(S.readTimer);
         var seq = ++S.readSeq;
-        S.readTimer = setTimeout(function () {
+        var previous = S.active.last_read_at || null;
+        var send = function () {
             api({ action: 'read.mark', room_id: roomId, through: through }).then(function (data) {
                 if (seq !== S.readSeq) return;
                 var room = findRoom(roomId);
                 if (!room) return;
                 room.unread = 0;
                 room.last_read_at = (data && data.last_read_at) || through;
+                updateMemberRead(roomId, S.me && S.me.student_id, room.last_read_at);
                 renderRooms();
                 paintUnread();
-            }).catch(function () { });
-        }, 500);
+                if (notify) toast('Đã đánh dấu đã đọc.', 'success');
+            }).catch(function () {
+                if (seq !== S.readSeq) return;
+                var room = findRoom(roomId);
+                if (room) room.last_read_at = previous;
+                if (notify) toast('Không đánh dấu được đã đọc. Thử lại sau.', 'error');
+            });
+        };
+        if (immediate) send();
+        else S.readTimer = setTimeout(send, 500);
     }
 
     function presenceLabel(person) {
@@ -851,6 +945,14 @@
         info.appendChild(el('div', 'bkchat-head-sub', sub));
         head.appendChild(info);
 
+        var markBtn = btn('bkchat-icon-btn', 'Đánh dấu đã đọc', 'fa-check-double');
+        markBtn.type = 'button';
+        markBtn.title = 'Đánh dấu đã đọc';
+        markBtn.setAttribute('aria-label', 'Đánh dấu đã đọc');
+        markBtn.classList.toggle('is-read-done', !room.unread);
+        markBtn.addEventListener('click', function () { markRead(true, true); });
+        head.appendChild(markBtn);
+
         var options = btn('bkchat-icon-btn', '', 'fa-ellipsis-vertical');
         options.setAttribute('data-room-menu', '1');
         options.setAttribute('aria-label', 'Tuỳ chọn hội thoại');
@@ -954,6 +1056,19 @@
             var chips = el('div', 'bkchat-reactions');
             chips.appendChild(chipGroup(m, reactionRows, me));
             extra.appendChild(chips);
+        }
+
+        var readState = readStateOf(m);
+        if (readState) {
+            var readRow = el('div', 'bkchat-read-row');
+            readRow.appendChild(icon(readState.read ? 'fa-check-double' : 'fa-check', 'bkchat-read-ic'));
+            readRow.appendChild(el('span', 'bkchat-read-state' + (readState.read ? ' is-read' : ''), readState.label));
+            if (readState.own) {
+                readRow.title = readState.read
+                    ? 'Người nhận đã đọc tin nhắn này'
+                    : 'Đã gửi tới máy chủ, chưa có người nhận đọc';
+            }
+            extra.appendChild(readRow);
         }
 
         var meta = el('div', 'bkchat-meta');
@@ -1075,7 +1190,10 @@
             sender_name: nameOf(message.sender)
         };
         if ((!S.active || S.active.id !== roomId) && !room.archived) {
-            room.unread = (Number(room.unread) || 0) + 1;
+            /* Tin của chính mình (gửi từ tab/thiết bị khác) không bao giờ là
+               tin chưa đọc của mình. */
+            var own = S.me && String(message.student_id) === String(S.me.student_id);
+            if (!own) room.unread = (Number(room.unread) || 0) + 1;
         }
         renderRooms();
         paintUnread();
@@ -1361,6 +1479,13 @@
                     var row = payload && (payload.new || payload.old);
                     if (!row || !row.message_id) return;
                     refreshReactions(String(row.message_id));
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_members' }, function (payload) {
+                    /* Mốc đã đọc đổi ở tab/thiết bị khác → cập nhật ngay nhãn
+                       “Đã đọc / Bạn đã đọc” mà không cần tải lại trang. */
+                    var row = payload && payload.new;
+                    if (!row || !row.room_id || !row.student_id || !row.last_read_at) return;
+                    updateMemberRead(String(row.room_id), String(row.student_id), row.last_read_at);
                 })
                 .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_rooms' }, function (payload) {
                     var row = payload && payload.new;

@@ -38,8 +38,8 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
 (async () => {
   console.log('\n[1] Trang Founder và mã bí mật');
   const page = read('founder/index.html');
-  ok('có trang founder/ dùng dashboard 7.0.0',
-    /bk-devboard\.js\?v=7\.0\.0/.test(page) && /BK_DASH_SCOPE\s*=\s*["']founder/.test(page));
+  ok('có trang founder/ dùng dashboard 7.0.1',
+    /bk-devboard\.js\?v=7\.0\.1/.test(page) && /BK_DASH_SCOPE\s*=\s*["']founder/.test(page));
   ok('trang Founder gọi founderLogin/founderToken',
     /founderLogin/.test(page) && /founderToken/.test(page));
   ok('không lưu Founder Code dạng plaintext trong client',
@@ -114,6 +114,16 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   ok('Founder có đủ 15 tab', tabs.length === 15, String(tabs.length) + ' :: ' + ids.join(','));
   ok('có Bảo trì, Dữ liệu và tab Founder',
     ['maintenance', 'data', 'founder'].every((id) => ids.includes(id)));
+
+  const founderTitle = D.querySelector('.bkc-dash-title');
+  ok('tiêu đề mặc định là Founder Dashboard',
+    !!founderTitle && founderTitle.textContent.trim() === 'Founder Dashboard',
+    founderTitle && founderTitle.textContent);
+
+  w.BKDashboard.tab('maintenance');
+  const maintCheck = await until(() => D.querySelector('.bkc-pane .bkc-check input[type="checkbox"]'));
+  ok('tab Bảo trì render checkbox không lỗi appendChild', !!maintCheck &&
+    /Bảo trì toàn website/.test(D.querySelector('.bkc-pane').textContent));
 
   w.BKDashboard.tab('founder');
   const grant = await until(() => Array.from(D.querySelectorAll('.bkc-pane button'))

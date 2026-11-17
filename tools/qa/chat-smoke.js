@@ -122,6 +122,7 @@ function makeHarness() {
   };
   w.matchMedia = w.matchMedia || ((q) => ({ matches: false, media: q, addEventListener() { }, removeEventListener() { } }));
   const calls = [];
+  const unreadPushes = [];
   let uploadCount = 0;
   const prefState = new Map();
   const prefFor = (roomId) => prefState.get(roomId) || {
@@ -148,6 +149,7 @@ function makeHarness() {
     configured: () => true,
     identity: () => ME,
     chatClient: () => Promise.resolve(fakeClient),
+    setChatUnread(n) { unreadPushes.push(Number(n) || 0); },
     storagePublicUrl: (bucket, p) => 'https://demo.supabase.co/storage/v1/object/public/' + bucket + '/' + p,
     chatApi(body) {
       calls.push({ action: body.action, body });
@@ -228,7 +230,7 @@ function makeHarness() {
 
   w.eval(fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-chat.js'), 'utf8'));
   return {
-    w, calls, errors, uploadCount: () => uploadCount,
+    w, calls, errors, uploadCount: () => uploadCount, unreadPushes,
     resizeViewport: (height) => { w.visualViewport.height = height; if (vvResize) vvResize(); }
   };
 }
@@ -276,6 +278,23 @@ async function main() {
   const readCall = H.calls.filter((c) => c.action === 'read.mark').pop();
   ok('read.mark gửi mốc tin cuối đã tải', !!readCall && /^\d{4}-\d{2}-\d{2}T/.test(readCall.body.through || ''),
     readCall && readCall.body.through);
+  const readRows = doc.querySelectorAll('#bkChatMessages .bkchat-read-row');
+  ok('mỗi tin có nhãn trạng thái đã đọc', readRows.length >= 3, String(readRows.length));
+  const ownRead = own.querySelector('.bkchat-read-row');
+  ok('tin của mình hiện “Đã đọc” khi người khác đã đọc',
+    !!ownRead && /Đã đọc/.test(ownRead.textContent), ownRead && ownRead.textContent);
+  const otherMsg = Array.from(msgNodes).find((n) => !n.classList.contains('is-own'));
+  const otherRead = otherMsg && otherMsg.querySelector('.bkchat-read-row');
+  ok('tin của người khác hiện “Bạn đã đọc” đối với mình',
+    !!otherRead && /Bạn đã đọc/.test(otherRead.textContent), otherRead && otherRead.textContent);
+  const markReadBtn = doc.querySelector('.bkchat-head .bkchat-icon-btn[aria-label="Đánh dấu đã đọc"]');
+  ok('có nút đánh dấu đã đọc ở đầu hội thoại', !!markReadBtn);
+  const readBeforeManual = H.calls.filter((c) => c.action === 'read.mark').length;
+  if (markReadBtn) {
+    markReadBtn.click();
+    const manualRead = await until(() => H.calls.filter((c) => c.action === 'read.mark').length > readBeforeManual);
+    ok('bấm nút gọi read.mark ngay lập tức', !!manualRead);
+  }
   ok('chat gửi nhịp hoạt động', H.calls.some((c) => c.action === 'presence.ping'));
   const liveDot = await until(() => dmRow && dmRow.querySelector('.bkchat-presence'));
   ok('avatar phòng nhắn riêng có chấm đang hoạt động', !!liveDot);
@@ -345,7 +364,9 @@ async function main() {
   liveDmRow.click();
   const activeRow = await until(() => doc.querySelector('#bkChatRooms [data-room="' + DM.id + '"].is-active'));
   ok('mở được hội thoại nhắn riêng', !!activeRow);
-  await wait(120);
+  await wait(700);
+  ok('đọc xong đẩy số chưa đọc 0 sang lớp Cloud', H.unreadPushes[H.unreadPushes.length - 1] === 0,
+    JSON.stringify(H.unreadPushes));
   const optionsBtn = await until(() => doc.querySelector('#bkChatHead [data-room-menu]'));
   ok('mở phòng có nút tuỳ chọn hội thoại', !!optionsBtn);
   if (optionsBtn) {
@@ -471,6 +492,9 @@ async function main() {
       .every((a) => fn.indexOf("'" + a + "'") !== -1));
   ok('giới hạn tần suất gửi tin', /chat-send:/.test(fn) && /20, 60/.test(fn));
   ok('server chặn gửi ảnh mới', /IMAGES_DISABLED/.test(fn));
+  ok('bộ đếm chưa đọc bỏ qua tin của chính mình', /\.neq\('student_id', ctx\.studentId\)/.test(fn));
+  ok('read.mark giữ nguyên mốc microseconds thay vì cắt về milliseconds',
+    /rawThrough/.test(fn) && /through > currentRaw/.test(fn));
 
   console.log('\n[10] Lối vào & trang Chat');
   const shell = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-shell.js'), 'utf8');

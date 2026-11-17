@@ -2,6 +2,37 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.0.1] — 2026-11-17
+
+### Sửa lỗi
+
+- **Tab Bảo trì không còn lỗi `appendChild`**: ô “Đang bật bảo trì” được gắn
+  đúng phần tử DOM; lưu cấu hình và tắt bảo trì đọc đúng trạng thái checkbox.
+- **Chấm đỏ Chat sau khi đã đọc**: mốc đã đọc lưu nguyên độ chính xác từ
+  PostgreSQL thay vì bị cắt về milliseconds; tin của chính mình không còn bị
+  cộng vào số chưa đọc; số chưa đọc được đẩy ngay sang lớp Cloud để chấm đỏ
+  trên avatar/menu biến mất tức thời sau khi đọc.
+- **Thời gian changelog đúng UTC+7**: ngày trong `CHANGELOG.md` được hiểu là
+  nửa đêm giờ Việt Nam ở cả bộ phân tích, Edge Function đồng bộ và giao diện;
+  dữ liệu cũ được chuẩn hoá bằng migration.
+
+### Tính năng
+
+- **Đánh dấu đã đọc trong Chat**: nút “Đánh dấu đã đọc” ở đầu hội thoại, tự
+  đánh dấu khi mở phòng, và nhãn “Đã gửi / Đã đọc” cho tin của bạn,
+  “Bạn đã đọc / Chưa đọc” cho tin của người khác; cập nhật realtime khi thành
+  viên khác đọc tin.
+- **Music Player luôn có ô dán liên kết**: form thêm bài nằm ngay dưới khung
+  phát, không còn ẩn trong tab Thư viện; nút “Thêm bài” mở trình phát và đưa
+  con trỏ vào ô liên kết.
+
+### Cải tiến
+
+- **Founder Dashboard đúng tên**: phiên Founder mặc định hiển thị “Founder
+  Dashboard”; Administrator vẫn là “Administrator Dashboard”. Tên tuỳ chỉnh
+  trong Cấu hình vẫn được ưu tiên.
+- **Phiên bản 7.0.1** áp dụng cho toàn bộ tệp HTML, `bk-version.js` và dashboard.
+
 ## [7.0.0] — 2026-11-17
 
 ### Tính năng

@@ -519,6 +519,16 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     const pushCl = await until(() => Array.from(w.document.querySelectorAll('.bkc-btn')).find((b) => b.textContent === 'PUSH CHANGELOG NOW'));
     ok('tab Changelog có nút PUSH CHANGELOG NOW', !!pushCl);
     ok('trình soạn nhiều mục thay đổi', !!w.document.querySelector('.bkc-section-row'));
+    const parseSrc = fs.readFileSync(path.join(ROOT, 'tools/changelog/parse.js'), 'utf8');
+    const syncSrc = fs.readFileSync(path.join(ROOT, 'supabase/functions/changelog-sync/index.ts'), 'utf8');
+    ok('changelog lưu ngày dưới dạng nửa đêm giờ Việt Nam (UTC+7)',
+        /T00:00:00\.000\+07:00/.test(parseSrc) && /T00:00:00\.000\+07:00/.test(syncSrc));
+    ok('đồng bộ lại tự chuẩn hoá mốc cũ 00:00Z sang UTC+7',
+        /normalizeLegacyDate/.test(syncSrc) && /T00:00:00\+00:00/.test(syncSrc) &&
+        /changelog_version/.test(syncSrc));
+    ok('migration chuẩn hoá mốc changelog cũ về UTC+7',
+        /published_at - interval '7 hours'/.test(fs.readFileSync(
+            path.join(ROOT, 'supabase/migrations/20261127000000_bakhi_changelog_vn_time.sql'), 'utf8')));
 
     w.BKDashboard.tab('students');
     const importBtn = await until(() => Array.from(w.document.querySelectorAll('.bkc-btn')).find((b) => b.textContent === 'Import danh sách'));

@@ -428,6 +428,18 @@
     .bkchat-meta { opacity: 1; }
 }
 .bkchat-time { font-size: .64rem; color: var(--bkl-muted); }
+.bkchat-read-row {
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+    padding: 0 .15rem;
+    color: var(--bkl-muted);
+    font-size: .62rem;
+    line-height: 1.4;
+}
+.bkchat-read-row .bkchat-read-ic { font-size: .6rem; }
+.bkchat-read-state.is-read { color: #16a34a; }
+.bkchat-icon-btn.is-read-done { color: #16a34a; }
 .bkchat-msg-action {
     display: inline-flex;
     align-items: center;

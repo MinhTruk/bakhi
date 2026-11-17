@@ -767,7 +767,7 @@
         ui.queue.textContent = '';
         if (!state.queue.length) {
             ui.queue.appendChild(el('div', 'bkmusic-empty',
-                'Queue trống. Mở tab Thư viện để thêm liên kết YouTube, Spotify hoặc SoundCloud.'));
+                'Queue trống. Dán liên kết vào ô phía trên để thêm bài mới.'));
             return;
         }
         state.queue.forEach(function (idx, qi) {
@@ -882,6 +882,16 @@
             '  <button class="bkm-repeat" type="button" title="Repeat off" aria-label="Repeat"><i class="bk-ic">' + ICONS.repeat + '</i></button>' +
             '</div>' +
             '<div class="bkmusic-embed" aria-label="Khung phát chính thức"></div>' +
+            '<div class="bkm-add">' +
+            '  <div class="bkm-add-grid">' +
+            '    <input class="bkm-url" type="url" inputmode="url" autocomplete="off" ' +
+            '           placeholder="Dán liên kết YouTube, Spotify hoặc SoundCloud…" aria-label="Liên kết bài hát">' +
+            '    <input class="bkm-new-title" type="text" maxlength="160" autocomplete="off" placeholder="Tên bài (không bắt buộc)" aria-label="Tên bài">' +
+            '    <input class="bkm-new-artist" type="text" maxlength="120" autocomplete="off" placeholder="Nghệ sĩ (không bắt buộc)" aria-label="Nghệ sĩ">' +
+            '    <button class="bkm-add-go" type="button" title="Thêm vào thư viện">Thêm</button>' +
+            '  </div>' +
+            '  <p class="bkm-hint">Chỉ nhận liên kết chính thức. Phát bằng khung nhúng của nền tảng; Bá Khí không tải hay lưu tệp nhạc.</p>' +
+            '</div>' +
             '<div class="bkmusic-tabs" role="tablist">' +
             '  <button data-tab="queue" class="on" type="button" role="tab" aria-selected="true" aria-controls="bkm-pane-queue">Queue</button>' +
             '  <button data-tab="library" type="button" role="tab" aria-selected="false" aria-controls="bkm-pane-library">Thư viện</button>' +
@@ -889,18 +899,7 @@
             '</div>' +
             '<div class="bkmusic-body">' +
             '  <div id="bkm-pane-queue" class="bkm-queue bkmusic-list" role="tabpanel"></div>' +
-            '  <div id="bkm-pane-library" class="bkm-library bkmusic-list" role="tabpanel" hidden>' +
-            '    <div class="bkm-add">' +
-            '      <div class="bkm-add-grid">' +
-            '        <input class="bkm-url" type="url" inputmode="url" autocomplete="off" ' +
-            '               placeholder="Dán liên kết YouTube, Spotify hoặc SoundCloud…" aria-label="Liên kết bài hát">' +
-            '        <input class="bkm-new-title" type="text" maxlength="160" autocomplete="off" placeholder="Tên bài (không bắt buộc)" aria-label="Tên bài">' +
-            '        <input class="bkm-new-artist" type="text" maxlength="120" autocomplete="off" placeholder="Nghệ sĩ (không bắt buộc)" aria-label="Nghệ sĩ">' +
-            '        <button class="bkm-add-go" type="button" title="Thêm vào thư viện">Thêm</button>' +
-            '      </div>' +
-            '      <p class="bkm-hint">Chỉ nhận liên kết chính thức. Phát bằng khung nhúng của nền tảng; Bá Khí không tải hay lưu tệp nhạc.</p>' +
-            '    </div>' +
-            '  </div>' +
+            '  <div id="bkm-pane-library" class="bkm-library bkmusic-list" role="tabpanel" hidden></div>' +
             '  <div class="bkm-lyrics bkmusic-lyrics" role="tabpanel" id="bkm-pane-lyrics" hidden></div>' +
             '  <div class="bkm-lyrics-edit" hidden>' +
             '    <textarea class="bkm-lyr-input" rows="7" maxlength="20000" ' +
@@ -1227,7 +1226,8 @@
         });
         q('.bkm-add-toggle').addEventListener('click', function () {
             layout.open();
-            showTab('library');
+            var inp = q('.bkm-url');
+            if (inp) { try { inp.focus({ preventScroll: true }); } catch (e) { } }
         });
 
         /* ---------- Lời bài hát ---------- */

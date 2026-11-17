@@ -68,6 +68,11 @@
         } catch (e) { return 'admin'; }
     }
     function isFounder() { return dashboardScope() === 'founder'; }
+    /* Administrator và Founder dùng chung một dashboard; tên mặc định đổi theo
+       phạm vi đăng nhập. Tên tuỳ chỉnh (public.branding) vẫn được ưu tiên. */
+    function defaultDashboardName() {
+        return isFounder() ? 'Founder Dashboard' : 'Administrator Dashboard';
+    }
     function isExclusiveBadge(id) {
         return id === 'founder' || String(id).indexOf('dev-exclusive-') === 0;
     }
@@ -105,7 +110,7 @@
         permissions: { data: null },
         data: { integrity: null, flags: [] },
         maintenance: { history: [], q: '', status: 'all', total: 0, loading: false, cycle: null, searchTimer: null },
-        branding: { adminDashboardName: 'Administrator Dashboard' }
+        branding: { adminDashboardName: defaultDashboardName() }
     };
 
     /* ------------------------------ Tiện ích ------------------------------ */
@@ -597,7 +602,7 @@
         mark.appendChild(icon('fa-shield-halved'));
         brand.appendChild(mark);
         var brandText = h('div', 'bkc-brand-text');
-        var brandNameEl = h('b', null, S.branding.adminDashboardName || 'Bá Khí Admin');
+        var brandNameEl = h('b', null, S.branding.adminDashboardName || defaultDashboardName());
         brandText.appendChild(brandNameEl);
         brandText.appendChild(h('span', null, 'Console v' + APP_VERSION));
         brand.appendChild(brandText);
@@ -656,7 +661,7 @@
         headLeft.appendChild(iconBtn('fa-bars', 'Mở điều hướng', function () { root.classList.add('is-nav-open'); }, 'bkc-nav-toggle'));
         var titles = h('div', 'bkc-dash-titles');
         var titleRow = h('div', 'bkc-dash-title-row');
-        S.titleEl = h('span', 'bkc-dash-title', S.branding.adminDashboardName || 'Administrator Dashboard');
+        S.titleEl = h('span', 'bkc-dash-title', S.branding.adminDashboardName || defaultDashboardName());
         titleRow.appendChild(S.titleEl);
         var live = h('span', 'bkc-live-dot');
         live.title = 'Đang hoạt động';
@@ -711,7 +716,7 @@
        app_settings.public.branding. Không đổi đường dẫn /admin/. */
     function applyBranding(name) {
         var clean = String(name == null ? '' : name).trim().slice(0, 40)
-            || 'Administrator Dashboard';
+            || defaultDashboardName();
         S.branding.adminDashboardName = clean;
         if (S.titleEl) S.titleEl.textContent = clean;
         if (S.brandNameEl) S.brandNameEl.textContent = clean;
@@ -3814,7 +3819,7 @@
             var value = (data && data.value) || {};
             form = {};
             var enabled = checkbox('Đang bật bảo trì', value.enabled === true, function () { });
-            host.appendChild(enabled);
+            host.appendChild(enabled.root);
             form.title = input('text', 'Tiêu đề thông báo…', value.title || 'Bá Khí đang bảo trì');
             form.title.maxLength = 120;
             host.appendChild(fieldRow('Tiêu đề', form.title));
@@ -3862,7 +3867,7 @@
                 };
             }
             function save(on, forceOff) {
-                var body = payload(forceOff ? false : (on || enabled.checked));
+                var body = payload(forceOff ? false : (on || enabled.input.checked));
                 api('settings.set', body).then(function () {
                     toast(forceOff ? 'Đã tắt bảo trì.' : (body.enabled ? 'Đã bật bảo trì.' : 'Đã lưu cấu hình bảo trì.'), 'success');
                     load();
@@ -4086,7 +4091,7 @@
         if (isFounder()) {
             var brandCard = card('Tên hiển thị Dashboard', [
                 iconBtn('fa-rotate', 'Tải lại tên hiển thị', function () { loadBrandName(); })
-            ], 'Founder đổi được tên hiển thị của Administrator Dashboard. Đường dẫn /admin/ và quyền truy cập không đổi.');
+            ], 'Founder đổi được tên hiển thị của dashboard. Đường dẫn /admin/ và quyền truy cập không đổi.');
             pane.appendChild(brandCard.root);
             var brandHost = h('div', 'bkc-form');
             brandCard.body.appendChild(brandHost);
@@ -4098,13 +4103,13 @@
                     brandHost.textContent = '';
                     var row = (data.settings || []).filter(function (x) { return x.key === 'public.branding'; })[0];
                     var value = row && row.value && typeof row.value === 'object' ? row.value : {};
-                    var current = value.adminDashboardName || 'Administrator Dashboard';
+                    var current = value.adminDashboardName || defaultDashboardName();
                     var nameInput = input('text', 'Tên hiển thị, tối đa 40 ký tự…', current);
                     nameInput.maxLength = 40;
                     brandHost.appendChild(fieldRow('Tên hiển thị', nameInput));
                     var preview = h('p', 'bkc-hint', 'Xem trước: ' + current);
                     nameInput.addEventListener('input', function () {
-                        preview.textContent = 'Xem trước: ' + (nameInput.value.trim() || 'Administrator Dashboard');
+                        preview.textContent = 'Xem trước: ' + (nameInput.value.trim() || defaultDashboardName());
                     });
                     brandHost.appendChild(preview);
                     var acts = h('div', 'bkc-actions');

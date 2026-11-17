@@ -153,7 +153,7 @@ function parseChangelog(markdown) {
             current = {
                 version: version,
                 date: date,
-                published_at: date + 'T00:00:00.000Z',
+                published_at: date + 'T00:00:00.000+07:00',
                 title: '',
                 summary: '',
                 category: 'other',

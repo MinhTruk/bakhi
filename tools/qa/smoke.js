@@ -296,6 +296,12 @@ ok('music shortcut active when panel open', openKey.defaultPrevented === true);
 w.BKMusic.showTab('library');
 ok('music showTab switches pane', w.document.querySelector('.bkm-library').hidden === false && w.document.querySelector('.bkm-queue').hidden === true);
 w.BKMusic.showTab('queue');
+const addForm = mPanel.querySelector('.bkm-add');
+const addUrl = mPanel.querySelector('.bkm-url');
+ok('music add-link form is always visible outside hidden tabs',
+  !!addForm && !!addUrl && !addForm.closest('[hidden]') && !addUrl.closest('[hidden]'));
+mPanel.querySelector('.bkm-add-toggle').click();
+ok('music “Thêm bài” focuses the link field', w.document.activeElement === addUrl);
 /* jsdom không layout → giả lập hình chữ nhật của panel để test kéo/đổi kích thước. */
 mPanel.getBoundingClientRect = function () {
   var px = parseFloat(this.style.getPropertyValue('--bkm-x'));

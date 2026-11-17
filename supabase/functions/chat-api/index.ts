@@ -557,20 +557,30 @@ Deno.serve(async (req) => {
                 const room = await readableRoom(ctx, roomId);
                 if (!room) return fail(403, 'NO_ACCESS', 'Bạn không ở trong phòng này.');
                 /* Client gửi mốc created_at của tin cuối đã thấy. Không dùng giờ
-                   server, vì tin đến trong lúc gọi API sẽ bị đánh dấu đã đọc oan. */
-                const requested = Date.parse(str(body.through, 40));
-                const through = Number.isFinite(requested)
-                    ? new Date(Math.min(requested, Date.now())).toISOString()
-                    : new Date().toISOString();
+                   server, vì tin đến trong lúc gọi API sẽ bị đánh dấu đã đọc oan.
+                   Giữ nguyên chuỗi gốc (PostgreSQL có microseconds) để lần so
+                   sánh `created_at > last_read_at` kế tiếp không lệch mốc. */
+                const rawThrough = str(body.through, 40);
+                const requestedAt = Date.parse(rawThrough);
+                const nowAt = Date.now();
+                const isIso = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})$/.test(rawThrough);
+                const through = Number.isFinite(requestedAt) && isIso && requestedAt <= nowAt
+                    ? rawThrough
+                    : new Date(nowAt).toISOString();
                 const { data: current } = await client
                     .from('chat_members')
                     .select('last_read_at')
                     .eq('room_id', roomId)
                     .eq('student_id', ctx.studentId)
                     .maybeSingle();
-                const currentAt = current && current.last_read_at ? Date.parse(current.last_read_at) : 0;
-                const nextAt = Math.max(currentAt || 0, Date.parse(through));
-                const lastReadAt = new Date(nextAt).toISOString();
+                const currentRaw = current && current.last_read_at ? String(current.last_read_at) : '';
+                const currentAt = currentRaw ? Date.parse(currentRaw) : 0;
+                const requestedMs = Date.parse(through);
+                /* Chỉ tiến, không lùi: mốc đã đọc là mốc lớn nhất từng thấy. */
+                const lastReadAt = requestedMs > (currentAt || 0) ||
+                    (requestedMs === (currentAt || 0) && through > currentRaw)
+                    ? through
+                    : (currentRaw || through);
                 await client.from('chat_members').upsert({
                     room_id: roomId,
                     student_id: ctx.studentId,

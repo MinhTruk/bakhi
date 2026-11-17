@@ -144,7 +144,7 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
 | 1 | Thư viện trống mặc định, không còn 5 bài `.mp3` đóng gói sẵn | ✅ | `bakhiMusic.v3` |
-| 2 | Thêm bài bằng liên kết chính thức YouTube/Spotify/SoundCloud | ✅ | `parseSource`; chặn host lạ và `javascript:` |
+| 2 | Thêm bài bằng liên kết chính thức YouTube/Spotify/SoundCloud | ✅ | `parseSource`; chặn host lạ và `javascript:`; ô dán luôn hiện dưới khung phát (7.0.1) |
 | 3 | Phát trong iframe chính thức của nền tảng | ✅ | YouTube/SoundCloud nhận play/pause qua `postMessage` |
 | 4 | Sửa tên, nghệ sĩ và lời theo từng bài | ✅ | Lời tối đa 20.000 ký tự, hỗ trợ `[mm:ss]` |
 | 5 | Bìa sinh từ chữ cái đầu, màu theo tên bài | ✅ | Không cần tệp PNG |
@@ -277,7 +277,7 @@ Function `chat-api`; trình duyệt chỉ đọc dữ liệu phòng mình tham g
 | 5 | Chat chỉ gửi văn bản (6.0.0 bỏ gửi ảnh và bảng emoji soạn tin) | ✅ | Ảnh cũ vẫn hiển thị; server trả `IMAGES_DISABLED` nếu client cố gửi ảnh mới |
 | 6 | 12 cảm xúc emoji, bấm lại để bỏ | ✅ | `chat_reactions`, `reactions.toggle`; cập nhật tối ưu + hoàn tác khi lỗi |
 | 7 | Realtime tin nhắn, cảm xúc, tên nhóm | ✅ | Các bảng trong `supabase_realtime`, `replica identity full` |
-| 8 | Bộ đếm tin chưa đọc theo phòng + trên tiêu đề tab | ✅ | `last_read_at`; `read.mark` nhận mốc `through` của tin cuối đã tải |
+| 8 | Bộ đếm tin chưa đọc theo phòng + trên tiêu đề tab | ✅ | `last_read_at`; `read.mark` nhận nguyên mốc `through` (microseconds) và bỏ qua tin của chính mình |
 | 9 | Profile Card: tên, biệt danh, giới thiệu, khung, số thành tích | ✅ | View `chat_profiles` không lộ `student_code`; có `last_seen_at` |
 | 10 | Tìm học sinh để nhắn riêng hoặc thêm vào nhóm | ✅ | `students.search` qua `chat-api`; có trạng thái tải/trống/lỗi + thử lại |
 | 11 | Xoá mềm tin của mình; trưởng nhóm xoá tin trong nhóm | ✅ | `deleted_at`, hiện “Tin nhắn đã được xoá” |
@@ -288,8 +288,10 @@ Function `chat-api`; trình duyệt chỉ đọc dữ liệu phòng mình tham g
 | 16 | Ghim/lưu trữ hội thoại theo từng học sinh | ✅ | `chat_conversation_prefs` + `conversation.pin`/`conversation.archive` |
 | 17 | Bộ lọc “Đã lưu trữ”, phòng ghim xếp trước | ✅ | Tổng chưa đọc bỏ qua phòng đã lưu trữ |
 | 18 | Xem ai đã thả cảm xúc | ✅ | Popover `.bkchat-reaction-pop`, tải Profile Card còn thiếu |
-| 19 | Chấm đỏ/đã đọc đồng bộ giữa các trang | ✅ | `bk-cloud.js` làm mới khi `chat_members`/`chat_conversation_prefs` đổi |
-| 20 | Mọi mốc thời gian theo `Asia/Ho_Chi_Minh` (UTC+7) | ✅ | Không dùng múi giờ thiết bị |
+| 19 | Chấm đỏ/đã đọc đồng bộ giữa các trang | ✅ | `bk-cloud.js` làm mới khi `chat_members`/`chat_conversation_prefs` đổi; trang Chat đẩy số qua `setChatUnread` |
+| 20 | Mọi mốc thời gian theo `Asia/Ho_Chi_Minh` (UTC+7) | ✅ | Không dùng múi giờ thiết bị; changelog hiểu ngày là nửa đêm UTC+7 từ 7.0.1 |
+| 21 | Nhãn “Đã gửi/Đã đọc” cho tin của mình, “Bạn đã đọc/Chưa đọc” cho tin người khác | ✅ | So sánh `chat_members.last_read_at`; realtime `chat_members` |
+| 22 | Nút “Đánh dấu đã đọc” ở đầu hội thoại | ✅ | Gọi `read.mark` ngay; mở phòng vẫn tự đánh dấu |
 
 > Từ 7.0.0, migration `20261126000000` bổ sung `chat_conversation_prefs` (RLS + realtime)
 > và `chat-api` xử lý ghim/lưu trữ. Các migration `20261120000000`/`20261125000000`,
