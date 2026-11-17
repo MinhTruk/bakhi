@@ -1,7 +1,7 @@
 /* TỆP SINH TỰ ĐỘNG — đừng sửa tay.
    Nguồn: assets/bakhi/bk-badges.js (CATALOG).
    Sinh lại: node tools/gen-badge-catalog.js
-   78 badge: 73 tự động + 5 chỉ Administrator trao. */
+   88 badge: 73 tự động + 15 chỉ Administrator trao. */
 
 export interface BadgeDef {
     id: string;
@@ -951,6 +951,126 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "founder",
+        "admin_only": true
+    },
+    {
+        "id": "founder-dragon-soul",
+        "name": "Hồn Long Thiên T",
+        "desc": "Khung Hồn Long Thiên T độc bản, chỉ Founder có thể trao.",
+        "icon": "fa-dragon",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-dragon-soul",
+        "admin_only": true
+    },
+    {
+        "id": "founder-phoenix-rebirth",
+        "name": "Phượng Sinh",
+        "desc": "Khung Phượng Sinh độc bản, chỉ Founder có thể trao.",
+        "icon": "fa-fire",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-phoenix-rebirth",
+        "admin_only": true
+    },
+    {
+        "id": "founder-white-tiger",
+        "name": "Bạch Hổ",
+        "desc": "Khung Bạch Hổ độc bản, chỉ Founder có thể trao.",
+        "icon": "fa-cat",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-white-tiger",
+        "admin_only": true
+    },
+    {
+        "id": "founder-black-tortoise",
+        "name": "Huyền Vũ",
+        "desc": "Khung Huyền Vũ độc bản, chỉ Founder có thể trao.",
+        "icon": "fa-shelter",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-black-tortoise",
+        "admin_only": true
+    },
+    {
+        "id": "founder-kirin",
+        "name": "Kì Lân",
+        "desc": "Khung Kì Lân độc bản, chỉ Founder có thể trao.",
+        "icon": "fa-unicorn",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-kirin",
+        "admin_only": true
+    },
+    {
+        "id": "founder-jade-seal",
+        "name": "Chiếu Ngọc",
+        "desc": "Khung Chiếu Ngọc độc bản, chỉ Founder có thể trao.",
+        "icon": "fa-seal",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-jade-seal",
+        "admin_only": true
+    },
+    {
+        "id": "founder-moon-palace",
+        "name": "Cung Tiên",
+        "desc": "Khung Cung Tiên độc bản, chỉ Founder có thể trao.",
+        "icon": "fa-moon",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-moon-palace",
+        "admin_only": true
+    },
+    {
+        "id": "founder-mountain-peak",
+        "name": "Đỉnh Sơn",
+        "desc": "Khung Đỉnh Sơn độc bản, chỉ Founder có thể trao.",
+        "icon": "fa-mountain",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-mountain-peak",
+        "admin_only": true
+    },
+    {
+        "id": "founder-divine-sword",
+        "name": "Thần Kiếm",
+        "desc": "Khung Thần Kiếm độc bản, chỉ Founder có thể trao.",
+        "icon": "fa-sword",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-divine-sword",
+        "admin_only": true
+    },
+    {
+        "id": "founder-lotus-throne",
+        "name": "Sen Điểm",
+        "desc": "Khung Sen Điểm độc bản, chỉ Founder có thể trao.",
+        "icon": "fa-lotus",
+        "category": "secret",
+        "rarity": "secret",
+        "goal": 1,
+        "metric": null,
+        "frame": "founder-lotus-throne",
         "admin_only": true
     }
 ];

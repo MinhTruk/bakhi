@@ -65,7 +65,18 @@
         { id: 'phoenix', name: 'Phượng Hoàng Niết Bàn', tier: 'normal', rarity: 'legendary', ring: '#fb7185', pc: '#fda4af', sc: '#881337', orn: ['feathers', 'flames'] },
         { id: 'dev-aurora', name: 'Dao Quang Tuyệt Ảnh', tier: 'dev', rarity: 'secret', ring: '#5eead4', pc: '#67e8f9', sc: '#a855f7', orn: ['aurora', 'stars', 'sigil'], anim: true },
         { id: 'dev-void', name: 'Vô Cực Hư Không', tier: 'dev', rarity: 'secret', ring: '#c084fc', pc: '#e9d5ff', sc: '#6d28d9', orn: ['void', 'spikes', 'runes'], anim: true },
-        { id: 'founder', name: 'Thiên Khải Sáng Thế', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#b91c1c', orn: ['founderCrown', 'wings', 'laurel', 'gem', 'sigil'], anim: true }
+        { id: 'founder', name: 'Thiên Khải Sáng Thế', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#b91c1c', orn: ['founderCrown', 'wings', 'laurel', 'gem', 'sigil'], anim: true },
+        /* 10 khung Founder độc quyền — chỉ Người sáng lập mới trao được. */
+        { id: 'founder-dragon-soul', name: 'Hồn Long Thiên T', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#b91c1c', orn: ['ring', 'crown', 'wings', 'sigil'], anim: true },
+        { id: 'founder-phoenix-rebirth', name: 'Phượng Sinh', tier: 'founder', rarity: 'secret', ring: '#ef4444', pc: '#f87171', sc: '#7f1d1d', orn: ['ring', 'wings', 'flames', 'sigil'], anim: true },
+        { id: 'founder-white-tiger', name: 'Bạch Hổ', tier: 'founder', rarity: 'secret', ring: '#f8fafc', pc: '#e2e8f0', sc: '#1e293b', orn: ['ring', 'spikes', 'sigil'], anim: true },
+        { id: 'founder-black-tortoise', name: 'Huyền Vũ', tier: 'founder', rarity: 'secret', ring: '#0f172a', pc: '#38bdf8', sc: '#0c4a6e', orn: ['ring', 'orbit', 'crystal'], anim: true },
+        { id: 'founder-kirin', name: 'Kì Lân', tier: 'founder', rarity: 'secret', ring: '#22c55e', pc: '#86efac', sc: '#166534', orn: ['ring', 'antlers', 'wings', 'sigil'], anim: true },
+        { id: 'founder-jade-seal', name: 'Chiếu Ngọc', tier: 'founder', rarity: 'secret', ring: '#10b981', pc: '#34d399', sc: '#065f46', orn: ['ring', 'crown', 'gem', 'sigil'], anim: true },
+        { id: 'founder-moon-palace', name: 'Cung Tiên', tier: 'founder', rarity: 'secret', ring: '#c084fc', pc: '#e9d5ff', sc: '#6d28d9', orn: ['ring', 'halo', 'stars', 'orbit'], anim: true },
+        { id: 'founder-mountain-peak', name: 'Đỉnh Sơn', tier: 'founder', rarity: 'secret', ring: '#94a3b8', pc: '#cbd5e1', sc: '#334155', orn: ['ring', 'spikes', 'rays', 'sigil'], anim: true },
+        { id: 'founder-divine-sword', name: 'Thần Kiếm', tier: 'founder', rarity: 'secret', ring: '#22d3ee', pc: '#67e8f9', sc: '#155e75', orn: ['ring', 'rays', 'sigil'], anim: true },
+        { id: 'founder-lotus-throne', name: 'Sen Điểm', tier: 'founder', rarity: 'secret', ring: '#f472b6', pc: '#f9a8d4', sc: '#9d174d', orn: ['ring', 'petals', 'laurel', 'sigil'], anim: true }
     ];
 
     function frameById(id) {

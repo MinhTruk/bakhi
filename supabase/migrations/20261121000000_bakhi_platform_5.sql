@@ -172,6 +172,16 @@ as $$
                     when 'dev-exclusive-aurora' then 'dev-aurora'
                     when 'dev-exclusive-void' then 'dev-void'
                     when 'founder' then 'founder'
+                    when 'founder-dragon-soul' then 'founder-dragon-soul'
+                    when 'founder-phoenix-rebirth' then 'founder-phoenix-rebirth'
+                    when 'founder-white-tiger' then 'founder-white-tiger'
+                    when 'founder-black-tortoise' then 'founder-black-tortoise'
+                    when 'founder-kirin' then 'founder-kirin'
+                    when 'founder-jade-seal' then 'founder-jade-seal'
+                    when 'founder-moon-palace' then 'founder-moon-palace'
+                    when 'founder-mountain-peak' then 'founder-mountain-peak'
+                    when 'founder-divine-sword' then 'founder-divine-sword'
+                    when 'founder-lotus-throne' then 'founder-lotus-throne'
                     else null
                 end as frame
                 from public.student_badges

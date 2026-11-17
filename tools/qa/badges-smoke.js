@@ -126,13 +126,13 @@ function main() {
   const w = client.w;
   const clientCatalog = w.BK.badges.CATALOG;
   const server = loadTs('supabase/functions/_shared/badge-catalog.ts');
-  ok('client có 78 badge', clientCatalog.length === 78, String(clientCatalog.length));
-  ok('máy chủ có 78 badge', server.BADGE_CATALOG.length === 78, String(server.BADGE_CATALOG.length));
+  ok('client có 88 badge', clientCatalog.length === 88, String(clientCatalog.length));
+  ok('máy chủ có 88 badge', server.BADGE_CATALOG.length === 88, String(server.BADGE_CATALOG.length));
   const clientIds = clientCatalog.map((b) => b.id).join(',');
   const serverIds = server.BADGE_CATALOG.map((b) => b.id).join(',');
   ok('id và thứ tự khớp nhau', clientIds === serverIds);
   ok('máy chủ có đúng 73 badge tự động', server.AUTO_BADGES.length === 73, String(server.AUTO_BADGES.length));
-  ok('máy chủ có đúng 5 badge admin/độc quyền', server.ADMIN_BADGES.length === 5 &&
+  ok('máy chủ có đúng 15 badge admin/độc quyền', server.ADMIN_BADGES.length === 15 &&
     server.ADMIN_BADGES.every((b) => b.admin_only) &&
     ['founder', 'dev-exclusive-aurora', 'dev-exclusive-void'].every((id) => !!server.BADGE_BY_ID[id]));
   const mismatched = clientCatalog.filter((c) => {

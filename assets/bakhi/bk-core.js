@@ -463,6 +463,165 @@
             checkAchievements();
             return { subject: subject, correct: !!payload.correct, key: reviewKey(subject, question, qid) };
         })();
+
+/* =========================================================================
+   Maintenance Lock: khóa toàn trang khi bảo trì
+   - Kiểm tra app_settings.public.maintenance qua Supabase
+   - Nếu bật: hiển thị overlay toàn trang (loading icon, thông báo, lý do,
+     nút Thử lại, form đăng nhập Admin). Admin đăng nhập thành công sẽ tắt
+     khóa và reload trang.
+   ========================================================================= */
+(function () {
+    'use strict';
+    var w = typeof window !== 'undefined' ? window : null;
+    if (!w || !w.document) return;
+    var D = w.document;
+    var cfg = w.BK_SUPABASE;
+    if (!cfg || typeof cfg.configured !== 'function' || !cfg.configured()) return;
+
+    var lockEl = null;
+    var checking = false;
+
+    function injectCSS() {
+        if (D.getElementById('bk-maintenance-lock-css')) return;
+        var s = D.createElement('style');
+        s.id = 'bk-maintenance-lock-css';
+        s.textContent =
+            '.bk-maintenance-locked { overflow: hidden !important; }' +
+            '.bk-maintenance-lock { position: fixed; inset: 0; z-index: 2147483647; ' +
+            'display: flex; align-items: center; justify-content: center; ' +
+            'background: #0b0f19; color: #e2e8f0; }' +
+            '.bk-maintenance-box { text-align: center; padding: 2.5rem; max-width: 420px; }' +
+            '.bk-maintenance-spinner { width: 48px; height: 48px; border: 4px solid #1e293b; ' +
+            'border-top-color: #22d3ee; border-radius: 50%; animation: bk-maint-spin 0.8s linear infinite; ' +
+            'margin: 0 auto 1rem; }' +
+            '@keyframes bk-maint-spin { to { transform: rotate(360deg); } }' +
+            '.bk-maintenance-box h2 { margin: 0 0 0.5rem; font-size: 1.5rem; color: #fbbf24; }' +
+            '.bk-maintenance-box p { margin: 0.4rem 0; color: #cbd5e1; }' +
+            '.bk-maintenance-reason { font-size: 0.9rem; color: #94a3b8; font-style: italic; }' +
+            '.bk-maintenance-retry { margin-top: 1.2rem; padding: 0.6rem 1.4rem; ' +
+            'background: #22d3ee; color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }' +
+            '.bk-maintenance-retry:hover { background: #67e8f9; }' +
+            '.bk-maintenance-admin { margin-top: 1.4rem; border-top: 1px solid #334155; padding-top: 1rem; }' +
+            '.bk-maintenance-admin label { display: block; margin-bottom: 0.4rem; font-size: 0.9rem; color: #94a3b8; }' +
+            '.bk-maintenance-admin input { width: 100%; padding: 0.5rem; margin-bottom: 0.6rem; ' +
+            'background: #1e293b; border: 1px solid #475569; color: #e2e8f0; border-radius: 4px; box-sizing: border-box; }' +
+            '.bk-maintenance-admin-btn { padding: 0.5rem 1.2rem; background: #fbbf24; color: #000; ' +
+            'border: none; border-radius: 4px; font-weight: 600; cursor: pointer; }' +
+            '.bk-maintenance-admin-btn:hover { background: #fde68a; }';
+        D.head.appendChild(s);
+    }
+
+    function showLock(value) {
+        if (lockEl) return;
+        injectCSS();
+        lockEl = D.createElement('div');
+        lockEl.className = 'bk-maintenance-lock';
+        lockEl.setAttribute('role', 'dialog');
+        lockEl.setAttribute('aria-modal', 'true');
+        lockEl.setAttribute('aria-label', 'Bảo trì');
+
+        var box = D.createElement('div');
+        box.className = 'bk-maintenance-box';
+
+        var spinner = D.createElement('div');
+        spinner.className = 'bk-maintenance-spinner';
+        box.appendChild(spinner);
+
+        var title = D.createElement('h2');
+        title.textContent = (value && value.title) || 'Bá Khí đang bảo trì';
+        box.appendChild(title);
+
+        var message = D.createElement('p');
+        message.textContent = (value && value.message) || 'Website tạm đóng để nâng cấp. Dữ liệu học tập của bạn được giữ nguyên.';
+        box.appendChild(message);
+
+        if (value && value.reason) {
+            var reason = D.createElement('p');
+            reason.className = 'bk-maintenance-reason';
+            reason.textContent = 'Lý do: ' + value.reason;
+            box.appendChild(reason);
+        }
+
+        var retry = D.createElement('button');
+        retry.type = 'button';
+        retry.textContent = 'Thử lại';
+        retry.className = 'bk-maintenance-retry';
+        retry.addEventListener('click', checkMaintenance);
+        box.appendChild(retry);
+
+        var adminBox = D.createElement('div');
+        adminBox.className = 'bk-maintenance-admin';
+        var adminLabel = D.createElement('label');
+        adminLabel.textContent = 'Đăng nhập Admin (qua mã Admin):';
+        adminBox.appendChild(adminLabel);
+        var adminInput = D.createElement('input');
+        adminInput.type = 'password';
+        adminInput.placeholder = 'Administrator Code…';
+        adminBox.appendChild(adminInput);
+        var adminBtn = D.createElement('button');
+        adminBtn.type = 'button';
+        adminBtn.textContent = 'Đăng nhập';
+        adminBtn.className = 'bk-maintenance-admin-btn';
+        adminBox.appendChild(adminBtn);
+        box.appendChild(adminBox);
+
+        lockEl.appendChild(box);
+        D.body.appendChild(lockEl);
+        D.documentElement.classList.add('bk-maintenance-locked');
+
+        adminBtn.addEventListener('click', function () {
+            var code = adminInput.value.trim();
+            if (!code) return;
+            if (w.BKCloud && typeof w.BKCloud.adminLogin === 'function') {
+                adminBtn.disabled = true;
+                adminBtn.textContent = 'Đang xác thực…';
+                w.BKCloud.adminLogin(code).then(function () {
+                    hideLock();
+                    w.location.reload();
+                }).catch(function () {
+                    adminInput.value = '';
+                    adminLabel.textContent = 'Mã Admin không đúng. Thử lại:';
+                    adminBtn.disabled = false;
+                    adminBtn.textContent = 'Đăng nhập';
+                });
+            }
+        });
+    }
+
+    function hideLock() {
+        if (lockEl) {
+            lockEl.remove();
+            lockEl = null;
+        }
+        D.documentElement.classList.remove('bk-maintenance-locked');
+    }
+
+    function checkMaintenance() {
+        if (checking) return;
+        checking = true;
+        fetch(cfg.url + '/rest/v1/app_settings?key=eq.public.maintenance&select=value', {
+            headers: { apikey: cfg.key, Authorization: 'Bearer ' + cfg.key },
+            cache: 'no-store'
+        }).then(function (res) { return res.ok ? res.json() : null; })
+            .then(function (rows) {
+                checking = false;
+                if (!Array.isArray(rows) || rows.length === 0) { hideLock(); return; }
+                var row = rows[0];
+                var value = row.value || {};
+                if (value.enabled === true) {
+                    showLock(value);
+                } else {
+                    hideLock();
+                }
+            }).catch(function () {
+                checking = false;
+            });
+    }
+
+    if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', checkMaintenance);
+    else checkMaintenance();
+})();
     }
 
     /** Đánh dấu ôn tập thủ công (không cần làm lại câu hỏi). */
