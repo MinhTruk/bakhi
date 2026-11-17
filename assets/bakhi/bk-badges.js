@@ -345,6 +345,7 @@
         b('secret-collector-40', 'Tứ Thập Tinh Tập', 'Mở khóa 40 badge.', 'fa-trophy', 'secret', 'legendary', 40, 'unlockedCount', 'sunflower'),
         b('secret-collector-60', 'Lục Thập Viên Mãn', 'Mở khóa 60 badge.', 'fa-trophy-star', 'secret', 'legendary', 60, 'unlockedCount', 'horn-dragon'),
         b('secret-completionist', 'Thất Thập Tam Quy Tông', 'Mở khóa 73 badge tự động.', 'fa-diamond', 'secret', 'legendary', 73, 'unlockedCount', 'crown'),
+        b('ke-suu-tam', 'Kẻ sưu tầm', 'Thu thập toàn bộ thành tích (ngoại trừ 11 badge Founder và 2 badge Developer).', 'fa-bag-shopping', 'secret', 'legendary', 75, 'unlockedCount', null),
 
         /* --- Chỉ Administrator trao (2) --- */
         admin('admin-chosen', 'Thiên Tuyển Chi Ấn', 'Badge đặc biệt do quản trị viên trao tặng.', 'fa-hand-holding-heart'),
@@ -547,7 +548,16 @@
             if (x.adminOnly || t.unlocked[x.id]) return;
             var cur = num(m[x.key]);
             if (x.key === 'unlockedCount') {
-                cur = Object.keys(t.unlocked).filter(function (id) { return BY_ID[id] && !BY_ID[id].adminOnly; }).length;
+                if (x.id === 'ke-suu-tam') {
+                    cur = Object.keys(t.unlocked).filter(function (id) {
+                        if (id === 'ke-suu-tam') return false;
+                        var b = BY_ID[id];
+                        if (!b) return false;
+                        return b.exclusive !== 'founder' && b.exclusive !== 'dev';
+                    }).length;
+                } else {
+                    cur = Object.keys(t.unlocked).filter(function (id) { return BY_ID[id] && !BY_ID[id].adminOnly; }).length;
+                }
             }
             if (cur >= x.goal) {
                 t.unlocked[x.id] = Date.now();

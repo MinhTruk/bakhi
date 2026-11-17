@@ -38,9 +38,9 @@ function main() {
   };
   w.eval(fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-badges.js'), 'utf8'));
   const catalog = w.BK.badges.CATALOG;
-  /* 88 = 73 tự động + 15 chỉ Administrator trao (2 admin + 2 Developer + 11 Founder). */
-  if (!Array.isArray(catalog) || catalog.length !== 88) {
-    throw new Error('Danh mục badge không đúng 88 mục: ' + (catalog && catalog.length));
+  /* 89 = 74 tự động + 15 chỉ Administrator trao (2 admin + 2 Developer + 11 Founder + 1 Kẻ sưu tầm). */
+  if (!Array.isArray(catalog) || catalog.length !== 89) {
+    throw new Error('Danh mục badge không đúng 89 mục: ' + (catalog && catalog.length));
   }
 
   const rows = catalog.map((x) => ({

@@ -359,7 +359,7 @@
             root.appendChild(row);
         });
 
-        /* Huy hiệu hồ sơ: đếm đúng danh mục 78 badge, không dùng mốc nội bộ. */
+        /* Huy hiệu hồ sơ: đếm đúng danh mục badge, không dùng mốc nội bộ. */
         var pb = profileBadgeStats();
         root.appendChild(el('h4', null, 'Huy hiệu hồ sơ (' + pb.done + '/' + pb.total + ')'));
         var badgeCard = el('div', 'bk-item');

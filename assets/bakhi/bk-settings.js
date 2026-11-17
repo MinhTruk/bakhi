@@ -16,8 +16,7 @@
         { id: 'display', label: 'Hiển thị & Trợ năng', icon: 'fa-circle-half-stroke' },
         { id: 'wallpaper', label: 'Hình nền', icon: 'fa-image' },
         { id: 'dev', label: 'Nhà phát triển', icon: 'fa-code' },
-        { id: 'founder', label: 'Founder', icon: 'fa-crown' },
-        { id: 'avatar-decoration', label: 'Trang trí Avatar', icon: 'fa-frame' }
+        { id: 'founder', label: 'Founder', icon: 'fa-crown' }
     ];
 
     var S = { tab: 'profile', mounted: {}, nav: null, panels: {} };
@@ -129,7 +128,6 @@
         else if (id === 'wallpaper') buildWallpaper(panel);
         else if (id === 'dev') buildDev(panel);
         else if (id === 'founder') buildFounder(panel);
-        else if (id === 'avatar-decoration') buildAvatarDecoration(panel);
     }
 
     /* ---------------------------------------------------------------------
@@ -875,177 +873,6 @@
         submit.addEventListener('click', submitCode);
         input.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') { e.preventDefault(); submitCode(); }
-        });
-    }
-
-    /* ---------------------------------------------------------------------
-       7. Trang trí Avatar (Founder chỉ) — trao khung avatar và badge kèm theo
-       ------------------------------------------------------------------ */
-    function buildAvatarDecoration(panel) {
-        panel.textContent = '';
-        var cloud = global.BKCloud;
-        var configured = !!(cloud && cloud.configured && cloud.configured());
-        var scope = null;
-        try { scope = cloud && cloud.adminScope ? cloud.adminScope() : null; } catch (e) { scope = null; }
-        var isFounder = scope === 'founder';
-
-        panel.appendChild(el('h2', null, 'Trang trí Avatar'));
-        panel.appendChild(el('p', 'bk-set-lead',
-            'Trao tặng khung avatar kèm theo badge tương ứng cho học sinh. Chỉ phiên Founder mới được trao khung Founder độc quyền.'));
-
-        if (!isFounder) {
-            if (!configured) {
-                panel.appendChild(el('p', 'bk-auth-msg err', 'Supabase chưa được cấu hình nên không thể xác thực Founder Code.'));
-            } else {
-                panel.appendChild(el('p', 'bk-auth-msg err', 'Chỉ phiên Founder mới được vào mục Trang trí Avatar.'));
-            }
-            return;
-        }
-
-        panel.appendChild(el('p', 'bk-auth-msg ok', 'Đang có phiên Founder trên tab này.'));
-
-        /* ---------- Học sinh ---------- */
-        panel.appendChild(el('h3', null, 'Chọn học sinh')).style.marginTop = '1.2rem';
-        var studentIdInput = el('input', 'bk-input');
-        studentIdInput.type = 'text';
-        studentIdInput.placeholder = 'Nhập ID học sinh…';
-        studentIdInput.setAttribute('aria-label', 'ID học sinh');
-        var studentNameInput = el('input', 'bk-input');
-        studentNameInput.type = 'text';
-        studentNameInput.placeholder = 'Tên hiển thị học sinh…';
-        studentNameInput.setAttribute('aria-label', 'Tên học sinh');
-        panel.appendChild(studentIdInput);
-        panel.appendChild(studentNameInput);
-        var selectedStudent = { id: null, name: null };
-        studentIdInput.addEventListener('input', function () {
-            selectedStudent.id = studentIdInput.value.trim() || null;
-        });
-        studentNameInput.addEventListener('input', function () {
-            selectedStudent.name = studentNameInput.value.trim() || null;
-        });
-
-        /* ---------- Khung avatar ---------- */
-        panel.appendChild(el('h3', null, 'Chọn khung avatar')).style.marginTop = '1.2rem';
-        var frameSelect = el('select', 'bk-input');
-        frameSelect.setAttribute('aria-label', 'Khung avatar');
-        var frames = global.BKProfile && global.BKProfile.frames ? global.BKProfile.frames : [];
-        frames.forEach(function (f) {
-            if (f.tier === 'normal' || f.tier === 'dev' || f.tier === 'founder') {
-                var o = el('option');
-                o.value = f.id;
-                o.textContent = (f.tier === 'founder' ? '[Founder] ' : f.tier === 'dev' ? '[Dev] ' : '') + f.name;
-                frameSelect.appendChild(o);
-            }
-        });
-        panel.appendChild(frameSelect);
-
-        var preview = el('span', 'bk-set-frame-preview');
-        panel.appendChild(preview);
-        function updatePreview() {
-            preview.textContent = '';
-            var fid = frameSelect.value;
-            var f = global.BKProfile && global.BKProfile.frameById ? global.BKProfile.frameById(fid) : null;
-            if (f && f.id !== 'none' && global.BKProfile && global.BKProfile.frameOverlay) {
-                try {
-                    var art = global.BKProfile.frameOverlay(f.id);
-                    if (art) {
-                        art.style.width = '36px';
-                        art.style.height = '36px';
-                        preview.appendChild(art);
-                    }
-                } catch (e) { }
-            }
-            var label = el('span', 'bk-set-frame-label', f ? f.name : '');
-            preview.appendChild(label);
-        }
-        frameSelect.addEventListener('change', updatePreview);
-        updatePreview();
-
-        /* ---------- Lý do ---------- */
-        panel.appendChild(el('h3', null, 'Lý do trao (tùy chọn)')).style.marginTop = '1.2rem';
-        var reasonInput = el('input', 'bk-input');
-        reasonInput.type = 'text';
-        reasonInput.placeholder = 'Lý do trao tặng…';
-        panel.appendChild(reasonInput);
-
-        /* ---------- Nút trao ---------- */
-        var grantBtn = el('button', 'bk-btn');
-        grantBtn.type = 'button';
-        grantBtn.appendChild(icon('fa-gift'));
-        grantBtn.appendChild(el('span', null, 'Trao khung và badge'));
-        panel.appendChild(grantBtn);
-
-        var grantMsg = el('p', 'bk-auth-msg');
-        panel.appendChild(grantMsg);
-
-        grantBtn.addEventListener('click', function () {
-            if (!selectedStudent.id) return grantMsg.textContent = 'Chọn học sinh trước.';
-            var badgeId = frameSelect.value;
-            var frame = global.BKProfile && global.BKProfile.frameById ? global.BKProfile.frameById(badgeId) : null;
-            if (!frame || frame.tier !== 'founder') {
-                /* Khung thường/dev: chỉ trao khung, không bắt buộc badge */
-                grantMsg.textContent = '';
-            }
-            grantBtn.disabled = true;
-            grantMsg.textContent = 'Đang trao…';
-            cloud.adminAction('avatar.grant', {
-                student_id: selectedStudent.id,
-                frame_id: badgeId,
-                badge_id: badgeId,
-                reason: reasonInput.value.trim()
-            }).then(function () {
-                grantMsg.textContent = 'Đã trao khung "' + (frame ? frame.name : badgeId) + '" cho ' + (selectedStudent.name || 'học sinh') + '.';
-                grantMsg.className = 'bk-auth-msg ok';
-                reasonInput.value = '';
-            }).catch(function (err) {
-                grantMsg.textContent = (err && err.message) || 'Không trao được.';
-                grantMsg.className = 'bk-auth-msg err';
-            }).then(function () {
-                grantBtn.disabled = false;
-            });
-        });
-
-        /* ---------- 10 khung Founder độc quyền ---------- */
-        panel.appendChild(el('h3', null, '10 khung Founder độc quyền')).style.marginTop = '1.6rem';
-        panel.appendChild(el('p', 'bk-hint',
-            'Danh sách 10 khung avatar Founder-exclusive. Bấm vào từng ô để trao ngay cho học sinh đã chọn ở trên.'));
-
-        var founderGrid = el('div', 'bk-set-founder-grid');
-        panel.appendChild(founderGrid);
-
-        var founderFrames = frames.filter(function (f) { return f.tier === 'founder' && f.id !== 'founder'; });
-        founderFrames.forEach(function (f) {
-            var card = el('div', 'bk-set-founder-card');
-            var art = null;
-            if (global.BKProfile && global.BKProfile.frameOverlay) {
-                try { art = global.BKProfile.frameOverlay(f.id); } catch (e) { art = null; }
-            }
-            if (art) { art.style.width = '48px'; art.style.height = '48px'; card.appendChild(art); }
-            card.appendChild(el('b', null, f.name));
-            card.appendChild(el('span', 'bk-set-founder-id', f.id));
-            var award = el('button', 'bk-btn bk-btn-ghost');
-            award.type = 'button';
-            award.appendChild(icon('fa-gift'));
-            award.appendChild(el('span', null, 'Trao'));
-            award.addEventListener('click', function () {
-                if (!selectedStudent.id) { grantMsg.textContent = 'Chọn học sinh trước.'; return; }
-                grantBtn.disabled = true;
-                grantMsg.textContent = 'Đang trao ' + f.name + '…';
-                cloud.adminAction('avatar.grant', {
-                    student_id: selectedStudent.id,
-                    frame_id: f.id,
-                    badge_id: f.id,
-                    reason: 'Founder trao khung độc quyền: ' + f.name
-                }).then(function () {
-                    grantMsg.textContent = 'Đã trao "' + f.name + '" cho ' + (selectedStudent.name || 'học sinh') + '.';
-                    grantMsg.className = 'bk-auth-msg ok';
-                }).catch(function (err) {
-                    grantMsg.textContent = (err && err.message) || 'Không trao được.';
-                    grantMsg.className = 'bk-auth-msg err';
-                }).then(function () { grantBtn.disabled = false; });
-            });
-            card.appendChild(award);
-            founderGrid.appendChild(card);
         });
     }
 

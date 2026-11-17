@@ -1,7 +1,7 @@
 /* TỆP SINH TỰ ĐỘNG — đừng sửa tay.
    Nguồn: assets/bakhi/bk-badges.js (CATALOG).
    Sinh lại: node tools/gen-badge-catalog.js
-   88 badge: 73 tự động + 15 chỉ Administrator trao. */
+   89 badge: 74 tự động + 15 chỉ Administrator trao. */
 
 export interface BadgeDef {
     id: string;
@@ -891,6 +891,18 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 73,
         "metric": "unlockedCount",
         "frame": "crown",
+        "admin_only": false
+    },
+    {
+        "id": "ke-suu-tam",
+        "name": "Kẻ sưu tầm",
+        "desc": "Thu thập toàn bộ thành tích (ngoại trừ 11 badge Founder và 2 badge Developer).",
+        "icon": "fa-bag-shopping",
+        "category": "secret",
+        "rarity": "legendary",
+        "goal": 75,
+        "metric": "unlockedCount",
+        "frame": null,
         "admin_only": false
     },
     {

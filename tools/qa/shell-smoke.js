@@ -227,20 +227,20 @@ ok('CSS toàn site tắt animation khung khi có bk-frames-still',
   /html\.bk-frames-still/.test(coreCss) && /bk-avatar-frame-svg/.test(coreCss));
 void saved;
 
-/* ========================= 2. 88 badge ========================= */
-console.log('\n[2] Hệ badge — 88 badge, 73 tự động + 15 quản trị/độc quyền');
+/* ========================= 2. 89 badge ========================= */
+console.log('\n[2] Hệ badge — 89 badge, 74 tự động + 15 quản trị/độc quyền');
 const B = iw.BK.badges;
-ok('đúng 88 badge', B.CATALOG.length === 88, String(B.CATALOG.length));
-ok('id badge không trùng', new Set(B.CATALOG.map((b) => b.id)).size === 88);
+ok('đúng 89 badge', B.CATALOG.length === 89, String(B.CATALOG.length));
+ok('id badge không trùng', new Set(B.CATALOG.map((b) => b.id)).size === 89);
 ok('đúng 15 badge chỉ Administrator trao', B.CATALOG.filter((b) => b.adminOnly).length === 15);
-ok('73 badge tự động', B.CATALOG.filter((b) => !b.adminOnly).length === 73);
+ok('74 badge tự động', B.CATALOG.filter((b) => !b.adminOnly).length === 74);
 ok('8 danh mục', B.CATEGORIES.length === 8, String(B.CATEGORIES.length));
 ok('6 bậc độ hiếm', B.RARITIES.length === 6, String(B.RARITIES.length));
 ok('mọi badge thuộc danh mục đã khai báo',
   B.CATALOG.every((b) => B.CATEGORIES.some((c) => c.id === b.category)));
 ok('mọi badge có độ hiếm hợp lệ',
   B.CATALOG.every((b) => B.RARITIES.some((r) => r.id === b.rarity)));
-ok('progress() trả đủ 88 dòng', B.progress().length === 88);
+ok('progress() trả đủ 89 dòng', B.progress().length === 89);
 ok('badge admin không tự mở', B.check({ silent: true }).every((b) => !b.adminOnly));
 ok('khung cơ bản luôn sở hữu', B.ownedFrames().indexOf('none') !== -1 && B.ownedFrames().indexOf('leaf') !== -1);
 
@@ -282,7 +282,7 @@ load(sw, 'assets/bakhi/bk-settings.js');
 
 const sdoc = sw.document;
 const tabs = Array.from(sdoc.querySelectorAll('.bk-set-tab')).map((t) => t.textContent.trim());
-ok('Cài đặt có đúng 7 tab', tabs.length === 7, JSON.stringify(tabs));
+ok('Cài đặt có đúng 6 tab', tabs.length === 6, JSON.stringify(tabs));
 ok('tab Hồ sơ mở mặc định', sdoc.getElementById('bkSetTab-profile').getAttribute('aria-selected') === 'true');
 ok('tab Hồ sơ có trình chỉnh sửa', !!sdoc.querySelector('#bkSetPanel-profile .bk-input'));
 const pkBox = sdoc.querySelector('#bkSetPanel-profile .bk-passkey');
