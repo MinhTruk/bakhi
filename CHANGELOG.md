@@ -2,6 +2,28 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [6.2.0] — 2026-11-17
+
+### Tính năng
+
+- **Trạng thái hoạt động trong chat**: chấm xanh trên avatar phòng nhắn riêng và
+  dòng “Đang hoạt động / Hoạt động x phút trước” ở đầu cuộc trò chuyện. Máy chủ
+  cập nhật `last_seen_at` mỗi lần chat gọi API; tab đang mở tự gửi nhịp mỗi phút
+  và khi quay lại tab.
+- **Passkey trong Cài đặt**: tab Hồ sơ có mục Passkey để thêm (tối đa 5) hoặc xoá
+  passkey của thiết bị. Khoá riêng tư ở lại trên thiết bị; máy chủ chỉ lưu khoá
+  công khai và bộ đếm chống phát lại.
+- **Bắt buộc xác minh passkey sau khi đăng nhập bằng tên**: nếu hồ sơ đã có
+  passkey, màn hình nhận diện giữ nguyên và yêu cầu vân tay, khuôn mặt hoặc mã
+  khoá thiết bị trước khi gắn phiên. Huỷ hộp thoại sẽ không gắn thiết bị.
+
+### Sửa lỗi
+
+- **Đã đọc chính xác hơn**: máy khách gửi mốc thời gian của tin cuối cùng đã tải
+  (`through`), máy chủ lưu mốc lớn hơn giữa lần đọc cũ và mốc mới. Tin đến trong
+  lúc gọi API không còn bị đánh dấu đã đọc oan; tab ẩn không tự đánh dấu cho đến
+  khi người dùng quay lại.
+
 ## [6.1.7] — 2026-11-16
 
 ### Sửa lỗi

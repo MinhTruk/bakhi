@@ -639,8 +639,160 @@
         });
     }
 
+    /* ------------------------------ Passkey ------------------------------- */
+    function passkeyApi(body) {
+        var fn = CFG.functions && CFG.functions.passkey;
+        if (!fn) return Promise.reject(new Error('Máy chủ chưa bật passkey.'));
+        return api(fn, body);
+    }
+
+    function passkeySupported() {
+        return !!(global.PublicKeyCredential && global.navigator &&
+            global.navigator.credentials && global.navigator.credentials.create &&
+            global.navigator.credentials.get && global.isSecureContext);
+    }
+
+    function b64urlToBuffer(value) {
+        var s = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
+        var pad = s.length % 4 ? '='.repeat(4 - (s.length % 4)) : '';
+        var bin = atob(s + pad);
+        var bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return bytes.buffer;
+    }
+
+    function bufferToB64url(buf) {
+        var bytes = new Uint8Array(buf || new ArrayBuffer(0));
+        var bin = '';
+        for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    }
+
+    function decodeCreationOptions(options) {
+        var out = JSON.parse(JSON.stringify(options || {}));
+        out.challenge = b64urlToBuffer(out.challenge);
+        if (out.user && out.user.id) out.user.id = b64urlToBuffer(out.user.id);
+        (out.excludeCredentials || []).forEach(function (c) { c.id = b64urlToBuffer(c.id); });
+        return out;
+    }
+
+    function decodeRequestOptions(options) {
+        var out = JSON.parse(JSON.stringify(options || {}));
+        out.challenge = b64urlToBuffer(out.challenge);
+        (out.allowCredentials || []).forEach(function (c) { c.id = b64urlToBuffer(c.id); });
+        return out;
+    }
+
+    function serializeAttestation(cred) {
+        var r = cred.response || {};
+        return {
+            id: cred.id,
+            rawId: bufferToB64url(cred.rawId),
+            type: cred.type,
+            authenticatorAttachment: cred.authenticatorAttachment || null,
+            clientExtensionResults: cred.getClientExtensionResults ? cred.getClientExtensionResults() : {},
+            response: {
+                clientDataJSON: bufferToB64url(r.clientDataJSON),
+                attestationObject: bufferToB64url(r.attestationObject),
+                transports: r.getTransports ? r.getTransports() : []
+            }
+        };
+    }
+
+    function serializeAssertion(cred) {
+        var r = cred.response || {};
+        return {
+            id: cred.id,
+            rawId: bufferToB64url(cred.rawId),
+            type: cred.type,
+            authenticatorAttachment: cred.authenticatorAttachment || null,
+            clientExtensionResults: cred.getClientExtensionResults ? cred.getClientExtensionResults() : {},
+            response: {
+                clientDataJSON: bufferToB64url(r.clientDataJSON),
+                authenticatorData: bufferToB64url(r.authenticatorData),
+                signature: bufferToB64url(r.signature),
+                userHandle: r.userHandle ? bufferToB64url(r.userHandle) : null
+            }
+        };
+    }
+
+    function passkeyErrorMessage(err) {
+        var name = err && err.name;
+        if (name === 'NotAllowedError') return 'Bạn đã huỷ hoặc để hết thời gian xác thực passkey.';
+        if (name === 'SecurityError') return 'Passkey cần HTTPS và tên miền hợp lệ. Hãy mở trang bằng HTTPS.';
+        if (name === 'NotSupportedError') return 'Thiết bị hoặc trình duyệt này không hỗ trợ passkey.';
+        return (err && err.message) || 'Không xác thực được passkey.';
+    }
+
+    function passkeyLogin(payload) {
+        var gate = S.gate;
+        if (!passkeySupported()) {
+            if (gate) gateSetMsg('Thiết bị này không hỗ trợ passkey. Hãy dùng trình duyệt/thiết bị đã tạo passkey.', 'error');
+            return Promise.reject(new Error('UNSUPPORTED'));
+        }
+        if (gate) {
+            S.binding = true;
+            if (gate.spin) gate.spin.hidden = false;
+            gate.confirm.disabled = true;
+            gateSetMsg('Hồ sơ đã bật passkey. Xác nhận bằng vân tay, khuôn mặt hoặc mã khoá thiết bị…', '');
+        }
+        return global.navigator.credentials.get({
+            publicKey: decodeRequestOptions(payload.passkey && payload.passkey.options)
+        }).then(function (cred) {
+            return passkeyApi({
+                action: 'auth.verify',
+                challenge_id: payload.passkey.challenge_id,
+                response: serializeAssertion(cred)
+            });
+        }).then(function (data) {
+            S.binding = false;
+            if (gate) { if (gate.spin) gate.spin.hidden = true; gate.confirm.disabled = false; }
+            handleBindSuccess(data);
+        }).catch(function (err) {
+            S.binding = false;
+            if (gate) {
+                if (gate.spin) gate.spin.hidden = true;
+                gate.confirm.disabled = false;
+                gateSetMsg(passkeyErrorMessage(err), 'error');
+            }
+            throw err;
+        });
+    }
+
+    function passkeyRegister(label) {
+        if (!passkeySupported()) return Promise.reject(new Error('Thiết bị này không hỗ trợ passkey.'));
+        return passkeyApi({ action: 'register.options' }).then(function (data) {
+            return global.navigator.credentials.create({
+                publicKey: decodeCreationOptions(data.passkey && data.passkey.options)
+            }).then(function (cred) {
+                return passkeyApi({
+                    action: 'register.verify',
+                    challenge_id: data.passkey.challenge_id,
+                    label: label || 'Passkey',
+                    response: serializeAttestation(cred)
+                });
+            });
+        });
+    }
+
+    function passkeyList() {
+        return passkeyApi({ action: 'list' });
+    }
+
+    function passkeyRemove(id) {
+        return passkeyApi({ action: 'remove', id: id });
+    }
+
     function handleBindSuccess(data) {
         var gate = S.gate;
+        if (data && data.passkey_required) {
+            passkeyLogin(data).catch(function (err) {
+                if (err && err.message === 'UNSUPPORTED' && gate) {
+                    gateSetMsg('Hồ sơ này yêu cầu passkey nhưng thiết bị chưa hỗ trợ. Hãy dùng thiết bị đã tạo passkey.', 'error');
+                }
+            });
+            return;
+        }
         if (gate) { if (gate.spin) gate.spin.hidden = true; gateSetMsg('', ''); }
         if (!data || !data.bound) {
             gateSetMsg('Máy chủ không xác nhận được danh tính. Thử lại.', 'error');
@@ -2281,6 +2433,10 @@
         syncStudent: syncStudent,
         /* Chat: gọi Edge Function chat-api và mở client để đăng ký realtime. */
         chatApi: function (body) { return api(CFG.functions.chat, body); },
+        passkeySupported: passkeySupported,
+        passkeyRegister: passkeyRegister,
+        passkeyList: passkeyList,
+        passkeyRemove: passkeyRemove,
         chatClient: function () {
             return ensureReady().then(function () { return client(); });
         },

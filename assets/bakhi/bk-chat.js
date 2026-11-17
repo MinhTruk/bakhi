@@ -24,7 +24,7 @@
         me: null, rooms: [], active: null, messages: [], reactions: {},
         members: [], cards: {}, totalUnread: 0, maxGroup: 10,
         channel: null, client: null, filter: '',
-        replyTo: null, readTimer: null, searchTimer: null, destroyed: false
+        replyTo: null, readTimer: null, readSeq: 0, presenceTimer: null, searchTimer: null, destroyed: false
     };
 
     /* ---------------------------------------------------------------------
@@ -273,6 +273,7 @@
 
         bindEvents();
         watchViewport();
+        watchPresence();
         boot();
         return S;
     }
@@ -478,11 +479,16 @@
             row.setAttribute('data-room', room.id);
             row.setAttribute('role', 'listitem');
 
+            var person = room.kind === 'dm' ? otherMember(room) : null;
             var avatar = room.kind === 'global'
                 ? el('span', 'bkchat-room-icon', '💬')
                 : room.kind === 'group'
                     ? el('span', 'bkchat-room-icon', '👥')
-                    : avatarFor(otherMember(room), 40);
+                    : avatarFor(person, 40);
+            if (person && person.online) {
+                avatar.appendChild(el('span', 'bkchat-presence'));
+                avatar.setAttribute('title', 'Đang hoạt động');
+            }
             row.appendChild(avatar);
 
             var body = el('span', 'bkchat-room-body');
@@ -557,6 +563,7 @@
                 room.created_by = data.room.created_by || room.created_by;
             }
             S.members = Array.isArray(data.members) ? data.members : [];
+            if (S.members.length) room.members = S.members;
             S.messages = Array.isArray(data.messages) ? data.messages : [];
             S.reactions = {};
             (data.reactions || []).forEach(function (r) {
@@ -567,24 +574,101 @@
             renderHead();
             renderThread();
             markRead();
+            pingPresence();
         }).catch(function (err) {
             if (S.active && S.active.id === id) renderNotice(errorText(err));
         });
     }
 
+    function newestMessageAt() {
+        var newest = 0;
+        (S.messages || []).forEach(function (m) {
+            var at = Date.parse(m && m.created_at);
+            if (Number.isFinite(at) && at > newest) newest = at;
+        });
+        return newest ? new Date(newest).toISOString() : '';
+    }
+
+    /* Chỉ đánh dấu đã đọc khi tab đang hiện và gửi đúng mốc tin cuối đã tải.
+       Nhờ vậy tin đến trong lúc gọi API không bị coi là đã đọc oan. */
     function markRead() {
-        if (!S.active) return;
+        if (!S.active || D.visibilityState === 'hidden') return;
         var roomId = S.active.id;
+        var through = newestMessageAt();
+        if (!through) return;
         clearTimeout(S.readTimer);
+        var seq = ++S.readSeq;
         S.readTimer = setTimeout(function () {
-            api({ action: 'read.mark', room_id: roomId }).catch(function () { });
-        }, 900);
-        var room = findRoom(roomId);
-        if (room && room.unread) {
-            room.unread = 0;
-            renderRooms();
-            paintUnread();
+            api({ action: 'read.mark', room_id: roomId, through: through }).then(function (data) {
+                if (seq !== S.readSeq) return;
+                var room = findRoom(roomId);
+                if (!room) return;
+                room.unread = 0;
+                room.last_read_at = (data && data.last_read_at) || through;
+                renderRooms();
+                paintUnread();
+            }).catch(function () { });
+        }, 500);
+    }
+
+    function presenceLabel(person) {
+        if (!person) return '';
+        if (person.online) return 'Đang hoạt động';
+        var at = Date.parse(person.last_seen_at || '');
+        if (!Number.isFinite(at)) return 'Chưa hoạt động';
+        var mins = Math.max(0, Math.floor((Date.now() - at) / 60000));
+        if (mins < 1) return 'Vừa hoạt động';
+        if (mins < 60) return 'Hoạt động ' + mins + ' phút trước';
+        var hours = Math.floor(mins / 60);
+        if (hours < 24) return 'Hoạt động ' + hours + ' giờ trước';
+        return 'Hoạt động ' + Math.floor(hours / 24) + ' ngày trước';
+    }
+
+    function applyPresence(rows) {
+        var list = Array.isArray(rows) ? rows : [];
+        if (!list.length) return;
+        var byId = {};
+        list.forEach(function (p) { if (p && p.student_id) byId[String(p.student_id)] = p; });
+        function merge(person) {
+            var p = person && byId[String(person.student_id)];
+            if (!p) return;
+            person.online = !!p.online;
+            person.last_seen_at = p.last_seen_at || person.last_seen_at || null;
         }
+        merge(S.me);
+        (S.rooms || []).forEach(function (room) { (room.members || []).forEach(merge); });
+        merge((S.active && S.active.members || []).filter(function (m) {
+            return S.me && m.student_id === S.me.student_id;
+        })[0]);
+        (S.members || []).forEach(merge);
+    }
+
+    function pingPresence() {
+        if (!S.active || D.visibilityState === 'hidden') return;
+        var roomId = S.active.id;
+        api({ action: 'presence.ping', room_id: roomId }).then(function (data) {
+            if (!S.active || S.active.id !== roomId) return;
+            applyPresence(data && data.online);
+            renderHead();
+            renderRooms();
+        }).catch(function () { });
+    }
+
+    function watchPresence() {
+        if (S.presenceTimer) return;
+        var tick = function () {
+            pingPresence();
+            S.presenceTimer = setTimeout(tick, 60000);
+        };
+        S.presenceTimer = setTimeout(tick, 60000);
+        D.addEventListener('visibilitychange', function () {
+            if (D.visibilityState === 'visible') {
+                if (S.active) {
+                    pingPresence();
+                    markRead();
+                }
+            }
+        });
     }
 
     function renderHead() {
@@ -625,8 +709,14 @@
         info.appendChild(el('div', 'bkchat-head-title', roomTitle(room)));
         var sub = '';
         if (room.kind === 'global') sub = 'Phòng chung — cả trường';
-        else if (room.kind === 'group') sub = (room.member_count || (room.members || []).length) + '/' + S.maxGroup + ' thành viên';
-        else sub = 'Tin nhắn riêng';
+        else if (room.kind === 'group') {
+            var groupMembers = room.members || [];
+            var onlineCount = groupMembers.filter(function (m) { return m.online; }).length;
+            sub = (room.member_count || groupMembers.length) + '/' + S.maxGroup + ' thành viên';
+            if (onlineCount) sub += ' · ' + onlineCount + ' đang hoạt động';
+        } else {
+            sub = presenceLabel(otherMember(room)) || 'Tin nhắn riêng';
+        }
         info.appendChild(el('div', 'bkchat-head-sub', sub));
         head.appendChild(info);
 

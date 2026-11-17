@@ -23,6 +23,7 @@ const EMOJI = new Set([
 interface Ctx {
     client: ReturnType<typeof adminClient>;
     studentId: string;
+    authUserId: string;
     ip: string;
 }
 
@@ -81,7 +82,7 @@ async function profilesByIds(ctx: Ctx, ids: string[]) {
     if (!unique.length) return new Map<string, Record<string, unknown>>();
     const { data } = await ctx.client
         .from('chat_profiles')
-        .select('student_id, display_name, nickname, bio, avatar_url, frame, badge_count')
+        .select('student_id, display_name, nickname, bio, avatar_url, frame, badge_count, last_seen_at')
         .in('student_id', unique);
     const map = new Map<string, Record<string, unknown>>();
     for (const row of data ?? []) map.set(String(row.student_id), row);
@@ -90,6 +91,7 @@ async function profilesByIds(ctx: Ctx, ids: string[]) {
 
 function card(map: Map<string, Record<string, unknown>>, id: string) {
     const row = map.get(id) || {};
+    const seen = row.last_seen_at ? Date.parse(String(row.last_seen_at)) : 0;
     return {
         student_id: id,
         display_name: String(row.display_name || 'Học sinh'),
@@ -97,7 +99,10 @@ function card(map: Map<string, Record<string, unknown>>, id: string) {
         bio: String(row.bio || ''),
         avatar_url: String(row.avatar_url || ''),
         frame: String(row.frame || 'none'),
-        badge_count: num(row.badge_count)
+        badge_count: num(row.badge_count),
+        last_seen_at: row.last_seen_at || null,
+        /* Hoạt động nếu có tín hiệu trong 2 phút gần nhất. */
+        online: !!seen && Date.now() - seen < 2 * 60 * 1000
     };
 }
 
@@ -229,9 +234,14 @@ Deno.serve(async (req) => {
         return fail(403, 'INACTIVE', 'Hồ sơ học sinh không còn hoạt động.');
     }
 
-    const ctx: Ctx = { client, studentId: String(student.id), ip: '' };
+    const ctx: Ctx = { client, studentId: String(student.id), authUserId: caller.userId, ip: '' };
     const body = await readJson<Record<string, unknown>>(req);
     const action = str(body.action, 40);
+
+    /* Mỗi thao tác chat là một nhịp hoạt động. */
+    await client.from('student_devices')
+        .update({ last_seen_at: new Date().toISOString() })
+        .eq('auth_user_id', ctx.authUserId);
 
     try {
         if (!(await limited(ctx, 'chat:' + ctx.studentId, 300, 3600))) {
@@ -296,20 +306,21 @@ Deno.serve(async (req) => {
                         .in('message_id', ids);
                     reactions = reactionsData ?? [];
                 }
-                const map = await profilesByIds(ctx, messages.map((m) => String(m.student_id)));
                 const { data: memberRows } = await client
                     .from('chat_members')
                     .select('student_id, role, last_read_at')
                     .eq('room_id', roomId)
                     .limit(12);
+                const memberIds = (memberRows ?? []).map((m) => String(m.student_id));
+                const map = await profilesByIds(ctx, messages.map((m) => String(m.student_id)).concat(memberIds));
                 return json({
                     ok: true,
                     room: {
                         id: room.id, kind: room.kind, title: room.title,
                         dm_key: room.dm_key, created_by: room.created_by
                     },
-                    members: (memberRows ?? []).map((m) => ({
-                        student_id: m.student_id, role: m.role, last_read_at: m.last_read_at
+                    members: (memberRows ?? []).map((m) => Object.assign(card(map, String(m.student_id)), {
+                        role: m.role, last_read_at: m.last_read_at
                     })),
                     messages: messages.map((m) => ({
                         id: m.id,
@@ -452,12 +463,49 @@ Deno.serve(async (req) => {
                 if (!roomId) return fail(400, 'BAD_ROOM', 'Thiếu phòng chat.');
                 const room = await readableRoom(ctx, roomId);
                 if (!room) return fail(403, 'NO_ACCESS', 'Bạn không ở trong phòng này.');
+                /* Client gửi mốc created_at của tin cuối đã thấy. Không dùng giờ
+                   server, vì tin đến trong lúc gọi API sẽ bị đánh dấu đã đọc oan. */
+                const requested = Date.parse(str(body.through, 40));
+                const through = Number.isFinite(requested)
+                    ? new Date(Math.min(requested, Date.now())).toISOString()
+                    : new Date().toISOString();
+                const { data: current } = await client
+                    .from('chat_members')
+                    .select('last_read_at')
+                    .eq('room_id', roomId)
+                    .eq('student_id', ctx.studentId)
+                    .maybeSingle();
+                const currentAt = current && current.last_read_at ? Date.parse(current.last_read_at) : 0;
+                const nextAt = Math.max(currentAt || 0, Date.parse(through));
+                const lastReadAt = new Date(nextAt).toISOString();
                 await client.from('chat_members').upsert({
                     room_id: roomId,
                     student_id: ctx.studentId,
-                    last_read_at: new Date().toISOString()
+                    last_read_at: lastReadAt
                 }, { onConflict: 'room_id,student_id' });
-                return json({ ok: true });
+                return json({ ok: true, last_read_at: lastReadAt });
+            }
+
+            case 'presence.ping': {
+                const roomId = uuid(body.room_id);
+                if (!roomId) return json({ ok: true, online: [] });
+                const room = await readableRoom(ctx, roomId);
+                if (!room) return fail(403, 'NO_ACCESS', 'Bạn không ở trong phòng này.');
+                const { data: members } = await client
+                    .from('chat_members')
+                    .select('student_id')
+                    .eq('room_id', roomId)
+                    .limit(50);
+                const ids = (members ?? []).map((m) => String(m.student_id));
+                if (room.kind === 'global' && !ids.includes(ctx.studentId)) ids.push(ctx.studentId);
+                const map = await profilesByIds(ctx, ids);
+                return json({
+                    ok: true,
+                    online: ids.map((id) => {
+                        const c = card(map, id);
+                        return { student_id: id, online: c.online, last_seen_at: c.last_seen_at };
+                    })
+                });
             }
 
             /* -------------------------------- Phòng -------------------------------- */

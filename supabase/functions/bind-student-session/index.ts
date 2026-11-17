@@ -9,6 +9,7 @@
 import { json, fail, preflight, readJson } from '../_shared/http.ts';
 import { adminClient, callerUserId } from '../_shared/supabase.ts';
 import { normalizeName } from '../_shared/names.ts';
+import { authenticationOptions, passkeyCount } from '../_shared/passkeys.ts';
 
 async function progressFor(client: ReturnType<typeof adminClient>, studentId: string) {
     const { data } = await client
@@ -127,6 +128,24 @@ Deno.serve(async (req) => {
         p_window_seconds: 600
     });
     if (allowed === false) return fail(429, 'TOO_MANY_BINDS', 'Bạn đổi học sinh quá nhiều lần. Vui lòng thử lại sau.');
+
+    /* Hồ sơ đã bật passkey: chưa gắn thiết bị, trả challenge để trình duyệt
+       xác minh credential. Chỉ passkey-api mới được gắn sau khi chữ ký hợp lệ. */
+    if (await passkeyCount(client, student.id)) {
+        const passkey = await authenticationOptions(client, caller.userId, { id: student.id });
+        return json({
+            ok: true,
+            bound: false,
+            passkey_required: true,
+            student: {
+                id: student.id,
+                display_name: student.display_name,
+                disambiguator: student.disambiguator ?? null,
+                student_code: student.student_code ?? null
+            },
+            passkey
+        });
+    }
 
     const { error: upsertError } = await client.from('student_devices').upsert({
         auth_user_id: caller.userId,

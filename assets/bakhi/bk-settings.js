@@ -159,10 +159,122 @@
         panel.appendChild(editor);
         ui.renderEditor(editor);
 
+        var passkey = el('div');
+        panel.appendChild(passkey);
+        buildPasskeySection(passkey);
+
         panel.__refresh = function () {
             ui.renderHero(hero, { actions: false });
             ui.renderEditor(editor);
+            buildPasskeySection(passkey);
         };
+    }
+
+    /* ---------------------------------------------------------------------
+       1b. Passkey — bảo vệ lần đăng nhập bằng tên tiếp theo
+       ------------------------------------------------------------------ */
+    function buildPasskeySection(host) {
+        host.textContent = '';
+        host.className = 'bk-passkey';
+        host.appendChild(el('h2', null, 'Passkey'));
+        host.appendChild(el('p', 'bk-set-lead',
+            'Thêm passkey để lần đăng nhập bằng họ tên tiếp theo phải xác nhận thêm bằng vân tay, khuôn mặt hoặc mã khoá thiết bị. Khoá riêng tư nằm trên thiết bị, máy chủ chỉ lưu khoá công khai.'));
+
+        var cloud = global.BKCloud;
+        var bound = false;
+        try { bound = !!(cloud && cloud.state && cloud.state().bound); } catch (e) { bound = false; }
+        var supported = !!(cloud && cloud.passkeySupported && cloud.passkeySupported());
+
+        var msg = el('p', 'bk-auth-msg');
+        msg.setAttribute('role', 'status');
+        host.appendChild(msg);
+
+        var list = el('div', 'bk-passkey-list');
+        host.appendChild(list);
+        var add = el('button', 'bk-btn');
+        add.type = 'button';
+        add.appendChild(icon('fa-fingerprint'));
+        add.appendChild(el('span', null, 'Thêm passkey cho thiết bị này'));
+        host.appendChild(add);
+
+        function say(text, kind) {
+            msg.textContent = text || '';
+            msg.className = 'bk-auth-msg' + (kind ? ' ' + kind : '');
+        }
+
+        function renderList(items) {
+            list.textContent = '';
+            if (!items || !items.length) {
+                list.appendChild(el('p', 'bk-passkey-empty', 'Chưa có passkey. Hồ sơ đang đăng nhập bằng tên như trước.'));
+                return;
+            }
+            var title = el('p', 'bk-passkey-title', 'Passkey đã đăng ký (' + items.length + '/5)');
+            list.appendChild(title);
+            items.forEach(function (p) {
+                var row = el('div', 'bk-passkey-item');
+                var body = el('div', 'bk-passkey-text');
+                body.appendChild(el('b', null, p.label || 'Passkey'));
+                var when = '';
+                try { when = p.last_used_at ? new Date(p.last_used_at).toLocaleDateString('vi-VN') : ''; } catch (e) { }
+                body.appendChild(el('small', null,
+                    (p.device_type === 'multiDevice' ? 'Đồng bộ qua tài khoản · ' : 'Chỉ thiết bị này · ') +
+                    (when ? 'dùng gần nhất ' + when : 'chưa dùng lại')));
+                var rm = el('button', 'bk-btn bk-btn-ghost', 'Xoá');
+                rm.type = 'button';
+                rm.addEventListener('click', function () {
+                    if (global.confirm && !global.confirm('Xoá passkey này? Lần đăng nhập sau sẽ không cần passkey này nữa.')) return;
+                    rm.disabled = true;
+                    cloud.passkeyRemove(p.id).then(function (data) {
+                        renderList(data && data.passkeys);
+                        toast('Đã xoá passkey.', 'success');
+                    }).catch(function (err) {
+                        rm.disabled = false;
+                        say((err && err.message) || 'Không xoá được passkey.', 'err');
+                    });
+                });
+                row.appendChild(body);
+                row.appendChild(rm);
+                list.appendChild(row);
+            });
+        }
+
+        function refresh() {
+            if (!bound) {
+                renderList([]);
+                add.disabled = true;
+                say('Hãy nhận diện học sinh trước khi thêm passkey.', '');
+                return;
+            }
+            if (!supported) {
+                renderList([]);
+                add.disabled = true;
+                say('Thiết bị/trình duyệt này chưa hỗ trợ passkey (cần HTTPS).', 'err');
+                return;
+            }
+            add.disabled = false;
+            cloud.passkeyList().then(function (data) {
+                renderList(data && data.passkeys);
+                say('', '');
+            }).catch(function (err) {
+                add.disabled = true;
+                say((err && err.message) || 'Không đọc được passkey.', 'err');
+            });
+        }
+
+        add.addEventListener('click', function () {
+            add.disabled = true;
+            say('Đang mở hộp thoại tạo passkey…', '');
+            var label = 'Passkey · ' + new Date().toLocaleDateString('vi-VN');
+            cloud.passkeyRegister(label).then(function (data) {
+                renderList(data && data.passkeys);
+                say('Đã thêm passkey. Lần đăng nhập bằng tên sau sẽ yêu cầu xác nhận passkey.', 'ok');
+                toast('Đã thêm passkey.', 'success');
+            }).catch(function (err) {
+                say((err && err.message) || 'Không tạo được passkey.', 'err');
+            }).then(function () { add.disabled = !bound || !supported; });
+        });
+
+        refresh();
     }
 
     /* ---------------------------------------------------------------------

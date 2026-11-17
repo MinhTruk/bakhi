@@ -166,7 +166,14 @@ function makeHarness() {
             }
           });
         case 'read.mark':
-          return Promise.resolve({ ok: true });
+          return Promise.resolve({ ok: true, last_read_at: body.through });
+        case 'presence.ping':
+          return Promise.resolve({
+            ok: true,
+            online: [OTHER, THIRD].map((p, i) => ({
+              student_id: p.student_id, online: true, last_seen_at: new Date(now - i * 1000).toISOString()
+            }))
+          });
         case 'reactions.toggle':
           return Promise.resolve({
             ok: true,
@@ -246,6 +253,12 @@ async function main() {
   ok('cảm xúc của mình được đánh dấu', !!doc.querySelector('#bkChatMessages .bkchat-reaction.is-mine'));
   await wait(1050);
   ok('gọi read.mark khi mở phòng', H.calls.some((c) => c.action === 'read.mark'));
+  const readCall = H.calls.filter((c) => c.action === 'read.mark').pop();
+  ok('read.mark gửi mốc tin cuối đã tải', !!readCall && /^\d{4}-\d{2}-\d{2}T/.test(readCall.body.through || ''),
+    readCall && readCall.body.through);
+  ok('chat gửi nhịp hoạt động', H.calls.some((c) => c.action === 'presence.ping'));
+  const liveDot = await until(() => dmRow && dmRow.querySelector('.bkchat-presence'));
+  ok('avatar phòng nhắn riêng có chấm đang hoạt động', !!liveDot);
   const sideToggle = doc.querySelector('.bkchat-back');
   sideToggle.click();
   ok('icon sidebar thu gọn được danh sách', doc.querySelector('.bkchat-shell').classList.contains('is-side-collapsed'));

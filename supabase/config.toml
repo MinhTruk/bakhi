@@ -41,3 +41,9 @@ verify_jwt = false
 
 [functions.sync-student-progress]
 verify_jwt = false
+
+[functions.chat-api]
+verify_jwt = false
+
+[functions.passkey-api]
+verify_jwt = false
