@@ -259,20 +259,29 @@ DOMContentLoaded
   - **RLS chỉ đọc**: bốn bảng chỉ có policy `select` (phòng chung hoặc phòng mình là thành viên),
     không có policy ghi; `revoke insert/update/delete` khỏi `anon`/`authenticated`.
   - View `chat_profiles` (`security_invoker = false`) chỉ lộ `display_name`, `nickname`, `bio`,
-    `avatar_url`, `frame`, `badge_count` — không lộ `student_code` hay dữ liệu học tập.
+    `avatar_url`, `frame`, `badge_count`, `last_seen_at` — không lộ `student_code` hay dữ liệu học tập.
+    `last_seen_at` là lần hoạt động gần nhất từ `student_devices`, dùng cho chấm xanh/“Đang hoạt động”.
+  - Bảng `student_passkeys` (credential WebAuthn) và `passkey_challenges` (dùng một lần, hạn
+    5 phút) chỉ service_role truy cập; `anon`/`authenticated` không có quyền đọc/ghi.
   - `replica identity full` và đưa cả bốn bảng vào `supabase_realtime`; bucket `chat-images`
     công khai theo URL, chỉ nhận `image/png|jpeg|webp|gif` ≤ 3 MB, mỗi người ghi/xoá trong
     thư mục uuid của chính mình.
 - **Edge Function `chat-api`**: mọi thao tác ghi (`messages.send/delete`, `reactions.toggle`,
-  `read.mark`, `dm.open`, `group.*`, `messages.purge_own`) chạy bằng service role sau khi xác
-  minh `auth.uid()` đã gắn với học sinh đang hoạt động và tư cách thành viên.
+  `read.mark`, `presence.ping`, `dm.open`, `group.*`, `messages.purge_own`) chạy bằng service role
+  sau khi xác minh `auth.uid()` đã gắn với học sinh đang hoạt động và tư cách thành viên. Mỗi
+  request cập nhật `student_devices.last_seen_at`; `read.mark` nhận mốc `through` của tin cuối
+  client đã tải và chỉ tăng `last_read_at`, không lùi về sau.
   Giới hạn: 300 lượt/giờ/học sinh, 20 tin/phút, 120 cảm xúc/phút. Không tin `student_id` từ client.
 - **Máy khách** (`bk-chat.js`): đọc dữ liệu trực tiếp qua Supabase (RLS), ghi qua `BKCloud.chatApi`;
   bộ đếm chưa đọc cả trên tiêu đề tab; realtime cho tin nhắn, cảm xúc và tên nhóm; toàn bộ nội dung
   render bằng `textContent`. Từ 6.0.0 chỉ nhận văn bản (bỏ gửi ảnh/emoji soạn tin); không có đồng hồ đếm ngược.
-- **Trạng thái triển khai**: mã đã hoàn tất và kiểm thử cục bộ (`tools/qa/chat-smoke.js`); cần
-  deploy migration `20261120000000`, Edge Function `chat-api` và bucket `chat-images` trên dự án
-  Supabase thật. Trước đó `/chat/` hiển thị thông báo máy chủ chưa sẵn sàng.
+  Tab ẩn không đánh dấu đã đọc; quay lại tab mới đánh dấu và gửi nhịp hoạt động.
+- **Passkey (6.2.0)**: Edge Function `passkey-api` dùng `@simplewebauthn/server` để tạo/xác minh
+  credential. RP ID/origin lấy từ secret `PASSKEY_RP_ID`/`PASSKEY_ORIGIN`, không lấy từ Host.
+  Khi hồ sơ đã có passkey, `bind-student-session` trả `passkey_required` + challenge thay vì
+  gắn thiết bị; chỉ `passkey-api auth.verify` được upsert `student_devices` sau khi chữ ký hợp lệ.
+- **Trạng thái triển khai**: migration `20261120000000` + `20261125000000`, các Edge Function
+  `chat-api`, `bind-student-session`, `passkey-api` và bucket `chat-images` đã deploy trên dự án thật.
 
 ### 2.8. Bá Khí Studio hợp nhất (3.9.0)
 
@@ -434,7 +443,8 @@ Kết quả sau nâng cấp: **122/122 tệp không đổi nội dung** (`verify
 
 | Thành phần | Tệp / vị trí | Vai trò |
 | --- | --- | --- |
-| Nhận diện học sinh | `assets/bakhi/bk-cloud.js` + `supabase/functions/bind-student-session` | Gõ họ tên hoặc chọn gợi ý; máy chủ đối chiếu `normalized_name` và gắn phiên |
+| Nhận diện học sinh | `assets/bakhi/bk-cloud.js` + `supabase/functions/bind-student-session` | Gõ họ tên hoặc chọn gợi ý; máy chủ đối chiếu `normalized_name`; hồ sơ có passkey phải xác minh WebAuthn trước khi gắn phiên |
+| Passkey | `supabase/functions/passkey-api` + `student_passkeys` | Đăng ký/xoá tối đa 5 passkey trong Cài đặt; xác minh chữ ký và bộ đếm khi đăng nhập |
 | Tìm kiếm gợi ý | `supabase/functions/search-students` | Tối đa 8 kết quả/lần, giới hạn tần suất theo phiên |
 | Đồng bộ tiến trình | `bk-cloud.js` + `sync-student-progress` | Debounce, thử lại theo cấp số nhân, gộp dữ liệu hai chiều |
 | Trung tâm thông báo | `bk-cloud.js` + bảng `announcements` | Realtime + đếm chưa đọc + đánh dấu đã đọc; có mặt trên mọi trang (chế độ chỉ thông báo ở trang bài học/Studio) |

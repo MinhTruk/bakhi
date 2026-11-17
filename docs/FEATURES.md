@@ -243,17 +243,19 @@ Function `chat-api`; trình duyệt chỉ đọc dữ liệu phòng mình tham g
 | 5 | Chat chỉ gửi văn bản (6.0.0 bỏ gửi ảnh và bảng emoji soạn tin) | ✅ | Ảnh cũ vẫn hiển thị; server trả `IMAGES_DISABLED` nếu client cố gửi ảnh mới |
 | 6 | 12 cảm xúc emoji, bấm lại để bỏ | ⚠️ đã có mã | `chat_reactions`, `reactions.toggle` |
 | 7 | Realtime tin nhắn, cảm xúc, tên nhóm | ⚠️ đã có mã | Bốn bảng trong `supabase_realtime`, `replica identity full` |
-| 8 | Bộ đếm tin chưa đọc theo phòng + trên tiêu đề tab | ⚠️ đã có mã | `last_read_at`, `read.mark` |
-| 9 | Profile Card: tên, biệt danh, giới thiệu, khung, số thành tích | ⚠️ đã có mã | View `chat_profiles` không lộ `student_code` |
+| 8 | Bộ đếm tin chưa đọc theo phòng + trên tiêu đề tab | ✅ | `last_read_at`; `read.mark` nhận mốc `through` của tin cuối đã tải |
+| 9 | Profile Card: tên, biệt danh, giới thiệu, khung, số thành tích | ✅ | View `chat_profiles` không lộ `student_code`; có `last_seen_at` |
 | 10 | Tìm học sinh để nhắn riêng hoặc thêm vào nhóm | ⚠️ đã có mã | `students.search` qua `chat-api` |
 | 11 | Xoá mềm tin của mình; trưởng nhóm xoá tin trong nhóm | ⚠️ đã có mã | `deleted_at`, hiện “Tin nhắn đã được xoá” |
 | 12 | Không có đồng hồ đếm ngược hay giới hạn thời gian | ✅ | Đúng nguyên tắc sản phẩm |
 | 13 | Kiểm thử giao diện và ràng buộc bảo mật | ✅ | `tools/qa/chat-smoke.js` (jsdom) |
+| 14 | Trạng thái hoạt động: chấm xanh avatar DM, “Đang hoạt động / x phút trước” | ✅ | `presence.ping` mỗi phút khi tab hiện; online nếu `last_seen_at` ≤ 2 phút |
+| 15 | Passkey trong Cài đặt và bắt buộc sau khi đăng nhập bằng tên | ✅ | `passkey-api`; tối đa 5 passkey; huỷ xác minh thì không gắn thiết bị |
 
-> Trạng thái “đã có mã” nghĩa là mã nguồn, migration và QA đã xong nhưng **chưa deploy**
-> migration `20261120000000` + Edge Function `chat-api` + bucket `chat-images` trên dự án
-> Supabase thật. Trước khi deploy, `/chat/` báo máy chủ chưa sẵn sàng và không ảnh hưởng
-> các trang học tập khác.
+> Từ 6.2.0, migration `20261120000000`/`20261125000000`, Edge Function `chat-api`,
+> `bind-student-session`, `passkey-api` và bucket `chat-images` đã deploy trên dự án thật.
+> Passkey chỉ hoạt động trên HTTPS đúng `PASSKEY_RP_ID`; nếu đổi tên miền, cập nhật secret
+> `PASSKEY_RP_ID`/`PASSKEY_ORIGIN` và deploy lại `passkey-api`.
 
 ## L. Không có trong sản phẩm (theo yêu cầu)
 

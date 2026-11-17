@@ -45,7 +45,9 @@ Project `wzvslyabhizsiggurwdq` **đã được cài đặt và kiểm chứng**:
 | Migration `20261118000000_bakhi_dev_sessions.sql` (3.5.0) | ⏳ chờ chạy — bảng `dev_sessions` tách khỏi phiên Administrator |
 | Migration `20261119000000_bakhi_profile_badges.sql` (3.6.0) | ⏳ chờ chạy — `student_profiles`, `student_badges`, khung avatar |
 | Migration `20261120000000_bakhi_chat.sql` (3.7.0) | ✅ đã chạy — bốn bảng chat, view `chat_profiles`, bucket `chat-images` |
-| Edge Functions `dev-auth`, `student-profile`, `chat-api` | ⏳ chờ deploy — mã đã xong, kiểm thử cục bộ |
+| Migration `20261125000000_bakhi_chat_presence_passkey.sql` (6.2.0) | ✅ đã chạy — `last_seen_at`, `student_passkeys`, `passkey_challenges` |
+| Edge Functions `dev-auth`, `student-profile`, `chat-api` | ✅ đã deploy |
+| Edge Function `passkey-api` + secret `PASSKEY_RP_ID`/`PASSKEY_ORIGIN` (6.2.0) | ✅ đã deploy/đặt |
 
 > Ba migration và ba Edge Function mới (3.5.0–3.7.0) **chưa được chạy** trên project thật.
 > Website vẫn hoạt động local-first: `bk-cloud.js` tự tắt đồng bộ hồ sơ sau lỗi 404, còn
@@ -159,6 +161,7 @@ supabase functions deploy changelog-sync
 supabase functions deploy dev-auth
 supabase functions deploy student-profile
 supabase functions deploy chat-api
+supabase functions deploy passkey-api
 ```
 
 Bắt buộc dùng `--no-verify-jwt` cho các function tự xác thực phiên riêng:
@@ -174,6 +177,7 @@ supabase functions deploy changelog-sync --no-verify-jwt
 supabase functions deploy dev-auth --no-verify-jwt
 supabase functions deploy student-profile --no-verify-jwt
 supabase functions deploy chat-api --no-verify-jwt
+supabase functions deploy passkey-api --no-verify-jwt
 ```
 
 Lý do: học sinh dùng Anonymous Auth, Administrator Dashboard dùng phiên quản trị riêng, và
@@ -206,6 +210,7 @@ workflow dùng `CHANGELOG_SYNC_TOKEN`; cả ba đều tự kiểm tra quyền b�
 | `dev-auth` | Quản trị viên / Dev | `DEV_PLAYGROUND_CODE` so sánh hằng thời gian | 10 lượt/10 phút/IP |
 | `student-profile` | Học sinh (ẩn danh) | Phiên + `student_id` do server suy ra | 90 lượt/giờ/học sinh |
 | `chat-api` | Học sinh (ẩn danh) | Phiên + `student_id` do server suy ra | 300 lượt/giờ; 20 tin/phút; 120 cảm xúc/phút |
+| `passkey-api` | Học sinh (ẩn danh) | Phiên + passkey WebAuthn; RP/origin lấy từ secret | 20 lượt xác minh/10 phút; 10 lượt đăng ký/10 phút |
 
 Riêng `admin-actions` xác thực lại ở **mỗi** thao tác, không tin trạng thái đã đăng nhập ở
 client. Token quản trị chỉ nằm trong `sessionStorage`, mất khi đóng tab.
@@ -247,6 +252,8 @@ gửi qua header `x-admin-token`; `admin-actions` xác thực lại ở **mỗi*
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ tự có | Supabase tự inject; **không** đặt vào repository và không gửi về client. |
 | `STUDENT_ROSTER_SECRET` | – | Chỉ dùng để đối chiếu khi bạn muốn xác nhận một bản import do chính bạn khởi tạo (ví dụ chạy bằng script/CI). Dashboard hiện xác thực import bằng Dev session nên secret này không bắt buộc. Nếu đặt, dùng một chuỗi ngẫu nhiên ≥ 32 ký tự do bạn tự sinh. |
 | `CHANGELOG_SYNC_TOKEN` | ✅ cho đồng bộ | Chuỗi ngẫu nhiên ≥ 32 ký tự, đặt ở **Supabase Secrets** và **GitHub → Settings → Secrets → Actions**. Workflow gửi qua header `x-changelog-token`; function từ chối request thiếu hoặc sai token. |
+| `PASSKEY_RP_ID` | ✅ cho passkey | Tên miền không kèm scheme, mặc định `minhtruk.github.io`. Phải khớp tên miền người dùng mở website. |
+| `PASSKEY_ORIGIN` | ✅ cho passkey | Origin đầy đủ, mặc định `https://minhtruk.github.io`. Đổi tên miền phải cập nhật và deploy lại `passkey-api`/`bind-student-session`. |
 
 ### Đồng bộ CHANGELOG.md qua GitHub Actions
 
@@ -302,6 +309,7 @@ Migration đã bật RLS cho toàn bộ bảng:
 | `announcement_reads` | đọc/ghi hàng của chính mình | Trạng thái đã đọc riêng từng học sinh |
 | `changelog` | chỉ đọc bản `is_published` | Ghi qua `admin-actions` và `changelog-sync` |
 | `app_settings` | chỉ đọc khoá `public.%` | Ghi qua `admin-actions` (service_role); `public.whatsnew`, `public.maintenance`; realtime |
+| `student_passkeys`, `passkey_challenges` | **không có quyền** | Chỉ service_role qua `passkey-api`; không lộ khoá công khai hay challenge |
 | `admin_activity_logs`, `admin_sessions`, `rate_limits` | **không có quyền** | Chỉ service_role |
 
 Kiểm tra nhanh: mở Console trình duyệt khi đã chọn tên và chạy
