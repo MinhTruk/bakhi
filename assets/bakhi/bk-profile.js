@@ -36,36 +36,36 @@
     /* 30 khung avatar thật (SVG vẽ bằng path, phần trung tâm trong suốt):
        27 khung thường + 2 khung độc quyền + 1 khung Thiên Khải. */
     var FRAMES = [
-        { id: 'none', name: 'Mặc định', tier: 'normal', rarity: 'common', ring: '#94a3b8', orn: [], animStyle: 'none' },
-        { id: 'leaf', name: 'Bồ Đề Sơ Diệp', tier: 'normal', rarity: 'uncommon', ring: '#10b981', pc: '#34d399', sc: '#065f46', orn: ['ring', 'laurel', 'vein'], animStyle: 'float' },
-        { id: 'sakura', name: 'Anh Hoa Vũ', tier: 'normal', rarity: 'rare', ring: '#f9a8d4', pc: '#f472b6', sc: '#9d174d', orn: ['petals', 'ring', 'fall'], animStyle: 'float' },
-        { id: 'sunflower', name: 'Hướng Dương Tâm', tier: 'normal', rarity: 'uncommon', ring: '#f59e0b', pc: '#fbbf24', sc: '#92400e', orn: ['rays', 'petals', 'core'], animStyle: 'pulse' },
-        { id: 'wreath', name: 'Nguyệt Quế Chi Vương', tier: 'normal', rarity: 'rare', ring: '#22c55e', pc: '#86efac', sc: '#166534', orn: ['laurel', 'gem', 'bow'], animStyle: 'spin' },
-        { id: 'ear-cat', name: 'Miêu Linh Nhĩ', tier: 'normal', rarity: 'rare', ring: '#fb923c', pc: '#fb923c', sc: '#7c2d12', orn: ['earsCat', 'whisker'], animStyle: 'bounce' },
-        { id: 'ear-fox', name: 'Hồ Ly Huyễn Nhĩ', tier: 'normal', rarity: 'rare', ring: '#f97316', pc: '#f97316', sc: '#7c2d12', orn: ['earsFox', 'tail'], animStyle: 'bounce' },
-        { id: 'ear-bunny', name: 'Ngọc Thố Huyền Nhĩ', tier: 'normal', rarity: 'epic', ring: '#e879f9', pc: '#e879f9', sc: '#701a75', orn: ['earsBunny', 'fluff'], animStyle: 'bounce' },
-        { id: 'ear-wolf', name: 'Thiên Lang Dạ Nhĩ', tier: 'normal', rarity: 'epic', ring: '#64748b', pc: '#94a3b8', sc: '#1e293b', orn: ['earsWolf', 'howl'], animStyle: 'none' },
-        { id: 'antler', name: 'Lộc Giác Tiên Tung', tier: 'normal', rarity: 'epic', ring: '#a16207', pc: '#d97706', sc: '#451a03', orn: ['antlers', 'leaf'], animStyle: 'float' },
-        { id: 'horn-dragon', name: 'Long Giác Thiên Uy', tier: 'normal', rarity: 'legendary', ring: '#ef4444', pc: '#f87171', sc: '#7f1d1d', orn: ['horns', 'spikes', 'scale'], animStyle: 'pulse' },
-        { id: 'crown', name: 'Cửu Trùng Miện', tier: 'normal', rarity: 'legendary', ring: '#eab308', pc: '#facc15', sc: '#a16207', orn: ['crown', 'gem', 'jewel'], animStyle: 'pulse' },
-        { id: 'star', name: 'Tinh Hà Chi Tâm', tier: 'normal', rarity: 'secret', ring: '#8b5cf6', pc: '#a78bfa', sc: '#4c1d95', orn: ['stars', 'halo', 'comet'], animStyle: 'shimmer' },
-        { id: 'royal', name: 'Đế Vương Miện', tier: 'normal', rarity: 'legendary', ring: '#f43f5e', pc: '#facc15', sc: '#9f1239', orn: ['crown', 'wings', 'gem', 'mantle'], animStyle: 'spin' },
-        { id: 'celestial', name: 'Thiên Giới Huyền Quang', tier: 'normal', rarity: 'epic', ring: '#38bdf8', pc: '#7dd3fc', sc: '#0c4a6e', orn: ['halo', 'stars', 'orbit', 'moon'], animStyle: 'orbit' },
-        { id: 'cyber', name: 'Lôi Vân Điện Ảnh', tier: 'normal', rarity: 'rare', ring: '#22d3ee', pc: '#22d3ee', sc: '#155e75', orn: ['hex', 'circuit', 'node'], animStyle: 'shimmer' },
-        { id: 'gothic', name: 'Huyết Dạ Biên Ảnh', tier: 'normal', rarity: 'epic', ring: '#a855f7', pc: '#c084fc', sc: '#3b0764', orn: ['batwings', 'thorns', 'moon'], animStyle: 'float' },
-        { id: 'crystal', name: 'Lưu Ly Tịnh Giới', tier: 'normal', rarity: 'rare', ring: '#67e8f9', pc: '#a5f3fc', sc: '#164e63', orn: ['crystal', 'gem', 'facet'], animStyle: 'shimmer' },
-        { id: 'infernal', name: 'Diệm Ngục Hồng Liên', tier: 'normal', rarity: 'legendary', ring: '#f97316', pc: '#fb923c', sc: '#7c2d12', orn: ['flames', 'horns', 'ember'], animStyle: 'pulse' },
-        { id: 'divine', name: 'Thần Quang Thánh Vũ', tier: 'normal', rarity: 'legendary', ring: '#fde68a', pc: '#fef3c7', sc: '#b45309', orn: ['rays', 'halo', 'wings', 'glory'], animStyle: 'shimmer' },
-        { id: 'galactic', name: 'Ngân Hà Tinh Đồ', tier: 'normal', rarity: 'epic', ring: '#818cf8', pc: '#a5b4fc', sc: '#312e81', orn: ['orbit', 'stars', 'nebula'], animStyle: 'orbit' },
-        { id: 'ancient', name: 'Cổ Văn Thần Ấn', tier: 'normal', rarity: 'epic', ring: '#d6d3d1', pc: '#e7e5e4', sc: '#44403c', orn: ['runes', 'ring', 'sigil', 'seal'], animStyle: 'spin' },
-        { id: 'legendary', name: 'Bất Diệt Huyền Hoàng', tier: 'normal', rarity: 'legendary', ring: '#fbbf24', pc: '#fcd34d', sc: '#92400e', orn: ['wings', 'crown', 'gem', 'stars', 'aura'], animStyle: 'pulse' },
-        { id: 'neon', name: 'Nghê Hồng Quang Ảnh', tier: 'normal', rarity: 'rare', ring: '#4ade80', pc: '#4ade80', sc: '#14532d', orn: ['ring', 'circuit', 'spikes', 'tube'], animStyle: 'shimmer' },
-        { id: 'eternal', name: 'Vĩnh Hằng Tinh Tú', tier: 'normal', rarity: 'legendary', ring: '#e879f9', pc: '#f0abfc', sc: '#701a75', orn: ['infinity', 'orbit', 'stars', 'loop'], animStyle: 'orbit' },
-        { id: 'frost', name: 'Băng Phách Tuyết Ảnh', tier: 'normal', rarity: 'rare', ring: '#93c5fd', pc: '#bfdbfe', sc: '#1e3a8a', orn: ['snow', 'crystal', 'ice'], animStyle: 'float' },
-        { id: 'phoenix', name: 'Phượng Hoàng Niết Bàn', tier: 'normal', rarity: 'legendary', ring: '#fb7185', pc: '#fda4af', sc: '#881337', orn: ['feathers', 'flames', 'ash'], animStyle: 'pulse' },
-        { id: 'dev-aurora', name: 'Dao Quang Tuyệt Ảnh', tier: 'dev', rarity: 'secret', ring: '#5eead4', pc: '#67e8f9', sc: '#a855f7', orn: ['aurora', 'stars', 'sigil', 'node'], animStyle: 'shimmer', anim: true },
-        { id: 'dev-void', name: 'Vô Cực Hư Không', tier: 'dev', rarity: 'secret', ring: '#c084fc', pc: '#e9d5ff', sc: '#6d28d9', orn: ['void', 'spikes', 'runes', 'event'], animStyle: 'orbit', anim: true },
-        { id: 'founder', name: 'Thiên Khải Sáng Thế', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#b91c1c', orn: ['founderCrown', 'wings', 'laurel', 'gem', 'sigil', 'glory'], animStyle: 'pulse', anim: true }
+        { id: 'none', name: 'Mặc định', tier: 'normal', rarity: 'common', ring: '#94a3b8', orn: [] },
+        { id: 'leaf', name: 'Bồ Đề Sơ Diệp', tier: 'normal', rarity: 'common', ring: '#10b981', pc: '#34d399', sc: '#065f46', orn: ['ring', 'laurel'] },
+        { id: 'sakura', name: 'Anh Hoa Vũ', tier: 'normal', rarity: 'uncommon', ring: '#f9a8d4', pc: '#f472b6', sc: '#9d174d', orn: ['petals', 'ring'] },
+        { id: 'sunflower', name: 'Hướng Dương Tâm', tier: 'normal', rarity: 'uncommon', ring: '#f59e0b', pc: '#fbbf24', sc: '#92400e', orn: ['rays', 'petals'] },
+        { id: 'wreath', name: 'Nguyệt Quế Chi Vương', tier: 'normal', rarity: 'uncommon', ring: '#22c55e', pc: '#86efac', sc: '#166534', orn: ['laurel', 'gem'] },
+        { id: 'ear-cat', name: 'Miêu Linh Nhĩ', tier: 'normal', rarity: 'rare', ring: '#fb923c', pc: '#fb923c', sc: '#7c2d12', orn: ['earsCat'] },
+        { id: 'ear-fox', name: 'Hồ Ly Huyễn Nhĩ', tier: 'normal', rarity: 'rare', ring: '#f97316', pc: '#f97316', sc: '#7c2d12', orn: ['earsFox'] },
+        { id: 'ear-bunny', name: 'Ngọc Thố Huyền Nhĩ', tier: 'normal', rarity: 'rare', ring: '#e879f9', pc: '#e879f9', sc: '#701a75', orn: ['earsBunny'] },
+        { id: 'ear-wolf', name: 'Thiên Lang Dạ Nhĩ', tier: 'normal', rarity: 'epic', ring: '#64748b', pc: '#94a3b8', sc: '#1e293b', orn: ['earsWolf'] },
+        { id: 'antler', name: 'Lộc Giác Tiên Tung', tier: 'normal', rarity: 'epic', ring: '#a16207', pc: '#d97706', sc: '#451a03', orn: ['antlers'] },
+        { id: 'horn-dragon', name: 'Long Giác Thiên Uy', tier: 'normal', rarity: 'legendary', ring: '#ef4444', pc: '#f87171', sc: '#7f1d1d', orn: ['horns', 'spikes'] },
+        { id: 'crown', name: 'Cửu Trùng Miện', tier: 'normal', rarity: 'legendary', ring: '#eab308', pc: '#facc15', sc: '#a16207', orn: ['crown', 'gem'] },
+        { id: 'star', name: 'Tinh Hà Chi Tâm', tier: 'normal', rarity: 'secret', ring: '#8b5cf6', pc: '#a78bfa', sc: '#4c1d95', orn: ['stars', 'halo'] },
+        { id: 'royal', name: 'Đế Vương Miện', tier: 'normal', rarity: 'legendary', ring: '#f43f5e', pc: '#facc15', sc: '#9f1239', orn: ['crown', 'wings', 'gem'] },
+        { id: 'celestial', name: 'Thiên Giới Huyền Quang', tier: 'normal', rarity: 'epic', ring: '#38bdf8', pc: '#7dd3fc', sc: '#0c4a6e', orn: ['halo', 'stars', 'orbit'] },
+        { id: 'cyber', name: 'Lôi Vân Điện Ảnh', tier: 'normal', rarity: 'rare', ring: '#22d3ee', pc: '#22d3ee', sc: '#155e75', orn: ['hex', 'circuit'] },
+        { id: 'gothic', name: 'Huyết Dạ Biên Ảnh', tier: 'normal', rarity: 'epic', ring: '#a855f7', pc: '#c084fc', sc: '#3b0764', orn: ['batwings', 'thorns'] },
+        { id: 'crystal', name: 'Lưu Ly Tịnh Giới', tier: 'normal', rarity: 'rare', ring: '#67e8f9', pc: '#a5f3fc', sc: '#164e63', orn: ['crystal', 'gem'] },
+        { id: 'infernal', name: 'Diệm Ngục Hồng Liên', tier: 'normal', rarity: 'legendary', ring: '#f97316', pc: '#fb923c', sc: '#7c2d12', orn: ['flames', 'horns'] },
+        { id: 'divine', name: 'Thần Quang Thánh Vũ', tier: 'normal', rarity: 'legendary', ring: '#fde68a', pc: '#fef3c7', sc: '#b45309', orn: ['rays', 'halo', 'wings'] },
+        { id: 'galactic', name: 'Ngân Hà Tinh Đồ', tier: 'normal', rarity: 'epic', ring: '#818cf8', pc: '#a5b4fc', sc: '#312e81', orn: ['orbit', 'stars'] },
+        { id: 'ancient', name: 'Cổ Văn Thần Ấn', tier: 'normal', rarity: 'epic', ring: '#d6d3d1', pc: '#e7e5e4', sc: '#44403c', orn: ['runes', 'ring', 'sigil'] },
+        { id: 'legendary', name: 'Bất Diệt Huyền Hoàng', tier: 'normal', rarity: 'legendary', ring: '#fbbf24', pc: '#fcd34d', sc: '#92400e', orn: ['wings', 'crown', 'gem', 'stars'] },
+        { id: 'neon', name: 'Nghê Hồng Quang Ảnh', tier: 'normal', rarity: 'rare', ring: '#4ade80', pc: '#4ade80', sc: '#14532d', orn: ['ring', 'circuit', 'spikes'] },
+        { id: 'eternal', name: 'Vĩnh Hằng Tinh Tú', tier: 'normal', rarity: 'legendary', ring: '#e879f9', pc: '#f0abfc', sc: '#701a75', orn: ['infinity', 'orbit', 'stars'] },
+        { id: 'frost', name: 'Băng Phách Tuyết Ảnh', tier: 'normal', rarity: 'rare', ring: '#93c5fd', pc: '#bfdbfe', sc: '#1e3a8a', orn: ['snow', 'crystal'] },
+        { id: 'phoenix', name: 'Phượng Hoàng Niết Bàn', tier: 'normal', rarity: 'legendary', ring: '#fb7185', pc: '#fda4af', sc: '#881337', orn: ['feathers', 'flames'] },
+        { id: 'dev-aurora', name: 'Dao Quang Tuyệt Ảnh', tier: 'dev', rarity: 'secret', ring: '#5eead4', pc: '#67e8f9', sc: '#a855f7', orn: ['aurora', 'stars', 'sigil'], anim: true },
+        { id: 'dev-void', name: 'Vô Cực Hư Không', tier: 'dev', rarity: 'secret', ring: '#c084fc', pc: '#e9d5ff', sc: '#6d28d9', orn: ['void', 'spikes', 'runes'], anim: true },
+        { id: 'founder', name: 'Thiên Khải Sáng Thế', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#b91c1c', orn: ['founderCrown', 'wings', 'laurel', 'gem', 'sigil'], anim: true }
     ];
 
     function frameById(id) {
@@ -196,119 +196,6 @@
                     st += '<path d="M' + stx.toFixed(1) + ' ' + (sty - 4).toFixed(1) + 'l1.4 2.6 2.6 1.4-2.6 1.4-1.4 2.6-1.4-2.6-2.6-1.4 2.6-1.4z" fill="' + P + '" stroke="none"/>';
                 }
                 return st;
-            case 'vein':
-                return '<g stroke="' + S + '" stroke-width=".7" fill="none">' +
-                    '<path d="M18 50C22 30 28 15 34 10M82 50C78 30 72 15 66 10"/>' +
-                    '<path d="M18 50C22 70 28 85 34 90M82 50C78 70 72 85 66 90"/>' +
-                    '</g>' +
-                    '<g fill="' + P + '">' +
-                    leaves(P) +
-                    '</g>';
-            case 'fall':
-                var fl = '';
-                for (i = 0; i < 5; i++) {
-                    var af = (Math.PI * 2 * i) / 5 - Math.PI / 2;
-                    var fx = 50 + Math.cos(af) * 38, fy = 50 + Math.sin(af) * 38;
-                    fl += '<ellipse cx="' + fx.toFixed(1) + '" cy="' + fy.toFixed(1) + '" rx="2.5" ry="1.5" transform="rotate(' + ((af * 180) / Math.PI + 90).toFixed(1) + ' ' + fx.toFixed(1) + ' ' + fy.toFixed(1) + ')" fill="' + P + '" opacity=".85"/>';
-                }
-                return fl;
-            case 'core':
-                return '<circle cx="50" cy="50" r="9" fill="' + P + '"/>' +
-                    '<circle cx="50" cy="50" r="5" fill="#fff" opacity=".8"/>' +
-                    '<circle cx="50" cy="50" r="13" fill="none" stroke="' + S + '" stroke-width="1" stroke-dasharray="1 4"/>';
-            case 'bow':
-                return '<path d="M42 44Q50 38 58 44Q50 50 42 44M50 44Q42 52 50 60Q58 52 50 44" fill="none" stroke="' + S + '" stroke-width="1.4" opacity=".8"/>' +
-                    '<path d="M44 44Q50 40 56 44" fill="none" stroke="' + P + '" stroke-width="1.6" stroke-linecap="round"/>' +
-                    '<circle cx="50" cy="52" r="2" fill="' + P + '"/>';
-            case 'whisker':
-                return '<g stroke="' + S + '" stroke-width=".5" opacity=".7">' +
-                    '<path d="M28 52L14 50M28 56L14 58M28 48L14 46"/>' +
-                    '<path d="M72 52L86 50M72 56L86 58M72 48L86 46"/>' +
-                    '</g>';
-            case 'tail':
-                return '<path d="M90 45C95 55 88 70 80 65C72 60 78 50 72 45" fill="none" stroke="' + P + '" stroke-width="3" stroke-linecap="round" opacity=".85"/>';
-            case 'fluff':
-                return '<g fill="' + P + '">' +
-                    '<circle cx="20" cy="18" r="4" opacity=".9"/><circle cx="26" cy="16" r="5" opacity=".9"/><circle cx="30" cy="19" r="4" opacity=".9"/>' +
-                    '<circle cx="80" cy="18" r="4" opacity=".9"/><circle cx="74" cy="16" r="5" opacity=".9"/><circle cx="70" cy="19" r="4" opacity=".9"/>' +
-                    '</g>';
-            case 'howl':
-                return '<path d="M30 58Q40 66 50 58Q60 66 70 58" fill="none" stroke="' + S + '" stroke-width="1.2" opacity=".7"/>' +
-                    '<path d="M42 50Q50 42 58 50" fill="none" stroke="' + P + '" stroke-width="1.4"/>';
-            case 'jewel':
-                return '<path d="M50 86l6 6-6 6-6-6z" fill="' + P + '" stroke="' + S + '" stroke-width="1.2"/>' +
-                    '<path d="M50 88l3 5-3 5-3-5z" fill="#fff" opacity=".6"/>' +
-                    '<path d="M52 84l2 3-2 3-2-3z" fill="#fff" opacity=".4"/>';
-            case 'mantle':
-                return '<path d="M22 52Q30 42 50 50Q70 42 78 52" fill="none" stroke="' + P + '" stroke-width="2.2" stroke-linecap="round"/>' +
-                    '<path d="M34 54Q50 62 66 54" fill="none" stroke="' + S + '" stroke-width="1" opacity=".6"/>';
-            case 'moon':
-                return '<circle cx="18" cy="18" r="7" fill="' + P + '" opacity=".9"/>' +
-                    '<circle cx="22" cy="14" r="2" fill="#fff"/>' +
-                    '<circle cx="82" cy="82" r="7" fill="' + P + '" opacity=".9"/>';
-            case 'node':
-                var nd = '';
-                for (i = 0; i < 8; i++) {
-                    var an = (Math.PI * 2 * i) / 8;
-                    var nx = 50 + Math.cos(an) * 42, ny = 50 + Math.sin(an) * 42;
-                    nd += '<circle cx="' + nx.toFixed(1) + '" cy="' + ny.toFixed(1) + '" r="2.2" fill="' + P + '"/>';
-                    nd += '<line x1="50" y1="50" x2="' + nx.toFixed(1) + '" y2="' + ny.toFixed(1) + '" stroke="' + P + '" stroke-width=".8" opacity=".5"/>';
-                }
-                return nd;
-            case 'facet':
-                var fc = '';
-                for (i = 0; i < 6; i++) {
-                    var af = (Math.PI * 2 * i) / 6;
-                    var fx = 50 + Math.cos(af) * 44, fy = 50 + Math.sin(af) * 44;
-                    fc += '<path d="M50 50L' + fx.toFixed(1) + ' ' + fy.toFixed(1) + 'L' + (50 + Math.cos(af + 1.05) * 30).toFixed(1) + ' ' + (50 + Math.sin(af + 1.05) * 30).toFixed(1) + 'z" fill="' + P + '" opacity=".7"/>';
-                }
-                return ringGroup(P, fc);
-            case 'ember':
-                var em = '';
-                for (i = 0; i < 6; i++) {
-                    var ae = (Math.PI * 2 * i) / 6;
-                    var ex = 50 + Math.cos(ae) * 36, ey = 50 + Math.sin(ae) * 36;
-                    em += '<circle cx="' + ex.toFixed(1) + '" cy="' + ey.toFixed(1) + '" r="2" fill="' + P + '" opacity=".9"/>';
-                }
-                return em;
-            case 'glory':
-                return '<g filter="url(#bkfg-glow)">' +
-                    '<path d="M50 12L42 28L30 28L36 40L28 48L40 44L50 56L60 44L72 48L64 40L70 28L58 28z" fill="' + P + '" opacity=".9"/>' +
-                    '</g>';
-            case 'nebula':
-                return '<g filter="url(#bkfg-blur)">' +
-                    '<circle cx="22" cy="22" r="18" fill="' + P + '" opacity=".25"/>' +
-                    '<circle cx="78" cy="78" r="18" fill="' + S + '" opacity=".25"/>' +
-                    '<circle cx="50" cy="50" r="22" fill="' + P + '" opacity=".15"/>' +
-                    '</g>';
-            case 'seal':
-                return '<path d="M50 16L64 30L50 44L36 30z" fill="' + P + '" stroke="' + S + '" stroke-width="1"/>' +
-                    '<path d="M50 56L64 70L50 84L36 70z" fill="' + P + '" stroke="' + S + '" stroke-width="1"/>' +
-                    '<circle cx="50" cy="50" r="3" fill="' + S + '"/>';
-            case 'tube':
-                var tb = '';
-                for (i = 0; i < 12; i++) {
-                    var at = (Math.PI * 2 * i) / 12;
-                    var tx = 50 + Math.cos(at) * 44, ty = 50 + Math.sin(at) * 44;
-                    tb += '<line x1="50" y1="50" x2="' + tx.toFixed(1) + '" y2="' + ty.toFixed(1) + '" stroke="' + P + '" stroke-width="2.2" stroke-linecap="round" opacity=".7"/>';
-                }
-                return tb;
-            case 'loop':
-                return '<path d="M38 50c-4-6-12-6-15 0s3 10 9 7c5-2 9-8 12-12 3-4 7-10 12-12 6-3 12 1 9 7s-11 10-17 8c-5-2-7-4-10 2z" stroke="' + P + '" stroke-width="2.6" fill="none"/>' +
-                    '<circle cx="23" cy="50" r="2" fill="' + P + '"/><circle cx="77" cy="50" r="2" fill="' + P + '"/>';
-            case 'ice':
-                return '<g stroke="' + P + '" stroke-width="1.2" fill="none" opacity=".8">' +
-                    '<path d="M50 10L46 24L40 24L34 42L28 50L34 58L40 58L46 42L52 42L64 58L70 58L74 42L66 24L60 24L56 10z"/>' +
-                    '<path d="M50 90L54 76L60 76L66 58L72 50L66 42L60 42L54 58L48 58L44 42L38 42L32 58L28 50L34 42L28 24L34 24L38 10z"/>' +
-                    '</g>';
-            case 'ash':
-                var ah = '';
-                for (i = 0; i < 8; i++) {
-                    var aa = (Math.PI * 2 * i) / 8;
-                    var ax = 50 + Math.cos(aa) * 40, ay = 50 + Math.sin(aa) * 40;
-                    ah += '<path d="M' + ax.toFixed(1) + ' ' + ay.toFixed(1) + 'l2 -3' + (i % 2 ? ' -2 3' : ' 2 -3') + '" stroke="' + P + '" stroke-width="1" opacity=".6"/>';
-                }
-                return ah;
             case 'runes':
                 var rn = '';
                 for (i = 0; i < 12; i++) {
@@ -379,12 +266,11 @@
         var NS = 'http://www.w3.org/2000/svg';
         var svg = D.createElementNS(NS, 'svg');
         svg.setAttribute('viewBox', '0 0 100 100');
-        svg.setAttribute('class', 'bk-avatar-frame-svg bk-frame-premium bk-anim-' + (f.animStyle || 'none') + (f.anim ? ' is-animated' : ''));
+        svg.setAttribute('class', 'bk-avatar-frame-svg bk-frame-premium' + (f.anim ? ' is-animated' : ''));
         svg.setAttribute('aria-hidden', 'true');
         svg.setAttribute('focusable', 'false');
         svg.setAttribute('data-frame', f.id);
         svg.setAttribute('data-rarity', f.rarity || 'common');
-        svg.setAttribute('data-anim', f.animStyle || 'none');
         var P = safeColor(f.pc, safeColor(f.ring, '#eab308'));
         var S = safeColor(f.sc, '#7f1d1d');
         var gid = 'bkfg-' + String(f.id).replace(/[^a-z0-9-]/g, '');
@@ -393,7 +279,7 @@
         function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
 
         var inner = '';
-        /* Filters: glow cho glory, blur cho nebula. */
+        /* Gradient + vòng kép: lớp nền dùng chung cho cả 30 khung. */
         inner += '<defs>' +
             '<linearGradient id="' + gid + '" x1="0" y1="0" x2="1" y2="1">' +
             '<stop offset="0" stop-color="' + P + '"/>' +
@@ -405,34 +291,13 @@
             '<stop offset=".62" stop-color="' + P + '" stop-opacity="0"/>' +
             '<stop offset="1" stop-color="' + P + '" stop-opacity=".3"/>' +
             '</radialGradient>' +
-            '<filter id="bkfg-glow" x="-50%" y="-50%" width="200%" height="200%">' +
-            '<feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>' +
-            '<feMerge>' +
-            '<feMergeNode in="coloredBlur"/>' +
-            '<feMergeNode in="SourceGraphic"/>' +
-            '</feMerge>' +
-            '</filter>' +
-            '<filter id="bkfg-blur" x="-50%" y="-50%" width="200%" height="200%">' +
-            '<feGaussianBlur stdDeviation="4" result="coloredBlur"/>' +
-            '<feMerge>' +
-            '<feMergeNode in="coloredBlur"/>' +
-            '<feMergeNode in="SourceGraphic"/>' +
-            '</feMerge>' +
-            '</filter>' +
             '</defs>';
-
-        /* Lớp 1: ánh sáng nội dung (inner glow) - nền mờ phía trong khung. */
-        inner += '<circle cx="50" cy="50" r="44" fill="none" stroke="url(#' + gid + ')" stroke-width="1" opacity=".35"/>';
-
-        /* Lớp 2: vòng khung chính. */
         inner += '<circle cx="50" cy="50" r="48.6" fill="none" stroke="url(#' + gid + ')" stroke-width="1.7" opacity=".95"/>';
         inner += '<circle cx="50" cy="50" r="50.4" fill="none" stroke="' + P + '" stroke-width=".45" opacity=".58"/>';
-
-        /* Lớp 3: quỹ đạo xoay. */
         inner += '<g class="bk-frame-orbit" fill="none" stroke="' + P + '" stroke-linecap="round">' +
             '<circle cx="50" cy="50" r="45.4" stroke-width=".8" stroke-dasharray="1.5 6" opacity=".8"/>' +
             '<circle cx="50" cy="50" r="51.2" stroke-width=".7" stroke-dasharray="10 26" opacity=".55"/>';
-        /* 12 vạch sáng nhỏ. */
+        /* 12 vạch sáng nhỏ, xoay chậm như vòng cơ khí. */
         for (var t = 0; t < 12; t++) {
             var at = (Math.PI * 2 * t) / 12;
             var ax = 50 + Math.cos(at) * 45.4, ay = 50 + Math.sin(at) * 45.4;
@@ -446,21 +311,6 @@
         inner += '<g class="bk-frame-art">';
         f.orn.forEach(function (n) { inner += prim(n, P, S); });
         inner += '</g>';
-
-        /* Lớp 4: aura bên ngoài cho dev/founder. */
-        if (f.tier === 'dev' || f.tier === 'founder') {
-            inner += '<g class="bk-frame-aura" fill="none" stroke="' + P + '" stroke-linecap="round">' +
-                '<ellipse cx="50" cy="50" rx="54" ry="26" transform="rotate(-26 50 50)" stroke-width="1.2" opacity=".8"/>' +
-                '<ellipse cx="50" cy="50" rx="54" ry="26" transform="rotate(26 50 50)" stroke-width="1" opacity=".6"/>' +
-                '<circle cx="50" cy="50" r="48" stroke="' + S + '" stroke-width="2.6" stroke-dasharray="1 14" opacity=".85"/>' +
-                '</g>';
-            if (f.tier === 'founder') {
-                inner += '<g class="bk-frame-crown" fill="' + P + '" stroke="' + S + '" stroke-width="1.1">' +
-                    '<path d="M30 13l4 13 8-11 9 13 9-13 8 11 4-13 3 16H27z"/>' +
-                    '<circle cx="50" cy="10" r="2.6"/>' +
-                    '<circle cx="35" cy="19" r="1.8"/><circle cx="65" cy="19" r="1.8"/></g>';
-            }
-        }
 
         /* Tia sáng / hạt lấp lánh phân bố tất định theo id khung. */
         inner += '<g class="bk-frame-spark" fill="' + P + '">';
@@ -479,6 +329,20 @@
                 'z" opacity="' + (0.45 + rnd() * 0.5).toFixed(2) + '"/>';
         }
         inner += '</g>';
+
+        /* Developer/Founder: thêm quỹ đạo phát sáng để khác biệt rõ. */
+        if (f.tier === 'dev' || f.tier === 'founder') {
+            inner += '<g class="bk-frame-aura" fill="none" stroke="' + P + '" stroke-linecap="round">' +
+                '<ellipse cx="50" cy="50" rx="53" ry="25" transform="rotate(-26 50 50)" stroke-width="1.1" opacity=".75"/>' +
+                '<ellipse cx="50" cy="50" rx="53" ry="25" transform="rotate(26 50 50)" stroke-width="1.1" opacity=".55"/>' +
+                '<circle cx="50" cy="50" r="47" stroke="' + S + '" stroke-width="2.4" stroke-dasharray="1 12" opacity=".8"/>' +
+                '</g>';
+            if (f.tier === 'founder') {
+                inner += '<g class="bk-frame-crown" fill="' + P + '" stroke="' + S + '" stroke-width="1">' +
+                    '<path d="M31 12l4 12 7-10 8 12 8-12 7 10 4-12 2 15H29z"/>' +
+                    '<circle cx="50" cy="9" r="2.4"/></g>';
+            }
+        }
 
         svg.style.setProperty('--bk-frame-glow', P);
         svg.innerHTML = inner;
@@ -819,15 +683,12 @@
         var frame = frameById(opts.showFrame === false ? 'none' : p.frame);
         wrap.setAttribute('data-frame', frame.id);
         wrap.setAttribute('data-tier', frame.tier || 'normal');
-        wrap.setAttribute('data-anim', frame.animStyle || 'none');
         if (p.prefs && p.prefs.animateAvatarBorders === false) {
             wrap.classList.add('bk-frame-static');
         }
         if (frame.id !== 'none') {
             wrap.style.setProperty('--bk-avatar-ring', frame.ring);
-            wrap.style.setProperty('--bk-frame-glow', frame.pc || frame.ring);
             wrap.classList.add('bk-avatar-framed');
-            wrap.classList.add('bk-anim-' + (frame.animStyle || 'none'));
             var art = frameOverlay(frame.id);
             if (art) wrap.appendChild(art);
         }

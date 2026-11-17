@@ -2,12 +2,6 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
-## [7.2.0] — 2026-11-17
-
-### Cải tiến
-
-- **Avatar decoration rework**: viết lại khung viền avatar thành hệ thống multi-layer SVG với glow, depth, sparkle và aura; thêm 22 kiểu hoạ tiết mới (vein, fall, core, bow, jewel, mantle, moon, node, facet, ember, glory, nebula, seal, tube, loop, ice, ash, whisker, tail, fluff, howl); mỗi khung có animStyle riêng (float, pulse, bounce, shimmer, orbit, spin, breathe) và CSS animation tương ứng; ánh sáng neon cho dev/founder frames; glow layer dưới avatar khi hover; frame grid có hover lift, màu viền theo tier, rarity color trên nhãn; preview khung lớn hơn (64px/100px).
-
 ## [7.1.3] — 2026-11-17
 
 ### Sửa lỗi

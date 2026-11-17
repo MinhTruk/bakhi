@@ -369,7 +369,6 @@
             var list = api.framesByTier ? api.framesByTier(t[0]) : api.frames;
             if (!list.length) return;
             var heading = el('div', 'bk-frame-tier', t[1]);
-            heading.setAttribute('data-tier', t[0]);
             grid.appendChild(heading);
             list.forEach(function (f) {
                 var isOwned = owned.indexOf(f.id) !== -1;
@@ -377,11 +376,10 @@
                 cell.type = 'button';
                 cell.setAttribute('data-tier', f.tier || 'normal');
                 cell.setAttribute('aria-pressed', current === f.id ? 'true' : 'false');
-                var rarity = rarityMeta(f.rarity);
-                cell.setAttribute('title', f.name + ' · ' + rarity.name +
+                cell.setAttribute('title', f.name + ' · ' + rarityMeta(f.rarity).name +
                     (isOwned ? ' · đã sở hữu' : ' · ấn để xem cách mở khoá'));
                 var badge = b ? b.CATALOG.filter(function (x) { return x.frame === f.id; })[0] : null;
-                var prev = api.avatarNode({ size: 64, showFrame: false });
+                var prev = api.avatarNode({ size: 46, showFrame: false });
                 if (f.id !== 'none') {
                     prev.classList.add('bk-avatar-framed');
                     prev.setAttribute('data-tier', f.tier || 'normal');
@@ -396,9 +394,7 @@
                     cell.appendChild(lock);
                 }
                 cell.appendChild(prev);
-                var label = el('span', 'bk-frame-label', f.name);
-                label.style.color = rarity.color || 'var(--bkl-muted)';
-                cell.appendChild(label);
+                cell.appendChild(el('span', 'bk-frame-label', f.name));
                 cell.addEventListener('click', function () {
                     if (!isOwned) {
                         openFrameDetail(f, badge, false);
@@ -424,7 +420,7 @@
 
     function framePreview(f, size) {
         var api = P();
-        var prev = api.avatarNode({ size: size || 100, showFrame: false });
+        var prev = api.avatarNode({ size: size || 84, showFrame: false });
         if (f.id !== 'none') {
             prev.classList.add('bk-avatar-framed');
             prev.setAttribute('data-tier', f.tier || 'normal');
