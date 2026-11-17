@@ -43,6 +43,13 @@ html.dark *::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 18
     --bkl-font-scale: 1;
 }
 
+/* Mọi khung trong lớp giao diện dùng border-box: input/textarea/button rộng
+   100% sẽ nằm gọn trong thẻ thay vì tràn ra vì padding + viền. */
+.bk-app,
+.bk-app *,
+.bk-app *::before,
+.bk-app *::after { box-sizing: border-box; }
+
 html.dark {
     --bkl-text: #e2e8f0;
     --bkl-muted: #94a3b8;

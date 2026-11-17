@@ -88,7 +88,9 @@ function bootClient(seedSignals, seedProfile) {
   w.BK = {
     ui: { toast() {} },
     signals: {
-      get() { return JSON.parse(w.localStorage.getItem('bakhiSignals.v1') || '{}'); }
+      get() { return JSON.parse(w.localStorage.getItem('bakhiSignals.v1') || '{}'); },
+      bump() { },
+      setMax() { }
     },
     store: { get() { return JSON.parse(w.localStorage.getItem('bakhiLearn.v1') || '{}'); } }
   };

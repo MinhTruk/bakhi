@@ -115,6 +115,11 @@ ok('menu đúng thứ tự mục bắt buộc',
 ok('menu có Chat trỏ tới /chat/ đã tồn tại', !!menu.querySelector('a[href$="chat/"]'));
 const chatCount = idoc.getElementById('bkMenuChatCount');
 const shellCss = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-shell.css'), 'utf8');
+const coreCss = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-core.css'), 'utf8');
+const settingsCss = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-settings.css'), 'utf8');
+ok('lớp giao diện dùng border-box để input không tràn', /\.bk-app \*[^{]*\{[^}]*box-sizing:\s*border-box/.test(coreCss));
+ok('tab Cài đặt chuyển lưới trên máy nhỏ', /\.bk-set-nav\s*\{[^}]*grid-template-columns:\s*repeat\(2/.test(settingsCss));
+ok('nút xác thực không bị kéo full width', /\.bk-auth-box \.bk-btn\s*\{[^}]*flex:\s*0 0 auto/.test(settingsCss));
 const avatarDot = idoc.querySelector('#bkUserBtn .bk-user-dot');
 ok('chấm đỏ bám đúng khung avatar', !!avatarDot && avatarDot.parentNode.classList.contains('bk-user-avatar-wrap'));
 ok('badge Chat không tràn khỏi hàng menu', /\.bk-menu-row\s*\{[^}]*box-sizing:\s*border-box/.test(shellCss) &&

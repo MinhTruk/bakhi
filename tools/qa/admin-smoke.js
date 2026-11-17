@@ -362,13 +362,13 @@ const CHANGELOG = [{
   ok('bucket chat chỉ nhận ảnh ≤ 3 MB', /chat-images/.test(migration) && /3145728/.test(migration) &&
     /image\/png/.test(migration) && /image\/jpeg/.test(migration) && /image\/webp/.test(migration) && /image\/gif/.test(migration));
 
-  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=6\.1\.6/.test(adminPage));
-  ok('trang admin dùng dashboard 6.1.6', /bk-admin-dashboard\.css\?v=6\.1\.6/.test(adminPage) &&
-    /bk-devboard\.js\?v=6\.1\.6/.test(adminPage));
+  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=6\.1\.7/.test(adminPage));
+  ok('trang admin dùng dashboard 6.1.7', /bk-admin-dashboard\.css\?v=6\.1\.7/.test(adminPage) &&
+    /bk-devboard\.js\?v=6\.1\.7/.test(adminPage));
 
   const founderPage = read('founder/index.html');
   ok('có trang Founder Dashboard riêng', /BK_DASH_SCOPE\s*=\s*["']founder/.test(founderPage) &&
-    /bk-devboard\.js\?v=6\.1\.6/.test(founderPage) && /founderLogin/.test(founderPage));
+    /bk-devboard\.js\?v=6\.1\.7/.test(founderPage) && /founderLogin/.test(founderPage));
   ok('Founder Dashboard có quyền cấp trọn bộ và bảo trì', /founder\.grantAll/.test(read('assets/bakhi/bk-devboard.js')) &&
     /FOUNDER_ONLY/.test(adminActions) && /founder_config/.test(read('supabase/functions/admin-auth/index.ts')));
   ok('migration 6.0.0 tạo founder_config và scope', /founder_config/.test(read('supabase/migrations/20261122000000_bakhi_founder_6.sql')) &&
@@ -384,6 +384,10 @@ const CHANGELOG = [{
   ok('không có service-role key hay token JWT trong client', leaks.length === 0, leaks.join(' | '));
   ok('không lưu Administrator Code vào localStorage', !/localStorage\.setItem\([^)]*adminCode/i.test(read('assets/bakhi/bk-devboard.js')));
   const dashCss = read('assets/bakhi/bk-admin-dashboard.css');
+  const adminCss = read('assets/bakhi/bk-admin.css');
+  ok('thẻ đăng nhập toàn màn hình trên điện thoại',
+    /@media \(max-width: 640px\)[\s\S]*?\.bkadm-card\s*\{[^}]*min-height:\s*100dvh/.test(adminCss) &&
+    /body\.bkadm,[\s\S]*?box-sizing:\s*border-box/.test(adminCss));
   ok('popup dashboard có nền đục và token màu riêng',
     /\.bkc-modal\s*\{[^}]*--bkc-panel:\s*#ffffff/.test(dashCss) &&
     /\.bkc-sheet\s*\{[^}]*background:\s*var\(--bkc-panel,\s*#ffffff\)/.test(dashCss) &&

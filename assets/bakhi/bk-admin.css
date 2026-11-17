@@ -46,6 +46,11 @@ html:not(.dark) body.bkadm {
     --adm-grid: rgba(100, 116, 139, .08);
 }
 
+body.bkadm,
+body.bkadm *,
+body.bkadm *::before,
+body.bkadm *::after { box-sizing: border-box; }
+
 body.bkadm {
     margin: 0;
     min-height: 100dvh;
@@ -443,9 +448,25 @@ html:not(.dark) body.bkadm .bkadm-foot a { color: #4f46e5; }
 .bkadm-statusline.is-ok .dot { background: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, .16); }
 .bkadm-statusline.is-error .dot { background: #f43f5e; box-shadow: 0 0 0 3px rgba(244, 63, 94, .16); }
 
+/* Trên điện thoại, thẻ đăng nhập chiếm trọn màn hình thay vì lơ lửng. */
+@media (max-width: 640px) {
+    body.bkadm { padding: 0; align-items: stretch; }
+    .bkadm-card {
+        width: 100%;
+        max-width: none;
+        min-height: 100dvh;
+        max-height: none;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+        padding: calc(1.1rem + env(safe-area-inset-top, 0px)) 1.1rem
+                 calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    }
+    .bkadm-card::before { border-radius: 0; }
+}
+
 @media (max-width: 420px) {
-    body.bkadm { padding: .9rem; }
-    .bkadm-card { padding: 1.45rem 1.2rem 1.15rem; border-radius: 20px; max-height: calc(100dvh - 1rem); }
+    .bkadm-card { padding: 1.15rem .95rem calc(1.1rem + env(safe-area-inset-bottom, 0px)); }
     .bkadm-card .bkadm-sub { margin-bottom: 1rem; }
     .bkadm-card .bkadm-field { margin-bottom: .75rem; }
     .bkadm-card .bkadm-msg { margin-top: .65rem; }

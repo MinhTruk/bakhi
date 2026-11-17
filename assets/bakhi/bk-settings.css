@@ -42,6 +42,8 @@
 
 .bk-set-panel[hidden] { display: none; }
 .bk-set-panel {
+    min-width: 0;
+    overflow-wrap: anywhere;
     border: 1px solid var(--bkl-line);
     border-radius: var(--bkl-radius);
     background: var(--bkl-surface);
@@ -180,9 +182,10 @@ html.dark .bk-wall-preview > span { background: rgba(15, 23, 42, .65); color: #e
     max-width: 100%;
     margin-top: .65rem;
 }
-.bk-auth-box input { flex: 1 1 12rem; min-width: 0; max-width: 100%; }
+.bk-auth-box input { flex: 1 1 12rem; min-width: 0; width: 100%; max-width: 100%; }
 .bk-auth-box .bk-btn {
-    flex: 1 1 12rem;
+    flex: 0 0 auto;
+    width: auto;
     max-width: 100%;
     min-height: 2.4rem;
     padding: .55rem .95rem;
@@ -197,6 +200,22 @@ html.dark .bk-wall-preview > span { background: rgba(15, 23, 42, .65); color: #e
     .bk-auth-box { flex-direction: column; align-items: stretch; }
     .bk-auth-box input,
     .bk-auth-box .bk-btn { width: 100%; flex: 1 1 auto; }
+}
+
+/* Tab Cài đặt thành lưới trên máy nhỏ để không bị cắt chữ ở mép phải. */
+@media (max-width: 720px) {
+    .bk-set-nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        overflow: visible;
+    }
+    .bk-set-tab { white-space: normal; text-align: left; }
+    .bk-set-panel { padding: 1rem .95rem 1.1rem; }
+}
+@media (max-width: 420px) {
+    .bk-set-nav { gap: .2rem; padding: .25rem; }
+    .bk-set-tab { padding: .45rem .55rem; font-size: .75rem; }
+    .bk-set-panel { padding: .9rem .8rem 1rem; }
 }
 .bk-auth-msg { font-size: .74rem; margin-top: .45rem; min-height: 1.1rem; }
 .bk-auth-msg.err { color: #e11d48; }

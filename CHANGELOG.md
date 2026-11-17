@@ -2,6 +2,25 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [6.1.7] — 2026-11-16
+
+### Sửa lỗi
+
+- **Không còn tràn khung nhập**: toàn bộ lớp giao diện dùng `border-box`, nên ô
+  Founder Code, Dev Code, mật khẩu và các nút rộng 100% nằm gọn trong thẻ thay vì
+  cộng thêm padding/viền ra ngoài.
+- **Đăng nhập toàn màn hình trên điện thoại**: thẻ đăng nhập Administrator/Founder
+  chiếm trọn chiều rộng và chiều cao màn hình, có chừa vùng an toàn tai thỏ.
+- **Nút Founder gọn lại**: nút xác thực không còn bị kéo giãn bằng ô nhập; trên
+  điện thoại vẫn xếp dọc và rộng bằng khung.
+
+### Cải tiến
+
+- **Cài đặt theo thiết bị**: tab Cài đặt chuyển thành lưới 2 cột trên máy nhỏ,
+  không còn bị cắt chữ ở mép phải; thẻ nội dung giảm padding trên màn hình hẹp.
+- Sửa tràn ngang giúp trang không bị đẩy lệch, kéo theo các nút nổi như Music
+  Player không còn bị cắt ở mép trái.
+
 ## [6.1.6] — 2026-11-16
 
 ### Cải tiến
