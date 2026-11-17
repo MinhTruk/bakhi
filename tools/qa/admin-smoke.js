@@ -209,8 +209,8 @@ const CHANGELOG = [{
     const selects = grantBox ? Array.from(grantBox.querySelectorAll('select')) : [];
     const select = selects.find((s) => Array.from(s.options).some((o) => o.value === 'admin-chosen'));
     const values = select ? Array.from(select.options).map((o) => o.value) : [];
-    ok('ô chọn có 75 badge thường (3 badge độc quyền thuộc Founder)', values.length === 75 &&
-      ['admin-chosen', 'admin-legend', 'learn-first-lesson'].every((id) => values.includes(id)) &&
+    ok('ô chọn có 76 badge thường (13 badge độc quyền Founder/Dev bị lọc)', values.length === 76 &&
+      ['admin-chosen', 'admin-legend', 'learn-first-lesson', 'ke-suu-tam'].every((id) => values.includes(id)) &&
       !values.includes('dev-exclusive-aurora') && !values.includes('founder'), String(values.length));
     ok('nêu rõ tách biệt badge tự động và trao tay', /TÁCH BIỆT/.test(D.querySelector('.bkc-pane').textContent));
 
@@ -366,13 +366,13 @@ const CHANGELOG = [{
   ok('bucket chat chỉ nhận ảnh ≤ 3 MB', /chat-images/.test(migration) && /3145728/.test(migration) &&
     /image\/png/.test(migration) && /image\/jpeg/.test(migration) && /image\/webp/.test(migration) && /image\/gif/.test(migration));
 
-  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=7\.1\.0/.test(adminPage));
-  ok('trang admin dùng dashboard 7.1.0', /bk-admin-dashboard\.css\?v=7\.1\.0/.test(adminPage) &&
-    /bk-devboard\.js\?v=7\.1\.0/.test(adminPage));
+  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=7\.4\.0/.test(adminPage));
+  ok('trang admin dùng dashboard 7.4.0', /bk-admin-dashboard\.css\?v=7\.4\.0/.test(adminPage) &&
+    /bk-devboard\.js\?v=7\.4\.0/.test(adminPage));
 
   const founderPage = read('founder/index.html');
   ok('có trang Founder Dashboard riêng', /BK_DASH_SCOPE\s*=\s*["']founder/.test(founderPage) &&
-    /bk-devboard\.js\?v=7\.1\.0/.test(founderPage) && /founderLogin/.test(founderPage));
+    /bk-devboard\.js\?v=7\.4\.0/.test(founderPage) && /founderLogin/.test(founderPage));
   ok('Founder Dashboard có quyền cấp trọn bộ và bảo trì', /founder\.grantAll/.test(read('assets/bakhi/bk-devboard.js')) &&
     /FOUNDER_ONLY/.test(adminActions) && /founder_config/.test(read('supabase/functions/admin-auth/index.ts')));
   ok('migration 6.0.0 tạo founder_config và scope', /founder_config/.test(read('supabase/migrations/20261122000000_bakhi_founder_6.sql')) &&

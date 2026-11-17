@@ -2,6 +2,31 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.4.0] — 2026-11-17
+
+### Tính năng
+
+- **Founder Dashboard: tìm người nhận trực quan** — nhập một phần tên để tìm học sinh, hiển thị avatar/tên hiển thị/username trong kết quả gợi ý, tự động xác định User ID nội bộ. Không yêu cầu nhập UUID thủ công.
+- **Founder Dashboard: trao badge và khung avatar** — bộ chọn loại vật phẩm (Badge, Khung avatar, Badge Founder, Khung Founder), danh sách tải tự động từ danh mục, xem trước trước khi xác nhận, hỗ trợ trạng thái thành công/thất bại/đã sở hữu/không đủ quyền.
+- **Founder Dashboard: cấp trọn bộ 89 badge + toàn bộ khung** cho hồ sơ Founder Minh Trúc (is_founder = true), idempotent, ghi vào `admin_grant_history`.
+- **Founder Dashboard: trao toàn bộ badge đồng bộ** — Trao tất cả badge có thể tặng cho một học sinh, tự động loại trừ 13 badge độc quyền (founder + 10 founder-* + 2 dev-exclusive).
+- **Founder Dashboard: tự động cấp badge đạt được** — Kiểm tra điều kiện thành tích, chỉ cấp badge đủ điều kiện, loại trừ badge chỉ nhận qua trao tặng, báo cáo chi tiết (mới cấp / đã sở hữu / chưa đủ điều kiện / bị loại trừ).
+- **Lịch sử cấp vật phẩm** — bảng `admin_grant_history` ghi nhận người trao, người nhận, vật phẩm, thời gian, lý do; xem được trong Founder Dashboard.
+- **Backend: action `avatar.grant`, `founder.grantItem`, `admin.grantHistory`, `admin.items.list`, `students.search`** trong `admin-actions`; kiểm tra quyền Founder ở máy chủ trước mọi thao tác.
+- **Backend: `founder.grantAll` cấp 89 badge** (bao gồm `ke-suu-tam` + 10 founder-badge mới), không còn giới hạn ở 78.
+
+### Cải tiến
+
+- Sửa lỗi `renderFounder`: `el` và `cloud` chưa định dạng gây ReferenceError.
+- Sửa `isExclusiveBadge` nhận diện đúng 11 badge Founder-exclusive (`founder-*`).
+- Số khung avatar hiển thị động thay vì cứng 30.
+- `ALL_BADGE_IDS` bổ sung `ke-suu-tam` và 10 badge founder-*.
+
+### Sửa lỗi
+
+- `gen-badge-catalog.js` và `badge-catalog.ts` bổ sung trường `exclusive` để máy chủ phân biệt badge Founder/Dev/Admin.
+- Migration `20261129000000_bakhi_v740_founder_badge_frame.sql`: bảng `admin_grant_history`, hỗ trợ ghi khung avatar vào `student_profiles.frame`.
+
 ## [7.3.0] — 2026-11-17
 
 ### Cải tiến

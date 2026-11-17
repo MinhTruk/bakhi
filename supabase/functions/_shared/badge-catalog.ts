@@ -14,6 +14,7 @@ export interface BadgeDef {
     metric: string | null;
     frame: string | null;
     admin_only: boolean;
+    exclusive: string | null;
 }
 
 export const BADGE_CATALOG: BadgeDef[] = [
@@ -27,7 +28,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "lessons",
         "frame": "leaf",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "learn-lessons-5",
@@ -39,7 +41,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 5,
         "metric": "lessons",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "learn-lessons-15",
@@ -51,7 +54,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 15,
         "metric": "lessons",
         "frame": "celestial",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "learn-lessons-30",
@@ -63,7 +67,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 30,
         "metric": "lessons",
         "frame": "wreath",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "learn-subjects-3",
@@ -75,7 +80,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 3,
         "metric": "subjects",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "learn-subjects-5",
@@ -87,7 +93,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 5,
         "metric": "subjects",
         "frame": "divine",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "learn-first-answer",
@@ -99,7 +106,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "practice",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "learn-practice-25",
@@ -111,7 +119,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 25,
         "metric": "practice",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "learn-practice-100",
@@ -123,7 +132,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 100,
         "metric": "practice",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "learn-practice-500",
@@ -135,7 +145,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 500,
         "metric": "practice",
         "frame": "royal",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "learn-correct-15",
@@ -147,7 +158,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 15,
         "metric": "correct",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "learn-correct-100",
@@ -159,7 +171,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 100,
         "metric": "correct",
         "frame": "infernal",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "learn-review-first",
@@ -171,7 +184,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "review",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "learn-mastered-10",
@@ -183,7 +197,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 10,
         "metric": "mastered",
         "frame": "legendary",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "explore-pages-5",
@@ -195,7 +210,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 5,
         "metric": "pages",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "explore-pages-20",
@@ -207,7 +223,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 20,
         "metric": "pages",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "explore-pages-50",
@@ -219,7 +236,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 50,
         "metric": "pages",
         "frame": "sakura",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "explore-studio",
@@ -231,7 +249,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "studioVisited",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "explore-settings",
@@ -243,7 +262,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "settingsVisited",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "explore-profile",
@@ -255,7 +275,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "profileVisited",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "explore-palette",
@@ -267,7 +288,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "palette",
         "frame": "ancient",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "explore-search",
@@ -279,7 +301,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "searchUsed",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "explore-theme",
@@ -291,7 +314,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "themeToggles",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "explore-badges",
@@ -303,7 +327,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "badgesViewed",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "consist-days-2",
@@ -315,7 +340,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 2,
         "metric": "days",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "consist-days-3",
@@ -327,7 +353,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 3,
         "metric": "days",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "consist-days-7",
@@ -339,7 +366,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 7,
         "metric": "days",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "consist-days-14",
@@ -351,7 +379,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 14,
         "metric": "days",
         "frame": "eternal",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "consist-days-30",
@@ -363,7 +392,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 30,
         "metric": "days",
         "frame": "sunflower",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "consist-streak-3",
@@ -375,7 +405,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 3,
         "metric": "streak",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "consist-streak-7",
@@ -387,7 +418,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 7,
         "metric": "streak",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "consist-streak-30",
@@ -399,7 +431,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 30,
         "metric": "streak",
         "frame": "crown",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "music-first",
@@ -411,7 +444,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "musicPlays",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "music-10",
@@ -423,7 +457,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 10,
         "metric": "musicPlays",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "music-50",
@@ -435,7 +470,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 50,
         "metric": "musicPlays",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "music-200",
@@ -447,7 +483,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 200,
         "metric": "musicPlays",
         "frame": "ear-cat",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "music-tracks-5",
@@ -459,7 +496,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 5,
         "metric": "musicTracks",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "music-shuffle",
@@ -471,7 +509,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "shuffleUsed",
         "frame": "neon",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "music-repeat",
@@ -483,7 +522,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "repeatUsed",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "music-queue",
@@ -495,7 +535,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "queueUsed",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "music-same-20",
@@ -507,7 +548,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 20,
         "metric": "sameTrack",
         "frame": "ear-fox",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "inter-first-effect",
@@ -519,7 +561,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "meteors",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "inter-meteor-10",
@@ -531,7 +574,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 10,
         "metric": "meteors",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "inter-meteor-100",
@@ -543,7 +587,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 100,
         "metric": "meteors",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "inter-meteor-1000",
@@ -555,7 +600,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1000,
         "metric": "meteors",
         "frame": "star",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "inter-meteor-10000",
@@ -567,7 +613,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 10000,
         "metric": "meteors",
         "frame": "horn-dragon",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "inter-music-fab",
@@ -579,7 +626,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "musicOpened",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "inter-focus",
@@ -591,7 +639,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "focusUsed",
         "frame": "cyber",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "inter-dark-mode",
@@ -603,7 +652,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "themeToggles",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "social-nickname",
@@ -615,7 +665,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "profileNickname",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "social-avatar",
@@ -627,7 +678,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "profileAvatar",
         "frame": "leaf",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "social-banner",
@@ -639,7 +691,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "profileBanner",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "social-bio",
@@ -651,7 +704,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "profileBio",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "social-links-2",
@@ -663,7 +717,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 2,
         "metric": "profileLinks",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "social-frame",
@@ -675,7 +730,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "profileFrame",
         "frame": "ear-bunny",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "studio-doc",
@@ -687,7 +743,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "studioDocs",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "studio-drawing",
@@ -699,7 +756,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "studioDrawings",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "studio-insert",
@@ -711,7 +769,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "studioInserts",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "studio-export",
@@ -723,7 +782,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "studioExports",
         "frame": "phoenix",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "studio-words-500",
@@ -735,7 +795,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 500,
         "metric": "studioWords",
         "frame": "crystal",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "studio-docs-5",
@@ -747,7 +808,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 5,
         "metric": "studioDocs",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "studio-drawings-5",
@@ -759,7 +821,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 5,
         "metric": "studioDrawings",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "studio-exports-10",
@@ -771,7 +834,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 10,
         "metric": "studioExports",
         "frame": "antler",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "secret-night-owl",
@@ -783,7 +847,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "nightOwl",
         "frame": "star",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "secret-early-bird",
@@ -795,7 +860,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": "earlyBird",
         "frame": "frost",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "secret-subjects-all",
@@ -807,7 +873,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 10,
         "metric": "subjects",
         "frame": "sakura",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "secret-notes-100",
@@ -819,7 +886,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 100,
         "metric": "notes",
         "frame": "wreath",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "secret-bookmarks-50",
@@ -831,7 +899,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 50,
         "metric": "bookmarks",
         "frame": "gothic",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "secret-mastered-50",
@@ -843,7 +912,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 50,
         "metric": "mastered",
         "frame": "ear-wolf",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "secret-one-subject-10",
@@ -855,7 +925,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 10,
         "metric": "lessonsOneSubject",
         "frame": "galactic",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "secret-collector-40",
@@ -867,7 +938,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 40,
         "metric": "unlockedCount",
         "frame": "sunflower",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "secret-collector-60",
@@ -879,7 +951,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 60,
         "metric": "unlockedCount",
         "frame": "horn-dragon",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "secret-completionist",
@@ -891,7 +964,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 73,
         "metric": "unlockedCount",
         "frame": "crown",
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "ke-suu-tam",
@@ -903,7 +977,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 75,
         "metric": "unlockedCount",
         "frame": null,
-        "admin_only": false
+        "admin_only": false,
+        "exclusive": null
     },
     {
         "id": "admin-chosen",
@@ -915,7 +990,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "star",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": null
     },
     {
         "id": "admin-legend",
@@ -927,7 +1003,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "crown",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": null
     },
     {
         "id": "dev-exclusive-aurora",
@@ -939,7 +1016,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "dev-aurora",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": "dev"
     },
     {
         "id": "dev-exclusive-void",
@@ -951,7 +1029,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "dev-void",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": "dev"
     },
     {
         "id": "founder",
@@ -963,7 +1042,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "founder",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": "founder"
     },
     {
         "id": "founder-yin-yang",
@@ -975,7 +1055,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "founder-yin-yang",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": "founder"
     },
     {
         "id": "founder-cyberpunk",
@@ -987,7 +1068,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "founder-cyberpunk",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": "founder"
     },
     {
         "id": "founder-ancient",
@@ -999,7 +1081,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "founder-ancient",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": "founder"
     },
     {
         "id": "founder-samurai",
@@ -1011,7 +1094,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "founder-samurai",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": "founder"
     },
     {
         "id": "founder-void-emperor",
@@ -1023,7 +1107,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "founder-void-emperor",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": "founder"
     },
     {
         "id": "founder-celestial-dragon",
@@ -1035,7 +1120,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "founder-celestial-dragon",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": "founder"
     },
     {
         "id": "founder-golden-ratio",
@@ -1047,7 +1133,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "founder-golden-ratio",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": "founder"
     },
     {
         "id": "founder-ember-core",
@@ -1059,7 +1146,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "founder-ember-core",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": "founder"
     },
     {
         "id": "founder-crystal-mind",
@@ -1071,7 +1159,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "founder-crystal-mind",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": "founder"
     },
     {
         "id": "founder-neon-lotus",
@@ -1083,7 +1172,8 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "goal": 1,
         "metric": null,
         "frame": "founder-neon-lotus",
-        "admin_only": true
+        "admin_only": true,
+        "exclusive": "founder"
     }
 ];
 

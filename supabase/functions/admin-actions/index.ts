@@ -168,6 +168,16 @@ const CATEGORIES = ['features', 'improvements', 'fixes', 'ui', 'performance', 's
 const BADGE_ID_RE = /^[a-z0-9][a-z0-9-]{2,63}$/;
 const FOUNDER_BADGE_ID = 'founder';
 const DEV_BADGE_IDS = ['dev-exclusive-aurora', 'dev-exclusive-void'];
+/* 13 badge độc quyền tuyệt đối không được trao tặng hàng loạt (bulk gift).
+   Gồm: founder (1) + founder-* (10) + dev-exclusive-* (2). admin-chosen và
+   admin-legend KHÔNG nằm trong danh sách này (được trao tay Administrator). */
+const EXCLUSIVE_BADGE_IDS = [
+    FOUNDER_BADGE_ID,
+    'founder-yin-yang', 'founder-cyberpunk', 'founder-ancient', 'founder-samurai',
+    'founder-void-emperor', 'founder-celestial-dragon', 'founder-golden-ratio',
+    'founder-ember-core', 'founder-crystal-mind', 'founder-neon-lotus',
+    'dev-exclusive-aurora', 'dev-exclusive-void'
+];
 const ALL_BADGE_IDS = [
     "learn-first-lesson",
     "learn-lessons-5",
@@ -242,6 +252,10 @@ const ALL_BADGE_IDS = [
     "secret-collector-40",
     "secret-collector-60",
     "secret-completionist",
+    "ke-suu-tam",
+    "founder-yin-yang", "founder-cyberpunk", "founder-ancient", "founder-samurai",
+    "founder-void-emperor", "founder-celestial-dragon", "founder-golden-ratio",
+    "founder-ember-core", "founder-crystal-mind", "founder-neon-lotus",
     "admin-chosen",
     "admin-legend",
     "dev-exclusive-aurora",
@@ -300,8 +314,9 @@ Deno.serve(async (req) => {
     /* Các mô-đun tối mật chỉ Founder mở được; Administrator thường bị chặn
        ngay ở máy chủ, không phụ thuộc giao diện. */
     const founderOnly = new Set([
-        'roles.set', 'founder.grantAll', 'students.export', 'logs.export', 'data.integrity',
-        'maintenance.history'
+        'roles.set', 'founder.grantAll', 'founder.grantItem', 'avatar.grant',
+        'students.export', 'logs.export', 'data.integrity', 'maintenance.history',
+        'admin.grantHistory'
     ]);
     if (founderOnly.has(action) && scope !== 'founder') {
         return fail(403, 'FOUNDER_ONLY', 'Chức năng này chỉ dành cho Founder Dashboard.');
@@ -388,6 +403,30 @@ Deno.serve(async (req) => {
                     total: count ?? (data ?? []).length,
                     offset,
                     students: (data ?? []).map((s) => ({ ...s, last_sync_at: sync[s.id] ?? null }))
+                });
+            }
+
+            /* Tìm học sinh nhẹ cho Founder chọn người nhận (gợi ý autocomplete). */
+            case 'students.search': {
+                const q = normalizeName(str(body.q, 80));
+                const limit = Math.min(20, Math.max(1, Number(body.limit) || 8));
+                let query = client.from('students')
+                    .select('id, display_name, disambiguator, student_code, avatar_url, is_active')
+                    .order('display_name', { ascending: true })
+                    .limit(limit);
+                if (q) query = query.ilike('normalized_name', `%${q}%`);
+                const { data, error } = await query;
+                if (error) throw error;
+                return json({
+                    ok: true,
+                    students: (data ?? []).map((s) => ({
+                        id: s.id,
+                        display_name: s.display_name,
+                        disambiguator: s.disambiguator || '',
+                        student_code: s.student_code || '',
+                        avatar_url: s.avatar_url || '',
+                        is_active: !!s.is_active
+                    }))
                 });
             }
 
@@ -707,12 +746,11 @@ Deno.serve(async (req) => {
                 if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
                 if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
 
-                /* Badge Founder và toàn bộ badge Developer độc quyền không bao
-                   giờ nằm trong "cấp trọn bộ", kể cả khi gọi API trực tiếp. */
-                const excluded = ALL_BADGE_IDS.filter(
-                    (b) => b === FOUNDER_BADGE_ID || b.startsWith('dev-exclusive-')
-                );
-                const grantable = ALL_BADGE_IDS.filter((b) => !excluded.includes(b));
+                /* 13 badge độc quyền KHÔNG bao giờ nằm trong "cấp trọn bộ",
+                   kể cả khi gọi API trực tiếp. admin-chosen và admin-legend
+                   vẫn có thể trao vì chúng thuộc Administrator, không phải Founder
+                   / Developer độc quyền. */
+                const grantable = ALL_BADGE_IDS.filter((b) => !EXCLUSIVE_BADGE_IDS.includes(b));
 
                 const { data: existing, error: existError } = await client
                     .from('student_badges').select('badge_id').eq('student_id', id);
@@ -721,7 +759,7 @@ Deno.serve(async (req) => {
                 const missing = grantable.filter((b) => !owned.has(b));
 
                 const nowIso = new Date().toISOString();
-                const reason = 'Cấp trọn bộ thành tích (trừ Founder/Developer)';
+                const reason = 'Cấp toàn bộ badge đồng bộ (trừ 13 badge độc quyền)';
                 const failed: string[] = [];
                 let added = 0;
                 for (let i = 0; i < missing.length; i += 40) {
@@ -745,7 +783,7 @@ Deno.serve(async (req) => {
                     added,
                     alreadyOwned: grantable.length - missing.length,
                     failed: failed.length,
-                    excluded
+                    excluded: EXCLUSIVE_BADGE_IDS
                 });
                 return json({
                     ok: failed.length === 0,
@@ -753,7 +791,8 @@ Deno.serve(async (req) => {
                     added,
                     alreadyOwned: grantable.length - missing.length,
                     failed,
-                    excluded
+                    excluded: EXCLUSIVE_BADGE_IDS,
+                    totalGrantable: grantable.length
                 });
             }
 
@@ -1559,6 +1598,7 @@ Deno.serve(async (req) => {
                         'Không tìm thấy hồ sơ Hứa Viết Minh Trúc. Hãy kiểm tra họ tên trong bảng students.');
                 }
                 const nowIso = new Date().toISOString();
+                /* Cấp toàn bộ 89 badge, bao gồm cả Founder-exclusive và Developer. */
                 const rows = ALL_BADGE_IDS.map((badgeId) => ({
                     student_id: founder.id,
                     badge_id: badgeId,
@@ -1569,8 +1609,18 @@ Deno.serve(async (req) => {
                     reason: 'Founder: cấp toàn bộ badge và khung'
                 }));
                 const { error: gErr } = await client.from('student_badges')
-                    .upsert(rows, { onConflict: 'student_id,badge_id' });
+                    .upsert(rows, { onConflict: 'student_id,badge_id', ignoreDuplicates: false });
                 if (gErr) throw gErr;
+                /* Cập nhật khung avatar mặc định trong profile nếu chưa có khung founder. */
+                const { data: profile } = await client
+                    .from('student_profiles').select('frame').eq('student_id', founder.id).maybeSingle();
+                if (!profile || !profile.frame) {
+                    await client.from('student_profiles').upsert({
+                        student_id: founder.id,
+                        frame: 'founder',
+                        updated_at: nowIso
+                    }, { onConflict: 'student_id' });
+                }
                 await client.from('student_roles').upsert({
                     student_id: founder.id,
                     role_key: 'founder',
@@ -1675,6 +1725,152 @@ Deno.serve(async (req) => {
                     checks,
                     issues: checks.filter((c) => c.status !== 'ok').length
                 });
+            }
+
+            /* ------------------- Founder: trao một vật phẩm (badge/frame) -------- */
+            case 'founder.grantItem': {
+                if (scope !== 'founder') {
+                    return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder mới được trao vật phẩm.');
+                }
+                const targetId = str(body.id, 40);
+                const itemType = str(body.item_type, 20);
+                const itemId = str(body.item_id, 64);
+                const reason = cleanDisplayName(body.reason).slice(0, 200);
+                if (!targetId) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                if (!itemType || !['badge', 'frame'].includes(itemType)) {
+                    return fail(400, 'BAD_ITEM_TYPE', 'item_type phải là badge hoặc frame.');
+                }
+                if (!itemId || !BADGE_ID_RE.test(itemId)) {
+                    return fail(400, 'BAD_ITEM_ID', 'Mã vật phẩm không hợp lệ.');
+                }
+                const { data: target } = await client
+                    .from('students').select('id, is_active, is_founder').eq('id', targetId).maybeSingle();
+                if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+                if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
+
+                if (itemType === 'badge') {
+                    /* Founder badge chỉ cấp cho hồ sơ is_founder = true. */
+                    const isFounderExclusive = itemId === FOUNDER_BADGE_ID ||
+                        itemId.startsWith('founder-');
+                    if (isFounderExclusive && target.is_founder !== true) {
+                        return fail(403, 'FOUNDER_ONLY',
+                            'Badge Founder chỉ được cấp cho hồ sơ Người sáng lập.');
+                    }
+                    /* Developer badge cũng chỉ Founder cấp được. */
+                    if (DEV_BADGE_IDS.includes(itemId) && scope !== 'founder') {
+                        return fail(403, 'FOUNDER_ONLY',
+                            'Badge Developer chỉ Founder mới được trao.');
+                    }
+                    const { error } = await client.from('student_badges').upsert({
+                        student_id: targetId,
+                        badge_id: itemId,
+                        kind: 'admin',
+                        manual_granted: true,
+                        awarded_at: new Date().toISOString(),
+                        awarded_by: sessionId,
+                        reason
+                    }, { onConflict: 'student_id,badge_id', ignoreDuplicates: false });
+                    if (error) throw error;
+                } else {
+                    /* Cấp khung avatar: ghi vào student_profiles.frame. */
+                    const { error } = await client.from('student_profiles').upsert({
+                        student_id: targetId,
+                        frame: itemId,
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'student_id' });
+                    if (error) throw error;
+                }
+
+                await logAction(client, 'founder.grantItem', 'student', targetId, {
+                    item_type: itemType, item_id: itemId, reason
+                });
+                return json({ ok: true, studentId: targetId, item_type: itemType, item_id: itemId });
+            }
+
+            /* ------------------- Founder: trao khung avatar (alias) -------------- */
+            case 'avatar.grant': {
+                if (scope !== 'founder') {
+                    return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder mới được trao khung avatar.');
+                }
+                const targetId = str(body.student_id, 40);
+                const frameId = str(body.frame_id, 64);
+                const reason = cleanDisplayName(body.reason).slice(0, 200);
+                if (!targetId) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                if (!frameId || !BADGE_ID_RE.test(frameId)) {
+                    return fail(400, 'BAD_FRAME_ID', 'Mã khung không hợp lệ.');
+                }
+                const { data: target } = await client
+                    .from('students').select('id, is_active').eq('id', targetId).maybeSingle();
+                if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+                if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
+                const { error } = await client.from('student_profiles').upsert({
+                    student_id: targetId,
+                    frame: frameId,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'student_id' });
+                if (error) throw error;
+                await logAction(client, 'avatar.grant', 'student', targetId, {
+                    item_type: 'frame', item_id: frameId, reason
+                });
+                return json({ ok: true, studentId: targetId, frame_id: frameId });
+            }
+
+            /* ------------------- Xem lịch sử cấp vật phẩm ------------------------ */
+            case 'admin.grantHistory': {
+                if (scope !== 'founder') {
+                    return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder mới xem lịch sử cấp.');
+                }
+                const limit = Math.min(100, Math.max(1, Number(body.limit) || 50));
+                const offset = Math.max(0, Number(body.offset) || 0);
+                const { data, error, count } = await client
+                    .from('admin_grant_history')
+                    .select('id, actor_scope, target_student, item_type, item_id, item_name, reason, created_at')
+                    .order('created_at', { ascending: false })
+                    .range(offset, offset + limit - 1);
+                if (error) throw error;
+                return json({ ok: true, total: count ?? (data ?? []).length, offset, history: data ?? [] });
+            }
+
+            /* ------------------- Danh sách vật phẩm có thể trao ------------------ */
+            case 'admin.items.list': {
+                if (scope !== 'founder') {
+                    return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder mới xem danh sách vật phẩm.');
+                }
+                const type = str(body.type, 20);
+                if (type === 'badge' || !type) {
+                    /* Trả về danh mục badge từ file tĩnh (đã nạp trong admin-actions qua BKCloud?).
+                       Ở đây chỉ trả về ID + tên từ ALL_BADGE_IDS kèm phân loại. */
+                    const badges = ALL_BADGE_IDS.map((bid) => ({
+                        id: bid,
+                        type: 'badge',
+                        exclusive: EXCLUSIVE_BADGE_IDS.includes(bid),
+                        founderOnly: bid === FOUNDER_BADGE_ID || bid.startsWith('founder-') ||
+                            DEV_BADGE_IDS.includes(bid)
+                    }));
+                    return json({ ok: true, items: badges, total: badges.length });
+                }
+                if (type === 'frame') {
+                    /* Danh sách khung avatar từ 39 ánh xạ badge→frame + none/leaf. */
+                    const frameIds = [
+                        'none', 'leaf', 'wreath', 'sakura', 'sunflower', 'crown', 'star',
+                        'horn-dragon', 'ear-bunny', 'antler', 'ear-wolf', 'celestial', 'divine',
+                        'royal', 'infernal', 'legendary', 'eternal', 'neon', 'cyber', 'ancient',
+                        'phoenix', 'crystal', 'frost', 'gothic', 'galactic', 'ear-cat', 'ear-fox',
+                        'dev-aurora', 'dev-void', 'founder',
+                        'founder-yin-yang', 'founder-cyberpunk', 'founder-ancient',
+                        'founder-samurai', 'founder-void-emperor', 'founder-celestial-dragon',
+                        'founder-golden-ratio', 'founder-ember-core', 'founder-crystal-mind',
+                        'founder-neon-lotus'
+                    ];
+                    const frames = frameIds.map((fid) => ({
+                        id: fid,
+                        type: 'frame',
+                        founderOnly: fid.startsWith('founder-') || fid === 'founder',
+                        devOnly: fid.startsWith('dev-')
+                    }));
+                    return json({ ok: true, items: frames, total: frames.length });
+                }
+                return fail(400, 'BAD_ITEM_TYPE', 'type phải là badge hoặc frame.');
             }
 
             default:

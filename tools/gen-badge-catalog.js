@@ -53,7 +53,8 @@ function main() {
     goal: x.goal,
     metric: x.key || null,
     frame: x.frame || null,
-    admin_only: !!x.adminOnly
+    admin_only: !!x.adminOnly,
+    exclusive: x.exclusive || null
   }));
 
   const auto = rows.filter((r) => !r.admin_only).length;
@@ -75,6 +76,7 @@ export interface BadgeDef {
     metric: string | null;
     frame: string | null;
     admin_only: boolean;
+    exclusive: string | null;
 }
 
 export const BADGE_CATALOG: BadgeDef[] = ${JSON.stringify(rows, null, 4)};
