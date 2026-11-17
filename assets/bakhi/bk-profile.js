@@ -67,16 +67,16 @@
         { id: 'dev-void', name: 'Vô Cực Hư Không', tier: 'dev', rarity: 'secret', ring: '#c084fc', pc: '#e9d5ff', sc: '#6d28d9', orn: ['void', 'spikes', 'runes'], anim: true },
         { id: 'founder', name: 'Thiên Khải Sáng Thế', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#b91c1c', orn: ['founderCrown', 'wings', 'laurel', 'gem', 'sigil'], anim: true },
         /* 10 khung Founder độc quyền — chỉ Người sáng lập mới trao được. */
-        { id: 'founder-dragon-soul', name: 'Hồn Long Thiên T', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#b91c1c', orn: ['ring', 'crown', 'wings', 'sigil'], anim: true },
-        { id: 'founder-phoenix-rebirth', name: 'Phượng Sinh', tier: 'founder', rarity: 'secret', ring: '#ef4444', pc: '#f87171', sc: '#7f1d1d', orn: ['ring', 'wings', 'flames', 'sigil'], anim: true },
-        { id: 'founder-white-tiger', name: 'Bạch Hổ', tier: 'founder', rarity: 'secret', ring: '#f8fafc', pc: '#e2e8f0', sc: '#1e293b', orn: ['ring', 'spikes', 'sigil'], anim: true },
-        { id: 'founder-black-tortoise', name: 'Huyền Vũ', tier: 'founder', rarity: 'secret', ring: '#0f172a', pc: '#38bdf8', sc: '#0c4a6e', orn: ['ring', 'orbit', 'crystal'], anim: true },
-        { id: 'founder-kirin', name: 'Kì Lân', tier: 'founder', rarity: 'secret', ring: '#22c55e', pc: '#86efac', sc: '#166534', orn: ['ring', 'antlers', 'wings', 'sigil'], anim: true },
-        { id: 'founder-jade-seal', name: 'Chiếu Ngọc', tier: 'founder', rarity: 'secret', ring: '#10b981', pc: '#34d399', sc: '#065f46', orn: ['ring', 'crown', 'gem', 'sigil'], anim: true },
-        { id: 'founder-moon-palace', name: 'Cung Tiên', tier: 'founder', rarity: 'secret', ring: '#c084fc', pc: '#e9d5ff', sc: '#6d28d9', orn: ['ring', 'halo', 'stars', 'orbit'], anim: true },
-        { id: 'founder-mountain-peak', name: 'Đỉnh Sơn', tier: 'founder', rarity: 'secret', ring: '#94a3b8', pc: '#cbd5e1', sc: '#334155', orn: ['ring', 'spikes', 'rays', 'sigil'], anim: true },
-        { id: 'founder-divine-sword', name: 'Thần Kiếm', tier: 'founder', rarity: 'secret', ring: '#22d3ee', pc: '#67e8f9', sc: '#155e75', orn: ['ring', 'rays', 'sigil'], anim: true },
-        { id: 'founder-lotus-throne', name: 'Sen Điểm', tier: 'founder', rarity: 'secret', ring: '#f472b6', pc: '#f9a8d4', sc: '#9d174d', orn: ['ring', 'petals', 'laurel', 'sigil'], anim: true }
+        { id: 'founder-yin-yang', name: 'Âm Dương Thái Cực', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#b91c1c', orn: ['ring', 'yinyang', 'sigil'], anim: true },
+        { id: 'founder-cyberpunk', name: 'Sát Thủ Tương Lai', tier: 'founder', rarity: 'secret', ring: '#22d3ee', pc: '#06b6d4', sc: '#0c4a6e', orn: ['ring', 'cyber', 'spikes', 'sigil'], anim: true },
+        { id: 'founder-ancient', name: 'Cổ Khí Thần Ấn', tier: 'founder', rarity: 'secret', ring: '#d6d3d1', pc: '#e7e5e4', sc: '#44403c', orn: ['ring', 'ancient-rune', 'sigil'], anim: true },
+        { id: 'founder-samurai', name: 'Bushido', tier: 'founder', rarity: 'secret', ring: '#ef4444', pc: '#f87171', sc: '#7f1d1d', orn: ['ring', 'sword', 'spikes', 'sigil'], anim: true },
+        { id: 'founder-void-emperor', name: 'Vô Cực Hoàng Đế', tier: 'founder', rarity: 'secret', ring: '#0f172a', pc: '#c084fc', sc: '#6d28d9', orn: ['ring', 'void', 'stars', 'sigil'], anim: true },
+        { id: 'founder-celestial-dragon', name: 'Thiên Long', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#facc15', sc: '#a16207', orn: ['ring', 'horns', 'wings', 'sigil'], anim: true },
+        { id: 'founder-golden-ratio', name: 'Vàng Nguyên Tắc', tier: 'founder', rarity: 'secret', ring: '#f59e0b', pc: '#fbbf24', sc: '#92400e', orn: ['ring', 'orbit', 'halo', 'stars'], anim: true },
+        { id: 'founder-ember-core', name: 'Lòng Nôc', tier: 'founder', rarity: 'secret', ring: '#fb7185', pc: '#fda4af', sc: '#881337', orn: ['ring', 'flames', 'ember-core', 'sigil'], anim: true },
+        { id: 'founder-crystal-mind', name: 'Tinh Thần Tinh Thạch', tier: 'founder', rarity: 'secret', ring: '#38bdf8', pc: '#7dd3fc', sc: '#0c4a6e', orn: ['ring', 'crystal', 'halo', 'sigil'], anim: true },
+        { id: 'founder-neon-lotus', name: 'Sen Neon', tier: 'founder', rarity: 'secret', ring: '#e879f9', pc: '#f0abfc', sc: '#701a75', orn: ['ring', 'petals', 'neon-lotus', 'sigil'], anim: true }
     ];
 
     function frameById(id) {
@@ -266,6 +266,56 @@
             case 'earsWolf':
                 return '<path d="M22 34L20 4l26 18zM78 34l2-30-26 18z" fill="' + P + '" stroke="' + S + '" stroke-width="1.5"/>' +
                     '<path d="M30 30l-3-13 12 9zM70 30l3-13-12 9z" fill="' + S + '"/>';
+            /* Yin-yang: vòng tròn chia đôi đen trắng với hai mắt nhỏ. */
+            case 'yinyang':
+                return '<g fill="' + S + '"><circle cx="50" cy="50" r="20"/></g>' +
+                    '<g fill="' + P + '"><circle cx="50" cy="50" r="18"/><circle cx="50" cy="32" r="4" fill="' + S + '"/><circle cx="50" cy="68" r="4" fill="' + S + '"/></g>' +
+                    '<circle cx="50" cy="32" r="1.5" fill="' + P + '"/><circle cx="50" cy="68" r="1.5" fill="' + P + '"/>';
+            /* Cyberpunk: đường mạch neon, port, kết nối tương lai. */
+            case 'cyber':
+                var cy = '';
+                for (i = 0; i < 8; i++) {
+                    var ac = (Math.PI * 2 * i) / 8;
+                    var cx1 = 50 + Math.cos(ac) * 30, cy1 = 50 + Math.sin(ac) * 30;
+                    var cx2 = 50 + Math.cos(ac) * 45, cy2 = 50 + Math.sin(ac) * 45;
+                    cy += '<line x1="' + cx1.toFixed(1) + '" y1="' + cy1.toFixed(1) + '" x2="' + cx2.toFixed(1) + '" y2="' + cy2.toFixed(1) + '" stroke="' + P + '" stroke-width="2" stroke-linecap="round"/>';
+                }
+                return '<g fill="none" stroke="' + P + '" stroke-width="1.5">' +
+                    '<rect x="20" y="20" width="60" height="60" rx="4"/>' +
+                    '<circle cx="50" cy="50" r="2"/>' +
+                    cy +
+                    '</g>' +
+                    '<g fill="' + S + '"><circle cx="30" cy="30" r="1.5"/><circle cx="70" cy="30" r="1.5"/><circle cx="30" cy="70" r="1.5"/><circle cx="70" cy="70" r="1.5"/></g>';
+            /* Sword: hình kiếm thẳng đứng (samurai). */
+            case 'sword':
+                return '<g fill="none" stroke="' + P + '" stroke-width="2.5" stroke-linecap="round">' +
+                    '<line x1="50" y1="14" x2="50" y2="86"/>' +
+                    '<path d="M42 18 L50 12 L58 18 M42 82 L50 88 L58 82"/>' +
+                    '</g>' +
+                    '<g fill="' + S + '"><circle cx="50" cy="16" r="2"/><circle cx="50" cy="84" r="2"/></g>';
+            /* Ancient-rune: phù lục cổ thời xưa. */
+            case 'ancient-rune':
+                var ar = '';
+                for (i = 0; i < 12; i++) {
+                    var aa = (Math.PI * 2 * i) / 12;
+                    var arx = 50 + Math.cos(aa) * 38, ary = 50 + Math.sin(aa) * 38;
+                    ar += '<path d="M' + (arx - 1.5).toFixed(1) + ' ' + (ary - 1.5).toFixed(1) + 'l3 3M' + (arx + 1.5).toFixed(1) + ' ' + (ary - 1.5).toFixed(1) + 'l-3 3"/>';
+                }
+                return '<g fill="none" stroke="' + P + '" stroke-width="1.5"><circle cx="50" cy="50" r="40"/></g>' +
+                    '<g fill="' + S + '">' + ar + '<circle cx="50" cy="50" r="3"/></g>';
+            /* Ember-core: ngọn lửa πυρί ở trung tâm. */
+            case 'ember-core':
+                return '<g fill="' + P + '" opacity=".9"><path d="M50 20 Q40 30 50 40 Q60 30 50 20 Z"/><path d="M50 28 Q42 40 50 50 Q58 40 50 28 Z"/></g>' +
+                    '<g fill="' + S + '" opacity=".6"><circle cx="50" cy="35" r="3"/><circle cx="50" cy="35" r="6" opacity=".3"/></g>';
+            /* Neon-lotus: hoa sen bằng ánh neon. */
+            case 'neon-lotus':
+                var nl = '';
+                for (i = 0; i < 8; i++) {
+                    var na = (Math.PI * 2 * i) / 8;
+                    var nlx = 50 + Math.cos(na) * 34, nly = 50 + Math.sin(na) * 34;
+                    nl += '<path d="M50 50 Q' + nlx.toFixed(1) + ' ' + nly.toFixed(1) + ' 50 50" stroke="' + P + '" stroke-width="3" fill="none"/>';
+                }
+                return nl + '<circle cx="50" cy="50" r="4" fill="' + S + '"/>';
         }
         return '';
     }

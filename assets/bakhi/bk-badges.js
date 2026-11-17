@@ -371,66 +371,66 @@
             frame: 'founder', adminOnly: true, exclusive: 'founder'
         },
         /* 10 badge Founder độc quyền — mỗi badge kèm theo một khung avatar Founder.
-           Chỉ Founder được trao tay, không tự động mở. */
+            Chỉ Founder được trao tay, không tự động mở. */
         {
-            id: 'founder-dragon-soul', name: 'Hồn Long Thiên T',
-            desc: 'Khung Hồn Long Thiên T độc bản, chỉ Founder có thể trao.',
-            icon: 'fa-dragon', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: 'founder-dragon-soul', adminOnly: true, exclusive: 'founder'
+            id: 'founder-yin-yang', name: 'Âm Dương Thái Cực',
+            desc: 'Khung Âm Dương Thái Cực độc bản, chỉ Founder có thể trao.',
+            icon: 'fa-yin-yang', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-yin-yang', adminOnly: true, exclusive: 'founder'
         },
         {
-            id: 'founder-phoenix-rebirth', name: 'Phượng Sinh',
-            desc: 'Khung Phượng Sinh độc bản, chỉ Founder có thể trao.',
-            icon: 'fa-fire', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: 'founder-phoenix-rebirth', adminOnly: true, exclusive: 'founder'
+            id: 'founder-cyberpunk', name: 'Sát Thủ Tương Lai',
+            desc: 'Khung Sát Thủ Tương Lai độc bản, chỉ Founder có thể trao.',
+            icon: 'fa-robot', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-cyberpunk', adminOnly: true, exclusive: 'founder'
         },
         {
-            id: 'founder-white-tiger', name: 'Bạch Hổ',
-            desc: 'Khung Bạch Hổ độc bản, chỉ Founder có thể trao.',
-            icon: 'fa-cat', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: 'founder-white-tiger', adminOnly: true, exclusive: 'founder'
+            id: 'founder-ancient', name: 'Cổ Khí Thần Ấn',
+            desc: 'Khung Cổ Khí Thần Ấn độc bản, chỉ Founder có thể trao.',
+            icon: 'fa-scroll', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-ancient', adminOnly: true, exclusive: 'founder'
         },
         {
-            id: 'founder-black-tortoise', name: 'Huyền Vũ',
-            desc: 'Khung Huyền Vũ độc bản, chỉ Founder có thể trao.',
-            icon: 'fa-shelter', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: 'founder-black-tortoise', adminOnly: true, exclusive: 'founder'
-        },
-        {
-            id: 'founder-kirin', name: 'Kì Lân',
-            desc: 'Khung Kì Lân độc bản, chỉ Founder có thể trao.',
-            icon: 'fa-unicorn', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: 'founder-kirin', adminOnly: true, exclusive: 'founder'
-        },
-        {
-            id: 'founder-jade-seal', name: 'Chiếu Ngọc',
-            desc: 'Khung Chiếu Ngọc độc bản, chỉ Founder có thể trao.',
-            icon: 'fa-seal', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: 'founder-jade-seal', adminOnly: true, exclusive: 'founder'
-        },
-        {
-            id: 'founder-moon-palace', name: 'Cung Tiên',
-            desc: 'Khung Cung Tiên độc bản, chỉ Founder có thể trao.',
-            icon: 'fa-moon', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: 'founder-moon-palace', adminOnly: true, exclusive: 'founder'
-        },
-        {
-            id: 'founder-mountain-peak', name: 'Đỉnh Sơn',
-            desc: 'Khung Đỉnh Sơn độc bản, chỉ Founder có thể trao.',
-            icon: 'fa-mountain', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: 'founder-mountain-peak', adminOnly: true, exclusive: 'founder'
-        },
-        {
-            id: 'founder-divine-sword', name: 'Thần Kiếm',
-            desc: 'Khung Thần Kiếm độc bản, chỉ Founder có thể trao.',
+            id: 'founder-samurai', name: 'Bushido',
+            desc: 'Khung Bushido độc bản, chỉ Founder có thể trao.',
             icon: 'fa-sword', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: 'founder-divine-sword', adminOnly: true, exclusive: 'founder'
+            frame: 'founder-samurai', adminOnly: true, exclusive: 'founder'
         },
         {
-            id: 'founder-lotus-throne', name: 'Sen Điểm',
-            desc: 'Khung Sen Điểm độc bản, chỉ Founder có thể trao.',
+            id: 'founder-void-emperor', name: 'Vô Cực Hoàng Đế',
+            desc: 'Khung Vô Cực Hoàng Đế độc bản, chỉ Founder có thể trao.',
+            icon: 'fa-circle-notch', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-void-emperor', adminOnly: true, exclusive: 'founder'
+        },
+        {
+            id: 'founder-celestial-dragon', name: 'Thiên Long',
+            desc: 'Khung Thiên Long độc bản, chỉ Founder có thể trao.',
+            icon: 'fa-dragon', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-celestial-dragon', adminOnly: true, exclusive: 'founder'
+        },
+        {
+            id: 'founder-golden-ratio', name: 'Vàng Nguyên Tắc',
+            desc: 'Khung Vàng Nguyên Tắc độc bản, chỉ Founder có thể trao.',
+            icon: 'fa-compass', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-golden-ratio', adminOnly: true, exclusive: 'founder'
+        },
+        {
+            id: 'founder-ember-core', name: 'Lòng Nôc',
+            desc: 'Khung Lòng Nôc độc bản, chỉ Founder có thể trao.',
+            icon: 'fa-fire', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-ember-core', adminOnly: true, exclusive: 'founder'
+        },
+        {
+            id: 'founder-crystal-mind', name: 'Tinh Thần Tinh Thạch',
+            desc: 'Khung Tinh Thần Tinh Thạch độc bản, chỉ Founder có thể trao.',
+            icon: 'fa-gem', category: 'secret', rarity: 'secret', goal: 1, key: null,
+            frame: 'founder-crystal-mind', adminOnly: true, exclusive: 'founder'
+        },
+        {
+            id: 'founder-neon-lotus', name: 'Sen Neon',
+            desc: 'Khung Sen Neon độc bản, chỉ Founder có thể trao.',
             icon: 'fa-lotus', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: 'founder-lotus-throne', adminOnly: true, exclusive: 'founder'
+            frame: 'founder-neon-lotus', adminOnly: true, exclusive: 'founder'
         }
     ];
 

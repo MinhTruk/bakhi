@@ -2,6 +2,14 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.3.0] — 2026-11-17
+
+### Cải tiến
+
+- **Vai trò học sinh mới**: Hứa Viết Minh Trúc chỉ còn 'Người sáng lập'; Trần Văn Bách, Võ Mai Phương, Trương Lê Bảo Hân là 'Lớp Phó'; Phấn, Trâm, Trần Lê Gia Huy, Khoa là 'Tổ Trưởng'.
+- **10 khung Founder-exclusive mới**: Âm Dương Thái Cực (yin-yang), Sát Thủ Tương Lai (cyberpunk), Cổ Khí Thần Ấn, Bushido (samurai), Vô Cực Hoàng Đế, Thiên Long, Vàng Nguyên Tắc, Lòng Nôc, Tinh Thần Tinh Thạch, Sen Neon — mỗi khung có SVG multi-layer và animation riêng.
+- **10 badge Founder-exclusive mới** kèm theo từng khung founder, chỉ Founder được trao tay.
+
 ## [7.1.3] — 2026-11-17
 
 ### Sửa lỗi
