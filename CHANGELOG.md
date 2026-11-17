@@ -2,6 +2,12 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.1.3] — 2026-11-17
+
+### Sửa lỗi
+
+- **Chat: chấm chưa đọc vẫn hiện sau F5 reload**: trong `openRoom`, tính toán `unread` từ dữ liệu local (`S.messages` so với `last_read_at` của chính mình) ngay sau khi `messages.list` trả về, trước khi gọi `markRead`; UI phản ánh ngay lập tức không cần đợi API `read.mark` hoàn tất.
+
 ## [7.1.2] — 2026-11-17
 
 ### Sửa lỗi

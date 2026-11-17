@@ -847,8 +847,30 @@
                 (S.reactions[key] = S.reactions[key] || []).push(r);
             });
             rememberCards(S.messages.map(function (m) { return m.sender; }));
+            /* Tính toán tin chưa đọc của phòng hiện tại từ dữ liệu local để UI
+               phản ánh ngay lập tức khi mở phòng (bao gồm cả khi reload/F5),
+               không cần đợi API read.mark hoàn tất. */
+            var me = S.me && S.me.student_id;
+            var myReadAt = 0;
+            S.members.forEach(function (m) {
+                if (m && String(m.student_id) === String(me)) {
+                    var at = Date.parse(m.last_read_at || '');
+                    if (Number.isFinite(at) && at > myReadAt) myReadAt = at;
+                }
+            });
+            var unread = 0;
+            (S.messages || []).forEach(function (m) {
+                if (m && String(m.student_id) !== String(me)) {
+                    var at = Date.parse(m && m.created_at);
+                    if (Number.isFinite(at) && at > myReadAt) unread++;
+                }
+            });
+            var curRoom = findRoom(id);
+            if (curRoom) curRoom.unread = unread;
             renderHead();
             renderThread();
+            renderRooms();
+            paintUnread();
             /* Thiết lập theo dõi hiển thị tin nhắn sau khi DOM đã vẽ. */
             setupReadTracking(id);
             markRead();
