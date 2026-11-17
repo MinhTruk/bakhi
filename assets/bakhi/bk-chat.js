@@ -25,7 +25,10 @@
         members: [], cards: {}, totalUnread: 0, maxGroup: 10,
         channel: null, client: null, filter: '', showArchived: false,
         replyTo: null, readTimer: null, readSeq: 0, readPending: false, lastReadSent: {},
-        presenceTimer: null, searchTimer: null, destroyed: false
+        readGen: 0, readActiveRoom: null, readVisible: false, readAtBottom: false,
+        readObserver: null, readPendingGen: null, readPendingThrough: null,
+        readRetryCount: 0, destroyed: false,
+        presenceTimer: null, searchTimer: null
     };
 
     /* Đúng 12 cảm xúc máy chủ chấp nhận (chat-api). Giữ khớp tuyệt đối để
@@ -379,8 +382,12 @@
             if (hit) showCard(String(hit.getAttribute('data-profile')));
         });
         on(D.getElementById('bkChatMessages'), 'scroll', function () {
-            if (!S.active) return;
-            if (S.readPending || nearBottom()) markRead();
+            if (!S.active || !S.readActiveRoom) return;
+            nearBottom();
+            if (S.readAtBottom) {
+                var through = newestMessageAt();
+                if (through) scheduleReadThrough(through);
+            }
         });
         on(D.getElementById('bkChatRooms'), 'click', function (e) {
             var row = e.target.closest ? e.target.closest('[data-room]') : null;
@@ -798,6 +805,16 @@
     function openRoom(id) {
         var room = findRoom(id);
         if (!room) return;
+        /* Dọn dẹp theo dõi phòng cũ trước khi chuyển phòng mới. */
+        teardownReadTracking();
+        S.readGen++;
+        S.readActiveRoom = id;
+        S.readVisible = chatVisible();
+        S.readAtBottom = false;
+        S.readPendingGen = null;
+        S.readPendingThrough = null;
+        S.readRetryCount = 0;
+
         S.active = room;
         if (S.root) {
             (S.shell || S.root).classList.add('is-thread');
@@ -832,11 +849,74 @@
             rememberCards(S.messages.map(function (m) { return m.sender; }));
             renderHead();
             renderThread();
+            /* Thiết lập theo dõi hiển thị tin nhắn sau khi DOM đã vẽ. */
+            setupReadTracking(id);
             markRead();
             pingPresence();
         }).catch(function (err) {
             if (S.active && S.active.id === id) renderNotice(errorText(err));
         });
+    }
+
+    /* ---------------------------------------------------------------------
+       Theo dõi hiển thị tin nhắn (IntersectionObserver).
+       Phân biệt: đã tải → đã hiển thị trong viewport → người dùng đã xem.
+       ------------------------------------------------------------------ */
+    function setupReadTracking(roomId) {
+        teardownReadTracking();
+        var box = D.getElementById('bkChatMessages');
+        if (!box || !global.IntersectionObserver) return;
+        S.readObserver = new global.IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                var target = entry.target;
+                if (!target || !target.getAttribute) return;
+                var msgId = target.getAttribute('data-message');
+                if (!msgId) return;
+                var m = S.messages.find(function (x) { return String(x.id) === String(msgId); });
+                if (!m) return;
+                /* Tin nhắn của người khác vừa hiện ra trong viewport → xem như đã đọc. */
+                if (S.me && String(m.student_id) !== String(S.me.student_id)) {
+                    scheduleReadThrough(m.created_at);
+                }
+            });
+        }, { root: box, rootMargin: '0px 0px 100px 0px', threshold: 0.01 });
+        /* Quan sát các tin nhắn đã render. */
+        box.querySelectorAll('[data-message]').forEach(function (node) {
+            S.readObserver.observe(node);
+        });
+    }
+
+    function teardownReadTracking() {
+        if (S.readObserver) {
+            try { S.readObserver.disconnect(); } catch (e) { }
+            S.readObserver = null;
+        }
+        clearTimeout(S.readTimer);
+        S.readTimer = null;
+        S.readPendingGen = null;
+        S.readPendingThrough = null;
+        S.readRetryCount = 0;
+    }
+
+    function scheduleReadThrough(through) {
+        if (!S.active || !S.readActiveRoom) return;
+        /* Không gửi trùng mốc cùng phòng. */
+        if (S.readPendingThrough === through && S.readPendingGen === S.readGen) return;
+        S.readPendingThrough = through;
+        S.readPendingGen = S.readGen;
+        clearTimeout(S.readTimer);
+        S.readTimer = setTimeout(function () {
+            if (S.readPendingGen !== S.readGen) return;
+            markReadThrough(through, false);
+        }, 300);
+    }
+
+    function cancelPendingRead() {
+        clearTimeout(S.readTimer);
+        S.readTimer = null;
+        S.readPendingGen = null;
+        S.readPendingThrough = null;
     }
 
     function newestMessageAt() {
@@ -854,66 +934,93 @@
         return raw;
     }
 
-    /* Chỉ đánh dấu đã đọc khi tab đang hiện, cửa sổ đang được chú ý và người
-       dùng đang ở gần cuối khung tin nhắn. Tin đến khi họ đang đọc phía trên
-       sẽ chờ tới lúc cuộn xuống đáy. Mốc gửi lên luôn là chuỗi created_at gốc
-       của tin cuối đã tải (PostgreSQL microseconds), không phải giờ máy.
-       immediate = bấm nút thủ công; notify = hiện xác nhận. */
-    function chatVisible() {
-        if (D.visibilityState === 'hidden') return false;
-        try {
-            if (typeof D.hasFocus === 'function' && !D.hasFocus()) return false;
-        } catch (e) { }
-        return true;
-    }
+    /* Chỉ đánh dấu đã đọc khi tab đang hiện, cửa sổ đang được chú ý, phòng
+   này là phòng đang mở, và tin nhắn đã được tải xong. Cập nhật cờ
+   S.readVisible để các hàm khác (scroll, IntersectionObserver) có thể dùng. */
+function chatVisible() {
+    var vis = D.visibilityState === 'visible';
+    var focus = true;
+    try {
+        if (typeof D.hasFocus === 'function') focus = D.hasFocus();
+    } catch (e) { focus = true; }
+    S.readVisible = vis && focus && !!S.active && !!S.readActiveRoom;
+    return S.readVisible;
+}
 
-    function nearBottom() {
-        var box = D.getElementById('bkChatMessages');
-        if (!box) return true;
-        /* jsdom không có layout (clientHeight = 0) → coi như đang ở đáy. */
-        if (!box.clientHeight) return true;
-        return (box.scrollHeight - box.scrollTop - box.clientHeight) <= 80;
-    }
+/* Cập nhật cờ S.readAtBottom dựa trên vị trí cuộn khung tin nhắn. */
+function nearBottom() {
+    var box = D.getElementById('bkChatMessages');
+    if (!box) { S.readAtBottom = true; return true; }
+    if (!box.clientHeight) { S.readAtBottom = true; return true; }
+    var at = (box.scrollHeight - box.scrollTop - box.clientHeight) <= 80;
+    S.readAtBottom = at;
+    return at;
+}
 
-    function markRead(immediate, notify) {
-        if (!S.active) return;
-        var roomId = S.active.id;
-        var through = newestMessageAt();
-        if (!through) return;
-        if (!immediate && !chatVisible()) return;
-        if (!immediate && !nearBottom()) {
-            S.readPending = true;
-            return;
-        }
-        /* Không gọi lại đúng một mốc đã gửi thành công. */
-        if (!immediate && S.lastReadSent[roomId] === through) return;
-        S.readPending = false;
+/* Gọi API đánh dấu đã đọc lên mốc `through` (chuỗi created_at gốc).
+   immediate = bấm nút thủ công, bypass kiểm tra vị trí cuộn.
+   notify = hiện toast sau khi thành công.
+   Có retry an toàn (tối đa 3 lần) nếu mạng lỗi. */
+function markReadThrough(through, immediate, notify) {
+    if (!S.active || !S.readActiveRoom) return;
+    if (!through) return;
+    var roomId = S.active.id;
+    var gen = S.readGen;
+    /* Generation token: hủy nếu đã chuyển phòng khác. */
+    if (gen !== S.readPendingGen && S.readPendingGen !== null) return;
+    if (!immediate) {
+        if (!chatVisible()) return;
+        if (!nearBottom()) return; /* Chờ sự kiện scroll lần sau. */
+    }
+    /* Idempotent: không gửi lại mốc đã gửi thành công. */
+    if (!immediate && S.lastReadSent[roomId] === through) return;
+    var previous = S.active.last_read_at || null;
+    var attempt = 0;
+    var maxAttempts = 3;
+    var send = function () {
+        if (S.readGen !== gen) return;
+        api({ action: 'read.mark', room_id: roomId, through: through }).then(function (data) {
+            if (S.readGen !== gen) return;
+            var room = findRoom(roomId);
+            if (!room) return;
+            room.unread = 0;
+            room.last_read_at = (data && data.last_read_at) || through;
+            S.lastReadSent[roomId] = through;
+            S.readRetryCount = 0;
+            updateMemberRead(roomId, S.me && S.me.student_id, room.last_read_at);
+            renderRooms();
+            paintUnread();
+            updateMarkReadButton();
+            if (notify) toast('Đã đánh dấu đã đọc.', 'success');
+        }).catch(function (err) {
+            if (S.readGen !== gen) return;
+            attempt++;
+            if (attempt < maxAttempts) {
+                var delay = Math.min(10000, 500 * Math.pow(2, attempt - 1));
+                S.readRetryCount = attempt;
+                setTimeout(send, delay);
+                return;
+            }
+            S.readRetryCount = 0;
+            var room = findRoom(roomId);
+            if (room) room.last_read_at = previous;
+            if (notify) toast('Không đánh dấu được đã đọc. Thử lại sau.', 'error');
+        });
+    };
+    if (immediate) send();
+    else {
         clearTimeout(S.readTimer);
-        var seq = ++S.readSeq;
-        var previous = S.active.last_read_at || null;
-        var send = function () {
-            api({ action: 'read.mark', room_id: roomId, through: through }).then(function (data) {
-                if (seq !== S.readSeq) return;
-                var room = findRoom(roomId);
-                if (!room) return;
-                room.unread = 0;
-                room.last_read_at = (data && data.last_read_at) || through;
-                S.lastReadSent[roomId] = through;
-                updateMemberRead(roomId, S.me && S.me.student_id, room.last_read_at);
-                renderRooms();
-                paintUnread();
-                updateMarkReadButton();
-                if (notify) toast('Đã đánh dấu đã đọc.', 'success');
-            }).catch(function () {
-                if (seq !== S.readSeq) return;
-                var room = findRoom(roomId);
-                if (room) room.last_read_at = previous;
-                if (notify) toast('Không đánh dấu được đã đọc. Thử lại sau.', 'error');
-            });
-        };
-        if (immediate) send();
-        else S.readTimer = setTimeout(send, 400);
+        S.readTimer = setTimeout(send, 200);
     }
+}
+
+/* Giữ tên gọi cũ cho nút bấm thủ công: đánh dấu hết tin trong phòng hiện tại. */
+function markRead(immediate, notify) {
+    if (!S.active || !S.readActiveRoom) return;
+    var through = newestMessageAt();
+    if (!through) return;
+    markReadThrough(through, immediate !== false, notify);
+}
 
     /* Nút đánh dấu đã đọc ở đầu hội thoại chỉ là biểu tượng ✓✓; khi phòng
        không còn tin chưa đọc thì chuyển sang màu xanh và đổi nhãn trợ năng. */
@@ -978,15 +1085,23 @@
         S.presenceTimer = setTimeout(tick, 60000);
         D.addEventListener('visibilitychange', function () {
             if (D.visibilityState === 'visible') {
-                if (S.active) {
+                chatVisible();
+                if (S.active && S.readActiveRoom) {
                     pingPresence();
-                    markRead();
+                    var through = newestMessageAt();
+                    if (through) markReadThrough(through, false);
                 }
+            } else {
+                S.readVisible = false;
             }
         });
-        /* Quay lại cửa sổ sau khi xem tab khác: đánh dấu đã đọc nếu đang ở đáy. */
+        /* Quay lại cửa sổ sau khi xem tab khác: đánh dấu đã đọc nếu đủ điều kiện. */
         global.addEventListener('focus', function () {
-            if (S.active) markRead();
+            chatVisible();
+            if (S.active && S.readActiveRoom) {
+                var through = newestMessageAt();
+                if (through) markReadThrough(through, false);
+            }
         });
     }
 
@@ -1321,6 +1436,7 @@
             box.appendChild(day);
         }
         box.appendChild(messageNode(message, prev, S.me && S.me.student_id));
+        if (S.readObserver) S.readObserver.observe(box.lastElementChild);
         scrollBottom();
     }
 
@@ -1730,7 +1846,9 @@
                         ensureSender(row).then(function (message) {
                             if (!message) return;
                             appendMessage(message);
-                            markRead();
+                            /* Chỉ đánh dấu đã đọc nếu người dùng đang xem và ở đáy. */
+                            var through = newestMessageAt();
+                            if (through) scheduleReadThrough(through);
                         });
                     } else {
                         touchRoom(row.room_id, {
@@ -1756,9 +1874,16 @@
                 })
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_members' }, function (payload) {
                     /* Mốc đã đọc đổi ở tab/thiết bị khác → cập nhật ngay nhãn
-                       “Đã đọc / Bạn đã đọc” mà không cần tải lại trang. */
+                       “Đã đọc / Bạn đã đọc” mà không cần tải lại trang.
+                       Bỏ qua sự kiện cũ hơn mốc đã biết (tránh ghi đè trạng thái mới hơn). */
                     var row = payload && payload.new;
                     if (!row || !row.room_id || !row.student_id || !row.last_read_at) return;
+                    var key = String(row.room_id) + '|' + String(row.student_id);
+                    var at = Date.parse(row.last_read_at) || 0;
+                    var prev = S.readMarks && S.readMarks[key];
+                    if (prev !== undefined && at <= prev) return;
+                    if (!S.readMarks) S.readMarks = {};
+                    S.readMarks[key] = at;
                     updateMemberRead(String(row.room_id), String(row.student_id), row.last_read_at);
                 })
                 .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_rooms' }, function (payload) {
@@ -2131,7 +2256,7 @@
         },
         destroy: function () {
             S.destroyed = true;
-            clearTimeout(S.readTimer);
+            teardownReadTracking();
             clearTimeout(S.searchTimer);
             if (S.channel && S.channel.unsubscribe) {
                 try { S.channel.unsubscribe(); } catch (e) { }

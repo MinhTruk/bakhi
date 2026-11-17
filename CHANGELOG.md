@@ -2,6 +2,12 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.1.2] — 2026-11-17
+
+### Sửa lỗi
+
+- **Chat: tái cấu trúc Read Receipt**: viết lại `markRead` thành `markReadThrough` với génération token, idempotent và retry tối đa 3 lần; thêm `IntersectionObserver` theo dõi tin nhắn hiển thị trong viewport; debounce 300ms khi cuộn qua `scheduleReadThrough`; dọn dẹp tracker khi chuyển phòng qua `teardownReadTracking`; realtime `chat_members` bỏ qua sự kiện cũ hơn mốc đã biết (tránh ghi đè trạng thái mới hơn); realtime `chat_messages` INSERT dùng `scheduleReadThrough` thay vì đánh dấu ngay.
+
 ## [7.1.1] — 2026-11-17
 
 ### Tính năng
