@@ -2,6 +2,43 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.1.0] — 2026-11-17
+
+### Tính năng
+
+- **Trình phát nhạc theo tệp trở lại**: 5 bài gốc trong `music/` phát bằng
+  `HTMLAudioElement`, kèm Queue, shuffle, repeat, lời bài hát và cửa sổ nổi như
+  trước. Mọi tệp `.mp3` mới bỏ vào `music/` được `tools/music-scan.js` ghi vào
+  `music/library.json`; trình phát tự nạp thêm khi mở trang, không cần sửa mã
+  hay build. Bài đã xoá khỏi Queue không tự quay lại.
+- **Chat: hồ sơ đầy đủ và sửa biệt danh**: thẻ hồ sơ hiện ảnh bìa, khung avatar,
+  giới thiệu, liên kết và danh vị lớp (lớp trưởng, bí thư…). Bấm tên hoặc avatar
+  ở đầu cuộc nhắn riêng để mở hồ sơ; hàng “Hồ sơ của bạn” ở chân danh sách mở
+  hồ sơ của chính mình và cho sửa biệt danh ngay trong Chat.
+- **Đánh dấu đã đọc kiểu biểu tượng**: tin của bạn hiện ✓ khi đã gửi và ✓✓ khi
+  người nhận đã đọc, không còn nhãn chữ; tin của người khác không hiện dấu thừa.
+
+### Cải tiến
+
+- **Bảo trì khóa toàn website**: khi Founder bật bảo trì, mọi trang hiện màn hình
+  chờ có biểu tượng tải, chặn cuộn, chạm, bàn phím và liên kết; chỉ `/admin/`,
+  `/founder/`, Administrator Code và thao tác tải lại trang được giữ.
+- **Menu 3 chấm trong Chat gọn hơn**: đúng hai nút biểu tượng có nhãn **Ghim** và
+  **Lưu trữ**, mở thành popup nhỏ ngay dưới nút thay vì hộp thoại lớn.
+- **Đọc tin chính xác hơn**: chỉ đánh dấu đã đọc khi tab đang hiện, cửa sổ được
+  chú ý và người dùng đang ở gần cuối khung; mốc gửi lên giữ nguyên độ chính xác
+  microseconds và không gửi lặp cùng một mốc.
+- **Tắt hiệu ứng viền avatar áp toàn site**: công tắc **Animate Avatar Borders**
+  gắn lớp `bk-frames-still` lên `<html>` nên mọi khung — kể cả của người khác
+  trong Chat — đứng yên ngay trên mọi trang.
+- **Bỏ chấm đỏ trên avatar**: Chat chỉ còn số tin chưa đọc trong menu tài khoản.
+
+### Sửa lỗi
+
+- **Founder Dashboard không còn mang tên Administrator**: tên cũ lưu trong cơ sở
+  dữ liệu được coi là “chưa đặt tên” khi mở bằng phiên Founder.
+- **Phiên bản 7.1.0** áp dụng cho toàn bộ tệp HTML, `bk-version.js` và dashboard.
+
 ## [7.0.1] — 2026-11-17
 
 ### Sửa lỗi

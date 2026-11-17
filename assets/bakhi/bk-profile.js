@@ -507,8 +507,19 @@
         if (name !== 'animateAvatarBorders') return getPrefs();
         var prefs = Object.assign({}, getPrefs(), { animateAvatarBorders: value !== false });
         save({ prefs: prefs });
+        applyFrameMotion();
         emit('pref');
         return prefs;
+    }
+
+    /* Công tắc "Animate Avatar Borders" áp cho toàn trang: thêm lớp lên <html>
+       để mọi khung avatar (kể cả của người khác trong Chat) đứng yên ngay,
+       không phải chờ từng avatar tự quyết định. */
+    function applyFrameMotion() {
+        var root = D && D.documentElement;
+        if (!root) return;
+        var animate = getPrefs().animateAvatarBorders !== false;
+        root.classList.toggle('bk-frames-still', !animate);
     }
 
     /**
@@ -527,6 +538,7 @@
         if (!canEquip(incoming.frame)) incoming.frame = 'none';
         all.profiles[idc.key] = incoming;
         writeAll(all);
+        applyFrameMotion();
         emit('remote');
         return true;
     }
@@ -536,6 +548,7 @@
         var all = readAll();
         delete all.profiles[idc.key];
         writeAll(all);
+        applyFrameMotion();
         return emptyProfile();
     }
 
@@ -567,9 +580,15 @@
 
     if (global.addEventListener) {
         global.addEventListener('storage', function (e) {
-            if (e && e.key === KEY) emit('external');
+            if (e && e.key === KEY) {
+                applyFrameMotion();
+                emit('external');
+            }
         });
     }
+
+    /* Áp ngay khi nạp trang để khung không chạy một nhịp rồi mới đứng yên. */
+    applyFrameMotion();
 
     /* ---------------------------------------------------------------------
        Ảnh: thu nhỏ bằng canvas
@@ -707,6 +726,7 @@
         save: save,
         getPrefs: getPrefs,
         setPref: setPref,
+        applyFrameMotion: applyFrameMotion,
         applyRemote: applyRemote,
         reset: reset,
         on: on,

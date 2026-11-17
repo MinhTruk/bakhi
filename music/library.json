@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "generatedBy": "tools/music-scan.js",
+  "tracks": [
+    {
+      "id": "gia-nhu",
+      "title": "Giá như",
+      "artist": "xoxad"
+    },
+    {
+      "id": "co-le-anh",
+      "title": "Có lẽ anh",
+      "artist": "fishy"
+    },
+    {
+      "id": "xuong-rong-intro",
+      "title": "Xương rồng (intro)",
+      "artist": "dangrangto"
+    },
+    {
+      "id": "du-bao-thoi-tiet-hom-nay-mua",
+      "title": "Dự báo thời tiết hôm nay mưa",
+      "artist": "GREY D"
+    },
+    {
+      "id": "homesick",
+      "title": "homesick",
+      "artist": "wave to earth"
+    }
+  ]
+}

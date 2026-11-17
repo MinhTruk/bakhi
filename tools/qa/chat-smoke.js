@@ -41,12 +41,16 @@ async function until(fn, timeout = 5000) {
 const ME = {
   student_id: '11111111-1111-4111-8111-111111111111',
   display_name: 'Nguyễn Minh Anh', nickname: 'Minh Anh',
-  avatar_url: '', frame: 'leaf', badge_count: 12, bio: 'Học sinh 11A1'
+  avatar_url: '', frame: 'leaf', badge_count: 12, bio: 'Học sinh 11A1',
+  banner_url: '', links: [], roles: [{ key: 'secretary', label: 'Bí thư' }]
 };
 const OTHER = {
   student_id: '22222222-2222-4222-8222-222222222222',
   display_name: 'Trần Bảo Long', nickname: 'Bảo Long',
-  avatar_url: '', frame: 'sakura', badge_count: 30, bio: 'Thích Vật lí'
+  avatar_url: '', frame: 'sakura', badge_count: 30, bio: 'Thích Vật lí',
+  banner_url: 'https://demo.supabase.co/storage/v1/object/public/profile-media/banner/long.png',
+  links: [{ label: 'Facebook', url: 'https://facebook.com/baolong' }],
+  roles: [{ key: 'class_leader', label: 'Lớp trưởng' }]
 };
 const THIRD = {
   student_id: '33333333-3333-4333-8333-333333333333',
@@ -160,8 +164,21 @@ function makeHarness() {
             ok: true, me: ME, rooms: [GLOBAL, DM, GROUP],
             totalUnread: 2, maxGroup: 10
           });
-        case 'messages.list':
-          return Promise.resolve(messagesPayload());
+        case 'messages.list': {
+          const payload = messagesPayload();
+          if (body.room_id === DM.id) {
+            payload.room = { id: DM.id, kind: 'dm', title: '', created_by: ME.student_id };
+            payload.messages = [{
+              id: 'dm1', room_id: DM.id, student_id: OTHER.student_id,
+              body: 'Cậu làm bài chưa?', image_path: null, reply_to: null,
+              created_at: new Date().toISOString(), deleted: false, sender: OTHER
+            }];
+          } else if (body.room_id === GROUP.id) {
+            payload.room = { id: GROUP.id, kind: 'group', title: GROUP.title, created_by: ME.student_id };
+            payload.messages = [];
+          }
+          return Promise.resolve(payload);
+        }
         case 'messages.send':
           return Promise.resolve({
             ok: true,
@@ -224,13 +241,25 @@ function makeHarness() {
     ui: { toast() { }, confirm: () => Promise.resolve(true) },
     badges: { ownedFrames: () => ['none', 'leaf', 'sakura'] }
   };
+  const profileSaves = [];
+  let profileState = {
+    nickname: 'Minh Anh', bio: 'Học sinh 11A1', avatar: '', banner: '',
+    frame: 'leaf', links: []
+  };
   w.BKProfile = {
-    frameById: (id) => ({ id: id || 'none', name: id === 'sakura' ? 'Hoa sakura' : 'Mặc định', glyph: id === 'none' ? '' : '🌸', ring: '#f9a8d4' })
+    frameById: (id) => ({ id: id || 'none', name: id === 'sakura' ? 'Hoa sakura' : 'Mặc định', glyph: id === 'none' ? '' : '🌸', ring: '#f9a8d4' }),
+    get: () => Object.assign({}, profileState),
+    save: (patch) => {
+      profileSaves.push(patch);
+      profileState = Object.assign({}, profileState, patch);
+      return Object.assign({}, profileState);
+    },
+    safeUrl: (u) => String(u || '').trim()
   };
 
   w.eval(fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-chat.js'), 'utf8'));
   return {
-    w, calls, errors, uploadCount: () => uploadCount, unreadPushes,
+    w, calls, errors, uploadCount: () => uploadCount, unreadPushes, profileSaves,
     resizeViewport: (height) => { w.visualViewport.height = height; if (vvResize) vvResize(); }
   };
 }
@@ -279,14 +308,15 @@ async function main() {
   ok('read.mark gửi mốc tin cuối đã tải', !!readCall && /^\d{4}-\d{2}-\d{2}T/.test(readCall.body.through || ''),
     readCall && readCall.body.through);
   const readRows = doc.querySelectorAll('#bkChatMessages .bkchat-read-row');
-  ok('mỗi tin có nhãn trạng thái đã đọc', readRows.length >= 3, String(readRows.length));
+  ok('chỉ tin của mình mới có dấu đã đọc', readRows.length === 1, String(readRows.length));
   const ownRead = own.querySelector('.bkchat-read-row');
-  ok('tin của mình hiện “Đã đọc” khi người khác đã đọc',
-    !!ownRead && /Đã đọc/.test(ownRead.textContent), ownRead && ownRead.textContent);
+  ok('tin của mình hiện hai gạch khi người khác đã đọc',
+    !!ownRead && ownRead.classList.contains('is-read') && !!ownRead.querySelector('.fa-check-double'));
+  ok('dấu đã đọc chỉ có biểu tượng, không nhãn chữ',
+    !!ownRead && ownRead.textContent.trim() === '', ownRead && ownRead.textContent);
   const otherMsg = Array.from(msgNodes).find((n) => !n.classList.contains('is-own'));
-  const otherRead = otherMsg && otherMsg.querySelector('.bkchat-read-row');
-  ok('tin của người khác hiện “Bạn đã đọc” đối với mình',
-    !!otherRead && /Bạn đã đọc/.test(otherRead.textContent), otherRead && otherRead.textContent);
+  ok('tin của người khác không có dấu đã đọc',
+    !!otherMsg && !otherMsg.querySelector('.bkchat-read-row'));
   const markReadBtn = doc.querySelector('.bkchat-head .bkchat-icon-btn[aria-label="Đánh dấu đã đọc"]');
   ok('có nút đánh dấu đã đọc ở đầu hội thoại', !!markReadBtn);
   const readBeforeManual = H.calls.filter((c) => c.action === 'read.mark').length;
@@ -353,13 +383,51 @@ async function main() {
     nameBtn.click();
     const card = await until(() => doc.getElementById('bkChatCard').hidden === false ? doc.getElementById('bkChatCard') : null);
     ok('mở Profile Card', !!card && /Bảo Long/.test(card.textContent), card && card.textContent.slice(0, 60));
+    ok('hiện ảnh bìa trong Profile Card', !!card && !!card.querySelector('.bkchat-card-banner img'));
+    ok('hiện danh vị lớp (Lớp trưởng)',
+      !!card && /Lớp trưởng/.test(card.querySelector('.bkchat-card-roles').textContent));
+    ok('hiện liên kết trong Profile Card',
+      !!card && !!card.querySelector('.bkchat-card-link') && /Facebook/.test(card.querySelector('.bkchat-card-link').textContent));
     ok('hiện số thành tích', !!card && /30 thành tích/.test(card.textContent));
     ok('có nút nhắn riêng', !!card && !!card.querySelector('[data-dm]'));
     card.querySelector('[data-close-card]').click();
     ok('đóng được Profile Card', doc.getElementById('bkChatCard').hidden === true);
   }
 
-  console.log('\n[5b] Ghim, lưu trữ và bộ lọc hội thoại');
+  console.log('\n[5b] Hồ sơ của bạn & sửa biệt danh');
+  const meRow = doc.getElementById('bkChatMe');
+  ok('có hàng hồ sơ của chính mình', !!meRow && meRow.hidden === false && /Minh Anh/.test(meRow.textContent));
+  if (meRow) {
+    meRow.click();
+    const selfCard = await until(() => {
+      const c = doc.getElementById('bkChatCard');
+      return c && c.hidden === false && /Bí thư/.test(c.textContent) ? c : null;
+    });
+    ok('mở hồ sơ của chính mình kèm danh vị (Bí thư)', !!selfCard);
+    const nickBtn = selfCard && selfCard.querySelector('.bkchat-card-edit');
+    ok('có nút sửa biệt danh trên hồ sơ của mình', !!nickBtn);
+    if (nickBtn) {
+      nickBtn.click();
+      const nickDialog = await until(() => doc.getElementById('bkChatDialog'));
+      ok('mở hộp thoại sửa biệt danh', !!nickDialog && /biệt danh/i.test(nickDialog.textContent));
+      const nickInput = nickDialog && nickDialog.querySelector('input');
+      if (nickInput) {
+        nickInput.value = 'Minh Anh Mới';
+        const saveBtn = Array.from(nickDialog.querySelectorAll('button'))
+          .find((b) => /Lưu biệt danh/.test(b.textContent));
+        if (saveBtn) saveBtn.click();
+        await wait(40);
+        const saved = H.profileSaves.pop();
+        ok('lưu biệt danh qua BKProfile', !!saved && saved.nickname === 'Minh Anh Mới', JSON.stringify(saved));
+        ok('hàng hồ sơ đổi tên ngay', /Minh Anh Mới/.test(doc.getElementById('bkChatMe').textContent),
+          doc.getElementById('bkChatMe').textContent);
+      }
+      const doneCard = doc.getElementById('bkChatCard');
+      if (doneCard && doneCard.hidden === false) doneCard.querySelector('[data-close-card]').click();
+    }
+  }
+
+  console.log('\n[5c] Ghim, lưu trữ và bộ lọc hội thoại');
   const liveDmRow = doc.querySelector('#bkChatRooms [data-room="' + DM.id + '"]');
   liveDmRow.click();
   const activeRow = await until(() => doc.querySelector('#bkChatRooms [data-room="' + DM.id + '"].is-active'));
@@ -367,16 +435,30 @@ async function main() {
   await wait(700);
   ok('đọc xong đẩy số chưa đọc 0 sang lớp Cloud', H.unreadPushes[H.unreadPushes.length - 1] === 0,
     JSON.stringify(H.unreadPushes));
+  const headLink = doc.querySelector('#bkChatHead .bkchat-head-link');
+  ok('tên ở đầu cuộc nhắn riêng bấm được', !!headLink);
+  if (headLink) {
+    headLink.click();
+    const headCard = await until(() => doc.getElementById('bkChatCard').hidden === false ? doc.getElementById('bkChatCard') : null);
+    ok('bấm tên ở đầu mở hồ sơ đối phương', !!headCard && /Bảo Long/.test(headCard.textContent));
+    if (headCard) headCard.querySelector('[data-close-card]').click();
+  }
   const optionsBtn = await until(() => doc.querySelector('#bkChatHead [data-room-menu]'));
   ok('mở phòng có nút tuỳ chọn hội thoại', !!optionsBtn);
   if (optionsBtn) {
     optionsBtn.click();
-    const optionsDialog = await until(() => doc.getElementById('bkChatDialog'));
-    const pinBtn = optionsDialog && Array.from(optionsDialog.querySelectorAll('button'))
-      .find((b) => /Ghim hội thoại/.test(b.textContent));
-    ok('menu có thao tác ghim', !!pinBtn);
-    if (pinBtn) {
-      pinBtn.click();
+    const menu = await until(() => doc.getElementById('bkChatConvMenu'));
+    ok('nút 3 chấm mở popup nhỏ thay vì hộp thoại lớn',
+      !!menu && menu.classList.contains('bkchat-menu-pop') && !doc.getElementById('bkChatDialog'));
+    const menuItems = menu ? menu.querySelectorAll('.bkchat-menu-item') : [];
+    ok('menu có đúng 2 nút', menuItems.length === 2, String(menuItems.length));
+    ok('hai nút có nhãn Ghim và Lưu trữ',
+      menuItems.length === 2 && /Ghim/.test(menuItems[0].textContent) && /Lưu trữ/.test(menuItems[1].textContent),
+      menuItems.length === 2 ? menuItems[0].textContent + ' / ' + menuItems[1].textContent : '');
+    ok('mỗi nút là biểu tượng có nhãn',
+      menuItems.length === 2 && !!menuItems[0].querySelector('i') && !!menuItems[1].querySelector('i'));
+    if (menuItems.length === 2) {
+      menuItems[0].click();
       const pinCall = await until(() => H.calls.filter((c) => c.action === 'conversation.pin').pop());
       ok('ghim gọi conversation.pin', !!pinCall && pinCall.body.room_id === DM.id && pinCall.body.value === true);
       await wait(40);
@@ -391,9 +473,9 @@ async function main() {
   const optionsAgain = doc.querySelector('#bkChatHead [data-room-menu]');
   if (optionsAgain) {
     optionsAgain.click();
-    const optionsDialog = await until(() => doc.getElementById('bkChatDialog'));
-    const archiveBtn = optionsDialog && Array.from(optionsDialog.querySelectorAll('button'))
-      .find((b) => /Lưu trữ hội thoại/.test(b.textContent));
+    const menu = await until(() => doc.getElementById('bkChatConvMenu'));
+    const archiveBtn = menu && Array.from(menu.querySelectorAll('.bkchat-menu-item'))
+      .find((b) => /Lưu trữ/.test(b.textContent));
     ok('menu có thao tác lưu trữ', !!archiveBtn);
     if (archiveBtn) {
       archiveBtn.click();
@@ -453,11 +535,24 @@ async function main() {
 
   console.log('\n[7] Bảo mật phía client');
   const src = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-chat.js'), 'utf8');
+  const shell = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-shell.js'), 'utf8');
   ok('không dùng innerHTML', !/\.innerHTML\s*=/.test(src));
   ok('không ghi trực tiếp bảng chat_*', !/\.from\(\s*['"]chat_/.test(src));
   ok('không chứa khoá bí mật', !/service_role|SERVICE_ROLE|eyJhbGciOi/.test(src));
   ok('không có bộ đếm thời gian tự động', !/setInterval\s*\(/.test(src));
   ok('client đã bỏ tải ảnh lên', !/storage\.from\(['"]chat-images['"]\)/.test(src) && !/image\/png/.test(src));
+  ok('bỏ chấm đỏ thông báo trên avatar',
+    !/bk-user-dot/.test(shell) && !/bk-user-dot/.test(fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-shell.css'), 'utf8')));
+  const coreCss = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-core.css'), 'utf8');
+  ok('công tắc viền avatar áp toàn site',
+    /html\.bk-frames-still/.test(coreCss) && /bk-avatar-frame-svg/.test(coreCss));
+  const profileSrc = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-profile.js'), 'utf8');
+  ok('bk-profile phát lớp bk-frames-still khi tắt hiệu ứng',
+    /function applyFrameMotion/.test(profileSrc) && /bk-frames-still/.test(profileSrc) &&
+    /applyFrameMotion\(\)/.test(profileSrc));
+  const chatCssSrc = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-chat.css'), 'utf8');
+  ok('khung avatar trong Chat cũng đứng yên khi tắt hiệu ứng',
+    /html\.bk-frames-still \.bkchat-avatar-frame-svg/.test(chatCssSrc));
   ok('không có lỗi runtime jsdom', H.errors.length === 0, H.errors.slice(0, 2).join(' | '));
 
   console.log('\n[8] Migration: RLS, giới hạn và Storage');
@@ -485,6 +580,9 @@ async function main() {
     reportDiagnostics: true, fileName: 'chat-api.ts'
   });
   ok('chat-api hợp lệ cú pháp', (tsOut.diagnostics || []).filter((x) => x.category === 1).length === 0);
+  ok('hồ sơ chat có ảnh bìa, liên kết và danh vị lớp',
+    /banner_url/.test(fn) && /student_profiles/.test(fn) && /student_roles/.test(fn) &&
+    /cleanLinks/.test(fn) && /role_label/.test(fn));
   ok('xác thực thiết bị đã gắn học sinh', /student_devices/.test(fn) && /callerUserId/.test(fn));
   ok('không tin student_id từ client', !/body\.student_id\s*\|\|\s*ctx\.studentId|const studentId = str\(body\.student_id/.test(fn));
   ok('có đủ thao tác chính',
@@ -497,7 +595,6 @@ async function main() {
     /rawThrough/.test(fn) && /through > currentRaw/.test(fn));
 
   console.log('\n[10] Lối vào & trang Chat');
-  const shell = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-shell.js'), 'utf8');
   ok('menu tài khoản có mục Chat', /'chat\/'/.test(shell) && /fa-comments/.test(shell));
   const page = fs.readFileSync(path.join(ROOT, 'chat/index.html'), 'utf8');
   ok('trang chat nạp bk-chat.js và css', /bk-chat\.js/.test(page) && /bk-chat\.css/.test(page));

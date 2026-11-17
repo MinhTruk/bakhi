@@ -86,20 +86,67 @@ async function profilesByIds(ctx: Ctx, ids: string[]) {
         .in('student_id', unique);
     const map = new Map<string, Record<string, unknown>>();
     for (const row of data ?? []) map.set(String(row.student_id), row);
+
+    /* View chat_profiles cố ý rút gọn, thiếu ảnh bìa, liên kết và danh vị lớp.
+       Đọc thêm bảng gốc bằng service role (không cần migration mới) để Profile
+       Card đủ dữ liệu như trang Hồ sơ. */
+    const [{ data: extras }, { data: roles }] = await Promise.all([
+        ctx.client
+            .from('student_profiles')
+            .select('student_id, banner_url, links')
+            .in('student_id', unique),
+        ctx.client
+            .from('student_roles')
+            .select('student_id, role_key, role_label')
+            .in('student_id', unique)
+    ]);
+    for (const row of extras ?? []) {
+        const base = map.get(String(row.student_id));
+        if (!base) continue;
+        base.banner_url = String(row.banner_url || '');
+        base.links = Array.isArray(row.links) ? row.links : [];
+    }
+    for (const row of roles ?? []) {
+        const base = map.get(String(row.student_id));
+        if (!base) continue;
+        base.role_key = String(row.role_key || '');
+        base.role_label = String(row.role_label || '');
+    }
     return map;
+}
+
+function cleanLinks(raw: unknown) {
+    return (Array.isArray(raw) ? raw : [])
+        .slice(0, 12)
+        .filter((l) => l && typeof l === 'object')
+        .map((l) => ({
+            label: str((l as Record<string, unknown>).label, 24),
+            url: str((l as Record<string, unknown>).url, 300),
+            visible: (l as Record<string, unknown>).visible !== false
+        }))
+        .filter((l) => l.visible && /^(https?:\/\/|mailto:)/i.test(l.url))
+        .slice(0, 6)
+        .map((l) => ({ label: l.label || 'Liên kết', url: l.url }));
 }
 
 function card(map: Map<string, Record<string, unknown>>, id: string) {
     const row = map.get(id) || {};
     const seen = row.last_seen_at ? Date.parse(String(row.last_seen_at)) : 0;
+    const roleKey = str(row.role_key, 40);
+    const roleLabel = str(row.role_label, 80);
     return {
         student_id: id,
         display_name: String(row.display_name || 'Học sinh'),
         nickname: String(row.nickname || ''),
         bio: String(row.bio || ''),
         avatar_url: String(row.avatar_url || ''),
+        banner_url: String(row.banner_url || ''),
         frame: String(row.frame || 'none'),
         badge_count: num(row.badge_count),
+        links: cleanLinks(row.links),
+        role_key: roleKey,
+        role_label: roleLabel,
+        roles: roleLabel ? [{ key: roleKey || 'member', label: roleLabel }] : [],
         last_seen_at: row.last_seen_at || null,
         /* Hoạt động nếu có tín hiệu trong 2 phút gần nhất. */
         online: !!seen && Date.now() - seen < 2 * 60 * 1000

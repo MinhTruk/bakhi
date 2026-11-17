@@ -69,17 +69,17 @@ trang bài học ─────┴──► bk-page.js
   (Ctrl/⌘+K), tìm kiếm toàn cục (`/`), focus mode, xuất/nhập.
 - **bk-dev.js/css** — Developer Playground 2.0: cửa sổ nổi kéo/đổi kích thước, nhớ
   vị trí/kích thước/tab, 11 công cụ (thêm tab Music). Không thay thế panel cũ.
-- **bk-music.js/css** — Music Player dùng chung, **thư viện nhạc cá nhân từ 7.0.0**:
-  mặc định trống, thêm bài bằng liên kết chính thức YouTube/Spotify/SoundCloud và phát
-  trong iframe của nền tảng (không có `.mp3` đóng gói sẵn). Queue (thêm/xoá), shuffle
-  chọn bài ngẫu nhiên, repeat 3 chế độ; sửa tên/nghệ sĩ/lời theo từng bài, bìa sinh từ
-  chữ cái đầu. Panel nổi kéo được, đổi kích thước, thu nhỏ/phóng to, nhớ bố cục
-  (`bakhiMusic.panel.v1`); thư viện + queue ở `bakhiMusic.v3`, vị trí logo ở
-  `bakhiMusic.fab.v1`; không autoplay. Phím tắt (`Space`, `←/→`, `Esc`) chỉ kích hoạt
-  khi panel mở và bỏ qua khi đang gõ. Có `BKMusic.on(fn)` phát sự kiện thay đổi để UI
-  khác (tab Music của Dev Panel) cập nhật không cần polling. Local-first: đẩy lên bảng
-  `music_tracks` theo học sinh khi có phiên, lỗi mạng chỉ hiện trạng thái.
-  Chi tiết: [MUSIC.md](MUSIC.md).
+- **bk-music.js/css** — Music Player dùng chung, **trình phát theo tệp từ 7.1.0**:
+  thư viện gốc 5 bài trong `music/<slug>.mp3` kèm `.txt` (lời) và `.png` (bìa).
+  `tools/music-scan.js` sinh `music/library.json`; player tải manifest và gộp bài mới
+  một lần (theo dõi qua `state.seen`), bài người dùng đã xoá không tự quay lại. Queue
+  (thêm/xoá), shuffle chọn bài ngẫu nhiên, repeat 3 chế độ. Panel nổi kéo được, đổi
+  kích thước, thu nhỏ/phóng to, nhớ bố cục (`bakhiMusic.panel.v1`); thư viện + queue ở
+  `bakhiMusic.v2`, lời tự nhập ở `bakhiMusic.lyrics.v1`, vị trí logo ở
+  `bakhiMusic.fab.v1`; không autoplay, không tải nhạc lên máy chủ. Phím tắt
+  (`Space`, `←/→`, `Esc`) chỉ kích hoạt khi panel mở và bỏ qua khi đang gõ. Có
+  `BKMusic.on(fn)` phát sự kiện thay đổi để UI khác (tab Music của Dev Panel) cập nhật
+  không cần polling. Chi tiết: [MUSIC.md](MUSIC.md).
 - **Chuyển động & trợ năng** — ba bề mặt (Dev Panel, Music Player, Trung tâm học tập)
   đều có hiệu ứng chuyển tab ngắn (`.bkdev-pane-in`, `.bkm-anim`, `.bk-tab-in`) và tự
   tắt khi `prefers-reduced-motion: reduce`. Tab dùng `role="tablist"/"tabpanel"`,
@@ -288,12 +288,18 @@ DOMContentLoaded
   phòng đã lưu trữ. Giao diện có bộ lọc “Đã lưu trữ”, phòng ghim xếp trước, thả cảm xúc
   tối ưu (hoàn tác khi lỗi) và popover xem ai đã thả. Mọi mốc thời gian hiển thị theo
   `Asia/Ho_Chi_Minh` (UTC+7).
-- **Đã đọc 7.0.1**: mỗi tin hiện nhãn “Đã gửi/Đã đọc” (tin của mình, dựa trên
-  `last_read_at` lớn nhất của thành viên khác) hoặc “Bạn đã đọc/Chưa đọc” (tin của người
-  khác, dựa trên mốc của mình). Nút “Đánh dấu đã đọc” ở đầu hội thoại gọi `read.mark` ngay;
-  mở phòng vẫn tự đánh dấu sau 500 ms. Kênh realtime `bakhi-chat` lắng nghe cả
-  `chat_members` để nhãn đổi ngay khi thành viên khác đọc. Trang Chat đẩy tổng chưa đọc
-  sang `BKCloud.setChatUnread` để chấm đỏ avatar/menu tắt tức thời.
+- **Đã đọc 7.1.0**: chỉ tin của chính mình mới có dấu — ✓ khi đã gửi, ✓✓ khi
+  `last_read_at` lớn nhất của thành viên khác vượt qua `created_at`; không còn nhãn
+  chữ. `read.mark` chỉ gửi khi tab đang hiện, cửa sổ được chú ý và người dùng ở gần
+  cuối khung, kèm chống gửi lặp cùng mốc; mở phòng/visibility/focus đều kích hoạt lại.
+  Nút “Đánh dấu đã đọc” ở đầu hội thoại gọi ngay. Kênh realtime `bakhi-chat` lắng nghe
+  cả `chat_members` để dấu đổi ngay khi thành viên khác đọc. Trang Chat đẩy tổng chưa
+  đọc sang `BKCloud.setChatUnread`; avatar không còn chấm đỏ, chỉ còn số trong menu.
+- **Hồ sơ trong Chat 7.1.0**: `profilesByIds` của `chat-api` đọc thêm
+  `student_profiles.banner_url`/`links` và `student_roles.role_key/role_label` bằng
+  service role (không cần migration mới). Thẻ hồ sơ hiện ảnh bìa, khung, giới thiệu,
+  liên kết và chip danh vị lớp; bấm tên/avatar đầu cuộc DM hoặc hàng “Hồ sơ của bạn”
+  mở thẻ tương ứng, cho sửa biệt danh qua `BKProfile.save`.
 - **Passkey (6.2.0)**: Edge Function `passkey-api` dùng `@simplewebauthn/server` để tạo/xác minh
   credential. RP ID/origin lấy từ secret `PASSKEY_RP_ID`/`PASSKEY_ORIGIN`, không lấy từ Host.
   Khi hồ sơ đã có passkey, `bind-student-session` trả `passkey_required` + challenge thay vì
@@ -337,8 +343,9 @@ DOMContentLoaded
 - **Bảo trì (Founder)**: `settings.set` ghi `public.maintenance` (bật/tắt, lý do, người
   thực hiện) và mở/đóng một dòng `maintenance_history`. Máy chủ tính thời lượng, ghi
   audit và chỉ tạo **một** announcement hoàn tất cho mỗi đợt. `maintenance.history`
-  hỗ trợ tìm kiếm/lọc trạng thái. `bk-shell.js` dựng màn hình bảo trì chung, có
-  “Thử lại” và lối vào bằng Administrator Code qua `BKCloud.adminLogin`.
+  hỗ trợ tìm kiếm/lọc trạng thái. `bk-shell.js` dựng màn hình bảo trì chung có biểu
+  tượng tải, khóa cuộn/chạm/bàn phím/liên kết trên toàn trang (`html.bk-maint-lock`),
+  chỉ chừa `/admin/`, `/founder/`, Administrator Code và thao tác tải lại trang.
 - **Thương hiệu**: Founder sửa tên hiển thị Administrator Dashboard trong
   `public.branding`; `bk-devboard.js` áp dụng realtime cho tiêu đề dashboard và không
   đổi đường dẫn `/admin/`.
@@ -465,9 +472,9 @@ Kết quả sau nâng cấp: **122/122 tệp không đổi nội dung** (`verify
   đồng bộ hồ sơ sau lỗi 404 và website giữ nguyên hành vi local-first.
 - Chat, passkey và các bảng 7.0 đã có migration + Edge Function tương ứng; `/chat/` vẫn
   báo “máy chủ chưa sẵn sàng” nếu thiếu cấu hình hoặc phiên Supabase không hợp lệ.
-- Thư viện nhạc chỉ đồng bộ khi đã nhận diện học sinh và `BKCloud.chatClient()` hoạt
-  động; ngoài ra bài hát nằm ở `bakhiMusic.v3` trên thiết bị. Khung nhúng có thể bị
-  chặn bởi mạng/tường lửa hoặc chính sách của nền tảng.
+- Thư viện nhạc 7.1 đọc tệp tĩnh trong `music/` và manifest `music/library.json`;
+  không cần phiên Supabase và không đẩy dữ liệu lên máy chủ. Bảng `music_tracks` cũ
+  vẫn để nguyên cho dữ liệu lịch sử nhưng trình phát không đọc/ghi nữa.
 - Vì menu ba gạch bị ẩn, Dev Code **chỉ** vào từ Cài đặt → Nhà phát triển → Dev Code;
   Developer Playground chỉ mở khi `dev-auth` đã cấp phiên (xem 2.5).
 
@@ -485,7 +492,7 @@ Kết quả sau nâng cấp: **122/122 tệp không đổi nội dung** (`verify
 | Cấu hình site | bảng `app_settings` | Chỉ đọc khoá `public.*`; `public.whatsnew`, `public.maintenance`, `public.branding`; realtime; ghi qua `admin-actions` |
 | Tuỳ chọn hội thoại | bảng `chat_conversation_prefs` | Ghim/lưu trữ theo học sinh; RLS + realtime; ghi qua `chat-api` (`conversation.*`) |
 | Lịch sử bảo trì | bảng `maintenance_history` | Bắt đầu/kết thúc, người thực hiện, lý do, thời lượng; Founder đọc qua `admin-actions` (`maintenance.history`) |
-| Thư viện nhạc | bảng `music_tracks` | Liên kết chính thức + tên/nghệ sĩ/lời theo học sinh; RLS `bakhi_current_student_id()`; realtime; đồng bộ trực tiếp từ `bk-music.js` |
+| Thư viện nhạc | `music/*.mp3` + `music/library.json` | Tệp tĩnh trong repository; `tools/music-scan.js` sinh manifest; player gộp bài mới một lần, không đồng bộ máy chủ. Bảng `music_tracks` cũ giữ nguyên nhưng không còn dùng |
 | Tuỳ chọn hồ sơ | cột `student_profiles.prefs` (jsonb) | `animateAvatarBorders` và tuỳ chọn giao diện; đọc/ghi qua `student-profile` |
 | Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html`, `founder/index.html` | 12 mô-đun Administrator; 15 mô-đun Founder, xác thực mã qua `admin-auth`; mọi thao tác kiểm tra lại ở `admin-actions` |
 | Dev Code | `assets/bakhi/bk-settings.js`, `bk-cloud.js`, `supabase/functions/dev-auth`, bảng `dev_sessions` | Xác minh mã ở máy chủ, giới hạn tần suất, chỉ trả token + hạn dùng; tách hoàn toàn khỏi phiên quản trị |

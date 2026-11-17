@@ -142,7 +142,7 @@ ok('lớp giao diện dùng border-box để input không tràn', /\.bk-app \*[^
 ok('tab Cài đặt chuyển lưới trên máy nhỏ', /\.bk-set-nav\s*\{[^}]*grid-template-columns:\s*repeat\(2/.test(settingsCss));
 ok('nút xác thực không bị kéo full width', /\.bk-auth-box \.bk-btn\s*\{[^}]*flex:\s*0 0 auto/.test(settingsCss));
 const avatarDot = idoc.querySelector('#bkUserBtn .bk-user-dot');
-ok('chấm đỏ bám đúng khung avatar', !!avatarDot && avatarDot.parentNode.classList.contains('bk-user-avatar-wrap'));
+ok('avatar không còn chấm đỏ thông báo', !avatarDot);
 ok('badge Chat không tràn khỏi hàng menu', /\.bk-menu-row\s*\{[^}]*box-sizing:\s*border-box/.test(shellCss) &&
   /\.bk-menu-count\s*\{[^}]*max-width:\s*3\.2rem/.test(shellCss));
 ok('menu Chat có chỗ hiển thị số tin chưa đọc', !!chatCount && chatCount.hidden === true);
@@ -152,8 +152,7 @@ iw.BKCloud = {
   refreshChatUnread: function () { return Promise.resolve(); }
 };
 iw.BKShell.refresh();
-ok('menu Chat hiện số tin chưa đọc', !!chatCount && chatCount.textContent === '3' && chatCount.hidden === false &&
-  idoc.querySelector('#bkUserBtn .bk-user-dot').classList.contains('on'));
+ok('menu Chat hiện số tin chưa đọc', !!chatCount && chatCount.textContent === '3' && chatCount.hidden === false);
 delete iw.BKCloud;
 ok('đường dẫn trong menu dùng gốc site đúng', menu.querySelector('a[href$="profile/"]').href === 'https://minhtruk.github.io/bakhi/profile/',
   menu.querySelector('a[href$="profile/"]').href);
@@ -213,6 +212,16 @@ ok('27 khung thường + 2 Developer + 1 Founder',
 ok('khung Developer/Founder chưa mở mặc định',
   !P.canEquip('dev-aurora') && !P.canEquip('dev-void') && !P.canEquip('founder'));
 ok('khung SVG vẽ thật cho khung hoa văn', !!P.frameOverlay('crown') && !!P.frameOverlay('founder'));
+ok('công tắc viền avatar áp lớp lên <html>',
+  typeof P.setPref === 'function' && typeof P.applyFrameMotion === 'function');
+P.setPref('animateAvatarBorders', false);
+ok('tắt hiệu ứng viền avatar đặt html.bk-frames-still',
+  idoc.documentElement.classList.contains('bk-frames-still'));
+P.setPref('animateAvatarBorders', true);
+ok('bật lại hiệu ứng viền avatar bỏ html.bk-frames-still',
+  !idoc.documentElement.classList.contains('bk-frames-still'));
+ok('CSS toàn site tắt animation khung khi có bk-frames-still',
+  /html\.bk-frames-still/.test(coreCss) && /bk-avatar-frame-svg/.test(coreCss));
 void saved;
 
 /* ========================= 2. 78 badge ========================= */

@@ -357,8 +357,6 @@
         caret.className = 'fa-solid fa-chevron-down bk-user-btn-caret';
         caret.setAttribute('aria-hidden', 'true');
         btn.appendChild(caret);
-        var dot = el('span', 'bk-user-dot');
-        avatarWrap.appendChild(dot);
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
             toggleMenu();
@@ -373,7 +371,6 @@
         }
         S.slot = slot;
         S.btn = btn;
-        S.dot = dot;
         return slot;
     }
 
@@ -565,8 +562,6 @@
             count.hidden = !n;
             count.setAttribute('aria-label', n + ' tin nhắn chưa đọc');
         }
-        var dot = S.btn.querySelector('.bk-user-dot');
-        if (dot) dot.classList.toggle('on', n > 0);
     }
 
     function paintProfileBits() {
@@ -774,6 +769,70 @@
         var node = D.getElementById('bkMaintenance');
         if (node && node.parentNode) node.parentNode.removeChild(node);
         if (D.body) D.body.classList.remove('bk-maintenance-on');
+        lockPage(false);
+    }
+
+    /* ---------------- Khoá cứng toàn website khi bảo trì ---------------- */
+    var LOCK = { on: false, y: 0 };
+
+    function maintInside(node) {
+        return !!(node && node.closest && node.closest('#bkMaintenance, #bkMaintBypass'));
+    }
+
+    /* Chặn mọi phím tắt toàn cục. Phím trong hộp thoại mở khoá vẫn hoạt động
+       bình thường để nhập Administrator Code. */
+    function maintKeyGuard(e) {
+        if (!LOCK.on) return;
+        if (maintInside(e.target)) return;
+        var k = e.key;
+        /* Vẫn cho phép tải lại trang và mở công cụ trình duyệt. */
+        if (k === 'F5' || k === 'F12' ||
+            ((e.ctrlKey || e.metaKey) && (k === 'r' || k === 'R'))) return;
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function maintScrollGuard(e) {
+        if (!LOCK.on) return;
+        if (maintInside(e.target)) return;
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function maintFocusGuard(e) {
+        if (!LOCK.on) return;
+        if (maintInside(e.target)) return;
+        var host = D.getElementById('bkMaintenance');
+        if (host && host.focus) { try { host.focus({ preventScroll: true }); } catch (err) { } }
+    }
+
+    function lockPage(on) {
+        on = !!on;
+        if (on === LOCK.on) return;
+        if (on) {
+            LOCK.on = true;
+            try { LOCK.y = global.pageYOffset || 0; } catch (e) { LOCK.y = 0; }
+            D.documentElement.classList.add('bk-maint-lock');
+            D.addEventListener('keydown', maintKeyGuard, true);
+            D.addEventListener('wheel', maintScrollGuard, { capture: true, passive: false });
+            D.addEventListener('touchmove', maintScrollGuard, { capture: true, passive: false });
+            D.addEventListener('focusin', maintFocusGuard, true);
+            try {
+                global.scrollTo(0, 0);
+                if (D.body) D.body.style.top = '-' + LOCK.y + 'px';
+            } catch (e) { }
+        } else {
+            LOCK.on = false;
+            D.documentElement.classList.remove('bk-maint-lock');
+            D.removeEventListener('keydown', maintKeyGuard, true);
+            D.removeEventListener('wheel', maintScrollGuard, true);
+            D.removeEventListener('touchmove', maintScrollGuard, true);
+            D.removeEventListener('focusin', maintFocusGuard, true);
+            try {
+                if (D.body) D.body.style.top = '';
+                global.scrollTo(0, LOCK.y || 0);
+            } catch (e) { }
+        }
     }
 
     function openMaintBypass() {
@@ -855,23 +914,42 @@
         MAINT_LAST = value || {};
         if (!MAINT_LAST.enabled || adminSessionActive()) { removeMaintenance(); return; }
         var host = D.getElementById('bkMaintenance');
+        var signature = [MAINT_LAST.title, MAINT_LAST.message, MAINT_LAST.reason,
+            MAINT_LAST.startAt, MAINT_LAST.endAt].join('|');
+        if (host && host.getAttribute('data-signature') === signature) {
+            lockPage(true);
+            return;
+        }
         if (!host) {
             host = D.createElement('div');
             host.id = 'bkMaintenance';
             host.className = 'bk-maint';
             host.setAttribute('role', 'alertdialog');
             host.setAttribute('aria-modal', 'true');
-            host.setAttribute('aria-label', 'Thông báo bảo trì');
+            host.setAttribute('aria-label', 'Bảo trì toàn website');
+            host.tabIndex = -1;
             (D.body || D.documentElement).appendChild(host);
         }
+        host.setAttribute('data-signature', signature);
         host.textContent = '';
         var card = D.createElement('div');
         card.className = 'bk-maint-card';
+
+        /* Vòng xoay tải + trạng thái: bảo trì là màn hình chặn toàn site,
+           không phải một thông báo nhỏ ở góc trang. */
         var mark = D.createElement('div');
         mark.className = 'bk-maint-mark';
         mark.setAttribute('aria-hidden', 'true');
-        mark.innerHTML = '<svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0 5 5l-9.4 9.4a2.1 2.1 0 0 1-3-3z"/><path d="M9 9l6 6"/></svg>';
+        mark.appendChild(el('span', 'bk-maint-spinner'));
         card.appendChild(mark);
+
+        var loading = D.createElement('p');
+        loading.className = 'bk-maint-loading';
+        loading.setAttribute('role', 'status');
+        loading.setAttribute('aria-live', 'polite');
+        loading.textContent = 'Đang tải…';
+        card.appendChild(loading);
+
         var title = D.createElement('h1');
         title.className = 'bk-maint-title';
         title.textContent = MAINT_LAST.title || 'Bá Khí đang bảo trì';
@@ -900,7 +978,17 @@
         retry.type = 'button';
         retry.className = 'bk-maint-btn';
         retry.textContent = 'Thử lại';
-        retry.addEventListener('click', function () { loadMaintenance(true); });
+        retry.addEventListener('click', function () {
+            retry.disabled = true;
+            retry.textContent = 'Đang kiểm tra…';
+            loading.textContent = 'Đang kết nối lại…';
+            loadMaintenance(true);
+            setTimeout(function () {
+                retry.disabled = false;
+                retry.textContent = 'Thử lại';
+                loading.textContent = 'Đang tải…';
+            }, 1500);
+        });
         actions.appendChild(retry);
         var bypass = D.createElement('button');
         bypass.type = 'button';
@@ -911,10 +999,12 @@
         card.appendChild(actions);
         card.appendChild(Object.assign(D.createElement('p'), {
             className: 'bk-maint-foot',
-            textContent: 'Quản trị viên có thể nhập Administrator Code để mở khoá tạm thời, hoặc vào /admin/ để tắt bảo trì.'
+            textContent: 'Mọi tính năng đang tạm khoá. Quản trị viên có thể nhập Administrator Code để mở khoá tạm thời, hoặc vào /admin/ để tắt bảo trì.'
         }));
         host.appendChild(card);
         if (D.body) D.body.classList.add('bk-maintenance-on');
+        lockPage(true);
+        try { host.focus({ preventScroll: true }); } catch (err) { }
     }
 
     function loadMaintenance(force) {

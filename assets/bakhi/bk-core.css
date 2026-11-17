@@ -304,3 +304,13 @@ html.lite, html.lite * { scroll-behavior: auto !important; }
     .bk-toast, .bk-overlay, .bk-modal, .bk-spinner { animation: none !important; }
     .bk-progress > span { transition: none !important; }
 }
+
+/* Công tắc "Animate Avatar Borders" tắt → mọi khung avatar trên mọi trang
+   (kể cả của người khác trong Chat) đứng yên. bk-profile.js gắn lớp này lên
+   <html> khi nạp trang, khi lưu và khi nhận thay đổi từ tab/máy khác. */
+html.bk-frames-still .bk-avatar-frame-svg,
+html.bk-frames-still .bk-avatar-frame-svg.is-animated,
+html.bk-frames-still .bk-avatar-frame-svg .bk-frame-orbit,
+html.bk-frames-still .bk-avatar-frame-svg .bk-frame-spark,
+html.bk-frames-still .bk-avatar-frame-svg .bk-frame-aura,
+html.bk-frames-still .bk-avatar-frame-svg .bk-frame-crown { animation: none !important; }

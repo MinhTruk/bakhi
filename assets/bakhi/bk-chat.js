@@ -24,7 +24,8 @@
         me: null, rooms: [], active: null, messages: [], reactions: {},
         members: [], cards: {}, totalUnread: 0, maxGroup: 10,
         channel: null, client: null, filter: '', showArchived: false,
-        replyTo: null, readTimer: null, readSeq: 0, presenceTimer: null, searchTimer: null, destroyed: false
+        replyTo: null, readTimer: null, readSeq: 0, readPending: false, lastReadSent: {},
+        presenceTimer: null, searchTimer: null, destroyed: false
     };
 
     /* ---------------------------------------------------------------------
@@ -222,6 +223,12 @@
         side.appendChild(rooms);
 
         var sideFoot = el('div', 'bkchat-side-foot');
+        var meRow = el('button', 'bkchat-me');
+        meRow.id = 'bkChatMe';
+        meRow.type = 'button';
+        meRow.setAttribute('aria-label', 'Hồ sơ của bạn');
+        meRow.hidden = true;
+        sideFoot.appendChild(meRow);
         var dmBtn = btn('bkchat-primary', 'Nhắn riêng', 'fa-pen-to-square');
         dmBtn.id = 'bkChatNewDm';
         sideFoot.appendChild(dmBtn);
@@ -334,6 +341,9 @@
         var root = S.root;
         on(D.getElementById('bkChatNewDm'), 'click', openDmDialog);
         on(D.getElementById('bkChatNewGroup'), 'click', openGroupDialog);
+        on(D.getElementById('bkChatMe'), 'click', function () {
+            if (S.me) showCard(S.me.student_id);
+        });
         on(D.getElementById('bkChatArchiveToggle'), 'click', function () {
             S.showArchived = !S.showArchived;
             var toggle = D.getElementById('bkChatArchiveToggle');
@@ -360,6 +370,14 @@
         });
         on(D.getElementById('bkChatInput'), 'input', autoGrow);
         on(D.getElementById('bkChatMessages'), 'click', onMessageClick);
+        on(D.getElementById('bkChatHead'), 'click', function (e) {
+            var hit = e.target.closest && e.target.closest('[data-profile]');
+            if (hit) showCard(String(hit.getAttribute('data-profile')));
+        });
+        on(D.getElementById('bkChatMessages'), 'scroll', function () {
+            if (!S.active) return;
+            if (S.readPending || nearBottom()) markRead();
+        });
         on(D.getElementById('bkChatRooms'), 'click', function (e) {
             var row = e.target.closest ? e.target.closest('[data-room]') : null;
             if (!row) return;
@@ -374,7 +392,10 @@
             var info = e.target.closest ? e.target.closest('[data-room-info]') : null;
             if (info) openGroupInfo();
             var menu = e.target.closest ? e.target.closest('[data-room-menu]') : null;
-            if (menu) openConversationOptions();
+            if (menu) {
+                e.stopPropagation();
+                openConversationOptions(menu);
+            }
         });
     }
 
@@ -405,6 +426,7 @@
             S.maxGroup = Number(data.maxGroup) || 10;
             S.totalUnread = Number(data.totalUnread) || 0;
             rememberCards([S.me].concat(collectCards(S.rooms)));
+            renderMe();
             renderRooms();
             paintUnread();
             subscribe();
@@ -571,8 +593,8 @@
             if (!r.archived) total += Number(r.unread) || 0;
         });
         S.totalUnread = total;
-        /* Đẩy số chưa đọc sang lớp Cloud để chấm đỏ trên avatar/menu hồ sơ
-           đổi ngay, không phải chờ lần bootstrap kế tiếp. */
+        /* Chỉ đẩy số chưa đọc sang lớp Cloud cho bộ đếm trong menu tài khoản.
+           Không còn chấm đỏ trên avatar. */
         try {
             if (global.BKCloud && global.BKCloud.setChatUnread) {
                 global.BKCloud.setChatUnread(total);
@@ -584,51 +606,48 @@
         } catch (e) { }
     }
 
+    /* Hàng "Hồ sơ của bạn" ở chân danh sách: mở thẻ hồ sơ của chính mình để
+       sửa biệt danh, xem khung/ảnh bìa và danh vị lớp. */
+    function renderMe() {
+        var host = D.getElementById('bkChatMe');
+        if (!host) return;
+        clear(host);
+        var me = S.me && S.me.student_id;
+        if (!me) { host.hidden = true; return; }
+        host.hidden = false;
+        var card = localProfileCard(cardOf(me));
+        host.appendChild(avatarFor(card, 30));
+        var text = el('span', 'bkchat-me-text');
+        text.appendChild(el('span', 'bkchat-me-name', nameOf(card)));
+        text.appendChild(el('span', 'bkchat-me-sub', 'Hồ sơ của bạn'));
+        host.appendChild(text);
+    }
+
     /* Mốc đã đọc do máy chủ lưu trong chat_members.last_read_at. So sánh theo
-       thời điểm để biết tin của mình đã được người khác đọc hay chưa, và tin
-       của người khác đã được mình đọc hay chưa. */
+       thời điểm để biết tin của mình đã được người khác đọc hay chưa. */
     function memberRows() {
         if (S.members && S.members.length) return S.members;
         return (S.active && S.active.members) || [];
     }
-    function memberRow(id) {
-        var list = memberRows();
-        for (var i = 0; i < list.length; i++) {
-            if (String(list[i].student_id) === String(id)) return list[i];
-        }
-        return null;
-    }
-    function readAtOf(id) {
-        var row = memberRow(id);
-        var at = row ? Date.parse(row.last_read_at || '') : NaN;
-        return Number.isFinite(at) ? at : null;
-    }
     function readStateOf(message) {
         if (!message || !message.created_at) return null;
+        var me = S.me && S.me.student_id;
+        /* Chỉ tin của chính mình mới có dấu đã đọc: một gạch = đã gửi,
+           hai gạch = có người nhận đã đọc. Tin của người khác không cần
+           nhãn “Bạn đã đọc” vì chính việc đang xem đã là đã đọc. */
+        if (!me || String(message.student_id) !== String(me)) return null;
         var at = Date.parse(message.created_at);
         if (!Number.isFinite(at)) return null;
-        var me = S.me && S.me.student_id;
-        if (me && String(message.student_id) === String(me)) {
-            var newest = null;
-            memberRows().forEach(function (m) {
-                if (!m || String(m.student_id) === String(me)) return;
-                var other = Date.parse(m.last_read_at || '');
-                if (Number.isFinite(other) && (newest === null || other > newest)) newest = other;
-            });
-            if (newest === null) return { own: true, read: false, label: 'Đã gửi' };
-            return newest >= at
-                ? { own: true, read: true, label: 'Đã đọc' }
-                : { own: true, read: false, label: 'Đã gửi' };
-        }
-        var mine = me ? readAtOf(me) : null;
-        if (mine === null && S.active && S.active.last_read_at) {
-            var roomAt = Date.parse(S.active.last_read_at);
-            mine = Number.isFinite(roomAt) ? roomAt : null;
-        }
-        if (mine === null) return null;
-        return mine >= at
-            ? { own: false, read: true, label: 'Bạn đã đọc' }
-            : { own: false, read: false, label: 'Chưa đọc' };
+        var newest = null;
+        memberRows().forEach(function (m) {
+            if (!m || String(m.student_id) === String(me)) return;
+            var other = Date.parse(m.last_read_at || '');
+            if (Number.isFinite(other) && (newest === null || other > newest)) newest = other;
+        });
+        if (newest === null) return { own: true, read: false, label: 'Đã gửi' };
+        return newest >= at
+            ? { own: true, read: true, label: 'Đã đọc' }
+            : { own: true, read: false, label: 'Đã gửi' };
     }
     function updateMemberRead(roomId, studentId, lastReadAt) {
         if (!roomId || !studentId || !lastReadAt) return;
@@ -654,38 +673,63 @@
         if (mine) paintUnread();
     }
 
-    function openConversationOptions() {
+    /* Menu 3 chấm: đúng hai thao tác (ghim + lưu trữ) dưới dạng hai nút biểu
+       tượng có nhãn, mở thành popup nhỏ ngay dưới nút thay vì hộp thoại lớn. */
+    function openConversationOptions(anchor) {
+        closePopovers();
         var room = S.active;
         if (!room) return;
-        dialog('Tuỳ chọn hội thoại', function (body) {
-            function option(label, iconName, hint, onClick) {
-                var b = btn('bkchat-menu-btn', '', iconName);
-                var text = el('span', 'bkchat-menu-text');
-                text.appendChild(el('span', 'bkchat-menu-label', label));
-                if (hint) text.appendChild(el('span', 'bkchat-menu-hint', hint));
-                b.appendChild(text);
-                b.addEventListener('click', function () {
-                    closeDialog();
-                    onClick();
-                });
-                body.appendChild(b);
-            }
-            option(
-                room.pinned ? 'Bỏ ghim hội thoại' : 'Ghim hội thoại',
-                'fa-thumbtack',
-                room.pinned ? 'Đưa về thứ tự theo tin nhắn mới' : 'Luôn nằm đầu danh sách của bạn',
-                function () { setConversationPref('pin', !room.pinned); }
-            );
-            option(
-                room.archived ? 'Bỏ lưu trữ hội thoại' : 'Lưu trữ hội thoại',
-                'fa-box-archive',
-                room.archived ? 'Đưa trở lại danh sách chính' : 'Ẩn khỏi danh sách chính, không ảnh hưởng người khác',
-                function () { setConversationPref('archive', !room.archived); }
-            );
-            if (room.kind === 'group' && room.created_by === (S.me && S.me.student_id)) {
-                option('Quản lý nhóm', 'fa-gear', 'Thành viên và tên nhóm', openGroupInfo);
-            }
-        });
+        var pop = el('div', 'bkchat-pop bkchat-menu-pop');
+        pop.id = 'bkChatConvMenu';
+        pop.setAttribute('role', 'menu');
+        pop.setAttribute('aria-label', 'Tuỳ chọn hội thoại');
+
+        function option(label, iconName, onClick) {
+            var b = btn('bkchat-menu-item', '', iconName);
+            b.setAttribute('role', 'menuitem');
+            b.appendChild(el('span', 'bkchat-menu-label', label));
+            b.addEventListener('click', function () {
+                closePopovers();
+                onClick();
+            });
+            pop.appendChild(b);
+            return b;
+        }
+
+        option(
+            room.pinned ? 'Bỏ ghim' : 'Ghim',
+            'fa-thumbtack',
+            function () { setConversationPref('pin', !room.pinned); }
+        );
+        option(
+            room.archived ? 'Bỏ lưu trữ' : 'Lưu trữ',
+            'fa-box-archive',
+            function () { setConversationPref('archive', !room.archived); }
+        );
+
+        D.body.appendChild(pop);
+        placePopover(pop, anchor, 184);
+        if (anchor) anchor.setAttribute('aria-expanded', 'true');
+        setTimeout(function () {
+            global.addEventListener('click', function (e) {
+                if (!pop.contains(e.target)) closePopovers();
+            }, { once: true });
+            global.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') closePopovers();
+            }, { once: true });
+        }, 0);
+        var first = pop.querySelector('button');
+        if (first && first.focus) { try { first.focus({ preventScroll: true }); } catch (e) { } }
+    }
+
+    function placePopover(pop, anchor, width) {
+        var vw = Math.max(240, global.innerWidth || 360);
+        var vh = Math.max(320, global.innerHeight || 640);
+        var w = Math.min(width || 190, vw - 16);
+        var rect = anchor && anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : { bottom: 56, right: vw - 8 };
+        pop.style.width = w + 'px';
+        pop.style.left = Math.min(Math.max(8, rect.right - w), vw - w - 8) + 'px';
+        pop.style.top = Math.min(Math.max(8, rect.bottom + 6), Math.max(8, vh - 140)) + 'px';
     }
 
     function setConversationPref(kind, value) {
@@ -756,6 +800,7 @@
         S.messages = [];
         S.reactions = {};
         S.replyTo = null;
+        S.readPending = false;
         renderHead();
         renderRooms();
         var box = D.getElementById('bkChatMessages');
@@ -803,14 +848,40 @@
         return raw;
     }
 
-    /* Chỉ đánh dấu đã đọc khi tab đang hiện và gửi đúng mốc tin cuối đã tải.
-       Nhờ vậy tin đến trong lúc gọi API không bị coi là đã đọc oan.
+    /* Chỉ đánh dấu đã đọc khi tab đang hiện, cửa sổ đang được chú ý và người
+       dùng đang ở gần cuối khung tin nhắn. Tin đến khi họ đang đọc phía trên
+       sẽ chờ tới lúc cuộn xuống đáy. Mốc gửi lên luôn là chuỗi created_at gốc
+       của tin cuối đã tải (PostgreSQL microseconds), không phải giờ máy.
        immediate = bấm nút thủ công; notify = hiện xác nhận. */
+    function chatVisible() {
+        if (D.visibilityState === 'hidden') return false;
+        try {
+            if (typeof D.hasFocus === 'function' && !D.hasFocus()) return false;
+        } catch (e) { }
+        return true;
+    }
+
+    function nearBottom() {
+        var box = D.getElementById('bkChatMessages');
+        if (!box) return true;
+        /* jsdom không có layout (clientHeight = 0) → coi như đang ở đáy. */
+        if (!box.clientHeight) return true;
+        return (box.scrollHeight - box.scrollTop - box.clientHeight) <= 80;
+    }
+
     function markRead(immediate, notify) {
-        if (!S.active || D.visibilityState === 'hidden') return;
+        if (!S.active) return;
         var roomId = S.active.id;
         var through = newestMessageAt();
         if (!through) return;
+        if (!immediate && !chatVisible()) return;
+        if (!immediate && !nearBottom()) {
+            S.readPending = true;
+            return;
+        }
+        /* Không gọi lại đúng một mốc đã gửi thành công. */
+        if (!immediate && S.lastReadSent[roomId] === through) return;
+        S.readPending = false;
         clearTimeout(S.readTimer);
         var seq = ++S.readSeq;
         var previous = S.active.last_read_at || null;
@@ -821,6 +892,7 @@
                 if (!room) return;
                 room.unread = 0;
                 room.last_read_at = (data && data.last_read_at) || through;
+                S.lastReadSent[roomId] = through;
                 updateMemberRead(roomId, S.me && S.me.student_id, room.last_read_at);
                 renderRooms();
                 paintUnread();
@@ -833,7 +905,7 @@
             });
         };
         if (immediate) send();
-        else S.readTimer = setTimeout(send, 500);
+        else S.readTimer = setTimeout(send, 400);
     }
 
     function presenceLabel(person) {
@@ -894,6 +966,10 @@
                 }
             }
         });
+        /* Quay lại cửa sổ sau khi xem tab khác: đánh dấu đã đọc nếu đang ở đáy. */
+        global.addEventListener('focus', function () {
+            if (S.active) markRead();
+        });
     }
 
     function renderHead() {
@@ -925,13 +1001,24 @@
             return;
         }
         var room = S.active;
+        var other = room.kind === 'dm' ? otherMember(room) : null;
         var avatar = room.kind === 'dm'
-            ? avatarFor(otherMember(room), 38, true)
+            ? avatarFor(other, 38, true)
             : el('span', 'bkchat-head-icon', room.kind === 'global' ? '💬' : '👥');
         head.appendChild(avatar);
 
         var info = el('div', 'bkchat-head-text');
-        info.appendChild(el('div', 'bkchat-head-title', roomTitle(room)));
+        if (other) {
+            /* Tên ở đầu cuộc nhắn riêng cũng mở được hồ sơ, như bấm avatar. */
+            var titleBtn = el('button', 'bkchat-head-title bkchat-head-link');
+            titleBtn.type = 'button';
+            titleBtn.setAttribute('data-profile', other.student_id);
+            titleBtn.setAttribute('aria-label', 'Xem hồ sơ ' + nameOf(other));
+            titleBtn.textContent = roomTitle(room);
+            info.appendChild(titleBtn);
+        } else {
+            info.appendChild(el('div', 'bkchat-head-title', roomTitle(room)));
+        }
         var sub = '';
         if (room.kind === 'global') sub = 'Phòng chung — cả trường';
         else if (room.kind === 'group') {
@@ -940,7 +1027,7 @@
             sub = (room.member_count || groupMembers.length) + '/' + S.maxGroup + ' thành viên';
             if (onlineCount) sub += ' · ' + onlineCount + ' đang hoạt động';
         } else {
-            sub = presenceLabel(otherMember(room)) || 'Tin nhắn riêng';
+            sub = presenceLabel(other) || 'Tin nhắn riêng';
         }
         info.appendChild(el('div', 'bkchat-head-sub', sub));
         head.appendChild(info);
@@ -956,6 +1043,8 @@
         var options = btn('bkchat-icon-btn', '', 'fa-ellipsis-vertical');
         options.setAttribute('data-room-menu', '1');
         options.setAttribute('aria-label', 'Tuỳ chọn hội thoại');
+        options.setAttribute('aria-haspopup', 'menu');
+        options.setAttribute('aria-expanded', 'false');
         options.title = 'Ghim hoặc lưu trữ hội thoại';
         head.appendChild(options);
 
@@ -1059,20 +1148,19 @@
         }
 
         var readState = readStateOf(m);
-        if (readState) {
-            var readRow = el('div', 'bkchat-read-row');
-            readRow.appendChild(icon(readState.read ? 'fa-check-double' : 'fa-check', 'bkchat-read-ic'));
-            readRow.appendChild(el('span', 'bkchat-read-state' + (readState.read ? ' is-read' : ''), readState.label));
-            if (readState.own) {
-                readRow.title = readState.read
-                    ? 'Người nhận đã đọc tin nhắn này'
-                    : 'Đã gửi tới máy chủ, chưa có người nhận đọc';
-            }
-            extra.appendChild(readRow);
-        }
-
         var meta = el('div', 'bkchat-meta');
         meta.appendChild(el('span', 'bkchat-time', fmtTime(m.created_at)));
+        if (readState) {
+            /* Chỉ biểu tượng, không nhãn chữ: ✓ đã gửi, ✓✓ đã đọc. */
+            var readRow = el('span', 'bkchat-read-row' + (readState.read ? ' is-read' : ''));
+            readRow.setAttribute('role', 'img');
+            readRow.setAttribute('aria-label', readState.label);
+            readRow.title = readState.read
+                ? 'Người nhận đã đọc tin nhắn này'
+                : 'Đã gửi tới máy chủ, chưa có người nhận đọc';
+            readRow.appendChild(icon(readState.read ? 'fa-check-double' : 'fa-check', 'bkchat-read-ic'));
+            meta.appendChild(readRow);
+        }
         if (!m.deleted) {
             /* Giữ thả cảm xúc nhưng không dùng icon mặt cười cạnh khung soạn tin. */
             var reactBtn = btn('bkchat-msg-action', 'Thả cảm xúc', '');
@@ -1371,15 +1459,71 @@
     }
 
     function closePopovers() {
-        var host = D.getElementById('bkChatMessages');
-        if (!host) return;
-        Array.prototype.slice.call(host.querySelectorAll('.bkchat-pop')).forEach(function (n) { n.remove(); });
+        Array.prototype.slice.call(D.querySelectorAll('.bkchat-pop')).forEach(function (n) { n.remove(); });
+        var menuBtn = D.querySelector('#bkChatHead [data-room-menu]');
+        if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
     }
 
     /* ---------------------------------------------------------------------
        Profile Card
        ------------------------------------------------------------------ */
+    /* Hồ sơ của chính mình: ưu tiên bản lưu cục bộ (vừa sửa biệt danh/ảnh)
+       để thẻ hồ sơ và tên trong chat đổi ngay, không chờ máy chủ. */
+    function localProfileCard(card) {
+        var me = S.me && S.me.student_id;
+        if (!card || !me || String(card.student_id) !== String(me)) return card;
+        var p = null;
+        try { p = global.BKProfile && global.BKProfile.get ? global.BKProfile.get() : null; } catch (e) { p = null; }
+        if (!p) return card;
+        return Object.assign({}, card, {
+            nickname: p.nickname || card.nickname || '',
+            bio: p.bio || card.bio || '',
+            avatar_url: p.avatar || card.avatar_url || '',
+            banner_url: p.banner || card.banner_url || '',
+            frame: p.frame || card.frame || 'none',
+            links: (p.links && p.links.length) ? p.links : (card.links || [])
+        });
+    }
+
+    function roleLabelsFor(card, studentId) {
+        var out = [];
+        function push(value) {
+            var label = String(value == null ? '' : value).trim().slice(0, 40);
+            if (label && out.indexOf(label) < 0) out.push(label);
+        }
+        (Array.isArray(card && card.roles) ? card.roles : []).forEach(function (r) {
+            if (!r) return;
+            if (typeof r === 'string') push(r);
+            else push(r.label || r.role_label || r.key || r.role_key);
+        });
+        push(card && card.role_label);
+        if (!out.length) {
+            try {
+                if (global.BKRoles && global.BKRoles.labelFor) push(global.BKRoles.labelFor(studentId));
+            } catch (e) { }
+        }
+        return out;
+    }
+
+    function cardLinksOf(card) {
+        return (Array.isArray(card && card.links) ? card.links : []).map(function (l) {
+            if (!l || typeof l !== 'object') return null;
+            var url = '';
+            try {
+                url = (global.BKProfile && global.BKProfile.safeUrl)
+                    ? global.BKProfile.safeUrl(l.url)
+                    : String(l.url || '').trim();
+            } catch (e) { url = ''; }
+            if (!/^(https?:\/\/|mailto:)/i.test(url)) return null;
+            return {
+                label: String(l.label || '').trim().slice(0, 24) || 'Liên kết',
+                url: url
+            };
+        }).filter(Boolean).slice(0, 6);
+    }
+
     function showCard(studentId) {
+        studentId = String(studentId || '');
         var card = S.cards[studentId];
         if (!card) {
             api({ action: 'profiles.cards', ids: [studentId] }).then(function (data) {
@@ -1391,34 +1535,141 @@
             }).catch(function () { });
             return;
         }
+        card = localProfileCard(card);
+        var self = studentId === String(S.me && S.me.student_id);
         var aside = D.getElementById('bkChatCard');
         if (!aside) return;
         clear(aside);
         aside.hidden = false;
+        aside.classList.toggle('has-banner', !!card.banner_url);
+
+        if (card.banner_url) {
+            var banner = el('div', 'bkchat-card-banner');
+            var bimg = D.createElement('img');
+            bimg.src = card.banner_url;
+            bimg.alt = '';
+            bimg.loading = 'lazy';
+            bimg.addEventListener('error', function () { banner.remove(); aside.classList.remove('has-banner'); });
+            banner.appendChild(bimg);
+            aside.appendChild(banner);
+        }
+
         var close = btn('bkchat-icon-btn bkchat-card-close', '', 'fa-xmark');
         close.setAttribute('data-close-card', '1');
         close.setAttribute('aria-label', 'Đóng hồ sơ');
         aside.appendChild(close);
 
-        var hero = el('div', 'bkchat-card-hero');
+        var hero = el('div', 'bkchat-card-hero' + (card.banner_url ? ' has-banner' : ''));
         hero.appendChild(avatarFor(card, 96));
-        hero.appendChild(el('h2', 'bkchat-card-name', nameOf(card)));
+
+        var nameRow = el('div', 'bkchat-card-name-row');
+        nameRow.appendChild(el('h2', 'bkchat-card-name', nameOf(card)));
+        if (self) {
+            var edit = btn('bkchat-card-edit', '', 'fa-pen');
+            edit.setAttribute('aria-label', 'Sửa biệt danh');
+            edit.title = 'Sửa biệt danh';
+            edit.addEventListener('click', openNicknameDialog);
+            nameRow.appendChild(edit);
+        }
+        hero.appendChild(nameRow);
+
         if (card.nickname && card.display_name && card.nickname !== card.display_name) {
             hero.appendChild(el('div', 'bkchat-card-sub', card.display_name));
+        }
+        var roles = roleLabelsFor(card, studentId);
+        if (roles.length) {
+            var roleRow = el('div', 'bkchat-card-roles');
+            roles.forEach(function (label) {
+                roleRow.appendChild(el('span', 'bkchat-chip bkchat-chip-role', label));
+            });
+            hero.appendChild(roleRow);
         }
         aside.appendChild(hero);
 
         if (card.bio) aside.appendChild(el('p', 'bkchat-card-bio', card.bio));
+
+        var links = cardLinksOf(card);
+        if (links.length) {
+            aside.appendChild(el('h3', 'bkchat-card-section', 'Liên kết'));
+            var linkList = el('div', 'bkchat-card-links');
+            links.forEach(function (l) {
+                var a = D.createElement('a');
+                a.className = 'bkchat-card-link';
+                a.href = l.url;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.appendChild(icon('fa-link'));
+                a.appendChild(el('span', null, l.label));
+                linkList.appendChild(a);
+            });
+            aside.appendChild(linkList);
+        }
+
         var stats = el('div', 'bkchat-card-stats');
         stats.appendChild(el('span', 'bkchat-chip', (Number(card.badge_count) || 0) + ' thành tích'));
         stats.appendChild(el('span', 'bkchat-chip', 'Khung ' + frameName(card.frame)));
         aside.appendChild(stats);
 
-        if (studentId !== (S.me && S.me.student_id)) {
+        if (!self) {
             var dm = btn('bkchat-primary bkchat-block', 'Nhắn riêng', 'fa-paper-plane');
             dm.setAttribute('data-dm', studentId);
             aside.appendChild(dm);
         }
+    }
+
+    /* Sửa biệt danh của chính mình: lưu ngay vào hồ sơ cục bộ (BKProfile) và
+       để BKCloud đẩy lên máy chủ; chat cập nhật tên mà không cần tải lại. */
+    function openNicknameDialog() {
+        var me = S.me && S.me.student_id;
+        if (!me) return;
+        var current = '';
+        try {
+            if (global.BKProfile && global.BKProfile.get) current = global.BKProfile.get().nickname || '';
+        } catch (e) { current = ''; }
+        if (!current) current = (S.cards[me] && S.cards[me].nickname) || '';
+        dialog('Sửa biệt danh', function (body) {
+            var label = el('label', 'bkchat-field');
+            label.appendChild(el('span', null, 'Biệt danh'));
+            var input = D.createElement('input');
+            input.type = 'text';
+            input.className = 'bkchat-input';
+            input.maxLength = 32;
+            input.value = current;
+            input.placeholder = 'Ví dụ: Minh Anh';
+            input.setAttribute('aria-label', 'Biệt danh hiển thị trong Chat');
+            label.appendChild(input);
+            body.appendChild(label);
+            body.appendChild(el('p', 'bkchat-hint',
+                'Biệt danh hiển thị trong Chat và Hồ sơ, tối đa 32 ký tự. Để trống nếu muốn dùng tên thật.'));
+        }, [{
+            label: 'Lưu biệt danh', icon: 'fa-check',
+            onClick: function (close) { saveNickname(close); }
+        }]);
+    }
+
+    function saveNickname(close) {
+        var me = S.me && S.me.student_id;
+        var input = D.querySelector('#bkChatDialog input');
+        var value = String(input && input.value || '').replace(/\s+/g, ' ').trim().slice(0, 32);
+        var nickname = value;
+        try {
+            if (global.BKProfile && global.BKProfile.save) {
+                var saved = global.BKProfile.save({ nickname: value });
+                if (saved) nickname = saved.nickname || '';
+            }
+        } catch (e) { }
+        if (S.me) S.me.nickname = nickname;
+        if (me) {
+            var selfCard = S.cards[me] || (S.cards[me] = { student_id: me, display_name: nameOf(S.me) });
+            selfCard.nickname = nickname;
+        }
+        if (close) close();
+        renderMe();
+        renderRooms();
+        renderHead();
+        if (S.active) renderThread();
+        if (me) showCard(me);
+        toast(nickname ? 'Đã lưu biệt danh.' : 'Đã xoá biệt danh.', 'success');
     }
 
     function frameName(id) {

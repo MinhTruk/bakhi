@@ -38,8 +38,8 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
 (async () => {
   console.log('\n[1] Trang Founder và mã bí mật');
   const page = read('founder/index.html');
-  ok('có trang founder/ dùng dashboard 7.0.1',
-    /bk-devboard\.js\?v=7\.0\.1/.test(page) && /BK_DASH_SCOPE\s*=\s*["']founder/.test(page));
+  ok('có trang founder/ dùng dashboard 7.1.0',
+    /bk-devboard\.js\?v=7\.1\.0/.test(page) && /BK_DASH_SCOPE\s*=\s*["']founder/.test(page));
   ok('trang Founder gọi founderLogin/founderToken',
     /founderLogin/.test(page) && /founderToken/.test(page));
   ok('không lưu Founder Code dạng plaintext trong client',
@@ -87,6 +87,13 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
         badges: [{ badge_id: 'founder', kind: 'admin', awarded_at: now, awarded_by: 'sess-f', reason: 'Founder: cấp toàn bộ' }]
       });
     }
+    /* Migration 7.0 ghi sẵn tên mặc định cũ vào DB — Founder phải bỏ qua nó. */
+    if (action === 'settings.get') {
+      return Promise.resolve({
+        ok: true,
+        settings: [{ key: 'public.branding', value: { adminDashboardName: 'Administrator Dashboard' } }]
+      });
+    }
     return Promise.resolve({ ok: true, total: 0, students: [], logs: [], announcements: [], changelog: [], settings: [], roles: [], rooms: [] });
   }
   w.BKCloud = {
@@ -115,8 +122,10 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   ok('có Bảo trì, Dữ liệu và tab Founder',
     ['maintenance', 'data', 'founder'].every((id) => ids.includes(id)));
 
+  await until(() => calls.find((c) => c.action === 'settings.get'));
+  await wait(60);
   const founderTitle = D.querySelector('.bkc-dash-title');
-  ok('tiêu đề mặc định là Founder Dashboard',
+  ok('tiêu đề mặc định là Founder Dashboard (bỏ tên cũ trong DB)',
     !!founderTitle && founderTitle.textContent.trim() === 'Founder Dashboard',
     founderTitle && founderTitle.textContent);
 

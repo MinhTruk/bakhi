@@ -73,6 +73,14 @@
     function defaultDashboardName() {
         return isFounder() ? 'Founder Dashboard' : 'Administrator Dashboard';
     }
+    /* Migration 7.0 ghi sẵn "Administrator Dashboard" vào app_settings như một
+       giá trị mặc định, không phải tên do người dùng đặt. Trong phạm vi Founder,
+       coi giá trị đó là "chưa tuỳ chỉnh" để tiêu đề luôn là Founder Dashboard. */
+    function brandingName(raw) {
+        var name = String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim().slice(0, 40);
+        if (isFounder() && name === 'Administrator Dashboard') return defaultDashboardName();
+        return name || defaultDashboardName();
+    }
     function isExclusiveBadge(id) {
         return id === 'founder' || String(id).indexOf('dev-exclusive-') === 0;
     }
@@ -715,8 +723,7 @@
     /* Tên hiển thị Dashboard do Founder chỉnh trong tab Cấu hình, lưu ở
        app_settings.public.branding. Không đổi đường dẫn /admin/. */
     function applyBranding(name) {
-        var clean = String(name == null ? '' : name).trim().slice(0, 40)
-            || defaultDashboardName();
+        var clean = brandingName(name);
         S.branding.adminDashboardName = clean;
         if (S.titleEl) S.titleEl.textContent = clean;
         if (S.brandNameEl) S.brandNameEl.textContent = clean;
@@ -4103,7 +4110,7 @@
                     brandHost.textContent = '';
                     var row = (data.settings || []).filter(function (x) { return x.key === 'public.branding'; })[0];
                     var value = row && row.value && typeof row.value === 'object' ? row.value : {};
-                    var current = value.adminDashboardName || defaultDashboardName();
+                    var current = brandingName(value.adminDashboardName);
                     var nameInput = input('text', 'Tên hiển thị, tối đa 40 ký tự…', current);
                     nameInput.maxLength = 40;
                     brandHost.appendChild(fieldRow('Tên hiển thị', nameInput));

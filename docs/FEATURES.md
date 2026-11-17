@@ -66,7 +66,7 @@ Không có animation favicon và không có Highlight Manager độc lập.
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1 | Thư viện 5 bài theo quy ước file `music/<slug>.mp3` · `.txt` · `.png` | ✅ | Thêm bài chỉ cần thêm file + một dòng trong `LIBRARY` |
+| 1 | Thư viện 5 bài theo quy ước file `music/<slug>.mp3` · `.txt` · `.png` | ✅ | Bỏ tệp mới vào `music/`, chạy `tools/music-scan.js`; player tự gộp qua `music/library.json` (7.1.0) |
 | 2 | Queue: thêm, xoá, phát tiếp theo, kéo thả đổi thứ tự, `Alt+↑/↓` cho bàn phím | ✅ | Không tạo audio thứ hai |
 | 3 | Shuffle (giữ bài đang phát đầu queue) và repeat 3 chế độ (off/all/one) | ✅ | Nhớ qua `bakhiMusic.v2` |
 | 4 | Lời bài hát: file `.txt` (dòng `#` là ghi chú, `[mm:ss]` để đồng bộ) và lời tự nhập | ✅ | Lời tự nhập được ưu tiên; lỗi file không làm hỏng player |
@@ -137,30 +137,29 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 12 | **Nhập dữ liệu Studio cũ** (`lexend-studio-doc`): văn bản, ảnh, hình SVG | ✅ | Nhập một lần, giữ khoá cũ, đánh dấu trong `migrated.legacy` |
 | 13 | **Tương thích địa chỉ cũ** `/studio/word-paint.html` | ✅ | Meta refresh + `location.replace`, giữ query/hash |
 
-## G2. Nhạc cá nhân, hồ sơ & cài đặt (7.0.0)
+## G2. Nhạc theo tệp, hồ sơ & cài đặt (7.1.0)
 
 ### G2.1. Music Player
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1 | Thư viện trống mặc định, không còn 5 bài `.mp3` đóng gói sẵn | ✅ | `bakhiMusic.v3` |
-| 2 | Thêm bài bằng liên kết chính thức YouTube/Spotify/SoundCloud | ✅ | `parseSource`; chặn host lạ và `javascript:`; ô dán luôn hiện dưới khung phát (7.0.1) |
-| 3 | Phát trong iframe chính thức của nền tảng | ✅ | YouTube/SoundCloud nhận play/pause qua `postMessage` |
-| 4 | Sửa tên, nghệ sĩ và lời theo từng bài | ✅ | Lời tối đa 20.000 ký tự, hỗ trợ `[mm:ss]` |
-| 5 | Bìa sinh từ chữ cái đầu, màu theo tên bài | ✅ | Không cần tệp PNG |
+| 1 | Thư viện gốc 5 bài `.mp3` trong `music/`, phát bằng `HTMLAudioElement` | ✅ | Quay lại kiến trúc 6.x; một audio duy nhất |
+| 2 | Tự phát hiện bài mới qua `music/library.json` | ✅ | `tools/music-scan.js` sinh manifest; workflow `music-library.yml` chạy khi `music/` đổi |
+| 3 | Bài mới chỉ thêm một lần; bài đã xoá không tự quay lại | ✅ | Theo dõi `state.seen` trong `bakhiMusic.v2` |
+| 4 | Lời từ `music/<slug>.txt`, hỗ trợ `[mm:ss]`; lời tự nhập được ưu tiên | ✅ | Lời tự nhập ở `bakhiMusic.lyrics.v1` |
+| 5 | Bìa tự dò `.png → .jpg → .jpeg → .webp` | ✅ | Tắt xoay khi reduced-motion |
 | 6 | Queue, shuffle, repeat 3 chế độ, panel kéo/đổi kích thước | ✅ | Shuffle chọn bài khác khi bấm kế/trước |
-| 7 | Đồng bộ theo học sinh qua `music_tracks` (RLS) | ✅ | Local-first; lỗi mạng chỉ hiện trạng thái |
-| 8 | Không autoplay, không tải nhạc lên máy chủ | ✅ | Chỉ lưu liên kết + metadata |
+| 7 | Không autoplay, không tải nhạc lên máy chủ | ✅ | Tệp tĩnh trong repository; bảng `music_tracks` cũ không còn dùng |
 
 ### G2.2. Hồ sơ & Cài đặt
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
 | 1 | Khung avatar chưa mở bấm xem ảnh trước, độ hiếm, cách mở khoá | ✅ | Modal `.bk-frame-detail` |
-| 2 | Công tắc **Animate Avatar Borders** lưu theo tài khoản và đồng bộ | ✅ | `student_profiles.prefs` |
-| 3 | Tắt hiệu ứng chuyển động khung nhưng vẫn giữ hoa văn tĩnh | ✅ | Lớp `bk-frame-static` trên avatar |
+| 2 | Công tắc **Animate Avatar Borders** lưu theo tài khoản và đồng bộ | ✅ | `student_profiles.prefs`; áp lớp `bk-frames-still` lên `<html>` |
+| 3 | Tắt hiệu ứng khung áp toàn site, kể cả avatar người khác trong Chat | ✅ | `bk-core.css` + `bk-chat.css`; giữ hoa văn tĩnh |
 | 4 | Lời chào trang chủ theo giờ Việt Nam kèm tên hiển thị | ✅ | `bk-shell.js`, cập nhật mỗi phút, không nhấp nháy |
-| 5 | Bảo trì toàn site thống nhất, nút “Thử lại”, lối vào Administrator Code | ✅ | Overlay trong `bk-shell.js` |
+| 5 | Bảo trì khóa toàn site: biểu tượng tải, chặn cuộn/chạm/bàn phím, lối vào Administrator Code | ✅ | Overlay + `html.bk-maint-lock` trong `bk-shell.js` (7.1.0) |
 
 ## H. Thành tích & tín hiệu dùng chung
 
@@ -277,8 +276,8 @@ Function `chat-api`; trình duyệt chỉ đọc dữ liệu phòng mình tham g
 | 5 | Chat chỉ gửi văn bản (6.0.0 bỏ gửi ảnh và bảng emoji soạn tin) | ✅ | Ảnh cũ vẫn hiển thị; server trả `IMAGES_DISABLED` nếu client cố gửi ảnh mới |
 | 6 | 12 cảm xúc emoji, bấm lại để bỏ | ✅ | `chat_reactions`, `reactions.toggle`; cập nhật tối ưu + hoàn tác khi lỗi |
 | 7 | Realtime tin nhắn, cảm xúc, tên nhóm | ✅ | Các bảng trong `supabase_realtime`, `replica identity full` |
-| 8 | Bộ đếm tin chưa đọc theo phòng + trên tiêu đề tab | ✅ | `last_read_at`; `read.mark` nhận nguyên mốc `through` (microseconds) và bỏ qua tin của chính mình |
-| 9 | Profile Card: tên, biệt danh, giới thiệu, khung, số thành tích | ✅ | View `chat_profiles` không lộ `student_code`; có `last_seen_at` |
+| 8 | Bộ đếm tin chưa đọc theo phòng + trên tiêu đề tab | ✅ | `last_read_at`; `read.mark` giữ nguyên mốc microseconds, bỏ qua tin của chính mình, chỉ gửi khi tab hiện + focus + gần cuối khung (7.1.0) |
+| 9 | Profile Card: tên, biệt danh, ảnh bìa, giới thiệu, khung, liên kết, danh vị lớp, số thành tích | ✅ | `chat-api` đọc thêm `student_profiles`/`student_roles`; view `chat_profiles` không lộ `student_code` |
 | 10 | Tìm học sinh để nhắn riêng hoặc thêm vào nhóm | ✅ | `students.search` qua `chat-api`; có trạng thái tải/trống/lỗi + thử lại |
 | 11 | Xoá mềm tin của mình; trưởng nhóm xoá tin trong nhóm | ✅ | `deleted_at`, hiện “Tin nhắn đã được xoá” |
 | 12 | Không có đồng hồ đếm ngược hay giới hạn thời gian | ✅ | Đúng nguyên tắc sản phẩm |
@@ -288,10 +287,13 @@ Function `chat-api`; trình duyệt chỉ đọc dữ liệu phòng mình tham g
 | 16 | Ghim/lưu trữ hội thoại theo từng học sinh | ✅ | `chat_conversation_prefs` + `conversation.pin`/`conversation.archive` |
 | 17 | Bộ lọc “Đã lưu trữ”, phòng ghim xếp trước | ✅ | Tổng chưa đọc bỏ qua phòng đã lưu trữ |
 | 18 | Xem ai đã thả cảm xúc | ✅ | Popover `.bkchat-reaction-pop`, tải Profile Card còn thiếu |
-| 19 | Chấm đỏ/đã đọc đồng bộ giữa các trang | ✅ | `bk-cloud.js` làm mới khi `chat_members`/`chat_conversation_prefs` đổi; trang Chat đẩy số qua `setChatUnread` |
+| 19 | Số chưa đọc đồng bộ giữa các trang, không còn chấm đỏ trên avatar | ✅ | `bk-cloud.js` làm mới khi `chat_members`/`chat_conversation_prefs` đổi; trang Chat đẩy số qua `setChatUnread` (7.1.0) |
 | 20 | Mọi mốc thời gian theo `Asia/Ho_Chi_Minh` (UTC+7) | ✅ | Không dùng múi giờ thiết bị; changelog hiểu ngày là nửa đêm UTC+7 từ 7.0.1 |
-| 21 | Nhãn “Đã gửi/Đã đọc” cho tin của mình, “Bạn đã đọc/Chưa đọc” cho tin người khác | ✅ | So sánh `chat_members.last_read_at`; realtime `chat_members` |
-| 22 | Nút “Đánh dấu đã đọc” ở đầu hội thoại | ✅ | Gọi `read.mark` ngay; mở phòng vẫn tự đánh dấu |
+| 21 | Dấu đã đọc kiểu biểu tượng: ✓ đã gửi, ✓✓ đã đọc | ✅ | Chỉ tin của chính mình; so sánh `chat_members.last_read_at`; realtime `chat_members` (7.1.0) |
+| 22 | Nút “Đánh dấu đã đọc” ở đầu hội thoại | ✅ | Gọi `read.mark` ngay; mở phòng/visibility/focus tự đánh dấu khi đủ điều kiện |
+| 23 | Menu 3 chấm đúng 2 nút **Ghim** và **Lưu trữ** dạng popup nhỏ | ✅ | `.bkchat-menu-pop`, biểu tượng + nhãn (7.1.0) |
+| 24 | Bấm tên/avatar đầu cuộc DM mở hồ sơ đối phương | ✅ | Ảnh bìa, khung, giới thiệu, liên kết, danh vị lớp |
+| 25 | Hàng “Hồ sơ của bạn” + sửa biệt danh trong Chat | ✅ | `#bkChatMe`; lưu qua `BKProfile.save`, đồng bộ như trang Hồ sơ (7.1.0) |
 
 > Từ 7.0.0, migration `20261126000000` bổ sung `chat_conversation_prefs` (RLS + realtime)
 > và `chat-api` xử lý ghim/lưu trữ. Các migration `20261120000000`/`20261125000000`,

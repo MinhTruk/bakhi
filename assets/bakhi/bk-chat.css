@@ -227,6 +227,34 @@
 .bkchat-primary:hover { filter: brightness(1.06); }
 .bkchat-block { width: 100%; margin-top: 1rem; }
 
+/* Hàng hồ sơ của chính mình ở chân danh sách trò chuyện. */
+.bkchat-me {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    width: 100%;
+    margin-bottom: .45rem;
+    padding: .4rem .45rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--bkl-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.bkchat-me:hover { background: var(--bkl-surface); border-color: var(--bkl-line); }
+.bkchat-me[hidden] { display: none; }
+.bkchat-me-text { display: flex; flex-direction: column; min-width: 0; gap: .05rem; }
+.bkchat-me-name {
+    font-size: .82rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bkchat-me-sub { font-size: .66rem; color: var(--bkl-muted); }
+
 /* -------------------------------------------------------------- Cột giữa */
 .bkchat-main {
     display: flex;
@@ -258,6 +286,25 @@
     font-size: .7rem;
     color: var(--bkl-muted);
 }
+.bkchat-head-link {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: .92rem;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+.bkchat-head-link:hover { text-decoration: underline; }
+.bkchat-head-link:focus-visible { outline: 2px solid var(--bkl-primary); outline-offset: 2px; border-radius: 4px; }
 
 .bkchat-messages {
     position: relative;
@@ -431,14 +478,15 @@
 .bkchat-read-row {
     display: inline-flex;
     align-items: center;
-    gap: .2rem;
-    padding: 0 .15rem;
+    justify-content: center;
+    flex: 0 0 auto;
+    padding: 0 .05rem;
     color: var(--bkl-muted);
     font-size: .62rem;
     line-height: 1.4;
 }
-.bkchat-read-row .bkchat-read-ic { font-size: .6rem; }
-.bkchat-read-state.is-read { color: #16a34a; }
+.bkchat-read-row .bkchat-read-ic { font-size: .64rem; }
+.bkchat-read-row.is-read { color: #16a34a; }
 .bkchat-icon-btn.is-read-done { color: #16a34a; }
 .bkchat-msg-action {
     display: inline-flex;
@@ -466,6 +514,45 @@
     border-radius: 12px;
     background: var(--bkl-surface);
     box-shadow: var(--bkl-shadow);
+}
+
+/* Popup 2 thao tác của nút 3 chấm (ghim + lưu trữ). */
+.bkchat-pop.bkchat-menu-pop {
+    position: fixed;
+    z-index: 21000;
+    display: flex;
+    flex-direction: column;
+    gap: .1rem;
+    padding: .28rem;
+    min-width: 0;
+}
+.bkchat-menu-item {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    width: 100%;
+    padding: .45rem .55rem;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--bkl-text);
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+}
+.bkchat-menu-item i {
+    width: 1rem;
+    flex: 0 0 1rem;
+    text-align: center;
+    color: var(--bkl-primary);
+}
+.bkchat-menu-item:hover,
+.bkchat-menu-item:focus-visible {
+    background: var(--bkl-surface-2);
+    color: var(--bkl-primary);
+    outline: none;
 }
 
 /* --------------------------------------------------------------- Soạn tin */
@@ -629,6 +716,24 @@
 }
 .bkchat-card[hidden] { display: none; }
 .bkchat-card-close { position: absolute; top: .6rem; right: .6rem; }
+.bkchat-card-banner {
+    position: relative;
+    height: 92px;
+    margin: -1.4rem -1rem .2rem;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--bkl-primary), var(--bkl-secondary));
+}
+.bkchat-card-banner img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.bkchat-card.has-banner .bkchat-card-close {
+    color: #fff;
+    background: rgba(2, 6, 23, .45);
+    border-color: rgba(255, 255, 255, .35);
+}
 .bkchat-card-hero {
     display: flex;
     flex-direction: column;
@@ -636,12 +741,39 @@
     gap: .35rem;
     text-align: center;
 }
+.bkchat-card-hero.has-banner { margin-top: -42px; }
+.bkchat-card-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .3rem;
+    width: 100%;
+    min-width: 0;
+}
 .bkchat-card-name {
     margin: .35rem 0 0;
     font-size: 1rem;
     font-weight: 700;
     color: var(--bkl-text);
+    max-width: 100%;
+    overflow-wrap: anywhere;
 }
+.bkchat-card-edit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-top: .35rem;
+    flex: 0 0 auto;
+    border: 1px solid var(--bkl-line);
+    border-radius: 50%;
+    background: var(--bkl-surface);
+    color: var(--bkl-muted);
+    font-size: .64rem;
+    cursor: pointer;
+}
+.bkchat-card-edit:hover { color: var(--bkl-primary); border-color: var(--bkl-primary); }
 .bkchat-card-sub { font-size: .74rem; color: var(--bkl-muted); }
 .bkchat-card-bio {
     margin: 0;
@@ -650,7 +782,7 @@
     color: var(--bkl-text);
     white-space: pre-wrap;
 }
-.bkchat-card-stats { display: flex; flex-wrap: wrap; gap: .3rem; justify-content: center; }
+.bkchat-card-roles { display: flex; flex-wrap: wrap; gap: .28rem; justify-content: center; }
 .bkchat-chip {
     padding: .16rem .5rem;
     border-radius: 999px;
@@ -659,6 +791,42 @@
     font-size: .7rem;
     color: var(--bkl-muted);
 }
+.bkchat-chip-role {
+    border-color: color-mix(in srgb, var(--bkl-primary) 50%, transparent);
+    background: color-mix(in srgb, var(--bkl-primary) 12%, transparent);
+    color: var(--bkl-primary);
+    font-weight: 700;
+}
+.bkchat-card-section {
+    margin: .15rem 0 0;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--bkl-muted);
+}
+.bkchat-card-links { display: flex; flex-direction: column; gap: .25rem; }
+.bkchat-card-link {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .38rem .5rem;
+    border: 1px solid var(--bkl-line);
+    border-radius: 9px;
+    background: var(--bkl-surface);
+    color: var(--bkl-text);
+    font-size: .78rem;
+    text-decoration: none;
+    min-width: 0;
+}
+.bkchat-card-link:hover { border-color: var(--bkl-primary); color: var(--bkl-primary); }
+.bkchat-card-link i { color: var(--bkl-primary); flex: 0 0 auto; }
+.bkchat-card-link span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.bkchat-card-stats { display: flex; flex-wrap: wrap; gap: .3rem; justify-content: center; }
 
 /* -------------------------------------------------------------- Avatar */
 .bkchat-avatar {
@@ -950,6 +1118,16 @@ button.bkchat-avatar { cursor: pointer; }
     overflow: visible;
     pointer-events: none;
     z-index: 2;
+}
+/* Công tắc "Animate Avatar Borders" tắt thì mọi khung — kể cả của người khác
+   trong Chat — đứng yên. */
+html.bk-frames-still .bkchat-avatar-frame-svg,
+html.bk-frames-still .bkchat-avatar-frame-svg *,
+html.bk-frames-still .bkchat-avatar-frame-svg .bk-frame-orbit,
+html.bk-frames-still .bkchat-avatar-frame-svg .bk-frame-spark,
+html.bk-frames-still .bkchat-avatar-frame-svg .bk-frame-aura,
+html.bk-frames-still .bkchat-avatar-frame-svg .bk-frame-crown {
+    animation: none !important;
 }
 .bkchat-role {
     margin-left: .35rem;

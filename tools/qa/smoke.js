@@ -217,39 +217,48 @@ ok('dev inspector pane built', !!w.document.querySelector('[data-pane="inspector
 
 /* ---------------- Music player ---------------- */
 console.log('\n[1b] Music player (global)');
-ok('music library starts empty (no default tracks)', !!w.BKMusic && w.BKMusic.tracks.length === 0, String(w.BKMusic && w.BKMusic.tracks.length));
+ok('music library starts with 5 curated tracks', !!w.BKMusic && w.BKMusic.tracks.length === 5, String(w.BKMusic && w.BKMusic.tracks.length));
 ok('music panel built', !!w.document.querySelector('.bkmusic-panel'));
-ok('music has no autoplay', w.BKMusic.state.playing === false && w.BKMusic.audio() === null);
+ok('music has no autoplay', w.BKMusic.state.playing === false);
 ok('music fab exists', !!w.document.querySelector('.bkmusic-btn'));
+ok('curated tracks keep file-based metadata',
+  w.BKMusic.tracks[0].id === 'gia-nhu' && /music\/gia-nhu\.mp3$/.test(w.BKMusic.tracks[0].src)
+  && w.BKMusic.tracks[4].id === 'homesick', w.BKMusic.tracks.map(function (t) { return t.id; }).join(','));
+ok('unknown manifest ids cannot escape music/', (() => {
+  const before = w.BKMusic.tracks.length;
+  w.BKMusic.mergeManifest([{ id: '../../.env' }, { id: 'co dau cach' }, null]);
+  return w.BKMusic.tracks.length === before;
+})());
 
-const ytSrc = w.BKMusic.parseSource('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
-ok('parses YouTube link to official embed', !!ytSrc && ytSrc.provider === 'youtube' && /youtube(?:-nocookie)?\.com\/embed\/dQw4w9WgXcQ/.test(ytSrc.embed), JSON.stringify(ytSrc && ytSrc.embed));
-const spSrc = w.BKMusic.parseSource('https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT');
-ok('parses Spotify link to official embed', !!spSrc && spSrc.provider === 'spotify' && /open\.spotify\.com\/embed\/track\/4cOdK2wGLETKBW3PvgPWqT/.test(spSrc.embed), JSON.stringify(spSrc && spSrc.embed));
-const scSrc = w.BKMusic.parseSource('https://soundcloud.com/artist/track');
-ok('parses SoundCloud link to official embed', !!scSrc && scSrc.provider === 'soundcloud' && /w\.soundcloud\.com\/player/.test(scSrc.embed), JSON.stringify(scSrc && scSrc.embed));
-const badSrc = w.BKMusic.parseSource('javascript:alert(1)');
-ok('rejects non-media link', !badSrc || !!badSrc.error);
-
-const t1 = w.BKMusic.addSource('https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'Bài thử', 'Nghệ sĩ thử');
-const t2 = w.BKMusic.addSource('https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT', '', '');
-ok('adds two imported tracks', w.BKMusic.tracks.length === 2 && !!t1 && !!t2, String(w.BKMusic.tracks.length));
-ok('imported tracks keep provider metadata', w.BKMusic.tracks[0].provider === 'youtube' && w.BKMusic.tracks[1].provider === 'spotify');
-ok('imported tracks start without lyrics', w.BKMusic.tracks.every(function (t) { return !t.lyrics; }));
-ok('library queue mirrors imported tracks', JSON.stringify(w.BKMusic.state.queue) === '[0,1]', JSON.stringify(w.BKMusic.state.queue));
+/* Manifest: file .mp3 mới trong music/ được tools/music-scan.js ghi vào
+   music/library.json; player tự nạp và thêm vào Thư viện + queue. */
+const manifestList = [
+  { id: 'gia-nhu', title: 'Trùng id' },
+  { id: 'bai-hat-moi', title: 'Bài hát mới', artist: 'Nghệ sĩ mới' },
+  { id: 'bai-khong-ten' }
+];
+const addedTracks = w.BKMusic.mergeManifest(manifestList);
+ok('manifest adds newly dropped mp3 files', w.BKMusic.tracks.length === 7 && addedTracks.length === 2, JSON.stringify(w.BKMusic.tracks.map(function (t) { return t.id; })));
+ok('manifest keeps curated metadata for duplicate ids', w.BKMusic.tracks[0].title === 'Giá như');
+ok('manifest can be re-applied without duplicates', (() => {
+  w.BKMusic.mergeManifest([{ id: 'bai-hat-moi' }]);
+  return w.BKMusic.tracks.length === 7;
+})());
+ok('new tracks join the queue once', w.BKMusic.state.queue.indexOf(5) >= 0 && w.BKMusic.state.queue.indexOf(6) >= 0, JSON.stringify(w.BKMusic.state.queue));
+ok('manifest loader is exposed', typeof w.BKMusic.loadLibrary === 'function' && typeof w.BKMusic.refreshLibrary === 'function');
+ok('auto title for unnamed files', w.BKMusic.tracks[6].title === 'Bai khong ten', w.BKMusic.tracks[6].title);
 
 const mQueue0 = w.BKMusic.state.queue.slice();
-const mCur0 = w.BKMusic.state.queue[w.BKMusic.state.qi];
 w.BKMusic.setShuffle(true);
 ok('shuffle enabled', w.BKMusic.state.shuffle === true);
-ok('shuffle keeps queue stable', JSON.stringify(w.BKMusic.state.queue) === JSON.stringify(mQueue0));
+ok('shuffle reshuffles the play queue', w.BKMusic.state.queue.length === mQueue0.length);
 const shuffleFrom = w.BKMusic.state.qi;
 w.BKMusic.next();
 ok('shuffle picks a different track', w.BKMusic.state.qi !== shuffleFrom && w.BKMusic.state.queue.length === mQueue0.length);
-const shuffleCur = w.BKMusic.state.qi;
+const shuffleCur = w.BKMusic.current().id;
 w.BKMusic.setShuffle(false);
 ok('shuffle disabled', w.BKMusic.state.shuffle === false);
-ok('shuffle off keeps current', w.BKMusic.state.qi === shuffleCur);
+ok('shuffle off keeps current track', w.BKMusic.current().id === shuffleCur, w.BKMusic.current().id);
 w.BKMusic.loadTrack(0, false);
 w.BKMusic.setRepeat(2);
 ok('repeat one set', w.BKMusic.state.repeat === 2);
@@ -258,9 +267,9 @@ ok('repeat all set', w.BKMusic.state.repeat === 1);
 w.BKMusic.setRepeat(0);
 ok('repeat off set', w.BKMusic.state.repeat === 0);
 w.BKMusic.clearQueue();
-ok('clear queue empties queue', w.BKMusic.state.queue.length === 0, String(w.BKMusic.state.queue.length));
-w.BKMusic.addToQueue(0);
-ok('add to queue grows empty queue', w.BKMusic.state.queue.length === 1, String(w.BKMusic.state.queue.length));
+ok('clear queue keeps only the current track', w.BKMusic.state.queue.length === 1, String(w.BKMusic.state.queue.length));
+w.BKMusic.addToQueue(1);
+ok('add to queue grows the queue', w.BKMusic.state.queue.length === 2, String(w.BKMusic.state.queue.length));
 w.BKMusic.reset();
 ok('reset rebuilds queue from library', w.BKMusic.state.queue.length === w.BKMusic.tracks.length && w.BKMusic.state.shuffle === false, String(w.BKMusic.state.queue.length));
 const beforeRemove = w.BKMusic.state.queue.length;
@@ -269,7 +278,7 @@ ok('remove from queue shrinks queue', w.BKMusic.state.queue.length === beforeRem
 w.BKMusic.loadTrack(0, false);
 ok('load track keeps paused', w.BKMusic.state.playing === false);
 ok('player renders queue items', w.document.querySelectorAll('.bkmusic-item').length > 0);
-ok('empty lyrics shows notice', (() => {
+ok('missing lyrics shows notice', (() => {
   w.BKMusic.open();
   const t = w.document.querySelector('.bkmusic-tabs button[data-tab="lyrics"]');
   if (t) t.click();
@@ -278,7 +287,7 @@ ok('empty lyrics shows notice', (() => {
 ok('dev music tab renders', !!w.document.querySelector('[data-pane="music"] .bkdev-table'));
 ok('dev music tab has layout buttons', /Phóng to/.test(w.document.querySelector('[data-pane="music"]').textContent));
 
-/* Nâng cấp Music Player: bố cục, phím tắt có điều kiện, trợ năng, sự kiện. */
+/* Bố cục, phím tắt có điều kiện, trợ năng, sự kiện. */
 const mPanel = w.document.querySelector('.bkmusic-panel');
 ok('music panel has minimize/maximize buttons', !!mPanel.querySelector('.bkm-min') && !!mPanel.querySelector('.bkm-max'));
 ok('music panel has resize handle', !!mPanel.querySelector('.bkmusic-resize'));
@@ -296,18 +305,12 @@ ok('music shortcut active when panel open', openKey.defaultPrevented === true);
 w.BKMusic.showTab('library');
 ok('music showTab switches pane', w.document.querySelector('.bkm-library').hidden === false && w.document.querySelector('.bkm-queue').hidden === true);
 w.BKMusic.showTab('queue');
-const addForm = mPanel.querySelector('.bkm-add');
-const addUrl = mPanel.querySelector('.bkm-url');
-ok('music add-link form is always visible outside hidden tabs',
-  !!addForm && !!addUrl && !addForm.closest('[hidden]') && !addUrl.closest('[hidden]'));
-mPanel.querySelector('.bkm-add-toggle').click();
-ok('music “Thêm bài” focuses the link field', w.document.activeElement === addUrl);
-/* jsdom không layout → giả lập hình chữ nhật của panel để test kéo/đổi kích thước. */
+/* jsdom không layout → giả lập hình chữ nhật của panel từ style inline. */
 mPanel.getBoundingClientRect = function () {
-  var px = parseFloat(this.style.getPropertyValue('--bkm-x'));
-  var py = parseFloat(this.style.getPropertyValue('--bkm-y'));
-  var pw = parseFloat(this.style.getPropertyValue('--bkm-w'));
-  var ph = parseFloat(this.style.getPropertyValue('--bkm-h'));
+  var px = parseFloat(this.style.left);
+  var py = parseFloat(this.style.top);
+  var pw = parseFloat(this.style.width);
+  var ph = parseFloat(this.style.height);
   var l = isFinite(px) ? px : 600, t = isFinite(py) ? py : 340;
   var wd = isFinite(pw) ? pw : 360, ht = isFinite(ph) ? ph : 400;
   return { left: l, top: t, right: l + wd, bottom: t + ht, width: wd, height: ht, x: l, y: t };
@@ -327,8 +330,8 @@ const dragGeo = JSON.parse(w.localStorage.getItem('bakhiMusic.panel.v1') || 'nul
 ok('music drag saves layout', !!dragGeo && typeof dragGeo.x === 'number' && typeof dragGeo.w === 'number', JSON.stringify(dragGeo));
 ok('music drag clears dragging state', !mPanel.classList.contains('bkmusic-dragging'));
 ptr('pointerdown', 610, 730, 1, mPanel.querySelector('.bkmusic-resize'));
-ptr('pointermove', 700, 760, 1);
-ptr('pointerup', 700, 760, 0);
+ptr('pointermove', 520, 700, 1);
+ptr('pointerup', 520, 700, 0);
 const rzGeo = JSON.parse(w.localStorage.getItem('bakhiMusic.panel.v1') || 'null');
 ok('music resize saves bigger box', !!rzGeo && rzGeo.w > dragGeo.w && rzGeo.h > dragGeo.h, JSON.stringify(rzGeo));
 ok('music resize clears resizing state', !mPanel.classList.contains('bkmusic-resizing'));
@@ -366,7 +369,7 @@ ok('storage protects learning key', w.document.getElementById('bkdevStorageList'
 
 w.BKDev.activate('console');
 w.console.log('smoke console line');
-setTimeout(() => {
+setTimeout(async () => {
   const logs = w.document.getElementById('bkdevLogList');
   ok('console captures logs', logs && logs.textContent.length > 0);
 
@@ -464,6 +467,23 @@ setTimeout(() => {
   ok('notify read state stores ids', Object.keys(nw.BKNotify.state().read).length === 2, JSON.stringify(nw.BKNotify.state().read));
   ok('notify read key is separate', !!nw.localStorage.getItem('bakhiNotify.v1') && !nw.localStorage.getItem('bakhiNotify.v1').includes('chuông thông báo'));
   ok('notify page has no runtime error', N.errors.length === 0, String(N.errors[0] || ''));
+
+  console.log('\n[3b] Music manifest fetch');
+  w.fetch = function (url) {
+    if (String(url).indexOf('music/library.json') >= 0) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ tracks: [{ id: 'bai-tu-dong', title: 'Bài tự động' }] })
+      });
+    }
+    return Promise.reject(new Error('not found'));
+  };
+  const fetchedTracks = await w.BKMusic.refreshLibrary();
+  ok('manifest fetch reports ok', w.BKMusic.libraryState() === 'ok', w.BKMusic.libraryState());
+  ok('manifest fetch appends newly discovered file',
+    w.BKMusic.tracks.length === 8 && fetchedTracks.length === 1 && w.BKMusic.state.queue.indexOf(7) >= 0,
+    String(w.BKMusic.tracks.length));
+  ok('manifest fetch ignores duplicates on repeat', (await w.BKMusic.refreshLibrary()).length === 0, String(w.BKMusic.tracks.length));
 
   console.log('\n[4] Corruption recovery');
   const C = makeDOM('<!DOCTYPE html><html><body></body></html>', 'https://minhtruk.github.io/bakhi/index.html');

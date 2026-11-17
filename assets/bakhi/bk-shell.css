@@ -101,18 +101,6 @@ body.bk-app {
 .bk-user-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px -12px rgba(2, 6, 23, .55); border-color: var(--bkl-primary, #6366f1); }
 .bk-user-btn:focus-visible { outline: 2px solid var(--bkl-primary, #6366f1); outline-offset: 2px; }
 .bk-user-btn-caret { font-size: .6rem; opacity: .65; padding-right: .3rem; }
-.bk-user-dot {
-    position: absolute;
-    top: -1px; right: -1px;
-    z-index: 4;
-    width: 9px; height: 9px;
-    border-radius: 999px;
-    background: #f43f5e;
-    border: 2px solid var(--bkl-surface, #fff);
-    box-sizing: content-box;
-    display: none;
-}
-.bk-user-dot.on { display: block; }
 
 /* ---------------------------- Menu tài khoản ---------------------------- */
 .bk-user-menu {
@@ -316,6 +304,17 @@ html.bk-a11y-links a:not(.bk-menu-row):not(.bk-chipx) {
 
 /* ----------------------------- Bảo trì toàn site ------------------------ */
 body.bk-maintenance-on { overflow: hidden; }
+html.bk-maint-lock,
+html.bk-maint-lock body {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+}
+html.bk-maint-lock body {
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100%;
+}
 .bk-maint {
     position: fixed;
     inset: 0;
@@ -350,12 +349,31 @@ body.bk-maintenance-on { overflow: hidden; }
     justify-content: center;
     width: 68px;
     height: 68px;
-    margin-bottom: .6rem;
+    margin-bottom: .55rem;
     border-radius: 50%;
     color: #fbbf24;
     background: color-mix(in srgb, #fbbf24 16%, transparent);
     border: 1px solid color-mix(in srgb, #fbbf24 40%, transparent);
 }
+.bk-maint-spinner {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid rgba(251, 191, 36, .22);
+    border-top-color: #fbbf24;
+    border-right-color: rgba(251, 191, 36, .65);
+    animation: bk-maint-spin .9s linear infinite;
+}
+@keyframes bk-maint-spin { to { transform: rotate(360deg); } }
+.bk-maint-loading {
+    margin: 0 0 .55rem;
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #fbbf24;
+}
+.bk-maint:focus { outline: none; }
 .bk-maint-title { margin: .2rem 0 .55rem; font-size: clamp(1.2rem, 4vw, 1.7rem); line-height: 1.25; }
 .bk-maint-msg { margin: 0 0 .6rem; font-size: .95rem; line-height: 1.6; color: #cbd5e1; }
 .bk-maint-reason { margin: 0 0 .5rem; font-size: .82rem; color: #94a3b8; }
@@ -372,7 +390,56 @@ body.bk-maintenance-on { overflow: hidden; }
     cursor: pointer;
 }
 .bk-maint-btn:hover { filter: brightness(1.08); }
+.bk-maint-btn-alt {
+    background: rgba(148, 163, 184, .16);
+    border: 1px solid rgba(148, 163, 184, .35);
+    color: #e2e8f0;
+}
+.bk-maint-btn:disabled { opacity: .6; cursor: progress; }
 .bk-maint-foot { margin: .9rem 0 0; font-size: .72rem; color: #64748b; }
+@media (prefers-reduced-motion: reduce) {
+    .bk-maint-spinner { animation-duration: 2.4s; }
+}
+
+/* Hộp thoại mở khoá tạm thời bằng Administrator Code (nằm trên màn bảo trì) */
+.bk-maint-bypass {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.2rem;
+    background: rgba(2, 6, 23, .72);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+.bk-maint-bypass-card {
+    width: min(420px, 100%);
+    max-width: 100%;
+    padding: clamp(1rem, 3vw, 1.4rem);
+    border: 1px solid rgba(148, 163, 184, .3);
+    border-radius: 18px;
+    background: #0f172a;
+    color: #e2e8f0;
+    box-shadow: 0 24px 70px rgba(2, 6, 23, .6);
+    overflow-wrap: anywhere;
+}
+.bk-maint-bypass-title { margin: 0 0 .4rem; font-size: 1.1rem; line-height: 1.3; }
+.bk-maint-bypass-desc { margin: 0 0 .85rem; font-size: .82rem; line-height: 1.55; color: #94a3b8; }
+.bk-maint-bypass-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: .6rem .7rem;
+    border-radius: .6rem;
+    border: 1px solid rgba(148, 163, 184, .4);
+    background: #020617;
+    color: #e2e8f0;
+    font: inherit;
+}
+.bk-maint-bypass-input:focus { outline: 2px solid #a5b4fc; outline-offset: 1px; }
+.bk-maint-bypass-error { margin: .55rem 0 0; font-size: .78rem; color: #fca5a5; }
+.bk-maint-bypass-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .9rem; flex-wrap: wrap; }
 
 /* ============================ Lời chào trang chủ ======================== */
 .bk-greeting {
