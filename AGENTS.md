@@ -33,7 +33,7 @@ Hướng dẫn cho agent/developer làm việc trong repository này. Đọc h�
 /assets/bakhi/         Lớp nâng cấp dùng chung
   bk-version.js        Nguồn phiên bản duy nhất (window.BAKHI_VERSION, BK.release)
   bk-shell.js|css      Avatar + menu tài khoản, trợ năng toàn site, ẩn chrome cũ
-  bk-profile.js|css    Hồ sơ local-first, ảnh đại diện/bìa, 30 khung avatar SVG
+  bk-profile.js|css    Hồ sơ local-first, ảnh đại diện/bìa, 50 khung avatar SVG
   bk-roles.js          Danh vị học sinh dùng chung (student_roles, canonical id)
   bk-badges.js         78 thành tích (73 tự động + 5 Administrator/độc quyền)
   bk-profile-ui.js     Component hồ sơ/badge dùng chung (profile + settings)

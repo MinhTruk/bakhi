@@ -33,9 +33,14 @@
     /* ---------------------------------------------------------------------
        Khung avatar (trang trí, không thay ảnh gốc)
        ------------------------------------------------------------------ */
-    /* 46 khung avatar thật (SVG vẽ bằng path, phần trung tâm trong suốt):
-       27 khung thường + 2 khung Developer + 1 khung Thiên Khải + 10 khung
-       Founder 7.5.0 + 6 khung Founder thế hệ 7.3.0 (legacy, vẫn dùng được). */
+    /* 50 khung avatar thật (SVG vẽ bằng path, phần trung tâm trong suốt):
+       27 khung thường + 2 khung Developer + 21 khung Founder.
+
+       7.5.3: mỗi badge Founder có đúng một khung độc quyền riêng — 21 badge
+       Founder ↔ 21 khung Founder (thêm Genesis, Nexus, Prime Code, Legacy;
+       6 khung thế hệ 7.3.0 được vẽ lại bằng bộ hình tượng riêng thay vì ghép
+       primitive dùng chung). Mỗi khung Founder có `desc` (mô tả) và `howTo`
+       (cách lấy) để hiển thị trong hộp chi tiết khung. */
     var FRAMES = [
         { id: 'none', name: 'Mặc định', tier: 'normal', rarity: 'common', ring: '#94a3b8', orn: [] },
         { id: 'leaf', name: 'Bồ Đề Sơ Diệp', tier: 'normal', rarity: 'common', ring: '#10b981', pc: '#34d399', sc: '#065f46', orn: ['ring', 'laurel'] },
@@ -66,7 +71,9 @@
         { id: 'phoenix', name: 'Phượng Hoàng Niết Bàn', tier: 'normal', rarity: 'legendary', ring: '#fb7185', pc: '#fda4af', sc: '#881337', orn: ['feathers', 'flames'] },
         { id: 'dev-aurora', name: 'Dao Quang Tuyệt Ảnh', tier: 'dev', rarity: 'secret', ring: '#5eead4', pc: '#67e8f9', sc: '#a855f7', orn: ['aurora', 'stars', 'sigil'], anim: true },
         { id: 'dev-void', name: 'Vô Cực Hư Không', tier: 'dev', rarity: 'secret', ring: '#c084fc', pc: '#e9d5ff', sc: '#6d28d9', orn: ['void', 'spikes', 'runes'], anim: true },
-        { id: 'founder', name: 'Thiên Khải Sáng Thế', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#b91c1c', orn: ['founderCrown', 'wings', 'laurel', 'gem', 'sigil'], anim: true },
+        { id: 'founder', name: 'Thiên Khải Sáng Thế', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#b91c1c', orn: ['ring'], art: 'thien-khai', anim: true,
+            desc: 'Vương miện ánh sáng, vòng nguyệt quế và mười sáu tia sáng — ấn ký tối cao của người khai sáng Bá Khí.',
+            howTo: 'Cách lấy: mở khoá badge “Thiên Khải Sáng Thế”; chỉ hồ sơ Founder (is_founder = true) nhận được từ Founder Dashboard.' },
         /* ------------------------------------------------------------------
            10 khung Founder độc quyền — THIẾT KẾ LẠI ở 7.5.0.
 
@@ -76,24 +83,53 @@
            sở hữu không bị mất; 6 khung cũ còn lại chuyển sang `legacy` và vẫn
            trang bị được nhưng không còn nằm trong danh mục trao mới.
            ------------------------------------------------------------------ */
-        { id: 'founder-yin-yang', name: 'Âm Dương Thái Cực', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#141414', orn: ['ring', 'sigil'], art: 'yin-yang', anim: true, desc: 'Âm dương, thái cực và vòng năng lượng xoắn — ánh kim vàng nhạt trên nền đen trắng.' },
-        { id: 'founder-cyberpunk', name: 'Cyberpunk Overdrive', tier: 'founder', rarity: 'secret', ring: '#22d3ee', pc: '#22d3ee', sc: '#d946ef', orn: ['ring', 'spikes'], art: 'cyberpunk', anim: true, desc: 'Holographic nhiều lớp, mạch điện tử, neon cyan — electric blue — magenta và glitch dữ liệu.' },
-        { id: 'founder-ancient', name: 'Đế Chế Cổ Đại', tier: 'founder', rarity: 'secret', ring: '#d6d3d1', pc: '#fbbf24', sc: '#7c2d12', orn: ['ring', 'runes'], art: 'ancient-empire', anim: true, desc: 'Đồng cổ và vàng cổ, họa tiết chạm khắc, đền đài, đá quý và ký hiệu cổ.' },
-        { id: 'founder-samurai', name: 'Bushido — Kiếm Sĩ', tier: 'founder', rarity: 'secret', ring: '#ef4444', pc: '#f87171', sc: '#0c0a09', orn: ['ring', 'spikes'], art: 'samurai', anim: true, desc: 'Giáp samurai sơn mài đen, đỏ thẫm và vàng, gia huy Nhật Bản và dây buộc giáp.' },
-        { id: 'founder-astral-observatory', name: 'Thiên Văn Đài', tier: 'founder', rarity: 'secret', ring: '#818cf8', pc: '#c7d2fe', sc: '#1e1b4b', orn: ['ring'], art: 'astral-observatory', anim: true, desc: 'Quỹ đạo thiên thể, chòm sao, xanh đêm — tím vũ trụ — bạc và ngôi sao trung tâm.' },
-        { id: 'founder-abyssal', name: 'Vực Thẳm', tier: 'founder', rarity: 'secret', ring: '#06b6d4', pc: '#67e8f9', sc: '#0c4a6e', orn: ['ring'], art: 'abyssal', anim: true, desc: 'Đại dương sâu, san hô, pha lê biển và ánh sáng sinh học xanh cyan.' },
-        { id: 'founder-phoenix-rebirth', name: 'Phượng Hoàng Tái Sinh', tier: 'founder', rarity: 'secret', ring: '#fb7185', pc: '#fbbf24', sc: '#7f1d1d', orn: ['ring'], art: 'phoenix-rebirth', anim: true, desc: 'Lông vũ phượng hoàng, ngọn lửa đỏ — cam — vàng kim, dáng vươn lên từ tro tàn.' },
-        { id: 'founder-crystal-sovereign', name: 'Pha Lê Đế Vương', tier: 'founder', rarity: 'secret', ring: '#a78bfa', pc: '#e9d5ff', sc: '#4c1d95', orn: ['ring'], art: 'crystal-sovereign', anim: true, desc: 'Pha lê nhiều mặt, tím amethyst và xanh sapphire, khúc xạ ánh sáng.' },
-        { id: 'founder-chrono-mechanical', name: 'Cỗ Máy Thời Gian', tier: 'founder', rarity: 'secret', ring: '#d97706', pc: '#fcd34d', sc: '#57534e', orn: ['ring'], art: 'chrono-mechanical', anim: true, desc: 'Bánh răng, đồng hồ, kim loại đồng và bạc với chi tiết cơ khí nhiều lớp.' },
-        { id: 'founder-frost-emperor', name: 'Băng Đế', tier: 'founder', rarity: 'secret', ring: '#93c5fd', pc: '#e0f2fe', sc: '#1e3a8a', orn: ['ring'], art: 'frost-emperor', anim: true, desc: 'Băng giá, tinh thể tuyết, xanh băng và bạc với hiệu ứng khúc xạ lạnh.' },
+        { id: 'founder-yin-yang', name: 'Âm Dương Thái Cực', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#141414', orn: ['ring', 'sigil'], art: 'yin-yang', anim: true, desc: 'Âm dương, thái cực và vòng năng lượng xoắn — ánh kim vàng nhạt trên nền đen trắng.', howTo: 'Cách lấy: mở khoá badge “Âm Dương Thái Cực” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-cyberpunk', name: 'Cyberpunk Overdrive', tier: 'founder', rarity: 'secret', ring: '#22d3ee', pc: '#22d3ee', sc: '#d946ef', orn: ['ring', 'spikes'], art: 'cyberpunk', anim: true, desc: 'Holographic nhiều lớp, mạch điện tử, neon cyan — electric blue — magenta và glitch dữ liệu.', howTo: 'Cách lấy: mở khoá badge “Sát Thủ Tương Lai” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-ancient', name: 'Đế Chế Cổ Đại', tier: 'founder', rarity: 'secret', ring: '#d6d3d1', pc: '#fbbf24', sc: '#7c2d12', orn: ['ring', 'runes'], art: 'ancient-empire', anim: true, desc: 'Đồng cổ và vàng cổ, họa tiết chạm khắc, đền đài, đá quý và ký hiệu cổ.', howTo: 'Cách lấy: mở khoá badge “Cổ Khí Thần Ấn” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-samurai', name: 'Bushido — Kiếm Sĩ', tier: 'founder', rarity: 'secret', ring: '#ef4444', pc: '#f87171', sc: '#0c0a09', orn: ['ring', 'spikes'], art: 'samurai', anim: true, desc: 'Giáp samurai sơn mài đen, đỏ thẫm và vàng, gia huy Nhật Bản và dây buộc giáp.', howTo: 'Cách lấy: mở khoá badge “Bushido” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-astral-observatory', name: 'Thiên Văn Đài', tier: 'founder', rarity: 'secret', ring: '#818cf8', pc: '#c7d2fe', sc: '#1e1b4b', orn: ['ring'], art: 'astral-observatory', anim: true, desc: 'Quỹ đạo thiên thể, chòm sao, xanh đêm — tím vũ trụ — bạc và ngôi sao trung tâm.', howTo: 'Cách lấy: mở khoá badge “Celestial” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-abyssal', name: 'Vực Thẳm', tier: 'founder', rarity: 'secret', ring: '#06b6d4', pc: '#67e8f9', sc: '#0c4a6e', orn: ['ring'], art: 'abyssal', anim: true, desc: 'Đại dương sâu, san hô, pha lê biển và ánh sáng sinh học xanh cyan.', howTo: 'Cách lấy: mở khoá badge “Void Sentinel” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-phoenix-rebirth', name: 'Phượng Hoàng Tái Sinh', tier: 'founder', rarity: 'secret', ring: '#fb7185', pc: '#fbbf24', sc: '#7f1d1d', orn: ['ring'], art: 'phoenix-rebirth', anim: true, desc: 'Lông vũ phượng hoàng, ngọn lửa đỏ — cam — vàng kim, dáng vươn lên từ tro tàn.', howTo: 'Cách lấy: mở khoá badge “Eternal Flame” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-crystal-sovereign', name: 'Pha Lê Đế Vương', tier: 'founder', rarity: 'secret', ring: '#a78bfa', pc: '#e9d5ff', sc: '#4c1d95', orn: ['ring'], art: 'crystal-sovereign', anim: true, desc: 'Pha lê nhiều mặt, tím amethyst và xanh sapphire, khúc xạ ánh sáng.', howTo: 'Cách lấy: mở khoá badge “Ascendant” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-chrono-mechanical', name: 'Cỗ Máy Thời Gian', tier: 'founder', rarity: 'secret', ring: '#d97706', pc: '#fcd34d', sc: '#57534e', orn: ['ring'], art: 'chrono-mechanical', anim: true, desc: 'Bánh răng, đồng hồ, kim loại đồng và bạc với chi tiết cơ khí nhiều lớp.', howTo: 'Cách lấy: mở khoá badge “Chronos” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-frost-emperor', name: 'Băng Đế', tier: 'founder', rarity: 'secret', ring: '#93c5fd', pc: '#e0f2fe', sc: '#1e3a8a', orn: ['ring'], art: 'frost-emperor', anim: true, desc: 'Băng giá, tinh thể tuyết, xanh băng và bạc với hiệu ứng khúc xạ lạnh.', howTo: 'Cách lấy: mở khoá badge “Architect” — badge Founder độc quyền, chỉ Founder trao tay.' },
 
         /* Khung Founder thế hệ 7.3.0 — giữ nguyên để không mất quyền sở hữu. */
-        { id: 'founder-void-emperor', name: 'Vô Cực Hoàng Đế', tier: 'founder', rarity: 'secret', ring: '#0f172a', pc: '#c084fc', sc: '#6d28d9', orn: ['ring', 'void', 'stars', 'sigil'], anim: true, legacy: true },
-        { id: 'founder-celestial-dragon', name: 'Thiên Long', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#facc15', sc: '#a16207', orn: ['ring', 'horns', 'wings', 'sigil'], anim: true, legacy: true },
-        { id: 'founder-golden-ratio', name: 'Vàng Nguyên Tắc', tier: 'founder', rarity: 'secret', ring: '#f59e0b', pc: '#fbbf24', sc: '#92400e', orn: ['ring', 'orbit', 'halo', 'stars'], anim: true, legacy: true },
-        { id: 'founder-ember-core', name: 'Lòng Nõn', tier: 'founder', rarity: 'secret', ring: '#fb7185', pc: '#fda4af', sc: '#881337', orn: ['ring', 'flames', 'ember-core', 'sigil'], anim: true, legacy: true },
-        { id: 'founder-crystal-mind', name: 'Tinh Thần Tinh Thạch', tier: 'founder', rarity: 'secret', ring: '#38bdf8', pc: '#7dd3fc', sc: '#0c4a6e', orn: ['ring', 'crystal', 'halo', 'sigil'], anim: true, legacy: true },
-        { id: 'founder-neon-lotus', name: 'Sen Neon', tier: 'founder', rarity: 'secret', ring: '#e879f9', pc: '#f0abfc', sc: '#701a75', orn: ['ring', 'petals', 'neon-lotus', 'sigil'], anim: true, legacy: true }
+        /* 6 khung thế hệ 7.3.0 — viết lại 7.5.3 bằng bộ vẽ riêng (giữ id để
+           không mất quyền sở hữu), kèm mô tả và cách lấy. */
+        { id: 'founder-void-emperor', name: 'Vô Cực Hoàng Đế', tier: 'founder', rarity: 'secret', ring: '#0f172a', pc: '#c084fc', sc: '#6d28d9', orn: ['ring'], art: 'void-emperor', anim: true, legacy: true,
+            desc: 'Hố đen ở tâm, vòng bồi tụ tím và mười hai mũi hư không — quyền lực của khoảng không tuyệt đối.',
+            howTo: 'Cách lấy: mở khoá badge “Vô Cực Hoàng Đế” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-celestial-dragon', name: 'Thiên Long', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#facc15', sc: '#a16207', orn: ['ring'], art: 'celestial-dragon', anim: true, legacy: true,
+            desc: 'Sừng rồng, vảy vàng và ngọc rồng ở tâm — long khí của trời đất.',
+            howTo: 'Cách lấy: mở khoá badge “Thiên Long” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-golden-ratio', name: 'Vàng Nguyên Tắc', tier: 'founder', rarity: 'secret', ring: '#f59e0b', pc: '#fbbf24', sc: '#92400e', orn: ['ring'], art: 'golden-ratio', anim: true, legacy: true,
+            desc: 'Đường xoắn ốc vàng, các cung tỉ lệ và điểm sao theo tỉ lệ vàng 1,618.',
+            howTo: 'Cách lấy: mở khoá badge “Vàng Nguyên Tắc” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-ember-core', name: 'Lòng Nõn', tier: 'founder', rarity: 'secret', ring: '#fb7185', pc: '#fda4af', sc: '#881337', orn: ['ring'], art: 'ember-core', anim: true, legacy: true,
+            desc: 'Lõi nham thạch, vành than hồng và tàn lửa bay — sức nóng không bao giờ nguội.',
+            howTo: 'Cách lấy: mở khoá badge “Lòng Nõn” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-crystal-mind', name: 'Tinh Thần Tinh Thạch', tier: 'founder', rarity: 'secret', ring: '#38bdf8', pc: '#7dd3fc', sc: '#0c4a6e', orn: ['ring'], art: 'crystal-mind', anim: true, legacy: true,
+            desc: 'Vành pha lê nhiều mặt, mảnh tinh thể và đường nơ-ron — trí tuệ kết tinh.',
+            howTo: 'Cách lấy: mở khoá badge “Tinh Thần Tinh Thạch” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-neon-lotus', name: 'Sen Neon', tier: 'founder', rarity: 'secret', ring: '#e879f9', pc: '#f0abfc', sc: '#701a75', orn: ['ring'], art: 'neon-lotus', anim: true, legacy: true,
+            desc: 'Cánh sen neon hồng tím, viền sáng và hạt sương phát quang.',
+            howTo: 'Cách lấy: mở khoá badge “Sen Neon” — badge Founder độc quyền, chỉ Founder trao tay.' },
+
+        /* 4 khung Founder 7.5.3 — bổ sung để 21 badge Founder có đủ 21 khung
+           độc quyền (Genesis → Ascendant), mỗi khung một hình tượng riêng. */
+        { id: 'founder-genesis', name: 'Khởi Nguyên', tier: 'founder', rarity: 'secret', ring: '#5eead4', pc: '#99f6e4', sc: '#0f766e', orn: ['ring'], art: 'genesis', anim: true,
+            desc: 'Lõi năng lượng đầu tiên, hai quỹ đạo nghiêng và chùm tia khởi tạo — điểm bắt đầu của Bá Khí.',
+            howTo: 'Cách lấy: mở khoá badge “Genesis” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-nexus', name: 'Liên Kết', tier: 'founder', rarity: 'secret', ring: '#a855f7', pc: '#f0abfc', sc: '#6b21a8', orn: ['ring'], art: 'nexus', anim: true,
+            desc: 'Lục giác trung tâm nối sáu nút năng lượng — nơi mọi luồng dữ liệu gặp nhau.',
+            howTo: 'Cách lấy: mở khoá badge “Nexus” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-prime-code', name: 'Mã Nguồn Gốc', tier: 'founder', rarity: 'secret', ring: '#22d3ee', pc: '#67e8f9', sc: '#15803d', orn: ['ring'], art: 'prime-code', anim: true,
+            desc: 'Ngoặc nhọn, lưới dữ liệu và mạch neon — dòng mã nguồn gốc của nền tảng.',
+            howTo: 'Cách lấy: mở khoá badge “Prime Code” — badge Founder độc quyền, chỉ Founder trao tay.' },
+        { id: 'founder-legacy', name: 'Di Sản', tier: 'founder', rarity: 'secret', ring: '#fbbf24', pc: '#fde68a', sc: '#713f12', orn: ['ring'], art: 'legacy', anim: true,
+            desc: 'Vương miện vàng trên vòng nguyệt quế, dải băng dưới — di sản còn mãi.',
+            howTo: 'Cách lấy: mở khoá badge “Legacy” — badge Founder độc quyền, chỉ Founder trao tay.' }
     ];
 
     function frameById(id) {
@@ -572,6 +608,262 @@
                 '<g fill="none" stroke="' + P + '" stroke-linecap="round">' + flakes + '</g>' +
                 '<g stroke="#bfdbfe" stroke-width=".9" opacity=".55"><path d="M8 56q14-8 26-2M92 56q-14-8-26-2"/></g>' +
                 '<path d="M38 92h24" stroke="' + P + '" stroke-width="1.7" opacity=".75"/>';
+        },
+
+        /* ------------------------------------------------------------------
+           7.5.3 — bộ vẽ riêng cho 11 khung Founder còn lại.
+           Mỗi khung một silhouette riêng; mọi chi tiết nằm ngoài bán kính 36
+           để không che ảnh đại diện.
+           ------------------------------------------------------------------ */
+
+        /* Thiên Khải — vương miện ánh sáng, 16 tia và vòng nguyệt quế. */
+        'thien-khai': function (P, S, gid) {
+            var rays = eachAround(16, function (a, i) {
+                return '<path d="M' + pol(i % 2 ? 44 : 46, a) + 'L' + pol(i % 2 ? 49 : 51.5, a) +
+                    '" stroke-width="' + (i % 2 ? 1 : 2) + '" opacity="' + (i % 2 ? '.55' : '.95') + '"/>';
+            });
+            var laurel = eachAround(14, function (a, i) {
+                var d = 40 + (i % 2) * 3;
+                return '<ellipse cx="' + (50 + Math.cos((a * Math.PI) / 180) * d).toFixed(1) +
+                    '" cy="' + (50 + Math.sin((a * Math.PI) / 180) * d).toFixed(1) +
+                    '" rx="2.6" ry="1.3" transform="rotate(' + a + ' ' +
+                    (50 + Math.cos((a * Math.PI) / 180) * d).toFixed(1) + ' ' +
+                    (50 + Math.sin((a * Math.PI) / 180) * d).toFixed(1) + ')"/>';
+            });
+            return '<defs><radialGradient id="' + gid + '-tk" cx=".5" cy=".5" r=".5">' +
+                '<stop offset=".5" stop-color="' + P + '" stop-opacity="0"/>' +
+                '<stop offset="1" stop-color="' + P + '" stop-opacity=".34"/></radialGradient>' +
+                '<linearGradient id="' + gid + '-tk2" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="#fffbeb"/><stop offset="1" stop-color="' + S + '"/></linearGradient></defs>' +
+                '<circle cx="50" cy="50" r="48" fill="url(#' + gid + '-tk)"/>' +
+                '<g fill="none" stroke="' + P + '" stroke-linecap="round">' + rays + '</g>' +
+                '<g fill="' + P + '" opacity=".8">' + laurel + '</g>' +
+                '<path d="M30 20l5-14 7 10 8-13 8 13 7-10 5 14z" fill="url(#' + gid + '-tk2)" stroke="#fffbeb" stroke-width=".8"/>' +
+                '<path d="M30 20h40" stroke="#fef3c7" stroke-width="1.3"/>' +
+                '<g fill="#fffbeb"><circle cx="50" cy="2.6" r="2"/><circle cx="31" cy="6" r="1.3"/>' +
+                '<circle cx="69" cy="6" r="1.3"/></g>' +
+                '<g fill="' + P + '"><circle cx="14" cy="50" r="1.6"/><circle cx="86" cy="50" r="1.6"/>' +
+                '<circle cx="50" cy="94" r="1.8"/></g>';
+        },
+
+        /* Vô Cực Hoàng Đế — hố đen, vòng bồi tụ tím, mũi hư không. */
+        'void-emperor': function (P, S, gid) {
+            var spikes = eachAround(12, function (a, i) {
+                return '<path d="M' + pol(44, a) + 'L' + pol(i % 2 ? 53 : 49.5, a) +
+                    '" stroke-width="' + (i % 2 ? 1.2 : 2.2) + '" opacity="' + (i % 2 ? '.55' : '.9') + '"/>';
+            });
+            return '<defs><radialGradient id="' + gid + '-ve" cx=".5" cy=".5" r=".5">' +
+                '<stop offset=".3" stop-color="#0b0614"/><stop offset=".78" stop-color="#3b0764" stop-opacity=".55"/>' +
+                '<stop offset="1" stop-color="' + P + '" stop-opacity=".26"/></radialGradient>' +
+                '<linearGradient id="' + gid + '-ve2" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="' + P + '"/><stop offset="1" stop-color="#6d28d9"/></linearGradient></defs>' +
+                '<circle cx="50" cy="50" r="49" fill="url(#' + gid + '-ve)"/>' +
+                '<g fill="none" stroke="url(#' + gid + '-ve2)" stroke-linecap="round">' + spikes + '</g>' +
+                '<g fill="none" stroke="' + P + '" opacity=".85">' +
+                '<ellipse cx="50" cy="50" rx="48" ry="16" transform="rotate(-24 50 50)" stroke-width="1.6"/>' +
+                '<ellipse cx="50" cy="50" rx="48" ry="16" transform="rotate(24 50 50)" stroke-width="1.1" opacity=".7"/></g>' +
+                '<circle cx="50" cy="50" r="38" fill="none" stroke="#0b0614" stroke-width="8" opacity=".9"/>' +
+                '<circle cx="50" cy="50" r="44.5" fill="none" stroke="' + P + '" stroke-width="1" stroke-dasharray="1 9" opacity=".85"/>' +
+                '<g fill="#e9d5ff"><circle cx="14" cy="26" r="1.4"/><circle cx="86" cy="30" r="1.2"/>' +
+                '<circle cx="20" cy="78" r="1.3"/><circle cx="80" cy="74" r="1.5"/><circle cx="50" cy="4" r="1.6"/></g>';
+        },
+
+        /* Thiên Long — sừng rồng, vảy, ngọc rồng. */
+        'celestial-dragon': function (P, S, gid) {
+            var scales = eachAround(28, function (a, i) {
+                return i % 2 ? '<path d="M' + pol(44, a) + 'a4.4 4.4 0 0 1 3.6-3.6" stroke-width=".9" opacity=".7"/>' : '';
+            });
+            var whiskers = '<path d="M22 40c-10 3-15 11-14 21"/><path d="M78 40c10 3 15 11 14 21"/>';
+            return '<defs><linearGradient id="' + gid + '-cd" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#fde68a"/><stop offset=".5" stop-color="' + P + '"/>' +
+                '<stop offset="1" stop-color="#a16207"/></linearGradient></defs>' +
+                '<circle cx="50" cy="50" r="48.6" fill="none" stroke="url(#' + gid + '-cd)" stroke-width="2"/>' +
+                '<g fill="none" stroke="' + P + '" stroke-linecap="round">' + scales + '</g>' +
+                '<g fill="none" stroke="url(#' + gid + '-cd)" stroke-width="2.6" stroke-linecap="round">' +
+                '<path d="M40 22C33 14 32 7 35 1"/><path d="M60 22c7-8 8-15 5-21"/></g>' +
+                '<g fill="' + P + '"><path d="M35 1l2 6-4 1z"/><path d="M65 1l-2 6 4 1z"/></g>' +
+                '<g fill="none" stroke="' + P + '" stroke-width="1.1" opacity=".75" stroke-linecap="round">' + whiskers + '</g>' +
+                '<circle cx="50" cy="50" r="6.4" fill="#fef9c3" stroke="' + S + '" stroke-width="1"/>' +
+                '<circle cx="50" cy="50" r="2.6" fill="#fbbf24"/>' +
+                '<g fill="#fde68a"><circle cx="18" cy="30" r="1.3"/><circle cx="82" cy="62" r="1.4"/><circle cx="30" cy="86" r="1.2"/></g>';
+        },
+
+        /* Vàng Nguyên Tắc — xoắn ốc vàng, cung tỉ lệ, điểm sao. */
+        'golden-ratio': function (P, S, gid) {
+            var spiral = '';
+            for (var i = 0; i < 6; i++) {
+                var r = 9 + i * 6.4;
+                spiral += '<path d="M' + pol(r, i * 90) + 'A' + r + ' ' + r + ' 0 0 1 ' + pol(r, i * 90 + 90) +
+                    '" stroke-width="' + (2.4 - i * 0.26).toFixed(2) + '" opacity="' + (0.95 - i * 0.1).toFixed(2) + '"/>';
+            }
+            var nodes = eachAround(5, function (a) {
+                return '<circle cx="' + (50 + Math.cos((a * Math.PI) / 180) * 45).toFixed(1) + '" cy="' +
+                    (50 + Math.sin((a * Math.PI) / 180) * 45).toFixed(1) + '" r="2.2"/>';
+            });
+            return '<defs><linearGradient id="' + gid + '-gr" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#fef3c7"/><stop offset=".5" stop-color="' + P + '"/>' +
+                '<stop offset="1" stop-color="#92400e"/></linearGradient></defs>' +
+                '<circle cx="50" cy="50" r="48.8" fill="none" stroke="url(#' + gid + '-gr)" stroke-width="1.7"/>' +
+                '<g fill="none" stroke="url(#' + gid + '-gr)" stroke-linecap="round">' + spiral + '</g>' +
+                '<g fill="' + P + '">' + nodes + '</g>' +
+                '<g stroke="' + P + '" stroke-width=".9" opacity=".6">' +
+                '<path d="M5 50h6M89 50h6M50 5v6M50 89v6"/></g>' +
+                '<path d="M50 8l1.8 3.7 4.2.6-3 2.9.7 4.1-3.7-2-3.7 2 .7-4.1-3-2.9 4.2-.6z" fill="#fef9c3"/>';
+        },
+
+        /* Lòng Nõn — lõi nham thạch, vành than hồng, tàn lửa. */
+        'ember-core': function (P, S, gid) {
+            var embers = eachAround(13, function (a, i) {
+                var r = 40 + (i % 3) * 4;
+                return '<circle cx="' + (50 + Math.cos((a * Math.PI) / 180) * r).toFixed(1) + '" cy="' +
+                    (50 + Math.sin((a * Math.PI) / 180) * r).toFixed(1) + '" r="' + (1 + (i % 3) * 0.5).toFixed(1) +
+                    '" opacity="' + (0.45 + (i % 3) * 0.2).toFixed(2) + '"/>';
+            });
+            var tongues = eachAround(8, function (a, i) {
+                var p1 = pol(45, a), p2 = pol(52, a + 4), p3 = pol(45, a + 8);
+                return '<path d="M' + p1 + 'Q' + pol(i % 2 ? 52 : 49, a + 4) + ' ' + p3 + '" stroke-width="1.8"/>';
+            });
+            return '<defs><radialGradient id="' + gid + '-ec" cx=".5" cy=".5" r=".5">' +
+                '<stop offset=".45" stop-color="#7f1d1d" stop-opacity=".55"/>' +
+                '<stop offset=".8" stop-color="#f97316" stop-opacity=".5"/>' +
+                '<stop offset="1" stop-color="#fde68a" stop-opacity=".25"/></radialGradient>' +
+                '<linearGradient id="' + gid + '-ec2" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="#fde68a"/><stop offset=".55" stop-color="#f97316"/>' +
+                '<stop offset="1" stop-color="#7f1d1d"/></linearGradient></defs>' +
+                '<circle cx="50" cy="50" r="49" fill="url(#' + gid + '-ec)"/>' +
+                '<circle cx="50" cy="50" r="48.2" fill="none" stroke="url(#' + gid + '-ec2)" stroke-width="2.2"/>' +
+                '<g fill="none" stroke="' + P + '" stroke-linecap="round" opacity=".85">' + tongues + '</g>' +
+                '<g fill="' + P + '">' + embers + '</g>' +
+                '<path d="M50 4c4 6 1 8 5 12 2-2 2-5 2-7 4 5 3 11 0 15-2 3-4 4-7 4s-5-1-7-4c-3-4-4-10 0-15 0 2 0 5 2 7 4-4 1-6 5-12z" fill="url(#' + gid + '-ec2)"/>';
+        },
+
+        /* Tinh Thần Tinh Thạch — vành pha lê, mảnh tinh thể, nơ-ron. */
+        'crystal-mind': function (P, S, gid) {
+            var shards = eachAround(9, function (a, i) {
+                var len = i % 2 ? 8 : 12;
+                return '<path d="M' + pol(43, a) + 'L' + pol(43 + len, a) + 'L' + pol(46, a + 5) + 'z" opacity="' +
+                    (i % 2 ? '.5' : '.85') + '" fill="' + (i % 3 ? P : '#e0f2fe') + '" stroke="' + P + '" stroke-width=".5"/>';
+            });
+            var neurons = eachAround(6, function (a) {
+                return '<path d="M' + pol(37, a) + 'L' + pol(45, a + 6) + 'M' + pol(45, a + 6) + 'l4 3" stroke-width=".9" opacity=".7"/>';
+            });
+            return '<defs><linearGradient id="' + gid + '-cm" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#ecfeff"/><stop offset=".45" stop-color="' + P + '"/>' +
+                '<stop offset="1" stop-color="#0c4a6e"/></linearGradient></defs>' +
+                '<g>' + shards + '</g>' +
+                '<circle cx="50" cy="50" r="48.2" fill="none" stroke="url(#' + gid + '-cm)" stroke-width="1.8"/>' +
+                '<circle cx="50" cy="50" r="44" fill="none" stroke="' + P + '" stroke-width=".6" stroke-dasharray="1 5" opacity=".8"/>' +
+                '<g fill="none" stroke="' + P + '" stroke-linecap="round">' + neurons + '</g>' +
+                '<g fill="#e0f2fe" opacity=".9"><circle cx="50" cy="4" r="1.8"/><circle cx="12" cy="34" r="1.3"/>' +
+                '<circle cx="88" cy="34" r="1.3"/><circle cx="26" cy="84" r="1.4"/><circle cx="74" cy="84" r="1.4"/></g>';
+        },
+
+        /* Sen Neon — cánh sen neon, viền sáng, sương phát quang. */
+        'neon-lotus': function (P, S, gid) {
+            var petals = '';
+            for (var i = 0; i < 8; i++) {
+                var a = i * 45;
+                petals += '<path d="M50 50Q' + pol(56, a - 13) + ' ' + pol(49, a) + 'Q' + pol(56, a + 13) + ' 50 50z" fill="' + P +
+                    '" opacity="' + (i % 2 ? '.34' : '.6') + '" stroke="' + P + '" stroke-width=".7"/>';
+            }
+            var dew = eachAround(10, function (a, i) {
+                var r = 42 + (i % 4) * 2.5;
+                return '<circle cx="' + (50 + Math.cos((a * Math.PI) / 180) * r).toFixed(1) + '" cy="' +
+                    (50 + Math.sin((a * Math.PI) / 180) * r).toFixed(1) + '" r="' + (1 + (i % 3) * 0.4).toFixed(1) + '"/>';
+            });
+            return '<defs><radialGradient id="' + gid + '-nl" cx=".5" cy=".5" r=".5">' +
+                '<stop offset=".55" stop-color="' + P + '" stop-opacity="0"/>' +
+                '<stop offset="1" stop-color="' + P + '" stop-opacity=".3"/></radialGradient></defs>' +
+                '<circle cx="50" cy="50" r="49" fill="url(#' + gid + '-nl)"/>' +
+                '<g>' + petals + '</g>' +
+                '<circle cx="50" cy="50" r="48.4" fill="none" stroke="' + P + '" stroke-width="1.6" opacity=".9"/>' +
+                '<circle cx="50" cy="50" r="44" fill="none" stroke="' + P + '" stroke-width=".8" stroke-dasharray="2 6" opacity=".7"/>' +
+                '<g fill="#fce7f3">' + dew + '</g>' +
+                '<g stroke="' + P + '" stroke-width=".9" opacity=".55"><path d="M50 3v6M50 91v6M3 50h6M91 50h6"/></g>';
+        },
+
+        /* Khởi Nguyên — lõi năng lượng, hai quỹ đạo, tia khởi tạo. */
+        'genesis': function (P, S, gid) {
+            var rays = eachAround(12, function (a, i) {
+                return '<path d="M' + pol(i % 2 ? 46 : 48, a) + 'L' + pol(i % 2 ? 50 : 52, a) +
+                    '" stroke-width="' + (i % 2 ? 1 : 1.8) + '" opacity=".85"/>';
+            });
+            return '<defs><radialGradient id="' + gid + '-ge" cx=".5" cy=".5" r=".5">' +
+                '<stop offset="0" stop-color="#f0fdfa"/><stop offset=".45" stop-color="' + P + '"/>' +
+                '<stop offset="1" stop-color="#0f766e" stop-opacity="0"/></radialGradient>' +
+                '<linearGradient id="' + gid + '-ge2" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#99f6e4"/><stop offset="1" stop-color="#0e7490"/></linearGradient></defs>' +
+                '<circle cx="50" cy="50" r="46" fill="url(#' + gid + '-ge)" opacity=".85"/>' +
+                '<g fill="none" stroke="url(#' + gid + '-ge2)" stroke-linecap="round">' +
+                '<circle cx="50" cy="50" r="47" stroke-width="2"/>' + rays +
+                '<ellipse cx="50" cy="50" rx="47" ry="17" transform="rotate(-24 50 50)" stroke-width="1.5"/>' +
+                '<ellipse cx="50" cy="50" rx="47" ry="17" transform="rotate(38 50 50)" stroke-width="1" opacity=".65"/></g>' +
+                '<circle cx="50" cy="50" r="34" fill="none" stroke="#ccfbf1" stroke-width="1" opacity=".5"/>' +
+                '<g fill="#a7f3d0"><circle cx="8" cy="23" r="1.7"/><circle cx="54" cy="3" r="1.4"/>' +
+                '<circle cx="90" cy="66" r="1.6"/><circle cx="24" cy="88" r="1.3"/></g>';
+        },
+
+        /* Liên Kết — lục giác nối sáu nút, tâm phát sáng. */
+        'nexus': function (P, S, gid) {
+            var spokes = '';
+            for (var i = 0; i < 6; i++) {
+                var a = (Math.PI * 2 * i) / 6 - Math.PI / 2;
+                var x = 50 + Math.cos(a) * 38, y = 50 + Math.sin(a) * 38;
+                spokes += '<path d="M50 50L' + x.toFixed(1) + ' ' + y.toFixed(1) + '" stroke-width="1.3"/>';
+                spokes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3" fill="' + P + '" stroke="#fdf4ff" stroke-width=".8"/>';
+                spokes += '<circle cx="' + (50 + Math.cos(a) * 48).toFixed(1) + '" cy="' + (50 + Math.sin(a) * 48).toFixed(1) + '" r="1.5" fill="#f0abfc"/>';
+            }
+            return '<defs><linearGradient id="' + gid + '-nx" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#f0abfc"/><stop offset="1" stop-color="#7e22ce"/></linearGradient></defs>' +
+                '<g fill="none" stroke="url(#' + gid + '-nx)" stroke-linecap="round">' + spokes + '</g>' +
+                '<path d="M50 9l18 10.5v21L50 51 32 40.5v-21z" fill="none" stroke="#a855f7" stroke-width="1" stroke-dasharray="3 4" opacity=".7"/>' +
+                '<circle cx="50" cy="50" r="11" fill="#4c1d95" opacity=".5"/>' +
+                '<circle cx="50" cy="50" r="6" fill="' + P + '"/>' +
+                '<circle cx="50" cy="50" r="2.4" fill="#fdf4ff"/>' +
+                '<g stroke="#f5d0fe" stroke-width="1.1" opacity=".8"><path d="M50 30v-6M50 70v-6M30 50h-6M70 50h-6"/></g>';
+        },
+
+        /* Mã Nguồn Gốc — ngoặc nhọn, lưới dữ liệu, mạch neon. */
+        'prime-code': function (P, S, gid) {
+            var dots = '';
+            for (var y = 0; y < 4; y++) for (var x = 0; x < 4; x++) {
+                dots += '<circle cx="' + (35 + x * 6).toFixed(1) + '" cy="' + (68 + y * 4.4).toFixed(1) + '" r=".9" opacity="' +
+                    (0.3 + ((x + y) % 3) * 0.2).toFixed(2) + '"/>';
+            }
+            var traces = eachAround(8, function (a, i) {
+                return '<path d="M' + pol(45, a) + 'h3v3" stroke-width="1.1" opacity="' + (i % 2 ? '.55' : '.9') + '"/>';
+            });
+            return '<defs><linearGradient id="' + gid + '-pc" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#67e8f9"/><stop offset="1" stop-color="#15803d"/></linearGradient></defs>' +
+                '<rect x="6" y="6" width="88" height="88" rx="12" fill="none" stroke="#22d3ee" stroke-width="1.1" opacity=".5"/>' +
+                '<path d="M42 26L32 50l10 24M58 26l10 24-10 24" fill="none" stroke="url(#' + gid + '-pc)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' +
+                '<g fill="#5eead4">' + dots + '</g>' +
+                '<g fill="none" stroke="' + P + '" stroke-linecap="round">' + traces + '</g>' +
+                '<g stroke="#22d3ee" stroke-width="1.1" opacity=".8"><path d="M6 50h5M89 50h5M50 6v5M50 89v5"/></g>' +
+                '<g fill="#67e8f9"><circle cx="50" cy="50" r="1.4"/><circle cx="14" cy="14" r="1.2"/><circle cx="86" cy="86" r="1.2"/></g>';
+        },
+
+        /* Di Sản — vương miện, vòng nguyệt quế, dải băng. */
+        'legacy': function (P, S, gid) {
+            var leaves = '';
+            var pts = [[30, 34, -40], [23, 42, -62], [20, 52, -84], [22, 62, -104], [28, 71, -124]];
+            pts.forEach(function (p) {
+                leaves += '<ellipse cx="' + p[0] + '" cy="' + p[1] + '" rx="3.6" ry="1.9" transform="rotate(' + p[2] + ' ' + p[0] + ' ' + p[1] + ')"/>';
+                var mx = 100 - p[0];
+                leaves += '<ellipse cx="' + mx + '" cy="' + p[1] + '" rx="3.6" ry="1.9" transform="rotate(' + (-p[2]) + ' ' + mx + ' ' + p[1] + ')"/>';
+            });
+            return '<defs><linearGradient id="' + gid + '-lg" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0" stop-color="#fef08a"/><stop offset=".5" stop-color="' + P + '"/>' +
+                '<stop offset="1" stop-color="#a16207"/></linearGradient></defs>' +
+                '<circle cx="50" cy="50" r="48.6" fill="none" stroke="url(#' + gid + '-lg)" stroke-width="1.8"/>' +
+                '<g fill="url(#' + gid + '-lg)" stroke="' + S + '" stroke-width=".5">' + leaves + '</g>' +
+                '<g fill="none" stroke="url(#' + gid + '-lg)" stroke-width="1.6" stroke-linecap="round">' +
+                '<path d="M36 30c-7 8-9 18-5 28"/><path d="M64 30c7 8 9 18 5 28"/></g>' +
+                '<path d="M34 18l4 12 6-9 6 11 6-11 6 9 4-12 2 14H32z" fill="url(#' + gid + '-lg)" stroke="#fef9c3" stroke-width=".7"/>' +
+                '<path d="M32 32h36" stroke="#fde68a" stroke-width="1.2"/>' +
+                '<g fill="#fef9c3"><circle cx="38" cy="13" r="1.5"/><circle cx="50" cy="10" r="1.8"/><circle cx="62" cy="13" r="1.5"/></g>' +
+                '<path d="M34 84h32l-4 8H38z" fill="url(#' + gid + '-lg)" stroke="' + S + '" stroke-width=".6"/>' +
+                '<path d="M42 86h16" stroke="#713f12" stroke-width="1"/>';
         }
     };
 
@@ -610,6 +902,12 @@
             '</defs>';
         inner += '<circle cx="50" cy="50" r="48.6" fill="none" stroke="url(#' + gid + ')" stroke-width="1.7" opacity=".95"/>';
         inner += '<circle cx="50" cy="50" r="50.4" fill="none" stroke="' + P + '" stroke-width=".45" opacity=".58"/>';
+        /* 7.5.3 — lớp hoàn thiện dùng chung cho MỌI khung: viền trong, ánh phản
+           chiếu chéo và quầng sáng ngoài, giúp cả khung cũ trông sâu và sạch hơn. */
+        inner += '<circle cx="50" cy="50" r="47.1" fill="none" stroke="' + S + '" stroke-width="1.2" opacity=".45"/>';
+        inner += '<path d="M21 21a41 41 0 0 1 58 0" fill="none" stroke="#ffffff" stroke-width="1.8" opacity=".42" stroke-linecap="round"/>';
+        inner += '<path d="M79 79a41 41 0 0 1-58 0" fill="none" stroke="#ffffff" stroke-width="1" opacity=".2" stroke-linecap="round"/>';
+        inner += '<circle cx="50" cy="50" r="49.8" fill="none" stroke="' + P + '" stroke-width="3.2" opacity=".16"/>';
         inner += '<g class="bk-frame-orbit" fill="none" stroke="' + P + '" stroke-linecap="round">' +
             '<circle cx="50" cy="50" r="45.4" stroke-width=".8" stroke-dasharray="1.5 6" opacity=".8"/>' +
             '<circle cx="50" cy="50" r="51.2" stroke-width=".7" stroke-dasharray="10 26" opacity=".55"/>';

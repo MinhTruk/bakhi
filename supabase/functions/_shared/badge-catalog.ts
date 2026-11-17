@@ -1184,7 +1184,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "secret",
         "goal": 1,
         "metric": null,
-        "frame": null,
+        "frame": "founder-genesis",
         "admin_only": true,
         "exclusive": "founder"
     },
@@ -1223,7 +1223,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "secret",
         "goal": 1,
         "metric": null,
-        "frame": null,
+        "frame": "founder-nexus",
         "admin_only": true,
         "exclusive": "founder"
     },
@@ -1275,7 +1275,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "secret",
         "goal": 1,
         "metric": null,
-        "frame": null,
+        "frame": "founder-prime-code",
         "admin_only": true,
         "exclusive": "founder"
     },
@@ -1288,7 +1288,7 @@ export const BADGE_CATALOG: BadgeDef[] = [
         "rarity": "secret",
         "goal": 1,
         "metric": null,
-        "frame": null,
+        "frame": "founder-legacy",
         "admin_only": true,
         "exclusive": "founder"
     },

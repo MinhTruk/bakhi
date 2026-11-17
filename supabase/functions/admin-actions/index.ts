@@ -992,7 +992,7 @@ const BADGE_CATALOG: BadgeMeta[] = [
         "name": "Genesis",
         "category": "secret",
         "rarity": "secret",
-        "frame": null,
+        "frame": "founder-genesis",
         "admin_only": true,
         "exclusive": "founder"
     },
@@ -1019,7 +1019,7 @@ const BADGE_CATALOG: BadgeMeta[] = [
         "name": "Nexus",
         "category": "secret",
         "rarity": "secret",
-        "frame": null,
+        "frame": "founder-nexus",
         "admin_only": true,
         "exclusive": "founder"
     },
@@ -1055,7 +1055,7 @@ const BADGE_CATALOG: BadgeMeta[] = [
         "name": "Prime Code",
         "category": "secret",
         "rarity": "secret",
-        "frame": null,
+        "frame": "founder-prime-code",
         "admin_only": true,
         "exclusive": "founder"
     },
@@ -1064,7 +1064,7 @@ const BADGE_CATALOG: BadgeMeta[] = [
         "name": "Legacy",
         "category": "secret",
         "rarity": "secret",
-        "frame": null,
+        "frame": "founder-legacy",
         "admin_only": true,
         "exclusive": "founder"
     },

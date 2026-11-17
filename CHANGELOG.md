@@ -2,6 +2,34 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.5.3] — 2026-11-17
+
+### Tính năng mới
+
+- **Đủ 21 khung avatar Founder cho 21 badge Founder**: thêm 4 khung độc quyền mới —
+  Khởi Nguyên (`founder-genesis`), Liên Kết (`founder-nexus`), Mã Nguồn Gốc
+  (`founder-prime-code`), Di Sản (`founder-legacy`) — nên mỗi badge Founder (Genesis → Ascendant)
+  mở khoá đúng một khung riêng. Tổng **50 khung**: 27 thường + 2 Developer + 21 Founder.
+- **Mỗi khung Founder có mô tả và cách lấy** trong hộp chi tiết khung (ví dụ “Cách lấy: mở khoá
+  badge ‘Genesis’ — badge Founder độc quyền, chỉ Founder trao tay”).
+- **Vẽ lại 7 khung Founder cũ bằng bộ hình tượng riêng**: Thiên Khải, Vô Cực Hoàng Đế, Thiên Long,
+  Vàng Nguyên Tắc, Lòng Nõn, Tinh Thần Tinh Thạch, Sen Neon — thay cho việc ghép primitive
+  dùng chung. Mọi khung Founder nay có `art` riêng (21 bộ vẽ).
+- **Lớp hoàn thiện dùng chung cho mọi khung**: viền trong, ánh phản chiếu chéo và quầng sáng
+  ngoài, giúp cả 50 khung (kể cả khung thường) trông sâu và sạch hơn.
+
+### Sửa lỗi
+
+- **“Hành động không hợp lệ: students.search” và “admin.items.list”**: nguyên nhân là Edge
+  Function `admin-actions` trên máy chủ còn bản cũ, chưa có các action 7.5.x. Founder Dashboard
+  nay tự lùi về action tương thích (`students.list`, `badges.list`, `badges.grant`) và dựng danh
+  mục vật phẩm cục bộ từ `bk-badges.js`, nên tìm người nhận, chọn vật phẩm, đọc tồn kho và
+  trao tặng vẫn dùng được ngay; bản xem trước “trao toàn bộ badge” cũng tính cục bộ.
+- **Lỗi tương tự ở các action mới khác**: `students.inventory`, `founder.grantItem`,
+  `badges.grantAllPreview` có fallback; `admin.grantHistory` báo rõ cần deploy thay vì lỗi thô.
+- Migration `20261201000000_bakhi_v753_founder_frames.sql` thêm 4 ánh xạ badge → khung mới
+  (idempotent), không đổi id khung cũ nên không ai mất quyền sở hữu.
+
 ## [7.5.2] — 2026-11-17
 
 ### Sửa lỗi

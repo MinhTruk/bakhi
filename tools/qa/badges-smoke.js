@@ -256,8 +256,10 @@ function main() {
 
   console.log('\n[5] Migration và bảo mật cơ sở dữ liệu');
   const sql = fs.readFileSync(path.join(ROOT, 'supabase/migrations/20261119000000_bakhi_profile_badges.sql'), 'utf8');
-  /* Bản 5.0 định nghĩa lại bakhi_owned_frames với đủ 30 khung; đây là bản có hiệu lực. */
-  const frameSql = fs.readFileSync(path.join(ROOT, 'supabase/migrations/20261130000000_bakhi_v750_founder_rework.sql'), 'utf8');
+  /* Ánh xạ badge → khung được bổ sung dần: 7.5.0 (đủ khung cũ) và 7.5.3
+     (thêm Genesis, Nexus, Prime Code, Legacy). Đọc cả hai để kiểm tra đủ 21. */
+  const frameSql = fs.readFileSync(path.join(ROOT, 'supabase/migrations/20261130000000_bakhi_v750_founder_rework.sql'), 'utf8') +
+    '\n' + fs.readFileSync(path.join(ROOT, 'supabase/migrations/20261201000000_bakhi_v753_founder_frames.sql'), 'utf8');
   ok('bật RLS cho hồ sơ và thành tích',
     /alter table public\.student_profiles enable row level security/i.test(sql) &&
     /alter table public\.student_badges enable row level security/i.test(sql));
@@ -272,7 +274,7 @@ function main() {
 
   /* Khung trong SQL phải khớp danh mục và danh sách khung của hồ sơ. */
   const sqlFrames = {};
-  const table = frameSql.split('insert into public.bakhi_badge_frames')[1] || '';
+  const table = frameSql.split('insert into public.bakhi_badge_frames').slice(1).join('\n');
   const re = /\('([a-z0-9-]+)', '([a-z0-9-]+)'\)/g;
   let m;
   while ((m = re.exec(table))) sqlFrames[m[1]] = m[2];
@@ -281,6 +283,20 @@ function main() {
   ok('khung trong SQL khớp danh mục badge', frameDiffs.length === 0,
     frameDiffs.map((b) => b.id + ':' + b.frame + '≠' + sqlFrames[b.id]).join(', '));
   const profileFrames = pw.BKProfile.frames.map((f) => f.id);
+  const founderBadges = clientCatalog.filter((b) => b.exclusive === 'founder');
+  const founderFrameIds = [...new Set(founderBadges.map((b) => b.frame))];
+  ok('21 badge Founder ánh xạ 21 khung Founder riêng',
+    founderBadges.length === 21 && founderFrameIds.length === 21 &&
+    founderFrameIds.every((id) => sqlFrames[founderBadges.find((b) => b.frame === id).id] === id),
+    founderBadges.length + '/' + founderFrameIds.length);
+  const founderFrameRows = pw.BKProfile.framesByTier('founder');
+  ok('mọi khung Founder có mô tả và cách lấy',
+    founderFrameRows.length === 21 &&
+    founderFrameRows.every((f) => !!f.desc && /^Cách lấy:/.test(String(f.howTo || ''))),
+    String(founderFrameRows.filter((f) => !f.desc || !f.howTo).map((f) => f.id)));
+  ok('mọi khung Founder có bộ vẽ riêng',
+    founderFrameRows.every((f) => !!f.art && !!pw.BKProfile.frameOverlay(f.id)),
+    String(founderFrameRows.filter((f) => !f.art).map((f) => f.id)));
   const unknownFrames = [...new Set(Object.values(sqlFrames))].filter((f) => profileFrames.indexOf(f) === -1);
   ok('mọi khung trong SQL đều có trong hồ sơ', unknownFrames.length === 0, unknownFrames.join(','));
 

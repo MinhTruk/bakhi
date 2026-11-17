@@ -444,7 +444,7 @@
             id: 'founder-genesis', name: 'Genesis',
             desc: 'Khởi nguyên — lõi năng lượng đầu tiên và quỹ đạo hình thành nên Bá Khí.',
             icon: 'fa-circle-dot', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: null, adminOnly: true, exclusive: 'founder', art: 'genesis'
+            frame: 'founder-genesis', adminOnly: true, exclusive: 'founder', art: 'genesis'
         },
         {
             id: 'founder-architect', name: 'Architect',
@@ -462,7 +462,7 @@
             id: 'founder-nexus', name: 'Nexus',
             desc: 'Trung tâm liên kết — nơi mọi luồng năng lượng và dữ liệu gặp nhau.',
             icon: 'fa-diagram-project', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: null, adminOnly: true, exclusive: 'founder', art: 'nexus'
+            frame: 'founder-nexus', adminOnly: true, exclusive: 'founder', art: 'nexus'
         },
         {
             id: 'founder-celestial', name: 'Celestial',
@@ -486,13 +486,13 @@
             id: 'founder-prime-code', name: 'Prime Code',
             desc: 'Công nghệ và dữ liệu — dòng mã nguồn gốc của nền tảng.',
             icon: 'fa-code', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: null, adminOnly: true, exclusive: 'founder', art: 'prime-code'
+            frame: 'founder-prime-code', adminOnly: true, exclusive: 'founder', art: 'prime-code'
         },
         {
             id: 'founder-legacy', name: 'Legacy',
             desc: 'Di sản — vương miện và nguyệt quế của những gì còn lại mãi.',
             icon: 'fa-crown', category: 'secret', rarity: 'secret', goal: 1, key: null,
-            frame: null, adminOnly: true, exclusive: 'founder', art: 'legacy'
+            frame: 'founder-legacy', adminOnly: true, exclusive: 'founder', art: 'legacy'
         },
         {
             id: 'founder-ascendant', name: 'Ascendant',

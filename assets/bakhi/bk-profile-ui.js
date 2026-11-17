@@ -456,19 +456,22 @@
         body.appendChild(head);
 
         body.appendChild(el('p', 'bk-badge-detail-label', 'Mô tả'));
-        body.appendChild(el('p', null,
-            'Khung avatar “' + f.name + '” thuộc ' + (FRAME_TIERS[f.tier] || FRAME_TIERS.normal) +
+        body.appendChild(el('p', null, f.desc ||
+            ('Khung avatar “' + f.name + '” thuộc ' + (FRAME_TIERS[f.tier] || FRAME_TIERS.normal) +
             ', độ hiếm ' + rarityMeta(f.rarity).name.toLowerCase() +
             '. Khung chỉ trang trí quanh ảnh đại diện, không thay đổi ảnh gốc hay dữ liệu học tập.' +
-            (f.anim ? ' Khung có hiệu ứng chuyển động; có thể tắt trong Cài đặt.' : '')));
+            (f.anim ? ' Khung có hiệu ứng chuyển động; có thể tắt trong Cài đặt.' : ''))));
 
         body.appendChild(el('p', 'bk-badge-detail-label', 'Cách mở khoá'));
-        if (isOwned) {
-            body.appendChild(el('p', null, 'Bạn đã sở hữu khung này và có thể trang bị ngay.'));
+        if (f.howTo) {
+            body.appendChild(el('p', null, f.howTo + (badge && badge.desc ? ' ' + badge.desc : '')));
         } else if (badge) {
             body.appendChild(el('p', null, 'Mở khoá bằng thành tích “' + badge.name + '”. ' + (badge.desc || '')));
         } else {
             body.appendChild(el('p', null, 'Khung này mở khoá bằng thành tích hiếm hoặc do quản trị viên trao.'));
+        }
+        if (isOwned) {
+            body.appendChild(el('p', 'bk-muted', 'Bạn đã sở hữu khung này và có thể trang bị ngay.'));
         }
 
         var actions = [{ label: 'Đóng', variant: 'ghost', onClick: function (close) { close(); } }];

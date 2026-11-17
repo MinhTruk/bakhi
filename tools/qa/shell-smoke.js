@@ -209,9 +209,9 @@ ok('chặn liên kết javascript:', !/javascript:/i.test(JSON.stringify(P.get()
 ok('avatarNode dùng chung trả về .bk-avatar', !!P.avatarNode({ size: 40 }).classList.contains('bk-avatar'));
 ok('equipFrame từ chối khung chưa mở', P.equipFrame('crown').ok === false);
 ok('equipFrame nhận khung cơ bản', P.equipFrame('leaf').ok === true && P.get().frame === 'leaf');
-ok('có đúng 46 khung avatar (27 thường + 2 Dev + 17 Founder)', P.frames.length === 46, String(P.frames.length));
-ok('27 khung thường + 2 Developer + 17 Founder',
-  P.framesByTier('normal').length === 27 && P.framesByTier('dev').length === 2 && P.framesByTier('founder').length === 17);
+ok('có đúng 50 khung avatar (27 thường + 2 Dev + 21 Founder)', P.frames.length === 50, String(P.frames.length));
+ok('27 khung thường + 2 Developer + 21 Founder',
+  P.framesByTier('normal').length === 27 && P.framesByTier('dev').length === 2 && P.framesByTier('founder').length === 21);
 ok('khung Developer/Founder chưa mở mặc định',
   !P.canEquip('dev-aurora') && !P.canEquip('dev-void') && !P.canEquip('founder'));
 ok('khung SVG vẽ thật cho khung hoa văn', !!P.frameOverlay('crown') && !!P.frameOverlay('founder'));

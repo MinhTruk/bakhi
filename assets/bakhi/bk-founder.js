@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-founder.js  (7.5.2)
+   Bá Khí — bk-founder.js  (7.5.3)
 
    Mô-đun Founder Dashboard: tìm người nhận, chọn vật phẩm, trao badge/khung,
    trao toàn bộ badge, tự động xét badge và xem lịch sử cấp.
@@ -38,6 +38,32 @@
         if (!parts.length) return '?';
         if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
         return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+
+    /* ---------------------------------------------------------------------
+       Tương thích máy chủ cũ
+
+       Nếu Edge Function `admin-actions` chưa được deploy lên bản 7.5.x, các
+       action mới (students.search, admin.items.list, students.inventory,
+       admin.grantHistory, founder.grantItem, badges.grantAllPreview) rơi vào
+       nhánh default và trả UNKNOWN_ACTION — giao diện hiện "Hành động không
+       hợp lệ". Các hàm dưới đây tự lùi về action đã có từ 7.3.0 để dashboard
+       vẫn dùng được ngay, không cần chờ deploy.
+       ------------------------------------------------------------------ */
+    function isUnknownAction(err) {
+        if (!err) return false;
+        if (err.code === 'UNKNOWN_ACTION') return true;
+        return /Hành động không hợp lệ|UNKNOWN_ACTION/i.test(String(err.message || ''));
+    }
+
+    /** Badge mở khoá một khung — dùng cho fallback badges.grant. */
+    function badgeIdForFrame(frameId) {
+        var B = global.BK && global.BK.badges ? global.BK.badges : null;
+        if (!B || !B.CATALOG) return '';
+        for (var i = 0; i < B.CATALOG.length; i++) {
+            if (B.CATALOG[i].frame === frameId) return B.CATALOG[i].id;
+        }
+        return '';
     }
 
     function avatarEl(h, student, size) {
@@ -119,7 +145,7 @@
             if (!pane || !kit || !kit.h) return;
             build(pane, kit);
         },
-        version: '7.5.2'
+        version: '7.5.3'
     };
 
     function build(pane, kit) {
@@ -239,13 +265,40 @@
                 results.appendChild(list);
             }
 
+            /* students.search là action 7.5.0; máy chủ cũ chỉ có students.list. */
+            function searchStudents(q) {
+                return api('students.search', { q: q, limit: 8 }).catch(function (err) {
+                    if (!isUnknownAction(err)) throw err;
+                    return api('students.list', { q: q, limit: 8, status: 'active' }).then(function (data) {
+                        var list = (data && data.students) || [];
+                        return {
+                            ok: true,
+                            fallback: true,
+                            query: q,
+                            count: list.length,
+                            students: list.filter(function (s) { return s.is_active !== false; }).map(function (s) {
+                                return {
+                                    id: s.id,
+                                    display_name: s.display_name,
+                                    disambiguator: s.disambiguator || '',
+                                    student_code: s.student_code || '',
+                                    avatar_url: '',
+                                    is_founder: !!s.is_founder
+                                };
+                            })
+                        };
+                    });
+                });
+            }
+
             function run(q) {
                 var mine = ++seq;
                 hint.textContent = 'Đang tìm “' + q + '”…';
                 results.textContent = '';
-                api('students.search', { q: q, limit: 8 }).then(function (data) {
+                searchStudents(q).then(function (data) {
                     if (mine !== seq) return;   /* bỏ kết quả của lần gõ cũ */
-                    hint.textContent = data.count ? data.count + ' gợi ý' : '';
+                    hint.textContent = (data.count ? data.count + ' gợi ý' : '') +
+                        (data.fallback ? ' · máy chủ cũ (students.list)' : '');
                     renderStudents(data.students || [], q);
                 }).catch(function (err) {
                     if (mine !== seq) return;
@@ -472,7 +525,8 @@
             grid.textContent = '';
             var items = visibleItems();
             summary.textContent = items.length + ' / ' + state.items.length + ' vật phẩm' +
-                (state.type === 'frame' ? ' · khung không gắn badge sẽ không trao được' : '');
+                (state.type === 'frame' ? ' · khung không gắn badge sẽ không trao được' : '') +
+                (state.itemsFallback ? ' · danh mục cục bộ (máy chủ cũ)' : '');
             if (!items.length) {
                 emptyState(grid, 'fa-box-open', 'Không có vật phẩm phù hợp',
                     'Thử bỏ bộ lọc hoặc chọn nhóm vật phẩm khác.');
@@ -515,7 +569,8 @@
             loading(grid, 'Đang tải danh mục vật phẩm…');
             var payload = { type: type };
             if (state.student) payload.id = state.student.id;
-            api('admin.items.list', payload).then(function (data) {
+
+            function applyItems(data) {
                 var items = (data.items || []).filter(function (it) {
                     if (founderOnly) return it.founderOnly === true;
                     return it.founderOnly !== true;
@@ -524,9 +579,56 @@
                     items = items.filter(function (it) { return it.id !== 'none'; });
                 }
                 state.items = items;
+                state.itemsFallback = !!data.fallback;
                 paintGrid();
                 paintPreview(null);
-            }).catch(function (err) {
+            }
+
+            /* Dựng danh mục vật phẩm từ bk-badges.js khi máy chủ chưa có
+               admin.items.list. Quyền sở hữu lấy từ tồn kho đã đọc trước đó. */
+            function localItems() {
+                var B = global.BK && global.BK.badges ? global.BK.badges : null;
+                var catalog = (B && B.CATALOG) ? B.CATALOG : [];
+                var inv = state.inventory;
+                var known = !!(inv && Array.isArray(inv.badges));
+                var owned = {};
+                if (known) {
+                    inv.badges.forEach(function (b) { owned[String(b.id)] = true; });
+                }
+                if (type === 'badge') {
+                    return catalog.map(function (b) {
+                        return {
+                            id: b.id, type: 'badge', name: b.name, category: b.category, rarity: b.rarity,
+                            frame: b.frame || null, exclusive: !!b.exclusive,
+                            founderOnly: b.exclusive === 'founder', devOnly: b.exclusive === 'dev',
+                            adminOnly: !!b.adminOnly, grantable: true,
+                            owned: known ? !!owned[b.id] : null
+                        };
+                    });
+                }
+                var seen = { none: true };
+                var frames = [{
+                    id: 'none', type: 'frame', badgeId: '', founderOnly: false, devOnly: false,
+                    exclusive: false, grantable: false, owned: known ? true : null
+                }];
+                catalog.forEach(function (b) {
+                    if (!b.frame || seen[b.frame]) return;
+                    seen[b.frame] = true;
+                    frames.push({
+                        id: b.frame, type: 'frame', badgeId: b.id,
+                        founderOnly: b.exclusive === 'founder', devOnly: b.exclusive === 'dev',
+                        exclusive: !!b.exclusive, grantable: true,
+                        owned: known ? (b.frame === 'leaf' ? true : !!owned[b.id]) : null
+                    });
+                });
+                return frames;
+            }
+
+            api('admin.items.list', payload).then(applyItems).catch(function (err) {
+                if (isUnknownAction(err)) {
+                    applyItems({ ok: true, fallback: true, items: localItems() });
+                    return;
+                }
                 grid.textContent = '';
                 grid.appendChild(alertBox((err && err.message) || 'Không tải được danh mục vật phẩm.', 'error'));
             });
@@ -605,7 +707,36 @@
 
         function loadInventory(id) {
             kit.loading(inventoryHost, 'Đang đọc tồn kho vật phẩm…');
-            kit.api('students.inventory', { id: id }).then(function (data) {
+            kit.api('students.inventory', { id: id }).catch(function (err) {
+                if (!isUnknownAction(err)) throw err;
+                /* Máy chủ cũ: đọc badge sở hữu qua badges.list rồi tự dựng tồn kho. */
+                return kit.api('badges.list', { id: id }).then(function (res) {
+                    var rows = (res && res.badges) || [];
+                    var B = global.BK && global.BK.badges ? global.BK.badges : null;
+                    var P2 = global.BKProfile;
+                    return {
+                        ok: true,
+                        fallback: true,
+                        studentId: id,
+                        studentName: (state.student && state.student.display_name) || '',
+                        isFounder: !!(state.student && state.student.is_founder),
+                        isActive: true,
+                        badges: rows.map(function (r) {
+                            var def = badgeMeta(String(r.badge_id));
+                            return {
+                                id: String(r.badge_id),
+                                name: def.name,
+                                source: r.manual_granted ? 'granted' : (r.auto_earned ? 'auto' : 'granted'),
+                                awardedAt: r.awarded_at || null
+                            };
+                        }),
+                        frames: (P2 && P2.ownedFrames) ? P2.ownedFrames() : ['none', 'leaf'],
+                        equippedFrame: (P2 && P2.get) ? P2.get().frame : 'none',
+                        catalogTotal: (B && B.breakdown) ? B.breakdown().total : 0,
+                        catalog: (B && B.breakdown) ? B.breakdown() : undefined
+                    };
+                });
+            }).then(function (data) {
                 state.inventory = data;
                 inventoryHost.textContent = '';
                 var line = h('div', 'bkf-inventory-line');
@@ -644,12 +775,37 @@
                 confirmBtn.disabled = true;
                 resultHost.textContent = '';
                 kit.loading(resultHost, 'Đang trao vật phẩm…');
+                var reasonText = String(reason.value || '').trim();
                 kit.api('founder.grantItem', {
                     id: student.id,
                     item_type: item.type,
                     item_id: item.id,
-                    reason: String(reason.value || '').trim(),
+                    reason: reasonText,
                     request_id: newRequestId()
+                }).catch(function (err) {
+                    if (!isUnknownAction(err)) throw err;
+                    /* Máy chủ cũ: trao qua badges.grant (badge mở khoá khung). */
+                    var badgeId = item.type === 'frame' ? badgeIdForFrame(item.id) : item.id;
+                    if (!badgeId) {
+                        throw new Error('Máy chủ chưa cập nhật founder.grantItem nên không trao được khung này. Hãy deploy admin-actions 7.5.3.');
+                    }
+                    return kit.api('badges.grant', {
+                        id: student.id,
+                        badge_id: badgeId,
+                        reason: reasonText,
+                        request_id: newRequestId()
+                    }).then(function (res) {
+                        /* badges.grant cũ chỉ trả { ok, badges } nên trạng thái suy ra
+                           từ tồn kho đã đọc trước khi trao. */
+                        return {
+                            ok: true,
+                            status: (res && res.status) || (item.owned === true ? 'already_owned' : 'granted'),
+                            studentName: (res && res.studentName) || student.display_name,
+                            item_name: itemName(item),
+                            item_type: item.type,
+                            item_id: item.id
+                        };
+                    });
                 }).then(function (data) {
                     resultHost.textContent = '';
                     resultHost.appendChild(resultBox(h, true,
@@ -712,7 +868,35 @@
 
         function loadPreview(id) {
             kit.loading(previewHost, 'Đang đối chiếu danh mục với tồn kho…');
-            kit.api('badges.grantAllPreview', { id: id }).then(function (data) {
+            kit.api('badges.grantAllPreview', { id: id }).catch(function (err) {
+                if (!isUnknownAction(err)) throw err;
+                /* Máy chủ cũ: tự dựng bản xem trước chỉ đọc từ danh mục + badges.list. */
+                return kit.api('badges.list', { id: id }).then(function (res) {
+                    var B = global.BK && global.BK.badges ? global.BK.badges : null;
+                    var catalog = (B && B.CATALOG) ? B.CATALOG : [];
+                    var owned = {};
+                    ((res && res.badges) || []).forEach(function (r) { owned[String(r.badge_id)] = true; });
+                    var grantable = catalog.filter(function (b) { return !b.exclusive; });
+                    var toGrant = grantable.filter(function (b) { return !owned[b.id]; });
+                    var already = grantable.filter(function (b) { return owned[b.id]; });
+                    var excluded = catalog.filter(function (b) { return !!b.exclusive; });
+                    return {
+                        ok: true,
+                        dryRun: true,
+                        fallback: true,
+                        studentId: id,
+                        studentName: (bulk.student && bulk.student.display_name) || '',
+                        totalGrantable: grantable.length,
+                        toGrant: toGrant.map(function (b) { return { id: b.id, name: b.name }; }),
+                        toAddCount: toGrant.length,
+                        alreadyOwned: already.map(function (b) { return b.id; }),
+                        alreadyOwnedCount: already.length,
+                        excluded: excluded.map(function (b) { return b.id; }),
+                        excludedCount: excluded.length,
+                        catalog: (B && B.breakdown) ? B.breakdown() : undefined
+                    };
+                });
+            }).then(function (data) {
                 bulk.preview = data;
                 previewHost.textContent = '';
                 var head = h('div', 'bkf-preview-head');
@@ -733,6 +917,10 @@
                 if (chips.children.length) {
                     previewHost.appendChild(h('p', 'bkf-hint', 'Badge độc quyền bị loại trừ (không cấp hàng loạt):'));
                     previewHost.appendChild(chips);
+                }
+                if (data.fallback) {
+                    previewHost.appendChild(h('p', 'bkf-hint',
+                        'Máy chủ đang chạy bản cũ: bản xem trước được tính cục bộ từ danh mục và badges.list.'));
                 }
                 if (data.toGrant && data.toGrant.length) {
                     var list = h('div', 'bkf-chips');
@@ -1045,6 +1233,13 @@
                 moreBtn.disabled = rows.length < 30;
             }).catch(function (err) {
                 if (nextOffset === 0) listHost.textContent = '';
+                if (isUnknownAction(err)) {
+                    listHost.appendChild(kit.alertBox(
+                        'Máy chủ chưa cập nhật action admin.grantHistory (admin-actions 7.5.x). ' +
+                        'Các lần trao vẫn được ghi vào nhật ký quản trị và sẽ hiện ở đây sau khi deploy.', 'info'));
+                    moreBtn.disabled = true;
+                    return;
+                }
                 listHost.appendChild(kit.alertBox((err && err.message) || 'Không tải được lịch sử.', 'error'));
                 moreBtn.disabled = false;
             }).then(function () {
