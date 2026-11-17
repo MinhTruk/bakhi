@@ -254,6 +254,60 @@
         var saved = parse(lsGet('bakhiStudent.v1'), {});
         return saved.displayName || 'Khách';
     }
+    /* Lời chào theo giờ Việt Nam. Chỉ chạy khi trang có #bkGreeting (trang chủ)
+       và chỉ hiện sau khi đã biết tên hiển thị → không nhấp nháy nội dung. */
+    function vnHour() {
+        try {
+            var parts = new Intl.DateTimeFormat('en-GB', {
+                timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', hour12: false
+            }).formatToParts(new Date());
+            for (var i = 0; i < parts.length; i++) {
+                if (parts[i].type === 'hour') return Number(parts[i].value) % 24;
+            }
+        } catch (e) { }
+        return new Date().getHours();
+    }
+
+    function greetingText(hour) {
+        if (hour >= 5 && hour < 11) return 'Chào buổi sáng';
+        if (hour >= 11 && hour < 14) return 'Chào buổi trưa';
+        if (hour >= 14 && hour < 18) return 'Chào buổi chiều';
+        if (hour >= 18 && hour < 23) return 'Chào buổi tối';
+        return 'Chào đêm khuya';
+    }
+
+    function vnDateText() {
+        try {
+            return new Intl.DateTimeFormat('vi-VN', {
+                timeZone: 'Asia/Ho_Chi_Minh', weekday: 'long',
+                day: '2-digit', month: '2-digit', year: 'numeric'
+            }).format(new Date());
+        } catch (e) { return ''; }
+    }
+
+    function paintGreeting() {
+        var box = D.getElementById('bkGreeting');
+        if (!box) return;
+        var name = '';
+        try {
+            var api = profileApi();
+            name = api && api.displayName ? api.displayName() : displayName();
+        } catch (e) { name = ''; }
+        name = String(name || '').trim();
+        if (!name || name === 'Khách') {
+            /* Khách chưa nhận diện: ẩn hẳn thay vì hiện lời chào trống. */
+            box.hidden = true;
+            return;
+        }
+        var timeEl = box.querySelector('[data-bk-greet-time]');
+        var nameEl = box.querySelector('[data-bk-greet-name]');
+        var dateEl = box.querySelector('[data-bk-greet-date]');
+        if (timeEl) timeEl.textContent = greetingText(vnHour());
+        if (nameEl) nameEl.textContent = name;
+        if (dateEl) dateEl.textContent = vnDateText();
+        box.hidden = false;
+    }
+
     function avatarNode(size) {
         var api = profileApi();
         if (api) return api.avatarNode({ size: size, className: 'bk-shell-avatar' });
@@ -516,6 +570,7 @@
     }
 
     function paintProfileBits() {
+        paintGreeting();
         if (!S.btn) return;
         var old = S.btn.querySelector('.bk-avatar');
         if (old) {
@@ -721,6 +776,81 @@
         if (D.body) D.body.classList.remove('bk-maintenance-on');
     }
 
+    function openMaintBypass() {
+        if (D.getElementById('bkMaintBypass')) return;
+        var overlay = el('div', 'bk-maint-bypass');
+        overlay.id = 'bkMaintBypass';
+        var form = el('form', 'bk-maint-bypass-card');
+        form.setAttribute('role', 'dialog');
+        form.setAttribute('aria-modal', 'true');
+        form.setAttribute('aria-label', 'Mở khoá bằng Administrator Code');
+        form.appendChild(el('h2', 'bk-maint-bypass-title', 'Mở khoá tạm thời'));
+        form.appendChild(el('p', 'bk-maint-bypass-desc',
+            'Nhập Administrator Code để tiếp tục sử dụng khi website đang bảo trì. Mã được xác thực trên máy chủ và không lưu trong trình duyệt.'));
+        var input = D.createElement('input');
+        input.type = 'password';
+        input.className = 'bk-maint-bypass-input';
+        input.autocomplete = 'current-password';
+        input.placeholder = 'Administrator Code';
+        input.setAttribute('aria-label', 'Administrator Code');
+        form.appendChild(input);
+        var error = el('p', 'bk-maint-bypass-error');
+        error.setAttribute('role', 'alert');
+        error.hidden = true;
+        form.appendChild(error);
+
+        var actions = el('div', 'bk-maint-bypass-actions');
+        var cancel = D.createElement('button');
+        cancel.type = 'button';
+        cancel.className = 'bk-maint-btn bk-maint-btn-alt';
+        cancel.textContent = 'Huỷ';
+        cancel.addEventListener('click', function () { overlay.remove(); });
+        actions.appendChild(cancel);
+        var submit = D.createElement('button');
+        submit.type = 'submit';
+        submit.className = 'bk-maint-btn';
+        submit.textContent = 'Xác minh';
+        actions.appendChild(submit);
+        form.appendChild(actions);
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var code = String(input.value || '').trim();
+            if (!code) {
+                error.hidden = false;
+                error.textContent = 'Hãy nhập Administrator Code.';
+                input.focus();
+                return;
+            }
+            if (!global.BKCloud || !global.BKCloud.adminLogin) {
+                error.hidden = false;
+                error.textContent = 'Chưa kết nối được dịch vụ quản trị. Hãy thử lại sau.';
+                return;
+            }
+            submit.disabled = true;
+            cancel.disabled = true;
+            error.hidden = true;
+            global.BKCloud.adminLogin(code).then(function () {
+                input.value = '';
+                overlay.remove();
+                removeMaintenance();
+            }).catch(function (err) {
+                submit.disabled = false;
+                cancel.disabled = false;
+                error.hidden = false;
+                error.textContent = String((err && (err.message || err.error)) || 'Administrator Code không đúng.');
+                input.select();
+            });
+        });
+
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) overlay.remove();
+        });
+        overlay.appendChild(form);
+        (D.body || D.documentElement).appendChild(overlay);
+        setTimeout(function () { input.focus(); }, 0);
+    }
+
     function paintMaintenance(value) {
         MAINT_LAST = value || {};
         if (!MAINT_LAST.enabled || adminSessionActive()) { removeMaintenance(); return; }
@@ -772,17 +902,24 @@
         retry.textContent = 'Thử lại';
         retry.addEventListener('click', function () { loadMaintenance(true); });
         actions.appendChild(retry);
+        var bypass = D.createElement('button');
+        bypass.type = 'button';
+        bypass.className = 'bk-maint-btn bk-maint-btn-alt';
+        bypass.textContent = 'Nhập Administrator Code';
+        bypass.addEventListener('click', openMaintBypass);
+        actions.appendChild(bypass);
         card.appendChild(actions);
         card.appendChild(Object.assign(D.createElement('p'), {
             className: 'bk-maint-foot',
-            textContent: 'Quản trị viên đã đăng nhập vẫn có thể mở Administrator Dashboard để tắt bảo trì.'
+            textContent: 'Quản trị viên có thể nhập Administrator Code để mở khoá tạm thời, hoặc vào /admin/ để tắt bảo trì.'
         }));
         host.appendChild(card);
         if (D.body) D.body.classList.add('bk-maintenance-on');
     }
 
     function loadMaintenance(force) {
-        if (/\/admin\//.test(global.location.pathname || '')) return;
+        if (/\/admin\//.test(global.location.pathname || '') ||
+            /\/founder\//.test(global.location.pathname || '')) return;
         var cfg = global.BK_SUPABASE;
         if (!cfg || typeof cfg.configured !== 'function' || !cfg.configured()) {
             var isTestEnv = /jsdom/i.test(String((global.navigator && global.navigator.userAgent) || ''));
@@ -832,9 +969,12 @@
                 if (!D.hidden) loadMaintenance();
             }, 120000);
         }
+        if (!S.greetPoll && !isJsdom && D.getElementById('bkGreeting')) {
+            S.greetPoll = setInterval(paintGreeting, 60000);
+        }
         global.addEventListener('focus', function () { loadMaintenance(); });
         global.addEventListener('bk:settings-changed', function () { loadMaintenance(true); });
-        global.addEventListener('bk:identity', function () { paintProfileBits(); });
+        global.addEventListener('bk:identity', function () { paintProfileBits(); paintGreeting(); });
         if (global.BKRoles && global.BKRoles.onReady) global.BKRoles.onReady(paintProfileBits);
         global.addEventListener('bk:maintenance', function (e) {
             if (e && e.detail) paintMaintenance(e.detail);

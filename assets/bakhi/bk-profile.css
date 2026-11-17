@@ -85,6 +85,12 @@
     animation: bk-frame-hover 4.2s ease-in-out infinite;
 }
 .bk-avatar-frame-svg.is-animated { animation: bk-frame-breathe 5s ease-in-out infinite; }
+.bk-frame-static .bk-avatar-frame-svg,
+.bk-frame-static .bk-avatar-frame-svg.is-animated,
+.bk-frame-static .bk-avatar-frame-svg .bk-frame-orbit,
+.bk-frame-static .bk-avatar-frame-svg .bk-frame-spark,
+.bk-frame-static .bk-avatar-frame-svg .bk-frame-aura,
+.bk-frame-static .bk-avatar-frame-svg .bk-frame-crown { animation: none !important; }
 @keyframes bk-frame-spin { to { transform: rotate(360deg); } }
 @keyframes bk-frame-twinkle {
     0%, 100% { opacity: .55; transform: rotate(0deg) scale(.985); }
@@ -302,6 +308,17 @@
 }
 .bk-frame[aria-pressed="true"] { border-color: var(--bkl-primary); box-shadow: 0 0 0 1px var(--bkl-primary) inset; color: var(--bkl-text); }
 .bk-frame[disabled] { opacity: .45; cursor: not-allowed; }
+.bk-frame { position: relative; }
+.bk-frame.is-locked { opacity: .82; }
+.bk-frame.is-locked:hover { opacity: 1; border-color: var(--bkl-primary); }
+.bk-frame-lock {
+    position: absolute; top: .3rem; right: .3rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.05rem; height: 1.05rem; border-radius: 50%;
+    background: rgba(15, 23, 42, .72); color: #f8fafc;
+    font-size: .52rem; line-height: 1; z-index: 2;
+}
+.bk-frame:focus-visible { outline: 2px solid var(--bkl-primary); outline-offset: 2px; }
 
 /* ------------------------------ Form ---------------------------------- */
 .bk-form-grid { display: grid; gap: .85rem; }
@@ -379,4 +396,60 @@
     border: 1px solid var(--bkl-line);
     font-size: .64rem;
     color: var(--bkl-muted);
+}
+
+/* ------------------- Chi tiết khung & hiệu ứng (7.0) ------------------- */
+.bk-frame-detail { display: flex; flex-direction: column; gap: .5rem; }
+.bk-frame-detail-head { display: flex; align-items: center; gap: .8rem; }
+.bk-frame-detail-preview {
+    flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center;
+    padding: .55rem;
+    border-radius: 18px;
+    border: 1px solid var(--bkl-line);
+    background:
+        radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--bkl-primary) 18%, transparent), transparent 70%),
+        var(--bkl-surface-2);
+}
+.bk-frame-detail-text { min-width: 0; flex: 1 1 auto; }
+.bk-frame-detail-text h3 { margin: 0; font-size: 1rem; }
+.bk-frame-detail p { margin: 0; font-size: .8rem; line-height: 1.55; }
+
+.bk-set-toggle-row {
+    display: flex; align-items: center; gap: .8rem;
+    padding: .65rem .75rem;
+    border-radius: var(--bkl-radius-sm);
+    border: 1px solid var(--bkl-line);
+    background: var(--bkl-surface);
+}
+.bk-set-toggle-text { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: .12rem; }
+.bk-set-toggle-label { font-size: .84rem; font-weight: 600; color: var(--bkl-text); }
+.bk-set-toggle-desc { font-size: .72rem; line-height: 1.4; color: var(--bkl-muted); }
+.bk-set-toggle-row .bk-switch {
+    width: 2.6rem; height: 1.5rem; padding: 0;
+    border-radius: 999px;
+    border: 1px solid var(--bkl-line);
+    background: var(--bkl-surface-2);
+    cursor: pointer; flex: 0 0 auto;
+    transition: background .18s ease, border-color .18s ease;
+}
+.bk-set-toggle-row .bk-switch::after { display: none; }
+.bk-set-toggle-row .bk-switch.is-on,
+.bk-set-toggle-row .bk-switch[aria-checked="true"] { background: var(--bkl-primary); border-color: var(--bkl-primary); }
+.bk-set-toggle-row .bk-switch-knob {
+    display: block;
+    position: absolute; top: 2px; left: 2px;
+    width: 1.1rem; height: 1.1rem;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(2, 6, 23, .35);
+    transition: transform .18s ease;
+}
+.bk-set-toggle-row .bk-switch.is-on .bk-switch-knob,
+.bk-set-toggle-row .bk-switch[aria-checked="true"] .bk-switch-knob { transform: translateX(1.1rem); }
+.bk-set-toggle-row .bk-switch:focus-visible { outline: 2px solid var(--bkl-primary); outline-offset: 2px; }
+
+@media (max-width: 640px) {
+    .bk-frame-detail-head { align-items: flex-start; }
+    .bk-frame-detail-preview { padding: .4rem; border-radius: 14px; }
 }

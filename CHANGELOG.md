@@ -2,6 +2,65 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.0.0] — 2026-11-17
+
+### Tính năng
+
+- **Chat đầy đủ hơn**: ghim và lưu trữ từng cuộc trò chuyện, bộ lọc “Đã lưu trữ”,
+  ưu tiên phòng đã ghim, tìm người để nhắn riêng có trạng thái tải/trống/lỗi và
+  thử lại. Bấm vào cảm xúc để xem ai đã thả; thả hoặc bỏ cảm xúc cập nhật ngay
+  trên giao diện và tự hoàn tác nếu máy chủ báo lỗi.
+- **Đã đọc do máy chủ quyết định**: mốc đã đọc lưu theo từng thành viên, không
+  còn phụ thuộc đồng hồ thiết bị; chấm đỏ trên avatar đồng bộ giữa các trang và
+  tự làm mới khi quay lại tab. Mọi mốc thời gian dùng múi giờ Việt Nam (UTC+7).
+- **Khung avatar có chi tiết**: khung chưa mở vẫn bấm được để xem ảnh xem trước,
+  độ hiếm, cách mở khoá và trạng thái sở hữu. Công tắc **Animate Avatar Borders**
+  lưu theo tài khoản, đồng bộ khi đã nhận diện học sinh và tắt được hiệu ứng
+  chuyển động của khung.
+- **Bảo trì toàn website**: Founder bật/tắt bảo trì, nhập lý do và lưu cấu hình;
+  trạng thái lan truyền realtime. Lịch sử ghi nhận thời điểm bắt đầu/kết thúc,
+  người thực hiện, lý do, trạng thái và thời lượng, có tìm kiếm và lọc. Mỗi đợt
+  bảo trì chỉ tạo một thông báo hoàn tất.
+- **Màn hình bảo trì dùng chung** cho mọi trang, có nút “Thử lại”. Quản trị viên
+  có thể vào bằng Administrator Code; máy chủ xác thực phiên, giới hạn tần suất
+  và ghi nhật ký, không lộ mã trong trình duyệt.
+- **Quản trị thành tích**: mở chi tiết từng badge (độ hiếm, phạm vi, cách đạt).
+  Founder/Administrator có thể **Cấp thành tích tự động** cho hồ sơ đủ điều kiện
+  và **Cấp toàn bộ badge** (trừ `founder` và mọi badge `dev-exclusive-*`), chống
+  trùng, báo rõ số đã cấp/đã có/lỗi và ghi nhật ký.
+- **Lời chào trang chủ**: “Chào buổi sáng/chiều/tối” kèm tên hiển thị theo giờ
+  Việt Nam, cập nhật mỗi phút và không nhấp nháy khi hồ sơ tải xong.
+- **Thư viện nhạc cá nhân**: mặc định trống, không còn bài hát đóng gói sẵn. Dán
+  liên kết YouTube, Spotify hoặc SoundCloud chính thức để thêm bài; sửa tên,
+  nghệ sĩ và lời bài hát của riêng bạn. Bìa được tạo từ chữ cái đầu, thư viện
+  đồng bộ theo từng học sinh, vẫn giữ queue, shuffle, repeat và cửa sổ nổi.
+- **Tên dashboard theo thương hiệu**: Founder chỉnh tên hiển thị của Administrator
+  Dashboard; giá trị được lưu trên máy chủ và áp cho mọi phiên, không đổi đường dẫn `/admin/`.
+
+### Sửa lỗi
+
+- **Không còn nhấp nháy tên ở lời chào**: lời chào vẽ lại ngay khi sự kiện nhận
+  diện phát ra, kể cả khi hồ sơ tải chậm hơn trang.
+- **Mốc cập nhật tín hiệu ổn định**: `BK.signals.get()` giữ nguyên `updatedAt` đã
+  lưu thay vì sinh mốc mới mỗi lần đọc, tránh sai lệch so sánh và kiểm thử.
+- **Shuffle thật sự đổi bài**: khi bật shuffle, “Bài kế”/“Bài trước” chọn ngẫu
+  nhiên bài khác trong queue thay vì chỉ đổi màu nút.
+- **Biểu tượng cảm xúc rõ nghĩa**: bấm cảm xúc mở danh sách người đã thả và cho
+  phép thả/bỏ ngay trong đó; không còn phụ thuộc một cú bấm mơ hồ.
+
+### Cải tiến
+
+- **Cơ sở dữ liệu 7.0**: migration `20261126000000_bakhi_platform_7.sql` bổ sung
+  tuỳ chọn hội thoại, lịch sử bảo trì, tuỳ chọn hồ sơ, thương hiệu và thư viện
+  nhạc. Mọi bảng người dùng bật RLS; realtime bật cho tuỳ chọn hội thoại và nhạc.
+- **Ghi quyền qua Edge Function**: `admin-actions`, `chat-api`, `student-profile`
+  xử lý bảo trì, thương hiệu, trao badge, ghim/lưu trữ và tuỳ chọn hồ sơ. Khoá
+  service-role chỉ nằm ở máy chủ; trình duyệt không lưu mã quản trị.
+- **Đồng bộ nhạc nhẹ nhàng**: thư viện đọc từ bộ nhớ cục bộ trước, sau đó đối
+  chiếu `music_tracks` của chính học sinh; thao tác thêm/sửa/xoá không chặn giao
+  diện khi mất mạng.
+- **Phiên bản 7.0.0** áp dụng cho toàn bộ tệp HTML, `bk-version.js` và dashboard.
+
 ## [6.2.0] — 2026-11-17
 
 ### Tính năng

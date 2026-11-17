@@ -1735,17 +1735,17 @@
         function renderList() {
             listBox.innerHTML = '';
             var tbl = el('table', 'bkdev-table');
-            tbl.innerHTML = '<thead><tr><th>#</th><th>Bài hát</th><th>File</th><th></th></tr></thead>';
+            tbl.innerHTML = '<thead><tr><th>#</th><th>Bài hát</th><th>Nguồn</th><th></th></tr></thead>';
             var tb = el('tbody');
             M.tracks.forEach(function (t, i) {
                 var tr = el('tr');
                 tr.appendChild(el('td', null, String(i + 1)));
                 tr.appendChild(el('td', null, t.title));
                 var fileCell = el('td');
-                var link = el('a', null, t.src.split('/').pop());
-                link.href = t.src;
+                var link = el('a', null, (t.provider || 'link'));
+                link.href = t.sourceUrl || t.embed || '#';
                 link.target = '_blank';
-                link.rel = 'noopener';
+                link.rel = 'noopener noreferrer';
                 fileCell.appendChild(link);
                 tr.appendChild(fileCell);
                 var act = el('td');
@@ -1766,21 +1766,14 @@
         }
 
         function checkFiles() {
-            out.textContent = 'Đang kiểm tra ' + M.tracks.length + ' file…';
-            var lines = [];
-            var left = M.tracks.length;
-            M.tracks.forEach(function (t) {
-                var probe = new Audio();
-                probe.preload = 'metadata';
-                probe.onloadedmetadata = function () { done(t, 'OK ' + Math.round(probe.duration) + 's'); };
-                probe.onerror = function () { done(t, 'LỖI không tải được'); };
-                function done(track, msg) {
-                    lines.push((msg.indexOf('OK') === 0 ? '✓ ' : '✗ ') + track.title + ' — ' + msg);
-                    probe.src = '';
-                    if (--left === 0) out.textContent = lines.join('\n');
-                }
-                probe.src = t.src;
+            if (!M.tracks.length) { out.textContent = 'Thư viện trống — thêm liên kết trong Music Player.'; return; }
+            var lines = M.tracks.map(function (t) {
+                var ok = M.parseSource ? M.parseSource(t.sourceUrl || '') : null;
+                return (ok && !ok.error ? '✓ ' : '✗ ') + t.title + ' — ' +
+                    (t.provider || '?') + (t.sourceKey ? ' · ' + t.sourceKey : '');
             });
+            out.textContent = lines.join('\n') +
+                '\n\nBá Khí phát bằng khung nhúng chính thức; không có tệp audio cục bộ để kiểm tra.';
         }
 
         pane.appendChild(row(

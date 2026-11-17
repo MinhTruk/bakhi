@@ -12,7 +12,7 @@
 //
 // Badge Administrator (2 badge) KHÔNG bao giờ được ghi ở đây — chỉ admin-actions
 // với phiên Administrator mới trao được.
-import { json, fail, preflight, readJson, sha256Hex } from '../_shared/http.ts';
+import { json, fail, preflight, readJson, sha256Hex, safeEqual } from '../_shared/http.ts';
 import { adminClient, callerUserId } from '../_shared/supabase.ts';
 import { BADGE_CATALOG, BADGE_BY_ID } from '../_shared/badge-catalog.ts';
 import { badgesEarned, computeMetrics, framesFromBadges, type StudentSnapshot } from '../_shared/badge-rules.ts';
@@ -24,6 +24,7 @@ interface ProfileInput {
     banner?: unknown;
     frame?: unknown;
     links?: unknown;
+    prefs?: unknown;
     updatedAt?: unknown;
 }
 
@@ -76,6 +77,21 @@ function cleanLinks(v: unknown) {
     return out;
 }
 
+/** Chỉ nhận các cờ giao diện đã biết; không lưu dữ liệu tuỳ ý. */
+function cleanPrefs(v: unknown): Record<string, unknown> {
+    const src = (v && typeof v === 'object' ? v : {}) as Record<string, unknown>;
+    const out: Record<string, unknown> = {};
+    if (typeof src.animateAvatarBorders === 'boolean') {
+        out.animateAvatarBorders = src.animateAvatarBorders;
+    }
+    return out;
+}
+
+function uuid(v: unknown): string {
+    const s = clampStr(v, 40);
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s) ? s : '';
+}
+
 Deno.serve(async (req) => {
     const pre = preflight(req);
     if (pre) return pre;
@@ -85,36 +101,61 @@ Deno.serve(async (req) => {
 
     const client = adminClient();
 
-    const { data: device } = await client
-        .from('student_devices')
-        .select('student_id')
-        .eq('auth_user_id', caller.userId)
-        .maybeSingle();
-    if (!device) return fail(409, 'NOT_BOUND', 'Thiết bị chưa được gắn với học sinh nào.');
+    const body = await readJson<{ action?: string; profile?: ProfileInput; student_id?: string }>(req);
+
+    /*
+     * Đường nội bộ: admin-actions gọi lại bằng service_role key để tự tính
+     * badge đủ điều kiện cho một học sinh. Không dùng được với update/get và
+     * không áp dụng giới hạn tần suất của học sinh.
+     */
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const bearer = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
+    const internal = !!serviceKey && safeEqual(bearer, serviceKey);
+
+    let studentId = '';
+    let action: 'sync' | 'get' | 'update' = 'sync';
+
+    if (internal) {
+        studentId = uuid(body.student_id);
+        if (!studentId) return fail(400, 'BAD_STUDENT', 'Thiếu học sinh.');
+        if (body.action && body.action !== 'sync') {
+            return fail(403, 'INTERNAL_ACTION', 'Đường nội bộ chỉ đồng bộ thành tích.');
+        }
+        action = 'sync';
+    } else {
+        const caller = await callerUserId(req);
+        if (caller instanceof Response) return caller;
+
+        const { data: device } = await client
+            .from('student_devices')
+            .select('student_id')
+            .eq('auth_user_id', caller.userId)
+            .maybeSingle();
+        if (!device) return fail(409, 'NOT_BOUND', 'Thiết bị chưa được gắn với học sinh nào.');
+        studentId = String(device.student_id);
+        action = body.action === 'update' || body.action === 'get' ? body.action : 'sync';
+
+        // Giới hạn tần suất: 90 lần / giờ / học sinh.
+        const { data: allowed, error: rlError } = await client.rpc('bakhi_rate_limit', {
+            p_key: 'student-profile:' + studentId,
+            p_limit: 90,
+            p_window_seconds: 3600
+        });
+        if (rlError) return fail(500, 'RATE_LIMIT_ERROR', 'Không kiểm tra được giới hạn truy cập.');
+        if (!allowed) return fail(429, 'TOO_MANY_ATTEMPTS', 'Bạn thao tác quá nhanh. Vui lòng đợi vài phút.');
+    }
 
     const { data: student } = await client
         .from('students')
         .select('id, is_active')
-        .eq('id', device.student_id)
+        .eq('id', studentId)
         .maybeSingle();
     if (!student || !student.is_active) return fail(403, 'INACTIVE', 'Hồ sơ học sinh không còn hoạt động.');
-
-    // Giới hạn tần suất: 90 lần / giờ / học sinh.
-    const { data: allowed, error: rlError } = await client.rpc('bakhi_rate_limit', {
-        p_key: 'student-profile:' + student.id,
-        p_limit: 90,
-        p_window_seconds: 3600
-    });
-    if (rlError) return fail(500, 'RATE_LIMIT_ERROR', 'Không kiểm tra được giới hạn truy cập.');
-    if (!allowed) return fail(429, 'TOO_MANY_ATTEMPTS', 'Bạn thao tác quá nhanh. Vui lòng đợi vài phút.');
-
-    const body = await readJson<{ action?: string; profile?: ProfileInput }>(req);
-    const action = body.action === 'update' || body.action === 'get' ? body.action : 'sync';
 
     // ---- Hồ sơ hiện có --------------------------------------------------
     let { data: profileRow } = await client
         .from('student_profiles')
-        .select('student_id, nickname, bio, avatar_url, banner_url, links, frame, updated_at')
+        .select('student_id, nickname, bio, avatar_url, banner_url, links, frame, prefs, updated_at')
         .eq('student_id', student.id)
         .maybeSingle();
 
@@ -122,7 +163,7 @@ Deno.serve(async (req) => {
         const { data: created, error: createError } = await client
             .from('student_profiles')
             .insert({ student_id: student.id })
-            .select('student_id, nickname, bio, avatar_url, banner_url, links, frame, updated_at')
+            .select('student_id, nickname, bio, avatar_url, banner_url, links, frame, prefs, updated_at')
             .maybeSingle();
         if (createError) return fail(500, 'PROFILE_CREATE_FAILED', 'Không tạo được hồ sơ.');
         profileRow = created;
@@ -138,6 +179,12 @@ Deno.serve(async (req) => {
             bio: clampText(input.bio, LIMITS.bio),
             links: cleanLinks(input.links)
         };
+        if (input.prefs && typeof input.prefs === 'object') {
+            const current = (profileRow.prefs && typeof profileRow.prefs === 'object')
+                ? profileRow.prefs as Record<string, unknown>
+                : {};
+            patch.prefs = { ...current, ...cleanPrefs(input.prefs) };
+        }
         const avatar = cleanImage(input.avatar, LIMITS.avatar);
         const banner = cleanImage(input.banner, LIMITS.banner);
         if (avatar) patch.avatar_url = avatar;
@@ -155,7 +202,7 @@ Deno.serve(async (req) => {
             .from('student_profiles')
             .update(patch)
             .eq('student_id', student.id)
-            .select('student_id, nickname, bio, avatar_url, banner_url, links, frame, updated_at')
+            .select('student_id, nickname, bio, avatar_url, banner_url, links, frame, prefs, updated_at')
             .maybeSingle();
         if (updateError) {
             if (String(updateError.message || '').includes('FRAME_NOT_OWNED')) {
@@ -252,6 +299,7 @@ Deno.serve(async (req) => {
             banner: profileRow.banner_url || '',
             frame: profileRow.frame || 'none',
             links: Array.isArray(profileRow.links) ? profileRow.links : [],
+            prefs: (profileRow.prefs && typeof profileRow.prefs === 'object') ? profileRow.prefs : {},
             updatedAt: new Date(profileRow.updated_at).getTime()
         },
         frameRejected,

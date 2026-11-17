@@ -286,9 +286,15 @@ async function main() {
 
   console.log('\n[4] Thả cảm xúc & xoá tin của mình');
   const reactionChip = doc.querySelector('#bkChatMessages .bkchat-reaction');
+  const chipEmoji = reactionChip && reactionChip.getAttribute('data-emoji');
   reactionChip.click();
+  const reactionCard = await until(() => doc.querySelector('.bkchat-reaction-pop'));
+  ok('bấm cảm xúc mở danh sách người đã thả', !!reactionCard && reactionCard.textContent.indexOf('người đã thả') >= 0,
+    reactionCard && reactionCard.textContent.slice(0, 80));
+  const reactToggle = reactionCard && reactionCard.querySelector('.bkchat-reaction-toggle');
+  if (reactToggle) reactToggle.click();
   const toggled = await until(() => H.calls.filter((c) => c.action === 'reactions.toggle').pop());
-  ok('bấm cảm xúc gọi reactions.toggle', !!toggled && toggled.body.emoji === '👍');
+  ok('nút trong danh sách gọi reactions.toggle', !!toggled && toggled.body.emoji === chipEmoji);
 
   const delBtn = doc.querySelector('#bkChatMessages .bkchat-msg.is-own [data-delete]');
   ok('tin của mình có nút xoá', !!delBtn);

@@ -825,6 +825,103 @@ button.bkchat-avatar { cursor: pointer; }
     .bkchat-image-link img { max-width: 100%; }
 }
 
+/* ================= Bá Khí 7.0: ghim, lưu trữ, cảm xúc ================= */
+.bkchat-pin-mark {
+    font-size: .62rem;
+    color: var(--bkl-primary);
+    margin-right: .28rem;
+    transform: rotate(28deg);
+    vertical-align: baseline;
+}
+.bkchat-room.is-pinned {
+    border-left: 3px solid color-mix(in srgb, var(--bkl-primary) 65%, transparent);
+}
+.bkchat-icon-btn.is-on {
+    background: color-mix(in srgb, var(--bkl-primary) 16%, transparent);
+    border-color: color-mix(in srgb, var(--bkl-primary) 55%, var(--bkl-line));
+    color: var(--bkl-primary);
+}
+.bkchat-search-state {
+    min-height: 1.2rem;
+    padding: .15rem .1rem .3rem;
+    font-size: .74rem;
+    line-height: 1.45;
+    color: var(--bkl-muted);
+}
+.bkchat-retry {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    margin: .2rem 0 .4rem;
+    padding: .38rem .7rem;
+    border: 1px solid var(--bkl-line);
+    border-radius: 9px;
+    background: var(--bkl-surface-2);
+    color: var(--bkl-text);
+    font: inherit;
+    font-size: .76rem;
+    cursor: pointer;
+}
+.bkchat-retry:hover { border-color: var(--bkl-primary); color: var(--bkl-primary); }
+
+/* Popover chi tiết cảm xúc (không dùng lưới 6 cột của picker). */
+.bkchat-pop.bkchat-reaction-pop {
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+    padding: .55rem .6rem;
+}
+.bkchat-reaction-head {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+.bkchat-reaction-head .bkchat-reaction-emoji { font-size: 1.1rem; }
+.bkchat-reaction-head .bkchat-reaction-count {
+    font-size: .72rem;
+    color: var(--bkl-muted);
+}
+.bkchat-reaction-people {
+    display: flex;
+    flex-direction: column;
+    gap: .22rem;
+    max-height: 190px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+.bkchat-reaction-person {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    font-size: .78rem;
+    padding: .12rem 0;
+    min-width: 0;
+}
+.bkchat-reaction-person > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.bkchat-reaction-toggle {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .6rem;
+    border: 1px solid var(--bkl-line);
+    border-radius: 999px;
+    background: var(--bkl-surface-2);
+    color: var(--bkl-text);
+    font: inherit;
+    font-size: .72rem;
+    cursor: pointer;
+}
+.bkchat-reaction-toggle:hover {
+    border-color: var(--bkl-primary);
+    color: var(--bkl-primary);
+}
+
+
 @media (prefers-reduced-motion: reduce) {
     .bkchat * { transition: none !important; animation: none !important; }
 }

@@ -106,7 +106,54 @@ function card(map: Map<string, Record<string, unknown>>, id: string) {
     };
 }
 
-async function roomSummary(ctx: Ctx, room: Record<string, unknown>, unread: number) {
+/** Ghim / lưu trữ của chính người gọi, theo phòng. */
+async function prefsByRoom(ctx: Ctx): Promise<Map<string, Record<string, unknown>>> {
+    const { data } = await ctx.client
+        .from('chat_conversation_prefs')
+        .select('room_id, pinned, pinned_at, archived, archived_at')
+        .eq('student_id', ctx.studentId);
+    const map = new Map<string, Record<string, unknown>>();
+    for (const row of data ?? []) map.set(String(row.room_id), row);
+    return map;
+}
+
+/** Ghi một phần tuỳ chọn, giữ nguyên phần còn lại. */
+async function setPref(
+    ctx: Ctx,
+    roomId: string,
+    patch: { pinned?: boolean; archived?: boolean }
+): Promise<Record<string, unknown> | null> {
+    const { data: existing } = await ctx.client
+        .from('chat_conversation_prefs')
+        .select('pinned, pinned_at, archived, archived_at')
+        .eq('student_id', ctx.studentId)
+        .eq('room_id', roomId)
+        .maybeSingle();
+    const now = new Date().toISOString();
+    const pinned = patch.pinned ?? !!existing?.pinned;
+    const archived = patch.archived ?? !!existing?.archived;
+    const row = {
+        student_id: ctx.studentId,
+        room_id: roomId,
+        pinned,
+        pinned_at: pinned ? (existing?.pinned_at || now) : null,
+        archived,
+        archived_at: archived ? (existing?.archived_at || now) : null,
+        updated_at: now
+    };
+    const { error } = await ctx.client
+        .from('chat_conversation_prefs')
+        .upsert(row, { onConflict: 'student_id,room_id' });
+    if (error) return null;
+    return row;
+}
+
+async function roomSummary(
+    ctx: Ctx,
+    room: Record<string, unknown>,
+    unread: number,
+    pref?: Record<string, unknown>
+) {
     const id = String(room.id);
     const [{ data: members }, { data: last }] = await Promise.all([
         ctx.client.from('chat_members').select('student_id, role').eq('room_id', id).limit(12),
@@ -131,6 +178,10 @@ async function roomSummary(ctx: Ctx, room: Record<string, unknown>, unread: numb
         member_count: (members ?? []).length,
         members: memberIds.slice(0, 12).map((sid) => card(map, sid)),
         unread,
+        pinned: !!pref?.pinned,
+        pinned_at: pref?.pinned_at || null,
+        archived: !!pref?.archived,
+        archived_at: pref?.archived_at || null,
         last_message: last ? {
             id: last.id,
             student_id: last.student_id,
@@ -267,13 +318,18 @@ Deno.serve(async (req) => {
                     .order('last_message_at', { ascending: false })
                     .limit(MAX_ROOMS);
                 const unread = await unreadByRoom(ctx, rooms ?? []);
+                const prefs = await prefsByRoom(ctx);
                 const summaries: Array<Record<string, unknown>> = [];
                 for (const room of rooms ?? []) {
-                    summaries.push(await roomSummary(ctx, room, unread.get(String(room.id)) || 0));
+                    const id = String(room.id);
+                    summaries.push(await roomSummary(ctx, room, unread.get(id) || 0, prefs.get(id)));
                 }
                 const meMap = await profilesByIds(ctx, [ctx.studentId]);
                 let total = 0;
-                unread.forEach((v) => { total += v; });
+                unread.forEach((v, roomId) => {
+                    /* Phòng đã lưu trữ không đếm vào huy hiệu chưa đọc. */
+                    if (!prefs.get(roomId)?.archived) total += v;
+                });
                 return json({
                     ok: true,
                     me: card(meMap, ctx.studentId),
@@ -289,6 +345,12 @@ Deno.serve(async (req) => {
                 if (!roomId) return fail(400, 'BAD_ROOM', 'Thiếu phòng chat.');
                 const room = await readableRoom(ctx, roomId);
                 if (!room) return fail(403, 'NO_ACCESS', 'Bạn không ở trong phòng này.');
+                const { data: pref } = await client
+                    .from('chat_conversation_prefs')
+                    .select('pinned, pinned_at, archived, archived_at')
+                    .eq('student_id', ctx.studentId)
+                    .eq('room_id', roomId)
+                    .maybeSingle();
                 let query = client.from('chat_messages')
                     .select('id, room_id, student_id, body, image_path, reply_to, created_at, deleted_at')
                     .eq('room_id', roomId)
@@ -318,6 +380,12 @@ Deno.serve(async (req) => {
                     room: {
                         id: room.id, kind: room.kind, title: room.title,
                         dm_key: room.dm_key, created_by: room.created_by
+                    },
+                    pref: {
+                        pinned: !!pref?.pinned,
+                        pinned_at: pref?.pinned_at || null,
+                        archived: !!pref?.archived,
+                        archived_at: pref?.archived_at || null
                     },
                     members: (memberRows ?? []).map((m) => Object.assign(card(map, String(m.student_id)), {
                         role: m.role, last_read_at: m.last_read_at
@@ -456,6 +524,31 @@ Deno.serve(async (req) => {
                     .select('message_id, student_id, emoji, created_at')
                     .eq('message_id', messageId);
                 return json({ ok: true, reactions: all ?? [] });
+            }
+
+            case 'conversation.pin':
+            case 'conversation.archive': {
+                const roomId = uuid(body.room_id);
+                if (!roomId) return fail(400, 'BAD_ROOM', 'Thiếu phòng chat.');
+                if (!(await readableRoom(ctx, roomId))) {
+                    return fail(403, 'NO_ACCESS', 'Bạn không ở trong phòng này.');
+                }
+                const pinAction = action === 'conversation.pin';
+                const row = await setPref(
+                    ctx,
+                    roomId,
+                    pinAction ? { pinned: body.value === true } : { archived: body.value === true }
+                );
+                if (!row) return fail(500, 'PREF_FAILED', 'Không lưu được tuỳ chọn hội thoại.');
+                return json({
+                    ok: true,
+                    pref: {
+                        pinned: !!row.pinned,
+                        pinned_at: row.pinned_at || null,
+                        archived: !!row.archived,
+                        archived_at: row.archived_at || null
+                    }
+                });
             }
 
             case 'read.mark': {

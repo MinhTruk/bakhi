@@ -100,8 +100,9 @@ Không có animation favicon và không có Highlight Manager độc lập.
 - **Focus mode**: `Ctrl+K` → Chế độ tập trung, hoặc `Esc` để thoát.
 - **Tìm kiếm**: phím `/` khi không ở trong ô nhập, hoặc ô tìm kiếm trong menu tài khoản.
 - **Developer Playground**: `Ctrl+Shift+G` (chỉ khi máy đã có quyền Developer).
-- **Music Player**: logo ♪ góc trái dưới; `Space` phát/tạm dừng, `←/→` tua 5 giây,
-  `M` tắt tiếng (chỉ khi panel nhạc mở), `Esc` đóng.
+- **Music Player**: logo ♪ góc trái dưới; `Space` phát/tạm dừng, `←/→` bài trước/kế
+  (chỉ khi panel nhạc mở), `Esc` đóng. Thêm bài bằng liên kết YouTube/Spotify/SoundCloud
+  trong tab Thư viện.
 - **Thông báo**: bấm chuông (header ở trang chủ, góc phải dưới ở trang bài học/Studio);
   bấm “Đánh dấu tất cả đã đọc” để xoá badge; bấm một mục để đọc đầy đủ.
 - **Studio**: avatar → Bá Khí Studio, hoặc `/studio/` (địa chỉ cũ `/studio/word-paint.html`
@@ -136,6 +137,31 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 12 | **Nhập dữ liệu Studio cũ** (`lexend-studio-doc`): văn bản, ảnh, hình SVG | ✅ | Nhập một lần, giữ khoá cũ, đánh dấu trong `migrated.legacy` |
 | 13 | **Tương thích địa chỉ cũ** `/studio/word-paint.html` | ✅ | Meta refresh + `location.replace`, giữ query/hash |
 
+## G2. Nhạc cá nhân, hồ sơ & cài đặt (7.0.0)
+
+### G2.1. Music Player
+
+| # | Tính năng | Trạng thái | Ghi chú |
+|---|---|---|---|
+| 1 | Thư viện trống mặc định, không còn 5 bài `.mp3` đóng gói sẵn | ✅ | `bakhiMusic.v3` |
+| 2 | Thêm bài bằng liên kết chính thức YouTube/Spotify/SoundCloud | ✅ | `parseSource`; chặn host lạ và `javascript:` |
+| 3 | Phát trong iframe chính thức của nền tảng | ✅ | YouTube/SoundCloud nhận play/pause qua `postMessage` |
+| 4 | Sửa tên, nghệ sĩ và lời theo từng bài | ✅ | Lời tối đa 20.000 ký tự, hỗ trợ `[mm:ss]` |
+| 5 | Bìa sinh từ chữ cái đầu, màu theo tên bài | ✅ | Không cần tệp PNG |
+| 6 | Queue, shuffle, repeat 3 chế độ, panel kéo/đổi kích thước | ✅ | Shuffle chọn bài khác khi bấm kế/trước |
+| 7 | Đồng bộ theo học sinh qua `music_tracks` (RLS) | ✅ | Local-first; lỗi mạng chỉ hiện trạng thái |
+| 8 | Không autoplay, không tải nhạc lên máy chủ | ✅ | Chỉ lưu liên kết + metadata |
+
+### G2.2. Hồ sơ & Cài đặt
+
+| # | Tính năng | Trạng thái | Ghi chú |
+|---|---|---|---|
+| 1 | Khung avatar chưa mở bấm xem ảnh trước, độ hiếm, cách mở khoá | ✅ | Modal `.bk-frame-detail` |
+| 2 | Công tắc **Animate Avatar Borders** lưu theo tài khoản và đồng bộ | ✅ | `student_profiles.prefs` |
+| 3 | Tắt hiệu ứng chuyển động khung nhưng vẫn giữ hoa văn tĩnh | ✅ | Lớp `bk-frame-static` trên avatar |
+| 4 | Lời chào trang chủ theo giờ Việt Nam kèm tên hiển thị | ✅ | `bk-shell.js`, cập nhật mỗi phút, không nhấp nháy |
+| 5 | Bảo trì toàn site thống nhất, nút “Thử lại”, lối vào Administrator Code | ✅ | Overlay trong `bk-shell.js` |
+
 ## H. Thành tích & tín hiệu dùng chung
 
 ### H.1. Hệ 78 thành tích (3.4.0 → xác minh máy chủ 3.6.0 → mở rộng 5.0.0)
@@ -147,9 +173,12 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 3 | 6 bậc độ hiếm: Phổ biến, Ít gặp, Hiếm, Cực hiếm, Huyền thoại, Bí mật | ✅ | Hiển thị trên thẻ badge |
 | 4 | Tiến độ từng badge, thanh tiến độ, lọc danh mục/độ hiếm/trạng thái, tìm kiếm | ✅ | `BKProfileUI.renderBadgeBoard` |
 | 5 | 30 khung avatar SVG (27 thường + 2 Developer + 1 Founder); chỉ trang bị khi đã mở khoá | ✅ | `ownedFrames`/`canEquip`, trigger `bakhi_profile_frame_guard` |
-| 6 | Trao/thu hồi badge Administrator có kiểm tra phiên, ghi audit log | ⚠️ đã có mã | `admin-actions` `badges.grant`/`badges.revoke`, 2 id admin; cần deploy |
-| 7 | Xác minh thành tích phía máy chủ, không tin danh sách client gửi | ⚠️ đã có mã | `student-profile` + `_shared/badge-rules.ts` + bảng `student_badges`; cần deploy |
-| 8 | Đồng bộ hồ sơ và thành tích giữa các thiết bị | ⚠️ đã có mã | `student_profiles` + `BKProfile.applyRemote`/`BK.badges.applyServer`; cần deploy |
+| 6 | Trao/thu hồi badge Administrator có kiểm tra phiên, ghi audit log | ✅ | `admin-actions` `badges.grant`/`badges.revoke` |
+| 7 | Xác minh thành tích phía máy chủ, không tin danh sách client gửi | ✅ | `student-profile` + `_shared/badge-rules.ts` + bảng `student_badges` |
+| 8 | Đồng bộ hồ sơ và thành tích giữa các thiết bị | ✅ | `student_profiles` + `BKProfile.applyRemote`/`BK.badges.applyServer` |
+| 9 | Modal chi tiết badge: độ hiếm, phạm vi, cách đạt, tiến độ | ✅ | `BKProfileUI` + dashboard 7.0 |
+| 10 | Cấp badge đủ điều kiện tự động cho một hồ sơ | ✅ | `badges.autoGrant` gọi nội bộ `student-profile` |
+| 11 | Cấp toàn bộ badge, trừ `founder` và `dev-exclusive-*`, chống trùng | ✅ | `badges.grantAll` trả `added`/`alreadyOwned`/`failed`/`excluded` |
 
 ### H.2. Thành tích 2.3 trong Trung tâm học tập
 
@@ -200,7 +229,7 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | Realtime + poll | Có | Có |
 | Ảnh hưởng dữ liệu học | Không | Không |
 
-## J. Administrator Dashboard 4.2
+## J. Administrator Dashboard 7.0
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
@@ -213,21 +242,26 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 7 | Nhật ký thao tác quản trị + xuất | ✅ | Lọc theo hành động/đối tượng |
 | 8 | Giám sát hệ thống: độ trễ, số bản ghi, hàng đợi đồng bộ, lỗi gần đây | ✅ | `system.health` |
 | 9 | Quyền & bảo mật: báo cáo thật về hàm/bảng/policy | ✅ | Đọc catalog qua `bakhi_permissions_report()`; một Administrator Code dùng chung, chưa có vai trò riêng |
-| 10 | Cấu hình: bật/tắt What's New và bảo trì | ✅ | Chỉ hai khoá `public.*` |
+| 10 | Cấu hình: bật/tắt What's New và bảo trì | ✅ | `public.whatsnew`, `public.maintenance`; ghi qua `settings.set` |
 | 11 | Dữ liệu & sao lưu: kiểm tra toàn vẹn + xuất CSV/JSON | ✅ | Không có xoá hàng loạt |
 | 12 | Xác nhận trước thao tác ảnh hưởng dữ liệu | ✅ | Sửa/xoá thông báo, changelog, badge, tin nhắn, phòng chat |
 | 13 | Xác thực Administrator Code + phiên `sessionStorage` | ✅ | Mọi thao tác kiểm tra lại ở máy chủ |
 | 14 | Import `students.txt`, phát hiện trùng tên | ✅ | Xem SUPABASE_SETUP |
 | 15 | Push thông báo/changelog ngay, ẩn/đăng lại/xoá | ✅ | Realtime tới máy học sinh |
 | 16 | **Hồ sơ**: danh sách, tìm kiếm, chi tiết biệt danh/khung/ảnh bìa, thành tích đã xác minh | ✅ | `profiles.list`, `profiles.detail`; không lộ mã nội bộ ngoài dashboard |
-| 17 | **Thành tích**: trao/thu hồi đúng `admin-chosen` và `admin-legend` | ⚠️ đã có mã | Máy chủ từ chối `NOT_ADMIN_BADGE`; badge tự động không trao tay được |
-| 18 | **Chat**: danh sách phòng, xem thành viên/tin nhắn, xoá mềm tin, tạm khoá, gỡ thành viên, xoá phòng riêng | ⚠️ đã có mã | `chat.*` trong `admin-actions`; phòng chung được bảo vệ (`PROTECTED_ROOM`) |
+| 17 | **Thành tích**: trao/thu hồi đúng `admin-chosen` và `admin-legend` | ✅ | Máy chủ từ chối `NOT_ADMIN_BADGE`; badge tự động không trao tay được |
+| 18 | **Chat**: danh sách phòng, xem thành viên/tin nhắn, xoá mềm tin, tạm khoá, gỡ thành viên, xoá phòng riêng | ✅ | `chat.*` trong `admin-actions`; phòng chung được bảo vệ (`PROTECTED_ROOM`) |
 | 19 | **What's New**: bật/tắt khối cập nhật và xem trước changelog đã xuất bản | ✅ | Chỉ ghi `public.whatsnew` qua `settings.set`; không sửa changelog |
-| 20 | Kiểm thử dashboard (14 tab + bảo mật) | ✅ | `tools/qa/admin-smoke.js` (jsdom) |
+| 20 | Kiểm thử dashboard (14 tab + bảo mật) | ✅ | `tools/qa/admin-smoke.js`, `founder-smoke.js` (jsdom) |
+| 21 | **Bảo trì**: bật/tắt toàn site, lý do, lưu cấu hình, realtime | ✅ | Founder-only; `public.maintenance` |
+| 22 | **Lịch sử bảo trì**: bắt đầu/kết thúc/người/lý do/trạng thái/thời lượng, tìm kiếm/lọc | ✅ | `maintenance.history`; realtime qua `bk:settings-changed` |
+| 23 | **Cấp badge tự động / toàn bộ** cho hồ sơ | ✅ | `badges.autoGrant`, `badges.grantAll`; loại `founder` + `dev-exclusive-*` |
+| 24 | **Modal chi tiết badge** và tên dashboard theo thương hiệu | ✅ | `bk-devboard.js`; `public.branding` (Founder) |
 
-> Hai mô-đun Hồ sơ/Thành tích và Chat cần migration `20261119000000`/`20261120000000` cùng
-> Edge Function `student-profile`/`chat-api` đã deploy. Trước đó dashboard hiện thông báo
-> trung thực “máy chủ chưa được triển khai”, không giả lập dữ liệu.
+> Migration 7.0 `20261126000000` bổ sung tuỳ chọn hội thoại, lịch sử bảo trì, thương hiệu,
+> tuỳ chọn hồ sơ và `music_tracks`. Các migration 3.x/6.x và Edge Function
+> `student-profile`/`chat-api`/`admin-actions` đã deploy; dashboard đọc dữ liệu thật,
+> không giả lập.
 
 ## K. Chat — phòng chung, tin nhắn riêng, nhóm nhỏ (3.7.0)
 
@@ -236,26 +270,32 @@ Function `chat-api`; trình duyệt chỉ đọc dữ liệu phòng mình tham g
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1 | Phòng chung cho mọi học sinh đã gắn danh tính | ⚠️ đã có mã | `chat_rooms` kind `global`, một phòng duy nhất; cần deploy |
-| 2 | Tin nhắn riêng từng cặp (DM) | ⚠️ đã có mã | `dm_key` sắp xếp cặp uuid, unique; đúng 2 thành viên |
-| 3 | Nhóm tối đa 10 người, trưởng nhóm đổi tên/thêm/xoá/rời | ⚠️ đã có mã | Trigger `bakhi_chat_member_guard`; chuyển trưởng khi người cũ rời |
-| 4 | Tin nhắn văn bản ≤ 2.000 ký tự, Enter gửi, Shift+Enter xuống dòng | ⚠️ đã có mã | `messages.send` |
+| 1 | Phòng chung cho mọi học sinh đã gắn danh tính | ✅ | `chat_rooms` kind `global`, một phòng duy nhất |
+| 2 | Tin nhắn riêng từng cặp (DM) | ✅ | `dm_key` sắp xếp cặp uuid, unique; đúng 2 thành viên |
+| 3 | Nhóm tối đa 10 người, trưởng nhóm đổi tên/thêm/xoá/rời | ✅ | Trigger `bakhi_chat_member_guard`; chuyển trưởng khi người cũ rời |
+| 4 | Tin nhắn văn bản ≤ 2.000 ký tự, Enter gửi, Shift+Enter xuống dòng | ✅ | `messages.send` |
 | 5 | Chat chỉ gửi văn bản (6.0.0 bỏ gửi ảnh và bảng emoji soạn tin) | ✅ | Ảnh cũ vẫn hiển thị; server trả `IMAGES_DISABLED` nếu client cố gửi ảnh mới |
-| 6 | 12 cảm xúc emoji, bấm lại để bỏ | ⚠️ đã có mã | `chat_reactions`, `reactions.toggle` |
-| 7 | Realtime tin nhắn, cảm xúc, tên nhóm | ⚠️ đã có mã | Bốn bảng trong `supabase_realtime`, `replica identity full` |
+| 6 | 12 cảm xúc emoji, bấm lại để bỏ | ✅ | `chat_reactions`, `reactions.toggle`; cập nhật tối ưu + hoàn tác khi lỗi |
+| 7 | Realtime tin nhắn, cảm xúc, tên nhóm | ✅ | Các bảng trong `supabase_realtime`, `replica identity full` |
 | 8 | Bộ đếm tin chưa đọc theo phòng + trên tiêu đề tab | ✅ | `last_read_at`; `read.mark` nhận mốc `through` của tin cuối đã tải |
 | 9 | Profile Card: tên, biệt danh, giới thiệu, khung, số thành tích | ✅ | View `chat_profiles` không lộ `student_code`; có `last_seen_at` |
-| 10 | Tìm học sinh để nhắn riêng hoặc thêm vào nhóm | ⚠️ đã có mã | `students.search` qua `chat-api` |
-| 11 | Xoá mềm tin của mình; trưởng nhóm xoá tin trong nhóm | ⚠️ đã có mã | `deleted_at`, hiện “Tin nhắn đã được xoá” |
+| 10 | Tìm học sinh để nhắn riêng hoặc thêm vào nhóm | ✅ | `students.search` qua `chat-api`; có trạng thái tải/trống/lỗi + thử lại |
+| 11 | Xoá mềm tin của mình; trưởng nhóm xoá tin trong nhóm | ✅ | `deleted_at`, hiện “Tin nhắn đã được xoá” |
 | 12 | Không có đồng hồ đếm ngược hay giới hạn thời gian | ✅ | Đúng nguyên tắc sản phẩm |
 | 13 | Kiểm thử giao diện và ràng buộc bảo mật | ✅ | `tools/qa/chat-smoke.js` (jsdom) |
 | 14 | Trạng thái hoạt động: chấm xanh avatar DM, “Đang hoạt động / x phút trước” | ✅ | `presence.ping` mỗi phút khi tab hiện; online nếu `last_seen_at` ≤ 2 phút |
 | 15 | Passkey trong Cài đặt và bắt buộc sau khi đăng nhập bằng tên | ✅ | `passkey-api`; tối đa 5 passkey; huỷ xác minh thì không gắn thiết bị |
+| 16 | Ghim/lưu trữ hội thoại theo từng học sinh | ✅ | `chat_conversation_prefs` + `conversation.pin`/`conversation.archive` |
+| 17 | Bộ lọc “Đã lưu trữ”, phòng ghim xếp trước | ✅ | Tổng chưa đọc bỏ qua phòng đã lưu trữ |
+| 18 | Xem ai đã thả cảm xúc | ✅ | Popover `.bkchat-reaction-pop`, tải Profile Card còn thiếu |
+| 19 | Chấm đỏ/đã đọc đồng bộ giữa các trang | ✅ | `bk-cloud.js` làm mới khi `chat_members`/`chat_conversation_prefs` đổi |
+| 20 | Mọi mốc thời gian theo `Asia/Ho_Chi_Minh` (UTC+7) | ✅ | Không dùng múi giờ thiết bị |
 
-> Từ 6.2.0, migration `20261120000000`/`20261125000000`, Edge Function `chat-api`,
-> `bind-student-session`, `passkey-api` và bucket `chat-images` đã deploy trên dự án thật.
-> Passkey chỉ hoạt động trên HTTPS đúng `PASSKEY_RP_ID`; nếu đổi tên miền, cập nhật secret
-> `PASSKEY_RP_ID`/`PASSKEY_ORIGIN` và deploy lại `passkey-api`.
+> Từ 7.0.0, migration `20261126000000` bổ sung `chat_conversation_prefs` (RLS + realtime)
+> và `chat-api` xử lý ghim/lưu trữ. Các migration `20261120000000`/`20261125000000`,
+> Edge Function `chat-api`, `bind-student-session`, `passkey-api` và bucket `chat-images`
+> đã deploy trên dự án thật. Passkey chỉ hoạt động trên HTTPS đúng `PASSKEY_RP_ID`; nếu đổi
+> tên miền, cập nhật secret `PASSKEY_RP_ID`/`PASSKEY_ORIGIN` và deploy lại `passkey-api`.
 
 ## L. Không có trong sản phẩm (theo yêu cầu)
 

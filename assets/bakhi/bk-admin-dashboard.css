@@ -1157,3 +1157,77 @@ html.dark .bkc-shortcut-row { background: rgba(148, 163, 184, .1); }
 }
 .bkc-maint-preview h3 { margin: 0 0 .35rem; font-size: 1rem; }
 .bkc-maint-preview p { margin: 0 0 .3rem; font-size: .82rem; line-height: 1.55; }
+
+/* ------------------- Thành tích 7.0: chi tiết & hàng loạt ---------------- */
+.bkc-badge-tile.is-tappable {
+    cursor: pointer;
+    transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
+}
+.bkc-badge-tile.is-tappable:hover,
+.bkc-badge-tile.is-tappable:focus-visible {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--bkc-accent, #6366f1) 55%, var(--bkc-line));
+    box-shadow: 0 6px 18px rgba(2, 6, 23, .16);
+    outline: none;
+}
+.bkc-badge-detail-head {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    padding: .75rem .8rem;
+    border-radius: 14px;
+    background: var(--bkc-panel-2);
+    border: 1px solid var(--bkc-line);
+    margin-bottom: .9rem;
+}
+.bkc-badge-detail-icon {
+    flex: 0 0 auto;
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #fff;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+}
+.bkc-badge-detail-icon.is-owned {
+    background: linear-gradient(135deg, #f59e0b, #d946ef);
+}
+.bkc-badge-detail-text { display: flex; flex-direction: column; gap: .16rem; min-width: 0; }
+.bkc-badge-detail-text b { font-size: 1rem; }
+.bkc-badge-frame-preview {
+    position: relative;
+    width: 5.4rem;
+    height: 5.4rem;
+    margin: .4rem 0 .2rem;
+    display: block;
+}
+.bkc-badge-frame-avatar {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #475569, #1e293b);
+    box-shadow: 0 0 0 2px var(--bkc-frame-ring, #94a3b8);
+    z-index: 1;
+}
+.bkc-badge-frame-preview svg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 146%;
+    height: 146%;
+    transform: translate(-50%, -50%);
+    overflow: visible;
+    pointer-events: none;
+    z-index: 2;
+}
+.bkc-bulk-box { margin-top: .75rem; }
+.bkc-bulk-box .bkc-sec-title { margin-top: 0; }
+

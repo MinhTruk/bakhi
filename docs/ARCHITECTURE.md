@@ -69,17 +69,16 @@ trang bài học ─────┴──► bk-page.js
   (Ctrl/⌘+K), tìm kiếm toàn cục (`/`), focus mode, xuất/nhập.
 - **bk-dev.js/css** — Developer Playground 2.0: cửa sổ nổi kéo/đổi kích thước, nhớ
   vị trí/kích thước/tab, 11 công cụ (thêm tab Music). Không thay thế panel cũ.
-- **bk-music.js/css** — Music Player dùng chung: thư viện 5 bài, queue (thêm/xoá/
-  kéo thả hoặc `Alt+↑↓`), shuffle, repeat 3 chế độ, âm lượng, lyrics có timestamp.
-  Quy ước file (không phải sửa code): `music/<slug>.mp3` (bài hát),
-  `music/<slug>.txt` (lời, dòng `#` là ghi chú), `music/<slug>.png` (bìa, tự dò
-  `.jpg/.jpeg/.webp`). Panel nổi kéo được, đổi kích thước ở góc dưới-trái, thu nhỏ/
-  phóng to, nhớ bố cục (`bakhiMusic.panel.v1`); state ở `bakhiMusic.v2`, vị trí logo
-  ở `bakhiMusic.fab.v1`, lời tự nhập ở `bakhiMusic.lyrics.v1`; không autoplay.
-  Phím tắt (`Space`, `←/→`, `M`, `Esc`) chỉ kích hoạt khi panel mở và bỏ qua khi đang
-  gõ. Có `BKMusic.on(fn)` phát sự kiện thay đổi để UI khác (tab Music của Dev Panel)
-  cập nhật không cần polling. Media Session được đăng ký khi trình duyệt hỗ trợ.
-  Do `bk-core.js` nạp trên mọi trang nên chỉ có một audio instance cho mỗi trang.
+- **bk-music.js/css** — Music Player dùng chung, **thư viện nhạc cá nhân từ 7.0.0**:
+  mặc định trống, thêm bài bằng liên kết chính thức YouTube/Spotify/SoundCloud và phát
+  trong iframe của nền tảng (không có `.mp3` đóng gói sẵn). Queue (thêm/xoá), shuffle
+  chọn bài ngẫu nhiên, repeat 3 chế độ; sửa tên/nghệ sĩ/lời theo từng bài, bìa sinh từ
+  chữ cái đầu. Panel nổi kéo được, đổi kích thước, thu nhỏ/phóng to, nhớ bố cục
+  (`bakhiMusic.panel.v1`); thư viện + queue ở `bakhiMusic.v3`, vị trí logo ở
+  `bakhiMusic.fab.v1`; không autoplay. Phím tắt (`Space`, `←/→`, `Esc`) chỉ kích hoạt
+  khi panel mở và bỏ qua khi đang gõ. Có `BKMusic.on(fn)` phát sự kiện thay đổi để UI
+  khác (tab Music của Dev Panel) cập nhật không cần polling. Local-first: đẩy lên bảng
+  `music_tracks` theo học sinh khi có phiên, lỗi mạng chỉ hiện trạng thái.
   Chi tiết: [MUSIC.md](MUSIC.md).
 - **Chuyển động & trợ năng** — ba bề mặt (Dev Panel, Music Player, Trung tâm học tập)
   đều có hiệu ứng chuyển tab ngắn (`.bkdev-pane-in`, `.bkm-anim`, `.bk-tab-in`) và tự
@@ -276,12 +275,20 @@ DOMContentLoaded
   bộ đếm chưa đọc cả trên tiêu đề tab; realtime cho tin nhắn, cảm xúc và tên nhóm; toàn bộ nội dung
   render bằng `textContent`. Từ 6.0.0 chỉ nhận văn bản (bỏ gửi ảnh/emoji soạn tin); không có đồng hồ đếm ngược.
   Tab ẩn không đánh dấu đã đọc; quay lại tab mới đánh dấu và gửi nhịp hoạt động.
+- **Chat 7.0.0**: `chat_conversation_prefs` lưu `pinned`/`archived` theo từng học sinh
+  (RLS, realtime). `chat-api` trả `pinned`/`archived` theo phòng và `pref` trong
+  `messages.list`; thêm `conversation.pin`/`conversation.archive`. Tổng chưa đọc bỏ qua
+  phòng đã lưu trữ. Giao diện có bộ lọc “Đã lưu trữ”, phòng ghim xếp trước, thả cảm xúc
+  tối ưu (hoàn tác khi lỗi) và popover xem ai đã thả. Mọi mốc thời gian hiển thị theo
+  `Asia/Ho_Chi_Minh` (UTC+7).
 - **Passkey (6.2.0)**: Edge Function `passkey-api` dùng `@simplewebauthn/server` để tạo/xác minh
   credential. RP ID/origin lấy từ secret `PASSKEY_RP_ID`/`PASSKEY_ORIGIN`, không lấy từ Host.
   Khi hồ sơ đã có passkey, `bind-student-session` trả `passkey_required` + challenge thay vì
   gắn thiết bị; chỉ `passkey-api auth.verify` được upsert `student_devices` sau khi chữ ký hợp lệ.
-- **Trạng thái triển khai**: migration `20261120000000` + `20261125000000`, các Edge Function
-  `chat-api`, `bind-student-session`, `passkey-api` và bucket `chat-images` đã deploy trên dự án thật.
+- **Trạng thái triển khai**: migration `20261120000000`, `20261125000000` và
+  `20261126000000` (7.0.0), các Edge Function `chat-api`, `bind-student-session`,
+  `passkey-api`, `admin-actions`, `student-profile` và bucket `chat-images` đã deploy
+  trên dự án thật.
 
 ### 2.8. Bá Khí Studio hợp nhất (3.9.0)
 
@@ -311,6 +318,17 @@ DOMContentLoaded
 - **Thành tích**: `badges.list` + `badges.grant` + `badges.revoke`. Máy chủ chỉ nhận
   `admin-chosen`/`admin-legend`; mọi id khác trả `NOT_ADMIN_BADGE`. Không có quyền tự mở
   badge tự động — chúng do `student-profile` tính lại từ tiến trình đã đồng bộ.
+  Từ 7.0.0 có `badges.autoGrant` (gọi nội bộ `student-profile` để đồng bộ hồ sơ) và
+  `badges.grantAll` (bỏ `founder` + mọi `dev-exclusive-*`, chống trùng, trả
+  `added`/`alreadyOwned`/`failed`/`excluded`). Thẻ badge mở modal chi tiết.
+- **Bảo trì (Founder)**: `settings.set` ghi `public.maintenance` (bật/tắt, lý do, người
+  thực hiện) và mở/đóng một dòng `maintenance_history`. Máy chủ tính thời lượng, ghi
+  audit và chỉ tạo **một** announcement hoàn tất cho mỗi đợt. `maintenance.history`
+  hỗ trợ tìm kiếm/lọc trạng thái. `bk-shell.js` dựng màn hình bảo trì chung, có
+  “Thử lại” và lối vào bằng Administrator Code qua `BKCloud.adminLogin`.
+- **Thương hiệu**: Founder sửa tên hiển thị Administrator Dashboard trong
+  `public.branding`; `bk-devboard.js` áp dụng realtime cho tiêu đề dashboard và không
+  đổi đường dẫn `/admin/`.
 - **Chat**: `chat.rooms`/`chat.messages` đọc phòng, thành viên, tin nhắn;
   `chat.delete` xoá mềm + xoá ảnh Storage; `chat.room.delete` chặn phòng `global`;
   `chat.member.remove`; `chat.mute` bật/tắt cột `chat_members.muted` và được `chat-api`
@@ -429,13 +447,14 @@ Kết quả sau nâng cấp: **122/122 tệp không đổi nội dung** (`verify
 - Chế độ chỉ thông báo không đồng bộ tiến trình, nên dữ liệu học trên trang bài học chỉ nằm
   trên thiết bị. Đây là chủ ý để không cần đăng nhập khi đang học.
 - Hồ sơ và thành tích: bản cục bộ (`bakhiProfile.v1`, `bakhiBadges.v1`) luôn dùng được;
-  đồng bộ/xác minh phía máy chủ (3.6.0) chỉ hoạt động sau khi deploy migration
-  `20261119000000` và Edge Functions `student-profile`/`admin-actions`. Khi chưa deploy,
-  `bk-cloud.js` tự tắt đồng bộ hồ sơ sau lỗi 404 và website giữ nguyên hành vi local-first.
-- Chat (3.7.0) đã có mã nguồn đầy đủ nhưng cần deploy migration `20261120000000` và Edge
-  Function `chat-api` cùng bucket `chat-images`; trước đó `/chat/` báo máy chủ chưa sẵn sàng.
-- Hợp nhất hai trang Studio và mở rộng dashboard A–M chưa triển khai; xem
-  `CHANGELOG.md` mục 3.7.0 và báo cáo phát hành.
+  đồng bộ/xác minh phía máy chủ dùng migration `20261119000000` và Edge Functions
+  `student-profile`/`admin-actions`. Nếu máy chủ chưa sẵn sàng, `bk-cloud.js` tự tắt
+  đồng bộ hồ sơ sau lỗi 404 và website giữ nguyên hành vi local-first.
+- Chat, passkey và các bảng 7.0 đã có migration + Edge Function tương ứng; `/chat/` vẫn
+  báo “máy chủ chưa sẵn sàng” nếu thiếu cấu hình hoặc phiên Supabase không hợp lệ.
+- Thư viện nhạc chỉ đồng bộ khi đã nhận diện học sinh và `BKCloud.chatClient()` hoạt
+  động; ngoài ra bài hát nằm ở `bakhiMusic.v3` trên thiết bị. Khung nhúng có thể bị
+  chặn bởi mạng/tường lửa hoặc chính sách của nền tảng.
 - Vì menu ba gạch bị ẩn, Dev Code **chỉ** vào từ Cài đặt → Nhà phát triển → Dev Code;
   Developer Playground chỉ mở khi `dev-auth` đã cấp phiên (xem 2.5).
 
@@ -450,7 +469,11 @@ Kết quả sau nâng cấp: **122/122 tệp không đổi nội dung** (`verify
 | Trung tâm thông báo | `bk-cloud.js` + bảng `announcements` | Realtime + đếm chưa đọc + đánh dấu đã đọc; có mặt trên mọi trang (chế độ chỉ thông báo ở trang bài học/Studio) |
 | Lịch sử phiên bản | bảng `changelog` | Hiển thị trong trung tâm thông báo và khối “Cập nhật gần đây” chỉ bật ở trang chủ, xếp theo số phiên bản |
 | Đồng bộ changelog | `.github/workflows/changelog-sync.yml` + `supabase/functions/changelog-sync` | GitHub Actions đọc `CHANGELOG.md`, gọi hàm bằng `CHANGELOG_SYNC_TOKEN`; hàm dùng RPC `bakhi_publish_changelog` để ghi và tạo thông báo một lần |
-| Cấu hình site | bảng `app_settings` | Chỉ đọc khoá `public.*`; `public.whatsnew`, `public.maintenance`; realtime; ghi qua `admin-actions` |
+| Cấu hình site | bảng `app_settings` | Chỉ đọc khoá `public.*`; `public.whatsnew`, `public.maintenance`, `public.branding`; realtime; ghi qua `admin-actions` |
+| Tuỳ chọn hội thoại | bảng `chat_conversation_prefs` | Ghim/lưu trữ theo học sinh; RLS + realtime; ghi qua `chat-api` (`conversation.*`) |
+| Lịch sử bảo trì | bảng `maintenance_history` | Bắt đầu/kết thúc, người thực hiện, lý do, thời lượng; Founder đọc qua `admin-actions` (`maintenance.history`) |
+| Thư viện nhạc | bảng `music_tracks` | Liên kết chính thức + tên/nghệ sĩ/lời theo học sinh; RLS `bakhi_current_student_id()`; realtime; đồng bộ trực tiếp từ `bk-music.js` |
+| Tuỳ chọn hồ sơ | cột `student_profiles.prefs` (jsonb) | `animateAvatarBorders` và tuỳ chọn giao diện; đọc/ghi qua `student-profile` |
 | Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html`, `founder/index.html` | 12 mô-đun Administrator; 15 mô-đun Founder, xác thực mã qua `admin-auth`; mọi thao tác kiểm tra lại ở `admin-actions` |
 | Dev Code | `assets/bakhi/bk-settings.js`, `bk-cloud.js`, `supabase/functions/dev-auth`, bảng `dev_sessions` | Xác minh mã ở máy chủ, giới hạn tần suất, chỉ trả token + hạn dùng; tách hoàn toàn khỏi phiên quản trị |
 

@@ -2004,7 +2004,8 @@
     function profileHasContent(p) {
         if (!p) return false;
         return !!(p.nickname || p.bio || p.avatar || p.banner ||
-            (p.links && p.links.length) || (p.frame && p.frame !== 'none'));
+            (p.links && p.links.length) || (p.frame && p.frame !== 'none') ||
+            (p.prefs && p.prefs.animateAvatarBorders === false));
     }
 
     /* Số tin nhắn Chat chưa đọc, dùng cho chấm đỏ trên avatar và menu hồ sơ.
@@ -2207,6 +2208,14 @@
                     var row = payload && (payload.new || payload.old);
                     if (!row || !S.student || row.student_id === S.student.id) return;
                     scheduleChatUnread(1200);
+                })
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_members' }, function () {
+                    /* Đọc ở tab/thiết bị khác → đồng bộ chấm đỏ trên avatar. */
+                    scheduleChatUnread(900);
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_conversation_prefs' }, function () {
+                    /* Ghim/lưu trữ ở thiết bị khác → tính lại số chưa đọc. */
+                    scheduleChatUnread(900);
                 })
                 .subscribe(function (status) {
                     if (status === 'SUBSCRIBED') S.realtime = 'connected';

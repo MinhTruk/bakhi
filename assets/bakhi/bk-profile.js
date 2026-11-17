@@ -428,6 +428,7 @@
             banner: '',
             frame: 'none',
             links: [],
+            prefs: { animateAvatarBorders: true },
             updatedAt: 0
         };
     }
@@ -445,6 +446,11 @@
         }
         p.frame = frameById(raw.frame).id;
         p.updatedAt = Number(raw.updatedAt) || 0;
+        p.prefs = { animateAvatarBorders: true };
+        if (raw.prefs && typeof raw.prefs === 'object' &&
+            raw.prefs.animateAvatarBorders === false) {
+            p.prefs.animateAvatarBorders = false;
+        }
         (Array.isArray(raw.links) ? raw.links : []).slice(0, LIMITS.links).forEach(function (l) {
             if (!l) return;
             var url = safeUrl(l.url);
@@ -489,6 +495,20 @@
         all.profiles[idc.key] = next;
         writeAll(all);
         return next;
+    }
+
+    function getPrefs() {
+        var p = get();
+        return p.prefs || { animateAvatarBorders: true };
+    }
+
+    /** Đổi một cờ giao diện; tăng updatedAt để BKCloud đẩy lên máy chủ. */
+    function setPref(name, value) {
+        if (name !== 'animateAvatarBorders') return getPrefs();
+        var prefs = Object.assign({}, getPrefs(), { animateAvatarBorders: value !== false });
+        save({ prefs: prefs });
+        emit('pref');
+        return prefs;
     }
 
     /**
@@ -644,6 +664,9 @@
         var frame = frameById(opts.showFrame === false ? 'none' : p.frame);
         wrap.setAttribute('data-frame', frame.id);
         wrap.setAttribute('data-tier', frame.tier || 'normal');
+        if (p.prefs && p.prefs.animateAvatarBorders === false) {
+            wrap.classList.add('bk-frame-static');
+        }
         if (frame.id !== 'none') {
             wrap.style.setProperty('--bk-avatar-ring', frame.ring);
             wrap.classList.add('bk-avatar-framed');
@@ -682,6 +705,8 @@
         identity: identity,
         get: get,
         save: save,
+        getPrefs: getPrefs,
+        setPref: setPref,
         applyRemote: applyRemote,
         reset: reset,
         on: on,

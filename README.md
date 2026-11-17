@@ -233,10 +233,11 @@ script và không sửa nội dung gốc.
 | 💾 Lưu tiến độ | 🟢 Đã có (local-first) |
 | 🧠 Trung tâm học tập | 🟢 Đã có |
 | 🛠 Developer Playground 2.0 | 🟢 Đã có |
-| 🎧 Music Player dùng chung | 🟢 Đã có |
+| 🎧 Music Player cá nhân (YouTube/Spotify/SoundCloud) | 🟢 Đã có (7.0.0) |
 | 🎨 Bá Khí Studio (Word & Paint) | 🟢 Đã có |
 | 🔔 Thông báo realtime toàn website (kể cả trang bài học, Studio) | 🟢 Đã có (3.2.0) |
-| 🛠️ Administrator Dashboard 6.0 (12 mô-đun) + Founder Dashboard (15 mô-đun, trao mọi badge) | 🟢 Đã có (6.2.0) |
+| 🛠️ Administrator Dashboard (12 mô-đun) + Founder Dashboard (15 mô-đun, bảo trì, trao badge) | 🟢 Đã có (7.0.0) |
+| ⏸️ Bảo trì toàn website + lịch sử và lối vào Administrator | 🟢 Đã có (7.0.0) |
 | 🔄 Đồng bộ CHANGELOG.md tự động qua GitHub Actions | 🟢 Đã có (3.3.0) |
 | 🌙 Giao diện thông báo tối thống nhất | 🟢 Đã có (3.3.0) |
 | 🖼️ Favicon tĩnh SVG/PNG/ICO toàn site | 🟢 Đã có (3.3.0) |

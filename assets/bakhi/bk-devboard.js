@@ -15,7 +15,7 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var APP_VERSION = '6.2.0';
+    var APP_VERSION = '7.0.0';
 
     var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
         ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];
@@ -103,7 +103,9 @@
         logs: { list: [], q: '', target: '', limit: 100, page: 1, total: 0, from: '', to: '' },
         monitor: { data: null },
         permissions: { data: null },
-        data: { integrity: null, flags: [] }
+        data: { integrity: null, flags: [] },
+        maintenance: { history: [], q: '', status: 'all', total: 0, loading: false, cycle: null, searchTimer: null },
+        branding: { adminDashboardName: 'Administrator Dashboard' }
     };
 
     /* ------------------------------ Tiện ích ------------------------------ */
@@ -595,11 +597,13 @@
         mark.appendChild(icon('fa-shield-halved'));
         brand.appendChild(mark);
         var brandText = h('div', 'bkc-brand-text');
-        brandText.appendChild(h('b', null, 'Bá Khí Admin'));
+        var brandNameEl = h('b', null, S.branding.adminDashboardName || 'Bá Khí Admin');
+        brandText.appendChild(brandNameEl);
         brandText.appendChild(h('span', null, 'Console v' + APP_VERSION));
         brand.appendChild(brandText);
         brand.appendChild(iconBtn('fa-xmark', 'Đóng điều hướng', function () { root.classList.remove('is-nav-open'); }, 'bkc-side-close'));
         side.appendChild(brand);
+        S.brandNameEl = brandNameEl;
 
         var nav = h('nav', 'bkc-nav');
         nav.setAttribute('role', 'tablist');
@@ -652,7 +656,8 @@
         headLeft.appendChild(iconBtn('fa-bars', 'Mở điều hướng', function () { root.classList.add('is-nav-open'); }, 'bkc-nav-toggle'));
         var titles = h('div', 'bkc-dash-titles');
         var titleRow = h('div', 'bkc-dash-title-row');
-        titleRow.appendChild(h('span', 'bkc-dash-title', 'Administrator Dashboard'));
+        S.titleEl = h('span', 'bkc-dash-title', S.branding.adminDashboardName || 'Administrator Dashboard');
+        titleRow.appendChild(S.titleEl);
         var live = h('span', 'bkc-live-dot');
         live.title = 'Đang hoạt động';
         titleRow.appendChild(live);
@@ -687,11 +692,43 @@
         (D.body || D.documentElement).appendChild(root);
         S.root = root;
 
+        /* Bảo trì đổi ở tab/thiết bị khác → lịch sử tự làm mới khi đang mở. */
+        global.addEventListener('bk:settings-changed', function () {
+            if (S.tab === 'maintenance' && typeof S.maintenance.refresh === 'function') {
+                try { S.maintenance.refresh(); } catch (e) { }
+            }
+        });
+
         try {
             if (global.localStorage.getItem('bkAdminCompact') === '1') root.classList.add('is-compact');
         } catch (e) { }
 
         checkStatus();
+        loadBranding();
+    }
+
+    /* Tên hiển thị Dashboard do Founder chỉnh trong tab Cấu hình, lưu ở
+       app_settings.public.branding. Không đổi đường dẫn /admin/. */
+    function applyBranding(name) {
+        var clean = String(name == null ? '' : name).trim().slice(0, 40)
+            || 'Administrator Dashboard';
+        S.branding.adminDashboardName = clean;
+        if (S.titleEl) S.titleEl.textContent = clean;
+        if (S.brandNameEl) S.brandNameEl.textContent = clean;
+        try {
+            D.title = clean + ' — Bá Khí';
+        } catch (e) { }
+        return clean;
+    }
+    function loadBranding() {
+        return api('settings.get').then(function (data) {
+            var row = (data.settings || []).filter(function (x) { return x.key === 'public.branding'; })[0];
+            var value = row && row.value && typeof row.value === 'object' ? row.value : {};
+            applyBranding(value.adminDashboardName);
+        }).catch(function () {
+            /* Không có cấu hình branding vẫn dùng tên mặc định. */
+            applyBranding(S.branding.adminDashboardName);
+        });
     }
 
     function checkStatus() {
@@ -2183,6 +2220,118 @@
         for (var i = 0; i < frames.length; i++) if (frames[i].id === id) return frames[i].name;
         return id ? String(id) : 'Mặc định';
     }
+
+    /* ----------------------- Chi tiết thành tích (modal) ------------------ */
+    /* Dùng chung cho tab Hồ sơ và tab Thành tích: bấm vào ô badge để xem
+       đầy đủ mô tả, độ hiếm, cách lấy, phần thưởng khung và trạng thái. */
+    function badgeRarity(id) {
+        var list = [];
+        try { list = (global.BK && global.BK.badges && global.BK.badges.RARITIES) || []; } catch (e) { list = []; }
+        for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+        return null;
+    }
+    function badgeCategory(id) {
+        var list = [];
+        try { list = (global.BK && global.BK.badges && global.BK.badges.CATEGORIES) || []; } catch (e) { list = []; }
+        for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+        return null;
+    }
+    function badgeScope(meta) {
+        if (!meta || !meta.adminOnly) return 'Tự động — máy chủ xác minh từ tiến trình học tập.';
+        if (meta.exclusive === 'founder') return 'Độc quyền Founder — chỉ hồ sơ is_founder = true.';
+        if (meta.exclusive === 'dev') return 'Độc quyền Developer — chỉ Founder trao được.';
+        return 'Administrator trao tay từ Dashboard.';
+    }
+    function openBadgeDetail(badgeId, opts) {
+        opts = opts || {};
+        var meta = badgeMeta(badgeId);
+        if (!meta) return;
+        var rarity = badgeRarity(meta.rarity);
+        var cat = badgeCategory(meta.category);
+        var owned = opts.owned === true;
+        var tags = [];
+        if (rarity) tags.push(['', rarity.name]);
+        if (cat) tags.push(['', cat.name]);
+        if (meta.adminOnly) tags.push(['bkc-tag-general', 'Trao tay']);
+        else tags.push(['', 'Tự động']);
+        if (opts.ownedDate) tags.push(['', 'Đã sở hữu']);
+
+        openSheet({
+            title: meta.name,
+            tags: tags,
+            body: function (host) {
+                var head = h('div', 'bkc-badge-detail-head');
+                var ic = h('span', 'bkc-badge-detail-icon' + (owned ? ' is-owned' : ''));
+                ic.appendChild(icon(meta.icon || 'fa-medal'));
+                head.appendChild(ic);
+                var text = h('div', 'bkc-badge-detail-text');
+                text.appendChild(h('b', null, meta.name));
+                text.appendChild(h('span', 'bkc-row-sub', badgeScope(meta)));
+                if (opts.ownedDate) {
+                    text.appendChild(h('span', 'bkc-row-sub',
+                        'Trao ngày ' + fmt(opts.ownedDate) + (opts.kind === 'auto' ? ' · tự động' : ' · quản trị viên')));
+                }
+                head.appendChild(text);
+                host.appendChild(head);
+
+                host.appendChild(h('h4', 'bkc-sec-title', 'Mô tả'));
+                host.appendChild(h('p', 'bkc-muted', meta.desc || 'Chưa có mô tả cho badge này.'));
+
+                host.appendChild(h('h4', 'bkc-sec-title', 'Cách lấy'));
+                host.appendChild(h('p', 'bkc-muted',
+                    meta.adminOnly
+                        ? badgeScope(meta)
+                        : 'Đạt mục tiêu ' + (meta.goal > 1 ? meta.goal + ' lần hoạt động' : '1 lần') +
+                          ' theo dữ liệu học tập đã đồng bộ. Máy chủ tính lại độc lập, không tin trình duyệt.'));
+
+                if (opts.reason) {
+                    host.appendChild(h('h4', 'bkc-sec-title', 'Lý do trao'));
+                    host.appendChild(h('p', 'bkc-muted', opts.reason));
+                }
+
+                if (meta.frame) {
+                    host.appendChild(h('h4', 'bkc-sec-title', 'Phần thưởng khung avatar'));
+                    var preview = h('div', 'bkc-badge-frame-preview');
+                    var frame = null;
+                    try {
+                        var frames = (global.BKProfile && global.BKProfile.frames) || [];
+                        for (var i = 0; i < frames.length; i++) if (frames[i].id === meta.frame) frame = frames[i];
+                    } catch (e) { frame = null; }
+                    if (frame) preview.style.setProperty('--bkc-frame-ring', frame.ring || '#94a3b8');
+                    var avatar = h('span', 'bkc-badge-frame-avatar', initials(opts.studentName || 'BK'));
+                    preview.appendChild(avatar);
+                    try {
+                        if (frame && global.BKProfile && global.BKProfile.frameOverlay) {
+                            var art = global.BKProfile.frameOverlay(frame.id);
+                            if (art) preview.appendChild(art);
+                        }
+                    } catch (e) { }
+                    host.appendChild(preview);
+                    host.appendChild(h('p', 'bkc-hint', 'Khung “' + frameLabel(meta.frame) +
+                        '” mở khoá khi học sinh sở hữu badge này. Khung chỉ trang trí ảnh đại diện.'));
+                }
+            }
+        });
+    }
+
+    /* Biến ô badge trong dashboard thành nút mở chi tiết, giữ thao tác riêng
+       (thu hồi) hoạt động độc lập. */
+    function makeBadgeTappable(tile, badgeId, opts) {
+        tile.classList.add('is-tappable');
+        tile.setAttribute('role', 'button');
+        tile.setAttribute('tabindex', '0');
+        tile.setAttribute('title', 'Ấn để xem chi tiết thành tích');
+        tile.addEventListener('click', function (e) {
+            if (e.target && e.target.closest && e.target.closest('button')) return;
+            openBadgeDetail(badgeId, opts);
+        });
+        tile.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openBadgeDetail(badgeId, opts);
+            }
+        });
+    }
     function badgeCountText(profile, count) {
         if (count == null) return '—';
         return String(count) + ' thành tích';
@@ -2390,6 +2539,10 @@
                                 (b.kind === 'admin' ? 'Administrator trao' : 'Tự động') + ' · ' + fmt(b.awarded_at)));
                             if (b.reason) body.appendChild(h('span', 'bkc-hint', b.reason));
                             tile.appendChild(body);
+                            makeBadgeTappable(tile, b.badge_id, {
+                                owned: true, ownedDate: b.awarded_at, kind: b.kind,
+                                reason: b.reason, studentName: row.display_name
+                            });
                             grid.appendChild(tile);
                         });
                         badgeSection.appendChild(grid);
@@ -2636,6 +2789,78 @@
             grantBox.appendChild(grantActions);
             selectedHost.appendChild(grantBox);
 
+            /* Cấp hàng loạt: tính lại badge tự động + cấp trọn bộ badge thường.
+               Cả hai đều chạy phía máy chủ và ghi audit log. */
+            var bulkBox = h('div', 'bkc-grant-box bkc-bulk-box');
+            bulkBox.appendChild(h('h4', 'bkc-sec-title', 'Cấp thành tích hàng loạt'));
+            bulkBox.appendChild(h('p', 'bkc-hint',
+                'Cấp tự động dùng đúng quy tắc của student-profile. Cấp trọn bộ bỏ qua badge Founder ' +
+                'và toàn bộ badge Developer độc quyền; badge đã có không bị nhân đôi.'));
+            var bulkActions = h('div', 'bkc-actions');
+            var autoBtn = btn('Cấp thành tích tự động', '', function () {
+                autoBtn.disabled = true;
+                bulkResult.textContent = '';
+                loading(bulkResult, 'Đang tính lại thành tích tự động…');
+                api('badges.autoGrant', { id: row.id }).then(function (data) {
+                    bulkResult.textContent = '';
+                    var earned = data.earned || [];
+                    bulkResult.appendChild(alertBox(
+                        earned.length
+                            ? 'Đã cấp ' + earned.length + ' thành tích tự động còn thiếu.'
+                            : 'Không có thành tích tự động mới — hồ sơ đã đạt mọi điều kiện hiện tại.',
+                        'success'));
+                    S.badges.badges = data.badges || [];
+                    paintList(S.badges.badges);
+                    toast('Đã tính lại thành tích tự động.', 'success');
+                }).catch(function (err) {
+                    bulkResult.textContent = '';
+                    bulkResult.appendChild(alertBox((err && err.message) || 'Không cấp được thành tích tự động.', 'error'));
+                }).then(function () { autoBtn.disabled = false; });
+            }, 'fa-wand-magic-sparkles');
+            bulkActions.appendChild(autoBtn);
+
+            var allBtn = btn('Cấp toàn bộ badge', 'bkc-btn-primary', function () {
+                var run = function () {
+                    allBtn.disabled = true;
+                    bulkResult.textContent = '';
+                    loading(bulkResult, 'Đang cấp trọn bộ thành tích…');
+                    api('badges.grantAll', { id: row.id }).then(function (data) {
+                        bulkResult.textContent = '';
+                        var parts = [];
+                        parts.push('Đã thêm ' + (data.added || 0) + ' badge');
+                        if (data.alreadyOwned) parts.push((data.alreadyOwned) + ' badge đã có sẵn');
+                        if ((data.excluded || []).length) parts.push('bỏ qua ' + data.excluded.length + ' badge độc quyền');
+                        if ((data.failed || []).length) parts.push('lỗi ' + data.failed.length + ' badge');
+                        bulkResult.appendChild(alertBox(parts.join(' · ') + '.', (data.failed || []).length ? 'warn' : 'success'));
+                        if (S.badges.selected && S.badges.selected.id === row.id) {
+                            api('badges.list', { id: row.id }).then(function (fresh) {
+                                S.badges.badges = fresh.badges || [];
+                                paintList(S.badges.badges);
+                            }).catch(function () { });
+                        }
+                        toast('Đã cấp trọn bộ badge thường cho ' + row.display_name + '.', 'success');
+                    }).catch(function (err) {
+                        bulkResult.textContent = '';
+                        bulkResult.appendChild(alertBox((err && err.message) || 'Không cấp được trọn bộ badge.', 'error'));
+                    }).then(function () { allBtn.disabled = false; });
+                };
+                if (global.BK && global.BK.ui && global.BK.ui.confirm) {
+                    global.BK.ui.confirm({
+                        title: 'Cấp toàn bộ badge?',
+                        message: 'Trao mọi badge thường cho ' + row.display_name + '. Bỏ qua badge Founder và '
+                            + 'hai badge Developer độc quyền. Thao tác được ghi nhật ký và không xoá badge đã có.',
+                        ok: 'Cấp trọn bộ', danger: false
+                    }).then(function (yes) { if (yes) run(); });
+                } else if (global.confirm('Cấp toàn bộ badge thường cho ' + row.display_name + '?')) {
+                    run();
+                }
+            }, 'fa-layer-group');
+            bulkActions.appendChild(allBtn);
+            bulkBox.appendChild(bulkActions);
+            var bulkResult = h('div');
+            bulkBox.appendChild(bulkResult);
+            selectedHost.appendChild(bulkBox);
+
             var listHost = h('div');
             selectedHost.appendChild(listHost);
             loading(listHost, 'Đang tải thành tích…');
@@ -2687,6 +2912,11 @@
                         tileActs.appendChild(pill('Máy chủ xác minh', 'ok'));
                     }
                     tile.appendChild(tileActs);
+                    makeBadgeTappable(tile, b.badge_id, {
+                        owned: true, ownedDate: b.awarded_at,
+                        kind: b.manual_granted || b.kind === 'admin' ? 'admin' : 'auto',
+                        reason: b.reason, studentName: row.display_name
+                    });
                     grid.appendChild(tile);
                 });
                 listHost.appendChild(grid);
@@ -3661,6 +3891,118 @@
             });
         }
         load();
+
+        /* ----------------------------- Lịch sử ----------------------------- */
+        var historyCard = card('Lịch sử bảo trì', [
+            iconBtn('fa-rotate', 'Tải lại lịch sử', function () { loadHistory(); })
+        ], 'Mỗi chu kỳ bật/tắt bảo trì được ghi nhận: người thao tác, lý do, thời lượng và trạng thái.');
+        pane.appendChild(historyCard.root);
+
+        var historyFilters = h('div', 'bkc-filters');
+        var historySearch = input('search', 'Tìm theo lý do hoặc người thao tác…', S.maintenance.q || '');
+        historySearch.className = 'bkc-input bkc-grow';
+        historyFilters.appendChild(historySearch);
+        var historyStatus = selectBox([
+            ['all', 'Mọi trạng thái'],
+            ['active', 'Đang bảo trì'],
+            ['completed', 'Đã kết thúc']
+        ], S.maintenance.status || 'all', function (v) {
+            S.maintenance.status = v;
+            loadHistory();
+        });
+        historyFilters.appendChild(historyStatus);
+        historyFilters.appendChild(btn('Tìm', '', function () {
+            S.maintenance.q = historySearch.value.trim();
+            loadHistory();
+        }, 'fa-magnifying-glass'));
+        historyCard.body.appendChild(historyFilters);
+        historySearch.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                S.maintenance.q = historySearch.value.trim();
+                loadHistory();
+            }
+        });
+
+        var historySummary = h('div', 'bkc-summary-row');
+        historyCard.body.appendChild(historySummary);
+        var historyHost = h('div');
+        historyCard.body.appendChild(historyHost);
+
+        function durationText(seconds, startedAt, endedAt) {
+            var secs = Number(seconds);
+            if (!isFinite(secs) || secs < 0) {
+                if (!startedAt) return '—';
+                secs = Math.max(0, Math.round(((endedAt ? new Date(endedAt) : new Date()).getTime()
+                    - new Date(startedAt).getTime()) / 1000));
+            }
+            if (!isFinite(secs)) return '—';
+            var hh = Math.floor(secs / 3600);
+            var mm = Math.floor((secs % 3600) / 60);
+            var ss = secs % 60;
+            if (hh) return hh + ' giờ ' + mm + ' phút';
+            if (mm) return mm + ' phút ' + ss + ' giây';
+            return ss + ' giây';
+        }
+
+        function loadHistory() {
+            if (!historyHost.isConnected) return;
+            historyHost.textContent = '';
+            loading(historyHost, 'Đang tải lịch sử bảo trì…');
+            api('maintenance.history', {
+                q: S.maintenance.q || '',
+                status: S.maintenance.status || 'all',
+                limit: 100
+            }).then(function (data) {
+                if (!historyHost.isConnected) return;
+                historyHost.textContent = '';
+                historySummary.textContent = '';
+                var rows = data.history || [];
+                S.maintenance.history = rows;
+                S.maintenance.total = data.total || rows.length;
+                var active = rows.filter(function (r) { return r.status === 'active'; })[0] || null;
+                S.maintenance.cycle = active;
+                historySummary.appendChild(pill(S.maintenance.total + ' chu kỳ'));
+                historySummary.appendChild(pill(active ? 'Đang bảo trì' : 'Không có phiên mở', active ? 'warn' : 'ok'));
+                if (active) {
+                    historySummary.appendChild(pill('Bắt đầu ' + fmt(active.started_at), 'warn'));
+                }
+
+                if (!rows.length) {
+                    emptyState(historyHost, 'fa-clock-rotate-left', 'Chưa có lịch sử',
+                        S.maintenance.q || S.maintenance.status !== 'all'
+                            ? 'Không có chu kỳ nào khớp bộ lọc.'
+                            : 'Lịch sử xuất hiện sau lần bật/tắt bảo trì đầu tiên kể từ phiên bản 7.0.');
+                    return;
+                }
+
+                var t = table(['Bắt đầu', 'Kết thúc', 'Thời lượng', 'Người bật', 'Người tắt', 'Lý do', 'Trạng thái']);
+                rows.forEach(function (r) {
+                    var tr = h('tr');
+                    tr.appendChild(h('td', null, r.started_at ? fmt(r.started_at) : '—'));
+                    tr.appendChild(h('td', null, r.ended_at ? fmt(r.ended_at) : '—'));
+                    tr.appendChild(h('td', null, durationText(r.duration_seconds, r.started_at, r.ended_at)));
+                    tr.appendChild(h('td', 'bkc-code', r.started_by || '—'));
+                    tr.appendChild(h('td', 'bkc-code', r.ended_by || '—'));
+                    tr.appendChild(h('td', null, r.reason || '—'));
+                    var st = h('td');
+                    st.appendChild(pill(r.status === 'active' ? 'Đang bảo trì' : 'Đã kết thúc',
+                        r.status === 'active' ? 'warn' : 'ok'));
+                    if (r.completion_announcement_id) st.appendChild(pill('Đã thông báo', 'info'));
+                    tr.appendChild(st);
+                    t.tbody.appendChild(tr);
+                });
+                historyHost.appendChild(t.wrap);
+                historyHost.appendChild(h('p', 'bkc-hint',
+                    'Một thông báo hoàn tất được tạo cho mỗi chu kỳ (không trùng lặp). ' +
+                    'Thời lượng do máy chủ tính từ started_at và ended_at.'));
+            }).catch(function (err) {
+                if (!historyHost.isConnected) return;
+                historyHost.textContent = '';
+                historyHost.appendChild(alertBox((err && err.message) || 'Không tải được lịch sử bảo trì.', 'error'));
+            });
+        }
+        S.maintenance.refresh = loadHistory;
+        loadHistory();
     }
 
     function renderSettings(pane) {
@@ -3740,6 +4082,56 @@
             });
         }
         loadFlags();
+
+        if (isFounder()) {
+            var brandCard = card('Tên hiển thị Dashboard', [
+                iconBtn('fa-rotate', 'Tải lại tên hiển thị', function () { loadBrandName(); })
+            ], 'Founder đổi được tên hiển thị của Administrator Dashboard. Đường dẫn /admin/ và quyền truy cập không đổi.');
+            pane.appendChild(brandCard.root);
+            var brandHost = h('div', 'bkc-form');
+            brandCard.body.appendChild(brandHost);
+
+            function loadBrandName() {
+                brandHost.textContent = '';
+                loading(brandHost, 'Đang tải tên hiển thị…');
+                api('settings.get').then(function (data) {
+                    brandHost.textContent = '';
+                    var row = (data.settings || []).filter(function (x) { return x.key === 'public.branding'; })[0];
+                    var value = row && row.value && typeof row.value === 'object' ? row.value : {};
+                    var current = value.adminDashboardName || 'Administrator Dashboard';
+                    var nameInput = input('text', 'Tên hiển thị, tối đa 40 ký tự…', current);
+                    nameInput.maxLength = 40;
+                    brandHost.appendChild(fieldRow('Tên hiển thị', nameInput));
+                    var preview = h('p', 'bkc-hint', 'Xem trước: ' + current);
+                    nameInput.addEventListener('input', function () {
+                        preview.textContent = 'Xem trước: ' + (nameInput.value.trim() || 'Administrator Dashboard');
+                    });
+                    brandHost.appendChild(preview);
+                    var acts = h('div', 'bkc-actions');
+                    var saveBrand = btn('Lưu tên hiển thị', 'bkc-btn-primary', function () {
+                        var name = nameInput.value.trim();
+                        if (!name) { toast('Tên hiển thị không được để trống.', 'error'); return; }
+                        saveBrand.disabled = true;
+                        api('settings.set', { key: 'public.branding', adminDashboardName: name })
+                            .then(function (data) {
+                                saveBrand.disabled = false;
+                                var saved = data && data.value && data.value.adminDashboardName;
+                                applyBranding(saved || name);
+                                toast('Đã lưu tên hiển thị Dashboard.', 'success');
+                            }).catch(function (err) {
+                                saveBrand.disabled = false;
+                                fail(err, brandHost);
+                            });
+                    }, 'fa-floppy-disk');
+                    acts.appendChild(saveBrand);
+                    brandHost.appendChild(acts);
+                }).catch(function (err) {
+                    brandHost.textContent = '';
+                    brandHost.appendChild(alertBox((err && err.message) || 'Không tải được tên hiển thị.', 'error'));
+                });
+            }
+            loadBrandName();
+        }
 
         var c = card('Trạng thái hệ thống', [iconBtn('fa-rotate', 'Kiểm tra lại', function () { switchTab('settings'); })],
             'Các secret chỉ được kiểm tra sự tồn tại, không bao giờ hiển thị giá trị.');

@@ -291,6 +291,7 @@
         fsub.style.cssText = 'font-size:.74rem;color:var(--bkl-muted);margin:.15rem 0 .55rem';
         frameCard.appendChild(fsub);
         frameCard.appendChild(renderFrames());
+        frameCard.appendChild(renderAnimationToggle());
         container.appendChild(frameCard);
 
         function linkRow(l, idx) {
@@ -371,17 +372,13 @@
             grid.appendChild(heading);
             list.forEach(function (f) {
                 var isOwned = owned.indexOf(f.id) !== -1;
-                var cell = el('button', 'bk-frame');
+                var cell = el('button', 'bk-frame' + (isOwned ? '' : ' is-locked'));
                 cell.type = 'button';
                 cell.setAttribute('data-tier', f.tier || 'normal');
                 cell.setAttribute('aria-pressed', current === f.id ? 'true' : 'false');
-                cell.setAttribute('title', f.name + ' · ' + rarityMeta(f.rarity).name);
-                if (!isOwned) {
-                    cell.disabled = true;
-                    var badge = b ? b.CATALOG.filter(function (x) { return x.frame === f.id; })[0] : null;
-                    cell.title = 'Chưa sở hữu — mở khóa bằng badge' + (badge ? ': ' + badge.name : ' hiếm');
-                    cell.setAttribute('aria-disabled', 'true');
-                }
+                cell.setAttribute('title', f.name + ' · ' + rarityMeta(f.rarity).name +
+                    (isOwned ? ' · đã sở hữu' : ' · ấn để xem cách mở khoá'));
+                var badge = b ? b.CATALOG.filter(function (x) { return x.frame === f.id; })[0] : null;
                 var prev = api.avatarNode({ size: 46, showFrame: false });
                 if (f.id !== 'none') {
                     prev.classList.add('bk-avatar-framed');
@@ -390,9 +387,19 @@
                     var art = api.frameOverlay(f.id);
                     if (art) prev.appendChild(art);
                 }
+                if (!isOwned) {
+                    var lock = el('span', 'bk-frame-lock');
+                    lock.appendChild(icon('fa-lock'));
+                    lock.setAttribute('aria-hidden', 'true');
+                    cell.appendChild(lock);
+                }
                 cell.appendChild(prev);
                 cell.appendChild(el('span', 'bk-frame-label', f.name));
                 cell.addEventListener('click', function () {
+                    if (!isOwned) {
+                        openFrameDetail(f, badge, false);
+                        return;
+                    }
                     var res = api.equipFrame(f.id);
                     if (!res.ok) return toast(res.error, 'error');
                     toast('Đã trang bị khung "' + f.name + '".', 'success');
@@ -407,6 +414,103 @@
     function renderFramesInto(container) {
         var fresh = renderFrames();
         container.parentNode.replaceChild(fresh, container);
+    }
+
+    var FRAME_TIERS = { normal: 'Bộ sưu tập', dev: 'Độc quyền Developer', founder: 'Người sáng lập' };
+
+    function framePreview(f, size) {
+        var api = P();
+        var prev = api.avatarNode({ size: size || 84, showFrame: false });
+        if (f.id !== 'none') {
+            prev.classList.add('bk-avatar-framed');
+            prev.setAttribute('data-tier', f.tier || 'normal');
+            prev.style.setProperty('--bk-avatar-ring', f.ring);
+            var art = api.frameOverlay(f.id);
+            if (art) prev.appendChild(art);
+        }
+        return prev;
+    }
+
+    function openFrameDetail(f, badge, owned) {
+        if (!f) return;
+        var api = P();
+        var isOwned = owned === true || api.ownedFrames().indexOf(f.id) !== -1;
+        var body = el('div', 'bk-frame-detail');
+        var head = el('div', 'bk-frame-detail-head');
+        var preview = el('div', 'bk-frame-detail-preview');
+        preview.appendChild(framePreview(f, 92));
+        head.appendChild(preview);
+        var text = el('div', 'bk-frame-detail-text');
+        text.appendChild(el('h3', null, f.name));
+        var meta = el('div', 'bk-badge-detail-meta');
+        meta.appendChild(el('span', null, rarityMeta(f.rarity).name));
+        meta.appendChild(el('span', null, FRAME_TIERS[f.tier] || FRAME_TIERS.normal));
+        meta.appendChild(el('span', null, isOwned ? 'Đã sở hữu' : 'Chưa sở hữu'));
+        text.appendChild(meta);
+        head.appendChild(text);
+        body.appendChild(head);
+
+        body.appendChild(el('p', 'bk-badge-detail-label', 'Mô tả'));
+        body.appendChild(el('p', null,
+            'Khung avatar “' + f.name + '” thuộc ' + (FRAME_TIERS[f.tier] || FRAME_TIERS.normal) +
+            ', độ hiếm ' + rarityMeta(f.rarity).name.toLowerCase() +
+            '. Khung chỉ trang trí quanh ảnh đại diện, không thay đổi ảnh gốc hay dữ liệu học tập.' +
+            (f.anim ? ' Khung có hiệu ứng chuyển động; có thể tắt trong Cài đặt.' : '')));
+
+        body.appendChild(el('p', 'bk-badge-detail-label', 'Cách mở khoá'));
+        if (isOwned) {
+            body.appendChild(el('p', null, 'Bạn đã sở hữu khung này và có thể trang bị ngay.'));
+        } else if (badge) {
+            body.appendChild(el('p', null, 'Mở khoá bằng thành tích “' + badge.name + '”. ' + (badge.desc || '')));
+        } else {
+            body.appendChild(el('p', null, 'Khung này mở khoá bằng thành tích hiếm hoặc do quản trị viên trao.'));
+        }
+
+        var actions = [{ label: 'Đóng', variant: 'ghost', onClick: function (close) { close(); } }];
+        if (isOwned && api.get().frame !== f.id) {
+            actions.unshift({
+                label: 'Trang bị', variant: 'primary', onClick: function (close) {
+                    var res = api.equipFrame(f.id);
+                    if (!res.ok) { toast(res.error, 'error'); return; }
+                    toast('Đã trang bị khung "' + f.name + '".', 'success');
+                    if (global.BKShell) global.BKShell.refresh();
+                    close();
+                    refreshAll();
+                }
+            });
+        }
+        if (global.BK && global.BK.ui && global.BK.ui.modal) {
+            global.BK.ui.modal({ title: 'Chi tiết khung avatar', body: body, actions: actions });
+        }
+    }
+
+    function renderAnimationToggle() {
+        var api = P();
+        var enabled = !api.getPrefs || api.getPrefs().animateAvatarBorders !== false;
+        var row = el('div', 'bk-set-toggle-row');
+        var text = el('div', 'bk-set-toggle-text');
+        text.appendChild(el('span', 'bk-set-toggle-label', 'Animate Avatar Borders'));
+        text.appendChild(el('span', 'bk-set-toggle-desc',
+            'Hiệu ứng chuyển động cho khung avatar có hoạ tiết động. Lưu theo tài khoản và đồng bộ khi đã nhận diện học sinh.'));
+        row.appendChild(text);
+        var sw = el('button', 'bk-switch');
+        sw.type = 'button';
+        sw.setAttribute('role', 'switch');
+        sw.setAttribute('aria-checked', enabled ? 'true' : 'false');
+        sw.setAttribute('aria-label', 'Bật hoặc tắt hiệu ứng chuyển động viền avatar');
+        sw.classList.toggle('is-on', enabled);
+        sw.appendChild(el('span', 'bk-switch-knob'));
+        sw.addEventListener('click', function () {
+            var next = !(api.getPrefs().animateAvatarBorders !== false);
+            api.setPref('animateAvatarBorders', next);
+            sw.classList.toggle('is-on', next);
+            sw.setAttribute('aria-checked', next ? 'true' : 'false');
+            toast(next ? 'Đã bật hiệu ứng viền avatar.' : 'Đã tắt hiệu ứng viền avatar.');
+            if (global.BKShell) global.BKShell.refresh();
+            refreshAll();
+        });
+        row.appendChild(sw);
+        return row;
     }
 
     /* ---------------------------------------------------------------------

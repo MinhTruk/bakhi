@@ -6,8 +6,8 @@ Hệ thống Supabase của Bá Khí gồm 4 phần:
 |---|---|---|
 | Cấu hình công khai | `assets/bakhi/bk-supabase.config.js` | **Nơi duy nhất** chứa Project URL + Publishable key |
 | Lớp client | `assets/bakhi/bk-cloud.js` | Một Supabase client duy nhất: Anonymous Auth, nhận diện học sinh, thông báo, changelog, đồng bộ |
-| Administrator Dashboard | `assets/bakhi/bk-devboard.js` + `admin/index.html` | 14 mô-đun quản trị, xác thực Administrator Code qua Edge Function |
-| Backend | `supabase/migrations/`, `supabase/functions/` | Schema + RLS + 10 Edge Function đã deploy |
+| Administrator Dashboard | `assets/bakhi/bk-devboard.js` + `admin/index.html` | 15 mô-đun Founders/12 Administrator, xác thực mã qua Edge Function |
+| Backend | `supabase/migrations/`, `supabase/functions/` | Schema + RLS + 11 Edge Function đã deploy |
 | Đồng bộ changelog | `.github/workflows/changelog-sync.yml` + `supabase/functions/changelog-sync` | GitHub Actions xuất bản `CHANGELOG.md` lên Supabase |
 
 > ⚠️ **Không bao giờ** đặt `service_role` key, secret key, database password, Administrator Code
@@ -19,7 +19,7 @@ Hệ thống Supabase của Bá Khí gồm 4 phần:
 1. Chạy lần lượt `supabase/migrations/20261122000000_bakhi_founder_6.sql`,
    `supabase/migrations/20261123000000_bakhi_founder_full_badges.sql` và
    `supabase/migrations/20261124000000_bakhi_chat_soft_delete.sql`.
-2. Deploy lại Edge Functions `admin-auth` và `admin-actions` (hoặc toàn bộ 10 hàm).
+2. Deploy lại Edge Functions `admin-auth` và `admin-actions` (hoặc toàn bộ 11 hàm).
 3. Migration đã seed sẵn một Founder Code (chỉ lưu SHA-256 trong `founder_config`).
    Đổi mã bằng cách cập nhật `code_hash` bằng SHA-256 của mã mới; không ghi mã gốc vào repo.
 4. Đăng nhập tại **Cài đặt → Founder**; không cần thêm secret môi trường.
@@ -36,7 +36,7 @@ Project `wzvslyabhizsiggurwdq` **đã được cài đặt và kiểm chứng**:
 | Migration `20261116000000_bakhi_security_hardening.sql` | ✅ đã chạy — thu hồi quyền hàm/bảng |
 | Migration `20261117000000_bakhi_changelog_sync.sql` | ✅ đã chạy — cột đồng bộ, RPC publish, `app_settings` |
 | Migration `20261117001000_app_settings_realtime.sql` | ✅ đã chạy — `app_settings` vào realtime |
-| 7 Edge Function | ✅ `ACTIVE`, `verify_jwt = false` |
+| 11 Edge Function | ✅ `ACTIVE`, `verify_jwt = false` |
 | Secret `ADMIN_DEV_CODE` | ✅ đã đặt |
 | Secret `CHANGELOG_SYNC_TOKEN` | ✅ đã đặt (Edge Function + GitHub Secrets) |
 | Roster `students.txt` | ✅ 40 học sinh, 0 hồ sơ trùng tên |
@@ -46,13 +46,14 @@ Project `wzvslyabhizsiggurwdq` **đã được cài đặt và kiểm chứng**:
 | Migration `20261119000000_bakhi_profile_badges.sql` (3.6.0) | ⏳ chờ chạy — `student_profiles`, `student_badges`, khung avatar |
 | Migration `20261120000000_bakhi_chat.sql` (3.7.0) | ✅ đã chạy — bốn bảng chat, view `chat_profiles`, bucket `chat-images` |
 | Migration `20261125000000_bakhi_chat_presence_passkey.sql` (6.2.0) | ✅ đã chạy — `last_seen_at`, `student_passkeys`, `passkey_challenges` |
+| Migration `20261126000000_bakhi_platform_7.sql` (7.0.0) | ✅ đã chạy — `chat_conversation_prefs`, `maintenance_history`, `music_tracks`, `student_profiles.prefs`, `public.branding` |
 | Edge Functions `dev-auth`, `student-profile`, `chat-api` | ✅ đã deploy |
 | Edge Function `passkey-api` + secret `PASSKEY_RP_ID`/`PASSKEY_ORIGIN` (6.2.0) | ✅ đã deploy/đặt |
+| Edge Functions `admin-actions`, `student-profile`, `chat-api` (7.0.0) | ✅ đã deploy bản 7.0.0 |
 
-> Ba migration và ba Edge Function mới (3.5.0–3.7.0) **chưa được chạy** trên project thật.
-> Website vẫn hoạt động local-first: `bk-cloud.js` tự tắt đồng bộ hồ sơ sau lỗi 404, còn
-> `/chat/` hiện thông báo máy chủ chưa sẵn sàng. Phần dưới là quy trình triển khai khi bạn
-> sẵn sàng bật các tính năng này.
+> Toàn bộ migration và Edge Function trên đã chạy/deploy trên project thật. Website vẫn
+> hoạt động local-first: khi mất mạng hoặc thiếu phiên, đồng bộ hồ sơ/nhạc chỉ hiện trạng
+> thái và giữ dữ liệu trên thiết bị.
 
 Kiểm chứng end-to-end đã chạy trực tiếp trên project (không phải mock):
 
@@ -139,6 +140,12 @@ Và ba migration cho Dev Code, hồ sơ/thành tích, Chat (3.5.0–3.7.0):
 supabase/migrations/20261118000000_bakhi_dev_sessions.sql
 supabase/migrations/20261119000000_bakhi_profile_badges.sql
 supabase/migrations/20261120000000_bakhi_chat.sql
+```
+
+Migration 7.0 (tuỳ chọn hội thoại, bảo trì, nhạc, thương hiệu):
+
+```
+supabase/migrations/20261126000000_bakhi_platform_7.sql
 ```
 
 Hoặc dùng CLI:
@@ -308,7 +315,13 @@ Migration đã bật RLS cho toàn bộ bảng:
 | `announcements` | chỉ đọc bản `is_published` | Ghi qua `admin-actions` |
 | `announcement_reads` | đọc/ghi hàng của chính mình | Trạng thái đã đọc riêng từng học sinh |
 | `changelog` | chỉ đọc bản `is_published` | Ghi qua `admin-actions` và `changelog-sync` |
-| `app_settings` | chỉ đọc khoá `public.%` | Ghi qua `admin-actions` (service_role); `public.whatsnew`, `public.maintenance`; realtime |
+| `app_settings` | chỉ đọc khoá `public.%` | Ghi qua `admin-actions` (service_role); `public.whatsnew`, `public.maintenance`, `public.branding`; realtime |
+| `chat_rooms`, `chat_messages`, `chat_members`, `chat_reactions` | chỉ đọc phòng mình tham gia | Ghi qua `chat-api`; realtime |
+| `chat_conversation_prefs` | đọc/ghi hàng của chính mình | Ghim/lưu trữ hội thoại; realtime |
+| `student_badges` | chỉ đọc hàng của chính mình | Ghi do `student-profile`/`admin-actions` |
+| `student_profiles` | chỉ đọc hàng của chính mình | Ghi qua `student-profile`; `prefs` jsonb |
+| `music_tracks` | đọc/ghi/xoá hàng của chính mình | RLS `bakhi_current_student_id()`; realtime |
+| `maintenance_history` | **không có quyền** | Founder đọc qua `admin-actions` |
 | `student_passkeys`, `passkey_challenges` | **không có quyền** | Chỉ service_role qua `passkey-api`; không lộ khoá công khai hay challenge |
 | `admin_activity_logs`, `admin_sessions`, `rate_limits` | **không có quyền** | Chỉ service_role |
 

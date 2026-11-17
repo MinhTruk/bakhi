@@ -12,9 +12,9 @@
 
     var V = {
         /* Phiên bản phát hành (khớp mục mới nhất trong CHANGELOG.md). */
-        app: '6.2.0',
+        app: '7.0.0',
         channel: 'stable',
-        releasedAt: '2026-11-16',
+        releasedAt: '2026-11-17',
         /* Thông tin thương hiệu dùng chung cho header/footer/profile. */
         brand: 'Bá Khí',
         school: 'THPT Huỳnh Ngọc Huệ',
@@ -24,7 +24,7 @@
 
     V.label = 'v' + V.app;
     V.full = V.brand + ' ' + V.label;
-    V.dataVersion = '6.2.0';   /* phiên bản bộ dữ liệu cục bộ (không phải bản phát hành) */
+    V.dataVersion = '7.0.0';   /* phiên bản bộ dữ liệu cục bộ (không phải bản phát hành) */
 
     global.BAKHI_VERSION = V;
 

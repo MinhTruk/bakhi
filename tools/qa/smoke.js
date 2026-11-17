@@ -217,42 +217,64 @@ ok('dev inspector pane built', !!w.document.querySelector('[data-pane="inspector
 
 /* ---------------- Music player ---------------- */
 console.log('\n[1b] Music player (global)');
-ok('music library has 5 tracks', !!w.BKMusic && w.BKMusic.tracks.length === 5, String(w.BKMusic && w.BKMusic.tracks.length));
-ok('music src follows music/<slug>.mp3', !!w.BKMusic && w.BKMusic.tracks.every(function (t) { return /\/music\/[a-z0-9-]+\.mp3$/.test(t.src); }));
-ok('music lyric path follows music/<slug>.txt', !!w.BKMusic && w.BKMusic.tracks.every(function (t) { return /\/music\/[a-z0-9-]+\.txt$/.test(t.lyricSrc); }));
+ok('music library starts empty (no default tracks)', !!w.BKMusic && w.BKMusic.tracks.length === 0, String(w.BKMusic && w.BKMusic.tracks.length));
 ok('music panel built', !!w.document.querySelector('.bkmusic-panel'));
-ok('music has no autoplay', w.BKMusic.state.playing === false && w.BKMusic.audio().paused === true);
+ok('music has no autoplay', w.BKMusic.state.playing === false && w.BKMusic.audio() === null);
 ok('music fab exists', !!w.document.querySelector('.bkmusic-btn'));
+
+const ytSrc = w.BKMusic.parseSource('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+ok('parses YouTube link to official embed', !!ytSrc && ytSrc.provider === 'youtube' && /youtube(?:-nocookie)?\.com\/embed\/dQw4w9WgXcQ/.test(ytSrc.embed), JSON.stringify(ytSrc && ytSrc.embed));
+const spSrc = w.BKMusic.parseSource('https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT');
+ok('parses Spotify link to official embed', !!spSrc && spSrc.provider === 'spotify' && /open\.spotify\.com\/embed\/track\/4cOdK2wGLETKBW3PvgPWqT/.test(spSrc.embed), JSON.stringify(spSrc && spSrc.embed));
+const scSrc = w.BKMusic.parseSource('https://soundcloud.com/artist/track');
+ok('parses SoundCloud link to official embed', !!scSrc && scSrc.provider === 'soundcloud' && /w\.soundcloud\.com\/player/.test(scSrc.embed), JSON.stringify(scSrc && scSrc.embed));
+const badSrc = w.BKMusic.parseSource('javascript:alert(1)');
+ok('rejects non-media link', !badSrc || !!badSrc.error);
+
+const t1 = w.BKMusic.addSource('https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'Bài thử', 'Nghệ sĩ thử');
+const t2 = w.BKMusic.addSource('https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT', '', '');
+ok('adds two imported tracks', w.BKMusic.tracks.length === 2 && !!t1 && !!t2, String(w.BKMusic.tracks.length));
+ok('imported tracks keep provider metadata', w.BKMusic.tracks[0].provider === 'youtube' && w.BKMusic.tracks[1].provider === 'spotify');
+ok('imported tracks start without lyrics', w.BKMusic.tracks.every(function (t) { return !t.lyrics; }));
+ok('library queue mirrors imported tracks', JSON.stringify(w.BKMusic.state.queue) === '[0,1]', JSON.stringify(w.BKMusic.state.queue));
+
 const mQueue0 = w.BKMusic.state.queue.slice();
 const mCur0 = w.BKMusic.state.queue[w.BKMusic.state.qi];
 w.BKMusic.setShuffle(true);
-ok('shuffle keeps queue size', w.BKMusic.state.queue.length === mQueue0.length, String(w.BKMusic.state.queue.length));
-ok('shuffle keeps current first', w.BKMusic.state.queue[0] === mCur0);
-ok('shuffle has no duplicates', new Set(w.BKMusic.state.queue).size === w.BKMusic.state.queue.length);
+ok('shuffle enabled', w.BKMusic.state.shuffle === true);
+ok('shuffle keeps queue stable', JSON.stringify(w.BKMusic.state.queue) === JSON.stringify(mQueue0));
+const shuffleFrom = w.BKMusic.state.qi;
+w.BKMusic.next();
+ok('shuffle picks a different track', w.BKMusic.state.qi !== shuffleFrom && w.BKMusic.state.queue.length === mQueue0.length);
+const shuffleCur = w.BKMusic.state.qi;
 w.BKMusic.setShuffle(false);
-ok('shuffle off restores base', JSON.stringify(w.BKMusic.state.queue) === JSON.stringify(w.BKMusic.state.base));
-ok('shuffle off keeps current', w.BKMusic.state.queue[w.BKMusic.state.qi] === mCur0);
+ok('shuffle disabled', w.BKMusic.state.shuffle === false);
+ok('shuffle off keeps current', w.BKMusic.state.qi === shuffleCur);
+w.BKMusic.loadTrack(0, false);
 w.BKMusic.setRepeat(2);
 ok('repeat one set', w.BKMusic.state.repeat === 2);
 w.BKMusic.setRepeat(1);
 ok('repeat all set', w.BKMusic.state.repeat === 1);
 w.BKMusic.setRepeat(0);
 ok('repeat off set', w.BKMusic.state.repeat === 0);
-const qLen = w.BKMusic.state.queue.length;
+w.BKMusic.clearQueue();
+ok('clear queue empties queue', w.BKMusic.state.queue.length === 0, String(w.BKMusic.state.queue.length));
 w.BKMusic.addToQueue(0);
-ok('add to queue grows queue', w.BKMusic.state.queue.length === qLen + 1, String(w.BKMusic.state.queue.length));
-const qiBefore = w.BKMusic.state.qi;
-w.BKMusic.playNext(2);
-ok('play next inserts after current', w.BKMusic.state.queue[qiBefore + 1] === 2, JSON.stringify(w.BKMusic.state.queue.slice(0, 4)));
+ok('add to queue grows empty queue', w.BKMusic.state.queue.length === 1, String(w.BKMusic.state.queue.length));
+w.BKMusic.reset();
+ok('reset rebuilds queue from library', w.BKMusic.state.queue.length === w.BKMusic.tracks.length && w.BKMusic.state.shuffle === false, String(w.BKMusic.state.queue.length));
 const beforeRemove = w.BKMusic.state.queue.length;
 w.BKMusic.removeAt(beforeRemove - 1);
 ok('remove from queue shrinks queue', w.BKMusic.state.queue.length === beforeRemove - 1, String(w.BKMusic.state.queue.length));
-w.BKMusic.clearQueue();
-ok('clear queue keeps current track', w.BKMusic.state.queue.length === 1 && w.BKMusic.state.queue[0] === mCur0);
 w.BKMusic.loadTrack(0, false);
-ok('load track keeps paused', w.BKMusic.audio().paused === true);
+ok('load track keeps paused', w.BKMusic.state.playing === false);
 ok('player renders queue items', w.document.querySelectorAll('.bkmusic-item').length > 0);
-ok('missing lyrics shows notice', (() => { w.BKMusic.open(); const t = w.document.querySelector('.bkmusic-tabs button[data-tab="lyrics"]'); if (t) t.click(); return /chưa có lời/i.test(w.document.querySelector('.bkm-lyrics').textContent); })());
+ok('empty lyrics shows notice', (() => {
+  w.BKMusic.open();
+  const t = w.document.querySelector('.bkmusic-tabs button[data-tab="lyrics"]');
+  if (t) t.click();
+  return /chưa có lời/i.test(w.document.querySelector('.bkm-lyrics').textContent);
+})());
 ok('dev music tab renders', !!w.document.querySelector('[data-pane="music"] .bkdev-table'));
 ok('dev music tab has layout buttons', /Phóng to/.test(w.document.querySelector('[data-pane="music"]').textContent));
 
@@ -276,11 +298,17 @@ ok('music showTab switches pane', w.document.querySelector('.bkm-library').hidde
 w.BKMusic.showTab('queue');
 /* jsdom không layout → giả lập hình chữ nhật của panel để test kéo/đổi kích thước. */
 mPanel.getBoundingClientRect = function () {
-  return { left: 600, top: 340, right: 960, bottom: 740, width: 360, height: 400, x: 600, y: 340 };
+  var px = parseFloat(this.style.getPropertyValue('--bkm-x'));
+  var py = parseFloat(this.style.getPropertyValue('--bkm-y'));
+  var pw = parseFloat(this.style.getPropertyValue('--bkm-w'));
+  var ph = parseFloat(this.style.getPropertyValue('--bkm-h'));
+  var l = isFinite(px) ? px : 600, t = isFinite(py) ? py : 340;
+  var wd = isFinite(pw) ? pw : 360, ht = isFinite(ph) ? ph : 400;
+  return { left: l, top: t, right: l + wd, bottom: t + ht, width: wd, height: ht, x: l, y: t };
 };
 function ptr(type, x, y, buttons, target) {
   const ev = new w.MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, buttons: buttons });
-  (target || w).dispatchEvent(ev);
+  (target || w.document).dispatchEvent(ev);
   return ev;
 }
 w.BKMusic.open();
@@ -293,8 +321,8 @@ const dragGeo = JSON.parse(w.localStorage.getItem('bakhiMusic.panel.v1') || 'nul
 ok('music drag saves layout', !!dragGeo && typeof dragGeo.x === 'number' && typeof dragGeo.w === 'number', JSON.stringify(dragGeo));
 ok('music drag clears dragging state', !mPanel.classList.contains('bkmusic-dragging'));
 ptr('pointerdown', 610, 730, 1, mPanel.querySelector('.bkmusic-resize'));
-ptr('pointermove', 530, 640, 1);
-ptr('pointerup', 530, 640, 0);
+ptr('pointermove', 700, 760, 1);
+ptr('pointerup', 700, 760, 0);
 const rzGeo = JSON.parse(w.localStorage.getItem('bakhiMusic.panel.v1') || 'null');
 ok('music resize saves bigger box', !!rzGeo && rzGeo.w > dragGeo.w && rzGeo.h > dragGeo.h, JSON.stringify(rzGeo));
 ok('music resize clears resizing state', !mPanel.classList.contains('bkmusic-resizing'));
@@ -313,7 +341,7 @@ mOff();
 ok('music change subscription fires', mFired > 0, String(mFired));
 w.BKMusic.setRepeat(0);
 w.BKMusic.reset();
-ok('music reset restores 5 tracks', w.BKMusic.state.queue.length === 5 && w.BKMusic.state.shuffle === false);
+ok('music reset restores queue from library', w.BKMusic.state.queue.length === w.BKMusic.tracks.length && w.BKMusic.state.shuffle === false);
 w.BKDev.inspector.setSelected(w.document.querySelector('header h1'));
 ok('inspector selector computed', w.BKDev.inspector.selectorFor(w.document.querySelector('header h1')).length > 0);
 

@@ -619,7 +619,7 @@
             });
         });
         /* Giữ nguyên mốc cập nhật đã lưu: get() không được tự đổi dữ liệu. */
-        if (typeof parsed.updatedAt === 'string') out.updatedAt = parsed.updatedAt;
+        if (typeof parsed.updatedAt === 'string' || typeof parsed.updatedAt === 'number') out.updatedAt = parsed.updatedAt;
         return out;
     }
     function writeSignals(sig) {

@@ -45,8 +45,8 @@
       }
     },
     "index.html": {
-      "hash": "df64d1796e5d1522726a13ddd6964202d4afb554c591291467d38f287b9c6ac1",
-      "bytes": 195476,
+      "hash": "283ca199e6f5935bfadcb77d3dd54f80d913bafb20cba39bfadc82b50e20d386",
+      "bytes": 196271,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1709,6 +1709,20 @@
         "mcqBank": 0,
         "tfBank": 0
       }
+    },
+    "founder/index.html": {
+      "hash": "3b18da2a920392b5ee437718fe246f9d4f25e2c476d0b45a6236a77e8480c743",
+      "bytes": 13199,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
     }
   },
   "notes": [
@@ -1741,6 +1755,20 @@
       "reason": "Trang không chứa nội dung giáo dục được viết lại có chủ đích (Studio hợp nhất, liên kết /studio/). Không có tệp môn/bài học nào thay đổi.",
       "files": [
         "profile/index.html"
+      ]
+    },
+    {
+      "at": "2026-11-17T06:02:51.501Z",
+      "reason": "Trang không chứa nội dung giáo dục được viết lại có chủ đích (Studio hợp nhất, liên kết /studio/). Không có tệp môn/bài học nào thay đổi.",
+      "files": [
+        "index.html"
+      ]
+    },
+    {
+      "at": "2026-11-17T06:02:59.540Z",
+      "reason": "Bổ sung trang dashboard Founder vào baseline (không chứa nội dung giáo dục). Không có tệp môn/bài học nào thay đổi.",
+      "files": [
+        "founder/index.html"
       ]
     }
   ]

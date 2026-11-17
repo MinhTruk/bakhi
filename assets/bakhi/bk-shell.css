@@ -373,3 +373,58 @@ body.bk-maintenance-on { overflow: hidden; }
 }
 .bk-maint-btn:hover { filter: brightness(1.08); }
 .bk-maint-foot { margin: .9rem 0 0; font-size: .72rem; color: #64748b; }
+
+/* ============================ Lời chào trang chủ ======================== */
+.bk-greeting {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    padding: .85rem 1rem;
+    border-radius: 16px;
+    border: 1px solid rgba(99, 102, 241, .22);
+    background: linear-gradient(135deg, rgba(99, 102, 241, .10), rgba(168, 85, 247, .08));
+    box-shadow: 0 8px 24px -18px rgba(30, 41, 59, .55);
+    overflow-wrap: anywhere;
+}
+.bk-greeting[hidden] { display: none !important; }
+.bk-greeting-mark {
+    flex: 0 0 auto;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.05rem;
+    background: linear-gradient(135deg, #f59e0b, #f472b6);
+    box-shadow: 0 6px 16px -8px rgba(245, 158, 11, .75);
+}
+.bk-greeting-body { min-width: 0; }
+.bk-greeting-line {
+    margin: 0;
+    font-size: clamp(.95rem, 2.4vw, 1.12rem);
+    font-weight: 600;
+    color: var(--bkl-text, #0f172a);
+    line-height: 1.35;
+}
+.bk-greeting-comma { margin-right: .15rem; }
+.bk-greeting-name { color: #6d28d9; }
+.bk-greeting-date {
+    margin: .18rem 0 0;
+    font-size: .74rem;
+    color: var(--bkl-muted, #64748b);
+    text-transform: capitalize;
+}
+.dark .bk-greeting {
+    border-color: rgba(129, 140, 248, .32);
+    background: linear-gradient(135deg, rgba(99, 102, 241, .20), rgba(168, 85, 247, .16));
+}
+.dark .bk-greeting-line { color: #e2e8f0; }
+.dark .bk-greeting-name { color: #c4b5fd; }
+.dark .bk-greeting-date { color: #94a3b8; }
+@media (max-width: 420px) {
+    .bk-greeting { padding: .7rem .8rem; gap: .65rem; }
+    .bk-greeting-mark { width: 2.2rem; height: 2.2rem; font-size: .92rem; }
+}
+

@@ -433,6 +433,18 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         <!-- Main Container -->
         <main class="max-w-6xl w-full mx-auto p-4 md:p-8 flex-grow space-y-8">
             
+            <!-- Lời chào theo giờ Việt Nam; bk-shell.js điền tên hiển thị -->
+            <section id="bkGreeting" class="bk-greeting" hidden aria-live="polite">
+                <div class="bk-greeting-mark" aria-hidden="true"><i class="fa-solid fa-sun"></i></div>
+                <div class="bk-greeting-body">
+                    <p class="bk-greeting-line">
+                        <span data-bk-greet-time>Chào bạn</span><span class="bk-greeting-comma">,</span>
+                        <strong data-bk-greet-name class="bk-greeting-name"></strong>
+                    </p>
+                    <p class="bk-greeting-date" data-bk-greet-date></p>
+                </div>
+            </section>
+
             <!-- Banner Intro & Custom Background -->
             <section class="bg-white/70 dark:bg-gradient-to-r dark:from-indigo-950/60 dark:via-slate-800 dark:to-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 transition-colors duration-300">
                 <div>
@@ -2056,22 +2068,22 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
     <script src="bakhi-v4.js"></script>
 
 <!-- Bá Khí Learning Platform (chỉ thêm thẻ script, không sửa nội dung) -->
-<script src="assets/bakhi/bk-core.js?v=6.2.0" defer></script>
-<script src="assets/bakhi/bk-notify.js?v=6.2.0" defer></script>
-<script src="assets/bakhi/bk-learn.js?v=6.2.0" defer></script>
-<script src="assets/bakhi/bk-dev.js?v=6.2.0" defer></script>
+<script src="assets/bakhi/bk-core.js?v=7.0.0" defer></script>
+<script src="assets/bakhi/bk-notify.js?v=7.0.0" defer></script>
+<script src="assets/bakhi/bk-learn.js?v=7.0.0" defer></script>
+<script src="assets/bakhi/bk-dev.js?v=7.0.0" defer></script>
 
 <!-- Bá Khí × Supabase: một client duy nhất, nhận diện học sinh, thông báo, changelog -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
-<script src="assets/bakhi/bk-supabase.config.js?v=6.2.0" defer></script>
-<script src="assets/bakhi/bk-cloud.js?v=6.2.0" data-bk-whatsnew="1" defer></script>
-<script src="assets/bakhi/bk-devboard.js?v=6.2.0" defer></script>
+<script src="assets/bakhi/bk-supabase.config.js?v=7.0.0" defer></script>
+<script src="assets/bakhi/bk-cloud.js?v=7.0.0" data-bk-whatsnew="1" defer></script>
+<script src="assets/bakhi/bk-devboard.js?v=7.0.0" defer></script>
 
 <!-- assets/bakhi/shell — avatar tài khoản dùng chung -->
-<script src="assets/bakhi/bk-version.js?v=6.2.0" defer></script>
-<script src="assets/bakhi/bk-profile.js?v=6.2.0" defer></script>
-<script src="assets/bakhi/bk-badges.js?v=6.2.0" defer></script>
-    <script src="assets/bakhi/bk-roles.js?v=6.2.0" defer></script>
-<script src="assets/bakhi/bk-shell.js?v=6.2.0" defer></script>
+<script src="assets/bakhi/bk-version.js?v=7.0.0" defer></script>
+<script src="assets/bakhi/bk-profile.js?v=7.0.0" defer></script>
+<script src="assets/bakhi/bk-badges.js?v=7.0.0" defer></script>
+    <script src="assets/bakhi/bk-roles.js?v=7.0.0" defer></script>
+<script src="assets/bakhi/bk-shell.js?v=7.0.0" defer></script>
 </body>
 </html>

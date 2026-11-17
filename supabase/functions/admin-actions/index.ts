@@ -300,13 +300,16 @@ Deno.serve(async (req) => {
     /* Các mô-đun tối mật chỉ Founder mở được; Administrator thường bị chặn
        ngay ở máy chủ, không phụ thuộc giao diện. */
     const founderOnly = new Set([
-        'roles.set', 'founder.grantAll', 'students.export', 'logs.export', 'data.integrity'
+        'roles.set', 'founder.grantAll', 'students.export', 'logs.export', 'data.integrity',
+        'maintenance.history'
     ]);
     if (founderOnly.has(action) && scope !== 'founder') {
         return fail(403, 'FOUNDER_ONLY', 'Chức năng này chỉ dành cho Founder Dashboard.');
     }
-    if (action === 'settings.set' && str(body.key, 80) === 'public.maintenance' && scope !== 'founder') {
-        return fail(403, 'FOUNDER_ONLY', 'Bật/tắt bảo trì chỉ dành cho Founder Dashboard.');
+    const founderSetting = action === 'settings.set'
+        && ['public.maintenance', 'public.branding'].includes(str(body.key, 80));
+    if (founderSetting && scope !== 'founder') {
+        return fail(403, 'FOUNDER_ONLY', 'Bảo trì và tên dashboard chỉ Founder Dashboard được đổi.');
     }
 
     try {
@@ -646,6 +649,112 @@ Deno.serve(async (req) => {
                 }
                 await logAction(client, 'badges.revoke', 'student', id, { badge_id: badgeId });
                 return json({ ok: true });
+            }
+
+            /* ---------------------- Trao thành tích hàng loạt --------------------- */
+            case 'badges.autoGrant': {
+                const id = str(body.id, 40);
+                if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                const { data: target } = await client
+                    .from('students').select('id, is_active').eq('id', id).maybeSingle();
+                if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+                if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
+
+                /* Dùng lại toàn bộ quy tắc badge của student-profile thay vì
+                   sao chép điều kiện. Chỉ service_role gọi được đường nội bộ. */
+                const url = Deno.env.get('SUPABASE_URL') ?? '';
+                const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+                if (!url || !serviceKey) {
+                    return fail(500, 'CONFIG_MISSING', 'Thiếu cấu hình máy chủ để tính thành tích.');
+                }
+                let payload: Record<string, unknown> | null = null;
+                try {
+                    const res = await fetch(url.replace(/\/+$/, '') + '/functions/v1/student-profile', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + serviceKey,
+                            'apikey': serviceKey
+                        },
+                        body: JSON.stringify({ action: 'sync', student_id: id })
+                    });
+                    payload = await res.json().catch(() => null);
+                    if (!res.ok || !payload || payload.ok !== true) {
+                        return fail(502, 'AUTO_GRANT_FAILED', 'Không tính được thành tích tự động.');
+                    }
+                } catch {
+                    return fail(502, 'AUTO_GRANT_FAILED', 'Không kết nối được dịch vụ thành tích.');
+                }
+
+                const earned = Array.isArray(payload.earned) ? payload.earned : [];
+                await logAction(client, 'badges.autoGrant', 'student', id, {
+                    earned: earned.length, badges: Array.isArray(payload.badges) ? payload.badges.length : 0
+                });
+                return json({
+                    ok: true,
+                    studentId: id,
+                    earned,
+                    badges: Array.isArray(payload.badges) ? payload.badges : [],
+                    frames: Array.isArray(payload.frames) ? payload.frames : []
+                });
+            }
+
+            case 'badges.grantAll': {
+                const id = str(body.id, 40);
+                if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                const { data: target } = await client
+                    .from('students').select('id, is_active').eq('id', id).maybeSingle();
+                if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+                if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
+
+                /* Badge Founder và toàn bộ badge Developer độc quyền không bao
+                   giờ nằm trong "cấp trọn bộ", kể cả khi gọi API trực tiếp. */
+                const excluded = ALL_BADGE_IDS.filter(
+                    (b) => b === FOUNDER_BADGE_ID || b.startsWith('dev-exclusive-')
+                );
+                const grantable = ALL_BADGE_IDS.filter((b) => !excluded.includes(b));
+
+                const { data: existing, error: existError } = await client
+                    .from('student_badges').select('badge_id').eq('student_id', id);
+                if (existError) throw existError;
+                const owned = new Set<string>((existing ?? []).map((r) => String(r.badge_id)));
+                const missing = grantable.filter((b) => !owned.has(b));
+
+                const nowIso = new Date().toISOString();
+                const reason = 'Cấp trọn bộ thành tích (trừ Founder/Developer)';
+                const failed: string[] = [];
+                let added = 0;
+                for (let i = 0; i < missing.length; i += 40) {
+                    const chunk = missing.slice(i, i + 40);
+                    const rows = chunk.map((badgeId) => ({
+                        student_id: id,
+                        badge_id: badgeId,
+                        kind: 'admin',
+                        manual_granted: true,
+                        awarded_at: nowIso,
+                        awarded_by: sessionId,
+                        reason
+                    }));
+                    const { error } = await client.from('student_badges')
+                        .upsert(rows, { onConflict: 'student_id,badge_id', ignoreDuplicates: true });
+                    if (error) failed.push(...chunk);
+                    else added += chunk.length;
+                }
+
+                await logAction(client, 'badges.grantAll', 'student', id, {
+                    added,
+                    alreadyOwned: grantable.length - missing.length,
+                    failed: failed.length,
+                    excluded
+                });
+                return json({
+                    ok: failed.length === 0,
+                    studentId: id,
+                    added,
+                    alreadyOwned: grantable.length - missing.length,
+                    failed,
+                    excluded
+                });
             }
 
             /* ------------------------------ Danh vị học sinh ----------------------------- */
@@ -1151,17 +1260,52 @@ Deno.serve(async (req) => {
                 return json({ ok: true, settings: data ?? [] });
             }
 
+            case 'maintenance.history': {
+                const q = str(body.q, 80).replace(/[,()%*]/g, ' ').trim();
+                const status = oneOf(body.status, ['all', 'active', 'completed'], 'all');
+                const limit = Math.min(200, Math.max(1, Number(body.limit) || 60));
+                let query = client.from('maintenance_history')
+                    .select('id, started_at, ended_at, started_by, ended_by, reason, status, duration_seconds, completion_announcement_id, notified_at, created_at', { count: 'exact' })
+                    .order('started_at', { ascending: false })
+                    .limit(limit);
+                if (status !== 'all') query = query.eq('status', status);
+                if (q) {
+                    query = query.or([
+                        'reason.ilike.%' + q + '%',
+                        'started_by.ilike.%' + q + '%',
+                        'ended_by.ilike.%' + q + '%'
+                    ].join(','));
+                }
+                const { data, error, count } = await query;
+                if (error) throw error;
+                return json({ ok: true, total: count ?? (data ?? []).length, history: data ?? [] });
+            }
+
             case 'settings.set': {
                 const key = str(body.key, 80);
-                const allowed = ['public.whatsnew', 'public.maintenance'];
+                const allowed = ['public.whatsnew', 'public.maintenance', 'public.branding'];
                 if (!allowed.includes(key)) {
                     return fail(400, 'BAD_SETTING_KEY', 'Chỉ được đổi các khoá: ' + allowed.join(', '));
                 }
+
+                const { data: currentRow } = await client.from('app_settings')
+                    .select('value').eq('key', key).maybeSingle();
+                const currentValue = (currentRow?.value && typeof currentRow.value === 'object')
+                    ? currentRow.value as Record<string, unknown>
+                    : {};
+
                 let value: Record<string, unknown>;
                 let description: string;
+                const maintenance: Record<string, unknown> = {};
+
                 if (key === 'public.whatsnew') {
                     value = { enabled: body.enabled !== false };
                     description = 'Hiển thị khối "Cập nhật gần đây" trên trang chủ';
+                } else if (key === 'public.branding') {
+                    const name = cleanDisplayName(body.adminDashboardName).slice(0, 40)
+                        || 'Administrator Dashboard';
+                    value = { ...currentValue, adminDashboardName: name };
+                    description = 'Tên hiển thị của Administrator Dashboard. Không đổi đường dẫn /admin/.';
                 } else {
                     const iso = (v: unknown) => {
                         const s = str(v, 40);
@@ -1169,23 +1313,131 @@ Deno.serve(async (req) => {
                         const d = new Date(s);
                         return Number.isNaN(d.getTime()) ? null : d.toISOString();
                     };
+                    const nowIso = new Date().toISOString();
+                    const enabled = body.enabled === true;
+                    const wasEnabled = currentValue.enabled === true;
+                    const reason = str(body.reason, 400);
+                    const actor = scope === 'founder' ? 'Founder' : 'Administrator';
+
                     value = {
-                        enabled: body.enabled === true,
+                        enabled,
                         title: str(body.title, 120) || 'Bá Khí đang bảo trì',
                         message: str(body.message, 1200),
-                        reason: str(body.reason, 400),
+                        reason,
                         startAt: iso(body.startAt),
                         endAt: iso(body.endAt),
-                        updatedAt: new Date().toISOString()
+                        updatedAt: nowIso,
+                        historyId: currentValue.historyId ?? null,
+                        cycleStartedAt: currentValue.cycleStartedAt ?? null
                     };
-                    description = 'Bảo trì toàn website: bật/tắt, tiêu đề, nội dung, lý do và thời gian';
+                    description = 'Bảo trì toàn website: bật/tắt, tiêu đề, nội dung, lý do, thời gian và chu kỳ bảo trì';
+
+                    if (enabled && !wasEnabled) {
+                        /* Bắt đầu một chu kỳ mới. Chỉ số duy nhất bảo đảm không
+                           có hai chu kỳ active song song. */
+                        const { data: inserted, error: insertError } = await client
+                            .from('maintenance_history')
+                            .insert({
+                                started_at: nowIso,
+                                started_by: actor,
+                                reason,
+                                status: 'active',
+                                metadata: { title: value.title }
+                            })
+                            .select('id, started_at, started_by, reason, status')
+                            .maybeSingle();
+                        let active = inserted;
+                        if (insertError) {
+                            const { data: existingActive } = await client
+                                .from('maintenance_history')
+                                .select('id, started_at, started_by, reason, status')
+                                .eq('status', 'active')
+                                .maybeSingle();
+                            active = existingActive ?? null;
+                        }
+                        if (active) {
+                            value.historyId = active.id;
+                            value.cycleStartedAt = active.started_at;
+                            maintenance.cycle = active;
+                        }
+                    } else if (!enabled && wasEnabled) {
+                        /* Kết thúc chu kỳ đang active và chỉ tạo đúng một thông
+                           báo hoàn tất cho chu kỳ đó. */
+                        const { data: active } = await client
+                            .from('maintenance_history')
+                            .select('id, started_at, reason, status')
+                            .eq('status', 'active')
+                            .maybeSingle();
+                        if (active) {
+                            const durationSeconds = Math.max(0, Math.round(
+                                (Date.parse(nowIso) - Date.parse(String(active.started_at))) / 1000
+                            ));
+                            const { data: closed, error: closeError } = await client
+                                .from('maintenance_history')
+                                .update({
+                                    ended_at: nowIso,
+                                    ended_by: actor,
+                                    status: 'completed',
+                                    duration_seconds: durationSeconds
+                                })
+                                .eq('id', active.id)
+                                .eq('status', 'active')
+                                .is('completion_announcement_id', null)
+                                .select('id, started_at, ended_at, reason, duration_seconds')
+                                .maybeSingle();
+                            if (closeError) throw closeError;
+
+                            if (closed) {
+                                maintenance.completed = true;
+                                maintenance.durationSeconds = durationSeconds;
+                                const minutes = Math.max(1, Math.round(durationSeconds / 60));
+                                const vnTime = new Intl.DateTimeFormat('vi-VN', {
+                                    timeZone: 'Asia/Ho_Chi_Minh',
+                                    dateStyle: 'short',
+                                    timeStyle: 'short'
+                                }).format(new Date(nowIso));
+                                const cleanReason = String(closed.reason || reason || '').trim();
+                                const { data: ann, error: annError } = await client
+                                    .from('announcements')
+                                    .insert({
+                                        title: 'Bá Khí đã hoàn tất bảo trì',
+                                        content: `Hệ thống đã hoạt động trở lại lúc ${vnTime} (giờ Việt Nam). `
+                                            + `Thời gian bảo trì: ${minutes} phút.`
+                                            + (cleanReason ? `\n\nLý do: ${cleanReason}` : ''),
+                                        type: 'maintenance',
+                                        priority: 'normal',
+                                        is_published: true,
+                                        published_at: nowIso
+                                    })
+                                    .select('id')
+                                    .maybeSingle();
+                                if (!annError && ann) {
+                                    await client.from('maintenance_history').update({
+                                        completion_announcement_id: ann.id,
+                                        notified_at: new Date().toISOString()
+                                    }).eq('id', closed.id);
+                                    maintenance.notificationCreated = true;
+                                } else {
+                                    maintenance.notificationCreated = false;
+                                    maintenance.notificationError = true;
+                                }
+                                await logAction(client, 'maintenance.completed', 'maintenance', String(closed.id), {
+                                    duration_seconds: durationSeconds,
+                                    notification: !!maintenance.notificationCreated
+                                });
+                            }
+                        }
+                        value.historyId = null;
+                        value.cycleStartedAt = null;
+                    }
                 }
+
                 const { data, error } = await client.from('app_settings')
                     .upsert({ key, value, description, updated_at: new Date().toISOString() }, { onConflict: 'key' })
                     .select().maybeSingle();
                 if (error) throw error;
                 await logAction(client, 'settings.set', 'setting', key, { value });
-                return json({ ok: true, setting: data });
+                return json({ ok: true, setting: data, maintenance });
             }
 
             /* ------------------------------ Giám sát ------------------------------- */
