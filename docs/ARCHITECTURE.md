@@ -254,10 +254,13 @@ DOMContentLoaded
   (`student-profile`, `admin-actions`, `sync-student-progress`) **cần được deploy** trên dự án
   Supabase thật trước khi tính năng chạy trên website công khai.
 
-### 2.6.1. Danh hiệu — Title (7.6.0)
+### 2.6.1. Danh hiệu — Title (7.6.0, hoàn thiện ở 7.7.0)
 
 - Danh hiệu là lớp **độc lập** với badge, khung avatar và thành tích: không tự mở khoá,
-  không phụ thuộc `student_badges`/`bakhi_owned_frames`.
+  không phụ thuộc `student_badges`/`bakhi_owned_frames`. Từ 7.7.0 danh hiệu mặc định **ánh xạ
+  1-1 từ badge nguồn** (`badge_id`) để xác minh quyền sở hữu, kèm hai kiểu hiển thị:
+  `style = plain` (font thường, màu tĩnh) và `style = special` (font riêng + gradient chuyển
+  động qua `palette`/`effect`), `prefers-reduced-motion` được tôn trọng.
 - **Bảng dữ liệu** (`supabase/migrations/20261202000000_bakhi_v760_titles.sql`):
   - `bakhi_titles`: danh mục (`id` slug, `name`, `short` = nhãn ngắn trước tên, `color`,
     `icon`, `description`, `sort_order`, `founder_only`, `active`).
@@ -271,9 +274,23 @@ DOMContentLoaded
   hiển thị ở mọi vị trí (bong bóng tin nhắn, đầu hội thoại, danh sách phòng, danh sách chọn
   người, thẻ hồ sơ) và nghe realtime `student_titles` để cập nhật ngay.
 - **Founder Dashboard → Danh hiệu**: `titles.list`, `titles.holders`, `titles.save`,
-  `titles.grant`, `titles.revoke`, `titles.delete` — tất cả trong danh sách `founderOnly`,
-  ghi `admin_activity_logs`. `titles.delete` chỉ đặt `active = false` để không làm mất nhãn
-  của người đang giữ.
+  `titles.seed`, `titles.grant`, `titles.revoke`, `titles.delete` — tất cả trong danh sách
+  `founderOnly`, ghi `admin_activity_logs`. `titles.delete` chỉ đặt `active = false` để không
+  làm mất nhãn của người đang giữ.
+- **7.7.0 — quyền sử dụng**: học sinh tự chọn/gỡ danh hiệu mình sở hữu qua Edge Function
+  `student-profile` (`action: 'titles'` để đọc, `action: 'title'` để trang bị/gỡ; `title_id`
+  rỗng = gỡ). Hàm `bakhi_title_eligible(p_student)` chỉ trả danh hiệu đang dùng mà học sinh
+  sở hữu badge nguồn hoặc đã được trao tay (`bakhi_title_grants`), nên client không thể tự cấp.
+- **7.7.0 — danh mục mặc định**: 35 danh hiệu = 10 badge tự động tiêu biểu + 21 Founder +
+  2 Developer + 2 Administrator (`DEFAULT_TITLES` trong `admin-actions`, seed bằng migration
+  `20261203000000_bakhi_v770_titles_rework.sql`). 64 badge tự động còn lại chỉ là thành tích.
+- **7.7.0 — hợp đồng phản hồi trao tặng**: mọi action trao vật phẩm trả cùng một hình dạng
+  (`success`, `status`, `requested_count`, `granted_count`, `already_owned_count`,
+  `failed_count`, `granted_badges`, `errors`, `message`) qua hàm `grantReport`; `request_id`
+  trùng được phát hiện bằng `replayGrant` nên không bao giờ trao lặp hoặc ghi lịch sử hai lần.
+- **7.7.0 — sửa RPC**: `20261203000001_bakhi_v770_grant_badges_fix.sql` thêm
+  `#variable_conflict use_column` cho `bakhi_grant_badges` (OUT parameter `badge_id` trùng tên
+  cột làm `on conflict (student_id, badge_id)` báo `42702 ambiguous`).
 
 ### 2.7. Chat phòng chung, tin nhắn riêng và nhóm nhỏ (3.7.0)
 

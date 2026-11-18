@@ -36,17 +36,29 @@ Trung tâm học tập, hồ sơ/cài đặt, Developer Playground, Administrato
 - Các quyền tối mật chỉ Founder: bảo trì, dữ liệu & sao lưu, đặt danh vị, trao badge
   Founder/Developer. Máy chủ chặn Administrator thường bằng `FOUNDER_ONLY`.
 
-### A2.1. Danh hiệu — Title (7.6.0)
+### A2.1. Danh hiệu — Title (7.6.0, hoàn thiện 7.7.0)
 
 - Danh hiệu tách hẳn khỏi badge, khung avatar và thành tích; mỗi học sinh giữ tối đa một danh hiệu.
 - Danh hiệu hiển thị **trước** tên hiển thị trong chat: bong bóng tin nhắn, đầu hội thoại,
-  danh sách đoạn chat, danh sách chọn người nhận và thẻ hồ sơ; đổi ở máy chủ là chat cập nhật ngay.
-- Founder Dashboard có khu **Danh hiệu**: trao/thu hồi, xem số người giữ, thêm/sửa danh hiệu
-  (mã, tên, nhãn ngắn, màu, icon, mô tả, thứ tự, chỉ-Founder) và ngừng dùng.
-- 12 danh hiệu khởi đầu: Nhà Sáng Lập, Quản Trị Viên, Kỹ Sư Hệ Thống, Học Giả, Nhà Thám Hiểm,
-  Tiên Phong, Chiến Lược Gia, Nghệ Nhân, Người Dẫn Đường, Người Giữ Lửa, Mầm Xanh, Ngôi Sao Bá Khí.
-- Bảng dữ liệu: `bakhi_titles` (danh mục) + `student_titles` (danh hiệu hiện tại); RLS chỉ đọc,
-  ghi qua Edge Function. Migration `20261202000000_bakhi_v760_titles.sql`.
+  danh sách đoạn chat, danh sách chọn người nhận, thẻ hồ sơ và Hồ sơ cá nhân; đổi ở máy chủ là
+  chat cập nhật ngay.
+- **35 danh hiệu mặc định ánh xạ badge**: 10 badge tự động tiêu biểu (Tri Thức Nhập Môn,
+  Tam Thập Thông Tuệ, Ngũ Bách Tinh Anh, Bá Khí Thiên Đồ, Tam Thập Nhật Viên Mãn, Vô Tận Âm
+  Trường, Lưu Tinh Kiếm Vũ, Tiểu Quán Miện, Ngũ Bách Ngôn Phong, Thất Thập Tam Quy Tông) mang
+  kiểu **Bình thường**; 21 Founder + 2 Developer + 2 Administrator mang kiểu **Đặc biệt**
+  (font riêng + gradient chuyển động).
+- **Hai kiểu hiển thị**: Bình thường (font thường, màu tĩnh) và Đặc biệt (font display/serif/
+  mono/elegant/rounded + bảng màu gradient + hiệu ứng flow/shimmer/pulse/aurora), có xem trước
+  trong trình soạn và tôn trọng `prefers-reduced-motion`.
+- **Học sinh tự chọn**: khối “Danh hiệu” trong Hồ sơ / Cài đặt liệt kê đúng những danh hiệu
+  mình sở hữu (badge nguồn hoặc được trao tay), cho trang bị, đổi và gỡ.
+- Founder Dashboard có **tab Danh hiệu** riêng: tải danh mục, tìm/lọc theo kiểu, thêm/sửa
+  (mã, tên, nhãn ngắn, màu, icon, mô tả, thứ tự, badge nguồn, kiểu, font, palette, hiệu ứng,
+  chỉ-Founder, trạng thái), xem người giữ, trao/gỡ, ngừng dùng và bổ sung danh hiệu mặc định.
+- Bảng dữ liệu: `bakhi_titles` (danh mục) + `student_titles` (danh hiệu hiện tại) +
+  `bakhi_title_grants` (danh hiệu tự tạo đã trao tay); RLS chỉ đọc, ghi qua Edge Function.
+  Migration `20261202000000_bakhi_v760_titles.sql` và
+  `20261203000000_bakhi_v770_titles_rework.sql`.
 
 ## B. Developer Playground 2.1 — 14 tab (`Ctrl+Shift+G`, sau khi xác thực Dev Code)
 

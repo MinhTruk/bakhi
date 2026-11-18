@@ -2,6 +2,56 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.7.0] — 2026-11-18
+
+### Sửa lỗi
+
+- **Cấp trọn bộ badge hoạt động thật**: RPC `bakhi_grant_badges` báo lỗi
+  `42702 column reference "badge_id" is ambiguous` (OUT parameter trùng tên cột), nên mọi lần
+  “Cấp toàn bộ badge” và “Cấp trọn bộ cho hồ sơ Founder” đều thất bại ở máy chủ. Migration
+  `20261203000001_bakhi_v770_grant_badges_fix.sql` thêm `#variable_conflict use_column`.
+- **Một hợp đồng phản hồi trao tặng duy nhất**: `badges.grantAll`, `founder.grantAll`,
+  `founder.grantItem`, `avatar.grant`, `badges.grant` đều trả `success`, `status`,
+  `requested_count`, `granted_count`, `already_owned_count`, `failed_count`, `granted_badges`,
+  `errors`, `message`. Không còn cảnh giao diện đoán số lượng hay in “undefined badge”.
+  Phản hồi không rõ kết quả thì giao diện chuyển sang **“Cần đối soát giao dịch”** và không tự
+  gửi lại.
+- **Chống trao trùng và chạy lặp**: cùng `request_id` được máy chủ nhận diện (`replayGrant`) và
+  trả lại kết quả cũ, không cấp thêm, không ghi lịch sử hai lần; nút gửi bị khoá khi đang chạy.
+- **Hai lỗi `titles.*` / `titles.save`**: Edge Function `admin-actions` đang deploy là bản cũ
+  (v19) không có namespace `titles.*` — đã deploy bản 7.7.0 và xác minh trực tiếp trên máy chủ
+  thật (tạo, cập nhật, trao, gỡ, ngừng dùng, bổ sung danh hiệu mặc định).
+- **Lỗi máy chủ không còn `[object Object]`**: nhánh lỗi chung đọc `message`/`code`/`details`
+  của PostgrestError để chẩn đoán được.
+
+### Tính năng mới
+
+- **Founder Dashboard chia 3 tab**: **Thành tích** (tồn kho, trao một/nhiều vật phẩm, cấp hàng
+  loạt, tự động xét badge, cấp trọn bộ, lịch sử), **Danh hiệu** (danh mục Title, trao/gỡ, người
+  giữ, bổ sung danh hiệu mặc định) và **Founder** (chỉ còn xác minh hồ sơ Founder + đặt danh vị).
+- **Trao nhiều vật phẩm cùng lúc**: chọn nhiều badge/khung trong lưới, xác nhận một lần, báo cáo
+  riêng số cấp mới / đã sở hữu / lỗi.
+- **Danh hiệu hai kiểu hiển thị**: Bình thường (font thường, màu tĩnh) và Đặc biệt (font riêng +
+  gradient chuyển động: flow, shimmer, pulse, aurora), có bảng màu cấu hình và xem trước.
+- **35 danh hiệu mặc định ánh xạ từ badge**: 10 badge tự động tiêu biểu (kiểu Bình thường) +
+  21 Founder + 2 Developer + 2 Administrator (kiểu Đặc biệt). Mỗi danh hiệu giữ `badge_id`
+  nguồn để xác minh quyền sở hữu; không tạo danh sách dữ liệu trùng lặp.
+- **Học sinh tự chọn danh hiệu**: khối “Danh hiệu” trong Hồ sơ/Cài đặt liệt kê đúng danh hiệu
+  mình sở hữu (badge nguồn hoặc được trao tay), cho trang bị, đổi và gỡ.
+- **Mô-đun dùng chung `bk-titles.js` / `bk-titles.css`**: một cách vẽ nhãn danh hiệu cho Chat,
+  Hồ sơ, Cài đặt và Dashboard; hiệu ứng tắt khi `prefers-reduced-motion` hoặc khi người dùng tắt
+  animate khung.
+- Action chẩn đoán `version` trong `admin-actions` để dashboard hiển thị đúng phiên bản máy chủ.
+
+### Cải tiến
+
+- Migration `20261203000000_bakhi_v770_titles_rework.sql`: thêm cột `badge_id`, `style`, `font`,
+  `palette`, `effect`, `created_by`, `updated_by` (chỉ thêm, idempotent), bảng
+  `bakhi_title_grants`, hàm `bakhi_title_eligible()` và seed 35 danh hiệu mặc định.
+- `chat-api` trả kèm `style`, `font`, `palette`, `effect` trong `title` của mọi profile card.
+- `student-profile` thêm action `titles` (đọc danh hiệu khả dụng) và `title` (trang bị/gỡ), kiểm
+  tra quyền sử dụng ở máy chủ, không tin dữ liệu phân quyền từ client.
+
 ## [7.6.1] — 2026-11-18
 
 ### Sửa lỗi

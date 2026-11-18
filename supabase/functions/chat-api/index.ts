@@ -133,10 +133,14 @@ async function titlesByIds(ctx: Ctx, ids: string[]) {
     if (!titleIds.length) return out;
     const { data: catalog } = await ctx.client
         .from('bakhi_titles')
-        .select('id, name, short, color, icon')
+        .select('id, name, short, color, icon, style, font, palette, effect, badge_id, active')
         .in('id', titleIds);
     const byId = new Map<string, Record<string, unknown>>();
-    for (const row of catalog ?? []) byId.set(String(row.id), row);
+    for (const row of catalog ?? []) {
+        /* Danh hiệu đã ngừng dùng không hiển thị trong chat. */
+        if (row.active === false) continue;
+        byId.set(String(row.id), row);
+    }
     for (const link of links) {
         const meta = byId.get(String(link.title_id));
         if (!meta) continue;
@@ -145,7 +149,12 @@ async function titlesByIds(ctx: Ctx, ids: string[]) {
             name: str(meta.name, 60),
             short: str(meta.short, 24) || str(meta.name, 60),
             color: str(meta.color, 24),
-            icon: str(meta.icon, 40)
+            icon: str(meta.icon, 40),
+            /* 7.7.0: kiểu hiển thị để chat vẽ đúng font/gradient/hiệu ứng. */
+            style: String(meta.style || 'plain') === 'special' ? 'special' : 'plain',
+            font: str(meta.font, 16),
+            palette: str(meta.palette, 96),
+            effect: str(meta.effect, 12) || 'none'
         });
     }
     return out;
@@ -175,7 +184,11 @@ function titleMeta(raw: unknown) {
         name,
         short: str(t.short, 24) || name,
         color: str(t.color, 24),
-        icon: str(t.icon, 40)
+        icon: str(t.icon, 40),
+        style: String(t.style || 'plain') === 'special' ? 'special' : 'plain',
+        font: str(t.font, 16),
+        palette: str(t.palette, 96),
+        effect: str(t.effect, 12) || 'none'
     };
 }
 

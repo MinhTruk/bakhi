@@ -1358,3 +1358,57 @@ html.dark .bkc-shortcut-row { background: rgba(148, 163, 184, .1); }
     .bkf-confirm-label { flex: none; }
     .bkf-tab { flex: 1 1 45%; }
 }
+
+/* =========================================================================
+   7.7.0 — Founder Dashboard: tab Thành tích / Danh hiệu / Founder
+   ========================================================================= */
+.bkf-tabbar {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 6px; margin-bottom: 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, .28);
+    background: rgba(15, 23, 42, .06);
+}
+.bkf-tabbtn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .45rem .8rem; border-radius: 10px; cursor: pointer;
+    border: 1px solid transparent; background: transparent; color: inherit;
+    font: inherit; font-size: .82rem; font-weight: 600;
+}
+.bkf-tabbtn:hover { background: rgba(56, 189, 248, .12); }
+.bkf-tabbtn.is-active {
+    border-color: rgba(56, 189, 248, .5);
+    background: rgba(56, 189, 248, .16);
+    color: #0284c7;
+}
+.bkf-tabhost { display: block; }
+.bkf-tabpanel { display: flex; flex-direction: column; gap: 14px; }
+.bkf-version {
+    margin-top: 10px; font-size: 11px; opacity: .62;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.bkf-subcard {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 12px; border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, .26);
+    background: rgba(148, 163, 184, .06);
+}
+.bkf-subcard h4 { margin: 0; font-size: .9rem; }
+.bkf-title-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.bkf-title-input { width: 100%; }
+.bkf-title-preview-host { grid-column: 1 / -1; }
+.bkf-title-cell { margin-bottom: 2px; }
+.bkf-tag.is-picked { border-color: rgba(56, 189, 248, .7); color: #0284c7; }
+.bkf-item.is-selected { outline: 2px solid rgba(56, 189, 248, .6); outline-offset: 1px; }
+.bkf-holders {
+    margin-top: 10px; padding: 10px; border-radius: 10px;
+    border: 1px dashed rgba(148, 163, 184, .45); font-size: 12px;
+}
+.bkf-result.is-warn { border-color: rgba(251, 191, 36, .6); }
+.bkf-mini { font-size: 11px; padding: .28rem .5rem; }
+.bkf-title-chip { font-size: .6rem; }
+@media (max-width: 640px) {
+    .bkf-tabbar { flex-direction: column; }
+    .bkf-tabbtn { width: 100%; justify-content: flex-start; }
+    .bkf-title-form { grid-template-columns: 1fr; }
+}

@@ -2442,6 +2442,8 @@
         syncStudent: syncStudent,
         /* Chat: gọi Edge Function chat-api và mở client để đăng ký realtime. */
         chatApi: function (body) { return api(CFG.functions.chat, body); },
+        /* 7.7.0: danh hiệu của chính học sinh (đọc danh mục + trang bị/gỡ). */
+        studentProfile: function (body) { return api(CFG.functions.studentProfile, body); },
         passkeySupported: passkeySupported,
         passkeyRegister: passkeyRegister,
         passkeyList: passkeyList,

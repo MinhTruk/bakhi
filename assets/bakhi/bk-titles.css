@@ -1,0 +1,185 @@
+/* =========================================================================
+   Bá Khí 7.7.0 — Kiểu hiển thị Danh hiệu (Title).
+
+   Dùng chung cho Chat, Hồ sơ, Cài đặt và Founder Dashboard:
+     .bk-title            khung chung
+     .is-plain            font thường, màu tĩnh
+     .is-special          font đặc biệt + gradient màu chuyển động
+     .bk-title-font-*     bộ font (sans/serif/display/mono/elegant/rounded)
+     .bk-title-fx-*       hiệu ứng (none/flow/shimmer/pulse/aurora)
+
+   Biến CSS do JS đặt: --bkt-color, --bkt-palette, --bkt-c1..c4.
+   Tôn trọng prefers-reduced-motion và công tắc "Animate Avatar Borders"
+   (html.bk-frames-still) để không ai bị chóng mặt vì chữ chuyển động.
+   ========================================================================= */
+
+.bk-title,
+.bk-title-chip {
+    --bkt-color: var(--bkl-primary, #93c5fd);
+    display: inline-flex;
+    align-items: center;
+    gap: .22rem;
+    max-width: 100%;
+    padding: .02rem .44rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--bkt-color) 52%, transparent);
+    background: color-mix(in srgb, var(--bkt-color) 14%, transparent);
+    color: var(--bkt-color);
+    font-size: .58rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    line-height: 1.55;
+    white-space: nowrap;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bk-title-chip-icon { font-size: .58rem; }
+
+/* Font đặc biệt cho danh hiệu kiểu "special" -------------------------------- */
+.bk-title.is-special,
+.bk-title-chip.is-special {
+    font-weight: 900;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+.bk-title-font-sans,
+.bk-title-chip.bk-title-font-sans { font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif; }
+
+.bk-title-font-serif,
+.bk-title-chip.bk-title-font-serif { font-family: "Playfair Display", Georgia, "Times New Roman", serif; }
+
+.bk-title-font-display,
+.bk-title-chip.bk-title-font-display { font-family: "Bricolage Grotesque", "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif; letter-spacing: .09em; }
+
+.bk-title-font-mono,
+.bk-title-chip.bk-title-font-mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+.bk-title-font-elegant,
+.bk-title-chip.bk-title-font-elegant { font-family: "Cormorant Garamond", "Times New Roman", Georgia, serif; font-style: italic; }
+
+.bk-title-font-rounded,
+.bk-title-chip.bk-title-font-rounded { font-family: "Nunito", "Segoe UI", system-ui, sans-serif; }
+
+/* Gradient màu chuyển động cho kiểu "special" ------------------------------- */
+.bk-title.is-special,
+.bk-title-chip.is-special {
+    border-color: color-mix(in srgb, var(--bkt-color) 62%, transparent);
+    background:
+        linear-gradient(120deg,
+            color-mix(in srgb, var(--bkt-c1, var(--bkt-color)) 20%, transparent),
+            color-mix(in srgb, var(--bkt-c2, var(--bkt-color)) 20%, transparent) 50%,
+            color-mix(in srgb, var(--bkt-c3, var(--bkt-color)) 20%, transparent)) border-box;
+    color: var(--bkt-c1, var(--bkt-color));
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    .bk-title.is-special:not(.bk-title-fx-none),
+    .bk-title-chip.is-special:not(.bk-title-fx-none) {
+        background-image: linear-gradient(100deg,
+            var(--bkt-c1, var(--bkt-color)),
+            var(--bkt-c2, var(--bkt-color)) 32%,
+            var(--bkt-c3, var(--bkt-color)) 62%,
+            var(--bkt-c1, var(--bkt-color)));
+        background-size: 220% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+    }
+}
+
+.bk-title-fx-flow { animation: bkt-flow 6s linear infinite; }
+.bk-title-fx-shimmer { animation: bkt-shimmer 4.2s ease-in-out infinite; }
+.bk-title-fx-pulse { animation: bkt-pulse 3.4s ease-in-out infinite; }
+.bk-title-fx-aurora { animation: bkt-aurora 7s ease-in-out infinite; }
+
+@keyframes bkt-flow {
+    from { background-position: 0% 50%; }
+    to { background-position: 220% 50%; }
+}
+@keyframes bkt-shimmer {
+    0%, 100% { background-position: 0% 50%; filter: brightness(1); }
+    50% { background-position: 120% 50%; filter: brightness(1.25); }
+}
+@keyframes bkt-pulse {
+    0%, 100% { opacity: 1; transform: translateZ(0); }
+    50% { opacity: .72; }
+}
+@keyframes bkt-aurora {
+    0% { background-position: 0% 50%; filter: hue-rotate(0deg); }
+    50% { background-position: 160% 50%; filter: hue-rotate(28deg); }
+    100% { background-position: 0% 50%; filter: hue-rotate(0deg); }
+}
+
+/* Tôn trọng lựa chọn của người dùng ---------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .bk-title,
+    .bk-title-chip { animation: none !important; }
+}
+html.bk-titles-still .bk-title,
+html.bk-titles-still .bk-title-chip,
+html.bk-frames-still .bk-title,
+html.bk-frames-still .bk-title-chip { animation: none !important; }
+
+/* Khối "Danh hiệu của tôi" ------------------------------------------------- */
+.bk-title-card {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--bkl-border, #94a3b8) 32%, transparent);
+    background: color-mix(in srgb, var(--bkl-surface, #0f172a) 60%, transparent);
+}
+.bk-title-card-head h3 { margin: 0 0 .3rem; font-size: .98rem; }
+.bk-title-hint { margin: 0 0 .6rem; font-size: .76rem; color: var(--bkl-muted, #94a3b8); }
+.bk-title-current { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; margin-bottom: .7rem; font-size: .78rem; }
+.bk-title-current-label { color: var(--bkl-muted, #94a3b8); }
+.bk-title-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: .55rem; }
+.bk-title-tile {
+    display: flex; flex-direction: column; gap: .28rem; align-items: flex-start;
+    padding: .55rem .6rem; border-radius: 12px; text-align: left; cursor: pointer;
+    border: 1px solid color-mix(in srgb, var(--bkl-border, #94a3b8) 32%, transparent);
+    background: color-mix(in srgb, var(--bkl-surface, #0f172a) 72%, transparent);
+    color: inherit; font: inherit;
+}
+.bk-title-tile:hover { border-color: color-mix(in srgb, var(--bkl-primary, #38bdf8) 62%, transparent); }
+.bk-title-tile.is-current { border-color: var(--bkl-primary, #38bdf8); box-shadow: 0 0 0 2px color-mix(in srgb, var(--bkl-primary, #38bdf8) 28%, transparent); }
+.bk-title-tile:disabled { opacity: .6; cursor: progress; }
+.bk-title-tile-art { display: block; }
+.bk-title-tile-name { font-size: .82rem; font-weight: 700; }
+.bk-title-tile-desc { font-size: .72rem; color: var(--bkl-muted, #94a3b8); }
+.bk-title-tile-meta { display: flex; gap: .25rem; flex-wrap: wrap; margin-top: .1rem; }
+.bk-title-tag {
+    font-size: .6rem; font-weight: 700; padding: .02rem .34rem; border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--bkl-border, #94a3b8) 42%, transparent);
+    color: var(--bkl-muted, #94a3b8);
+}
+.bk-title-tag.is-current { border-color: var(--bkl-primary, #38bdf8); color: var(--bkl-primary, #38bdf8); }
+.bk-title-tag.is-badge { border-color: color-mix(in srgb, #34d399 52%, transparent); color: #34d399; }
+.bk-title-tag.is-grant { border-color: color-mix(in srgb, #f5c451 52%, transparent); color: #f5c451; }
+.bk-title-empty { font-size: .76rem; color: var(--bkl-muted, #94a3b8); margin: .2rem 0; }
+.bk-title-msg { margin: .5rem 0 0; font-size: .74rem; min-height: 1rem; }
+.bk-title-msg.is-ok { color: #34d399; }
+.bk-title-msg.is-error { color: #f87171; }
+.bk-title-msg.is-warn { color: #fbbf24; }
+.bk-title-clear {
+    margin-top: .6rem; padding: .34rem .7rem; border-radius: 10px; cursor: pointer;
+    border: 1px solid color-mix(in srgb, #f87171 52%, transparent);
+    background: transparent; color: #f87171; font: inherit; font-size: .75rem;
+}
+.bk-title-preview { display: flex; flex-direction: column; gap: .4rem; }
+.bk-title-preview-line {
+    display: flex; align-items: center; gap: .4rem; flex-wrap: wrap;
+    padding: .6rem .7rem; border-radius: 12px;
+    background: color-mix(in srgb, var(--bkl-surface, #0f172a) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bkl-border, #94a3b8) 30%, transparent);
+}
+.bk-title-preview-name { font-weight: 700; font-size: .86rem; }
+.bk-title-preview-meta { display: flex; gap: .3rem; flex-wrap: wrap; }
+
+@media (max-width: 620px) {
+    .bk-title-grid { grid-template-columns: 1fr; }
+    .bk-title-chip { max-width: 42vw; }
+}

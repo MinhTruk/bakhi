@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-chat.js
+   Bá Khí — bk-chat.js (7.7.0)
    Chat dùng chung: phòng chung, tin nhắn riêng, nhóm ≤ 10, cảm xúc,
    realtime, bộ đếm chưa đọc và Profile Card.
 
@@ -128,16 +128,27 @@
         var name = String(t.name || '').trim();
         if (!name) return null;
         return {
+            id: String(t.id || ''),
             name: name,
             short: String(t.short || name).trim() || name,
             color: String(t.color || ''),
-            icon: String(t.icon || '')
+            icon: String(t.icon || ''),
+            /* 7.7.0: kiểu hiển thị đặc biệt (font + gradient). */
+            style: String(t.style || 'plain') === 'special' ? 'special' : 'plain',
+            font: String(t.font || ''),
+            palette: String(t.palette || ''),
+            effect: String(t.effect || 'none')
         };
     }
 
     function titleChip(card) {
         var t = titleOf(card);
         if (!t) return null;
+        /* Một nguồn vẽ chip duy nhất cho Chat, Hồ sơ và Dashboard. */
+        var shared = global.BK && global.BK.titles && typeof global.BK.titles.chip === 'function'
+            ? global.BK.titles.chip(t, { className: 'bkchat-title' })
+            : null;
+        if (shared) return shared;
         var chip = el('span', 'bkchat-title');
         if (/^fa-[a-z0-9-]+$/.test(t.icon)) chip.appendChild(icon(t.icon, 'bkchat-title-icon'));
         chip.appendChild(D.createTextNode(t.short.toUpperCase()));

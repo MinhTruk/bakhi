@@ -414,7 +414,14 @@
                 grid.appendChild(cell);
             });
         });
-        return grid;
+        /* 7.7.0: Danh hiệu nằm ngay dưới bộ sưu tập khung — cùng nhóm trang trí
+           danh tính, nhưng dữ liệu và quyền hoàn toàn tách biệt. */
+        var wrap = el('div', 'bk-frames-wrap');
+        wrap.appendChild(grid);
+        if (global.BK && global.BK.titles && typeof global.BK.titles.card === 'function') {
+            try { wrap.appendChild(global.BK.titles.card()); } catch (e) { }
+        }
+        return wrap;
     }
     function renderFramesInto(container) {
         var fresh = renderFrames();

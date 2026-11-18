@@ -1093,6 +1093,120 @@ const EXCLUSIVE_BADGE_IDS: string[] = BADGE_CATALOG
 const DEV_BADGE_IDS: string[] = BADGE_CATALOG
     .filter((b) => b.exclusive === 'dev').map((b) => b.id);
 
+/* ---------------------------------------------------------------------------
+   Danh mục Danh hiệu (Title) mặc định — ánh xạ 1-1 từ badge nguồn.
+
+   35 danh hiệu = 10 badge tự động tiêu biểu + 21 Founder + 2 Developer +
+   2 Administrator. Không phải badge nào cũng có danh hiệu: 64 badge tự động
+   còn lại chỉ là thành tích, đúng cấu hình đã chốt cho 7.7.0.
+
+   `style = plain`  → font thường, màu tĩnh.
+   `style = special`→ font đặc biệt, gradient và màu chuyển động.
+   Sinh lại từ migration 20261203000000_bakhi_v770_titles_rework.sql.
+   ------------------------------------------------------------------------ */
+interface TitleDef {
+    id: string;
+    name: string;
+    short: string;
+    color: string;
+    icon: string;
+    description: string;
+    sortOrder: number;
+    founderOnly: boolean;
+    badgeId: string | null;
+    style: 'plain' | 'special';
+    font: string;
+    palette: string;
+    effect: string;
+}
+
+function T(
+    id: string, name: string, short: string, color: string, icon: string, description: string,
+    sortOrder: number, founderOnly: boolean, style: 'plain' | 'special',
+    font = '', palette = '', effect = 'none'
+): TitleDef {
+    return {
+        id, name, short, color, icon, description, sortOrder, founderOnly,
+        badgeId: BADGE_BY_ID.has(id) ? id : null, style, font, palette, effect
+    };
+}
+
+const DEFAULT_TITLES: TitleDef[] = [
+    T('founder', 'Nhà Sáng Lập', 'SÁNG LẬP', '#f5c451', 'fa-crown',
+        'Người tạo nên Bá Khí và giữ ngọn lửa của cả cộng đồng.', 10, true, 'special', 'display', '#f5c451,#b45309,#facc15', 'flow'),
+    T('learn-first-lesson', 'Tri Thức Nhập Môn', 'NHẬP MÔN', '#60a5fa', 'fa-book-open',
+        'Mở bài học đầu tiên.', 10, false, 'plain'),
+    T('learn-lessons-30', 'Tam Thập Thông Tuệ', 'THÔNG TUỆ', '#6366f1', 'fa-graduation-cap',
+        'Mở 30 bài học khác nhau.', 11, false, 'plain'),
+    T('learn-practice-500', 'Ngũ Bách Tinh Anh', 'TINH ANH', '#818cf8', 'fa-bolt',
+        'Hoàn thành 500 lượt luyện tập.', 12, false, 'plain'),
+    T('explore-pages-50', 'Bá Khí Thiên Đồ', 'THIÊN ĐỒ', '#0ea5e9', 'fa-map',
+        'Ghé 50 trang khác nhau.', 13, false, 'plain'),
+    T('consist-days-30', 'Tam Thập Nhật Viên Mãn', 'VIÊN MÃN', '#10b981', 'fa-calendar-plus',
+        'Hoạt động trong 30 ngày khác nhau.', 14, false, 'plain'),
+    T('music-200', 'Vô Tận Âm Trường', 'ÂM TRƯỜNG', '#a855f7', 'fa-record-vinyl',
+        'Nghe trọn 200 lượt nhạc.', 15, false, 'plain'),
+    T('inter-meteor-1000', 'Lưu Tinh Kiếm Vũ', 'KIẾM VŨ', '#f59e0b', 'fa-cloud-moon',
+        'Bắn 1.000 sao băng.', 16, false, 'plain'),
+    T('social-frame', 'Tiểu Quán Miện', 'TIỂU QUÁN', '#ec4899', 'fa-crown',
+        'Trang bị một khung avatar.', 17, false, 'plain'),
+    T('studio-words-500', 'Ngũ Bách Ngôn Phong', 'NGÔN PHONG', '#14b8a6', 'fa-feather-pointed',
+        'Viết một tài liệu dài 500 từ.', 18, false, 'plain'),
+    T('secret-completionist', 'Thất Thập Tam Quy Tông', 'QUY TÔNG', '#94a3b8', 'fa-diamond',
+        'Mở khóa 73 badge tự động.', 19, false, 'plain'),
+    T('founder-yin-yang', 'Âm Dương Thái Cực', 'ÂM DƯƠNG', '#e2e8f0', 'fa-yin-yang',
+        'Khung Âm Dương Thái Cực độc bản, chỉ Founder có thể trao.', 30, true, 'special', 'elegant', '#e2e8f0,#94a3b8,#f5f5f4', 'flow'),
+    T('founder-cyberpunk', 'Sát Thủ Tương Lai', 'CYBERPUNK', '#22d3ee', 'fa-robot',
+        'Khung Sát Thủ Tương Lai độc bản, chỉ Founder có thể trao.', 31, true, 'special', 'mono', '#22d3ee,#d946ef,#f0abfc', 'shimmer'),
+    T('founder-ancient', 'Cổ Khí Thần Ấn', 'CỔ KHÍ', '#d6d3d1', 'fa-scroll',
+        'Khung Cổ Khí Thần Ấn độc bản, chỉ Founder có thể trao.', 32, true, 'special', 'serif', '#d6d3d1,#fbbf24,#92400e', 'flow'),
+    T('founder-samurai', 'Bushido', 'BUSHIDO', '#ef4444', 'fa-sword',
+        'Khung Bushido độc bản, chỉ Founder có thể trao.', 33, true, 'special', 'serif', '#ef4444,#f8fafc,#0c0a09', 'pulse'),
+    T('founder-void-emperor', 'Vô Cực Hoàng Đế', 'VÔ CỰC', '#c084fc', 'fa-circle-notch',
+        'Khung Vô Cực Hoàng Đế độc bản, chỉ Founder có thể trao.', 34, true, 'special', 'display', '#c084fc,#6d28d9,#0f172a', 'aurora'),
+    T('founder-celestial-dragon', 'Thiên Long', 'THIÊN LONG', '#fbbf24', 'fa-dragon',
+        'Khung Thiên Long độc bản, chỉ Founder có thể trao.', 35, true, 'special', 'display', '#fbbf24,#facc15,#a16207', 'flow'),
+    T('founder-golden-ratio', 'Vàng Nguyên Tắc', 'NGUYÊN TẮC', '#f59e0b', 'fa-compass',
+        'Khung Vàng Nguyên Tắc độc bản, chỉ Founder có thể trao.', 36, true, 'special', 'elegant', '#f59e0b,#fde68a,#b45309', 'shimmer'),
+    T('founder-ember-core', 'Lòng Nõn', 'LÒNG NÕN', '#fb7185', 'fa-fire',
+        'Khung Lòng Nõn độc bản, chỉ Founder có thể trao.', 37, true, 'special', 'display', '#fb7185,#fda4af,#881337', 'pulse'),
+    T('founder-crystal-mind', 'Tinh Thần Tinh Thạch', 'TINH THẠCH', '#38bdf8', 'fa-gem',
+        'Khung Tinh Thần Tinh Thạch độc bản, chỉ Founder có thể trao.', 38, true, 'special', 'elegant', '#38bdf8,#7dd3fc,#0c4a6e', 'shimmer'),
+    T('founder-neon-lotus', 'Sen Neon', 'SEN NEON', '#e879f9', 'fa-lotus',
+        'Khung Sen Neon độc bản, chỉ Founder có thể trao.', 39, true, 'special', 'display', '#e879f9,#f0abfc,#701a75', 'aurora'),
+    T('founder-genesis', 'Genesis', 'GENESIS', '#5eead4', 'fa-circle-dot',
+        'Khởi nguyên — lõi năng lượng đầu tiên và quỹ đạo hình thành nên Bá Khí.', 41, true, 'special', 'mono', '#5eead4,#99f6e4,#0f766e', 'aurora'),
+    T('founder-architect', 'Architect', 'ARCHITECT', '#93c5fd', 'fa-compass-drafting',
+        'Người kiến tạo — bản thiết kế hình học của toàn bộ hệ thống.', 42, true, 'special', 'mono', '#93c5fd,#e0f2fe,#1e3a8a', 'shimmer'),
+    T('founder-eternal-flame', 'Eternal Flame', 'ETERNAL', '#fb7185', 'fa-fire-flame-curved',
+        'Ngọn lửa vĩnh cửu — nhiệt huyết không tắt của người khai sáng.', 43, true, 'special', 'display', '#fb7185,#fbbf24,#7f1d1d', 'pulse'),
+    T('founder-nexus', 'Nexus', 'NEXUS', '#a855f7', 'fa-diagram-project',
+        'Trung tâm liên kết — nơi mọi luồng năng lượng và dữ liệu gặp nhau.', 44, true, 'special', 'mono', '#a855f7,#f0abfc,#6b21a8', 'aurora'),
+    T('founder-celestial', 'Celestial', 'CELESTIAL', '#818cf8', 'fa-galaxy',
+        'Thiên hà và tinh tú — tầm nhìn vượt khỏi đường chân trời.', 45, true, 'special', 'elegant', '#818cf8,#c7d2fe,#1e1b4b', 'shimmer'),
+    T('founder-chronos', 'Chronos', 'CHRONOS', '#d97706', 'fa-clock',
+        'Thời gian — đồng hồ cổ và cơ khí ghi dấu từng giai đoạn phát triển.', 46, true, 'special', 'serif', '#d97706,#fcd34d,#57534e', 'flow'),
+    T('founder-void-sentinel', 'Void Sentinel', 'VOID', '#06b6d4', 'fa-shield',
+        'Người canh giữ hư không — lá chắn đứng giữa khoảng trống vô tận.', 47, true, 'special', 'mono', '#06b6d4,#67e8f9,#0c4a6e', 'pulse'),
+    T('founder-prime-code', 'Prime Code', 'PRIME', '#22d3ee', 'fa-code',
+        'Công nghệ và dữ liệu — dòng mã nguồn gốc của nền tảng.', 48, true, 'special', 'mono', '#22d3ee,#67e8f9,#15803d', 'shimmer'),
+    T('founder-legacy', 'Legacy', 'LEGACY', '#fbbf24', 'fa-crown',
+        'Di sản — vương miện và nguyệt quế của những gì còn lại mãi.', 49, true, 'special', 'serif', '#fbbf24,#fde68a,#713f12', 'flow'),
+    T('founder-ascendant', 'Ascendant', 'ASCENDANT', '#a78bfa', 'fa-gem',
+        'Thăng hoa — pha lê và ánh sáng của bước tiến cuối cùng.', 50, true, 'special', 'display', '#a78bfa,#e9d5ff,#4c1d95', 'aurora'),
+    T('dev-exclusive-aurora', 'Dao Quang Tuyệt Ảnh', 'AURORA', '#5eead4', 'fa-code',
+        'Khung Dao quang độc bản, chỉ Founder có thể trao.', 60, true, 'special', 'mono', '#5eead4,#67e8f9,#a855f7', 'aurora'),
+    T('dev-exclusive-void', 'Vô Cực Hư Không', 'HƯ KHÔNG', '#c084fc', 'fa-terminal',
+        'Khung Hư không độc bản, chỉ Founder có thể trao.', 61, true, 'special', 'mono', '#c084fc,#e9d5ff,#6d28d9', 'pulse'),
+    T('admin-chosen', 'Thiên Tuyển Chi Ấn', 'THIÊN TUYỂN', '#7dd3fc', 'fa-hand-holding-heart',
+        'Badge đặc biệt do quản trị viên trao tặng.', 70, true, 'special', 'display', '#7dd3fc,#bae6fd,#0c4a6e', 'shimmer'),
+    T('admin-legend', 'Bá Khí Chí Tôn', 'CHÍ TÔN', '#f5c451', 'fa-crown',
+        'Badge cao nhất, chỉ Administrator trao tặng.', 71, true, 'special', 'display', '#f5c451,#fde68a,#b91c1c', 'flow')
+];
+
+const TITLE_BY_ID = new Map<string, TitleDef>(DEFAULT_TITLES.map((t) => [t.id, t]));
+const SERVER_VERSION = '7.7.0';
+
 /* Cơ cấu danh mục: 99 = 74 tự động + 21 Founder + 2 Developer + 2 Administrator.
    Trả kèm mọi phản hồi trao tặng để giao diện không phải tự đếm hay viết cứng. */
 function badgeBreakdown() {
@@ -1213,6 +1327,118 @@ function badgeForFrame(frameId: string): string {
 interface GrantResult {
     added: string[];
     alreadyOwned: string[];
+    failed?: string[];
+}
+
+/* ---------------------------------------------------------------------------
+   7.7.0 — Hợp đồng phản hồi trao vật phẩm THỐNG NHẤT.
+
+   Lỗi 7.6.1: mỗi action trả một hình dạng khác nhau (added | addedIds |
+   badges | count), giao diện phải đoán và có lúc in "undefined badge". Từ
+   7.7.0 mọi phản hồi trao tặng đều có đủ: success, status, requested_count,
+   granted_count, already_owned_count, failed_count, granted_badges, errors,
+   message. Các trường cũ được giữ lại để client/bản cũ không vỡ.
+   ------------------------------------------------------------------------ */
+interface GrantCounts {
+    requestedIds: string[];
+    grantedIds: string[];
+    alreadyOwnedIds: string[];
+    failedIds?: string[];
+    errors?: Array<{ id: string; name: string; message: string }>;
+}
+
+function grantReport(input: GrantCounts) {
+    const requested = Array.from(new Set(input.requestedIds));
+    const granted = Array.from(new Set(input.grantedIds));
+    const already = Array.from(new Set(input.alreadyOwnedIds));
+    const failed = Array.from(new Set(input.failedIds ?? []));
+    const errors = input.errors ?? [];
+    const grantedBadges = granted.map((id) => ({
+        id,
+        name: (BADGE_BY_ID.get(id) || { name: id }).name
+    }));
+    let status: 'granted' | 'already_owned' | 'partial' | 'failed' | 'none';
+    if (!requested.length) status = 'none';
+    else if (granted.length && (failed.length || already.length)) status = 'partial';
+    else if (granted.length) status = 'granted';
+    else if (failed.length) status = 'failed';
+    else status = 'already_owned';
+    const message = status === 'granted'
+        ? 'Đã cấp ' + granted.length + ' vật phẩm mới.'
+        : status === 'already_owned'
+            ? 'Không cấp mới: mọi vật phẩm đã có trong tồn kho (không tạo bản ghi trùng).'
+            : status === 'partial'
+                ? 'Cấp một phần: ' + granted.length + ' mới, ' + already.length + ' đã có, ' + failed.length + ' lỗi.'
+                : status === 'failed'
+                    ? 'Không cấp được vật phẩm nào (' + failed.length + ' lỗi).'
+                    : 'Không có vật phẩm nào để cấp.';
+    return {
+        success: status === 'granted' || status === 'partial' || status === 'already_owned',
+        status,
+        requested_count: requested.length,
+        granted_count: granted.length,
+        already_owned_count: already.length,
+        failed_count: failed.length,
+        granted_badges: grantedBadges,
+        granted_ids: granted,
+        already_owned_ids: already,
+        errors,
+        message,
+        /* Trường tương thích 7.4–7.6 */
+        added: granted.length,
+        addedIds: granted,
+        alreadyOwned: already.length,
+        failed,
+        requested: requested.length
+    };
+}
+
+/* Đọc lô cấp đã ghi để chống chạy lại (idempotent theo request_id). */
+async function findGrantBatch(client: SupabaseClient, requestId: string) {
+    const { data, error } = await client
+        .from('admin_grant_batches')
+        .select('request_id, item_type, target_student, requested, added, already_owned, failed, created_at')
+        .eq('request_id', requestId)
+        .maybeSingle();
+    if (error) return null;
+    return data || null;
+}
+
+/**
+ * Chống trao lặp: cùng request_id + cùng người nhận thì trả lại đúng kết quả
+ * đã ghi trong lịch sử, KHÔNG trao thêm và KHÔNG ghi lịch sử lần thứ hai.
+ * Trả null khi đây là yêu cầu mới.
+ */
+async function replayGrant(client: SupabaseClient, requestId: string, studentId: string) {
+    const batch = await findGrantBatch(client, requestId);
+    if (!batch) return null;
+    if (String(batch.target_student || '') !== studentId) return null;
+    const { data: rows } = await client
+        .from('admin_grant_history')
+        .select('badge_id, item_id')
+        .eq('request_id', requestId)
+        .eq('target_student', studentId)
+        .limit(200);
+    const grantedIds = (rows ?? [])
+        .map((r) => String(r.badge_id || r.item_id || ''))
+        .filter(Boolean);
+    return {
+        ...grantReport({
+            requestedIds: grantedIds.concat(
+                Array.from({ length: Math.max(0, Number(batch.already_owned) || 0) })
+                    .map((_, i) => '__owned_' + i)),
+            grantedIds,
+            alreadyOwnedIds: []
+        }),
+        status: 'replayed' as const,
+        replayed: true,
+        requestId,
+        studentId,
+        message: grantedIds.length
+            ? 'Yêu cầu này đã được xử lý trước đó (' + grantedIds.length + ' vật phẩm). Không trao lặp; tồn kho và lịch sử được giữ nguyên.'
+            : 'Yêu cầu này đã được xử lý trước đó nhưng không cấp thêm vật phẩm nào. Không trao lặp; hãy đối chiếu tồn kho trước khi chạy lại.',
+        already_owned_count: Number(batch.already_owned) || 0
+    };
 }
 
 class GrantError extends Error {
@@ -1410,8 +1636,14 @@ async function grantSingleItem(
         status
     });
 
+    const report = grantReport({
+        requestedIds: [badgeId],
+        grantedIds: result.added,
+        alreadyOwnedIds: result.alreadyOwned
+    });
     return json({
         ok: true,
+        serverVersion: SERVER_VERSION,
         status,
         requestId: params.requestId,
         studentId: studentId,
@@ -1420,9 +1652,37 @@ async function grantSingleItem(
         item_id: params.itemId,
         badge_id: badgeId,
         item_name: def.name,
-        added: result.added,
-        alreadyOwned: result.alreadyOwned
+        added_ids: result.added,
+        already_ids: result.alreadyOwned,
+        ...report
     });
+}
+
+/* 7.7.0 — chuẩn hoá một dòng danh hiệu trả về cho dashboard và website. */
+function titleRow(row: Record<string, unknown>, holders = 0) {
+    const style = String(row.style || 'plain') === 'special' ? 'special' : 'plain';
+    const def = TITLE_BY_ID.get(String(row.id));
+    return {
+        id: String(row.id || ''),
+        name: String(row.name || ''),
+        short: String(row.short || ''),
+        color: String(row.color || ''),
+        icon: String(row.icon || ''),
+        description: String(row.description || ''),
+        sortOrder: Number(row.sort_order) || 100,
+        founderOnly: row.founder_only === true,
+        active: row.active !== false,
+        badgeId: row.badge_id == null ? null : String(row.badge_id),
+        style,
+        font: String(row.font || ''),
+        palette: String(row.palette || ''),
+        effect: String(row.effect || 'none'),
+        /* Danh hiệu mặc định (ánh xạ badge) hay do Founder tự tạo. */
+        source: row.badge_id ? 'badge' : 'custom',
+        holders,
+        badgeName: row.badge_id ? ((BADGE_BY_ID.get(String(row.badge_id)) || { name: '' }).name || '') : '',
+        matchesDefault: !!def
+    };
 }
 
 Deno.serve(async (req) => {
@@ -1835,6 +2095,8 @@ Deno.serve(async (req) => {
                         'Badge độc quyền (Founder/Developer) chỉ Founder mới được trao.');
                 }
                 const reason = cleanDisplayName(body.reason).slice(0, 200);
+                const { data: prior } = await client.from('student_badges')
+                    .select('badge_id').eq('student_id', id).eq('badge_id', badgeId).maybeSingle();
                 /* manual_granted là nguồn riêng: không ghi đè auto_earned.awarded_at
                    của kết quả tự động — chỉ đánh dấu trao tay và ghi người trao. */
                 const { error } = await client.from('student_badges').upsert({
@@ -1855,7 +2117,19 @@ Deno.serve(async (req) => {
                     .select('badge_id, kind, auto_earned, manual_granted, awarded_at, awarded_by, reason')
                     .eq('student_id', id)
                     .order('awarded_at', { ascending: false });
-                return json({ ok: true, badges: badges ?? [] });
+                const report = grantReport({
+                    requestedIds: [badgeId],
+                    grantedIds: prior ? [] : [badgeId],
+                    alreadyOwnedIds: prior ? [badgeId] : []
+                });
+                return json({
+                    ok: true,
+                    serverVersion: SERVER_VERSION,
+                    studentName: student.display_name,
+                    item_name: (BADGE_BY_ID.get(badgeId) || { name: badgeId }).name,
+                    badges: badges ?? [],
+                    ...report
+                });
             }
 
             case 'badges.revoke': {
@@ -2023,6 +2297,11 @@ Deno.serve(async (req) => {
                 const grantable = ALL_BADGE_IDS.filter((b) => !EXCLUSIVE_BADGE_IDS.includes(b));
                 const reason = 'Cấp toàn bộ badge đồng bộ (trừ badge độc quyền)';
 
+                const replay = await replayGrant(client, requestId, id);
+                if (replay) {
+                    return json({ ...replay, studentName: target.display_name, catalog: badgeBreakdown() });
+                }
+
                 let result: GrantResult;
                 try {
                     result = await grantBadgeIds(client, id, grantable, reason, sessionId);
@@ -2051,15 +2330,19 @@ Deno.serve(async (req) => {
                     excluded: EXCLUSIVE_BADGE_IDS.length
                 });
 
+                const report = grantReport({
+                    requestedIds: grantable,
+                    grantedIds: result.added,
+                    alreadyOwnedIds: result.alreadyOwned,
+                    failedIds: result.failed ?? []
+                });
                 return json({
                     ok: true,
+                    serverVersion: SERVER_VERSION,
                     requestId,
                     studentId: id,
                     studentName: target.display_name,
-                    added: result.added.length,
-                    addedIds: result.added,
-                    alreadyOwned: result.alreadyOwned.length,
-                    failed: [],
+                    ...report,
                     excluded: EXCLUSIVE_BADGE_IDS,
                     excludedCount: EXCLUSIVE_BADGE_IDS.length,
                     totalGrantable: grantable.length,
@@ -2894,6 +3177,17 @@ Deno.serve(async (req) => {
                     targetName = founders[0].display_name;
                 }
 
+                const replay = await replayGrant(client, requestId, targetId);
+                if (replay) {
+                    return json({
+                        ...replay,
+                        studentName: targetName,
+                        target: ALL_BADGE_IDS.length,
+                        badgeTotal: ALL_BADGE_IDS.length,
+                        catalog: badgeBreakdown()
+                    });
+                }
+
                 let result: GrantResult;
                 try {
                     result = await grantBadgeIds(client, targetId, ALL_BADGE_IDS,
@@ -2953,17 +3247,22 @@ Deno.serve(async (req) => {
                     badgeTotal
                 });
 
+                const report = grantReport({
+                    requestedIds: ALL_BADGE_IDS,
+                    grantedIds: result.added,
+                    alreadyOwnedIds: result.alreadyOwned,
+                    failedIds: result.failed ?? []
+                });
                 return json({
                     ok: true,
+                    serverVersion: SERVER_VERSION,
                     requestId,
                     studentId: targetId,
                     studentName: targetName,
                     target: badgeTotal,
                     badgeTotal,
                     catalog: badgeBreakdown(),
-                    added: result.added.length,
-                    alreadyOwned: result.alreadyOwned.length,
-                    failed: [],
+                    ...report,
                     frames: Array.isArray(ownedFrames) ? ownedFrames : [],
                     frameCount: Array.isArray(ownedFrames) ? ownedFrames.length : 0,
                     equippedFrame
@@ -3209,33 +3508,37 @@ Deno.serve(async (req) => {
 
             /* ------------------------------ Danh hiệu (7.6.0) ------------------------------ */
             case 'titles.list': {
-                const [{ data: catalog }, { data: links }] = await Promise.all([
+                const targetId = uuidOf(body.id);
+                const [{ data: catalog, error: catalogError }, { data: links }] = await Promise.all([
                     client.from('bakhi_titles')
-                        .select('id, name, short, color, icon, description, sort_order, founder_only, active')
+                        .select('id, name, short, color, icon, description, sort_order, founder_only, active, badge_id, style, font, palette, effect')
                         .order('sort_order', { ascending: true })
                         .order('name', { ascending: true }),
                     client.from('student_titles').select('student_id, title_id')
                 ]);
+                if (catalogError) throw catalogError;
                 const counts = new Map<string, number>();
                 for (const row of links ?? []) {
                     const key = String(row.title_id);
                     counts.set(key, (counts.get(key) || 0) + 1);
                 }
+                let eligible: string[] | null = null;
+                if (targetId) {
+                    const { data: rows } = await client.rpc('bakhi_title_eligible', { p_student: targetId });
+                    eligible = (rows ?? []).map((r) => String((r as { title_id?: string }).title_id || r));
+                }
+                const titles = (catalog ?? []).map((t) =>
+                    titleRow(t as Record<string, unknown>, counts.get(String(t.id)) || 0));
                 return json({
                     ok: true,
-                    total: (catalog ?? []).length,
-                    titles: (catalog ?? []).map((t) => ({
-                        id: String(t.id),
-                        name: String(t.name || ''),
-                        short: String(t.short || ''),
-                        color: String(t.color || ''),
-                        icon: String(t.icon || ''),
-                        description: String(t.description || ''),
-                        sortOrder: Number(t.sort_order) || 100,
-                        founderOnly: t.founder_only === true,
-                        active: t.active !== false,
-                        holders: counts.get(String(t.id)) || 0
-                    }))
+                    serverVersion: SERVER_VERSION,
+                    total: titles.length,
+                    activeTotal: titles.filter((t) => t.active).length,
+                    defaultTotal: DEFAULT_TITLES.length,
+                    specialTotal: titles.filter((t) => t.style === 'special' && t.active).length,
+                    plainTotal: titles.filter((t) => t.style === 'plain' && t.active).length,
+                    eligible,
+                    titles
                 });
             }
 
@@ -3279,7 +3582,8 @@ Deno.serve(async (req) => {
             }
 
             case 'titles.save': {
-                const id = str(body.title_id, 40).toLowerCase();
+                const rawId = str(body.title_id, 40).toLowerCase();
+                const id = rawId || ('title-' + Math.random().toString(36).slice(2, 10));
                 if (!TITLE_ID_RE.test(id)) {
                     return fail(400, 'BAD_TITLE_ID', 'Mã danh hiệu chỉ gồm a-z, 0-9 và dấu gạch nối (2–40 ký tự).');
                 }
@@ -3289,6 +3593,34 @@ Deno.serve(async (req) => {
                 const color = str(body.color, 24).trim();
                 if (color && !/^#[0-9a-fA-F]{3,8}$/.test(color)) {
                     return fail(400, 'BAD_TITLE_COLOR', 'Màu danh hiệu phải ở dạng #rgb hoặc #rrggbb.');
+                }
+                const style = str(body.style, 12) === 'special' ? 'special' : 'plain';
+                const font = str(body.font, 16).toLowerCase();
+                if (!['', 'sans', 'serif', 'display', 'mono', 'elegant', 'rounded'].includes(font)) {
+                    return fail(400, 'BAD_TITLE_FONT', 'Font không hợp lệ: sans, serif, display, mono, elegant, rounded.');
+                }
+                const effect = str(body.effect, 12).toLowerCase() || 'none';
+                if (!['none', 'flow', 'shimmer', 'pulse', 'aurora'].includes(effect)) {
+                    return fail(400, 'BAD_TITLE_EFFECT', 'Hiệu ứng không hợp lệ: none, flow, shimmer, pulse, aurora.');
+                }
+                const rawPalette = Array.isArray(body.palette)
+                    ? (body.palette as unknown[]).map((c) => String(c)).join(',')
+                    : str(body.palette, 96);
+                const palette = rawPalette.split(',').map((c) => c.trim()).filter(Boolean).slice(0, 4).join(',');
+                if (palette && !palette.split(',').every((c) => /^#[0-9a-fA-F]{3,8}$/.test(c))) {
+                    return fail(400, 'BAD_TITLE_PALETTE', 'Bảng màu phải là các mã #rgb/#rrggbb, cách nhau bởi dấu phẩy (tối đa 4 màu).');
+                }
+                const badgeId = str(body.badge_id, 64).trim();
+                if (badgeId && !BADGE_BY_ID.has(badgeId)) {
+                    return fail(400, 'BAD_BADGE_ID', 'Badge nguồn không tồn tại trong danh mục.');
+                }
+                if (badgeId) {
+                    const { data: clash } = await client
+                        .from('bakhi_titles').select('id').eq('badge_id', badgeId).neq('id', id).maybeSingle();
+                    if (clash) {
+                        return fail(409, 'BADGE_ALREADY_MAPPED',
+                            'Badge này đã ánh xạ tới danh hiệu “' + String(clash.id) + '”. Mỗi badge chỉ có một danh hiệu.');
+                    }
                 }
                 const rawOrder = Number(body.sort_order);
                 const sortOrder = Number.isFinite(rawOrder)
@@ -3303,14 +3635,64 @@ Deno.serve(async (req) => {
                     description: str(body.description, 240).trim(),
                     sort_order: sortOrder,
                     founder_only: body.founder_only === true,
-                    active: body.active !== false
+                    active: body.active !== false,
+                    badge_id: badgeId || null,
+                    style,
+                    font,
+                    palette,
+                    effect,
+                    updated_by: sessionId
                 };
                 const { error } = await client.from('bakhi_titles').upsert(row, { onConflict: 'id' });
                 if (error) throw error;
                 await logAction(client, 'titles.save', 'title', id, {
-                    name, short, founder_only: row.founder_only, active: row.active
+                    name, short, style, font, effect, badge_id: row.badge_id, active: row.active
                 });
-                return json({ ok: true, id, title: row });
+                const { data: saved } = await client.from('bakhi_titles')
+                    .select('id, name, short, color, icon, description, sort_order, founder_only, active, badge_id, style, font, palette, effect')
+                    .eq('id', id).maybeSingle();
+                return json({
+                    ok: true,
+                    serverVersion: SERVER_VERSION,
+                    created: !rawId,
+                    id,
+                    title: titleRow((saved || row) as Record<string, unknown>),
+                    message: 'Đã lưu danh hiệu “' + name + '”.'
+                });
+            }
+
+            case 'titles.seed': {
+                /* Bổ sung danh hiệu mặc định còn thiếu từ danh mục badge. Chỉ
+                   THÊM, không sửa tên/màu Founder đã chỉnh, không xoá gì. */
+                const { data: existing, error: existError } = await client
+                    .from('bakhi_titles').select('id');
+                if (existError) throw existError;
+                const have = new Set<string>((existing ?? []).map((r) => String(r.id)));
+                const missing = DEFAULT_TITLES.filter((t) => !have.has(t.id));
+                if (missing.length) {
+                    const rows = missing.map((t) => ({
+                        id: t.id, name: t.name, short: t.short, color: t.color, icon: t.icon,
+                        description: t.description, sort_order: t.sortOrder,
+                        founder_only: t.founderOnly, active: true, badge_id: t.badgeId,
+                        style: t.style, font: t.font, palette: t.palette, effect: t.effect,
+                        created_by: sessionId, updated_by: sessionId
+                    }));
+                    const { error } = await client.from('bakhi_titles')
+                        .upsert(rows, { onConflict: 'id', ignoreDuplicates: true });
+                    if (error) throw error;
+                }
+                await logAction(client, 'titles.seed', 'title', null, {
+                    missing: missing.length, total: DEFAULT_TITLES.length
+                });
+                return json({
+                    ok: true,
+                    serverVersion: SERVER_VERSION,
+                    added: missing.length,
+                    total: DEFAULT_TITLES.length,
+                    message: missing.length
+                        ? 'Đã bổ sung ' + missing.length + ' danh hiệu mặc định còn thiếu.'
+                        : 'Danh mục đã đủ ' + DEFAULT_TITLES.length + ' danh hiệu mặc định.'
+                });
             }
 
             case 'titles.grant': {
@@ -3322,7 +3704,9 @@ Deno.serve(async (req) => {
                 }
                 const [{ data: student }, { data: title }] = await Promise.all([
                     client.from('students').select('id, display_name, is_founder').eq('id', id).maybeSingle(),
-                    client.from('bakhi_titles').select('id, name, founder_only, active').eq('id', titleId).maybeSingle()
+                    client.from('bakhi_titles')
+                        .select('id, name, founder_only, active, badge_id, style, font, palette, effect, color, short, icon')
+                        .eq('id', titleId).maybeSingle()
                 ]);
                 if (!student) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
                 if (!title) return fail(404, 'TITLE_NOT_FOUND', 'Không tìm thấy danh hiệu.');
@@ -3332,6 +3716,33 @@ Deno.serve(async (req) => {
                 if (title.founder_only === true && student.is_founder !== true) {
                     return fail(403, 'FOUNDER_ONLY', 'Danh hiệu này chỉ dành cho hồ sơ Founder.');
                 }
+                /* Danh hiệu ánh xạ badge: phải sở hữu badge nguồn. Danh hiệu tự
+                   tạo: ghi bản ghi trao tay để học sinh được phép trang bị. */
+                if (title.badge_id) {
+                    const { data: owned } = await client.from('student_badges')
+                        .select('badge_id').eq('student_id', id).eq('badge_id', String(title.badge_id))
+                        .maybeSingle();
+                    if (!owned) {
+                        return fail(409, 'BADGE_REQUIRED',
+                            'Học sinh chưa sở hữu badge “' + String(title.badge_id) + '” nên chưa dùng được danh hiệu này. Hãy trao badge trước.');
+                    }
+                } else {
+                    const { error: grantError } = await client.from('bakhi_title_grants').upsert({
+                        student_id: id,
+                        title_id: titleId,
+                        granted_by: sessionId,
+                        granted_at: new Date().toISOString()
+                    }, { onConflict: 'student_id,title_id', ignoreDuplicates: true });
+                    if (grantError) {
+                        if (isSchemaGap(grantError)) {
+                            return fail(500, 'MIGRATION_REQUIRED',
+                                'Chưa áp dụng migration 7.7.0 (bảng bakhi_title_grants). Hãy chạy migration trước khi trao danh hiệu tự tạo.');
+                        }
+                        throw grantError;
+                    }
+                }
+                const { data: previous } = await client.from('student_titles')
+                    .select('title_id').eq('student_id', id).maybeSingle();
                 const { error } = await client.from('student_titles').upsert({
                     student_id: id,
                     title_id: titleId,
@@ -3340,14 +3751,17 @@ Deno.serve(async (req) => {
                 }, { onConflict: 'student_id' });
                 if (error) throw error;
                 await logAction(client, 'titles.grant', 'student', id, {
-                    title_id: titleId, title_name: String(title.name || '')
+                    title_id: titleId, title_name: String(title.name || ''),
+                    previous: previous ? String(previous.title_id) : ''
                 });
                 return json({
                     ok: true,
-                    status: 'granted',
+                    status: previous && String(previous.title_id) === titleId ? 'already_owned' : 'granted',
                     studentName: student.display_name,
                     titleId,
-                    titleName: String(title.name || '')
+                    titleName: String(title.name || ''),
+                    previousTitleId: previous ? String(previous.title_id) : '',
+                    title: titleRow(title as Record<string, unknown>)
                 });
             }
 
@@ -3358,10 +3772,22 @@ Deno.serve(async (req) => {
                     .from('student_titles').select('title_id').eq('student_id', id).maybeSingle();
                 const { error } = await client.from('student_titles').delete().eq('student_id', id);
                 if (error) throw error;
+                /* Danh hiệu tự tạo đã thu hồi thì cũng bỏ quyền sử dụng. */
+                const titleId = str(body.title_id, 40);
+                if (titleId) {
+                    await client.from('bakhi_title_grants')
+                        .delete().eq('student_id', id).eq('title_id', titleId);
+                }
                 await logAction(client, 'titles.revoke', 'student', id, {
-                    title_id: existing ? String(existing.title_id) : ''
+                    title_id: existing ? String(existing.title_id) : '',
+                    removed_grant: titleId || ''
                 });
-                return json({ ok: true, removed: !!existing });
+                return json({
+                    ok: true,
+                    removed: !!existing,
+                    previousTitleId: existing ? String(existing.title_id) : '',
+                    message: existing ? 'Đã gỡ danh hiệu.' : 'Học sinh chưa có danh hiệu nào.'
+                });
             }
 
             case 'titles.delete': {
@@ -3378,11 +3804,39 @@ Deno.serve(async (req) => {
                 return json({ ok: true, id: titleId, active: false });
             }
 
+            /* ---------------- Máy chủ đang chạy bản nào (chẩn đoán) -------------- */
+            case 'version': {
+                const { count } = await client
+                    .from('bakhi_titles').select('*', { count: 'exact', head: true });
+                return json({
+                    ok: true,
+                    serverVersion: SERVER_VERSION,
+                    scope,
+                    titles: {
+                        available: count !== null,
+                        total: count ?? 0,
+                        actions: ['titles.list', 'titles.holders', 'titles.save', 'titles.seed',
+                            'titles.grant', 'titles.revoke', 'titles.delete']
+                    },
+                    catalog: badgeBreakdown(),
+                    defaultTitles: DEFAULT_TITLES.length
+                });
+            }
+
             default:
                 return fail(400, 'UNKNOWN_ACTION', 'Hành động không hợp lệ: ' + action);
         }
     } catch (e) {
-        const message = e instanceof Error ? e.message : String(e);
+        /* PostgrestError là object thuần nên String(e) chỉ ra "[object Object]".
+           Lấy message/code/details để chẩn đoán được lỗi thật. */
+        let message: string;
+        if (e instanceof Error) message = e.message;
+        else if (e && typeof e === 'object') {
+            const err = e as { message?: string; code?: string; details?: string; hint?: string };
+            message = [err.message || 'lỗi không rõ', err.code, err.details, err.hint]
+                .filter(Boolean).join(' · ');
+        } else message = String(e);
+        console.error('admin-actions ' + action + ' failed:', message);
         return fail(500, 'SERVER_ERROR', 'Lỗi máy chủ: ' + message);
     }
 });

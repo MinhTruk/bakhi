@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
 
     const client = adminClient();
 
-    const body = await readJson<{ action?: string; profile?: ProfileInput; student_id?: string }>(req);
+    const body = await readJson<{ action?: string; profile?: ProfileInput; student_id?: string; title_id?: string }>(req);
 
     /*
      * Đường nội bộ: admin-actions gọi lại bằng service_role key để tự tính
@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
     const internal = !!serviceKey && safeEqual(bearer, serviceKey);
 
     let studentId = '';
-    let action: 'sync' | 'get' | 'update' = 'sync';
+    let action: 'sync' | 'get' | 'update' | 'titles' | 'title' = 'sync';
 
     if (internal) {
         studentId = uuid(body.student_id);
@@ -133,7 +133,10 @@ Deno.serve(async (req) => {
             .maybeSingle();
         if (!device) return fail(409, 'NOT_BOUND', 'Thiết bị chưa được gắn với học sinh nào.');
         studentId = String(device.student_id);
-        action = body.action === 'update' || body.action === 'get' ? body.action : 'sync';
+        action = body.action === 'update' || body.action === 'get' ||
+            body.action === 'titles' || body.action === 'title'
+            ? body.action
+            : 'sync';
 
         // Giới hạn tần suất: 90 lần / giờ / học sinh.
         const { data: allowed, error: rlError } = await client.rpc('bakhi_rate_limit', {
@@ -151,6 +154,87 @@ Deno.serve(async (req) => {
         .eq('id', studentId)
         .maybeSingle();
     if (!student || !student.is_active) return fail(403, 'INACTIVE', 'Hồ sơ học sinh không còn hoạt động.');
+
+    /* ------------------------------------------------------------------
+       7.7.0 — Danh hiệu của chính học sinh.
+
+       Chỉ đọc danh mục + sở hữu thật của người gọi; muốn trang bị thì danh
+       hiệu phải nằm trong bakhi_title_eligible (sở hữu badge nguồn hoặc đã
+       được Founder trao tay). Không tin bất kỳ quyền nào do client gửi lên.
+       ------------------------------------------------------------------ */
+    if (action === 'titles' || action === 'title') {
+        const { data: catalog, error: catalogError } = await client
+            .from('bakhi_titles')
+            .select('id, name, short, color, icon, description, sort_order, badge_id, style, font, palette, effect')
+            .eq('active', true)
+            .order('sort_order', { ascending: true })
+            .order('name', { ascending: true });
+        if (catalogError) return fail(500, 'TITLE_READ_FAILED', 'Không đọc được danh mục danh hiệu.');
+
+        const [{ data: currentRow }, { data: eligibleRows }] = await Promise.all([
+            client.from('student_titles').select('title_id').eq('student_id', student.id).maybeSingle(),
+            client.rpc('bakhi_title_eligible', { p_student: student.id })
+        ]);
+        const eligible = new Set<string>((eligibleRows ?? [])
+            .map((r: unknown) => (r && typeof r === 'object' ? String((r as { title_id?: string }).title_id || '') : String(r)))
+            .filter(Boolean));
+        const current = currentRow ? String(currentRow.title_id) : '';
+        const shape = (row: Record<string, unknown>) => ({
+            id: String(row.id || ''),
+            name: clampStr(row.name, 60),
+            short: clampStr(row.short, 24),
+            color: clampStr(row.color, 24),
+            icon: clampStr(row.icon, 40),
+            description: clampStr(row.description, 240),
+            style: String(row.style || 'plain') === 'special' ? 'special' : 'plain',
+            font: clampStr(row.font, 16),
+            palette: clampStr(row.palette, 96),
+            effect: clampStr(row.effect, 12) || 'none',
+            badgeId: row.badge_id ? String(row.badge_id) : null
+        });
+
+        if (action === 'titles') {
+            return json({
+                ok: true,
+                action: 'titles',
+                currentTitleId: current,
+                total: (catalog ?? []).length,
+                titles: (catalog ?? []).map((row) => ({
+                    ...shape(row as Record<string, unknown>),
+                    eligible: eligible.has(String(row.id)),
+                    current: String(row.id) === current
+                }))
+            });
+        }
+
+        const wanted = clampStr(body.title_id, 40);
+        if (!wanted) {
+            const { error: clearError } = await client.from('student_titles')
+                .delete().eq('student_id', student.id);
+            if (clearError) return fail(500, 'TITLE_WRITE_FAILED', 'Không gỡ được danh hiệu.');
+            return json({ ok: true, action: 'title', cleared: true, currentTitleId: '', message: 'Đã gỡ danh hiệu.' });
+        }
+        if (!eligible.has(wanted)) {
+            return fail(403, 'TITLE_NOT_OWNED',
+                'Bạn chưa sở hữu danh hiệu này. Hãy mở khoá badge tương ứng hoặc nhờ Founder trao tặng.');
+        }
+        const target = (catalog ?? []).find((row) => String(row.id) === wanted);
+        if (!target) return fail(404, 'TITLE_NOT_FOUND', 'Không tìm thấy danh hiệu đang dùng.');
+        const { error: writeError } = await client.from('student_titles').upsert({
+            student_id: student.id,
+            title_id: wanted,
+            assigned_by: 'self',
+            assigned_at: new Date().toISOString()
+        }, { onConflict: 'student_id' });
+        if (writeError) return fail(500, 'TITLE_WRITE_FAILED', 'Không lưu được danh hiệu.');
+        return json({
+            ok: true,
+            action: 'title',
+            currentTitleId: wanted,
+            title: shape(target as Record<string, unknown>),
+            message: 'Đã trang bị danh hiệu “' + clampStr(target.name, 60) + '”.'
+        });
+    }
 
     // ---- Hồ sơ hiện có --------------------------------------------------
     let { data: profileRow } = await client
