@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-founder.js  (7.5.3)
+   Bá Khí — bk-founder.js  (7.6.1)
 
    Mô-đun Founder Dashboard: tìm người nhận, chọn vật phẩm, trao badge/khung,
    trao toàn bộ badge, tự động xét badge và xem lịch sử cấp.
@@ -145,7 +145,7 @@
             if (!pane || !kit || !kit.h) return;
             build(pane, kit);
         },
-        version: '7.5.3'
+        version: '7.6.1'
     };
 
     function build(pane, kit) {
@@ -352,6 +352,7 @@
         sectionAuto(pane, ctx);
         sectionFull(pane, ctx);
         sectionHistory(pane, ctx);
+        sectionTitles(pane, ctx);
     }
 
     /* ---------------------------------------------------------------------
@@ -370,12 +371,48 @@
         return def;
     }
 
-    /* Cơ cấu danh mục dùng chung cho mọi thông báo trao tặng. */
+    /* Đọc một con số từ phản hồi máy chủ. Trả null khi thiếu/không hợp lệ để
+       giao diện không bao giờ in "undefined" vào báo cáo trao tặng. */
+    function countOr(value) {
+        var n = typeof value === 'number' ? value : Number(value);
+        return (typeof value !== 'undefined' && value !== null && value !== '' && isFinite(n)) ? n : null;
+    }
+
+    function countText(value) {
+        var n = countOr(value);
+        return n === null ? '—' : String(n);
+    }
+
+    /* Cơ cấu danh mục dùng chung cho mọi thông báo trao tặng. Mọi trường đều
+       được điền số 0 khi phản hồi máy chủ thiếu, nhờ vậy chuỗi "undefined tự
+       động/Founder" không bao giờ xuất hiện. */
     function catalogMix(fromServer) {
-        if (fromServer && typeof fromServer.total === 'number') return fromServer;
         var B = global.BK && global.BK.badges ? global.BK.badges : null;
-        if (B && typeof B.breakdown === 'function') return B.breakdown();
-        return { total: 0, auto: 0, founder: 0, dev: 0, admin: 0 };
+        var base = (B && typeof B.breakdown === 'function')
+            ? B.breakdown()
+            : { total: 0, auto: 0, founder: 0, dev: 0, admin: 0 };
+        var src = (fromServer && typeof fromServer === 'object') ? fromServer : base;
+        function pick(key) {
+            var n = countOr(src[key]);
+            if (n !== null) return n;
+            n = countOr(base[key]);
+            return n === null ? 0 : n;
+        }
+        return { total: pick('total'), auto: pick('auto'), founder: pick('founder'), dev: pick('dev'), admin: pick('admin') };
+    }
+
+    /* Số khung avatar của danh mục. Trang Founder không nạp bk-profile.js nên
+       khi thiếu BKProfile phải đếm từ ánh xạ badge → khung thay vì báo 0. */
+    function frameCatalogSize(B, P) {
+        if (P && P.frames && P.frames.length) return P.frames.length;
+        var seen = {};
+        var count = 0;
+        var list = (B && B.CATALOG) ? B.CATALOG : [];
+        for (var i = 0; i < list.length; i++) {
+            var id = list[i].frame;
+            if (id && !seen[id]) { seen[id] = true; count++; }
+        }
+        return count;
     }
 
     function mixText(mix) {
@@ -739,10 +776,14 @@
             }).then(function (data) {
                 state.inventory = data;
                 inventoryHost.textContent = '';
+                var ownedBadges = Array.isArray(data.badges) ? data.badges.length : 0;
+                var ownedFrames = Array.isArray(data.frames) ? data.frames.length : 0;
+                var catalogTotal = countOr(data.catalogTotal);
+                if (catalogTotal === null) catalogTotal = catalogMix(data.catalog).total;
                 var line = h('div', 'bkf-inventory-line');
                 line.appendChild(h('span', 'bkf-inventory-name', data.studentName));
-                line.appendChild(h('span', 'bkf-tag', data.badges.length + ' / ' + data.catalogTotal + ' badge'));
-                line.appendChild(h('span', 'bkf-tag', data.frames.length + ' khung'));
+                line.appendChild(h('span', 'bkf-tag', ownedBadges + ' / ' + catalogTotal + ' badge'));
+                line.appendChild(h('span', 'bkf-tag', ownedFrames + ' khung'));
                 if (data.equippedFrame && data.equippedFrame !== 'none') {
                     line.appendChild(h('span', 'bkf-tag is-owned', 'Đang dùng: ' + data.equippedFrame));
                 }
@@ -787,7 +828,7 @@
                     /* Máy chủ cũ: trao qua badges.grant (badge mở khoá khung). */
                     var badgeId = item.type === 'frame' ? badgeIdForFrame(item.id) : item.id;
                     if (!badgeId) {
-                        throw new Error('Máy chủ chưa cập nhật founder.grantItem nên không trao được khung này. Hãy deploy admin-actions 7.5.3.');
+                        throw new Error('Máy chủ chưa cập nhật founder.grantItem nên không trao được khung này. Hãy deploy admin-actions 7.6.1.');
                     }
                     return kit.api('badges.grant', {
                         id: student.id,
@@ -897,6 +938,20 @@
                     };
                 });
             }).then(function (data) {
+                /* Chuẩn hoá số lượng: máy chủ cũ có thể thiếu trường, hoặc trả
+                   mảng thay vì số. Không để "undefined" lọt vào hộp xác nhận. */
+                var toAdd = countOr(data.toAddCount);
+                if (toAdd === null && Array.isArray(data.toGrant)) toAdd = data.toGrant.length;
+                var grantableCount = countOr(data.totalGrantable);
+                if (grantableCount === null && Array.isArray(data.toGrant)) grantableCount = data.toGrant.length;
+                var alreadyCount = countOr(data.alreadyOwnedCount);
+                if (alreadyCount === null && Array.isArray(data.alreadyOwned)) alreadyCount = data.alreadyOwned.length;
+                var excludedCount = countOr(data.excludedCount);
+                if (excludedCount === null && Array.isArray(data.excluded)) excludedCount = data.excluded.length;
+                data.toAddCount = toAdd === null ? 0 : toAdd;
+                data.totalGrantable = grantableCount === null ? 0 : grantableCount;
+                data.alreadyOwnedCount = alreadyCount === null ? 0 : alreadyCount;
+                data.excludedCount = excludedCount === null ? 0 : excludedCount;
                 bulk.preview = data;
                 previewHost.textContent = '';
                 var head = h('div', 'bkf-preview-head');
@@ -965,18 +1020,41 @@
                 reportHost.textContent = '';
                 kit.loading(reportHost, 'Đang cấp badge…');
                 kit.api('badges.grantAll', { id: student.id, request_id: newRequestId() }).then(function (data) {
+                    data = data || {};
                     reportHost.textContent = '';
                     var boxEl = h('div', 'bkf-report');
                     var mixAfter = catalogMix(data.catalog);
-                    boxEl.appendChild(resultBox(h, true,
-                        'Đã cấp ' + data.added + ' badge cho ' + (data.studentName || student.display_name) +
-                        ' (đã có ' + data.alreadyOwned + ', loại trừ ' + data.excludedCount + ' badge độc quyền: ' +
-                        mixAfter.founder + ' Founder + ' + mixAfter.dev + ' Developer).'));
-                    if (data.failed && data.failed.length) {
+                    var who = data.studentName || student.display_name;
+                    /* Máy chủ cũ chỉ trả {ok, count|badges} hoặc không trả số nào.
+                       Suy ra số đã cấp từ nhiều dạng phản hồi, và nếu vẫn không
+                       có thì báo rõ thay vì in "undefined badge". */
+                    var added = countOr(data.added);
+                    if (added === null && Array.isArray(data.addedIds)) added = data.addedIds.length;
+                    if (added === null && Array.isArray(data.badges)) added = data.badges.length;
+                    if (added === null) added = countOr(data.count);
+                    var already = countOr(data.alreadyOwned);
+                    if (already === null) already = countOr(preview.alreadyOwnedCount);
+                    var excluded = countOr(data.excludedCount);
+                    if (excluded === null && Array.isArray(data.excluded)) excluded = data.excluded.length;
+                    if (excluded === null) excluded = countOr(preview.excludedCount);
+                    var detail = [];
+                    if (already !== null) detail.push('đã có ' + already);
+                    if (excluded !== null) {
+                        detail.push('loại trừ ' + excluded + ' badge độc quyền: ' +
+                            mixAfter.founder + ' Founder + ' + mixAfter.dev + ' Developer');
+                    }
+                    boxEl.appendChild(resultBox(h, true, added === null
+                        ? 'Máy chủ đã nhận yêu cầu cấp badge cho ' + who +
+                            ' nhưng không trả về số badge đã cấp. Bản xem trước bên dưới vừa được tải lại để đối chiếu tồn kho.'
+                        : 'Đã cấp ' + added + ' badge cho ' + who +
+                            (detail.length ? ' (' + detail.join(', ') + ')' : '') + '.'));
+                    if (Array.isArray(data.failed) && data.failed.length) {
                         boxEl.appendChild(kit.alertBox('Không cấp được: ' + data.failed.join(', '), 'error'));
                     }
                     reportHost.appendChild(boxEl);
-                    toast('Đã cấp ' + data.added + ' badge trong ' + mixAfter.total + ' badge danh mục.', 'success');
+                    toast(added === null
+                        ? 'Đã gửi yêu cầu cấp badge cho ' + who + '.'
+                        : 'Đã cấp ' + added + ' badge trong ' + mixAfter.total + ' badge danh mục.', 'success');
                     loadPreview(student.id);
                 }).catch(function (err) {
                     reportHost.textContent = '';
@@ -1095,7 +1173,7 @@
 
         var mix = catalogMix();
         var badgeTotal = B && B.CATALOG ? B.CATALOG.length : mix.total;
-        var frameTotal = P && P.frames ? P.frames.length : 0;
+        var frameTotal = frameCatalogSize(B, P);
 
         var box = kit.card('Cấp trọn bộ cho hồ sơ Founder', null,
             'Trao toàn bộ ' + badgeTotal + ' badge trong danh mục (' + mixText(mix) + ') và mở toàn bộ ' +
@@ -1134,21 +1212,31 @@
                 var payload = { request_id: newRequestId() };
                 if (student) payload.id = student.id;
                 kit.api('founder.grantAll', payload).then(function (data) {
+                    data = data || {};
                     reportHost.textContent = '';
                     var report = h('div', 'bkf-report');
                     var who = data.studentName || (student ? student.display_name : 'hồ sơ Founder');
-                    report.appendChild(resultBox(h, true,
-                        'Đã cấp ' + data.added + ' badge mới cho ' + who + '.'));
                     var mixDone = catalogMix(data.catalog);
+                    var added = countOr(data.added);
+                    var already = countOr(data.alreadyOwned);
+                    var frameDone = countOr(data.frameCount);
+                    if (frameDone === null && Array.isArray(data.frames)) frameDone = data.frames.length;
+                    if (frameDone === null) frameDone = frameTotal;
+                    var catalogDone = countOr(data.badgeTotal);
+                    if (catalogDone === null || catalogDone === 0) catalogDone = mixDone.total;
+                    report.appendChild(resultBox(h, true, added === null
+                        ? 'Máy chủ đã nhận yêu cầu cấp trọn bộ cho ' + who +
+                            ' nhưng không trả về số badge mới. Hãy đối chiếu tồn kho vật phẩm trước khi chạy lại.'
+                        : 'Đã cấp ' + added + ' badge mới cho ' + who + '.'));
                     var grid = h('div', 'bkf-report-grid');
-                    grid.appendChild(h('span', 'bkf-tag', 'Danh mục: ' + (data.badgeTotal || mixDone.total) + ' badge'));
+                    grid.appendChild(h('span', 'bkf-tag', 'Danh mục: ' + catalogDone + ' badge'));
                     grid.appendChild(h('span', 'bkf-tag', 'Tự động: ' + mixDone.auto));
                     grid.appendChild(h('span', 'bkf-tag is-exclusive', 'Founder: ' + mixDone.founder));
                     grid.appendChild(h('span', 'bkf-tag is-exclusive', 'Developer: ' + mixDone.dev));
                     grid.appendChild(h('span', 'bkf-tag is-exclusive', 'Administrator: ' + mixDone.admin));
-                    grid.appendChild(h('span', 'bkf-tag is-owned', 'Mới cấp: ' + data.added));
-                    grid.appendChild(h('span', 'bkf-tag', 'Đã có: ' + data.alreadyOwned));
-                    grid.appendChild(h('span', 'bkf-tag', 'Khung: ' + data.frameCount));
+                    grid.appendChild(h('span', 'bkf-tag is-owned', 'Mới cấp: ' + countText(added)));
+                    grid.appendChild(h('span', 'bkf-tag', 'Đã có: ' + countText(already)));
+                    grid.appendChild(h('span', 'bkf-tag', 'Khung: ' + countText(frameDone)));
                     if (data.equippedFrame) grid.appendChild(h('span', 'bkf-tag is-owned', 'Đang dùng: ' + data.equippedFrame));
                     report.appendChild(grid);
                     reportHost.appendChild(report);
@@ -1162,6 +1250,275 @@
                 });
             });
         }
+    }
+
+    /* ---------------------------------------------------------------------
+       Khu vực 6 — Danh hiệu (Title, 7.6.0)
+
+       Danh hiệu tách hẳn khỏi badge/khung: một học sinh giữ tối đa một danh
+       hiệu, danh hiệu hiển thị TRƯỚC tên trong chat ở mọi vị trí.
+       ------------------------------------------------------------------ */
+    function sectionTitles(pane, ctx) {
+        var h = ctx.h;
+        var kit = ctx.kit;
+        var state = ctx.state;
+        var toast = ctx.toast;
+
+        var box = kit.card('Danh hiệu (Title)', null,
+            'Danh hiệu độc lập với badge, khung avatar và thành tích. Nhãn danh hiệu luôn đứng trước tên hiển thị trong chat.');
+        pane.appendChild(box.root);
+        var host = h('div', 'bkf-section');
+        box.body.appendChild(host);
+
+        var recipient = ctx.recipientBox({
+            placeholder: 'Tìm người nhận danh hiệu…',
+            onSelect: function (student) {
+                state.titleStudent = student;
+                syncButtons();
+            }
+        });
+        host.appendChild(recipient.root);
+
+        var pickRow = h('div', 'bkf-tools');
+        var select = h('select', 'bkc-input bkf-input');
+        select.setAttribute('aria-label', 'Chọn danh hiệu để trao');
+        pickRow.appendChild(select);
+        var grantBtn = kit.btn('Trao danh hiệu', 'bkc-btn-primary', grant, 'fa-medal');
+        grantBtn.disabled = true;
+        var revokeBtn = kit.btn('Thu hồi danh hiệu', 'bkc-btn-ghost', revoke, 'fa-eraser');
+        revokeBtn.disabled = true;
+        pickRow.appendChild(grantBtn);
+        pickRow.appendChild(revokeBtn);
+        host.appendChild(pickRow);
+
+        var resultHost = h('div', 'bkf-result-host');
+        host.appendChild(resultHost);
+
+        var listHost = h('div', 'bkf-titles');
+        host.appendChild(listHost);
+
+        /* Trình soạn danh mục — dùng lại cho cả thêm mới và sửa. */
+        var editor = h('details', 'bkf-title-editor');
+        editor.appendChild(h('summary', null, 'Thêm hoặc sửa danh hiệu'));
+        var form = h('div', 'bkf-title-form');
+        var fId = kit.input('text', 'Mã: hoc-gia (a-z, 0-9, dấu gạch nối)');
+        var fName = kit.input('text', 'Tên hiển thị (tối đa 60 ký tự)');
+        var fShort = kit.input('text', 'Nhãn ngắn trước tên, ví dụ HỌC GIẢ');
+        var fColor = kit.input('text', 'Màu nhãn, ví dụ #93c5fd');
+        var fIcon = kit.input('text', 'Icon Font Awesome, ví dụ fa-book-open');
+        var fDesc = kit.input('text', 'Mô tả ngắn (tối đa 240 ký tự)');
+        var fOrder = kit.input('number', 'Thứ tự (số nhỏ đứng trước)');
+        fOrder.value = '100';
+        [fId, fName, fShort, fColor, fIcon, fDesc, fOrder].forEach(function (f) {
+            f.classList.add('bkf-title-input');
+            form.appendChild(f);
+        });
+        var founderRow = h('label', 'bkf-check');
+        var founderBox = h('input');
+        founderBox.type = 'checkbox';
+        founderRow.appendChild(founderBox);
+        founderRow.appendChild(h('span', null, 'Chỉ dành cho hồ sơ Founder (is_founder)'));
+        form.appendChild(founderRow);
+        var saveBtn = kit.btn('Lưu danh hiệu', 'bkc-btn-primary', save, 'fa-floppy-disk');
+        form.appendChild(saveBtn);
+        editor.appendChild(form);
+        host.appendChild(editor);
+
+        function syncButtons() {
+            grantBtn.disabled = !state.titleStudent || !select.value;
+            revokeBtn.disabled = !state.titleStudent;
+        }
+
+        function fillSelect() {
+            select.textContent = '';
+            (state.titles || []).filter(function (t) { return t.active !== false; }).forEach(function (t) {
+                var opt = h('option', null, t.name + (t.founderOnly ? ' · Founder' : ''));
+                opt.value = t.id;
+                select.appendChild(opt);
+            });
+            syncButtons();
+        }
+
+        function editTitle(t) {
+            fId.value = t.id;
+            fName.value = t.name;
+            fShort.value = t.short || '';
+            fColor.value = t.color || '';
+            fIcon.value = t.icon || '';
+            fDesc.value = t.description || '';
+            fOrder.value = String(t.sortOrder || 100);
+            founderBox.checked = t.founderOnly === true;
+            editor.open = true;
+            editor.scrollIntoView({ block: 'nearest' });
+        }
+
+        function paintList() {
+            listHost.textContent = '';
+            var titles = state.titles || [];
+            if (!titles.length) {
+                kit.emptyState(listHost, 'fa-medal', 'Chưa có danh hiệu',
+                    'Tạo danh hiệu đầu tiên bằng khung “Thêm hoặc sửa danh hiệu”.');
+                return;
+            }
+            var built = kit.table(['Danh hiệu', 'Nhãn ngắn', 'Người giữ', 'Trạng thái', '']);
+            listHost.appendChild(built.wrap);
+            titles.forEach(function (t) {
+                var tr = h('tr');
+                var nameCell = h('td');
+                nameCell.appendChild(h('b', null, t.name));
+                nameCell.appendChild(h('span', 'bkf-sub', ' ' + t.id));
+                tr.appendChild(nameCell);
+                tr.appendChild(h('td', null, t.short || t.name));
+                tr.appendChild(h('td', null, String(t.holders || 0)));
+                var stateCell = h('td');
+                stateCell.appendChild(h('span', 'bkf-tag' + (t.active ? ' is-owned' : ' is-muted'), t.active ? 'Đang dùng' : 'Ngừng dùng'));
+                if (t.founderOnly) stateCell.appendChild(h('span', 'bkf-tag is-founder', 'Founder'));
+                tr.appendChild(stateCell);
+                var actions = h('td');
+                var edit = kit.btn('Sửa', 'bkc-btn-ghost', function () { editTitle(t); }, 'fa-pen');
+                edit.classList.add('bkf-mini');
+                actions.appendChild(edit);
+                if (t.active) {
+                    var off = kit.btn('Ngừng', 'bkc-btn-ghost', function () { deactivate(t); }, 'fa-ban');
+                    off.classList.add('bkf-mini');
+                    actions.appendChild(off);
+                }
+                tr.appendChild(actions);
+                built.tbody.appendChild(tr);
+            });
+        }
+
+        function showMessage(err, fallback) {
+            resultHost.textContent = '';
+            resultHost.appendChild(kit.alertBox((err && err.message) || fallback, 'error'));
+        }
+
+        function grant() {
+            var student = state.titleStudent;
+            var title = (state.titles || []).filter(function (t) { return t.id === select.value; })[0];
+            if (!student || !title) {
+                toast('Chọn người nhận và danh hiệu trước.', 'warn');
+                return;
+            }
+            confirmDialog(h, 'Trao danh hiệu', [
+                ['Người nhận', student.display_name + (student.student_code ? ' · ' + student.student_code : '')],
+                ['Danh hiệu', title.name + '  (' + title.id + ')'],
+                ['Hiển thị', 'Nhãn “‘' + (title.short || title.name) + '”' + ' đứng trước tên trong chat']
+            ], 'Trao ngay').then(function (ok) {
+                if (!ok) return;
+                grantBtn.disabled = true;
+                resultHost.textContent = '';
+                kit.loading(resultHost, 'Đang trao danh hiệu…');
+                kit.api('titles.grant', { id: student.id, title_id: title.id }).then(function (data) {
+                    resultHost.textContent = '';
+                    resultHost.appendChild(resultBox(h, true,
+                        'Đã trao danh hiệu “' + (data.titleName || title.name) + '” cho ' +
+                        (data.studentName || student.display_name) + '.'));
+                    toast('Đã cập nhật danh hiệu.', 'success');
+                    load();
+                }).catch(function (err) {
+                    if (isUnknownAction(err)) {
+                        showMessage(null, 'Máy chủ chưa cập nhật action titles.* (admin-actions 7.6.0) nên chưa trao được danh hiệu.');
+                    } else {
+                        showMessage(err, 'Không trao được danh hiệu.');
+                    }
+                }).then(syncButtons);
+            });
+        }
+
+        function revoke() {
+            var student = state.titleStudent;
+            if (!student) {
+                toast('Chọn người nhận trước.', 'warn');
+                return;
+            }
+            confirmDialog(h, 'Thu hồi danh hiệu', [
+                ['Người nhận', student.display_name + (student.student_code ? ' · ' + student.student_code : '')],
+                ['Kết quả', 'Tên sẽ hiển thị trong chat không còn nhãn danh hiệu']
+            ], 'Thu hồi').then(function (ok) {
+                if (!ok) return;
+                revokeBtn.disabled = true;
+                kit.api('titles.revoke', { id: student.id }).then(function (data) {
+                    resultHost.textContent = '';
+                    resultHost.appendChild(resultBox(h, true,
+                        data.removed ? 'Đã thu hồi danh hiệu của ' + student.display_name + '.'
+                            : student.display_name + ' chưa có danh hiệu nào để thu hồi.'));
+                    toast('Đã thu hồi danh hiệu.', 'success');
+                    load();
+                }).catch(function (err) {
+                    if (isUnknownAction(err)) {
+                        showMessage(null, 'Máy chủ chưa cập nhật action titles.* (admin-actions 7.6.0).');
+                    } else {
+                        showMessage(err, 'Không thu hồi được danh hiệu.');
+                    }
+                }).then(syncButtons);
+            });
+        }
+
+        function deactivate(t) {
+            confirmDialog(h, 'Ngừng dùng danh hiệu', [
+                ['Danh hiệu', t.name + '  (' + t.id + ')'],
+                ['Lưu ý', 'Học sinh đang giữ danh hiệu vẫn giữ nguyên, chỉ không trao mới được nữa.']
+            ], 'Ngừng dùng').then(function (ok) {
+                if (!ok) return;
+                kit.api('titles.delete', { title_id: t.id }).then(function () {
+                    toast('Đã ngừng dùng “' + t.name + '”.', 'success');
+                    load();
+                }).catch(function (err) { showMessage(err, 'Không ngừng dùng được danh hiệu.'); });
+            });
+        }
+
+        function save() {
+            var payload = {
+                title_id: String(fId.value || '').trim().toLowerCase(),
+                name: String(fName.value || '').trim(),
+                short: String(fShort.value || '').trim(),
+                color: String(fColor.value || '').trim(),
+                icon: String(fIcon.value || '').trim(),
+                description: String(fDesc.value || '').trim(),
+                sort_order: Number(fOrder.value || 100),
+                founder_only: !!founderBox.checked,
+                active: true
+            };
+            if (!payload.title_id || !payload.name) {
+                toast('Cần mã và tên danh hiệu.', 'warn');
+                return;
+            }
+            saveBtn.disabled = true;
+            kit.api('titles.save', payload).then(function () {
+                toast('Đã lưu danh hiệu “' + payload.name + '”.', 'success');
+                editor.open = false;
+                load();
+            }).catch(function (err) {
+                if (isUnknownAction(err)) {
+                    showMessage(null, 'Máy chủ chưa cập nhật action titles.save (admin-actions 7.6.0).');
+                } else {
+                    showMessage(err, 'Không lưu được danh hiệu.');
+                }
+            }).then(function () { saveBtn.disabled = false; });
+        }
+
+        function load() {
+            kit.loading(listHost, 'Đang tải danh mục danh hiệu…');
+            kit.api('titles.list', {}).then(function (data) {
+                state.titles = data.titles || [];
+                fillSelect();
+                paintList();
+            }).catch(function (err) {
+                listHost.textContent = '';
+                state.titles = [];
+                fillSelect();
+                if (isUnknownAction(err)) {
+                    listHost.appendChild(kit.alertBox(
+                        'Máy chủ chưa có action titles.* (admin-actions 7.6.0). Deploy Edge Function để bật hệ thống danh hiệu.', 'info'));
+                    return;
+                }
+                listHost.appendChild(kit.alertBox((err && err.message) || 'Không tải được danh sách danh hiệu.', 'error'));
+            });
+        }
+
+        select.addEventListener('change', syncButtons);
+        load();
     }
 
     /* ---------------------------------------------------------------------

@@ -1157,6 +1157,31 @@ html.bk-frames-still .bkchat-avatar-frame-svg .bk-frame-aura,
 html.bk-frames-still .bkchat-avatar-frame-svg .bk-frame-crown {
     animation: none !important;
 }
+/* 7.6.0 — Danh hiệu (Title) đứng trước tên hiển thị trong chat. */
+.bkchat-title {
+    display: inline-flex;
+    align-items: center;
+    gap: .22rem;
+    margin-right: .35rem;
+    padding: .02rem .42rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--bkchat-title-color, var(--bkl-primary)) 52%, transparent);
+    background: color-mix(in srgb, var(--bkchat-title-color, var(--bkl-primary)) 14%, transparent);
+    color: var(--bkchat-title-color, var(--bkl-primary));
+    font-size: .58rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    line-height: 1.55;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+.bkchat-title-icon { font-size: .58rem; }
+.bkchat-card-name-row .bkchat-title { margin-right: .4rem; }
+.bkchat-pick-name .bkchat-title { margin-right: .3rem; }
+@media (max-width: 620px) {
+    .bkchat-title { max-width: 38vw; overflow: hidden; text-overflow: ellipsis; }
+}
+
 .bkchat-role {
     margin-left: .35rem;
     padding: .02rem .36rem;

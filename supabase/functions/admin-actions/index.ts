@@ -172,6 +172,8 @@ const CATEGORIES = ['features', 'improvements', 'fixes', 'ui', 'performance', 's
    danh sách badge thứ hai bị lệch với client (lỗi của 7.4.0).
    ------------------------------------------------------------------------ */
 const BADGE_ID_RE = /^[a-z0-9][a-z0-9-]{2,63}$/;
+/* 7.6.0: mã danh hiệu (Title) — độc lập với badge/khung. */
+const TITLE_ID_RE = /^[a-z0-9][a-z0-9-]{1,39}$/;
 const FOUNDER_BADGE_ID = 'founder';
 
 interface BadgeMeta {
@@ -1441,7 +1443,9 @@ Deno.serve(async (req) => {
     const founderOnly = new Set([
         'roles.set', 'founder.grantAll', 'founder.grantItem', 'avatar.grant',
         'students.inventory', 'admin.items.list', 'students.export', 'logs.export',
-        'data.integrity', 'maintenance.history', 'admin.grantHistory'
+        'data.integrity', 'maintenance.history', 'admin.grantHistory',
+        'titles.list', 'titles.holders', 'titles.save', 'titles.grant',
+        'titles.revoke', 'titles.delete'
     ]);
     if (founderOnly.has(action) && scope !== 'founder') {
         return fail(403, 'FOUNDER_ONLY', 'Chức năng này chỉ dành cho Founder Dashboard.');
@@ -3201,6 +3205,177 @@ Deno.serve(async (req) => {
                         : null
                 }));
                 return json({ ok: true, type, total: items.length, items });
+            }
+
+            /* ------------------------------ Danh hiệu (7.6.0) ------------------------------ */
+            case 'titles.list': {
+                const [{ data: catalog }, { data: links }] = await Promise.all([
+                    client.from('bakhi_titles')
+                        .select('id, name, short, color, icon, description, sort_order, founder_only, active')
+                        .order('sort_order', { ascending: true })
+                        .order('name', { ascending: true }),
+                    client.from('student_titles').select('student_id, title_id')
+                ]);
+                const counts = new Map<string, number>();
+                for (const row of links ?? []) {
+                    const key = String(row.title_id);
+                    counts.set(key, (counts.get(key) || 0) + 1);
+                }
+                return json({
+                    ok: true,
+                    total: (catalog ?? []).length,
+                    titles: (catalog ?? []).map((t) => ({
+                        id: String(t.id),
+                        name: String(t.name || ''),
+                        short: String(t.short || ''),
+                        color: String(t.color || ''),
+                        icon: String(t.icon || ''),
+                        description: String(t.description || ''),
+                        sortOrder: Number(t.sort_order) || 100,
+                        founderOnly: t.founder_only === true,
+                        active: t.active !== false,
+                        holders: counts.get(String(t.id)) || 0
+                    }))
+                });
+            }
+
+            case 'titles.holders': {
+                const titleId = str(body.title_id, 40);
+                if (!TITLE_ID_RE.test(titleId)) {
+                    return fail(400, 'BAD_TITLE_ID', 'Mã danh hiệu không hợp lệ.');
+                }
+                const { data: links, error } = await client
+                    .from('student_titles')
+                    .select('student_id, assigned_by, assigned_at')
+                    .eq('title_id', titleId)
+                    .order('assigned_at', { ascending: false })
+                    .limit(200);
+                if (error) throw error;
+                const ids = (links ?? []).map((r) => String(r.student_id));
+                const people = new Map<string, { name: string; code: string }>();
+                if (ids.length) {
+                    const { data: students } = await client
+                        .from('students').select('id, display_name, student_code').in('id', ids);
+                    for (const s of students ?? []) {
+                        people.set(String(s.id), {
+                            name: String(s.display_name || ''),
+                            code: String(s.student_code || '')
+                        });
+                    }
+                }
+                return json({
+                    ok: true,
+                    holders: (links ?? []).map((r) => {
+                        const info = people.get(String(r.student_id));
+                        return {
+                            studentId: String(r.student_id),
+                            name: info ? info.name : '',
+                            code: info ? info.code : '',
+                            assignedBy: String(r.assigned_by || ''),
+                            assignedAt: r.assigned_at || null
+                        };
+                    })
+                });
+            }
+
+            case 'titles.save': {
+                const id = str(body.title_id, 40).toLowerCase();
+                if (!TITLE_ID_RE.test(id)) {
+                    return fail(400, 'BAD_TITLE_ID', 'Mã danh hiệu chỉ gồm a-z, 0-9 và dấu gạch nối (2–40 ký tự).');
+                }
+                const name = str(body.name, 60).trim();
+                if (!name) return fail(400, 'BAD_TITLE_NAME', 'Thiếu tên danh hiệu.');
+                const short = str(body.short, 24).trim().toUpperCase();
+                const color = str(body.color, 24).trim();
+                if (color && !/^#[0-9a-fA-F]{3,8}$/.test(color)) {
+                    return fail(400, 'BAD_TITLE_COLOR', 'Màu danh hiệu phải ở dạng #rgb hoặc #rrggbb.');
+                }
+                const rawOrder = Number(body.sort_order);
+                const sortOrder = Number.isFinite(rawOrder)
+                    ? Math.max(0, Math.min(9999, Math.round(rawOrder)))
+                    : 100;
+                const row = {
+                    id,
+                    name,
+                    short,
+                    color,
+                    icon: str(body.icon, 40).trim(),
+                    description: str(body.description, 240).trim(),
+                    sort_order: sortOrder,
+                    founder_only: body.founder_only === true,
+                    active: body.active !== false
+                };
+                const { error } = await client.from('bakhi_titles').upsert(row, { onConflict: 'id' });
+                if (error) throw error;
+                await logAction(client, 'titles.save', 'title', id, {
+                    name, short, founder_only: row.founder_only, active: row.active
+                });
+                return json({ ok: true, id, title: row });
+            }
+
+            case 'titles.grant': {
+                const id = str(body.id, 40);
+                const titleId = str(body.title_id, 40);
+                if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                if (!TITLE_ID_RE.test(titleId)) {
+                    return fail(400, 'BAD_TITLE_ID', 'Mã danh hiệu không hợp lệ.');
+                }
+                const [{ data: student }, { data: title }] = await Promise.all([
+                    client.from('students').select('id, display_name, is_founder').eq('id', id).maybeSingle(),
+                    client.from('bakhi_titles').select('id, name, founder_only, active').eq('id', titleId).maybeSingle()
+                ]);
+                if (!student) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+                if (!title) return fail(404, 'TITLE_NOT_FOUND', 'Không tìm thấy danh hiệu.');
+                if (title.active === false) {
+                    return fail(409, 'TITLE_INACTIVE', 'Danh hiệu này đã ngừng dùng.');
+                }
+                if (title.founder_only === true && student.is_founder !== true) {
+                    return fail(403, 'FOUNDER_ONLY', 'Danh hiệu này chỉ dành cho hồ sơ Founder.');
+                }
+                const { error } = await client.from('student_titles').upsert({
+                    student_id: id,
+                    title_id: titleId,
+                    assigned_by: sessionId,
+                    assigned_at: new Date().toISOString()
+                }, { onConflict: 'student_id' });
+                if (error) throw error;
+                await logAction(client, 'titles.grant', 'student', id, {
+                    title_id: titleId, title_name: String(title.name || '')
+                });
+                return json({
+                    ok: true,
+                    status: 'granted',
+                    studentName: student.display_name,
+                    titleId,
+                    titleName: String(title.name || '')
+                });
+            }
+
+            case 'titles.revoke': {
+                const id = str(body.id, 40);
+                if (!id) return fail(400, 'MISSING_ID', 'Thiếu id học sinh.');
+                const { data: existing } = await client
+                    .from('student_titles').select('title_id').eq('student_id', id).maybeSingle();
+                const { error } = await client.from('student_titles').delete().eq('student_id', id);
+                if (error) throw error;
+                await logAction(client, 'titles.revoke', 'student', id, {
+                    title_id: existing ? String(existing.title_id) : ''
+                });
+                return json({ ok: true, removed: !!existing });
+            }
+
+            case 'titles.delete': {
+                const titleId = str(body.title_id, 40);
+                if (!TITLE_ID_RE.test(titleId)) {
+                    return fail(400, 'BAD_TITLE_ID', 'Mã danh hiệu không hợp lệ.');
+                }
+                /* Ngừng dùng thay vì xoá: học sinh đang giữ danh hiệu vẫn giữ
+                   nguyên tên hiển thị, chỉ không trao mới được nữa. */
+                const { error } = await client
+                    .from('bakhi_titles').update({ active: false }).eq('id', titleId);
+                if (error) throw error;
+                await logAction(client, 'titles.delete', 'title', titleId, {});
+                return json({ ok: true, id: titleId, active: false });
             }
 
             default:

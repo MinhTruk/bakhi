@@ -1270,6 +1270,16 @@ html.dark .bkc-shortcut-row { background: rgba(148, 163, 184, .1); }
 .bkf-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
 .bkf-tab { flex: 1 1 auto; justify-content: center; }
 .bkf-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+/* 7.6.0 — quản lý Danh hiệu (Title) trong Founder Dashboard. */
+.bkf-titles:empty { display: none; }
+.bkf-title-editor { border: 1px solid color-mix(in srgb, currentColor 16%, transparent); border-radius: 12px; padding: 10px 14px; }
+.bkf-title-editor summary { cursor: pointer; font-weight: 700; font-size: 13px; }
+.bkf-title-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 12px; }
+.bkf-title-form .bkf-title-input { min-width: 0; }
+.bkf-title-form .bkf-check, .bkf-title-form .bkc-btn { grid-column: 1 / -1; justify-self: start; }
+.bkf-mini { padding: 4px 10px; font-size: 12px; }
+.bkf-titles td .bkf-mini + .bkf-mini { margin-left: 6px; }
 .bkf-check { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; }
 
 .bkf-grid {

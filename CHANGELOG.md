@@ -2,6 +2,46 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.6.1] — 2026-11-18
+
+### Sửa lỗi
+
+- **Founder Dashboard không còn trao “undefined badge”**: báo cáo cấp badge hàng loạt và cấp
+  trọn bộ đọc số lượng qua hàm chuẩn hoá, nên khi máy chủ trả thiếu trường (bản cũ hoặc chỉ trả
+  `{ ok, count }`) giao diện hiện đúng số badge đã cấp, số đã sở hữu và số badge độc quyền bị
+  loại trừ thay vì `undefined`; nếu phản hồi không có số nào thì hiện thông báo rõ ràng để đối
+  chiếu lại tồn kho.
+- **Bản xem trước và hộp xác nhận cấp hàng loạt** luôn có số badge hợp lệ (0 khi thiếu dữ liệu),
+  không còn “Dự kiến cấp undefined badge”.
+- **Số khung avatar ở khu “Cấp trọn bộ cho hồ sơ Founder”** đếm từ ánh xạ badge → khung khi
+  trang Founder không nạp `bk-profile.js`, thay vì báo 0 khung.
+- **Dòng tồn kho vật phẩm** hiện `x / 99 badge` ngay cả khi phản hồi thiếu `catalogTotal` hoặc
+  danh sách khung.
+
+## [7.6.0] — 2026-11-17
+
+### Tính năng mới
+
+- **Hệ thống Danh hiệu (Title)**: lớp hoàn toàn mới, **độc lập với badge, khung avatar và
+  thành tích**. Mỗi học sinh giữ tối đa một danh hiệu, do Founder trao tay; danh hiệu không
+  tự mở khoá và không ảnh hưởng tới badge đang có.
+- **Danh hiệu hiển thị TRƯỚC tên trong chat** ở mọi vị trí: bong bóng tin nhắn, đầu hội thoại,
+  danh sách đoạn chat (nhắn riêng), danh sách chọn người nhận, thẻ hồ sơ và dòng “Hồ sơ của bạn”.
+  Nhãn có màu + icon riêng và cập nhật realtime khi Founder trao hoặc thu hồi.
+- **Founder Dashboard → Danh hiệu**: trao/thu hồi danh hiệu cho từng học sinh, xem số người giữ,
+  thêm/sửa danh hiệu (mã, tên, nhãn ngắn, màu, icon, mô tả, thứ tự, chỉ-Founder) và ngừng dùng.
+- **12 danh hiệu khởi đầu**: Nhà Sáng Lập, Quản Trị Viên, Kỹ Sư Hệ Thống, Học Giả, Nhà Thám Hiểm,
+  Tiên Phong, Chiến Lược Gia, Nghệ Nhân, Người Dẫn Đường, Người Giữ Lửa, Mầm Xanh, Ngôi Sao Bá Khí.
+
+### Cải tiến
+
+- `chat-api` trả `title` trong **mọi** profile card (`profiles.cards`, `students.search`,
+  thành viên phòng, người gửi tin) nên chat hiển thị danh hiệu mà không cần thêm request.
+- Migration `20261202000000_bakhi_v760_titles.sql`: bảng `bakhi_titles` (danh mục) và
+  `student_titles` (danh hiệu hiện tại), RLS chỉ cho đọc, realtime cho cả hai bảng, seed 12
+  danh hiệu — chạy lại nhiều lần vẫn an toàn và không ghi đè danh hiệu Founder đã sửa.
+- Founder Dashboard báo rõ khi máy chủ chưa có action `titles.*` thay vì lỗi thô.
+
 ## [7.5.3] — 2026-11-17
 
 ### Tính năng mới

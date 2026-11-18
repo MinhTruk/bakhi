@@ -40,8 +40,8 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
 (async () => {
   console.log('\n[1] Trang Founder, mô-đun và mã bí mật');
   const page = read('founder/index.html');
-  ok('trang founder dùng dashboard + mô-đun 7.5.3',
-    /bk-devboard\.js\?v=7\.5\.3/.test(page) && /bk-founder\.js\?v=7\.5\.3/.test(page) &&
+  ok('trang founder dùng dashboard + mô-đun 7.6.1',
+    /bk-devboard\.js\?v=7\.6\.1/.test(page) && /bk-founder\.js\?v=7\.6\.1/.test(page) &&
     /BK_DASH_SCOPE\s*=\s*["']founder/.test(page));
   ok('trang Founder gọi founderLogin/founderToken',
     /founderLogin/.test(page) && /founderToken/.test(page));
@@ -58,6 +58,21 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   ok('migration chống trùng theo request_id',
     /create unique index if not exists admin_grant_history_request_unique/.test(sql) &&
     /request_id, target_student, item_id/.test(sql));
+
+  /* --- 7.6.0: hệ thống Danh hiệu (Title) --- */
+  const titlesSql = read('supabase/migrations/20261202000000_bakhi_v760_titles.sql');
+  ok('migration 7.6.0 có bảng danh hiệu, RLS chỉ đọc và realtime',
+    /create table if not exists public\.bakhi_titles/.test(titlesSql) &&
+    /create table if not exists public\.student_titles/.test(titlesSql) &&
+    /enable row level security/.test(titlesSql) && /supabase_realtime/.test(titlesSql));
+  ok('admin-actions có đủ action titles.* và chỉ Founder',
+    ['titles.list', 'titles.holders', 'titles.save', 'titles.grant', 'titles.revoke', 'titles.delete']
+      .every((a) => backend.indexOf("'" + a + "'") !== -1) &&
+    /founderOnly = new Set\(\[[\s\S]*?'titles\.grant'/.test(backend));
+  const founderSrc = read('assets/bakhi/bk-founder.js');
+  ok('Founder Dashboard có khu Danh hiệu (trao, thu hồi, lưu)',
+    /function sectionTitles/.test(founderSrc) &&
+    /titles\.grant/.test(founderSrc) && /titles\.revoke/.test(founderSrc) && /titles\.save/.test(founderSrc));
   ok('migration đóng quyền đọc lịch sử cấp cho client',
     /revoke select on public\.admin_grant_history from anon, authenticated/.test(sql) &&
     /drop policy if exists admin_grant_history_select_all/.test(sql));
@@ -81,6 +96,11 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   ok('server xem trước tách khỏi thao tác cấp badge',
     /case 'badges\.grantAllPreview'/.test(backend) &&
     /dryRun: true/.test(backend));
+  /* 7.6.1 — không bao giờ in "undefined badge" khi máy chủ trả thiếu trường. */
+  ok('báo cáo cấp badge đọc số lượng qua hàm chuẩn hoá',
+    /function countOr/.test(founderSrc) && !/'Đã cấp ' \+ data\.added/.test(founderSrc));
+  ok('số khung lấy từ danh mục badge khi thiếu BKProfile',
+    /function frameCatalogSize/.test(founderSrc) && /frameCatalogSize\(B, P\)/.test(founderSrc));
   ok('trao khung đi qua badge sở hữu khung, không ghi đè khung đang dùng',
     /function badgeForFrame/.test(backend) &&
     !/student_profiles'\)\.upsert\(\{\s*student_id: targetId,\s*frame: itemId/.test(backend));
@@ -180,6 +200,8 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
         frames: ['none', 'leaf', 'founder'], frameCount: 3, equippedFrame: 'founder', failed: []
       });
     }
+    /* 7.6.1 — máy chủ cũ chỉ trả { ok, count }; báo cáo phải tự suy ra số badge. */
+    if (action === 'badges.grantAll') return Promise.resolve({ ok: true, count: 76 });
     if (action === 'admin.grantHistory') {
       return Promise.resolve({ ok: true, history: [] });
     }
@@ -216,8 +238,8 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   await wait(60);
   w.BKDashboard.tab('founder');
   const pane = await until(() => D.querySelector('.bkc-pane'));
-  ok('tab Founder dựng 5 khu vực làm việc', !!pane &&
-    D.querySelectorAll('.bkc-pane .bkf-section').length === 5,
+  ok('tab Founder dựng 6 khu vực làm việc (có Danh hiệu)', !!pane &&
+    D.querySelectorAll('.bkc-pane .bkf-section').length === 6,
     String(D.querySelectorAll('.bkc-pane .bkf-section').length));
   ok('không còn khối tìm kiếm trùng lặp trong dashboard',
     D.querySelectorAll('.bkc-pane .bkc-search-results').length === 0);
@@ -283,6 +305,21 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   const previewText = await until(() => /Dự kiến cấp/.test(bulkCard.textContent));
   ok('hiện số badge dự kiến cấp + badge bị loại trừ', !!previewText);
 
+  /* --- 7.6.1: phản hồi cũ { ok, count } không được sinh "undefined badge" --- */
+  const bulkGo = Array.from(bulkCard.querySelectorAll('button'))
+    .find((b) => /Cấp toàn bộ badge đủ điều kiện/.test(b.textContent || ''));
+  bulkGo.click();
+  const bulkModal = await until(() => Array.from(D.querySelectorAll('.bk-overlay'))
+    .find((m) => /Xác nhận cấp toàn bộ badge/.test(m.textContent || '')) || null);
+  const bulkConfirm = bulkModal && Array.from(bulkModal.querySelectorAll('button'))
+    .find((b) => /^Cấp \d+ badge$/.test((b.textContent || '').trim()));
+  ok('hộp xác nhận cấp hàng loạt hiện số badge cụ thể',
+    !!bulkConfirm && !/undefined/.test(bulkModal.textContent));
+  if (bulkConfirm) bulkConfirm.click();
+  const bulkReport = await until(() => /Đã cấp 76 badge/.test(bulkCard.textContent), 2500);
+  ok('báo cáo cấp hàng loạt suy ra số lượng, không có undefined',
+    !!bulkReport && !/undefined/.test(bulkCard.textContent));
+
   /* --- cấp trọn bộ --- */
   const fullCard = cardByTitle('Cấp trọn bộ cho hồ sơ Founder');
   ok('có khu vực cấp trọn bộ', !!fullCard);
@@ -290,7 +327,8 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
     .find((b) => /Cấp toàn bộ badge và khung/.test(b.textContent || ''));
   ok('nút cấp trọn bộ tồn tại', !!fullBtn);
   fullBtn.click();
-  const fullModal = await until(() => D.querySelector('.bk-overlay'));
+  const fullModal = await until(() => Array.from(D.querySelectorAll('.bk-overlay'))
+    .find((m) => /Cấp trọn bộ danh mục/.test(m.textContent || '')) || null);
   ok('cấp trọn bộ cũng yêu cầu xác nhận', !!fullModal && /99/.test(fullModal.textContent));
   const fullGo = Array.from(fullModal.querySelectorAll('button')).find((b) => /Cấp trọn bộ/.test(b.textContent || ''));
   fullGo.click();

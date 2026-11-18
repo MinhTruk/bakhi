@@ -254,6 +254,27 @@ DOMContentLoaded
   (`student-profile`, `admin-actions`, `sync-student-progress`) **cần được deploy** trên dự án
   Supabase thật trước khi tính năng chạy trên website công khai.
 
+### 2.6.1. Danh hiệu — Title (7.6.0)
+
+- Danh hiệu là lớp **độc lập** với badge, khung avatar và thành tích: không tự mở khoá,
+  không phụ thuộc `student_badges`/`bakhi_owned_frames`.
+- **Bảng dữ liệu** (`supabase/migrations/20261202000000_bakhi_v760_titles.sql`):
+  - `bakhi_titles`: danh mục (`id` slug, `name`, `short` = nhãn ngắn trước tên, `color`,
+    `icon`, `description`, `sort_order`, `founder_only`, `active`).
+  - `student_titles`: danh hiệu hiện tại của mỗi học sinh (khoá chính `student_id`), kèm
+    `assigned_by`/`assigned_at`; mỗi học sinh giữ tối đa một danh hiệu.
+  - RLS bật, chỉ policy `select` cho `anon`/`authenticated` (chat cần đọc danh hiệu của người
+    khác); không có policy ghi — mọi thao tác ghi qua `admin-actions` bằng `service_role`.
+  - Hai bảng nằm trong publication `supabase_realtime` để chat cập nhật tức thời.
+- **Hiển thị**: `chat-api` trả `title` trong mọi profile card (thành viên phòng, người gửi
+  tin, `profiles.cards`, `students.search`); `bk-chat.js` vẽ nhãn danh hiệu **trước** tên
+  hiển thị ở mọi vị trí (bong bóng tin nhắn, đầu hội thoại, danh sách phòng, danh sách chọn
+  người, thẻ hồ sơ) và nghe realtime `student_titles` để cập nhật ngay.
+- **Founder Dashboard → Danh hiệu**: `titles.list`, `titles.holders`, `titles.save`,
+  `titles.grant`, `titles.revoke`, `titles.delete` — tất cả trong danh sách `founderOnly`,
+  ghi `admin_activity_logs`. `titles.delete` chỉ đặt `active = false` để không làm mất nhãn
+  của người đang giữ.
+
 ### 2.7. Chat phòng chung, tin nhắn riêng và nhóm nhỏ (3.7.0)
 
 - **Trang** `/chat/` (`chat/index.html`) nạp `bk-cloud.js` ở chế độ đầy đủ và `bk-chat.js` +

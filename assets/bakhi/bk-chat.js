@@ -119,6 +119,44 @@
         if (!card) return 'Học sinh';
         return card.nickname || card.display_name || 'Học sinh';
     }
+
+    /* 7.6.0 — Danh hiệu (Title) là lớp riêng, độc lập badge/khung/thành tích.
+       Danh hiệu luôn đứng TRƯỚC tên hiển thị ở mọi vị trí trong chat. */
+    function titleOf(card) {
+        var t = card && card.title;
+        if (!t || typeof t !== 'object') return null;
+        var name = String(t.name || '').trim();
+        if (!name) return null;
+        return {
+            name: name,
+            short: String(t.short || name).trim() || name,
+            color: String(t.color || ''),
+            icon: String(t.icon || '')
+        };
+    }
+
+    function titleChip(card) {
+        var t = titleOf(card);
+        if (!t) return null;
+        var chip = el('span', 'bkchat-title');
+        if (/^fa-[a-z0-9-]+$/.test(t.icon)) chip.appendChild(icon(t.icon, 'bkchat-title-icon'));
+        chip.appendChild(D.createTextNode(t.short.toUpperCase()));
+        chip.title = t.name;
+        chip.setAttribute('aria-label', 'Danh hiệu: ' + t.name);
+        if (/^#[0-9a-fA-F]{3,8}$/.test(t.color)) {
+            chip.style.setProperty('--bkchat-title-color', t.color);
+        }
+        return chip;
+    }
+
+    /* Tên có danh hiệu đứng trước — dùng cho chỗ cần một nút/khối tên. */
+    function nameInto(node, card, cls) {
+        var chip = titleChip(card);
+        if (chip) node.appendChild(chip);
+        node.appendChild(el('span', cls || 'bkchat-name', nameOf(card)));
+        return node;
+    }
+
     function initials(name) {
         var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
         if (!parts.length) return 'BK';
@@ -566,6 +604,10 @@
                 pin.setAttribute('aria-label', 'Đã ghim');
                 name.appendChild(pin);
             }
+            if (room.kind === 'dm') {
+                var dmChip = titleChip(person);
+                if (dmChip) name.appendChild(dmChip);
+            }
             name.appendChild(D.createTextNode(roomTitle(room)));
             top.appendChild(name);
             if (room.last_message_at) top.appendChild(el('span', 'bkchat-room-time', shortTime(room.last_message_at)));
@@ -574,7 +616,9 @@
             var preview = el('span', 'bkchat-room-preview');
             var last = room.last_message;
             if (last) {
-                var who = last.student_id === (S.me && S.me.student_id) ? 'Bạn: ' : (room.kind === 'global' || room.kind === 'group' ? last.sender_name + ': ' : '');
+                var senderTitle = titleOf(cardOf(String(last.student_id)));
+                var whoName = (senderTitle ? senderTitle.short.toUpperCase() + ' ' : '') + last.sender_name;
+                var who = last.student_id === (S.me && S.me.student_id) ? 'Bạn: ' : (room.kind === 'global' || room.kind === 'group' ? whoName + ': ' : '');
                 preview.textContent = last.deleted ? 'Tin nhắn đã được xoá' : (last.body ? who + last.body : who + '📷 Ảnh');
             } else {
                 preview.textContent = room.kind === 'global' ? 'Cả trường cùng trò chuyện' : 'Bắt đầu trò chuyện';
@@ -631,7 +675,7 @@
         var card = localProfileCard(cardOf(me));
         host.appendChild(avatarFor(card, 30));
         var text = el('span', 'bkchat-me-text');
-        text.appendChild(el('span', 'bkchat-me-name', nameOf(card)));
+        text.appendChild(nameInto(el('span', 'bkchat-me-name'), card, 'bkchat-me-realname'));
         text.appendChild(el('span', 'bkchat-me-sub', 'Hồ sơ của bạn'));
         host.appendChild(text);
     }
@@ -1169,7 +1213,9 @@ function markRead(immediate, notify) {
             titleBtn.type = 'button';
             titleBtn.setAttribute('data-profile', other.student_id);
             titleBtn.setAttribute('aria-label', 'Xem hồ sơ ' + nameOf(other));
-            titleBtn.textContent = roomTitle(room);
+            var headChip = titleChip(other);
+            if (headChip) titleBtn.appendChild(headChip);
+            titleBtn.appendChild(D.createTextNode(roomTitle(room)));
             info.appendChild(titleBtn);
         } else {
             info.appendChild(el('div', 'bkchat-head-title', roomTitle(room)));
@@ -1256,7 +1302,9 @@ function markRead(immediate, notify) {
             var nameRow = el('button', 'bkchat-msg-name');
             nameRow.type = 'button';
             nameRow.setAttribute('data-profile', m.student_id);
-            nameRow.textContent = nameOf(m.sender);
+            var senderChip = titleChip(m.sender);
+            if (senderChip) nameRow.appendChild(senderChip);
+            nameRow.appendChild(D.createTextNode(nameOf(m.sender)));
             var roleLabel = (global.BKRoles && global.BKRoles.labelFor) ? global.BKRoles.labelFor(m.student_id) : '';
             if (roleLabel) {
                 nameRow.appendChild(el('span', 'bkchat-role', roleLabel));
@@ -1697,6 +1745,7 @@ function markRead(immediate, notify) {
             return;
         }
         card = localProfileCard(card);
+        S.cardStudent = studentId;
         var self = studentId === String(S.me && S.me.student_id);
         var aside = D.getElementById('bkChatCard');
         if (!aside) return;
@@ -1724,6 +1773,8 @@ function markRead(immediate, notify) {
         hero.appendChild(avatarFor(card, 96));
 
         var nameRow = el('div', 'bkchat-card-name-row');
+        var cardChip = titleChip(card);
+        if (cardChip) nameRow.appendChild(cardChip);
         nameRow.appendChild(el('h2', 'bkchat-card-name', nameOf(card)));
         if (self) {
             var edit = btn('bkchat-card-edit', '', 'fa-pen');
@@ -1889,6 +1940,22 @@ function markRead(immediate, notify) {
                     m.image_path = row.deleted_at ? null : row.image_path;
                     renderThread();
                 })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'student_titles' }, function (payload) {
+                    /* 7.6.0: Founder trao/thu hồi danh hiệu → cập nhật ngay tên
+                       ở danh sách phòng, đầu hội thoại và bong bóng tin nhắn. */
+                    var row = payload && (payload.new || payload.old);
+                    var sid = row && row.student_id ? String(row.student_id) : '';
+                    if (!sid) return;
+                    api({ action: 'profiles.cards', ids: [sid] }).then(function (data) {
+                        var list = (data && data.profiles) || [];
+                        if (list.length) rememberCards(list);
+                        else if (S.cards[sid]) S.cards[sid].title = null;
+                        renderRooms();
+                        renderHead();
+                        renderThread();
+                        if (S.cardStudent === sid) showCard(sid);
+                    }).catch(function () { });
+                })
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_reactions' }, function (payload) {
                     var row = payload && (payload.new || payload.old);
                     if (!row || !row.message_id) return;
@@ -2035,7 +2102,7 @@ function markRead(immediate, notify) {
                         }
                         row.appendChild(av);
                         var txt = el('span', 'bkchat-pick-text');
-                        txt.appendChild(el('span', 'bkchat-pick-name', nameOf(card)));
+                        txt.appendChild(nameInto(el('span', 'bkchat-pick-name'), card, 'bkchat-pick-realname'));
                         var sub = card.nickname && card.display_name ? card.display_name : '';
                         var presence = presenceLabel(card);
                         if (presence) sub = sub ? sub + ' · ' + presence : presence;
@@ -2115,7 +2182,7 @@ function markRead(immediate, notify) {
                         row.type = 'button';
                         row.appendChild(avatarFor(card, 32));
                         var txt = el('span', 'bkchat-pick-text');
-                        txt.appendChild(el('span', 'bkchat-pick-name', nameOf(card)));
+                        txt.appendChild(nameInto(el('span', 'bkchat-pick-name'), card, 'bkchat-pick-realname'));
                         row.appendChild(txt);
                         var mark = el('span', 'bkchat-check', chosen[card.student_id] ? '✓' : '');
                         row.appendChild(mark);

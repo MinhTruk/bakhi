@@ -50,7 +50,9 @@ const OTHER = {
   avatar_url: '', frame: 'sakura', badge_count: 30, bio: 'Thích Vật lí',
   banner_url: 'https://demo.supabase.co/storage/v1/object/public/profile-media/banner/long.png',
   links: [{ label: 'Facebook', url: 'https://facebook.com/baolong' }],
-  roles: [{ key: 'class_leader', label: 'Lớp trưởng' }]
+  roles: [{ key: 'class_leader', label: 'Lớp trưởng' }],
+  /* 7.6.0 — danh hiệu độc lập badge/khung, hiển thị trước tên. */
+  title: { id: 'scholar', name: 'Học Giả', short: 'HỌC GIẢ', color: '#93c5fd', icon: 'fa-book-open' }
 };
 const THIRD = {
   student_id: '33333333-3333-4333-8333-333333333333',
@@ -299,6 +301,16 @@ async function main() {
   ok('tải 3 tin nhắn', !!msgNodes, String(doc.querySelectorAll('#bkChatMessages .bkchat-msg').length));
   const own = doc.querySelector('#bkChatMessages .bkchat-msg.is-own');
   ok('tin của mình căn phải', !!own && /Chào Long/.test(own.textContent));
+
+  /* 7.6.0 — Danh hiệu (Title) độc lập, đứng TRƯỚC tên trong chat. */
+  console.log('\n[2b] Danh hiệu (Title) trong chat — 7.6.0');
+  const titleInMsg = doc.querySelector('#bkChatMessages .bkchat-msg-name .bkchat-title');
+  ok('danh hiệu đứng trước tên trong bong bóng tin nhắn',
+    !!titleInMsg && /HỌC GIẢ/.test(titleInMsg.textContent));
+  const dmName = doc.querySelector('#bkChatRooms [data-room="' + DM.id + '"] .bkchat-room-name');
+  ok('danh hiệu đứng trước tên trong danh sách đoạn chat',
+    !!dmName && !!dmName.querySelector('.bkchat-title') &&
+    dmName.textContent.indexOf('HỌC GIẢ') === 0, dmName && dmName.textContent);
   const image = doc.querySelector('#bkChatMessages .bkchat-image-link img');
   ok('ảnh dùng URL Storage công khai', !!image && image.src.indexOf('/storage/v1/object/public/chat-images/') !== -1, image && image.src);
   const chips = doc.querySelectorAll('#bkChatMessages .bkchat-reaction');
@@ -627,6 +639,22 @@ async function main() {
   ok('bộ đếm chưa đọc bỏ qua tin của chính mình', /\.neq\('student_id', ctx\.studentId\)/.test(fn));
   ok('read.mark giữ nguyên mốc microseconds thay vì cắt về milliseconds',
     /rawThrough/.test(fn) && /through > currentRaw/.test(fn));
+
+  console.log('\n[9b] Hệ thống Danh hiệu (7.6.0)');
+  const titlesSql = fs.readFileSync(path.join(ROOT, 'supabase/migrations/20261202000000_bakhi_v760_titles.sql'), 'utf8');
+  ok('migration danh hiệu có 2 bảng và RLS chỉ đọc',
+    /create table if not exists public\.bakhi_titles/.test(titlesSql) &&
+    /create table if not exists public\.student_titles/.test(titlesSql) &&
+    /enable row level security/.test(titlesSql) &&
+    !/for insert to (anon|authenticated)/.test(titlesSql));
+  ok('danh hiệu có seed idempotent và realtime',
+    /on conflict \(id\) do nothing/.test(titlesSql) && /supabase_realtime/.test(titlesSql));
+  ok('chat-api trả title trong profile card',
+    /student_titles/.test(fn) && /bakhi_titles/.test(fn) && /title: titleMeta/.test(fn));
+  ok('chat nghe realtime student_titles', /table: 'student_titles'/.test(src));
+  ok('chat có chip danh hiệu trước tên',
+    /function titleChip/.test(src) && /\.bkchat-title/.test(chatCssSrc));
+  ok('danh hiệu hiển thị ở nhiều vị trí chat', (src.match(/titleChip\(/g) || []).length >= 4);
 
   console.log('\n[10] Lối vào & trang Chat');
   ok('menu tài khoản có mục Chat', /'chat\/'/.test(shell) && /fa-comments/.test(shell));

@@ -90,7 +90,7 @@ async function profilesByIds(ctx: Ctx, ids: string[]) {
     /* View chat_profiles cố ý rút gọn, thiếu ảnh bìa, liên kết và danh vị lớp.
        Đọc thêm bảng gốc bằng service role (không cần migration mới) để Profile
        Card đủ dữ liệu như trang Hồ sơ. */
-    const [{ data: extras }, { data: roles }] = await Promise.all([
+    const [{ data: extras }, { data: roles }, titles] = await Promise.all([
         ctx.client
             .from('student_profiles')
             .select('student_id, banner_url, links')
@@ -98,7 +98,8 @@ async function profilesByIds(ctx: Ctx, ids: string[]) {
         ctx.client
             .from('student_roles')
             .select('student_id, role_key, role_label')
-            .in('student_id', unique)
+            .in('student_id', unique),
+        titlesByIds(ctx, unique)
     ]);
     for (const row of extras ?? []) {
         const base = map.get(String(row.student_id));
@@ -112,7 +113,42 @@ async function profilesByIds(ctx: Ctx, ids: string[]) {
         base.role_key = String(row.role_key || '');
         base.role_label = String(row.role_label || '');
     }
+    for (const [sid, title] of titles) {
+        const base = map.get(sid);
+        if (base) base.title = title;
+    }
     return map;
+}
+
+/** Danh hiệu (Title) đang gắn cho từng học sinh — độc lập với badge và khung. */
+async function titlesByIds(ctx: Ctx, ids: string[]) {
+    const out = new Map<string, Record<string, unknown>>();
+    if (!ids.length) return out;
+    const { data: links } = await ctx.client
+        .from('student_titles')
+        .select('student_id, title_id')
+        .in('student_id', ids);
+    if (!links || !links.length) return out;
+    const titleIds = [...new Set(links.map((l) => String(l.title_id)))].slice(0, 40);
+    if (!titleIds.length) return out;
+    const { data: catalog } = await ctx.client
+        .from('bakhi_titles')
+        .select('id, name, short, color, icon')
+        .in('id', titleIds);
+    const byId = new Map<string, Record<string, unknown>>();
+    for (const row of catalog ?? []) byId.set(String(row.id), row);
+    for (const link of links) {
+        const meta = byId.get(String(link.title_id));
+        if (!meta) continue;
+        out.set(String(link.student_id), {
+            id: String(meta.id),
+            name: str(meta.name, 60),
+            short: str(meta.short, 24) || str(meta.name, 60),
+            color: str(meta.color, 24),
+            icon: str(meta.icon, 40)
+        });
+    }
+    return out;
 }
 
 function cleanLinks(raw: unknown) {
@@ -127,6 +163,20 @@ function cleanLinks(raw: unknown) {
         .filter((l) => l.visible && /^(https?:\/\/|mailto:)/i.test(l.url))
         .slice(0, 6)
         .map((l) => ({ label: l.label || 'Liên kết', url: l.url }));
+}
+
+function titleMeta(raw: unknown) {
+    if (!raw || typeof raw !== 'object') return null;
+    const t = raw as Record<string, unknown>;
+    const name = str(t.name, 60);
+    if (!name) return null;
+    return {
+        id: str(t.id, 40),
+        name,
+        short: str(t.short, 24) || name,
+        color: str(t.color, 24),
+        icon: str(t.icon, 40)
+    };
 }
 
 function card(map: Map<string, Record<string, unknown>>, id: string) {
@@ -147,6 +197,8 @@ function card(map: Map<string, Record<string, unknown>>, id: string) {
         role_key: roleKey,
         role_label: roleLabel,
         roles: roleLabel ? [{ key: roleKey || 'member', label: roleLabel }] : [],
+        /* 7.6.0: danh hiệu hiển thị TRƯỚC tên hiển thị trong chat. */
+        title: titleMeta(row.title),
         last_seen_at: row.last_seen_at || null,
         /* Hoạt động nếu có tín hiệu trong 2 phút gần nhất. */
         online: !!seen && Date.now() - seen < 2 * 60 * 1000
