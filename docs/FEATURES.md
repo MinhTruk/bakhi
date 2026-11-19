@@ -33,6 +33,9 @@ Trung tâm học tập, hồ sơ/cài đặt, Developer Playground, Administrato
   so sánh băm và cấp phiên `scope = founder`.
 - Founder thấy đủ 14 mô-đun Administrator, thêm tab **Founder** (`bk-founder.js`) để tìm người nhận,
   trao badge/khung, cấp trọn bộ 99 badge và toàn bộ 50 khung cho hồ sơ `is_founder = true`.
+- Từ 7.9.0, Founder trao được **mọi badge và khung Founder cho bất kỳ học sinh**, trừ badge tối
+  cao **Thiên Khải Sáng Thế** (`founder`) vẫn chỉ dành cho hồ sơ `is_founder = true`. Danh hiệu
+  ánh xạ badge Founder cũng trao được sau khi người nhận sở hữu badge nguồn.
 - Các quyền tối mật chỉ Founder: bảo trì, dữ liệu & sao lưu, đặt danh vị, trao badge
   Founder/Developer. Máy chủ chặn Administrator thường bằng `FOUNDER_ONLY`.
 
@@ -203,6 +206,7 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 9 | Modal chi tiết badge: độ hiếm, phạm vi, cách đạt, tiến độ | ✅ | `BKProfileUI` + dashboard 7.0 |
 | 10 | Cấp badge đủ điều kiện tự động cho một hồ sơ | ✅ | `badges.autoGrant` gọi nội bộ `student-profile` |
 | 11 | Cấp toàn bộ badge, trừ `founder` và `dev-exclusive-*`, chống trùng | ✅ | `badges.grantAll` trả `added`/`alreadyOwned`/`failed`/`excluded` |
+| 12 | Founder trao badge/khung Founder cho học sinh (7.9.0), trừ Thiên Khải Sáng Thế | ✅ | `founder.grantItem` + `grantSingleItem` kiểm tra `is_founder` chỉ cho `founder` |
 
 ### H.2. Thành tích 2.3 trong Trung tâm học tập
 

@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-founder.js  (7.7.0)
+   Bá Khí — bk-founder.js  (7.9.0)
 
    Founder Dashboard: ba khu vực độc lập
      1. Thành tích  — tồn kho, trao badge/khung (một, nhiều), cấp hàng loạt,
@@ -683,9 +683,10 @@
         var state = ctx.state;
         var api = ctx.api;
 
-        var box = kit.card('Trao badge và khung avatar', null,
-            'Chọn người nhận, chọn một hoặc nhiều vật phẩm rồi xác nhận. Mọi điều kiện quyền hạn được kiểm tra lại ở máy chủ; ' +
-            'máy chủ chống trao trùng theo từng vật phẩm và theo request_id.');
+                var box = kit.card('Trao badge và khung avatar', null,
+            'Chọn người nhận, chọn một hoặc nhiều vật phẩm rồi xác nhận. Từ 7.9.0, Founder trao được mọi badge/khung Founder cho học sinh; '
+            + 'riêng Thiên Khải Sáng Thế vẫn chỉ dành cho hồ sơ Người sáng lập. Mọi điều kiện quyền hạn được kiểm tra lại ở máy chủ; '
+            + 'máy chủ chống trao trùng theo từng vật phẩm và theo request_id.');
         pane.appendChild(box.root);
         var host = h('div', 'bkf-section');
         box.body.appendChild(host);
@@ -971,12 +972,15 @@
             items.forEach(function (it) {
                 var key = keyOf(it);
                 var on = !!state.selected[key];
+                /* Thiên Khải Sáng Thế chỉ dành cho hồ sơ Người sáng lập. */
+                var lockTop = it.type === 'badge' && it.id === 'founder' &&
+                    state.student && !state.student.is_founder;
                 var tile = h('button', 'bkf-item' + (on ? ' is-selected' : '') +
                     (it.owned ? ' is-owned' : ''));
                 tile.type = 'button';
                 tile.setAttribute('aria-pressed', on ? 'true' : 'false');
                 tile.setAttribute('aria-label', (on ? 'Bỏ chọn ' : 'Chọn ') + itemName(it));
-                if (it.grantable === false) tile.classList.add('is-disabled');
+                if (it.grantable === false || lockTop) tile.classList.add('is-disabled');
                 tile.appendChild(artNode(h, it, false));
                 tile.appendChild(h('b', 'bkf-item-name', itemName(it)));
                 tile.appendChild(h('span', 'bkf-item-id', it.id));
@@ -985,11 +989,17 @@
                 if (it.owned) line.appendChild(h('span', 'bkf-tag is-owned', 'Đã có'));
                 else if (it.owned === false) line.appendChild(h('span', 'bkf-tag', 'Chưa có'));
                 if (on) line.appendChild(h('span', 'bkf-tag is-picked', 'Đã chọn'));
+                if (lockTop) line.appendChild(h('span', 'bkf-tag is-exclusive', 'Chỉ hồ sơ Founder'));
                 tile.appendChild(line);
                 tile.addEventListener('click', function () {
                     state.item = it;
                     if (it.grantable === false) {
                         ctx.toast('Khung này không gắn badge nên không trao riêng được.', 'warn');
+                        paintPreview(it);
+                        return;
+                    }
+                    if (lockTop) {
+                        ctx.toast('Thiên Khải Sáng Thế chỉ trao cho hồ sơ Người sáng lập.', 'warn');
                         paintPreview(it);
                         return;
                     }

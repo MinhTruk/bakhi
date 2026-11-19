@@ -2,6 +2,29 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.9.0] — 2026-11-19
+
+### Tính năng
+
+- **Founder trao badge/khung Founder cho mọi học sinh.** Ngoại lệ duy nhất là badge tối cao
+  **Thiên Khải Sáng Thế** (`founder`), vẫn chỉ cấp cho hồ sơ `is_founder = true`. 20 badge và
+  khung Founder còn lại, cùng các danh hiệu ánh xạ, do Founder trao tay từ
+  **Founder Dashboard → Thành tích** cho bất kỳ học sinh đang hoạt động; máy chủ kiểm tra lại
+  quyền và ghi `admin_activity_logs`.
+- Founder Dashboard chặn chọn Thiên Khải Sáng Thế khi người nhận không phải hồ sơ Founder và
+  hiện nhãn “Chỉ hồ sơ Founder”.
+
+### Sửa lỗi
+
+- `titles.grant` không còn chặn mọi danh hiệu `founder_only` với học sinh thường: chỉ danh hiệu
+  “Nhà Sáng Lập” giữ giới hạn hồ sơ Founder, các danh hiệu Founder khác vẫn yêu cầu sở hữu
+  badge nguồn trước khi dùng.
+
+### Cải tiến
+
+- Gỡ secret `PASSKEY_RP_ID`/`PASSKEY_ORIGIN` khỏi Supabase sau khi passkey đã bị loại bỏ hoàn toàn.
+- Nâng toàn bộ website lên 7.9.0 (122 tệp HTML, `bk-version.js`, dashboard, chat, Edge Function).
+
 ## [7.8.0] — 2026-11-19
 
 ### Tính năng

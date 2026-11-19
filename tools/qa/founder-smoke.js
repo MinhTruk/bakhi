@@ -44,8 +44,8 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   console.log('\n[1] Trang Founder, mô-đun và mã bí mật');
   const page = read('founder/index.html');
   ok('trang founder dùng dashboard + mô-đun 7.7.0',
-    /bk-devboard\.js\?v=7\.8\.0/.test(page) && /bk-founder\.js\?v=7\.8\.0/.test(page) &&
-    /bk-titles\.js\?v=7\.8\.0/.test(page) &&
+    /bk-devboard\.js\?v=7\.9\.0/.test(page) && /bk-founder\.js\?v=7\.9\.0/.test(page) &&
+    /bk-titles\.js\?v=7\.9\.0/.test(page) &&
     /BK_DASH_SCOPE\s*=\s*["']founder/.test(page));
   ok('trang Founder gọi founderLogin/founderToken',
     /founderLogin/.test(page) && /founderToken/.test(page));
@@ -111,8 +111,14 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   ok('mọi action trao vật phẩm nằm trong nhóm Founder-only',
     /'students\.inventory', 'admin\.items\.list'/.test(backend) &&
     /'founder\.grantItem'/.test(backend));
-  ok('badge Founder chỉ cấp cho hồ sơ is_founder',
-    /FOUNDER_PROFILE_REQUIRED/.test(backend) && /target\.is_founder !== true/.test(backend));
+  ok('chỉ Thiên Khải Sáng Thế (badge founder) mới đòi hồ sơ is_founder',
+    /FOUNDER_PROFILE_REQUIRED/.test(backend) &&
+    /badgeId === FOUNDER_BADGE_ID && target\.is_founder !== true/.test(backend));
+  ok('badge/khung Founder khác không còn chặn hồ sơ thường (7.9.0)',
+    !/def\.exclusive === 'founder' && target\.is_founder/.test(backend));
+  ok('danh hiệu Founder khác chỉ giới hạn ở “Nhà Sáng Lập”',
+    /titleId === FOUNDER_BADGE_ID && student\.is_founder !== true/.test(backend) &&
+    !/title\.founder_only === true && student\.is_founder/.test(backend));
   ok('không nhận mã vật phẩm ngoài danh mục',
     /UNKNOWN_ITEM/.test(backend) && /BADGE_BY_ID\.get\(badgeId\)/.test(backend));
   ok('server xem trước tách khỏi thao tác cấp badge',
@@ -517,7 +523,7 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   ['chat/index.html', 'profile/index.html', 'settings/index.html', 'admin/index.html'].forEach((f) => {
     const html = read(f);
     ok(f + ' nạp bk-titles.css + bk-titles.js đúng 1 lần',
-      /bk-titles\.css\?v=7\.8\.0/.test(html) && /bk-titles\.js\?v=7\.8\.0/.test(html) &&
+      /bk-titles\.css\?v=7\.9\.0/.test(html) && /bk-titles\.js\?v=7\.9\.0/.test(html) &&
       (html.match(/bk-titles\.js/g) || []).length === 1);
   });
 

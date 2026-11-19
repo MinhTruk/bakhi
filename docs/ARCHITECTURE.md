@@ -248,6 +248,10 @@ DOMContentLoaded
 - **Trao badge Administrator**: chỉ `admin-actions` với `x-admin-token` (các action
   `badges.grant`/`badges.revoke`), giới hạn ở `admin-chosen` và `admin-legend`, ghi
   `admin_activity_logs`. `student-profile` không bao giờ ghi hai id này.
+- **Trao badge/khung Founder (7.9.0)**: `founder.grantItem` (và alias `avatar.grant`) cho phép
+  Founder trao mọi badge/khung `exclusive = founder` cho học sinh đang hoạt động; chỉ badge
+  `founder` (Thiên Khải Sáng Thế) còn đòi `students.is_founder = true`. Badge Developer vẫn chỉ
+  Founder trao. Mọi lần trao ghi `admin_grant_history`/`admin_grant_batches` và audit log.
 - **Đồng bộ máy khách**: `bk-cloud.js` đẩy hồ sơ khi `updatedAt` mới hơn bản máy chủ, kéo
   badge đã xác minh, và tự tắt (`studentDisabled`) khi Edge Function chưa được deploy (404).
 - **Trạng thái triển khai**: mã đã hoàn tất và kiểm thử cục bộ; migration + ba Edge Function
@@ -276,7 +280,8 @@ DOMContentLoaded
 - **Founder Dashboard → Danh hiệu**: `titles.list`, `titles.holders`, `titles.save`,
   `titles.seed`, `titles.grant`, `titles.revoke`, `titles.delete` — tất cả trong danh sách
   `founderOnly`, ghi `admin_activity_logs`. `titles.delete` chỉ đặt `active = false` để không
-  làm mất nhãn của người đang giữ.
+  làm mất nhãn của người đang giữ. Từ 7.9.0, `titles.grant` chỉ giới hạn hồ sơ Founder với
+  danh hiệu tối cao `founder`; các danh hiệu Founder khác yêu cầu sở hữu badge nguồn.
 - **7.7.0 — quyền sử dụng**: học sinh tự chọn/gỡ danh hiệu mình sở hữu qua Edge Function
   `student-profile` (`action: 'titles'` để đọc, `action: 'title'` để trang bị/gỡ; `title_id`
   rỗng = gỡ). Hàm `bakhi_title_eligible(p_student)` chỉ trả danh hiệu đang dùng mà học sinh

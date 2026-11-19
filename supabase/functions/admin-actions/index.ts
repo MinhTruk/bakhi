@@ -1205,7 +1205,7 @@ const DEFAULT_TITLES: TitleDef[] = [
 ];
 
 const TITLE_BY_ID = new Map<string, TitleDef>(DEFAULT_TITLES.map((t) => [t.id, t]));
-const SERVER_VERSION = '7.8.0';
+const SERVER_VERSION = '7.9.0';
 
 /* Cơ cấu danh mục: 99 = 74 tự động + 21 Founder + 2 Developer + 2 Administrator.
    Trả kèm mọi phản hồi trao tặng để giao diện không phải tự đếm hay viết cứng. */
@@ -1595,9 +1595,12 @@ async function grantSingleItem(
     if (!target) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
     if (!target.is_active) return fail(400, 'INACTIVE', 'Học sinh đã ngừng hoạt động.');
 
-    if (def.exclusive === 'founder' && target.is_founder !== true) {
+    /* 7.9.0: khung/badge Founder (trừ badge tối cao Thiên Khải Sáng Thế) do
+       Founder trao tay cho BẤT KỲ học sinh đang hoạt động. Riêng badge
+       `founder` vẫn chỉ dành cho hồ sơ is_founder = true. */
+    if (badgeId === FOUNDER_BADGE_ID && target.is_founder !== true) {
         return fail(403, 'FOUNDER_PROFILE_REQUIRED',
-            'Badge và khung Founder chỉ cấp cho hồ sơ Người sáng lập (is_founder = true).');
+            'Badge Thiên Khải Sáng Thế chỉ cấp cho hồ sơ Người sáng lập (is_founder = true).');
     }
     if (def.exclusive === 'dev' && params.scope !== 'founder') {
         return fail(403, 'FOUNDER_ONLY', 'Badge Developer chỉ Founder mới được trao.');
@@ -3713,8 +3716,11 @@ Deno.serve(async (req) => {
                 if (title.active === false) {
                     return fail(409, 'TITLE_INACTIVE', 'Danh hiệu này đã ngừng dùng.');
                 }
-                if (title.founder_only === true && student.is_founder !== true) {
-                    return fail(403, 'FOUNDER_ONLY', 'Danh hiệu này chỉ dành cho hồ sơ Founder.');
+                /* 7.9.0: chỉ danh hiệu tối cao “Nhà Sáng Lập” (id founder) giữ
+                   giới hạn hồ sơ Founder; các danh hiệu Founder khác do Founder
+                   trao tay, kèm điều kiện sở hữu badge nguồn bên dưới. */
+                if (titleId === FOUNDER_BADGE_ID && student.is_founder !== true) {
+                    return fail(403, 'FOUNDER_ONLY', 'Danh hiệu Nhà Sáng Lập chỉ dành cho hồ sơ Founder.');
                 }
                 /* Danh hiệu ánh xạ badge: phải sở hữu badge nguồn. Danh hiệu tự
                    tạo: ghi bản ghi trao tay để học sinh được phép trang bị. */

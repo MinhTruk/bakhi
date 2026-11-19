@@ -15,7 +15,7 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var APP_VERSION = '7.8.0';
+    var APP_VERSION = '7.9.0';
 
     var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
         ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];
@@ -2252,7 +2252,8 @@
     }
     function badgeScope(meta) {
         if (!meta || !meta.adminOnly) return 'Tự động — máy chủ xác minh từ tiến trình học tập.';
-        if (meta.exclusive === 'founder') return 'Độc quyền Founder — chỉ hồ sơ is_founder = true.';
+        if (meta.id === 'founder') return 'Badge tối cao — chỉ cấp cho hồ sơ is_founder = true.';
+        if (meta.exclusive === 'founder') return 'Độc quyền Founder — Founder trao tay cho học sinh từ Founder Dashboard.';
         if (meta.exclusive === 'dev') return 'Độc quyền Developer — chỉ Founder trao được.';
         return 'Administrator trao tay từ Dashboard.';
     }
