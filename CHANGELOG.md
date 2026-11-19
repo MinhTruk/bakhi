@@ -2,6 +2,35 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.8.0] — 2026-11-19
+
+### Tính năng
+
+- **Mật mã đăng nhập thay hoàn toàn passkey.** Mỗi học sinh có thể đặt mật mã 4–32 ký tự trong
+  **Cài đặt → Hồ sơ → Mật mã đăng nhập**. Khi bấm đúng họ tên và xác nhận, nếu hồ sơ đã gắn mật
+  mã thì màn hình nhận diện hiện thêm **một khung nhập mật mã**; nhập đúng rồi bấm “Mở khoá”
+  mới vào được Bá Khí. Mật mã lưu dạng băm PBKDF2-SHA256 (salt riêng, 120.000 vòng) trên máy
+  chủ, không lưu mật mã thô, nên dùng được trên điện thoại, máy tính và mọi trình duyệt —
+  khắc phục việc passkey trình duyệt chỉ dùng được trên máy đã tạo credential.
+- Đổi hoặc gỡ mật mã phải nhập đúng mật mã hiện tại; có nút **Hiện/Ẩn** khi nhập và thông báo
+  số lần thử còn lại.
+
+### Sửa lỗi
+
+- Sai mật mã 5 lần liên tiếp sẽ tạm khoá 10 phút (`student_login_codes.failed_count`/
+  `locked_until`), thêm giới hạn 30 lượt/10 phút mỗi thiết bị để chống dò mật mã.
+- Hồ sơ có mật mã không còn bị gắn thiết bị trước khi xác thực: `bind-student-session` chỉ trả
+  `code_required`, không upsert `student_devices`.
+
+### Cải tiến
+
+- Gỡ toàn bộ mã và dữ liệu passkey: xoá Edge Function `passkey-api`, `_shared/passkeys.ts`,
+  `student_passkeys`, `passkey_challenges`; secret `PASSKEY_RP_ID`/`PASSKEY_ORIGIN` không còn
+  dùng. Migration `20261204000000_bakhi_v780_login_code.sql` chỉ bổ sung bảng mới và idempotent.
+- `student-profile` thêm `code`, `code.set`, `code.remove`; `bk-cloud.js` bỏ API passkey, thêm
+  `loginCodeStatus`/`loginCodeSet`/`loginCodeRemove`; kiểm thử `cloud-smoke`/`shell-smoke` cập
+  nhật theo luồng mật mã.
+
 ## [7.7.1] — 2026-11-18
 
 ### Sửa lỗi

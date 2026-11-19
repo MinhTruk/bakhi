@@ -124,22 +124,25 @@ function fakeFetch(url, opts) {
         const norm = (v) => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
             .replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().replace(/\s+/g, ' ').trim();
         const typed = norm(body.display_name);
+        const ha = {
+            ok: true, bound: true,
+            student: { id: 's5', display_name: 'Lê Thu Hà', student_code: 'BK-5E6F', disambiguator: null, is_active: true },
+            progress: {}, updated: {}
+        };
         if (body.unbind) payload = { ok: true, bound: false };
+        else if (body.student_id && typeof body.code === 'string') {
+            /* Hồ sơ đã đặt mật mã: chỉ gắn khi đúng mật mã. */
+            payload = body.code === '2468' ? ha
+                : { ok: false, error: { code: 'WRONG_CODE', message: 'Mật mã không đúng. Còn 4 lần thử.', attempts_left: 4 } };
+        }
         else if (body.student_id) payload = bound;
         else if (!typed) payload = { ok: true, bound: false };            /* kiểm tra phiên ban đầu */
         else if (typed === 'nguyen minh anh') payload = bound;             /* khớp đúng họ tên */
         else if (typed === 'le thu ha') {
+            /* 7.8.0: hồ sơ có mật mã trả code_required thay vì gắn ngay. */
             payload = {
-                ok: true, bound: false, passkey_required: true,
-                student: { id: 's5', display_name: 'Lê Thu Hà', student_code: 'BK-5E6F', disambiguator: null, is_active: true },
-                passkey: {
-                    challenge_id: '11111111-1111-4111-8111-111111111111',
-                    options: {
-                        challenge: 'Y2hhbGxlbmdl', rpId: 'minhtruk.github.io', timeout: 60000,
-                        allowCredentials: [{ id: 'Y3JlZA', type: 'public-key', transports: ['internal'] }],
-                        userVerification: 'preferred'
-                    }
-                }
+                ok: true, bound: false, code_required: true,
+                student: { id: 's5', display_name: 'Lê Thu Hà', student_code: 'BK-5E6F', disambiguator: null }
             };
         }
         else if (typed === 'tran van bach') {
@@ -155,16 +158,6 @@ function fakeFetch(url, opts) {
             };
         } else {
             payload = { ok: false, error: { code: 'NAME_NOT_FOUND', message: 'Không có học sinh nào trùng đúng họ tên này.' } };
-        }
-    } else if (name === 'passkey-api') {
-        if (body.action === 'auth.verify') {
-            payload = {
-                ok: true, bound: true,
-                student: { id: 's5', display_name: 'Lê Thu Hà', student_code: 'BK-5E6F', disambiguator: null, is_active: true },
-                progress: {}, updated: {}
-            };
-        } else {
-            payload = { ok: false, error: { code: 'BAD_ACTION', message: 'unknown' } };
         }
     } else if (name === 'admin-auth') {
         payload = { ok: true, token: 'x'.repeat(48), expiresAt: new Date(Date.now() + 3600e3).toISOString() };
@@ -283,7 +276,7 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     w.matchMedia = w.matchMedia || ((q) => ({ matches: false, media: q, addEventListener() { }, removeEventListener() { } }));
     w.fetch = fakeFetch;
     w.supabase = { createClient: () => fakeClient() };
-    w.BK_SUPABASE = { url: 'https://demo.supabase.co', key: 'sb_publishable_test', functions: { adminAuth: 'admin-auth', adminActions: 'admin-actions', devAuth: 'dev-auth', importStudents: 'import-students', searchStudents: 'search-students', bindSession: 'bind-student-session', syncProgress: 'sync-student-progress', studentProfile: 'student-profile', passkey: 'passkey-api' }, syncDebounceMs: 20, pollMs: 600000, configured: () => true };
+    w.BK_SUPABASE = { url: 'https://demo.supabase.co', key: 'sb_publishable_test', functions: { adminAuth: 'admin-auth', adminActions: 'admin-actions', devAuth: 'dev-auth', importStudents: 'import-students', searchStudents: 'search-students', bindSession: 'bind-student-session', syncProgress: 'sync-student-progress', studentProfile: 'student-profile' }, syncDebounceMs: 20, pollMs: 600000, configured: () => true };
 
     function load(file) { w.eval(fs.readFileSync(path.join(ROOT, file), 'utf8')); }
     load('assets/bakhi/bk-core.js');
@@ -581,42 +574,35 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
         ok('màn hình nhận diện mở lại ở trạng thái trống', w.document.querySelector('.bkc-gate-confirm').disabled === true);
     }
 
-    console.log('\n[10] Passkey sau khi đăng nhập bằng tên');
-    let passkeyGet = 0;
-    w.PublicKeyCredential = function PublicKeyCredential() { };
-    try { Object.defineProperty(w, 'isSecureContext', { value: true, configurable: true }); } catch (e) { }
-    w.navigator.credentials = {
-        create: () => Promise.reject(new Error('not used')),
-        get() {
-            passkeyGet++;
-            return Promise.resolve({
-                id: 'Y3JlZA', rawId: new Uint8Array([1, 2, 3]).buffer, type: 'public-key',
-                authenticatorAttachment: 'platform',
-                getClientExtensionResults: () => ({}),
-                response: {
-                    clientDataJSON: new Uint8Array([4, 5]).buffer,
-                    authenticatorData: new Uint8Array([6]).buffer,
-                    signature: new Uint8Array([7, 8]).buffer,
-                    userHandle: null
-                }
-            });
-        }
-    };
-    const pkInput = w.document.getElementById('bkcNameInput');
-    pkInput.value = 'Lê Thu Hà';
-    pkInput.dispatchEvent(new w.Event('input', { bubbles: true }));
+    console.log('\n[10] Mật mã đăng nhập sau khi xác nhận họ tên (thay passkey)');
+    const codeNameInput = w.document.getElementById('bkcNameInput');
+    codeNameInput.value = 'Lê Thu Hà';
+    codeNameInput.dispatchEvent(new w.Event('input', { bubbles: true }));
     await wait(40);
     w.document.querySelector('.bkc-gate-confirm').click();
-    const pkClosed = await until(() => !w.document.getElementById('bkIdentityGate'));
-    ok('hồ sơ có passkey → mở hộp thoại passkey thay vì vào ngay', passkeyGet === 1, String(passkeyGet));
-    ok('xác minh passkey xong mới đóng màn hình nhận diện', !!pkClosed);
-    const pkCall = calls.filter((c) => c.name === 'passkey-api' && c.body.action === 'auth.verify').pop();
-    ok('gửi challenge + chữ ký passkey lên máy chủ', !!pkCall &&
-        pkCall.body.challenge_id === '11111111-1111-4111-8111-111111111111' &&
-        pkCall.body.response.id === 'Y3JlZA', pkCall && JSON.stringify(pkCall.body).slice(0, 80));
-    ok('chỉ gắn thiết bị sau khi passkey hợp lệ', !calls.some((c) =>
-        c.name === 'bind-student-session' && c.body.display_name === 'Lê Thu Hà' && c.body.student_id === 's5'));
-    ok('danh tính sau passkey là hồ sơ đã chọn', /Lê Thu Hà/.test((w.document.getElementById('bkcIdentityChip') || {}).textContent || ''));
+    const codePanel = await until(() => w.document.getElementById('bkcCodeInput'));
+    ok('hồ sơ có mật mã → hiện thêm khung nhập mật mã', !!codePanel);
+    ok('khung mật mã nằm trong màn hình nhận diện', !!codePanel &&
+        !!w.document.querySelector('#bkcCodePanel') && !!w.document.getElementById('bkcCodeSubmit'));
+    ok('chưa gắn thiết bị trước khi nhập mật mã', !!w.document.getElementById('bkIdentityGate') &&
+        !/Lê Thu Hà/.test((w.document.getElementById('bkcIdentityChip') || {}).textContent || ''));
+
+    w.document.getElementById('bkcCodeInput').value = '0000';
+    w.document.getElementById('bkcCodeSubmit').click();
+    await wait(60);
+    const codeMsg = w.document.getElementById('bkcCodeMsg');
+    ok('mật mã sai → báo lỗi, giữ khung nhập', !!codeMsg && /không đúng/i.test(codeMsg.textContent || ''));
+    ok('chưa đóng màn hình nhận diện khi mật mã sai', !!w.document.getElementById('bkIdentityGate'));
+
+    w.document.getElementById('bkcCodeInput').value = '2468';
+    w.document.getElementById('bkcCodeSubmit').click();
+    const codeClosed = await until(() => !w.document.getElementById('bkIdentityGate'));
+    ok('mật mã đúng → vào được Bá Khí', !!codeClosed);
+    const codeCall = calls.filter((c) => c.name === 'bind-student-session' && c.body.code === '2468').pop();
+    ok('gửi mật mã cùng hồ sơ đã chọn lên máy chủ', !!codeCall &&
+        codeCall.body.student_id === 's5' && codeCall.body.display_name === 'Lê Thu Hà');
+    ok('danh tính sau mật mã là hồ sơ đã chọn', /Lê Thu Hà/.test((w.document.getElementById('bkcIdentityChip') || {}).textContent || ''));
+    ok('không còn gọi passkey-api', !calls.some((c) => c.name === 'passkey-api'));
 
     console.log('\n[11] What\'s New chỉ là tuỳ chọn');
     const studioHtml = fs.readFileSync(path.join(ROOT, 'studio/index.html'), 'utf8');

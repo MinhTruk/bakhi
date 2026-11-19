@@ -16,6 +16,16 @@ import { json, fail, preflight, readJson, sha256Hex, safeEqual } from '../_share
 import { adminClient, callerUserId } from '../_shared/supabase.ts';
 import { BADGE_CATALOG, BADGE_BY_ID } from '../_shared/badge-catalog.ts';
 import { badgesEarned, computeMetrics, framesFromBadges, type StudentSnapshot } from '../_shared/badge-rules.ts';
+import {
+    cleanCode,
+    codeProblem,
+    loadLoginCode,
+    lockMinutesLeft,
+    registerFailure,
+    removeLoginCode,
+    saveLoginCode,
+    verifyLoginCode
+} from '../_shared/login-code.ts';
 
 interface ProfileInput {
     nickname?: unknown;
@@ -101,7 +111,15 @@ Deno.serve(async (req) => {
 
     const client = adminClient();
 
-    const body = await readJson<{ action?: string; profile?: ProfileInput; student_id?: string; title_id?: string }>(req);
+    const body = await readJson<{
+        action?: string;
+        profile?: ProfileInput;
+        student_id?: string;
+        title_id?: string;
+        code?: string;
+        current_code?: string;
+        code_confirm?: string;
+    }>(req);
 
     /*
      * Đường nội bộ: admin-actions gọi lại bằng service_role key để tự tính
@@ -113,7 +131,7 @@ Deno.serve(async (req) => {
     const internal = !!serviceKey && safeEqual(bearer, serviceKey);
 
     let studentId = '';
-    let action: 'sync' | 'get' | 'update' | 'titles' | 'title' = 'sync';
+    let action: 'sync' | 'get' | 'update' | 'titles' | 'title' | 'code' | 'code.set' | 'code.remove' = 'sync';
 
     if (internal) {
         studentId = uuid(body.student_id);
@@ -134,7 +152,8 @@ Deno.serve(async (req) => {
         if (!device) return fail(409, 'NOT_BOUND', 'Thiết bị chưa được gắn với học sinh nào.');
         studentId = String(device.student_id);
         action = body.action === 'update' || body.action === 'get' ||
-            body.action === 'titles' || body.action === 'title'
+            body.action === 'titles' || body.action === 'title' ||
+            body.action === 'code' || body.action === 'code.set' || body.action === 'code.remove'
             ? body.action
             : 'sync';
 
@@ -233,6 +252,63 @@ Deno.serve(async (req) => {
             currentTitleId: wanted,
             title: shape(target as Record<string, unknown>),
             message: 'Đã trang bị danh hiệu “' + clampStr(target.name, 60) + '”.'
+        });
+    }
+
+    /* ------------------------------------------------------------------
+       7.8.0 — Mật mã đăng nhập của chính học sinh.
+
+       Chỉ học sinh đang gắn với thiết bị này mới đặt/đổi/xoá được mật mã của
+       mình. Đổi hoặc xoá bắt buộc nhập đúng mật mã hiện tại. Mật mã băm
+       PBKDF2-SHA256 phía máy chủ; không bao giờ trả về bản băm hay mật mã thô.
+       ------------------------------------------------------------------ */
+    if (action === 'code' || action === 'code.set' || action === 'code.remove') {
+        const row = await loadLoginCode(client, student.id);
+        const status = {
+            hasCode: !!row,
+            updatedAt: row?.updated_at ?? null,
+            lastUsedAt: row?.last_used_at ?? null,
+            lockedMinutes: lockMinutesLeft(row)
+        };
+
+        if (action === 'code') return json({ ok: true, action: 'code', ...status });
+
+        if (row) {
+            const current = cleanCode(body.current_code);
+            if (!current) {
+                return fail(400, 'CODE_REQUIRED', 'Hãy nhập mật mã hiện tại để đổi hoặc gỡ mật mã.');
+            }
+            if (!(await verifyLoginCode(current, row))) {
+                const left = await registerFailure(client, row);
+                return fail(401, 'WRONG_CODE', left
+                    ? `Mật mã hiện tại không đúng. Còn ${left} lần thử.`
+                    : 'Mật mã hiện tại không đúng. Hãy thử lại sau 10 phút.', { attempts_left: left });
+            }
+        }
+
+        if (action === 'code.remove') {
+            if (!row) return json({ ok: true, action: 'code.remove', hasCode: false, message: 'Hồ sơ chưa đặt mật mã.' });
+            if (!(await removeLoginCode(client, student.id))) {
+                return fail(500, 'CODE_WRITE_FAILED', 'Không gỡ được mật mã. Vui lòng thử lại.');
+            }
+            return json({ ok: true, action: 'code.remove', hasCode: false, message: 'Đã gỡ mật mã đăng nhập.' });
+        }
+
+        const code = cleanCode(body.code);
+        const problem = codeProblem(code, body.code_confirm);
+        if (problem) return fail(400, 'BAD_CODE', problem);
+        if (row && code === cleanCode(body.current_code)) {
+            return fail(400, 'SAME_CODE', 'Mật mã mới phải khác mật mã hiện tại.');
+        }
+        if (!(await saveLoginCode(client, student.id, code))) {
+            return fail(500, 'CODE_WRITE_FAILED', 'Không lưu được mật mã. Vui lòng thử lại.');
+        }
+        return json({
+            ok: true,
+            action: 'code.set',
+            hasCode: true,
+            updatedAt: new Date().toISOString(),
+            message: row ? 'Đã đổi mật mã đăng nhập.' : 'Đã đặt mật mã đăng nhập.'
         });
     }
 

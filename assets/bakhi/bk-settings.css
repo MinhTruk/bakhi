@@ -246,37 +246,26 @@ html.dark .bk-auth-msg.ok { color: #34d399; }
 .bk-set-panel .bk-btn:hover { filter: brightness(1.06); }
 .bk-set-panel .bk-btn:disabled { opacity: .6; cursor: progress; }
 
-/* ------------------------------- Passkey ------------------------------- */
-.bk-passkey {
+/* --------------------------- Mật mã đăng nhập -------------------------- */
+.bk-login-code {
     margin-top: 1.5rem;
     padding-top: 1.2rem;
     border-top: 1px solid var(--bkl-line);
     min-width: 0;
 }
-.bk-passkey h2 {
+.bk-login-code h2 {
     font: 700 1rem/1.3 Lexend, system-ui, sans-serif;
     margin: 0 0 .2rem;
     color: var(--bkl-text);
 }
-.bk-passkey-list { display: flex; flex-direction: column; gap: .45rem; margin: .6rem 0 .8rem; }
-.bk-passkey-empty, .bk-passkey-title { margin: 0; font-size: .74rem; color: var(--bkl-muted); }
-.bk-passkey-title { font-weight: 600; }
-.bk-passkey-item {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    padding: .55rem .65rem;
-    border: 1px solid var(--bkl-line);
-    border-radius: var(--bkl-radius-sm);
-    background: var(--bkl-surface-2);
-    min-width: 0;
-}
-.bk-passkey-text { display: flex; flex-direction: column; min-width: 0; flex: 1; gap: .12rem; }
-.bk-passkey-text b { font-size: .8rem; color: var(--bkl-text); overflow-wrap: anywhere; }
-.bk-passkey-text small { font-size: .68rem; color: var(--bkl-muted); }
-.bk-passkey-item .bk-btn { flex: 0 0 auto; min-height: 2rem; padding: .35rem .6rem; font-size: .72rem; }
+.bk-code-status { margin: .5rem 0 .75rem; font-size: .74rem; color: var(--bkl-muted); }
+.bk-code-status.is-on { color: var(--bkl-text); font-weight: 600; }
+.bk-code-form { display: flex; flex-direction: column; gap: .6rem; min-width: 0; }
+.bk-code-field { display: flex; flex-direction: column; gap: .25rem; font-size: .72rem; color: var(--bkl-muted); }
+.bk-code-field .bk-input { width: 100%; }
+.bk-code-form .bk-row { margin-top: .25rem; }
 
 @media (max-width: 420px) {
-    .bk-passkey-item { align-items: flex-start; flex-direction: column; }
-    .bk-passkey-item .bk-btn { width: 100%; }
+    .bk-code-form .bk-row { flex-direction: column; align-items: stretch; }
+    .bk-code-form .bk-btn { width: 100%; }
 }

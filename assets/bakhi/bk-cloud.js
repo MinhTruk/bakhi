@@ -413,8 +413,9 @@
         D.documentElement.classList.add('bkc-lock');
 
         S.gate = {
-            wrap: wrap, input: input, list: list, msg: msg, confirm: confirm,
-            spin: spin, selected: null, items: [], activeIndex: -1
+            wrap: wrap, card: card, input: input, list: list, msg: msg, confirm: confirm,
+            spin: spin, selected: null, items: [], activeIndex: -1,
+            codePanel: null, codeInput: null, codeMsg: null, codeSubmit: null, codeFor: null
         };
         bindGateEvents();
         return S.gate;
@@ -639,158 +640,180 @@
         });
     }
 
-    /* ------------------------------ Passkey ------------------------------- */
-    function passkeyApi(body) {
-        var fn = CFG.functions && CFG.functions.passkey;
-        if (!fn) return Promise.reject(new Error('Máy chủ chưa bật passkey.'));
-        return api(fn, body);
-    }
+    /* -------------------------- Mật mã đăng nhập ------------------------- */
+    /* 7.8.0 — thay passkey WebAuthn bằng mật mã của chính hồ sơ.
 
-    function passkeySupported() {
-        return !!(global.PublicKeyCredential && global.navigator &&
-            global.navigator.credentials && global.navigator.credentials.create &&
-            global.navigator.credentials.get && global.isSecureContext);
-    }
-
-    function b64urlToBuffer(value) {
-        var s = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
-        var pad = s.length % 4 ? '='.repeat(4 - (s.length % 4)) : '';
-        var bin = atob(s + pad);
-        var bytes = new Uint8Array(bin.length);
-        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-        return bytes.buffer;
-    }
-
-    function bufferToB64url(buf) {
-        var bytes = new Uint8Array(buf || new ArrayBuffer(0));
-        var bin = '';
-        for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-        return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-    }
-
-    function decodeCreationOptions(options) {
-        var out = JSON.parse(JSON.stringify(options || {}));
-        out.challenge = b64urlToBuffer(out.challenge);
-        if (out.user && out.user.id) out.user.id = b64urlToBuffer(out.user.id);
-        (out.excludeCredentials || []).forEach(function (c) { c.id = b64urlToBuffer(c.id); });
-        return out;
-    }
-
-    function decodeRequestOptions(options) {
-        var out = JSON.parse(JSON.stringify(options || {}));
-        out.challenge = b64urlToBuffer(out.challenge);
-        (out.allowCredentials || []).forEach(function (c) { c.id = b64urlToBuffer(c.id); });
-        return out;
-    }
-
-    function serializeAttestation(cred) {
-        var r = cred.response || {};
-        return {
-            id: cred.id,
-            rawId: bufferToB64url(cred.rawId),
-            type: cred.type,
-            authenticatorAttachment: cred.authenticatorAttachment || null,
-            clientExtensionResults: cred.getClientExtensionResults ? cred.getClientExtensionResults() : {},
-            response: {
-                clientDataJSON: bufferToB64url(r.clientDataJSON),
-                attestationObject: bufferToB64url(r.attestationObject),
-                transports: r.getTransports ? r.getTransports() : []
-            }
-        };
-    }
-
-    function serializeAssertion(cred) {
-        var r = cred.response || {};
-        return {
-            id: cred.id,
-            rawId: bufferToB64url(cred.rawId),
-            type: cred.type,
-            authenticatorAttachment: cred.authenticatorAttachment || null,
-            clientExtensionResults: cred.getClientExtensionResults ? cred.getClientExtensionResults() : {},
-            response: {
-                clientDataJSON: bufferToB64url(r.clientDataJSON),
-                authenticatorData: bufferToB64url(r.authenticatorData),
-                signature: bufferToB64url(r.signature),
-                userHandle: r.userHandle ? bufferToB64url(r.userHandle) : null
-            }
-        };
-    }
-
-    function passkeyErrorMessage(err) {
-        var name = err && err.name;
-        if (name === 'NotAllowedError') return 'Bạn đã huỷ hoặc để hết thời gian xác thực passkey.';
-        if (name === 'SecurityError') return 'Passkey cần HTTPS và tên miền hợp lệ. Hãy mở trang bằng HTTPS.';
-        if (name === 'NotSupportedError') return 'Thiết bị hoặc trình duyệt này không hỗ trợ passkey.';
-        return (err && err.message) || 'Không xác thực được passkey.';
-    }
-
-    function passkeyLogin(payload) {
+       Máy chủ trả `code_required` khi hồ sơ đã đặt mật mã: màn hình nhận diện
+       hiện thêm một khung nhập mật mã, xác nhận đúng thì mới gắn thiết bị.
+       Cách này chạy được trên điện thoại, máy tính và trình duyệt nào cũng
+       vậy — không phụ thuộc passkey lưu trong từng trình duyệt. */
+    function showCodePanel(data) {
         var gate = S.gate;
-        if (!passkeySupported()) {
-            if (gate) gateSetMsg('Thiết bị này không hỗ trợ passkey. Hãy dùng trình duyệt/thiết bị đã tạo passkey.', 'error');
-            return Promise.reject(new Error('UNSUPPORTED'));
+        if (!gate) return;
+        var student = (data && data.student) || {};
+        var name = student.display_name || (gate.selected && gate.selected.display_name) || '';
+        gate.codeFor = { student_id: student.id || '', display_name: name };
+        gate.confirm.hidden = true;
+        gate.input.disabled = true;
+        gate.list.hidden = true;
+        if (gate.spin) gate.spin.hidden = true;
+        gateSetMsg('', '');
+
+        if (gate.codePanel) {
+            if (gate.codeName) gate.codeName.textContent = name || 'hồ sơ';
+            gate.codeInput.value = '';
+            try { gate.codeInput.focus(); } catch (e) { }
+            return;
         }
-        if (gate) {
-            S.binding = true;
-            if (gate.spin) gate.spin.hidden = false;
-            gate.confirm.disabled = true;
-            gateSetMsg('Hồ sơ đã bật passkey. Xác nhận bằng vân tay, khuôn mặt hoặc mã khoá thiết bị…', '');
+
+        var panel = el('div', 'bkc-code-panel');
+        panel.id = 'bkcCodePanel';
+        panel.appendChild(el('p', 'bkc-code-title', 'Hồ sơ này có mật mã'));
+        var sub = el('p', 'bkc-code-sub', 'Nhập mật mã của ');
+        var who = el('b', null, name || 'hồ sơ');
+        sub.appendChild(who);
+        sub.appendChild(D.createTextNode(' để đăng nhập.'));
+        panel.appendChild(sub);
+
+        var field = el('div', 'bkc-field');
+        var label = el('label', 'bkc-label', 'Mật mã');
+        label.setAttribute('for', 'bkcCodeInput');
+        field.appendChild(label);
+
+        var row = el('div', 'bkc-code-row');
+        var input = el('input', 'bkc-input');
+        input.id = 'bkcCodeInput';
+        input.type = 'password';
+        input.autocomplete = 'current-password';
+        input.maxLength = 32;
+        input.placeholder = 'Nhập mật mã';
+        input.setAttribute('aria-describedby', 'bkcCodeMsg');
+        row.appendChild(input);
+
+        var toggle = el('button', 'bkc-btn bkc-btn-ghost bkc-code-toggle', 'Hiện');
+        toggle.type = 'button';
+        toggle.setAttribute('aria-label', 'Hiện mật mã');
+        toggle.addEventListener('click', function () {
+            var show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            toggle.textContent = show ? 'Ẩn' : 'Hiện';
+            toggle.setAttribute('aria-label', show ? 'Ẩn mật mã' : 'Hiện mật mã');
+            try { input.focus(); } catch (e) { }
+        });
+        row.appendChild(toggle);
+        field.appendChild(row);
+
+        var msg = el('p', 'bkc-gate-msg');
+        msg.id = 'bkcCodeMsg';
+        msg.setAttribute('role', 'status');
+        field.appendChild(msg);
+        panel.appendChild(field);
+
+        var submit = el('button', 'bkc-btn bkc-btn-primary bkc-gate-confirm', 'Mở khoá');
+        submit.type = 'button';
+        submit.id = 'bkcCodeSubmit';
+        submit.addEventListener('click', submitCode);
+        panel.appendChild(submit);
+
+        var back = el('button', 'bkc-code-back', 'Không phải bạn? Đổi tên');
+        back.type = 'button';
+        back.addEventListener('click', resetCodePanel);
+        panel.appendChild(back);
+
+        gate.card.appendChild(panel);
+        gate.codePanel = panel;
+        gate.codeName = who;
+        gate.codeInput = input;
+        gate.codeMsg = msg;
+        gate.codeSubmit = submit;
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); submitCode(); }
+        });
+        setTimeout(function () { try { input.focus(); } catch (e) { } }, 40);
+    }
+
+    function codeSetMsg(text, kind) {
+        var gate = S.gate;
+        if (!gate || !gate.codeMsg) return;
+        gate.codeMsg.textContent = text || '';
+        gate.codeMsg.className = 'bkc-gate-msg' + (kind ? ' is-' + kind : '');
+    }
+
+    function resetCodePanel() {
+        var gate = S.gate;
+        if (!gate) return;
+        if (gate.codePanel) gate.codePanel.remove();
+        gate.codePanel = null;
+        gate.codeMsg = null;
+        gate.codeFor = null;
+        gate.confirm.hidden = false;
+        gate.confirm.disabled = normName(gate.input.value).length < 2;
+        gate.input.disabled = false;
+        gate.input.value = '';
+        gate.selected = null;
+        gateSetMsg('Nhập đúng họ tên rồi bấm Xác nhận — hoặc chọn trong danh sách gợi ý.', '');
+        try { gate.input.focus(); } catch (e) { }
+    }
+
+    function submitCode() {
+        var gate = S.gate;
+        if (!gate || !gate.codeFor || S.binding) return;
+        var code = String(gate.codeInput.value || '').trim();
+        if (!code) {
+            codeSetMsg('Hãy nhập mật mã của hồ sơ này.', 'warn');
+            try { gate.codeInput.focus(); } catch (e) { }
+            return;
         }
-        return global.navigator.credentials.get({
-            publicKey: decodeRequestOptions(payload.passkey && payload.passkey.options)
-        }).then(function (cred) {
-            return passkeyApi({
-                action: 'auth.verify',
-                challenge_id: payload.passkey.challenge_id,
-                response: serializeAssertion(cred)
-            });
+        S.binding = true;
+        gate.codeSubmit.disabled = true;
+        gate.codeInput.disabled = true;
+        codeSetMsg('Đang kiểm tra mật mã…', '');
+        api(CFG.functions.bindSession, {
+            student_id: gate.codeFor.student_id,
+            display_name: gate.codeFor.display_name,
+            code: code
         }).then(function (data) {
             S.binding = false;
-            if (gate) { if (gate.spin) gate.spin.hidden = true; gate.confirm.disabled = false; }
+            if (!S.gate) return;
+            S.gate.codeSubmit.disabled = false;
+            S.gate.codeInput.disabled = false;
+            if (data && data.code_required) {
+                codeSetMsg('Máy chủ chưa xác nhận được mật mã. Hãy thử lại.', 'error');
+                return;
+            }
             handleBindSuccess(data);
         }).catch(function (err) {
             S.binding = false;
-            if (gate) {
-                if (gate.spin) gate.spin.hidden = true;
-                gate.confirm.disabled = false;
-                gateSetMsg(passkeyErrorMessage(err), 'error');
+            if (!S.gate) return;
+            S.gate.codeSubmit.disabled = false;
+            S.gate.codeInput.disabled = false;
+            var kind = err && err.code;
+            if (kind === 'WRONG_CODE') {
+                S.gate.codeInput.value = '';
+                codeSetMsg((err && err.message) || 'Mật mã không đúng.', 'error');
+                try { S.gate.codeInput.focus(); } catch (e) { }
+                return;
             }
-            throw err;
+            if (kind === 'CODE_LOCKED' || kind === 'TOO_MANY_ATTEMPTS') {
+                codeSetMsg((err && err.message) || 'Bạn thử quá nhiều lần. Chờ vài phút rồi thử lại.', 'error');
+                return;
+            }
+            if (kind === 'INACTIVE' || kind === 'NAME_NOT_FOUND' || kind === 'NEEDS_REVIEW' ||
+                kind === 'NAME_MISMATCH' || kind === 'AMBIGUOUS') {
+                var typed = S.gate.codeFor ? S.gate.codeFor.display_name : '';
+                resetCodePanel();
+                handleBindError(err, typed);
+                return;
+            }
+            codeSetMsg((err && err.message) || 'Không kiểm tra được mật mã. Thử lại sau.', 'error');
         });
-    }
-
-    function passkeyRegister(label) {
-        if (!passkeySupported()) return Promise.reject(new Error('Thiết bị này không hỗ trợ passkey.'));
-        return passkeyApi({ action: 'register.options' }).then(function (data) {
-            return global.navigator.credentials.create({
-                publicKey: decodeCreationOptions(data.passkey && data.passkey.options)
-            }).then(function (cred) {
-                return passkeyApi({
-                    action: 'register.verify',
-                    challenge_id: data.passkey.challenge_id,
-                    label: label || 'Passkey',
-                    response: serializeAttestation(cred)
-                });
-            });
-        });
-    }
-
-    function passkeyList() {
-        return passkeyApi({ action: 'list' });
-    }
-
-    function passkeyRemove(id) {
-        return passkeyApi({ action: 'remove', id: id });
     }
 
     function handleBindSuccess(data) {
         var gate = S.gate;
-        if (data && data.passkey_required) {
-            passkeyLogin(data).catch(function (err) {
-                if (err && err.message === 'UNSUPPORTED' && gate) {
-                    gateSetMsg('Hồ sơ này yêu cầu passkey nhưng thiết bị chưa hỗ trợ. Hãy dùng thiết bị đã tạo passkey.', 'error');
-                }
-            });
+        if (data && data.code_required) {
+            showCodePanel(data);
             return;
         }
         if (gate) { if (gate.spin) gate.spin.hidden = true; gateSetMsg('', ''); }
@@ -932,6 +955,11 @@
             var gate = buildGate();
             gate.wrap.hidden = false;
             D.documentElement.classList.add('bkc-lock');
+            if (gate.codePanel) { gate.codePanel.remove(); gate.codePanel = null; }
+            gate.codeMsg = null;
+            gate.codeFor = null;
+            gate.input.disabled = false;
+            gate.confirm.hidden = false;
             gate.input.value = '';
             gate.selected = null;
             gate.confirm.disabled = true;
@@ -2444,10 +2472,20 @@
         chatApi: function (body) { return api(CFG.functions.chat, body); },
         /* 7.7.0: danh hiệu của chính học sinh (đọc danh mục + trang bị/gỡ). */
         studentProfile: function (body) { return api(CFG.functions.studentProfile, body); },
-        passkeySupported: passkeySupported,
-        passkeyRegister: passkeyRegister,
-        passkeyList: passkeyList,
-        passkeyRemove: passkeyRemove,
+        /* 7.8.0: mật mã đăng nhập của chính học sinh (thay passkey). */
+        loginCodeStatus: function () {
+            return api(CFG.functions.studentProfile, { action: 'code' });
+        },
+        loginCodeSet: function (code, currentCode) {
+            return api(CFG.functions.studentProfile, {
+                action: 'code.set', code: code, code_confirm: code, current_code: currentCode || ''
+            });
+        },
+        loginCodeRemove: function (currentCode) {
+            return api(CFG.functions.studentProfile, {
+                action: 'code.remove', current_code: currentCode || ''
+            });
+        },
         chatClient: function () {
             return ensureReady().then(function () { return client(); });
         },

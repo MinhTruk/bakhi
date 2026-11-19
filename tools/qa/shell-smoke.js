@@ -291,11 +291,11 @@ const tabs = Array.from(sdoc.querySelectorAll('.bk-set-tab')).map((t) => t.textC
 ok('Cài đặt có đúng 6 tab', tabs.length === 6, JSON.stringify(tabs));
 ok('tab Hồ sơ mở mặc định', sdoc.getElementById('bkSetTab-profile').getAttribute('aria-selected') === 'true');
 ok('tab Hồ sơ có trình chỉnh sửa', !!sdoc.querySelector('#bkSetPanel-profile .bk-input'));
-const pkBox = sdoc.querySelector('#bkSetPanel-profile .bk-passkey');
-ok('tab Hồ sơ có mục Passkey', !!pkBox && /Passkey/.test(pkBox.textContent) &&
-  /vân tay|khuôn mặt/.test(pkBox.textContent));
-ok('Passkey tắt an toàn khi chưa có phiên/BKCloud', !!pkBox &&
-  pkBox.querySelector('button').disabled === true && /nhận diện/.test(pkBox.textContent));
+const codeBox = sdoc.querySelector('#bkSetPanel-profile .bk-login-code');
+ok('tab Hồ sơ có mục Mật mã đăng nhập', !!codeBox && /Mật mã đăng nhập/.test(codeBox.textContent) &&
+  /passkey/i.test(codeBox.textContent));
+ok('Mật mã đăng nhập tắt an toàn khi chưa có phiên/BKCloud', !!codeBox &&
+  codeBox.querySelector('button').disabled === true && /nhận diện/.test(codeBox.textContent));
 
 sdoc.getElementById('bkSetTab-learning').click();
 ok('tab Trung tâm học tập gắn đúng hub dùng chung', !!sdoc.querySelector('#bkHubInline .bk-hub-nav'));

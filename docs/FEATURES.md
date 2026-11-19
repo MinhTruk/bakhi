@@ -308,7 +308,7 @@ Function `chat-api`; trình duyệt chỉ đọc dữ liệu phòng mình tham g
 | 12 | Không có đồng hồ đếm ngược hay giới hạn thời gian | ✅ | Đúng nguyên tắc sản phẩm |
 | 13 | Kiểm thử giao diện và ràng buộc bảo mật | ✅ | `tools/qa/chat-smoke.js` (jsdom) |
 | 14 | Trạng thái hoạt động: chấm xanh avatar DM, “Đang hoạt động / x phút trước” | ✅ | `presence.ping` mỗi phút khi tab hiện; online nếu `last_seen_at` ≤ 2 phút |
-| 15 | Passkey trong Cài đặt và bắt buộc sau khi đăng nhập bằng tên | ✅ | `passkey-api`; tối đa 5 passkey; huỷ xác minh thì không gắn thiết bị |
+| 15 | Mật mã đăng nhập trong Cài đặt, bắt buộc sau khi đăng nhập bằng tên (7.8.0 thay passkey) | ✅ | `student-profile` `code.set`/`code.remove`; băm PBKDF2; sai 5 lần khoá 10 phút; dùng được trên mọi thiết bị |
 | 16 | Ghim/lưu trữ hội thoại theo từng học sinh | ✅ | `chat_conversation_prefs` + `conversation.pin`/`conversation.archive` |
 | 17 | Bộ lọc “Đã lưu trữ”, phòng ghim xếp trước | ✅ | Tổng chưa đọc bỏ qua phòng đã lưu trữ |
 | 18 | Xem ai đã thả cảm xúc | ✅ | Popover `.bkchat-reaction-pop`, tải Profile Card còn thiếu |
@@ -322,9 +322,10 @@ Function `chat-api`; trình duyệt chỉ đọc dữ liệu phòng mình tham g
 
 > Từ 7.0.0, migration `20261126000000` bổ sung `chat_conversation_prefs` (RLS + realtime)
 > và `chat-api` xử lý ghim/lưu trữ. Các migration `20261120000000`/`20261125000000`,
-> Edge Function `chat-api`, `bind-student-session`, `passkey-api` và bucket `chat-images`
-> đã deploy trên dự án thật. Passkey chỉ hoạt động trên HTTPS đúng `PASSKEY_RP_ID`; nếu đổi
-> tên miền, cập nhật secret `PASSKEY_RP_ID`/`PASSKEY_ORIGIN` và deploy lại `passkey-api`.
+> Edge Function `chat-api`, `bind-student-session`, `admin-actions`, `student-profile` và bucket
+> `chat-images` đã deploy trên dự án thật. Từ 7.8.0 passkey WebAuthn được thay hoàn toàn bằng
+> **mật mã đăng nhập** (bảng `student_login_codes`), nên không còn phụ thuộc `PASSKEY_RP_ID`,
+> không cần tạo credential trên từng thiết bị và điện thoại đăng nhập được như máy tính.
 
 ## L. Không có trong sản phẩm (theo yêu cầu)
 

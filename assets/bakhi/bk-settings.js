@@ -159,122 +159,188 @@
         panel.appendChild(editor);
         ui.renderEditor(editor);
 
-        var passkey = el('div');
-        panel.appendChild(passkey);
-        buildPasskeySection(passkey);
+        var codeSec = el('div');
+        panel.appendChild(codeSec);
+        buildCodeSection(codeSec);
 
         panel.__refresh = function () {
             ui.renderHero(hero, { actions: false });
             ui.renderEditor(editor);
-            buildPasskeySection(passkey);
+            buildCodeSection(codeSec);
         };
     }
 
     /* ---------------------------------------------------------------------
-       1b. Passkey — bảo vệ lần đăng nhập bằng tên tiếp theo
+       1b. Mật mã đăng nhập — thay passkey WebAuthn (7.8.0)
+
+       Mật mã gắn với hồ sơ trên máy chủ (băm PBKDF2), nên đăng nhập được
+       trên điện thoại và mọi trình duyệt, không phụ thuộc thiết bị đã tạo
+       passkey như trước.
        ------------------------------------------------------------------ */
-    function buildPasskeySection(host) {
+    function buildCodeSection(host) {
         host.textContent = '';
-        host.className = 'bk-passkey';
-        host.appendChild(el('h2', null, 'Passkey'));
+        host.className = 'bk-login-code';
+        host.appendChild(el('h2', null, 'Mật mã đăng nhập'));
         host.appendChild(el('p', 'bk-set-lead',
-            'Thêm passkey để lần đăng nhập bằng họ tên tiếp theo phải xác nhận thêm bằng vân tay, khuôn mặt hoặc mã khoá thiết bị. Khoá riêng tư nằm trên thiết bị, máy chủ chỉ lưu khoá công khai.'));
+            'Mật mã riêng (4–32 ký tự) thay cho passkey: lần đăng nhập sau bằng họ tên sẽ hiện thêm ô nhập mật mã. ' +
+            'Mật mã lưu dạng băm trên máy chủ nên dùng được trên điện thoại, máy tính và mọi trình duyệt.'));
 
         var cloud = global.BKCloud;
         var bound = false;
         try { bound = !!(cloud && cloud.state && cloud.state().bound); } catch (e) { bound = false; }
-        var supported = !!(cloud && cloud.passkeySupported && cloud.passkeySupported());
 
+        var status = el('p', 'bk-code-status');
+        var form = el('div', 'bk-code-form');
         var msg = el('p', 'bk-auth-msg');
         msg.setAttribute('role', 'status');
+        host.appendChild(status);
+        host.appendChild(form);
         host.appendChild(msg);
 
-        var list = el('div', 'bk-passkey-list');
-        host.appendChild(list);
-        var add = el('button', 'bk-btn');
-        add.type = 'button';
-        add.appendChild(icon('fa-fingerprint'));
-        add.appendChild(el('span', null, 'Thêm passkey cho thiết bị này'));
-        host.appendChild(add);
+        var hasCode = false;
+        var currentInput = null;
 
         function say(text, kind) {
             msg.textContent = text || '';
             msg.className = 'bk-auth-msg' + (kind ? ' ' + kind : '');
         }
 
-        function renderList(items) {
-            list.textContent = '';
-            if (!items || !items.length) {
-                list.appendChild(el('p', 'bk-passkey-empty', 'Chưa có passkey. Hồ sơ đang đăng nhập bằng tên như trước.'));
+        function field(id, labelText, placeholder, autocomplete) {
+            var wrap = el('label', 'bk-code-field');
+            wrap.appendChild(el('span', null, labelText));
+            var inp = el('input', 'bk-input');
+            inp.id = id;
+            inp.type = 'password';
+            inp.maxLength = 32;
+            inp.autocomplete = autocomplete || 'new-password';
+            inp.placeholder = placeholder || '';
+            wrap.appendChild(inp);
+            return { wrap: wrap, input: inp };
+        }
+
+        function paintStatus(data) {
+            if (!data || data.hasCode === false) {
+                status.textContent = 'Chưa đặt mật mã — đăng nhập bằng họ tên như trước.';
+                status.className = 'bk-code-status';
                 return;
             }
-            var title = el('p', 'bk-passkey-title', 'Passkey đã đăng ký (' + items.length + '/5)');
-            list.appendChild(title);
-            items.forEach(function (p) {
-                var row = el('div', 'bk-passkey-item');
-                var body = el('div', 'bk-passkey-text');
-                body.appendChild(el('b', null, p.label || 'Passkey'));
-                var when = '';
-                try { when = p.last_used_at ? new Date(p.last_used_at).toLocaleDateString('vi-VN') : ''; } catch (e) { }
-                body.appendChild(el('small', null,
-                    (p.device_type === 'multiDevice' ? 'Đồng bộ qua tài khoản · ' : 'Chỉ thiết bị này · ') +
-                    (when ? 'dùng gần nhất ' + when : 'chưa dùng lại')));
-                var rm = el('button', 'bk-btn bk-btn-ghost', 'Xoá');
+            var when = '';
+            try { when = data.updatedAt ? new Date(data.updatedAt).toLocaleDateString('vi-VN') : ''; } catch (e) { }
+            status.textContent = 'Đã đặt mật mã' + (when ? ' · cập nhật ' + when : '') + '.';
+            status.className = 'bk-code-status is-on';
+        }
+
+        function removeCode() {
+            var current = currentInput ? currentInput.value : '';
+            if (!current) {
+                say('Nhập mật mã hiện tại để gỡ mật mã.', 'err');
+                try { if (currentInput) currentInput.focus(); } catch (e) { }
+                return;
+            }
+            if (global.confirm && !global.confirm('Gỡ mật mã? Lần đăng nhập sau chỉ cần họ tên.')) return;
+            cloud.loginCodeRemove(current).then(function (data) {
+                hasCode = false;
+                renderFields();
+                paintStatus(data);
+                say('Đã gỡ mật mã đăng nhập.', 'ok');
+                toast('Đã gỡ mật mã.', 'success');
+            }).catch(function (err) {
+                say((err && err.message) || 'Không gỡ được mật mã.', 'err');
+            });
+        }
+
+        function renderFields() {
+            form.textContent = '';
+            currentInput = null;
+            if (hasCode) {
+                var current = field('bkCodeCurrent', 'Mật mã hiện tại', 'Nhập mật mã đang dùng', 'current-password');
+                form.appendChild(current.wrap);
+                currentInput = current.input;
+            }
+            var fresh = field('bkCodeNew', hasCode ? 'Mật mã mới' : 'Mật mã', '4–32 ký tự, không dấu cách');
+            var again = field('bkCodeConfirm', 'Nhập lại mật mã', 'Gõ lại để chắc chắn');
+            form.appendChild(fresh.wrap);
+            form.appendChild(again.wrap);
+
+            var row = el('div', 'bk-row');
+            var save = el('button', 'bk-btn');
+            save.type = 'button';
+            save.appendChild(icon('fa-key'));
+            save.appendChild(el('span', null, hasCode ? 'Đổi mật mã' : 'Đặt mật mã'));
+            row.appendChild(save);
+            if (hasCode) {
+                var rm = el('button', 'bk-btn bk-btn-ghost', 'Gỡ mật mã');
                 rm.type = 'button';
-                rm.addEventListener('click', function () {
-                    if (global.confirm && !global.confirm('Xoá passkey này? Lần đăng nhập sau sẽ không cần passkey này nữa.')) return;
-                    rm.disabled = true;
-                    cloud.passkeyRemove(p.id).then(function (data) {
-                        renderList(data && data.passkeys);
-                        toast('Đã xoá passkey.', 'success');
-                    }).catch(function (err) {
-                        rm.disabled = false;
-                        say((err && err.message) || 'Không xoá được passkey.', 'err');
-                    });
-                });
-                row.appendChild(body);
+                rm.addEventListener('click', removeCode);
                 row.appendChild(rm);
-                list.appendChild(row);
+            }
+            form.appendChild(row);
+
+            save.addEventListener('click', function () {
+                var value = String(fresh.input.value || '').trim();
+                if (value.length < 4) {
+                    say('Mật mã cần tối thiểu 4 ký tự.', 'err');
+                    try { fresh.input.focus(); } catch (e) { }
+                    return;
+                }
+                if (/\s/.test(value)) {
+                    say('Mật mã không được chứa khoảng trắng.', 'err');
+                    try { fresh.input.focus(); } catch (e) { }
+                    return;
+                }
+                if (value !== String(again.input.value || '').trim()) {
+                    say('Hai lần nhập mật mã chưa khớp nhau.', 'err');
+                    try { again.input.focus(); } catch (e) { }
+                    return;
+                }
+                if (hasCode && currentInput && !currentInput.value) {
+                    say('Nhập mật mã hiện tại để đổi mật mã.', 'err');
+                    try { currentInput.focus(); } catch (e) { }
+                    return;
+                }
+                save.disabled = true;
+                say('Đang lưu mật mã…', '');
+                cloud.loginCodeSet(value, currentInput ? currentInput.value : '').then(function (data) {
+                    hasCode = true;
+                    renderFields();
+                    paintStatus(data);
+                    say('Đã lưu mật mã. Lần đăng nhập sau sẽ hỏi mật mã này — dùng được trên mọi thiết bị.', 'ok');
+                    toast('Đã lưu mật mã đăng nhập.', 'success');
+                }).catch(function (err) {
+                    save.disabled = false;
+                    say((err && err.message) || 'Không lưu được mật mã.', 'err');
+                });
             });
         }
 
-        function refresh() {
-            if (!bound) {
-                renderList([]);
-                add.disabled = true;
-                say('Hãy nhận diện học sinh trước khi thêm passkey.', '');
-                return;
-            }
-            if (!supported) {
-                renderList([]);
-                add.disabled = true;
-                say('Thiết bị/trình duyệt này chưa hỗ trợ passkey (cần HTTPS).', 'err');
-                return;
-            }
-            add.disabled = false;
-            cloud.passkeyList().then(function (data) {
-                renderList(data && data.passkeys);
-                say('', '');
-            }).catch(function (err) {
-                add.disabled = true;
-                say((err && err.message) || 'Không đọc được passkey.', 'err');
-            });
+        if (!bound) {
+            status.textContent = 'Hãy nhận diện học sinh trước khi đặt mật mã.';
+            status.className = 'bk-code-status';
+            var off = el('button', 'bk-btn');
+            off.type = 'button';
+            off.disabled = true;
+            off.appendChild(icon('fa-lock'));
+            off.appendChild(el('span', null, 'Đặt mật mã'));
+            form.appendChild(off);
+            return;
         }
 
-        add.addEventListener('click', function () {
-            add.disabled = true;
-            say('Đang mở hộp thoại tạo passkey…', '');
-            var label = 'Passkey · ' + new Date().toLocaleDateString('vi-VN');
-            cloud.passkeyRegister(label).then(function (data) {
-                renderList(data && data.passkeys);
-                say('Đã thêm passkey. Lần đăng nhập bằng tên sau sẽ yêu cầu xác nhận passkey.', 'ok');
-                toast('Đã thêm passkey.', 'success');
-            }).catch(function (err) {
-                say((err && err.message) || 'Không tạo được passkey.', 'err');
-            }).then(function () { add.disabled = !bound || !supported; });
+        if (!cloud || typeof cloud.loginCodeStatus !== 'function') {
+            status.textContent = 'Máy chủ chưa sẵn sàng. Hãy thử lại sau.';
+            return;
+        }
+
+        cloud.loginCodeStatus().then(function (data) {
+            hasCode = !!(data && data.hasCode);
+            paintStatus(data);
+            renderFields();
+            if (data && data.lockedMinutes) {
+                say('Mật mã đang tạm khoá ' + data.lockedMinutes + ' phút do nhập sai nhiều lần.', 'err');
+            }
+        }).catch(function (err) {
+            status.textContent = 'Không đọc được trạng thái mật mã.';
+            say((err && err.message) || 'Không đọc được trạng thái mật mã.', 'err');
         });
-
-        refresh();
     }
 
     /* ---------------------------------------------------------------------

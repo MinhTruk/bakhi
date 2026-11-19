@@ -309,8 +309,9 @@ DOMContentLoaded
   - View `chat_profiles` (`security_invoker = false`) chỉ lộ `display_name`, `nickname`, `bio`,
     `avatar_url`, `frame`, `badge_count`, `last_seen_at` — không lộ `student_code` hay dữ liệu học tập.
     `last_seen_at` là lần hoạt động gần nhất từ `student_devices`, dùng cho chấm xanh/“Đang hoạt động”.
-  - Bảng `student_passkeys` (credential WebAuthn) và `passkey_challenges` (dùng một lần, hạn
-    5 phút) chỉ service_role truy cập; `anon`/`authenticated` không có quyền đọc/ghi.
+  - Từ 7.8.0 passkey WebAuthn đã được gỡ: bảng `student_passkeys`/`passkey_challenges` bị xoá
+    trong migration `20261204000000_bakhi_v780_login_code.sql`. Thay bằng `student_login_codes`
+    (băm PBKDF2-SHA256 + salt riêng, `failed_count`/`locked_until`), chỉ service_role truy cập.
   - `replica identity full` và đưa cả bốn bảng vào `supabase_realtime`; bucket `chat-images`
     công khai theo URL, chỉ nhận `image/png|jpeg|webp|gif` ≤ 3 MB, mỗi người ghi/xoá trong
     thư mục uuid của chính mình.
@@ -343,14 +344,18 @@ DOMContentLoaded
   service role (không cần migration mới). Thẻ hồ sơ hiện ảnh bìa, khung, giới thiệu,
   liên kết và chip danh vị lớp; bấm tên/avatar đầu cuộc DM hoặc hàng “Hồ sơ của bạn”
   mở thẻ tương ứng, cho sửa biệt danh qua `BKProfile.save`.
-- **Passkey (6.2.0)**: Edge Function `passkey-api` dùng `@simplewebauthn/server` để tạo/xác minh
-  credential. RP ID/origin lấy từ secret `PASSKEY_RP_ID`/`PASSKEY_ORIGIN`, không lấy từ Host.
-  Khi hồ sơ đã có passkey, `bind-student-session` trả `passkey_required` + challenge thay vì
-  gắn thiết bị; chỉ `passkey-api auth.verify` được upsert `student_devices` sau khi chữ ký hợp lệ.
-- **Trạng thái triển khai**: migration `20261120000000`, `20261125000000` và
-  `20261126000000` (7.0.0), các Edge Function `chat-api`, `bind-student-session`,
-  `passkey-api`, `admin-actions`, `student-profile` và bucket `chat-images` đã deploy
-  trên dự án thật.
+- **Mật mã đăng nhập (7.8.0, thay passkey)**: mỗi hồ sơ có thể đặt mật mã 4–32 ký tự.
+  `_shared/login-code.ts` băm PBKDF2-SHA256 (salt 16 byte riêng, 120.000 vòng) nên mật mã thô
+  không nằm trong database hay log. Khi hồ sơ đã có mật mã, `bind-student-session` trả
+  `code_required` thay vì gắn thiết bị; client hiện thêm ô nhập mật mã rồi gọi lại kèm `code`.
+  Sai 5 lần liên tiếp khoá 10 phút (`failed_count`/`locked_until`), thêm giới hạn 30 lượt/10 phút
+  mỗi thiết bị. Đặt/đổi/gỡ mật mã đi qua `student-profile` (`code`, `code.set`, `code.remove`),
+  đổi hoặc gỡ bắt buộc nhập đúng mật mã hiện tại. Cách này chạy trên mọi thiết bị, khắc phục
+  hạn chế của passkey chỉ dùng được trên máy đã tạo credential.
+- **Trạng thái triển khai**: migration `20261120000000`, `20261125000000`,
+  `20261126000000` (7.0.0) và `20261204000000` (7.8.0), các Edge Function `chat-api`,
+  `bind-student-session`, `admin-actions`, `student-profile` và bucket `chat-images` đã deploy
+  trên dự án thật. `passkey-api` đã được gỡ khỏi dự án.
 
 ### 2.8. Bá Khí Studio hợp nhất (3.9.0)
 
@@ -513,7 +518,7 @@ Kết quả sau nâng cấp: **122/122 tệp không đổi nội dung** (`verify
   đồng bộ/xác minh phía máy chủ dùng migration `20261119000000` và Edge Functions
   `student-profile`/`admin-actions`. Nếu máy chủ chưa sẵn sàng, `bk-cloud.js` tự tắt
   đồng bộ hồ sơ sau lỗi 404 và website giữ nguyên hành vi local-first.
-- Chat, passkey và các bảng 7.0 đã có migration + Edge Function tương ứng; `/chat/` vẫn
+- Chat, mật mã đăng nhập (7.8.0) và các bảng 7.0 đã có migration + Edge Function tương ứng; `/chat/` vẫn
   báo “máy chủ chưa sẵn sàng” nếu thiếu cấu hình hoặc phiên Supabase không hợp lệ.
 - Thư viện nhạc 7.1 đọc tệp tĩnh trong `music/` và manifest `music/library.json`;
   không cần phiên Supabase và không đẩy dữ liệu lên máy chủ. Bảng `music_tracks` cũ
@@ -525,8 +530,8 @@ Kết quả sau nâng cấp: **122/122 tệp không đổi nội dung** (`verify
 
 | Thành phần | Tệp / vị trí | Vai trò |
 | --- | --- | --- |
-| Nhận diện học sinh | `assets/bakhi/bk-cloud.js` + `supabase/functions/bind-student-session` | Gõ họ tên hoặc chọn gợi ý; máy chủ đối chiếu `normalized_name`; hồ sơ có passkey phải xác minh WebAuthn trước khi gắn phiên |
-| Passkey | `supabase/functions/passkey-api` + `student_passkeys` | Đăng ký/xoá tối đa 5 passkey trong Cài đặt; xác minh chữ ký và bộ đếm khi đăng nhập |
+| Nhận diện học sinh | `assets/bakhi/bk-cloud.js` + `supabase/functions/bind-student-session` | Gõ họ tên hoặc chọn gợi ý; máy chủ đối chiếu `normalized_name`; hồ sơ có mật mã phải nhập đúng mật mã trước khi gắn phiên |
+| Mật mã đăng nhập | `supabase/functions/student-profile` + `student_login_codes` | Đặt/đổi/gỡ mật mã (**Cài đặt → Hồ sơ**); lưu băm PBKDF2, sai 5 lần khoá 10 phút |
 | Tìm kiếm gợi ý | `supabase/functions/search-students` | Tối đa 8 kết quả/lần, giới hạn tần suất theo phiên |
 | Đồng bộ tiến trình | `bk-cloud.js` + `sync-student-progress` | Debounce, thử lại theo cấp số nhân, gộp dữ liệu hai chiều |
 | Trung tâm thông báo | `bk-cloud.js` + bảng `announcements` | Realtime + đếm chưa đọc + đánh dấu đã đọc; có mặt trên mọi trang (chế độ chỉ thông báo ở trang bài học/Studio) |

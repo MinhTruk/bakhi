@@ -317,6 +317,35 @@ html.dark .bkc-sync-state { color: #94a3b8; }
     font-size: .68rem; line-height: 1.55; color: #64748b;
 }
 
+/* 7.8.0 — khung nhập mật mã hiện thêm trong màn hình nhận diện. */
+.bkc-code-panel {
+    margin-top: .9rem; padding-top: .9rem;
+    border-top: 1px solid rgba(148, 163, 184, .22);
+    animation: bkc-fade .18s ease-out;
+}
+.bkc-code-title {
+    margin: 0 0 .2rem; font: 700 .84rem/1.35 Lexend, system-ui, sans-serif;
+    color: #e2e8f0;
+}
+.bkc-code-sub { margin: 0 0 .8rem; font-size: .76rem; line-height: 1.55; color: #94a3b8; overflow-wrap: anywhere; }
+.bkc-code-sub b { color: #c7d2fe; }
+.bkc-code-row { display: flex; gap: .45rem; align-items: stretch; }
+.bkc-code-row .bkc-input { flex: 1 1 auto; min-width: 0; }
+.bkc-code-toggle {
+    flex: 0 0 auto; font-size: .72rem; padding: .45rem .7rem;
+    border-color: rgba(148, 163, 184, .3); color: #cbd5e1;
+}
+.bkc-code-back {
+    display: block; width: 100%; margin-top: .55rem; padding: .35rem;
+    background: none; border: 0; color: #818cf8; font-size: .72rem;
+    cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
+}
+.bkc-code-back:hover { color: #a5b4fc; }
+@media (max-width: 420px) {
+    .bkc-code-row { flex-wrap: wrap; }
+    .bkc-code-toggle { width: 100%; }
+}
+
 .bkc-sug {
     position: absolute; left: 0; right: 0; top: calc(100% + .25rem); z-index: 5; margin: 0;
     padding: .3rem; list-style: none; max-height: min(15rem, 42vh); overflow-y: auto;

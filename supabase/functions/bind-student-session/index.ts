@@ -4,12 +4,23 @@
 // POST { student_id }   → gắn (hoặc đổi) học sinh cho auth.uid() hiện tại.
 // POST { unbind: true } → xoá liên kết, yêu cầu chọn lại danh tính.
 //
+// 7.8.0: hồ sơ có mật mã đăng nhập thì lần gắn đầu tiên trả `code_required`
+// (chưa gắn thiết bị). Client hỏi mật mã rồi gọi lại kèm `code`; chỉ khi mật
+// mã đúng mới gắn thiết bị. Mật mã băm PBKDF2 phía máy chủ, sai 5 lần khoá 10 phút.
+//
 // student_id luôn được xác minh phía server; không tin bất kỳ thông tin
 // phân quyền nào khác từ client.
 import { json, fail, preflight, readJson } from '../_shared/http.ts';
 import { adminClient, callerUserId } from '../_shared/supabase.ts';
 import { normalizeName } from '../_shared/names.ts';
-import { authenticationOptions, passkeyCount } from '../_shared/passkeys.ts';
+import {
+    cleanCode,
+    loadLoginCode,
+    lockMinutesLeft,
+    registerFailure,
+    registerSuccess,
+    verifyLoginCode
+} from '../_shared/login-code.ts';
 
 async function progressFor(client: ReturnType<typeof adminClient>, studentId: string) {
     const { data } = await client
@@ -33,7 +44,12 @@ Deno.serve(async (req) => {
     if (caller instanceof Response) return caller;
 
     const client = adminClient();
-    const body = await readJson<{ student_id?: string; display_name?: string; unbind?: boolean }>(req);
+    const body = await readJson<{
+        student_id?: string;
+        display_name?: string;
+        code?: string;
+        unbind?: boolean;
+    }>(req);
 
     /* ---------------------------- Ngắt liên kết ---------------------------- */
     if (body.unbind) {
@@ -121,6 +137,50 @@ Deno.serve(async (req) => {
             'Hồ sơ này đang chờ Admin phân biệt (trùng họ tên). Vui lòng liên hệ quản trị viên.');
     }
 
+    /* --------------------------- Mật mã đăng nhập ------------------------- */
+    /* Hồ sơ đã đặt mật mã: lần gắn này chỉ trả `code_required`, KHÔNG gắn
+       thiết bị. Client hiện thêm ô nhập mật mã rồi gọi lại kèm `code`. */
+    const codeRow = await loadLoginCode(client, student.id);
+    if (codeRow) {
+        const wait = lockMinutesLeft(codeRow);
+        if (wait) {
+            return fail(429, 'CODE_LOCKED',
+                `Bạn nhập sai mật mã quá nhiều lần. Thử lại sau ${wait} phút.`, { retry_minutes: wait });
+        }
+        const typedCode = cleanCode(body.code);
+        if (!typedCode) {
+            return json({
+                ok: true,
+                bound: false,
+                code_required: true,
+                student: {
+                    id: student.id,
+                    display_name: student.display_name,
+                    disambiguator: student.disambiguator ?? null,
+                    student_code: student.student_code ?? null
+                }
+            });
+        }
+
+        /* Chống dò mật mã: 30 lượt / 10 phút cho mỗi thiết bị. */
+        const { data: codeAllowed } = await client.rpc('bakhi_rate_limit', {
+            p_key: 'code:' + caller.userId,
+            p_limit: 30,
+            p_window_seconds: 600
+        });
+        if (codeAllowed === false) {
+            return fail(429, 'TOO_MANY_ATTEMPTS', 'Bạn thử mật mã quá nhiều lần. Vui lòng đợi vài phút.');
+        }
+
+        if (!(await verifyLoginCode(typedCode, codeRow))) {
+            const left = await registerFailure(client, codeRow);
+            return fail(401, 'WRONG_CODE', left
+                ? `Mật mã không đúng. Còn ${left} lần thử.`
+                : `Mật mã không đúng. Hãy thử lại sau 10 phút.`, { attempts_left: left });
+        }
+        await registerSuccess(client, student.id);
+    }
+
     // Giới hạn: 10 lần gắn danh tính / 10 phút cho mỗi thiết bị.
     const { data: allowed } = await client.rpc('bakhi_rate_limit', {
         p_key: 'bind:' + caller.userId,
@@ -128,24 +188,6 @@ Deno.serve(async (req) => {
         p_window_seconds: 600
     });
     if (allowed === false) return fail(429, 'TOO_MANY_BINDS', 'Bạn đổi học sinh quá nhiều lần. Vui lòng thử lại sau.');
-
-    /* Hồ sơ đã bật passkey: chưa gắn thiết bị, trả challenge để trình duyệt
-       xác minh credential. Chỉ passkey-api mới được gắn sau khi chữ ký hợp lệ. */
-    if (await passkeyCount(client, student.id)) {
-        const passkey = await authenticationOptions(client, caller.userId, { id: student.id });
-        return json({
-            ok: true,
-            bound: false,
-            passkey_required: true,
-            student: {
-                id: student.id,
-                display_name: student.display_name,
-                disambiguator: student.disambiguator ?? null,
-                student_code: student.student_code ?? null
-            },
-            passkey
-        });
-    }
 
     const { error: upsertError } = await client.from('student_devices').upsert({
         auth_user_id: caller.userId,

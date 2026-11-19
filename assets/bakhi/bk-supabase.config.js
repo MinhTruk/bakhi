@@ -48,8 +48,7 @@
             bindSession: 'bind-student-session',
             syncProgress: 'sync-student-progress',
             studentProfile: 'student-profile',
-            chat: 'chat-api',
-            passkey: 'passkey-api'
+            chat: 'chat-api'
         },
         /* Số mili giây chờ trước khi đẩy tiến trình học tập lên máy chủ. */
         syncDebounceMs: 2500,
