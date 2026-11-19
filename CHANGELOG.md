@@ -2,6 +2,24 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.7.1] — 2026-11-18
+
+### Sửa lỗi
+
+- **Đổi khung avatar không còn nhân bản khối “Danh hiệu”**: mỗi lần bấm một khung trong
+  **Hồ sơ / Cài đặt → Khung avatar**, giao diện thay nhầm ô lưới khung bằng cả một cụm mới, nên
+  cụm cũ nằm lại và cứ mỗi lần đổi khung lại lồng thêm một cụm — khối “Danh hiệu” vì thế xuất
+  hiện nhiều lần và lặp liên tục. Nay chỉ một cụm `.bk-frames-wrap` tồn tại, được thay trọn gói
+  mỗi lần đổi khung.
+- Không còn lưới khung lồng nhau sau nhiều lần đổi khung; vị trí và số khung giữ nguyên.
+
+### Cải tiến
+
+- Thêm `tools/qa/version-audit.js` để kiểm tra “nâng cấp toàn bộ”: mọi tài nguyên nội bộ của
+  123 trang đều tồn tại, mọi `?v=` trùng `APP_VERSION`, không còn phiên bản cũ trong HTML/JS,
+  không trang nào nạp trùng mô-đun, và 5 trang dùng Danh hiệu nạp `bk-titles.js/css` đúng một lần.
+- `shell-smoke` thêm 6 kiểm tra hồi quy cho lỗi nhân bản khối Danh hiệu khi đổi khung.
+
 ## [7.7.0] — 2026-11-18
 
 ### Sửa lỗi

@@ -424,8 +424,15 @@
         return wrap;
     }
     function renderFramesInto(container) {
-        var fresh = renderFrames();
-        container.parentNode.replaceChild(fresh, container);
+        /* 7.7.1: phải thay CẢ CỤM `.bk-frames-wrap` (lưới khung + khối Danh hiệu).
+           Bản 7.7.0 thay nhầm `grid` bằng một cụm mới, nên cụm cũ vẫn nằm lại và
+           mỗi lần đổi khung lại lồng thêm một cụm, nhân bản khối “Danh hiệu”. */
+        var wrap = container && container.closest
+            ? container.closest('.bk-frames-wrap')
+            : null;
+        if (!wrap) wrap = (container && container.parentNode) || null;
+        if (!wrap || !wrap.parentNode) return;
+        wrap.parentNode.replaceChild(renderFrames(), wrap);
     }
 
     var FRAME_TIERS = { normal: 'Bộ sưu tập', dev: 'Độc quyền Developer', founder: 'Người sáng lập' };

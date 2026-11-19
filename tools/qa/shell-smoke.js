@@ -282,6 +282,7 @@ load(sw, 'assets/bakhi/bk-version.js');
 load(sw, 'assets/bakhi/bk-profile.js');
 load(sw, 'assets/bakhi/bk-badges.js');
 load(sw, 'assets/bakhi/bk-shell.js');
+load(sw, 'assets/bakhi/bk-titles.js');
 load(sw, 'assets/bakhi/bk-profile-ui.js');
 load(sw, 'assets/bakhi/bk-settings.js');
 
@@ -328,6 +329,32 @@ ok('Cài đặt không lưu Dev Code/Administrator Code trong localStorage',
   !/Administrator Code[\s\S]{0,80}localStorage/.test(settingsSrc));
 ok('mọi xác thực Dev/Admin đều gọi BKCloud',
   /cloud\.devLogin\(/.test(settingsSrc) && /cloud\.adminLogin\(/.test(settingsSrc));
+
+/* 7.7.1: đổi khung avatar không được lồng cụm hoặc nhân bản khối “Danh hiệu” */
+const profPanel = sdoc.getElementById('bkSetPanel-profile');
+const framesWrapCount = () => profPanel.querySelectorAll('.bk-frames-wrap').length;
+const titleCardCount = () => profPanel.querySelectorAll('.bk-title-card').length;
+ok('Cài đặt có đúng một khối Danh hiệu trong mục Khung avatar', titleCardCount() === 1, String(titleCardCount()));
+function clickOwnedFrame() {
+  const cells = Array.from(profPanel.querySelectorAll('.bk-frame'))
+    .filter((b) => !b.classList.contains('is-locked'));
+  const cell = cells.find((b) => b.getAttribute('aria-pressed') === 'false') || cells[0];
+  if (cell) cell.click();
+  return cells.length;
+}
+const frameBefore = sw.BKProfile.get().frame;
+const ownedCount = clickOwnedFrame();
+const frameAfter = sw.BKProfile.get().frame;
+clickOwnedFrame();
+clickOwnedFrame();
+ok('đổi khung lưu ngay vào hồ sơ', ownedCount >= 2 && frameAfter !== frameBefore,
+  frameBefore + ' -> ' + frameAfter);
+ok('đổi khung 3 lần vẫn chỉ có một cụm khung', framesWrapCount() === 1, String(framesWrapCount()));
+ok('đổi khung 3 lần không nhân bản khối Danh hiệu', titleCardCount() === 1, String(titleCardCount()));
+ok('cụm khung không bị lồng nhau sau khi đổi khung',
+  profPanel.querySelectorAll('.bk-frames-wrap .bk-frames-wrap').length === 0);
+ok('lưới khung không bị lồng nhau sau khi đổi khung',
+  profPanel.querySelectorAll('.bk-frame-grid .bk-frame-grid').length === 0);
 
 ok('không có lỗi runtime ở shell/hồ sơ/badge', I.errors.length === 0, I.errors[0]);
 ok('không có lỗi runtime ở trang Cài đặt', St.errors.length === 0, St.errors[0]);
