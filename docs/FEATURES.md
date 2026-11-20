@@ -1,4 +1,4 @@
-# Tính năng Bá Khí 5.0
+# Tính năng Bá Khí 8.0.0
 
 Tài liệu liệt kê toàn bộ tính năng đang có, trạng thái và ghi chú triển khai. Ký hiệu:
 ✅ hoàn thành · 🟡 một phần · ⛔ chưa làm · 🚫 bị chặn
@@ -62,6 +62,25 @@ Trung tâm học tập, hồ sơ/cài đặt, Developer Playground, Administrato
   `bakhi_title_grants` (danh hiệu tự tạo đã trao tay); RLS chỉ đọc, ghi qua Edge Function.
   Migration `20261202000000_bakhi_v760_titles.sql` và
   `20261203000000_bakhi_v770_titles_rework.sql`.
+
+### A3. Report Issue + Q&A (8.0.0)
+
+| Hạng mục | Trạng thái |
+|---|---|
+| Nút nổi trên mọi trang môn học / bài học / Studio / Chat / Hồ sơ | 🟢 Hoạt động |
+| Mục **Cài đặt → Report Issue** trên trang chủ | 🟢 Hoạt động |
+| Biểu mẫu đầy đủ (tiêu đề, nhóm, loại, ưu tiên, mô tả, tệp, ngữ cảnh) | 🟢 Hoạt động |
+| Lịch sử và theo dõi báo cáo của chính mình | 🟢 Hoạt động |
+| Q&A riêng cho từng báo cáo (hai chiều) | 🟢 Hoạt động |
+| Thông báo riêng trong Trung tâm thông báo hiện có | 🟢 Hoạt động |
+| Tab **Report** trong Administrator và Founder Dashboard | 🟢 Hoạt động |
+| Complete Report + lịch sử xử lý + mở lại | 🟢 Hoạt động |
+| Tệp đính kèm riêng tư (bucket private, signed URL) | 🟢 Hoạt động |
+| RLS chỉ cho đọc dữ liệu của chính mình | 🟢 Hoạt động |
+| Thông báo đẩy ngoài trình duyệt (Web Push) | ⚪ Chưa triển khai |
+| Xuất báo cáo ra CSV | ⚪ Chưa triển khai |
+
+Chi tiết: [REPORT_ISSUE.md](REPORT_ISSUE.md).
 
 ### A2.2. Bảo trì toàn hệ thống & Founder Login (7.9.2)
 
@@ -247,6 +266,10 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 
 ## I. Trung tâm thông báo (`bk-cloud.js`, `bk-notify.js`)
 
+Từ 8.0.0, chuông có thêm nhóm **“Phản hồi báo cáo của bạn”** — đọc bảng
+`report_notifications` theo RLS, cập nhật realtime và mở đúng báo cáo khi bấm. Đây vẫn là
+**một** Trung tâm thông báo duy nhất, không có chuông hay hệ thống thứ hai.
+
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|
 | 1 | Chuông thông báo trên **mọi trang**: chủ, môn học, bài học, đề kiểm tra, Studio | ✅ | Từ 3.2.0; trang bài học dùng chuông nổi |
@@ -279,7 +302,15 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | Realtime + poll | Có | Có |
 | Ảnh hưởng dữ liệu học | Không | Không |
 
-## J. Administrator Dashboard 7.0
+## J. Administrator Dashboard 8.0
+
+- **13 mô-đun Administrator** (thêm tab **Report**), **16 với Founder** (thêm Bảo trì, Dữ liệu
+  và Founder). Cả hai dashboard dùng chung tab Report và cùng nguồn dữ liệu `public.reports`.
+- **Tab Report**: thống kê thật (tổng, mới, đang xử lý, chờ học sinh, đã giải quyết, cần chú ý,
+  chưa đọc), tìm kiếm, lọc trạng thái/nhóm/ưu tiên/ngày/chưa đọc, phân trang phía máy chủ,
+  chi tiết báo cáo, Q&A, Complete Report, gửi tin nhắn riêng, mở lại, lịch sử xử lý.
+- **Phân quyền**: Administrator và Founder cùng xử lý báo cáo; máy chủ kiểm tra từng action
+  `reports.*`; không có đường tự nâng quyền Founder.
 
 | # | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|---|

@@ -1412,3 +1412,49 @@ html.dark .bkc-shortcut-row { background: rgba(148, 163, 184, .1); }
     .bkf-tabbtn { width: 100%; justify-content: flex-start; }
     .bkf-title-form { grid-template-columns: 1fr; }
 }
+
+/* -------------------------------------------------------------------------
+   v8.0.0 — Tab Report: hội thoại Q&A và mô tả báo cáo
+   ---------------------------------------------------------------------- */
+.bkc-report-desc {
+    margin: .6rem 0;
+    padding: .65rem .8rem;
+    border-left: 3px solid var(--bkc-accent, #7c8cff);
+    border-radius: 0 8px 8px 0;
+    background: var(--bkc-surface-2, rgba(255, 255, 255, .04));
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    line-height: 1.55;
+    font-size: .86rem;
+}
+.bkc-rep-thread {
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+    margin-bottom: .7rem;
+    max-height: 460px;
+    overflow-y: auto;
+}
+.bkc-rep-msg {
+    padding: .55rem .7rem;
+    border: 1px solid var(--bkc-line, rgba(255, 255, 255, .1));
+    border-radius: 10px;
+    background: var(--bkc-surface-2, rgba(255, 255, 255, .03));
+}
+.bkc-rep-msg.is-staff { border-left: 3px solid var(--bkc-accent, #7c8cff); }
+.bkc-rep-msg.is-student { border-left: 3px solid #34d399; }
+.bkc-rep-msg-head {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    flex-wrap: wrap;
+    margin-bottom: .25rem;
+    font-size: .76rem;
+}
+.bkc-rep-msg-body { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .84rem; line-height: 1.5; }
+.bkc-rep-reply { display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem; }
+.bkc-filters { flex-wrap: wrap; }
+.bkc-filters .bkc-input { min-width: 160px; }
+.bkc-pill.is-warn { background: rgba(251, 191, 36, .16); color: #fbbf24; }
+.bkc-pill.is-ok { background: rgba(52, 211, 153, .16); color: #34d399; }
+.bkc-pill.is-muted { background: rgba(148, 163, 184, .16); color: #94a3b8; }

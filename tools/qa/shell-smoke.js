@@ -282,7 +282,7 @@ load(sw, 'assets/bakhi/bk-settings.js');
 
 const sdoc = sw.document;
 const tabs = Array.from(sdoc.querySelectorAll('.bk-set-tab')).map((t) => t.textContent.trim());
-ok('Cài đặt có đúng 6 tab', tabs.length === 6, JSON.stringify(tabs));
+ok('Cài đặt có đúng 7 tab', tabs.length === 7, JSON.stringify(tabs));
 ok('tab Hồ sơ mở mặc định', sdoc.getElementById('bkSetTab-profile').getAttribute('aria-selected') === 'true');
 ok('tab Hồ sơ có trình chỉnh sửa', !!sdoc.querySelector('#bkSetPanel-profile .bk-input'));
 const codeBox = sdoc.querySelector('#bkSetPanel-profile .bk-login-code');

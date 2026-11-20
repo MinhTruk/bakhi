@@ -2,6 +2,75 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.0.0] — 2026-11-20
+
+### Tính năng
+
+- **Hệ thống Report Issue toàn website.** Một component dùng chung (`bk-report.js` +
+  `bk-report.css`) xuất hiện ở hai nơi: mục **Cài đặt → Report Issue** trên trang chủ và
+  **nút nổi** ở góc phải dưới trên mọi trang môn học, bài học, Chat, Hồ sơ, Cài đặt và
+  Studio. Cửa sổ nổi kéo được, thu nhỏ được, nhớ vị trí, đóng bằng `Esc`, chuyển thành
+  bottom sheet trên điện thoại.
+- **Báo cáo cơ bản và nâng cao.** Biểu mẫu gồm tiêu đề, nhóm vấn đề (9 nhóm), loại báo cáo,
+  mức ưu tiên, mô tả chi tiết, tệp đính kèm (tối đa 4 tệp ≤ 5 MB: PNG/JPG/WEBP/GIF/PDF),
+  ngữ cảnh tự thu thập (URL, tiêu đề trang, khu vực, kích thước màn hình, trình duyệt,
+  múi giờ, thời điểm) và mã báo cáo dạng `BK-xxxxx`. Không thu thập mật khẩu, token, cookie
+  hay dữ liệu cá nhân không cần thiết.
+- **Theo dõi và lịch sử báo cáo của chính mình.** Tab *Báo cáo của tôi* hiển thị mã, tiêu
+  đề, trạng thái, ưu tiên, thời gian cập nhật và nhãn “Phản hồi mới”. Học sinh chỉ thấy báo
+  cáo thuộc tài khoản của mình.
+- **Q&A riêng cho từng báo cáo.** Hội thoại hai chiều giữa người báo cáo và ban quản trị,
+  sắp theo thời gian, có nhãn *Tin nhắn riêng*, trả lời được nhiều lượt trên cùng một báo
+  cáo, không sửa được nội dung đã gửi. Trả lời vào báo cáo đã hoàn thiện sẽ mở lại báo cáo.
+- **Thông báo riêng cho đúng học sinh.** Phản hồi, tin nhắn riêng, thay đổi trạng thái và
+  kết quả hoàn thiện đều tạo một dòng trong `report_notifications` và hiển thị trong
+  **Trung tâm thông báo hiện có** (nhóm “Phản hồi báo cáo của bạn”) — không có chuông thứ
+  hai. Bấm thông báo sẽ mở đúng báo cáo. Realtime qua `report_notifications`.
+- **Tab Report trong cả hai dashboard.** Administrator Dashboard và Founder Dashboard dùng
+  chung một tab, một nguồn dữ liệu `public.reports` và cùng các action `reports.*`:
+  thống kê thật (tổng, mới, đang xử lý, chờ học sinh, đã giải quyết, cần chú ý, chưa đọc),
+  danh sách có tìm kiếm, lọc trạng thái/nhóm/ưu tiên/ngày/chưa đọc, phân trang phía máy chủ.
+- **Chi tiết báo cáo và quy trình xử lý.** Xem thông tin, ngữ cảnh, tệp đính kèm, toàn bộ
+  Q&A, đổi trạng thái theo luồng hợp lệ, **Complete Report** (bắt buộc ghi chú kết quả, ghi
+  người thực hiện + thời gian, tạo thông báo và tin nhắn trong Q&A), **Gửi tin nhắn riêng**
+  cho đúng người báo cáo, mở lại báo cáo kèm lý do, và bảng **Lịch sử xử lý**.
+- **Nhật ký và chống lạm dụng.** Mọi chuyển trạng thái, trả lời, hoàn thiện, mở lại và trao
+  người xử lý đều ghi `report_activity_logs` và `admin_activity_logs`. Máy chủ giới hạn tần
+  suất tạo báo cáo (6/giờ) và gửi trả lời (30/10 phút), chặn tệp ngoài thư mục của học sinh
+  và cảnh báo báo cáo trùng lặp trong 24 giờ mà không tự từ chối báo cáo hợp lệ.
+- **Nâng cấp toàn bộ tài liệu Markdown.** README, CHANGELOG, AGENTS, ARCHITECTURE, FEATURES,
+  SUPABASE_SETUP, MUSIC, STUDIO được rà soát và đồng bộ với mã nguồn 8.0.0; thêm
+  [docs/REPORT_ISSUE.md](docs/REPORT_ISSUE.md) mô tả đầy đủ hệ thống báo cáo.
+
+### Sửa lỗi
+
+- **Phiên bản đồng nhất toàn website.** `bk-version.js`, mọi tham số `?v=` trong 123 tệp
+  HTML, `APP_VERSION` của dashboard/Founder, `SERVER_VERSION` của `admin-actions` và bộ QA
+  cùng là `8.0.0`; `tools/qa/version-audit.js` xác nhận không còn tài nguyên lỗi thời.
+- **Chuông thông báo không bị phá khi chưa chạy migration báo cáo.** Nếu bảng
+  `report_notifications` chưa tồn tại, chuông vẫn hoạt động bình thường và chỉ bỏ qua nhóm
+  phản hồi báo cáo.
+
+### Cải tiến
+
+- **Một component báo cáo duy nhất.** Cài đặt, cửa sổ nổi và dashboard đều dùng chung logic
+  kiểm tra dữ liệu, danh mục, nhãn trạng thái và định dạng thời gian; không có bản sao thứ hai.
+- **Quyền kiểm tra ở máy chủ.** Trình duyệt chỉ đọc dữ liệu của chính mình qua RLS
+  (`reports_select_own`, `report_messages_select_own`, `report_notifications_select_own`);
+  mọi thao tác ghi đi qua Edge Function `report-api` (học sinh) hoặc `admin-actions`
+  (Administrator/Founder) sau khi xác minh phiên. Không có `student_id` nào do client gửi lên.
+- **Tệp đính kèm riêng tư.** Bucket `report-attachments` để `public = false`; học sinh chỉ
+  ghi/đọc trong thư mục của mình, quản trị viên xem qua signed URL do Edge Function sinh ra.
+- **QA mới `tools/qa/report-smoke.js`** kiểm tra form, validation, payload không chứa
+  `student_id`, danh sách, Q&A, chế độ nhúng Cài đặt, hợp đồng máy chủ, RLS và bucket.
+
+### Ghi chú phát hành
+
+- Cần chạy migration `20261206000000_bakhi_v800_reports.sql` và deploy Edge Function
+  `report-api` (cùng `admin-actions`) trước khi tab Report hoạt động trên production.
+- Chưa triển khai: thông báo đẩy ngoài trình duyệt (Web Push) và xuất báo cáo ra CSV — không
+  nằm trong phạm vi 8.0.0.
+
 ## [7.9.2] — 2026-11-20
 
 ### Tính năng

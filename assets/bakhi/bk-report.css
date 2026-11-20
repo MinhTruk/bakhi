@@ -1,0 +1,427 @@
+/* =========================================================================
+   Bá Khí — bk-report.css
+   Giao diện Report Issue + Q&A: nút nổi, cửa sổ kéo được, danh sách và hội
+   thoại. Tôn trọng theme sáng/tối của site và prefers-reduced-motion.
+   ========================================================================= */
+
+#bkReportWin,
+.bkrep-inline {
+    --bkrep-bg: #14151c;
+    --bkrep-bg-2: #1c1e27;
+    --bkrep-surface: #22242f;
+    --bkrep-line: rgba(255, 255, 255, .1);
+    --bkrep-text: #eef0f6;
+    --bkrep-muted: #a0a4b8;
+    --bkrep-primary: #7c8cff;
+    --bkrep-primary-2: #a855f7;
+    --bkrep-ok: #34d399;
+    --bkrep-warn: #fbbf24;
+    --bkrep-error: #f87171;
+    --bkrep-radius: 14px;
+}
+
+html:not(.dark) #bkReportWin,
+html:not(.dark) .bkrep-inline {
+    --bkrep-bg: #ffffff;
+    --bkrep-bg-2: #f4f5fa;
+    --bkrep-surface: #eef0f7;
+    --bkrep-line: rgba(15, 23, 42, .12);
+    --bkrep-text: #12141c;
+    --bkrep-muted: #5b6076;
+    --bkrep-primary: #4f46e5;
+}
+
+/* ------------------------------- Nút nổi ------------------------------- */
+.bkrep-fab {
+    position: fixed;
+    right: 18px;
+    bottom: 88px;
+    z-index: 2147482000;
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .6rem .9rem;
+    border: 1px solid var(--bkrep-line, rgba(255, 255, 255, .14));
+    border-radius: 999px;
+    background: linear-gradient(135deg, #7c8cff, #a855f7);
+    color: #fff;
+    font: 700 .78rem/1 Lexend, system-ui, sans-serif;
+    cursor: pointer;
+    box-shadow: 0 10px 28px rgba(12, 14, 30, .38);
+    transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+}
+.bkrep-fab:hover { transform: translateY(-1px); box-shadow: 0 14px 32px rgba(12, 14, 30, .46); }
+.bkrep-fab:active { transform: translateY(0); }
+.bkrep-fab:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.bkrep-fab i { font-size: .85rem; }
+.bkrep-fab-dot {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #fff;
+    font: 700 .62rem/18px system-ui, sans-serif;
+    text-align: center;
+}
+.bkrep-fab.has-unread { animation: bkrep-pulse 2.4s ease-in-out infinite; }
+@keyframes bkrep-pulse {
+    0%, 100% { box-shadow: 0 10px 28px rgba(12, 14, 30, .38); }
+    50% { box-shadow: 0 10px 34px rgba(168, 85, 247, .55); }
+}
+@media (max-width: 640px) {
+    .bkrep-fab { right: 12px; bottom: 78px; padding: .55rem .8rem; }
+    .bkrep-fab-label { display: none; }
+}
+
+/* ------------------------------ Cửa sổ nổi ------------------------------ */
+#bkReportWin {
+    position: fixed;
+    inset: 0;
+    z-index: 2147482500;
+    pointer-events: none;
+    font-family: Lexend, system-ui, sans-serif;
+    color: var(--bkrep-text);
+}
+#bkReportWin[hidden] { display: none !important; }
+#bkReportWin .bkrep-shell {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    width: min(520px, calc(100vw - 32px));
+    max-height: min(78vh, 720px);
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+    background: var(--bkrep-bg);
+    border: 1px solid var(--bkrep-line);
+    border-radius: var(--bkrep-radius);
+    box-shadow: 0 24px 60px rgba(4, 6, 18, .55);
+    overflow: hidden;
+}
+#bkReportWin .bkrep-shell.is-min .bkrep-body,
+#bkReportWin .bkrep-shell.is-min .bkrep-tabs { display: none; }
+#bkReportWin .bkrep-shell.is-drag { cursor: grabbing; user-select: none; }
+
+.bkrep-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .6rem;
+    padding: .75rem .9rem;
+    background: linear-gradient(135deg, rgba(124, 140, 255, .18), rgba(168, 85, 247, .14));
+    border-bottom: 1px solid var(--bkrep-line);
+    cursor: grab;
+}
+.bkrep-head-titles { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
+.bkrep-title { font-size: .92rem; font-weight: 700; }
+.bkrep-sub { font-size: .7rem; color: var(--bkrep-muted); }
+.bkrep-head-actions { display: flex; gap: .25rem; }
+.bkrep-x {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    opacity: .8;
+}
+.bkrep-x:hover { background: var(--bkrep-surface); opacity: 1; }
+.bkrep-x:focus-visible { outline: 2px solid var(--bkrep-primary); outline-offset: 1px; }
+
+.bkrep-tabs { display: flex; gap: .3rem; padding: .45rem .7rem 0; }
+.bkrep-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .45rem .7rem;
+    border: 0;
+    border-radius: 9px 9px 0 0;
+    background: none;
+    color: var(--bkrep-muted);
+    font: 600 .76rem/1.2 inherit;
+    cursor: pointer;
+}
+.bkrep-tab:hover { color: var(--bkrep-text); }
+.bkrep-tab.is-active {
+    color: var(--bkrep-text);
+    background: var(--bkrep-bg-2);
+    box-shadow: inset 0 -2px 0 var(--bkrep-primary);
+}
+.bkrep-tab:focus-visible { outline: 2px solid var(--bkrep-primary); outline-offset: -2px; }
+
+.bkrep-body {
+    padding: .9rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    flex: 1;
+    background: var(--bkrep-bg-2);
+}
+#bkReportWin .bkrep-body { max-height: calc(78vh - 96px); }
+#bkReportWin .bkrep-body::-webkit-scrollbar { width: 8px; }
+#bkReportWin .bkrep-body::-webkit-scrollbar-thumb { background: var(--bkrep-surface); border-radius: 999px; }
+
+/* --------------------------------- Form -------------------------------- */
+.bkrep-form { display: flex; flex-direction: column; gap: .7rem; }
+.bkrep-field { display: flex; flex-direction: column; gap: .28rem; min-width: 0; }
+.bkrep-label { font-size: .72rem; font-weight: 700; color: var(--bkrep-muted); text-transform: uppercase; letter-spacing: .04em; }
+.bkrep-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: .5rem .6rem;
+    border: 1px solid var(--bkrep-line);
+    border-radius: 9px;
+    background: var(--bkrep-bg);
+    color: var(--bkrep-text);
+    font: 500 .82rem/1.4 inherit;
+}
+.bkrep-input:focus { outline: none; border-color: var(--bkrep-primary); box-shadow: 0 0 0 3px rgba(124, 140, 255, .18); }
+.bkrep-textarea { resize: vertical; min-height: 84px; }
+.bkrep-hint { font-size: .68rem; color: var(--bkrep-muted); }
+.bkrep-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+@media (max-width: 560px) { .bkrep-row { grid-template-columns: 1fr; } }
+
+.bkrep-ctx { border: 1px dashed var(--bkrep-line); border-radius: 10px; padding: .45rem .6rem; }
+.bkrep-ctx summary { cursor: pointer; font-size: .74rem; font-weight: 600; color: var(--bkrep-muted); }
+.bkrep-ctx-list { margin: .45rem 0; padding-left: 1rem; font-size: .7rem; color: var(--bkrep-muted); display: flex; flex-direction: column; gap: .2rem; }
+.bkrep-ctx-list b { color: var(--bkrep-text); font-weight: 600; }
+
+.bkrep-file { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.bkrep-filebtn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    align-self: flex-start;
+    padding: .4rem .65rem;
+    border: 1px dashed var(--bkrep-line);
+    border-radius: 9px;
+    font-size: .76rem;
+    font-weight: 600;
+    color: var(--bkrep-muted);
+    cursor: pointer;
+}
+.bkrep-filebtn:hover { color: var(--bkrep-text); border-color: var(--bkrep-primary); }
+.bkrep-files { display: flex; flex-direction: column; gap: .25rem; }
+.bkrep-file-item {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .25rem .4rem;
+    border-radius: 8px;
+    background: var(--bkrep-bg);
+    font-size: .74rem;
+}
+.bkrep-file-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bkrep-file-size { color: var(--bkrep-muted); font-size: .68rem; }
+
+.bkrep-foot { display: flex; justify-content: flex-end; align-items: center; gap: .45rem; margin-top: .2rem; }
+.bkrep-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .48rem .8rem;
+    border: 1px solid var(--bkrep-line);
+    border-radius: 9px;
+    background: var(--bkrep-surface);
+    color: var(--bkrep-text);
+    font: 600 .78rem/1.2 inherit;
+    cursor: pointer;
+}
+.bkrep-btn:hover { filter: brightness(1.1); }
+.bkrep-btn:focus-visible { outline: 2px solid var(--bkrep-primary); outline-offset: 1px; }
+.bkrep-btn:disabled { opacity: .55; cursor: not-allowed; }
+.bkrep-btn.is-primary { background: linear-gradient(135deg, var(--bkrep-primary), var(--bkrep-primary-2)); border-color: transparent; color: #fff; }
+.bkrep-btn.is-ghost { background: transparent; }
+.bkrep-btn.is-sm { padding: .35rem .6rem; font-size: .72rem; }
+.bkrep-btn.is-busy::after {
+    content: "";
+    width: 12px; height: 12px;
+    border: 2px solid rgba(255, 255, 255, .5);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: bkrep-spin .7s linear infinite;
+}
+@keyframes bkrep-spin { to { transform: rotate(360deg); } }
+
+.bkrep-form-msg {
+    padding: .45rem .6rem;
+    border-radius: 8px;
+    background: rgba(248, 113, 113, .14);
+    color: var(--bkrep-error);
+    font-size: .75rem;
+}
+
+/* ------------------------------ Thông báo ------------------------------- */
+.bkrep-notice {
+    display: flex;
+    gap: .5rem;
+    padding: .6rem .7rem;
+    border-radius: 10px;
+    font-size: .76rem;
+    line-height: 1.45;
+    border: 1px solid var(--bkrep-line);
+    background: var(--bkrep-bg);
+}
+.bkrep-notice i { margin-top: .1rem; }
+.bkrep-notice.is-info i { color: var(--bkrep-primary); }
+.bkrep-notice.is-warn i { color: var(--bkrep-warn); }
+.bkrep-notice.is-ok i { color: var(--bkrep-ok); }
+.bkrep-notice.is-error i { color: var(--bkrep-error); }
+.bkrep-notice > div { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+.bkrep-link { color: var(--bkrep-primary); font-weight: 600; text-decoration: underline; }
+
+.bkrep-loading {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: 1.2rem 0;
+    color: var(--bkrep-muted);
+    font-size: .78rem;
+    justify-content: center;
+}
+.bkrep-spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--bkrep-line);
+    border-top-color: var(--bkrep-primary);
+    border-radius: 50%;
+    animation: bkrep-spin .7s linear infinite;
+}
+.bkrep-empty { text-align: center; padding: 1.6rem 1rem; color: var(--bkrep-muted); font-size: .78rem; }
+.bkrep-empty i { font-size: 1.4rem; display: block; margin-bottom: .4rem; opacity: .7; }
+.bkrep-empty b { display: block; color: var(--bkrep-text); font-size: .86rem; margin-bottom: .2rem; }
+.bkrep-empty p { margin: .2rem 0 0; }
+
+/* ------------------------------- Danh sách ------------------------------ */
+.bkrep-list-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .55rem; }
+.bkrep-list-count { font-size: .74rem; color: var(--bkrep-muted); font-weight: 600; }
+.bkrep-list { display: flex; flex-direction: column; gap: .45rem; }
+.bkrep-item {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    width: 100%;
+    text-align: left;
+    padding: .6rem .7rem;
+    border: 1px solid var(--bkrep-line);
+    border-radius: 10px;
+    background: var(--bkrep-bg);
+    color: var(--bkrep-text);
+    cursor: pointer;
+    font: inherit;
+}
+.bkrep-item:hover { border-color: var(--bkrep-primary); }
+.bkrep-item:focus-visible { outline: 2px solid var(--bkrep-primary); outline-offset: 1px; }
+.bkrep-item-top { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+.bkrep-item-title { font-size: .82rem; font-weight: 600; line-height: 1.35; }
+.bkrep-item-meta { display: flex; flex-wrap: wrap; gap: .45rem; font-size: .68rem; color: var(--bkrep-muted); }
+.bkrep-item-meta span::before { content: "· "; opacity: .6; }
+.bkrep-item-meta span:first-child::before { content: ""; }
+.bkrep-code { font: 700 .68rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--bkrep-muted); letter-spacing: .04em; }
+.bkrep-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: .14rem .45rem;
+    border-radius: 999px;
+    font-size: .64rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    border: 1px solid transparent;
+}
+.bkrep-pill.is-info { background: rgba(124, 140, 255, .16); color: var(--bkrep-primary); }
+.bkrep-pill.is-warn { background: rgba(251, 191, 36, .16); color: var(--bkrep-warn); }
+.bkrep-pill.is-ok { background: rgba(52, 211, 153, .16); color: var(--bkrep-ok); }
+.bkrep-pill.is-muted { background: var(--bkrep-surface); color: var(--bkrep-muted); }
+.bkrep-unread {
+    margin-left: auto;
+    padding: .1rem .4rem;
+    border-radius: 999px;
+    background: rgba(248, 113, 113, .16);
+    color: var(--bkrep-error);
+    font-size: .62rem;
+    font-weight: 700;
+}
+
+/* -------------------------------- Chi tiết ------------------------------ */
+.bkrep-back {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    margin-bottom: .5rem;
+    padding: .25rem .1rem;
+    border: 0;
+    background: none;
+    color: var(--bkrep-muted);
+    font: 600 .72rem/1 inherit;
+    cursor: pointer;
+}
+.bkrep-back:hover { color: var(--bkrep-text); }
+.bkrep-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; margin-bottom: .4rem; }
+.bkrep-detail-title { margin: .2rem 0 0; font-size: .95rem; line-height: 1.35; }
+.bkrep-desc {
+    margin: .6rem 0;
+    padding: .6rem .7rem;
+    border-left: 3px solid var(--bkrep-primary);
+    border-radius: 0 8px 8px 0;
+    background: var(--bkrep-bg);
+    font-size: .8rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.bkrep-attachments { display: flex; flex-wrap: wrap; gap: .35rem; margin: .4rem 0; }
+.bkrep-attach {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .5rem;
+    border: 1px solid var(--bkrep-line);
+    border-radius: 8px;
+    background: var(--bkrep-bg);
+    color: var(--bkrep-text);
+    font-size: .7rem;
+    text-decoration: none;
+}
+.bkrep-attach:hover { border-color: var(--bkrep-primary); }
+
+.bkrep-qa-title { margin: .9rem 0 .4rem; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--bkrep-muted); }
+.bkrep-thread { display: flex; flex-direction: column; gap: .45rem; }
+.bkrep-thread-empty { padding: .8rem; border: 1px dashed var(--bkrep-line); border-radius: 10px; font-size: .74rem; color: var(--bkrep-muted); text-align: center; }
+.bkrep-msg { display: flex; }
+.bkrep-msg.is-me { justify-content: flex-end; }
+.bkrep-bubble { max-width: 86%; padding: .5rem .65rem; border-radius: 12px; background: var(--bkrep-surface); font-size: .78rem; }
+.bkrep-msg.is-me .bkrep-bubble { background: linear-gradient(135deg, rgba(124, 140, 255, .24), rgba(168, 85, 247, .2)); }
+.bkrep-bubble-top { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; margin-bottom: .2rem; font-size: .68rem; }
+.bkrep-msg-time { color: var(--bkrep-muted); font-weight: 500; }
+.bkrep-tag { padding: .05rem .35rem; border-radius: 999px; background: rgba(251, 191, 36, .18); color: var(--bkrep-warn); font-size: .6rem; font-weight: 700; }
+.bkrep-msg-body { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
+.bkrep-reply { display: flex; flex-direction: column; gap: .4rem; margin-top: .7rem; }
+
+/* -------------------------------- Nhúng --------------------------------- */
+.bkrep-inline { color: var(--bkrep-text); }
+.bkrep-inline .bkrep-body { background: transparent; padding: 0; max-height: none; overflow: visible; }
+
+@media (max-width: 640px) {
+    #bkReportWin .bkrep-shell {
+        right: 0;
+        bottom: 0;
+        left: 0 !important;
+        top: auto !important;
+        width: 100%;
+        max-height: 88vh;
+        border-radius: 16px 16px 0 0;
+    }
+    #bkReportWin .bkrep-body { max-height: 66vh; }
+    .bkrep-head { cursor: default; }
+    .bkrep-bubble { max-width: 92%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bkrep-fab, .bkrep-fab.has-unread, .bkrep-btn.is-busy::after, .bkrep-spinner { animation: none; transition: none; }
+}

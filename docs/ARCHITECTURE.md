@@ -1,7 +1,7 @@
 # Kiến trúc Bá Khí
 
 Tài liệu này mô tả hiện trạng repository, lớp nâng cấp dùng chung, cơ chế thông báo và các
-quyết định kỹ thuật. Cập nhật: 16/11/2026 (phiên bản 3.4.0).
+quyết định kỹ thuật. Cập nhật: 20/11/2026 (phiên bản 8.0.0).
 
 ## 1. Kiểm toán repository (trước khi nâng cấp)
 
@@ -277,6 +277,33 @@ DOMContentLoaded
 - **Giới hạn thử**: `admin-auth` dùng RPC `bakhi_rate_limit` theo IP — Founder 5 lần / 10 phút,
   trả `retryAfter`; mọi trường hợp sai đều trả “Mã Founder không hợp lệ.”
 
+### 2.9. Report Issue + Q&A (8.0.0)
+
+```
+bk-report.js ─► BKCloud.reportApi ─► report-api ─► reports / report_messages
+      │                                          └─ storage report-attachments
+      └─► BKCloud.reportUpload ─────────────────────┘
+bk-devboard.js (tab Report) ─► adminAction ─► admin-actions ─► reports.* + report_notifications
+bk-cloud.js (chuông) ◄── RLS select ── report_notifications
+```
+
+- **Một component duy nhất.** `assets/bakhi/bk-report.js` dựng cả cửa sổ nổi (trên mọi trang
+  có `bk-cloud.js`) và chế độ nhúng trong `bk-settings.js` → tab **Report Issue**. Không có
+  biến thể riêng cho trang chủ hay trang môn học.
+- **Trình duyệt chỉ đọc.** Ba policy SELECT (`reports_select_own`,
+  `report_messages_select_own`, `report_notifications_select_own`) dùng
+  `public.bakhi_current_student_id()`. Không có policy INSERT/UPDATE/DELETE cho client.
+- **Mọi thao tác ghi ở máy chủ.** `report-api` xác minh Anonymous Auth → `student_devices` →
+  `students.is_active`; `admin-actions` xác minh `x-admin-token` trong `admin_sessions`.
+  Không có `student_id` nào do client gửi lên.
+- **Một Trung tâm thông báo.** Thông báo riêng cho người báo cáo nằm ở
+  `report_notifications` và được `bk-cloud.js` hiển thị chung nhóm “Phản hồi báo cáo của
+  bạn”, có realtime; không dựng chuông thứ hai.
+- **Tab Report dùng chung** cho Administrator và Founder (`reports.stats/list/detail/reply/
+  privateMessage/status/complete/reopen/assign`), ghi `report_activity_logs` và
+  `admin_activity_logs` cho mọi thay đổi.
+- Chi tiết đầy đủ: [REPORT_ISSUE.md](REPORT_ISSUE.md).
+
 ### 2.6.1. Danh hiệu — Title (7.6.0, hoàn thiện ở 7.7.0)
 
 - Danh hiệu là lớp **độc lập** với badge, khung avatar và thành tích: không tự mở khoá,
@@ -449,6 +476,19 @@ DOMContentLoaded
 
 ## 3. Mô hình dữ liệu
 
+Từ 8.0.0, bốn bảng của hệ thống báo cáo nằm trong
+`supabase/migrations/20261206000000_bakhi_v800_reports.sql`:
+
+| Bảng | Vai trò | Client đọc |
+|---|---|---|
+| `reports` | Báo cáo, trạng thái, kết quả xử lý | Chỉ hàng của mình (RLS) |
+| `report_messages` | Q&A của một báo cáo | Chỉ thuộc báo cáo của mình |
+| `report_activity_logs` | Nhật ký xử lý | Không (qua `admin-actions`) |
+| `report_notifications` | Thông báo riêng cho người báo cáo | Chỉ hàng của mình |
+
+Bucket `report-attachments` để private; học sinh ghi/đọc trong thư mục `<student_id>/`,
+quản trị viên xem qua signed URL do Edge Function sinh ra.
+
 ```jsonc
 {
   "v": 1,
@@ -566,7 +606,7 @@ Kết quả sau nâng cấp: **122/122 tệp không đổi nội dung** (`verify
 | Lịch sử bảo trì | bảng `maintenance_history` | Bắt đầu/kết thúc, người thực hiện, lý do, thời lượng; Founder đọc qua `admin-actions` (`maintenance.history`) |
 | Thư viện nhạc | `music/*.mp3` + `music/library.json` | Tệp tĩnh trong repository; `tools/music-scan.js` sinh manifest; player gộp bài mới một lần, không đồng bộ máy chủ. Bảng `music_tracks` cũ giữ nguyên nhưng không còn dùng |
 | Tuỳ chọn hồ sơ | cột `student_profiles.prefs` (jsonb) | `animateAvatarBorders` và tuỳ chọn giao diện; đọc/ghi qua `student-profile` |
-| Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html`, `founder/index.html` | 12 mô-đun Administrator; 15 mô-đun Founder, xác thực mã qua `admin-auth`; mọi thao tác kiểm tra lại ở `admin-actions` |
+| Quản trị | `assets/bakhi/bk-devboard.js`, `admin/index.html`, `founder/index.html` | 13 mô-đun Administrator; 16 mô-đun Founder, xác thực mã qua `admin-auth`; mọi thao tác kiểm tra lại ở `admin-actions` |
 | Dev Code | `assets/bakhi/bk-settings.js`, `bk-cloud.js`, `supabase/functions/dev-auth`, bảng `dev_sessions` | Xác minh mã ở máy chủ, giới hạn tần suất, chỉ trả token + hạn dùng; tách hoàn toàn khỏi phiên quản trị |
 
 Ghi chú triển khai:

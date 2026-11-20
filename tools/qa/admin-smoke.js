@@ -151,15 +151,15 @@ const CHANGELOG = [{
   const dash = await until(() => D.querySelector('.bkc-dash'));
   ok('dashboard mở được khi có phiên quản trị', !!dash);
   const tabs = Array.from(D.querySelectorAll('.bkc-nav .bkc-tab'));
-  ok('sidebar Administrator có đúng 12 tab', tabs.length === 12, String(tabs.length));
+  ok('sidebar Administrator có đúng 13 tab', tabs.length === 13, String(tabs.length));
   const adminTitle = D.querySelector('.bkc-dash-title');
   ok('tiêu đề mặc định là Administrator Dashboard',
     !!adminTitle && adminTitle.textContent.trim() === 'Administrator Dashboard',
     adminTitle && adminTitle.textContent);
   const tabIds = tabs.map((b) => b.getAttribute('data-tab'));
-  ok('thứ tự tab đúng', tabIds.join(',') === 'overview,students,profiles,badges,chat,notifications,whatsnew,changelog,logs,monitoring,permissions,settings', tabIds.join(','));
+  ok('thứ tự tab đúng', tabIds.join(',') === 'overview,students,profiles,badges,chat,reports,notifications,whatsnew,changelog,logs,monitoring,permissions,settings', tabIds.join(','));
   ok('tab mới có nhãn tiếng Việt', /Hồ sơ/.test(tabs[2].textContent) && /Thành tích/.test(tabs[3].textContent) &&
-    /Chat/.test(tabs[4].textContent) && /What's New/.test(tabs[6].textContent), tabs.map((b) => b.textContent.trim()).join(' | '));
+    /Chat/.test(tabs[4].textContent) && /Report/.test(tabs[5].textContent) && /What's New/.test(tabs[7].textContent), tabs.map((b) => b.textContent.trim()).join(' | '));
   ok('Alt+1…9 chuyển tab được khai báo', /altKey && \/\^\[1-9\]\$\/\.test/.test(read('assets/bakhi/bk-devboard.js')));
   ok('dashboard không nạp tệp badge vào localStorage khi mở admin', /if \(global\.BK_ADMIN_ONLY\) return;/.test(read('assets/bakhi/bk-badges.js')));
 
@@ -366,13 +366,13 @@ const CHANGELOG = [{
   ok('bucket chat chỉ nhận ảnh ≤ 3 MB', /chat-images/.test(migration) && /3145728/.test(migration) &&
     /image\/png/.test(migration) && /image\/jpeg/.test(migration) && /image\/webp/.test(migration) && /image\/gif/.test(migration));
 
-  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=7\.9\.2/.test(adminPage) && /bk-founder\.js\?v=7\.9\.2/.test(adminPage));
-  ok('trang admin dùng dashboard 7.7.0', /bk-admin-dashboard\.css\?v=7\.9\.2/.test(adminPage) &&
-    /bk-devboard\.js\?v=7\.9\.2/.test(adminPage));
+  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=8\.0\.0/.test(adminPage) && /bk-founder\.js\?v=8\.0\.0/.test(adminPage));
+  ok('trang admin dùng dashboard 7.7.0', /bk-admin-dashboard\.css\?v=8\.0\.0/.test(adminPage) &&
+    /bk-devboard\.js\?v=8\.0\.0/.test(adminPage));
 
   const founderPage = read('founder/index.html');
   ok('có trang Founder Dashboard riêng', /BK_DASH_SCOPE\s*=\s*["']founder/.test(founderPage) &&
-    /bk-devboard\.js\?v=7\.9\.2/.test(founderPage) && /bk-founder\.js\?v=7\.9\.2/.test(founderPage) && /founderLogin/.test(founderPage));
+    /bk-devboard\.js\?v=8\.0\.0/.test(founderPage) && /bk-founder\.js\?v=8\.0\.0/.test(founderPage) && /founderLogin/.test(founderPage));
   ok('Founder Dashboard có quyền cấp trọn bộ và bảo trì', /founder\.grantAll/.test(read('assets/bakhi/bk-founder.js')) &&
     /FOUNDER_ONLY/.test(adminActions) && /founder_config/.test(read('supabase/functions/admin-auth/index.ts')));
   ok('migration 6.0.0 tạo founder_config và scope', /founder_config/.test(read('supabase/migrations/20261122000000_bakhi_founder_6.sql')) &&

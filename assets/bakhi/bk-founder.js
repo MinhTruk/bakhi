@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-founder.js  (7.9.2)
+   Bá Khí — bk-founder.js  (8.0.0)
 
    Founder Dashboard: ba khu vực độc lập
      1. Thành tích  — tồn kho, trao badge/khung (một, nhiều), cấp hàng loạt,
@@ -219,7 +219,7 @@
             if (!pane || !kit || !kit.h) return;
             build(pane, kit);
         },
-        version: '7.9.2'
+        version: '8.0.0'
     };
 
     /* ---------------------------------------------------------------------

@@ -43,6 +43,7 @@ Hướng dẫn cho agent/developer làm việc trong repository này. Đọc h�
   bk-dev.js|css        Developer Playground 2.0 (11 công cụ, tab Music)
   bk-music.js|css      Music Player dùng chung (queue, shuffle, repeat, lyrics)
   bk-cloud.js|css      Nhận diện, thông báo realtime, changelog, đồng bộ (Supabase)
+  bk-report.js|css     Report Issue + Q&A dùng chung (cửa sổ nổi + nhúng Cài đặt)
   bk-devboard.js       Administrator (12) / Founder (15) Dashboard
   bk-admin-dashboard.css  Giao diện dashboard 4.2
   bk-admin.css|bk-admin-theme.js  Trang đăng nhập quản trị + theme
@@ -82,6 +83,8 @@ NODE_PATH=/tmp/bktest/node_modules node tools/qa/dev-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/badges-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/chat-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/admin-smoke.js
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/report-smoke.js
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/version-audit.js
 
 # 4. Chèn thẻ script vào các trang mới (idempotent)
 node tools/integrate-pages.js
@@ -147,7 +150,19 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 - **Favicon tĩnh**: chạy `node tools/inject-favicon.js` sau khi thêm trang HTML. Tool chèn
   link SVG/PNG/ICO/apple-touch-icon với đường dẫn tương đối đúng; không dùng GIF.
 
-### 4.2. Bảng lưu trữ
+### 4.2. Report Issue
+
+- Một component duy nhất: `assets/bakhi/bk-report.js|css`. Cửa sổ nổi tự gắn vào mọi trang có
+  `bk-cloud.js` (do `tools/integrate-pages.js` chèn, idempotent); trang chủ dùng thêm chế độ
+  nhúng trong `bk-settings.js` → tab **Report Issue**. Không tạo bản sao thứ hai.
+- Học sinh chỉ đọc dữ liệu của mình qua RLS; mọi thao tác ghi đi qua Edge Function
+  `report-api` (học sinh) hoặc `admin-actions` → `reports.*` (Administrator/Founder).
+  Không bao giờ gửi `student_id` từ trình duyệt.
+- Thông báo riêng dùng bảng `report_notifications` và hiển thị trong chuông `bk-cloud` hiện
+  có — không dựng Notification System thứ hai.
+- Chi tiết: [docs/REPORT_ISSUE.md](docs/REPORT_ISSUE.md).
+
+### 4.3. Bảng lưu trữ
 
 | Key | Ghi chú |
 |---|---|
@@ -158,7 +173,7 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 | `bakhiMusic.v2`, `.panel.v1`, `.fab.v1` | Trạng thái trình phát nhạc |
 | `bakhiStudent.v1`, `bakhiAdmin.v1` | Hồ sơ học sinh / phiên quản trị (sessionStorage) |
 
-### 4.3. Quy ước tài liệu & phát hành
+### 4.4. Quy ước tài liệu & phát hành
 
 - Mọi thay đổi hành vi phải có mục trong `CHANGELOG.md`, theo nhóm
   **Tính năng / Sửa lỗi / Cải tiến**, ghi ngày và số phiên bản mới.

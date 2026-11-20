@@ -1,8 +1,8 @@
 'use strict';
 /**
- * Bá Khí — QA Founder Login trên màn hình bảo trì (7.9.2, jsdom).
+ * Bá Khí — QA Founder Login trên màn hình bảo trì (8.0.0, jsdom).
  *
- * Kiểm tra đúng các hành vi bắt buộc của v7.9.2:
+ * Kiểm tra đúng các hành vi bắt buộc của v8.0.0:
  *   1. Màn hình bảo trì có đúng thông tin (Bảo trì / lý do / giờ bắt đầu từ
  *      máy chủ / vòng xoay / nút Đăng nhập Founder) và KHÔNG còn lối mở khoá
  *      bằng Administrator Code.
@@ -60,7 +60,7 @@ function boot(opts) {
   });
   const w = dom.window;
   w.matchMedia = w.matchMedia || ((q) => ({ matches: false, media: q, addEventListener() { }, removeEventListener() { } }));
-  w.BAKHI_VERSION = { app: '7.9.2' };
+  w.BAKHI_VERSION = { app: '8.0.0' };
   w.BK_SUPABASE = {
     url: 'https://demo.supabase.co',
     key: 'publishable-key',
@@ -220,7 +220,7 @@ function labels(root) {
     const future = new Date(Date.now() + 3600 * 1000).toISOString();
     const { w, D } = boot({
       session: { token: 'founder-token-1234567890', expiresAt: future, scope: 'founder' },
-      onCheck: (body, reply) => reply(200, { ok: true, scope: 'founder', expiresAt: future, serverVersion: '7.9.2', maintenance: MAINT })
+      onCheck: (body, reply) => reply(200, { ok: true, scope: 'founder', expiresAt: future, serverVersion: '8.0.0', maintenance: MAINT })
     });
     await wait(80);
     ok('màn hình bảo trì được gỡ cho Founder', !D.getElementById('bkMaintenance'));

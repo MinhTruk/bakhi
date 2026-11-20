@@ -127,6 +127,14 @@ Sau đó chạy tiếp migration gia cố bảo mật (xem
 supabase/migrations/20261116000000_bakhi_security_hardening.sql
 ```
 
+Migration 8.0.0 tạo bốn bảng của **Report Issue** (`reports`, `report_messages`,
+`report_activity_logs`, `report_notifications`), bật RLS chỉ-đọc-cho-chủ-sở-hữu, thêm
+`report_notifications` vào realtime và tạo bucket riêng tư `report-attachments`:
+
+```
+supabase/migrations/20261206000000_bakhi_v800_reports.sql
+```
+
 Và ba migration cho đồng bộ changelog, cấu hình site và báo cáo quyền (3.3.0):
 
 ```
@@ -169,6 +177,7 @@ supabase functions deploy changelog-sync
 supabase functions deploy dev-auth
 supabase functions deploy student-profile
 supabase functions deploy chat-api
+supabase functions deploy report-api
 ```
 
 Bắt buộc dùng `--no-verify-jwt` cho các function tự xác thực phiên riêng:
@@ -184,6 +193,7 @@ supabase functions deploy changelog-sync --no-verify-jwt
 supabase functions deploy dev-auth --no-verify-jwt
 supabase functions deploy student-profile --no-verify-jwt
 supabase functions deploy chat-api --no-verify-jwt
+supabase functions deploy report-api --no-verify-jwt
 ```
 
 Lý do: học sinh dùng Anonymous Auth, Administrator Dashboard dùng phiên quản trị riêng, và
@@ -340,6 +350,12 @@ Chat dùng **một** bucket công khai theo URL tên `chat-images`, được mig
 `image/png`, `image/jpeg`, `image/webp`, `image/gif`. Policy cho phép mọi người đọc ảnh và
 mỗi học sinh chỉ ghi/xoá trong thư mục uuid của chính mình; mọi thao tác ghi tin nhắn vẫn
 đi qua `chat-api`.
+
+Report Issue dùng **một** bucket **private** tên `report-attachments`, được migration
+`20261206000000_bakhi_v800_reports.sql` tạo sẵn: giới hạn 5 MB, nhận
+`image/png`, `image/jpeg`, `image/webp`, `image/gif`, `application/pdf`. Học sinh chỉ
+ghi/đọc trong thư mục uuid của mình; Administrator/Founder xem tệp qua signed URL hạn 1 giờ
+do Edge Function sinh ra. Không bao giờ để bucket này `public = true`.
 
 Nếu bạn muốn lưu bản gốc TXT để đối chiếu, tạo bucket **private** tên `rosters`:
 

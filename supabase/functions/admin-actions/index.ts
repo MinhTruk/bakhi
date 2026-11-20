@@ -1172,7 +1172,7 @@ const DEFAULT_TITLES: TitleDef[] = [
 ];
 
 const TITLE_BY_ID = new Map<string, TitleDef>(DEFAULT_TITLES.map((t) => [t.id, t]));
-const SERVER_VERSION = '7.9.2';
+const SERVER_VERSION = '8.0.0';
 
 /* Cơ cấu danh mục: 99 = 74 tự động + 21 Founder + 2 Developer + 2 Administrator.
    Trả kèm mọi phản hồi trao tặng để giao diện không phải tự đếm hay viết cứng. */
@@ -1653,6 +1653,87 @@ function titleRow(row: Record<string, unknown>, holders = 0) {
         badgeName: row.badge_id ? ((BADGE_BY_ID.get(String(row.badge_id)) || { name: '' }).name || '') : '',
         matchesDefault: !!def
     };
+}
+
+/* ---------------------------------------------------------------------------
+   v8.0.0 — Report Issue
+
+   Hai dashboard (Administrator và Founder) dùng CHUNG các action dưới đây và
+   cùng đọc bảng public.reports; không có hệ thống báo cáo thứ hai.
+   ------------------------------------------------------------------------ */
+const REPORT_BUCKET = 'report-attachments';
+const REPORT_STATUSES = ['new', 'pending', 'in_progress', 'waiting_student', 'resolved', 'closed'];
+const REPORT_CATEGORIES = ['bug', 'ui', 'content', 'answer', 'account', 'performance',
+    'feature', 'data', 'other'];
+const REPORT_PRIORITIES = ['low', 'normal', 'high', 'critical'];
+/* Chuyển trạng thái hợp lệ. Máy chủ từ chối bước nhảy tuỳ tiện. */
+const REPORT_TRANSITIONS: Record<string, string[]> = {
+    new: ['pending', 'in_progress', 'waiting_student', 'resolved', 'closed'],
+    pending: ['in_progress', 'waiting_student', 'resolved', 'closed'],
+    in_progress: ['pending', 'waiting_student', 'resolved', 'closed'],
+    waiting_student: ['in_progress', 'pending', 'resolved', 'closed'],
+    resolved: ['in_progress', 'closed'],
+    closed: ['in_progress']
+};
+
+async function signedReportFiles(client: SupabaseClient, paths: unknown) {
+    const list = (Array.isArray(paths) ? paths : []).map((p) => String(p)).filter(Boolean).slice(0, 6);
+    const out: Array<Record<string, unknown>> = [];
+    for (const path of list) {
+        const { data } = await client.storage.from(REPORT_BUCKET).createSignedUrl(path, 3600);
+        out.push({ path, name: path.split('/').pop() || 'tệp', url: data?.signedUrl || '' });
+    }
+    return out;
+}
+
+async function logReportActivity(
+    client: SupabaseClient,
+    reportId: string,
+    actorKind: string,
+    actorLabel: string,
+    action: string,
+    oldValue: string | null,
+    newValue: string | null,
+    metadata: Record<string, unknown> = {}
+): Promise<void> {
+    await client.from('report_activity_logs').insert({
+        report_id: reportId,
+        actor_kind: actorKind,
+        actor_label: actorLabel,
+        action,
+        old_value: oldValue,
+        new_value: newValue,
+        metadata
+    });
+}
+
+/** Thông báo riêng cho ĐÚNG học sinh đã tạo báo cáo. */
+async function notifyReportStudent(
+    client: SupabaseClient,
+    report: Record<string, unknown>,
+    kind: string,
+    title: string,
+    body: string
+): Promise<void> {
+    await client.from('report_notifications').insert({
+        student_id: report.student_id,
+        report_id: report.id,
+        kind,
+        title: String(title).slice(0, 160),
+        body: String(body).slice(0, 600)
+    });
+}
+
+async function reportStudentNames(client: SupabaseClient, ids: string[]) {
+    const unique = [...new Set(ids.filter(Boolean))].slice(0, 100);
+    const map = new Map<string, string>();
+    if (!unique.length) return map;
+    const { data } = await client
+        .from('students')
+        .select('id, display_name')
+        .in('id', unique);
+    for (const row of data ?? []) map.set(String(row.id), String(row.display_name || 'Học sinh'));
+    return map;
 }
 
 Deno.serve(async (req) => {
@@ -3820,6 +3901,283 @@ Deno.serve(async (req) => {
                 if (error) throw error;
                 await logAction(client, 'titles.delete', 'title', titleId, {});
                 return json({ ok: true, id: titleId, active: false });
+            }
+
+            /* ---------------------------- Report Issue -----------------------------
+               Administrator và Founder dùng chung. Quyền được kiểm tra ở đây,
+               không dựa vào tab nào đang mở trên trình duyệt. */
+            case 'reports.stats': {
+                const { data: rows, error } = await client
+                    .from('reports')
+                    .select('status, priority, staff_unread, resolution_note')
+                    .limit(5000);
+                if (error) return fail(500, 'DB_ERROR', 'Không đọc được thống kê báo cáo.');
+                const stats = {
+                    total: 0, new: 0, pending: 0, in_progress: 0, waiting_student: 0,
+                    resolved: 0, closed: 0, unread: 0, attention: 0
+                };
+                for (const row of rows ?? []) {
+                    stats.total++;
+                    const key = String(row.status || 'new') as keyof typeof stats;
+                    if (key in stats) (stats as Record<string, number>)[key]++;
+                    if (Number(row.staff_unread || 0) > 0) stats.unread++;
+                    if ((row.priority === 'high' || row.priority === 'critical') &&
+                        ['new', 'pending', 'in_progress', 'waiting_student'].includes(String(row.status))) {
+                        stats.attention++;
+                    }
+                }
+                return json({ ok: true, stats, serverVersion: SERVER_VERSION });
+            }
+
+            case 'reports.list': {
+                const page = Math.max(1, Number(body.page) || 1);
+                const pageSize = Math.min(Math.max(Number(body.page_size) || 20, 5), 50);
+                const from = (page - 1) * pageSize;
+                const q = str(body.q, 80).replace(/[%,()]/g, ' ').trim();
+                let query = client
+                    .from('reports')
+                    .select('*', { count: 'exact' })
+                    .order('updated_at', { ascending: false })
+                    .range(from, from + pageSize - 1);
+                if (body.status && String(body.status) !== 'all') {
+                    query = query.eq('status', str(body.status, 20));
+                }
+                if (body.category && String(body.category) !== 'all') {
+                    query = query.eq('category', str(body.category, 20));
+                }
+                if (body.priority && String(body.priority) !== 'all') {
+                    query = query.eq('priority', str(body.priority, 20));
+                }
+                if (body.unread) query = query.gt('staff_unread', 0);
+                if (body.from) query = query.gte('created_at', str(body.from, 40));
+                if (body.to) query = query.lte('created_at', str(body.to, 40));
+                if (q) query = query.or('title.ilike.%' + q + '%,code.ilike.%' + q + '%,description.ilike.%' + q + '%');
+                const { data, count, error } = await query;
+                if (error) return fail(500, 'DB_ERROR', 'Không tải được danh sách báo cáo.');
+                const names = await reportStudentNames(client,
+                    (data ?? []).map((r) => String(r.student_id)));
+                return json({
+                    ok: true,
+                    total: count || 0,
+                    page,
+                    pageSize,
+                    reports: (data ?? []).map((row) => ({
+                        id: row.id, code: row.code, title: row.title, category: row.category,
+                        issue_type: row.issue_type, priority: row.priority, status: row.status,
+                        student_id: row.student_id,
+                        student_name: names.get(String(row.student_id)) || 'Học sinh',
+                        created_at: row.created_at, updated_at: row.updated_at,
+                        last_message_at: row.last_message_at,
+                        last_message_by: row.last_message_by,
+                        staff_unread: Number(row.staff_unread || 0),
+                        student_unread: Number(row.student_unread || 0),
+                        assigned_to: row.assigned_to || ''
+                    }))
+                });
+            }
+
+            case 'reports.detail': {
+                const id = str(body.report_id, 40);
+                if (!id) return fail(400, 'BAD_REPORT', 'Thiếu mã báo cáo.');
+                const { data: row } = await client.from('reports').select('*').eq('id', id).maybeSingle();
+                if (!row) return fail(404, 'NOT_FOUND', 'Không tìm thấy báo cáo.');
+                const [{ data: messages }, { data: activity }, { data: student }] = await Promise.all([
+                    client.from('report_messages').select('*')
+                        .eq('report_id', id).order('created_at', { ascending: true }).limit(200),
+                    client.from('report_activity_logs').select('*')
+                        .eq('report_id', id).order('created_at', { ascending: false }).limit(50),
+                    client.from('students').select('id, display_name, student_code')
+                        .eq('id', row.student_id).maybeSingle()
+                ]);
+                /* Mở báo cáo = đã đọc phía quản trị. */
+                if (Number(row.staff_unread || 0) > 0) {
+                    await client.from('reports').update({ staff_unread: 0 }).eq('id', id);
+                    await client.from('report_messages')
+                        .update({ read_by_staff_at: new Date().toISOString() })
+                        .eq('report_id', id)
+                        .eq('sender_kind', 'student')
+                        .is('read_by_staff_at', null);
+                }
+                return json({
+                    ok: true,
+                    report: {
+                        id: row.id, code: row.code, title: row.title, description: row.description,
+                        category: row.category, issue_type: row.issue_type, priority: row.priority,
+                        status: row.status, page_url: row.page_url || '',
+                        page_title: row.page_title || '', route: row.route || '',
+                        subject: row.subject || '', context_data: row.context_data || {},
+                        assigned_to: row.assigned_to || '', resolved_by: row.resolved_by || '',
+                        resolution_note: row.resolution_note || '',
+                        created_at: row.created_at, updated_at: row.updated_at,
+                        resolved_at: row.resolved_at || null, closed_at: row.closed_at || null,
+                        staff_unread: 0, student_unread: Number(row.student_unread || 0)
+                    },
+                    student: student || null,
+                    attachments: await signedReportFiles(client, row.attachment_paths),
+                    messages: await Promise.all((messages ?? []).map(async (m) => ({
+                        id: m.id, sender_kind: m.sender_kind, sender_label: m.sender_label,
+                        body: m.body, is_private: !!m.is_private, created_at: m.created_at,
+                        read_by_student_at: m.read_by_student_at || null,
+                        attachment_urls: await signedReportFiles(client, m.attachments)
+                    }))),
+                    activity: activity ?? []
+                });
+            }
+
+            case 'reports.reply':
+            case 'reports.privateMessage': {
+                const id = str(body.report_id, 40);
+                const text = String(body.body ?? '').replace(/\r\n/g, '\n').trim().slice(0, 4000);
+                if (!id) return fail(400, 'BAD_REPORT', 'Thiếu mã báo cáo.');
+                if (!text) return fail(400, 'EMPTY', 'Nội dung trả lời đang trống.');
+                const { data: row } = await client.from('reports').select('*').eq('id', id).maybeSingle();
+                if (!row) return fail(404, 'NOT_FOUND', 'Không tìm thấy báo cáo.');
+                if (row.status === 'closed') {
+                    return fail(409, 'REPORT_CLOSED', 'Báo cáo đã đóng. Hãy mở lại trước khi trả lời.');
+                }
+                const isPrivate = action === 'reports.privateMessage';
+                const label = scope === 'founder' ? 'Founder' : 'Administrator';
+                const { data: msg, error } = await client.from('report_messages').insert({
+                    report_id: id,
+                    sender_kind: 'staff',
+                    sender_label: label,
+                    body: text,
+                    is_private: isPrivate
+                }).select('*').maybeSingle();
+                if (error || !msg) return fail(500, 'SEND_FAILED', 'Không gửi được phản hồi.');
+
+                const nextStatus = ['new', 'pending'].includes(String(row.status))
+                    ? 'in_progress' : String(row.status);
+                await client.from('reports').update({
+                    status: nextStatus,
+                    last_message_at: new Date().toISOString(),
+                    last_message_by: 'staff',
+                    student_unread: Number(row.student_unread || 0) + 1,
+                    staff_unread: 0,
+                    assigned_to: row.assigned_to || scope
+                }).eq('id', id);
+                await logReportActivity(client, id, scope, label,
+                    isPrivate ? 'message.private' : 'message.staff',
+                    String(row.status), nextStatus, { length: text.length });
+                await notifyReportStudent(client, row,
+                    isPrivate ? 'notice' : 'reply',
+                    (isPrivate ? 'Tin nhắn riêng về báo cáo ' : 'Phản hồi báo cáo ') + String(row.code),
+                    text);
+                await logAction(client, isPrivate ? 'reports.privateMessage' : 'reports.reply',
+                    'report', id, { code: row.code });
+                return json({ ok: true, status: nextStatus, message: {
+                    id: msg.id, sender_kind: 'staff', sender_label: label, body: msg.body,
+                    is_private: isPrivate, created_at: msg.created_at, attachment_urls: []
+                } });
+            }
+
+            case 'reports.status': {
+                const id = str(body.report_id, 40);
+                const next = str(body.status, 20);
+                if (!id || !REPORT_STATUSES.includes(next)) {
+                    return fail(400, 'BAD_STATUS', 'Trạng thái không hợp lệ.');
+                }
+                const { data: row } = await client.from('reports').select('*').eq('id', id).maybeSingle();
+                if (!row) return fail(404, 'NOT_FOUND', 'Không tìm thấy báo cáo.');
+                const current = String(row.status);
+                const allowed = REPORT_TRANSITIONS[current] || [];
+                if (current !== next && !allowed.includes(next)) {
+                    return fail(409, 'BAD_TRANSITION',
+                        'Không thể chuyển từ ' + current + ' sang ' + next + '.');
+                }
+                const patch: Record<string, unknown> = { status: next };
+                if (next === 'resolved') patch.resolved_at = new Date().toISOString();
+                if (next === 'closed') patch.closed_at = new Date().toISOString();
+                if (next === 'in_progress' || next === 'pending') {
+                    patch.resolved_at = null;
+                    patch.closed_at = null;
+                }
+                await client.from('reports').update(patch).eq('id', id);
+                await logReportActivity(client, id, scope, scope === 'founder' ? 'Founder' : 'Administrator',
+                    'status.changed', current, next, { note: str(body.note, 300) });
+                await notifyReportStudent(client, row, 'status',
+                    'Cập nhật báo cáo ' + String(row.code),
+                    'Trạng thái mới: ' + next + (body.note ? ' — ' + str(body.note, 300) : ''));
+                await logAction(client, 'reports.status', 'report', id, { from: current, to: next });
+                return json({ ok: true, status: next });
+            }
+
+            case 'reports.complete': {
+                const id = str(body.report_id, 40);
+                const note = String(body.resolution_note ?? '').trim().slice(0, 2000);
+                if (!id) return fail(400, 'BAD_REPORT', 'Thiếu mã báo cáo.');
+                if (note.length < 3) {
+                    return fail(400, 'BAD_NOTE', 'Hãy nhập ghi chú kết quả xử lý (ít nhất 3 ký tự).');
+                }
+                const { data: row } = await client.from('reports').select('*').eq('id', id).maybeSingle();
+                if (!row) return fail(404, 'NOT_FOUND', 'Không tìm thấy báo cáo.');
+                if (row.status === 'resolved') return fail(409, 'ALREADY_RESOLVED', 'Báo cáo đã hoàn thiện.');
+                if (row.status === 'closed') return fail(409, 'REPORT_CLOSED', 'Báo cáo đã đóng.');
+                const nowIso = new Date().toISOString();
+                const label = scope === 'founder' ? 'Founder' : 'Administrator';
+                await client.from('reports').update({
+                    status: 'resolved',
+                    resolved_by: label,
+                    resolution_note: note,
+                    resolved_at: nowIso,
+                    last_message_at: nowIso,
+                    last_message_by: 'staff',
+                    staff_unread: 0
+                }).eq('id', id);
+                await client.from('report_messages').insert({
+                    report_id: id,
+                    sender_kind: 'staff',
+                    sender_label: label,
+                    body: 'Đã hoàn thiện báo cáo: ' + note,
+                    is_private: false
+                });
+                await logReportActivity(client, id, scope, label, 'report.completed',
+                    String(row.status), 'resolved', { note });
+                await notifyReportStudent(client, row, 'resolved',
+                    'Báo cáo ' + String(row.code) + ' đã được hoàn thiện', note);
+                await logAction(client, 'reports.complete', 'report', id, { code: row.code });
+                return json({ ok: true, status: 'resolved', resolved_at: nowIso, resolved_by: label });
+            }
+
+            case 'reports.reopen': {
+                const id = str(body.report_id, 40);
+                const reason = String(body.reason ?? '').trim().slice(0, 500);
+                if (!id) return fail(400, 'BAD_REPORT', 'Thiếu mã báo cáo.');
+                if (reason.length < 3) return fail(400, 'BAD_REASON', 'Hãy nhập lý do mở lại báo cáo.');
+                const { data: row } = await client.from('reports').select('*').eq('id', id).maybeSingle();
+                if (!row) return fail(404, 'NOT_FOUND', 'Không tìm thấy báo cáo.');
+                if (!['resolved', 'closed'].includes(String(row.status))) {
+                    return fail(409, 'NOT_CLOSED', 'Chỉ mở lại báo cáo đã hoàn thiện hoặc đã đóng.');
+                }
+                const label = scope === 'founder' ? 'Founder' : 'Administrator';
+                await client.from('reports').update({
+                    status: 'in_progress', resolved_at: null, closed_at: null,
+                    resolution_note: null
+                }).eq('id', id);
+                await logReportActivity(client, id, scope, label, 'report.reopened',
+                    String(row.status), 'in_progress', { reason });
+                await notifyReportStudent(client, row, 'status',
+                    'Báo cáo ' + String(row.code) + ' đã được mở lại', reason);
+                await logAction(client, 'reports.reopen', 'report', id, { reason });
+                return json({ ok: true, status: 'in_progress' });
+            }
+
+            case 'reports.assign': {
+                const id = str(body.report_id, 40);
+                const to = str(body.assigned_to, 20);
+                if (!id) return fail(400, 'BAD_REPORT', 'Thiếu mã báo cáo.');
+                if (to && !['admin', 'founder'].includes(to)) {
+                    return fail(400, 'BAD_ASSIGNEE', 'Người xử lý không hợp lệ.');
+                }
+                const { data: row } = await client.from('reports').select('id, code, assigned_to')
+                    .eq('id', id).maybeSingle();
+                if (!row) return fail(404, 'NOT_FOUND', 'Không tìm thấy báo cáo.');
+                await client.from('reports').update({ assigned_to: to || null }).eq('id', id);
+                await logReportActivity(client, id, scope,
+                    scope === 'founder' ? 'Founder' : 'Administrator',
+                    'report.assigned', String(row.assigned_to || ''), to || '');
+                await logAction(client, 'reports.assign', 'report', id, { to });
+                return json({ ok: true, assigned_to: to || '' });
             }
 
             /* ---------------- Máy chủ đang chạy bản nào (chẩn đoán) -------------- */

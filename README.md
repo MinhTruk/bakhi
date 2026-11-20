@@ -28,8 +28,13 @@ BAKHI hướng đến việc giúp việc ôn tập trở nên:
 - 📝 **Tương tác** hơn
 - 🎯 **Tập trung vào việc ôn thi**
 
-### Điểm nổi bật ở phiên bản 3.4.0
+### Điểm nổi bật ở phiên bản 8.0.0
 
+- **Report Issue + Q&A toàn website**: mục **Cài đặt → Report Issue** trên trang chủ và nút
+  nổi ở mọi trang môn học, bài học, Studio. Mỗi báo cáo có một cuộc hội thoại riêng với ban
+  quản trị, có tệp đính kèm, theo dõi trạng thái và thông báo riêng cho đúng người gửi.
+- **Tab Report trong Administrator và Founder Dashboard**: cùng một nguồn dữ liệu, có thống
+  kê thật, tìm kiếm/lọc/phân trang, Complete Report, gửi tin nhắn riêng và lịch sử xử lý.
 - **Một tài khoản, một menu**: avatar ở góc phải header thay cho menu ba gạch và nút README
   riêng. Menu gồm Hồ sơ cá nhân, Giao diện, README.md, Bá Khí Studio và Cài đặt.
 - **Hồ sơ và thành tích**: trang `/profile/` có ảnh đại diện, ảnh bìa, biệt danh, giới thiệu,
@@ -47,10 +52,12 @@ BAKHI hướng đến việc giúp việc ôn tập trở nên:
 - **Học tập local-first**: tiến trình, ghi chú, đánh dấu, thành tích lưu trên máy trước;
   Supabase chỉ là lớp đồng bộ tuỳ chọn, không bắt buộc tài khoản.
 - **Không áp lực thời gian**: không đồng hồ đếm ngược, không tính giờ, không xếp hạng thi.
-- **Quản trị tập trung**: Administrator Dashboard 12 mô-đun; Founder Dashboard 15 mô-đun (thêm Bảo trì, Dữ liệu, trao mọi badge), có xem trước thông báo/changelog
-  trước khi push, quản lý học sinh, nhật ký, giám sát, cấu hình và dữ liệu.
+- **Quản trị tập trung**: Administrator Dashboard 13 mô-đun; Founder Dashboard 16 mô-đun (thêm Bảo trì, Dữ liệu, trao mọi badge), có xem trước thông báo/changelog
+  trước khi push, quản lý học sinh, báo cáo, nhật ký, giám sát, cấu hình và dữ liệu.
 - **Công cụ học tập đi kèm**: Trung tâm học tập 7 tab, Music Player, Bá Khí Studio (Word & Paint),
   Developer Playground 2.0. Favicon tĩnh dùng chung trên toàn site.
+- **Tài liệu đồng bộ với mã nguồn**: toàn bộ tệp Markdown trong repository được rà soát và cập
+  nhật cho 8.0.0, thêm [docs/REPORT_ISSUE.md](docs/REPORT_ISSUE.md).
 
 ### Yêu cầu & tương thích
 
@@ -204,10 +211,10 @@ nhận diện học sinh, đồng bộ giữa thiết bị và thông báo realt
 
 | Đường dẫn | Nội dung | Lớp nâng cấp |
 |---|---|---|
-| `/index.html` | Trang chủ, điều hướng môn học, Trung tâm học tập, What's New | `bk-core`, `bk-learn`, `bk-dev`, `bk-music`, `bk-cloud` |
+| `/index.html` | Trang chủ, điều hướng môn học, Trung tâm học tập, Cài đặt → Report Issue, What's New | `bk-core`, `bk-learn`, `bk-dev`, `bk-music`, `bk-cloud`, `bk-report` |
 | `/admin/index.html` | Administrator Dashboard (yêu cầu Administrator Code) | `bk-cloud` (admin-only), `bk-devboard` |
-| `/ktgk1`, `/ktgk2`, `/ktck1`, `/ktck2`, `/kttx` | Nội dung giáo dục theo đợt kiểm tra và môn học | `bk-core`, `bk-page`, `bk-cloud` (chỉ thông báo) |
-| `/studio/index.html` | Bá Khí Studio — Word & Paint (Word / Paint / Chia đôi) | `bk-cloud` (chỉ thông báo), shell tài khoản |
+| `/ktgk1`, `/ktgk2`, `/ktck1`, `/ktck2`, `/kttx` | Nội dung giáo dục theo đợt kiểm tra và môn học | `bk-core`, `bk-page`, `bk-cloud` (chỉ thông báo), `bk-report` |
+| `/studio/index.html` | Bá Khí Studio — Word & Paint (Word / Paint / Chia đôi) | `bk-cloud` (chỉ thông báo), `bk-report`, shell tài khoản |
 | `/studio/word-paint.html` | Trang tương thích: chuyển hướng về `/studio/` | — |
 | `/music/` | Tệp âm thanh, lời, ảnh bìa | — |
 | `/assets/bakhi/` | Toàn bộ JavaScript/CSS dùng chung | — |
@@ -236,7 +243,8 @@ script và không sửa nội dung gốc.
 | 🎧 Music Player cá nhân (YouTube/Spotify/SoundCloud) | 🟢 Đã có (7.0.0) |
 | 🎨 Bá Khí Studio (Word & Paint) | 🟢 Đã có |
 | 🔔 Thông báo realtime toàn website (kể cả trang bài học, Studio) | 🟢 Đã có (3.2.0) |
-| 🛠️ Administrator Dashboard (12 mô-đun) + Founder Dashboard (15 mô-đun, bảo trì, trao badge) | 🟢 Đã có (7.0.0) |
+| 🛠️ Administrator Dashboard (13 mô-đun) + Founder Dashboard (16 mô-đun, bảo trì, trao badge) | 🟢 Đã có (8.0.0) |
+| 🚩 Report Issue + Q&A toàn website, tab Report trong hai dashboard | 🟢 Đã có (8.0.0) |
 | ⏸️ Bảo trì toàn website + lịch sử và lối vào Administrator | 🟢 Đã có (7.0.0) |
 | 🔄 Đồng bộ CHANGELOG.md tự động qua GitHub Actions | 🟢 Đã có (3.3.0) |
 | 🌙 Giao diện thông báo tối thống nhất | 🟢 Đã có (3.3.0) |
@@ -450,12 +458,44 @@ Chế độ chỉ thông báo được bật bằng thuộc tính trên thẻ sc
 
 ```html
 <script src="../../assets/bakhi/bk-supabase.config.js?v=4.0.0" defer></script>
-<script src="../../assets/bakhi/bk-cloud.js?v=3.4.0" data-bk-notify-only="1" defer></script>
+<script src="../../assets/bakhi/bk-cloud.js?v=8.0.0" data-bk-notify-only="1" defer></script>
 ```
 
 Nếu Supabase chưa cấu hình hoặc đang mất mạng, chuông vẫn xuất hiện và trang học hoạt động
 bình thường; thông báo sẽ được tải lại khi kết nối trở lại. Xem thêm
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#thông-báo-toàn-website).
+
+---
+
+# 🚩 Report Issue & Q&A
+
+Báo cáo lỗi và trao đổi riêng với ban quản trị, có mặt trên **toàn website**:
+
+- **Trang chủ** — mở **Cài đặt → Report Issue**.
+- **Mọi trang môn học, bài học, Chat, Hồ sơ, Cài đặt, Studio** — bấm nút nổi **Báo cáo** ở góc
+  phải dưới. Cửa sổ kéo được, thu nhỏ, nhớ vị trí, đóng bằng `Esc`, thành bottom sheet trên điện thoại.
+- **Một component duy nhất** (`bk-report.js`) nên biểu mẫu, danh mục và cách hiển thị giống nhau
+  ở mọi nơi; không có bản sao thứ hai.
+
+Nội dung một báo cáo:
+
+| Trường | Ghi chú |
+|---|---|
+| Tiêu đề, mô tả | 4–160 và 10–5.000 ký tự |
+| Nhóm vấn đề | Lỗi kỹ thuật, giao diện, nội dung, đáp án, tài khoản, hiệu năng, đề xuất, dữ liệu, khác |
+| Loại báo cáo | Lỗi, nội dung chưa đúng, cần hỏi thêm, góp ý |
+| Mức ưu tiên | Thấp → Khẩn |
+| Tệp đính kèm | Tối đa 4 tệp ≤ 5 MB (PNG/JPG/WEBP/GIF/PDF) |
+| Ngữ cảnh | URL, tiêu đề trang, khu vực, trình duyệt, màn hình, múi giờ — **không** có mật khẩu/token/cookie |
+
+Mỗi báo cáo có mã `BK-xxxxx` và **một cuộc hội thoại riêng**: học sinh và ban quản trị trả lời
+qua lại, có nhãn *Tin nhắn riêng*, mọi tin nhắn gắn với báo cáo và sắp theo thời gian. Khi có
+phản hồi, học sinh nhận **thông báo riêng trong Trung tâm thông báo hiện có** và bấm vào là mở
+đúng báo cáo. Trả lời vào báo cáo đã hoàn thiện sẽ mở lại báo cáo.
+
+Phía quản trị: tab **Report** trong Administrator và Founder Dashboard — thống kê thật, tìm
+kiếm/lọc/phân trang, chi tiết báo cáo, **Complete Report** (bắt buộc ghi chú kết quả), gửi tin
+nhắn riêng, mở lại và lịch sử xử lý. Chi tiết: [docs/REPORT_ISSUE.md](docs/REPORT_ISSUE.md).
 
 ---
 
@@ -468,21 +508,23 @@ Trang quản trị dành riêng cho quản trị viên, **yêu cầu Administrat
 | Menu 3 gạch | nút **Administrator** → nhập mã | Mục “Administrator Dashboard” chỉ hiện sau khi mã đúng, bấm vào mở **tab mới** |
 | Trang riêng | [`/admin/`](https://minhtruk.github.io/bakhi/admin/) | Tự hỏi Administrator Code khi mở tab mới |
 
-Chín mô-đun:
+Mười mô-đun:
 
-1. **Tổng quan** — số học sinh, thông báo, phiên bản, nhật ký hoạt động gần đây, hồ sơ cần phân biệt.
+1. **Tổng quan** — số học sinh, thông báo, phiên bản, báo cáo mới, nhật ký hoạt động gần đây, hồ sơ cần phân biệt.
 2. **Học sinh** — import `students.txt`, tìm kiếm, sửa họ tên, đánh dấu phân biệt trùng tên, vô hiệu hoá, xem chi tiết, xuất CSV.
 3. **Thông báo** — soạn, xem trước, **PUSH NOTIFICATION NOW**, thống kê, sửa/ẩn/đăng lại/xoá.
 4. **Lịch sử phiên bản** — biểu mẫu toàn chiều rộng phía trên, danh sách phiên bản bên dưới; lọc nguồn/đồng bộ, xuất JSON, lưu nháp hoặc xuất bản.
-5. **Nhật ký** — nhật ký thao tác quản trị (ai làm gì, lúc nào), lọc và xuất.
-6. **Giám sát** — độ trễ, số bản ghi, hàng đợi đồng bộ changelog, lỗi gần đây.
-7. **Quyền** — báo cáo thật về hàm, bảng và policy; chỉ đọc.
-8. **Cấu hình** — bật/tắt What's New và thông báo bảo trì.
-9. **Dữ liệu** — kiểm tra toàn vẹn và xuất CSV/JSON; không có xoá hàng loạt.
+5. **Report** — tiếp nhận và xử lý báo cáo của học sinh: thống kê, tìm kiếm/lọc, Q&A, Complete
+   Report, gửi tin nhắn riêng và lịch sử xử lý (dùng chung dữ liệu với Founder Dashboard).
+6. **Nhật ký** — nhật ký thao tác quản trị (ai làm gì, lúc nào), lọc và xuất.
+7. **Giám sát** — độ trễ, số bản ghi, hàng đợi đồng bộ changelog, lỗi gần đây.
+8. **Quyền** — báo cáo thật về hàm, bảng và policy; chỉ đọc.
+9. **Cấu hình** — bật/tắt What's New và thông báo bảo trì.
+10. **Dữ liệu** — kiểm tra toàn vẹn và xuất CSV/JSON; không có xoá hàng loạt.
 
 ### Giao diện 4.1
 
-- **12 mô-đun Administrator (15 với Founder) trong sidebar thu gọn được**, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng.
+- **13 mô-đun Administrator (16 với Founder) trong sidebar thu gọn được**, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng.
 - **Bảng dữ liệu** có tìm kiếm, lọc, sắp xếp và phân trang phía máy chủ; bảng rộng cuộn trong
   khung, không đẩy vỡ bố cục.
 - **Lịch sử phiên bản dạng cột dọc**: biểu mẫu tạo/sửa chiếm toàn chiều rộng, danh sách bên dưới.
@@ -521,7 +563,8 @@ có kiểm tra phiên quản trị.
   bk-dev.js|css         Developer Playground 2.0
   bk-music.js|css       Music Player dùng chung
   bk-cloud.js|css       Nhận diện, thông báo realtime, changelog, đồng bộ (Supabase)
-  bk-devboard.js        Administrator/Founder Dashboard 12–15 mô-đun + menu quản trị
+  bk-report.js|css      Report Issue + Q&A dùng chung (cửa sổ nổi + nhúng Cài đặt)
+  bk-devboard.js        Administrator/Founder Dashboard 13–16 mô-đun + menu quản trị
   bk-admin-dashboard.css Giao diện dashboard 4.1 (sidebar thu gọn, bảng phân trang)
   bk-admin.css|bk-admin-theme.js  Trang đăng nhập quản trị + theme
   bk-supabase.config.js Nơi duy nhất chứa Project URL + Publishable key
@@ -534,8 +577,8 @@ có kiểm tra phiên quản trị.
 /studio                 index.html (Word & Paint hợp nhất) + word-paint.html (chuyển hướng)
 /supabase/
   migrations/           Schema + RLS + realtime cho announcements & changelog
-  functions/            admin-auth, admin-actions, search-students, bind-student-session,
-                        sync-student-progress, import-students
+  functions/            admin-auth, admin-actions, report-api, search-students,
+                        bind-student-session, sync-student-progress, import-students
 /tools                  content-integrity, integrate-pages, inject-shell,
                         qa/smoke, qa/cloud-smoke, qa/shell-smoke
 /docs                   Kiến trúc, tính năng, Music, Studio, Supabase, baseline nội dung
@@ -622,6 +665,7 @@ service-role key hay Administrator Code.
 - [docs/FEATURES.md](docs/FEATURES.md) — danh sách tính năng & trạng thái từng mục
 - [docs/MUSIC.md](docs/MUSIC.md) — Music Player: quy ước file, phím tắt, bố cục, xử lý sự cố
 - [docs/STUDIO.md](docs/STUDIO.md) — Bá Khí Studio: Word & Paint, lưu trữ, giới hạn
+- [docs/REPORT_ISSUE.md](docs/REPORT_ISSUE.md) — Report Issue + Q&A: vị trí, dữ liệu, quyền, API, kiểm thử
 - [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) — cài đặt Supabase, Administrator Code, RLS, kiểm thử
 - [CHANGELOG.md](CHANGELOG.md) — lịch sử thay đổi theo phiên bản
 - [AGENTS.md](AGENTS.md) — quy ước làm việc trong repository

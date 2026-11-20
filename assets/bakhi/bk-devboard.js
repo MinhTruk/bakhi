@@ -15,7 +15,7 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var APP_VERSION = '7.9.2';
+    var APP_VERSION = '8.0.0';
 
     var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
         ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];
@@ -29,6 +29,7 @@
         ['profiles', 'Hồ sơ', 'fa-id-card'],
         ['badges', 'Thành tích', 'fa-medal'],
         ['chat', 'Chat', 'fa-comments'],
+        ['reports', 'Report', 'fa-flag'],
         ['notifications', 'Thông báo', 'fa-bullhorn'],
         ['whatsnew', "What's New", 'fa-star'],
         ['changelog', 'Changelog', 'fa-code-branch'],
@@ -45,6 +46,7 @@
         profiles: 'Xem hồ sơ, khung avatar và thành tích của từng học sinh',
         badges: 'Trao và thu hồi hai badge dành riêng cho Administrator',
         chat: 'Kiểm duyệt phòng chung, tin nhắn riêng và nhóm nhỏ',
+        reports: 'Tiếp nhận, trao đổi và hoàn thiện báo cáo của học sinh',
         notifications: 'Soạn, xem trước và xuất bản thông báo tức thời',
         whatsnew: 'Bật/tắt khối "Cập nhật gần đây" và xem trước nội dung',
         changelog: 'Quản lý lịch sử phiên bản hiển thị trên website',
@@ -114,6 +116,12 @@
         profiles: { q: '', list: [], page: 1, pageSize: 20, total: 0, loading: false },
         badges: { q: '', list: [], page: 1, pageSize: 20, total: 0, selected: null, badges: [], badgeId: 'admin-chosen', reason: '' },
         chat: { rooms: [], active: null, data: null, loading: false },
+        reports: {
+            list: [], stats: null, total: 0, page: 1, pageSize: 20, q: '',
+            status: 'all', category: 'all', priority: 'all', unread: false,
+            from: '', to: '', loading: false, searchTimer: null,
+            activeId: null, detail: null, detailLoading: false
+        },
         whatsnew: { flags: [], entries: [], loading: false },
         logs: { list: [], q: '', target: '', limit: 100, page: 1, total: 0, from: '', to: '' },
         monitor: { data: null },
@@ -844,6 +852,7 @@
             profiles: renderProfiles,
             badges: renderBadges,
             chat: renderChatAdmin,
+            reports: renderReports,
             notifications: renderNotifications,
             whatsnew: renderWhatsNewAdmin,
             changelog: renderChangelog,
@@ -1012,6 +1021,420 @@
     }
 
     /* ------------------------------ Notifications ------------------------- */
+    /* ------------------------------- Report --------------------------------
+       Tab Report dùng CHUNG dữ liệu public.reports với Administrator và
+       Founder Dashboard. Máy chủ kiểm tra quyền cho từng action reports.*
+       --------------------------------------------------------------------- */
+    var REPORT_STATUSES = [
+        ['new', 'Mới'], ['pending', 'Chờ xử lý'], ['in_progress', 'Đang xử lý'],
+        ['waiting_student', 'Chờ học sinh'], ['resolved', 'Đã giải quyết'], ['closed', 'Đã đóng']
+    ];
+    var REPORT_CATEGORIES = [
+        ['bug', 'Lỗi kỹ thuật'], ['ui', 'Giao diện'], ['content', 'Nội dung'],
+        ['answer', 'Đáp án / Giải thích'], ['account', 'Tài khoản'],
+        ['performance', 'Hiệu năng'], ['feature', 'Đề xuất'], ['data', 'Dữ liệu'], ['other', 'Khác']
+    ];
+    var REPORT_PRIORITIES = [['low', 'Thấp'], ['normal', 'Bình thường'], ['high', 'Cao'], ['critical', 'Khẩn']];
+    function reportStatusLabel(value) { return labelOf(REPORT_STATUSES, value); }
+    function reportCategoryLabel(value) { return labelOf(REPORT_CATEGORIES, value); }
+    function reportPriorityLabel(value) { return labelOf(REPORT_PRIORITIES, value); }
+    function reportStatusTone(value) {
+        if (value === 'resolved') return 'ok';
+        if (value === 'closed') return 'muted';
+        if (value === 'new' || value === 'in_progress') return 'info';
+        return 'warn';
+    }
+
+    function askText(opts) {
+        var body = h('div');
+        if (opts.text) body.appendChild(h('p', 'bkc-hint', opts.text));
+        var ta = h('textarea', 'bkc-input');
+        ta.rows = 4;
+        ta.maxLength = opts.max || 2000;
+        ta.placeholder = opts.placeholder || '';
+        if (opts.value) ta.value = opts.value;
+        body.appendChild(ta);
+        var msg = h('div', 'bkc-hint');
+        body.appendChild(msg);
+        if (global.BK && global.BK.ui && global.BK.ui.modal) {
+            global.BK.ui.modal({
+                title: opts.title,
+                body: body,
+                actions: [
+                    { label: 'Huỷ', variant: 'ghost', onClick: function (c) { c(); } },
+                    {
+                        label: opts.okLabel || 'Xác nhận', variant: 'primary', onClick: function (c) {
+                            var v = String(ta.value || '').trim();
+                            if (opts.min && v.length < opts.min) {
+                                msg.textContent = 'Cần ít nhất ' + opts.min + ' ký tự.';
+                                msg.classList.add('bkc-alert');
+                                return;
+                            }
+                            c();
+                            opts.onSubmit(v);
+                        }
+                    }
+                ]
+            });
+            setTimeout(function () { try { ta.focus(); } catch (e) { } }, 40);
+            return;
+        }
+        var v = global.prompt ? global.prompt(opts.title, '') : null;
+        if (v != null && String(v).trim()) opts.onSubmit(String(v).trim());
+    }
+
+    function renderReports(pane) {
+        var R = S.reports;
+        if (R.activeId) return renderReportDetail(pane, R.activeId);
+
+        var statsHost = h('div');
+        var statsGrid = h('div', 'bkc-grid');
+        statsHost.appendChild(statsGrid);
+        pane.appendChild(statsHost);
+
+        var toolbar = card('Báo cáo của học sinh', [
+            btn('Làm mới', 'bkc-btn-ghost bkc-btn-sm', function () {
+                loadReportStats(statsGrid);
+                loadReportList();
+            }, 'fa-rotate')
+        ], 'Tìm kiếm, lọc và mở từng báo cáo để trao đổi riêng với người gửi');
+        pane.appendChild(toolbar.root);
+
+        var filters = h('div', 'bkc-actions bkc-filters');
+        var search = input('search', 'Tìm mã, tiêu đề, nội dung…', R.q);
+        search.addEventListener('input', function () {
+            R.q = search.value;
+            clearTimeout(R.searchTimer);
+            R.searchTimer = setTimeout(function () { R.page = 1; loadReportList(); }, 350);
+        });
+        filters.appendChild(search);
+        filters.appendChild(selectBox(REPORT_STATUSES, R.status, function (v) {
+            R.status = v; R.page = 1; loadReportList();
+        }));
+        filters.appendChild(selectBox([['all', 'Mọi nhóm']].concat(REPORT_CATEGORIES), R.category, function (v) {
+            R.category = v; R.page = 1; loadReportList();
+        }));
+        filters.appendChild(selectBox([['all', 'Mọi ưu tiên']].concat(REPORT_PRIORITIES), R.priority, function (v) {
+            R.priority = v; R.page = 1; loadReportList();
+        }));
+        var unreadBtn = btn('Chưa đọc', 'bkc-btn-ghost bkc-btn-sm', function () {
+            R.unread = !R.unread;
+            unreadBtn.classList.toggle('is-active', R.unread);
+            unreadBtn.setAttribute('aria-pressed', R.unread ? 'true' : 'false');
+            R.page = 1;
+            loadReportList();
+        }, 'fa-envelope');
+        unreadBtn.setAttribute('aria-pressed', 'false');
+        filters.appendChild(unreadBtn);
+        var from = input('date', '', R.from);
+        from.type = 'date';
+        from.title = 'Từ ngày';
+        from.addEventListener('change', function () { R.from = from.value; R.page = 1; loadReportList(); });
+        filters.appendChild(from);
+        var to = input('date', '', R.to);
+        to.type = 'date';
+        to.title = 'Đến ngày';
+        to.addEventListener('change', function () { R.to = to.value; R.page = 1; loadReportList(); });
+        filters.appendChild(to);
+        var clearBtn = btn('Xoá lọc', 'bkc-btn-ghost bkc-btn-sm', function () {
+            R.q = ''; R.status = 'all'; R.category = 'all'; R.priority = 'all';
+            R.unread = false; R.from = ''; R.to = ''; R.page = 1;
+            switchTab('reports');
+        }, 'fa-filter-circle-xmark');
+        filters.appendChild(clearBtn);
+        toolbar.body.appendChild(filters);
+
+        var listCard = card('Danh sách báo cáo', null, null);
+        toolbar.body.appendChild(listCard.root);
+        R.listHost = listCard.body;
+        R.pagerHost = h('div', 'bkc-pager');
+
+        loadReportStats(statsGrid);
+        loadReportList();
+    }
+
+    function loadReportStats(host) {
+        host.textContent = '';
+        statCard(host, 'Tổng báo cáo', '…', 'Đang tải', 'fa-flag');
+        api('reports.stats', {}).then(function (data) {
+            var s = data.stats || {};
+            host.textContent = '';
+            statCard(host, 'Tổng báo cáo', s.total || 0, 'Toàn bộ thời gian', 'fa-flag');
+            statCard(host, 'Mới', s.new || 0, 'Chưa tiếp nhận', 'fa-inbox', 'info');
+            statCard(host, 'Đang xử lý', s.in_progress || 0, 'Có người phụ trách', 'fa-spinner', 'info');
+            statCard(host, 'Chờ học sinh', s.waiting_student || 0, 'Cần bổ sung thông tin', 'fa-hourglass-half', 'warn');
+            statCard(host, 'Đã giải quyết', s.resolved || 0, 'Đã hoàn thiện', 'fa-circle-check', 'ok');
+            statCard(host, 'Cần chú ý', s.attention || 0, 'Ưu tiên cao / khẩn', 'fa-triangle-exclamation', 'warn');
+            statCard(host, 'Chưa đọc', s.unread || 0, 'Hội thoại có tin mới', 'fa-envelope-open-text', 'info');
+            S.reports.stats = s;
+        }).catch(function (err) {
+            host.textContent = '';
+            host.appendChild(alertBox((err && err.message) || 'Không tải được thống kê báo cáo.', 'error'));
+        });
+    }
+
+    function loadReportList() {
+        var R = S.reports;
+        if (!R.listHost) return;
+        R.listHost.textContent = '';
+        loading(R.listHost, 'Đang tải báo cáo…');
+        api('reports.list', {
+            page: R.page, page_size: R.pageSize, q: R.q,
+            status: R.status, category: R.category, priority: R.priority,
+            unread: R.unread, from: R.from ? R.from + 'T00:00:00' : '',
+            to: R.to ? R.to + 'T23:59:59' : ''
+        }).then(function (data) {
+            R.list = data.reports || [];
+            R.total = data.total || 0;
+            R.pageSize = data.pageSize || R.pageSize;
+            R.listHost.textContent = '';
+            var t = table(['Mã', 'Tiêu đề', 'Học sinh', 'Nhóm', 'Ưu tiên', 'Trạng thái', 'Cập nhật', '']);
+            if (!R.list.length) {
+                emptyRow(t.tbody, 8, 'Chưa có báo cáo phù hợp với bộ lọc.');
+            }
+            R.list.forEach(function (row) {
+                var tr = h('tr');
+                if (row.staff_unread > 0) tr.className = 'is-unread';
+                tr.appendChild(h('td', null, row.code));
+                var titleTd = h('td');
+                titleTd.appendChild(h('b', null, row.title));
+                if (row.staff_unread > 0) titleTd.appendChild(h('span', 'bkc-pill is-info', 'Mới'));
+                tr.appendChild(titleTd);
+                tr.appendChild(h('td', null, row.student_name || 'Học sinh'));
+                tr.appendChild(h('td', null, reportCategoryLabel(row.category)));
+                tr.appendChild(h('td', null, reportPriorityLabel(row.priority)));
+                var statusTd = h('td');
+                statusTd.appendChild(pill(reportStatusLabel(row.status), reportStatusTone(row.status)));
+                tr.appendChild(statusTd);
+                tr.appendChild(h('td', null, fmt(row.updated_at)));
+                var actTd = h('td');
+                actTd.appendChild(btn('Mở', 'bkc-btn-ghost bkc-btn-xs', function () {
+                    R.activeId = row.id;
+                    switchTab('reports');
+                }, 'fa-arrow-up-right-from-square'));
+                tr.appendChild(actTd);
+                t.tbody.appendChild(tr);
+            });
+            R.listHost.appendChild(t.wrap);
+            renderPager(R.listHost, {
+                total: R.total, page: R.page, pageSize: R.pageSize, unit: 'báo cáo',
+                onPage: function (p) { R.page = p; loadReportList(); },
+                onSize: function (n) { R.pageSize = n; R.page = 1; loadReportList(); }
+            });
+        }).catch(function (err) {
+            R.listHost.textContent = '';
+            R.listHost.appendChild(alertBox((err && err.message) || 'Không tải được danh sách báo cáo.', 'error'));
+        });
+    }
+
+    function renderReportDetail(pane, id) {
+        var R = S.reports;
+        var back = btn('Quay lại danh sách', 'bkc-btn-ghost bkc-btn-sm', function () {
+            R.activeId = null;
+            R.detail = null;
+            switchTab('reports');
+        }, 'fa-arrow-left');
+        pane.appendChild(back);
+        var host = h('div');
+        pane.appendChild(host);
+        loading(host, 'Đang mở báo cáo…');
+        api('reports.detail', { report_id: id }).then(function (data) {
+            R.detail = data;
+            host.textContent = '';
+            paintReportDetail(host, data);
+            loadReportStats(h('div'));
+        }).catch(function (err) {
+            host.textContent = '';
+            host.appendChild(alertBox((err && err.message) || 'Không mở được báo cáo.', 'error'));
+        });
+    }
+
+    function paintReportDetail(host, data) {
+        var r = data.report;
+        var info = card(r.code + ' · ' + r.title, [
+            pill(reportStatusLabel(r.status), reportStatusTone(r.status))
+        ], (data.student ? data.student.display_name : 'Học sinh') + ' · ' + fmt(r.created_at));
+        host.appendChild(info.root);
+
+        var grid = h('div', 'bkc-kv');
+        [['Nhóm', reportCategoryLabel(r.category)],
+        ['Loại', r.issue_type],
+        ['Ưu tiên', reportPriorityLabel(r.priority)],
+        ['Trang', r.page_title || r.page_url || '—'],
+        ['Đường dẫn', r.page_url || '—'],
+        ['Người xử lý', r.assigned_to || '—'],
+        ['Cập nhật cuối', fmt(r.updated_at)]].forEach(function (pair) {
+            var row = h('div', 'bkc-kv-row');
+            row.appendChild(h('span', 'bkc-kv-key', pair[0]));
+            row.appendChild(h('span', 'bkc-kv-val', pair[1]));
+            grid.appendChild(row);
+        });
+        info.body.appendChild(grid);
+        info.body.appendChild(h('p', 'bkc-report-desc', r.description));
+
+        if (data.attachments && data.attachments.length) {
+            var files = h('div', 'bkc-actions');
+            data.attachments.forEach(function (f) {
+                var a = h('a', 'bkc-btn bkc-btn-ghost bkc-btn-xs', f.name || 'Tệp');
+                a.href = f.url || '#';
+                a.target = '_blank';
+                a.rel = 'noopener';
+                files.appendChild(a);
+            });
+            info.body.appendChild(files);
+        }
+        if (r.context_data && Object.keys(r.context_data).length) {
+            info.body.appendChild(h('p', 'bkc-hint',
+                'Ngữ cảnh: ' + Object.keys(r.context_data).map(function (k) {
+                    return k + '=' + String(r.context_data[k] || '');
+                }).filter(function (x) { return !/=$/.test(x); }).join(' · ')));
+        }
+
+        /* --------------------------- Khu vực xử lý --------------------------- */
+        var actions = card('Xử lý báo cáo', null, 'Mọi thay đổi được ghi vào nhật ký và tạo thông báo riêng cho người gửi');
+        host.appendChild(actions.root);
+        var bar = h('div', 'bkc-actions');
+        bar.appendChild(selectBox(REPORT_STATUSES, r.status, function (v) {
+            if (v === r.status) return;
+            api('reports.status', { report_id: r.id, status: v }).then(function () {
+                toast('Đã chuyển trạng thái báo cáo', 'success');
+                reloadReportDetail();
+            }).catch(function (err) { fail(err); });
+        }));
+        bar.appendChild(btn('Complete Report', 'bkc-btn-primary bkc-btn-sm', function () {
+            askText({
+                title: 'Hoàn thiện báo cáo ' + r.code,
+                text: 'Nhập ghi chú kết quả xử lý. Học sinh sẽ nhận thông báo riêng và thấy nội dung này trong Q&A.',
+                placeholder: 'Ví dụ: Đã sửa lại đáp án câu 5 và cập nhật giải thích.',
+                min: 3, max: 2000, okLabel: 'Hoàn thiện',
+                onSubmit: function (note) {
+                    api('reports.complete', { report_id: r.id, resolution_note: note }).then(function () {
+                        toast('Báo cáo đã hoàn thiện và đã gửi thông báo cho học sinh', 'success');
+                        reloadReportDetail();
+                    }).catch(function (err) { fail(err); });
+                }
+            });
+        }, 'fa-circle-check'));
+        bar.appendChild(btn('Gửi tin nhắn riêng', 'bkc-btn-ghost bkc-btn-sm', function () {
+            askText({
+                title: 'Gửi tin nhắn riêng cho người báo cáo',
+                text: 'Chỉ học sinh đã tạo báo cáo ' + r.code + ' nhận được thông báo này.',
+                placeholder: 'Nội dung tin nhắn…',
+                min: 1, max: 2000, okLabel: 'Gửi',
+                onSubmit: function (text) {
+                    api('reports.privateMessage', { report_id: r.id, body: text }).then(function () {
+                        toast('Đã gửi tin nhắn riêng', 'success');
+                        reloadReportDetail();
+                    }).catch(function (err) { fail(err); });
+                }
+            });
+        }, 'fa-paper-plane'));
+        if (['resolved', 'closed'].indexOf(r.status) >= 0) {
+            bar.appendChild(btn('Mở lại', 'bkc-btn-ghost bkc-btn-sm', function () {
+                askText({
+                    title: 'Mở lại báo cáo ' + r.code,
+                    text: 'Nhập lý do mở lại — lý do được lưu vào nhật ký.',
+                    min: 3, max: 500, okLabel: 'Mở lại',
+                    onSubmit: function (reason) {
+                        api('reports.reopen', { report_id: r.id, reason: reason }).then(function () {
+                            toast('Đã mở lại báo cáo', 'success');
+                            reloadReportDetail();
+                        }).catch(function (err) { fail(err); });
+                    }
+                });
+            }, 'fa-rotate-left'));
+        }
+        actions.body.appendChild(bar);
+        if (r.resolution_note) {
+            actions.body.appendChild(alertBox('Kết quả xử lý: ' + r.resolution_note, 'ok'));
+        }
+
+        /* ------------------------------ Hội thoại --------------------------- */
+        var conv = card('Q&A của báo cáo', null, 'Tin nhắn của học sinh và ban quản trị, theo thứ tự thời gian');
+        host.appendChild(conv.root);
+        var thread = h('div', 'bkc-rep-thread');
+        if (!(data.messages || []).length) {
+            thread.appendChild(h('p', 'bkc-hint', 'Chưa có tin nhắn nào ngoài nội dung báo cáo.'));
+        }
+        (data.messages || []).forEach(function (m) {
+            var mine = m.sender_kind === 'staff';
+            var box = h('div', 'bkc-rep-msg' + (mine ? ' is-staff' : ' is-student'));
+            var head = h('div', 'bkc-rep-msg-head');
+            head.appendChild(h('b', null, mine ? (m.sender_label || 'Ban quản trị') : 'Học sinh'));
+            if (m.is_private) head.appendChild(h('span', 'bkc-pill is-warn', 'Tin nhắn riêng'));
+            head.appendChild(h('span', 'bkc-hint', fmt(m.created_at)));
+            if (mine && m.read_by_student_at) head.appendChild(h('span', 'bkc-pill is-ok', 'Đã đọc'));
+            box.appendChild(head);
+            box.appendChild(h('p', 'bkc-rep-msg-body', m.body));
+            if (m.attachment_urls && m.attachment_urls.length) {
+                var fl = h('div', 'bkc-actions');
+                m.attachment_urls.forEach(function (f) {
+                    var a = h('a', 'bkc-btn bkc-btn-ghost bkc-btn-xs', f.name || 'Tệp');
+                    a.href = f.url || '#';
+                    a.target = '_blank';
+                    a.rel = 'noopener';
+                    fl.appendChild(a);
+                });
+                box.appendChild(fl);
+            }
+            thread.appendChild(box);
+        });
+        conv.body.appendChild(thread);
+
+        var form = h('form', 'bkc-rep-reply');
+        form.noValidate = true;
+        var ta = h('textarea', 'bkc-input');
+        ta.rows = 3;
+        ta.maxLength = 4000;
+        ta.placeholder = r.status === 'closed'
+            ? 'Báo cáo đã đóng — hãy mở lại trước khi trả lời.'
+            : 'Trả lời học sinh…';
+        ta.disabled = r.status === 'closed';
+        form.appendChild(ta);
+        var send = btn('Gửi trả lời', 'bkc-btn-primary bkc-btn-sm', null, 'fa-reply');
+        send.type = 'submit';
+        send.disabled = r.status === 'closed';
+        var foot = h('div', 'bkc-actions');
+        foot.appendChild(send);
+        form.appendChild(foot);
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var text = String(ta.value || '').trim();
+            if (!text) { toast('Nội dung trả lời đang trống.', 'error'); return; }
+            send.disabled = true;
+            api('reports.reply', { report_id: r.id, body: text }).then(function () {
+                toast('Đã gửi phản hồi và thông báo cho học sinh', 'success');
+                reloadReportDetail();
+            }).catch(function (err) {
+                send.disabled = false;
+                fail(err);
+            });
+        });
+        conv.body.appendChild(form);
+
+        /* --------------------------- Nhật ký xử lý --------------------------- */
+        if ((data.activity || []).length) {
+            var logs = card('Lịch sử xử lý', null, 'Ai làm gì, khi nào');
+            host.appendChild(logs.root);
+            var lt = table(['Thời gian', 'Người thực hiện', 'Hành động', 'Từ', 'Đến']);
+            data.activity.forEach(function (row) {
+                var tr = h('tr');
+                tr.appendChild(h('td', null, fmt(row.created_at)));
+                tr.appendChild(h('td', null, row.actor_label || row.actor_kind));
+                tr.appendChild(h('td', null, row.action));
+                tr.appendChild(h('td', null, row.old_value || '—'));
+                tr.appendChild(h('td', null, row.new_value || '—'));
+                lt.tbody.appendChild(tr);
+            });
+            logs.body.appendChild(lt.wrap);
+        }
+    }
+
+    function reloadReportDetail() {
+        if (S.tab !== 'reports' || !S.reports.activeId) return;
+        switchTab('reports');
+    }
+
     function renderNotifications(pane) {
         var seed = S.notif.editing || S.notif.draft || {};
         var editing = !!S.notif.editing;

@@ -26,10 +26,32 @@ function walk(dir, out = []) {
   return out;
 }
 
+/**
+ * Report Issue dùng chung cho mọi trang có bk-cloud.js (8.0.0).
+ * Chỉ thêm một thẻ script; idempotent; không sửa nội dung.
+ */
+function ensureReport(file, html) {
+  if (html.includes('assets/bakhi/bk-report.js')) return html;
+  if (!html.includes('assets/bakhi/bk-cloud.js')) return html;
+  const rel = path.relative(ROOT, file).split(path.sep).join('/');
+  const depth = rel.split('/').length - 1;
+  const prefix = depth === 0 ? '' : '../'.repeat(depth);
+  const idx = html.lastIndexOf('</body>');
+  if (idx < 0) return html;
+  const tag = `<script src="${prefix}assets/bakhi/bk-report.js" defer></script>\n`;
+  return html.slice(0, idx) + tag + html.slice(idx);
+}
+
 function inject(file) {
   const rel = path.relative(ROOT, file).split(path.sep).join('/');
-  if (SKIP.has(rel)) return 'skip';
   let html = fs.readFileSync(file, 'utf8');
+  /* Report Issue cũng có mặt ở Studio (trang tĩnh độc lập). */
+  const withReport = ensureReport(file, html);
+  if (withReport !== html) {
+    fs.writeFileSync(file, withReport);
+    html = withReport;
+  }
+  if (SKIP.has(rel)) return 'skip';
   if (html.includes('assets/bakhi/bk-core.js')) return 'already';
 
   const depth = rel.split('/').length - 1;

@@ -1,0 +1,205 @@
+# 🚩 Report Issue + Q&A (Bá Khí 8.0.0)
+
+Tài liệu này mô tả hệ thống báo cáo vấn đề đang chạy trên production: nơi người dùng gặp nó,
+cách dữ liệu đi qua Supabase, quyền của từng vai trò và cách vận hành.
+
+- [1. Người dùng thấy gì](#1-người-dùng-thấy-gì)
+- [2. Kiến trúc](#2-kiến-trúc)
+- [3. Mô hình dữ liệu](#3-mô-hình-dữ-liệu)
+- [4. Trạng thái & quy trình](#4-trạng-thái--quy-trình)
+- [5. Quyền hạn](#5-quyền-hạn)
+- [6. Tệp đính kèm](#6-tệp-đính-kèm)
+- [7. Thông báo riêng](#7-thông-báo-riêng)
+- [8. Hợp đồng API](#8-hợp-đồng-api)
+- [9. Kiểm thử](#9-kiểm-thử)
+- [10. Xử lý sự cố](#10-xử-lý-sự-cố)
+
+## 1. Người dùng thấy gì
+
+| Vị trí | Cách mở | Ghi chú |
+|---|---|---|
+| Trang chủ | **Cài đặt → Report Issue** | Nhúng cùng component, không mở trang Cài đặt thứ hai |
+| Mọi trang môn học / bài học | Nút nổi **Báo cáo** góc phải dưới | Cửa sổ kéo được, thu nhỏ, nhớ vị trí, `Esc` để đóng |
+| Chat, Hồ sơ, Cài đặt, Studio, Admin, Founder | Nút nổi **Báo cáo** | Cùng component, cùng dữ liệu |
+
+Cửa sổ có hai tab:
+
+1. **Gửi báo cáo** — tiêu đề, nhóm vấn đề, loại báo cáo, mức ưu tiên, mô tả, tệp đính kèm,
+   ngữ cảnh tự thu thập (thu gọn được).
+2. **Báo cáo của tôi** — danh sách báo cáo của chính tài khoản đang gắn với thiết bị. Bấm
+   một dòng để mở chi tiết và Q&A.
+
+Trên điện thoại, cửa sổ chuyển thành bottom sheet toàn chiều rộng; nút nổi thu về biểu tượng.
+
+### Ngữ cảnh tự thu thập
+
+`page_url`, `page_title`, `route`, `subject`, `user_agent`, `platform`, `language`,
+`screen`, `viewport`, `timezone`, `captured_at`.
+
+Không thu thập mật khẩu, token, cookie, mã đăng nhập hay nội dung ô nhập khác.
+
+## 2. Kiến trúc
+
+```
+bk-report.js ──► BKCloud.reportApi() ──► Edge Function report-api ──► public.reports
+      │                                        │                        report_messages
+      │                                        └──► storage: report-attachments
+      └──► BKCloud.reportUpload() ─────────────► storage (RLS theo thư mục học sinh)
+
+bk-devboard.js (tab Report) ──► BKCloud.adminAction() ──► admin-actions ──► reports.*
+                                                              │
+                                                              └──► report_notifications
+bk-cloud.js (chuông) ◄── RLS select ◄── report_notifications ◄─┘
+```
+
+- **Trình duyệt chỉ đọc.** Ba policy SELECT cho phép học sinh đọc đúng hàng của mình; không
+  có policy INSERT/UPDATE/DELETE nào cho client trên bốn bảng của hệ thống.
+- **Mọi thao tác ghi ở máy chủ.** `report-api` xác minh phiên Anonymous Auth → tra
+  `student_devices` → lấy `students` đang hoạt động. `admin-actions` xác minh `x-admin-token`
+  trong `admin_sessions`.
+- **Không có `student_id` từ client.** Payload tạo báo cáo không chứa trường này.
+
+## 3. Mô hình dữ liệu
+
+Migration: `supabase/migrations/20261206000000_bakhi_v800_reports.sql`.
+
+### `reports`
+
+| Cột | Ý nghĩa |
+|---|---|
+| `id` | UUID |
+| `code` | Mã công khai `BK-xxxxx` (sequence `report_code_seq`) |
+| `student_id` | Người báo cáo (FK `students`) |
+| `title`, `description` | Nội dung báo cáo (4–160 / 10–5.000 ký tự) |
+| `category` | `bug`, `ui`, `content`, `answer`, `account`, `performance`, `feature`, `data`, `other` |
+| `issue_type` | `bug`, `question`, `suggestion`, `content_error` |
+| `priority` | `low`, `normal`, `high`, `critical` |
+| `status` | `new`, `pending`, `in_progress`, `waiting_student`, `resolved`, `closed` |
+| `page_url`, `page_title`, `route`, `subject` | Ngữ cảnh trang |
+| `context_data` | JSONB ngữ cảnh kỹ thuật đã lọc |
+| `attachment_paths` | Đường dẫn trong bucket `report-attachments` |
+| `assigned_to` | `admin` / `founder` |
+| `resolved_by`, `resolution_note`, `resolved_at`, `closed_at` | Kết quả xử lý |
+| `last_message_at`, `last_message_by` | Tin nhắn gần nhất |
+| `student_unread`, `staff_unread` | Bộ đếm chưa đọc hai phía |
+
+### `report_messages`
+
+`sender_kind` (`student`/`staff`), `sender_student_id`, `sender_label`, `body` (1–4.000),
+`attachments`, `is_private`, `read_by_student_at`, `read_by_staff_at`.
+
+### `report_activity_logs`
+
+`actor_kind`, `actor_label`, `action`, `old_value`, `new_value`, `metadata`. Không mở cho
+trình duyệt; dashboard đọc qua `admin-actions` → `reports.detail`.
+
+### `report_notifications`
+
+`student_id`, `report_id`, `kind` (`reply`, `status`, `resolved`, `notice`), `title`, `body`,
+`read_at`. Có unique index chống trùng nội dung cho cùng báo cáo.
+
+## 4. Trạng thái & quy trình
+
+```
+new ─► pending ─► in_progress ─► waiting_student ─► in_progress ─► resolved ─► closed
+                                                          ▲             │
+                                                          └── reopen ───┘
+```
+
+- Bảng chuyển trạng thái hợp lệ nằm ở **máy chủ** (`REPORT_TRANSITIONS` trong
+  `admin-actions`). Bước nhảy không hợp lệ bị từ chối với `409 BAD_TRANSITION`.
+- `resolved` ghi `resolved_at` + `resolved_by`; `closed` ghi `closed_at`.
+- Mở lại chỉ áp dụng cho `resolved`/`closed`, bắt buộc nhập lý do, ghi nhật ký và gửi thông
+  báo cho học sinh.
+- Học sinh trả lời một báo cáo `resolved` sẽ tự mở lại về `pending`.
+- Học sinh không thể tự đánh dấu hoàn thiện: không có action nào cho phép.
+
+## 5. Quyền hạn
+
+| Hành động | Học sinh | Administrator | Founder |
+|---|---|---|---|
+| Tạo báo cáo | ✅ | — | — |
+| Xem báo cáo của mình | ✅ | — | — |
+| Xem mọi báo cáo | ❌ | ✅ | ✅ |
+| Trả lời trong Q&A | ✅ (của mình) | ✅ | ✅ |
+| Đổi trạng thái | ❌ | ✅ | ✅ |
+| Complete Report | ❌ | ✅ | ✅ |
+| Gửi tin nhắn riêng | ❌ | ✅ | ✅ |
+| Mở lại báo cáo | ❌ | ✅ | ✅ |
+| Gán người xử lý | ❌ | ✅ | ✅ |
+| Tự nâng quyền Founder | ❌ | ❌ (chặn ở `admin-actions`) | — |
+
+Administrator và Founder dùng chung tab Report và cùng các action `reports.*`; không có
+đường nào để Administrator tự cấp quyền Founder qua hệ thống báo cáo.
+
+## 6. Tệp đính kèm
+
+- Bucket `report-attachments`, **private**, tối đa 5 MB mỗi tệp, nhận PNG/JPG/WEBP/GIF/PDF.
+- Đường dẫn bắt buộc `<student_id>/<tên-tệp>`; policy storage kiểm tra thư mục đầu tiên
+  khớp `public.bakhi_current_student_id()`.
+- `report-api` lọc lại danh sách đường dẫn gửi lên (chỉ nhận trong thư mục của chính mình,
+  tối đa 4) rồi mới ghi vào `attachment_paths`.
+- Dashboard và trang học sinh nhận **signed URL** hạn 1 giờ do Edge Function sinh ra; không
+  có URL công khai.
+
+## 7. Thông báo riêng
+
+Khi Administrator/Founder trả lời, gửi tin nhắn riêng, đổi trạng thái, hoàn thiện hoặc mở
+lại báo cáo, máy chủ ghi một dòng `report_notifications` cho **đúng** `student_id` của báo
+cáo. `bk-cloud.js` đọc bảng này bằng RLS và hiển thị nhóm **“Phản hồi báo cáo của bạn”**
+trong Trung tâm thông báo hiện có, kèm realtime. Bấm vào sẽ mở đúng báo cáo qua
+`BKReport.openReport(report_id)`.
+
+Không có hệ thống thông báo thứ hai, không gửi cho toàn bộ người dùng, không có recipient do
+client chọn.
+
+## 8. Hợp đồng API
+
+### `report-api` (học sinh, Bearer token Anonymous Auth)
+
+| Action | Nội dung |
+|---|---|
+| `bootstrap` | Hồ sơ đang gắn + đếm báo cáo + số thông báo chưa đọc |
+| `list` | `{ status?, limit, offset }` → báo cáo của chính mình |
+| `detail` | `{ report_id }` → báo cáo + tệp (signed URL) + Q&A; tự đánh dấu đã đọc |
+| `create` | `{ title, description, category, issue_type, priority, page_url, page_title, route, subject, context, attachments }` |
+| `message.send` | `{ report_id, body, attachments? }` |
+| `read.mark` | `{ report_id }` |
+| `notifications` | Danh sách thông báo báo cáo |
+| `notifications.read` | `{ notification_id? }` — không có id thì đánh dấu tất cả |
+
+Giới hạn: tạo 6 báo cáo/giờ, 30 tin nhắn/10 phút (`bakhi_rate_limit`).
+
+### `admin-actions` (header `x-admin-token`)
+
+`reports.stats`, `reports.list`, `reports.detail`, `reports.reply`,
+`reports.privateMessage`, `reports.status`, `reports.complete`, `reports.reopen`,
+`reports.assign`.
+
+## 9. Kiểm thử
+
+```bash
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/report-smoke.js
+```
+
+Bộ QA kiểm tra: nút nổi, cửa sổ, form, validation, payload không có `student_id`, danh sách,
+Q&A, gửi trả lời, `Esc`, chế độ nhúng Cài đặt, hợp đồng action của hai Edge Function, RLS và
+bucket riêng tư.
+
+Kiểm thử thủ công trên production (cần một tài khoản học sinh đã gắn):
+
+1. Gửi báo cáo từ trang chủ và từ một trang bài học.
+2. Mở tab Report trong dashboard, thấy báo cáo mới và thống kê tăng.
+3. Trả lời → học sinh thấy thông báo trong chuông → bấm mở đúng báo cáo.
+4. Complete Report kèm ghi chú → trạng thái `resolved`, có thông báo, có lịch sử.
+5. Đăng nhập học sinh khác → không thấy báo cáo của người trước.
+
+## 10. Xử lý sự cố
+
+| Hiện tượng | Nguyên nhân thường gặp | Cách xử lý |
+|---|---|---|
+| Nút Báo cáo báo “chưa gắn học sinh” | Thiết bị chưa chọn họ tên | Chọn họ tên ở trang chủ rồi mở lại |
+| Gửi báo cáo lỗi `report-api` 404 | Chưa deploy Edge Function | `npx supabase functions deploy report-api` |
+| Tab Report trống, không có thống kê | Chưa chạy migration 8.0.0 | Chạy migration rồi tải lại dashboard |
+| Học sinh không thấy phản hồi | Chưa bật realtime hoặc chưa chạy migration | Kiểm tra `report_notifications` trong publication `supabase_realtime` |
+| Tải tệp thất bại | Tệp > 5 MB hoặc sai định dạng | Dùng PNG/JPG/WEBP/GIF/PDF ≤ 5 MB |

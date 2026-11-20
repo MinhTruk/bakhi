@@ -15,6 +15,7 @@
         { id: 'learning', label: 'Trung tâm học tập', icon: 'fa-graduation-cap' },
         { id: 'display', label: 'Hiển thị & Trợ năng', icon: 'fa-circle-half-stroke' },
         { id: 'wallpaper', label: 'Hình nền', icon: 'fa-image' },
+        { id: 'report', label: 'Report Issue', icon: 'fa-flag' },
         { id: 'dev', label: 'Nhà phát triển', icon: 'fa-code' },
         { id: 'founder', label: 'Founder', icon: 'fa-crown' }
     ];
@@ -118,6 +119,10 @@
             /* Trạng thái phiên Dev/Admin/Founder có thể đổi từ nơi khác → dựng lại khi mở tab. */
             if (id === 'dev') buildDev(S.panels[id]);
             if (id === 'founder') buildFounder(S.panels[id]);
+            if (id === 'report') {
+                var rp = S.panels[id];
+                if (rp && rp.__report) rp.__report.refresh();
+            }
             return;
         }
         S.mounted[id] = true;
@@ -128,6 +133,23 @@
         else if (id === 'wallpaper') buildWallpaper(panel);
         else if (id === 'dev') buildDev(panel);
         else if (id === 'founder') buildFounder(panel);
+        else if (id === 'report') buildReport(panel);
+    }
+
+    /* ---------------------------------------------------------------------
+       Report Issue — cùng component với cửa sổ nổi ở các trang môn học.
+       ------------------------------------------------------------------ */
+    function buildReport(panel) {
+        panel.textContent = '';
+        panel.appendChild(el('p', 'bk-set-lead',
+            'Gửi báo cáo lỗi nội dung, giao diện, tài khoản hoặc góp ý. Ban quản trị trả lời riêng cho bạn và toàn bộ trao đổi được lưu tại đây.'));
+        if (!global.BKReport || typeof global.BKReport.mount !== 'function') {
+            panel.appendChild(el('p', null, 'Không tải được thành phần báo cáo. Hãy tải lại trang.'));
+            return;
+        }
+        var host = el('div', 'bk-set-report');
+        panel.appendChild(host);
+        panel.__report = global.BKReport.mount(host, { tab: 'compose' });
     }
 
     /* ---------------------------------------------------------------------

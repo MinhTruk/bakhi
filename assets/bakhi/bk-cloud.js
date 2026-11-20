@@ -57,6 +57,7 @@
         announcements: [], reads: {}, changelog: [], co: {}, lastSeenVersion: null,
         annLoading: false, annError: null, clLoading: false, clError: null,
         flags: {}, flagsLoaded: false, realtime: 'idle', maintenanceNode: null,
+        reportNotes: [], reportNotesLoaded: false, reportNotesAt: 0,
         syncTimer: null, retrying: null, syncing: false, applyingRemote: false,
         lastSyncAt: 0, syncError: null, listeners: [], channel: null,
         studentTimer: null, studentBusy: false, lastStudentAt: 0, studentError: null,
@@ -1117,6 +1118,8 @@
                 paintBell();
                 if (S.panelOpen) renderPanel();
                 emit('announcements', S.announcements);
+                /* Phản hồi báo cáo nằm chung Trung tâm thông báo. */
+                loadReportNotes();
                 return S.announcements;
             }).catch(function (err) {
                 S.annLoading = false;
@@ -1128,7 +1131,71 @@
     }
 
     function unreadCount() {
-        return S.announcements.filter(function (a) { return !S.reads[a.id]; }).length;
+        return S.announcements.filter(function (a) { return !S.reads[a.id]; }).length +
+            S.reportNotes.filter(function (n) { return !n.read_at; }).length;
+    }
+
+    /* ------------------------------------------------------------------
+       v8.0.0 — Thông báo riêng của Report Issue trong CÙNG Trung tâm thông báo.
+       Chỉ đọc thông báo thuộc chính học sinh đang gắn (RLS + máy chủ).
+       ------------------------------------------------------------------ */
+    function loadReportNotes(force) {
+        /* Trang chỉ nhận thông báo vẫn có thể hiển thị phản hồi báo cáo: hồ sơ
+           học sinh lấy từ bản lưu thiết bị, còn RLS vẫn chỉ mở đúng hàng của mình. */
+        var ident = S.student || cachedIdentity();
+        if (!S.ready || !ident) return Promise.resolve([]);
+        if (!force && S.reportNotesLoaded && now() - S.reportNotesAt < 5000) {
+            return Promise.resolve(S.reportNotes);
+        }
+        S.reportNotesAt = now();
+        return client().from('report_notifications')
+            .select('id, report_id, kind, title, body, read_at, created_at')
+            .order('created_at', { ascending: false })
+            .limit(20)
+            .then(function (res) {
+                if (res.error) throw res.error;
+                S.reportNotes = (res.data || []).filter(function (n) {
+                    return !ident || !n.student_id || String(n.student_id) === String(ident.id);
+                });
+                S.reportNotesLoaded = true;
+                if (S.panelOpen) renderPanel();
+                paintBell();
+                return S.reportNotes;
+            }).catch(function (err) {
+                /* Bảng chưa được tạo (chưa chạy migration) → bỏ qua, không phá chuông. */
+                console.warn('[BKCloud] report notifications', err && err.message);
+                S.reportNotes = [];
+                return [];
+            });
+    }
+
+    function openReportNotification(note) {
+        if (!note) return;
+        markReportNoteRead(note.id);
+        closePanel();
+        if (global.BKReport && typeof global.BKReport.openReport === 'function') {
+            global.BKReport.openReport(note.report_id);
+        } else {
+            toast('Mở mục Báo cáo của tôi để xem phản hồi.', 'info');
+        }
+    }
+
+    function markReportNoteRead(id) {
+        var note = S.reportNotes.filter(function (n) { return n.id === id; })[0];
+        if (note) note.read_at = new Date().toISOString();
+        paintBell();
+        if (S.panelOpen) renderPanel();
+        api(CFG.functions.report, { action: 'notifications.read', notification_id: id })
+            .catch(function () { });
+    }
+
+    function markAllReportNotesRead() {
+        var unread = S.reportNotes.filter(function (n) { return !n.read_at; });
+        if (!unread.length) return Promise.resolve();
+        var stamp = new Date().toISOString();
+        unread.forEach(function (n) { n.read_at = stamp; });
+        paintBell();
+        return api(CFG.functions.report, { action: 'notifications.read' }).catch(function () { });
     }
 
     function typeLabel(type) {
@@ -1371,6 +1438,24 @@
             return;
         }
 
+        if (S.reportNotes.length) {
+            S.list.appendChild(panelGroup('Phản hồi báo cáo của bạn'));
+            S.reportNotes.forEach(function (n) {
+                var unread = !n.read_at;
+                var item = el('button', 'bkc-item' + (unread ? ' is-unread' : ''));
+                item.type = 'button';
+                var top = el('div', 'bkc-item-top');
+                top.appendChild(el('span', 'bkc-tag bkc-tag-' + (n.kind === 'resolved' ? 'update' : 'important'),
+                    n.kind === 'resolved' ? 'Hoàn thiện' : n.kind === 'notice' ? 'Tin nhắn riêng' : 'Báo cáo'));
+                top.appendChild(el('span', 'bkc-item-time', relTime(n.created_at)));
+                item.appendChild(top);
+                item.appendChild(el('b', 'bkc-item-title', n.title));
+                item.appendChild(el('span', 'bkc-item-sum', clip(n.body, 120)));
+                item.addEventListener('click', function () { openReportNotification(n); });
+                S.list.appendChild(item);
+            });
+        }
+
         if (S.announcements.length) {
             S.list.appendChild(panelGroup('Thông báo từ quản trị viên'));
             S.announcements.forEach(function (a) {
@@ -1559,6 +1644,7 @@
     }
 
     function markAllRead() {
+        markAllReportNotesRead();
         if (NOTIFY_ONLY) {
             var localUnread = S.announcements.filter(function (a) { return !S.reads[a.id]; });
             if (!localUnread.length) { toast('Bạn đã đọc tất cả thông báo.', 'info'); return; }
@@ -2212,6 +2298,14 @@
                     loadSiteFlags();
                     try { global.dispatchEvent(new global.CustomEvent('bk:settings-changed')); } catch (e) { }
                 })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'report_notifications' }, function (payload) {
+                    var row = payload && payload.new;
+                    var me = S.student || cachedIdentity();
+                    if (!row || !me || String(row.student_id) !== String(me.id)) return;
+                    loadReportNotes(true).then(function () {
+                        toast('Có phản hồi mới cho báo cáo của bạn', 'info');
+                    });
+                })
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'student_badges' }, function () {
                     /* Trao/thu hồi badge ở tab hoặc thiết bị khác → tải lại hồ sơ ngay. */
                     syncStudent();
@@ -2459,6 +2553,27 @@
         syncStudent: syncStudent,
         /* Chat: gọi Edge Function chat-api và mở client để đăng ký realtime. */
         chatApi: function (body) { return api(CFG.functions.chat, body); },
+        /* 8.0.0: Report Issue — cùng một Edge Function cho cả website. */
+        reportApi: function (body) { return api(CFG.functions.report, body); },
+        reportNotifications: function (force) { return loadReportNotes(force); },
+        /* Tải tệp đính kèm vào thư mục của CHÍNH học sinh đang gắn.
+           Bucket riêng tư; quyền ghi do RLS kiểm tra lại ở máy chủ. */
+        reportUpload: function (file) {
+            return ensureReady().then(function () { return client(); }).then(function (c) {
+                var ident = S.student || cachedIdentity();
+                if (!ident || !ident.id) throw new Error('Chưa gắn học sinh nên không tải được tệp.');
+                var name = String((file && file.name) || 'tep');
+                var ext = (name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) || 'bin';
+                var path = ident.id + '/' + Date.now().toString(36) + '-' +
+                    Math.random().toString(36).slice(2, 8) + '.' + ext;
+                return c.storage.from('report-attachments')
+                    .upload(path, file, { upsert: false, contentType: (file && file.type) || undefined })
+                    .then(function (res) {
+                        if (res.error) throw new Error(res.error.message || 'Không tải được tệp.');
+                        return path;
+                    });
+            });
+        },
         /* 7.7.0: danh hiệu của chính học sinh (đọc danh mục + trang bị/gỡ). */
         studentProfile: function (body) { return api(CFG.functions.studentProfile, body); },
         /* 7.8.0: mật mã đăng nhập của chính học sinh (thay passkey). */

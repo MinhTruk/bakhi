@@ -120,6 +120,12 @@ Tệp tĩnh độc lập, không cần backend. Chuông thông báo đặt ở g
 không che thanh công cụ. Thông báo không làm gián đoạn tài liệu đang soạn: bảng chỉ mở khi
 bấm chuông.
 
+## 8.1. Report Issue trên Studio (8.0.0)
+
+Studio cũng nạp `bk-report.js`, nên nút **Báo cáo** ở góc phải dưới mở cùng cửa sổ báo cáo như
+mọi trang khác. Báo cáo gửi từ Studio tự gắn ngữ cảnh `studio` (khu vực) và URL hiện tại, giúp
+ban quản trị biết vấn đề nằm ở Word hay Paint. Không có hệ thống báo cáo riêng cho Studio.
+
 ## 9. Dữ liệu, an toàn và sao lưu
 
 ### Cấu trúc `bakhiStudio.v1`
