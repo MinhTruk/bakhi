@@ -100,7 +100,8 @@ ba mảng mới là dữ liệu mới. Không có bảng hay khoá thứ hai cho
 | Client tự cấp achievement | Không đổi — achievements vẫn ở `bk-core`/`student-profile` phía server |
 | Sửa kết quả quiz lịch sử | Phiên ôn không ghi vào `practice`; có kiểm thử riêng |
 | Ghi trực tiếp bảng qua REST | Không đổi — Edge Function là đường ghi duy nhất cho dữ liệu nhạy cảm |
-| Kiểm thử RLS với **hai tài khoản thật** | ❌ **Chưa chạy được** (không có thiết bị/tài khoản học sinh trong môi trường agent) |
+| Truy cập ẩn danh (không phiên) vào `learning_mistakes_v`, `learning_plans_v`, `student_progress` | ✅ `401 42501 permission denied` trên cả ba — đã gọi REST thật bằng publishable key |
+| Kiểm thử RLS với **hai tài khoản học sinh thật** | ❌ **Chưa chạy được** (không có thiết bị/tài khoản học sinh trong môi trường agent) |
 
 ## 10. QA Results
 
