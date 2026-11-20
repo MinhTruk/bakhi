@@ -16,6 +16,13 @@
 -- Edge Function admin-actions (service_role) với scope Founder.
 -- ============================================================================
 
+-- Sửa quyền đọc cho khách CHƯA đăng nhập.
+-- Migration 5.0 đã tạo policy app_settings_select_anon (chỉ key public.*)
+-- nhưng chưa cấp GRANT SELECT cho role anon, nên trình duyệt nhận 42501 và
+-- màn hình bảo trì / feature flag công khai / realtime app_settings không
+-- bao giờ tải được. Cấp đúng quyền đọc, không mở quyền ghi.
+grant select on public.app_settings to anon;
+
 update public.app_settings
    set value = value || jsonb_build_object(
         'maintenance_enabled',

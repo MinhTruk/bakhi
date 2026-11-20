@@ -34,6 +34,12 @@ Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep
 - **Thiên Khải Sáng Thế không còn được tự gắn cờ Founder theo tên hiển thị.** `badges.grant`
   chỉ cấp badge `founder` khi hồ sơ đã có `is_founder = true`; việc trao và thu hồi badge độc
   quyền đều bắt buộc phạm vi Founder và được ghi `admin_activity_logs`.
+- **Sửa quyền đọc `app_settings` cho khách chưa đăng nhập.** Migration 5.0 đã tạo policy
+  `app_settings_select_anon` (chỉ khoá `public.*`) nhưng thiếu `grant select ... to anon`,
+  nên trình duyệt nhận lỗi `42501 permission denied for table app_settings`: màn hình bảo trì
+  và feature flag công khai không bao giờ tải được. 7.9.2 cấp đúng quyền đọc (không mở quyền
+  ghi — PATCH từ anon vẫn bị từ chối) trong migration
+  `20261205000000_bakhi_v792_maintenance_fields.sql`.
 - **Mã Founder sai trả về đúng một thông báo** “Mã Founder không hợp lệ.”, không phân biệt mã
   rỗng, sai hay chưa cấu hình; giới hạn 5 lần thử / 10 phút theo IP kèm thời gian thử lại.
 
