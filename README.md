@@ -1,680 +1,608 @@
+<div align="center">
+
 # 📚 BAKHI
 
-### 🌐 Nền tảng học tập và ôn luyện trực tuyến
-
-> **BAKHI** là một website học tập cá nhân được xây dựng nhằm tổng hợp tài liệu, bài tập, câu hỏi trắc nghiệm và nội dung ôn thi vào một nơi duy nhất.
+### Nền tảng học tập, luyện tập và công cụ cá nhân trên nền web
 
 <p align="center">
-
-- 🌐 **[Mở BAKHI](https://minhtruk.github.io/bakhi/)**  
-- 🛠️ **[Administrator Dashboard](https://minhtruk.github.io/bakhi/admin/)** (cần Administrator Code)  
-- 📦 **[GitHub Repository](https://github.com/MinhTruk/bakhi)**
-- 📱 **[TikTok](https://www.tiktok.com/@meionyx)**   
-- 🟦 **[Facebook](https://www.facebook.com/meionyxx/)**
-
+  <img src="https://img.shields.io/badge/BAKHI-LEARNING%20PLATFORM-8B5CF6?style=for-the-badge" alt="BAKHI Learning Platform" />
+  <img src="https://img.shields.io/badge/PLATFORM-WEB-06B6D4?style=for-the-badge" alt="Platform Web" />
+  <img src="https://img.shields.io/badge/TOOLS-05-F59E0B?style=for-the-badge" alt="Five core tool groups" />
+  <img src="https://img.shields.io/badge/STATUS-ACTIVE-22C55E?style=for-the-badge" alt="Project status active" />
 </p>
+
+<p>
+  <strong>Một không gian để học, luyện tập, lưu trữ và sáng tạo.</strong><br />
+  Tập trung vào trải nghiệm tự học, dữ liệu local-first và khả năng mở rộng theo nhu cầu.
+</p>
+
+<p>
+  <a href="https://minhtruk.github.io/bakhi/"><strong>🌐 Mở website</strong></a>
+  ·
+  <a href="https://github.com/MinhTruk/bakhi"><strong>📦 Source code</strong></a>
+  ·
+  <a href="https://minhtruk.github.io/bakhi/admin/"><strong>🛠 Administrator</strong></a>
+  ·
+  <a href="CHANGELOG.md"><strong>📝 Changelog</strong></a>
+</p>
+
+<p>
+  <a href="https://www.tiktok.com/@meionyx">TikTok</a>
+  ·
+  <a href="https://www.facebook.com/meionyxx/">Facebook</a>
+</p>
+
+</div>
+
+---
+
+## 🧭 Mục lục
+
+- [Giới thiệu](#-giới-thiệu)
+- [Tổng quan tính năng](#-tổng-quan-tính-năng)
+- [Năm nhóm công cụ chính](#-năm-nhóm-công-cụ-chính)
+- [Nguyên tắc thiết kế](#-nguyên-tắc-thiết-kế)
+- [Bắt đầu sử dụng](#-bắt-đầu-sử-dụng)
+- [Chạy dự án cục bộ](#-chạy-dự-án-cục-bộ)
+- [Cấu hình Supabase](#-cấu-hình-supabase-tuỳ-chọn)
+- [Bản đồ thư mục và trang](#-bản-đồ-thư-mục-và-trang)
+- [Kiến trúc kỹ thuật](#-kiến-trúc-kỹ-thuật)
+- [Phím tắt](#-phím-tắt)
+- [Lưu trữ và quyền riêng tư](#-lưu-trữ-và-quyền-riêng-tư)
+- [Kiểm thử và bảo toàn nội dung](#-kiểm-thử-và-bảo-toàn-nội-dung)
+- [Trạng thái và định hướng](#-trạng-thái-và-định-hướng)
+- [Tài liệu liên quan](#-tài-liệu-liên-quan)
+- [Câu hỏi thường gặp](#-câu-hỏi-thường-gặp)
+- [Đóng góp](#-đóng-góp)
+- [Tác giả](#-tác-giả)
 
 ---
 
 ## 📖 Giới thiệu
 
-Trong quá trình học tập, tài liệu thường nằm rải rác ở nhiều nơi. **BAKHI** được tạo ra để giải quyết vấn đề đó bằng cách xây dựng một không gian học tập riêng, nơi các nội dung có thể được sắp xếp theo **môn học, học kỳ, bài kiểm tra và chủ đề**.
+**BAKHI** là một website học tập cá nhân, tập hợp tài liệu, bài học, câu hỏi luyện tập và các công cụ hỗ trợ học tập trong cùng một không gian. Dự án được xây dựng theo hướng web tĩnh, ưu tiên JavaScript thuần, không yêu cầu quy trình build và có thể triển khai trên GitHub Pages.
 
-BAKHI hướng đến việc giúp việc ôn tập trở nên:
+Ngoài phần nội dung học tập, BAKHI còn có hồ sơ cá nhân, trung tâm học tập, hệ thống thông báo, trình phát nhạc, không gian soạn thảo và vẽ, cùng các khu vực quản trị và phát triển.
 
-- 📚 **Gọn gàng** hơn
-- 🔎 **Dễ tìm kiếm** hơn
-- ⚡ **Nhanh chóng** hơn
-- 📝 **Tương tác** hơn
-- 🎯 **Tập trung vào việc ôn thi**
+### 🎯 Mục tiêu
 
-### Điểm nổi bật ở phiên bản 3.4.0
+- **Tập trung:** sắp xếp tài liệu theo môn học, học kỳ, bài kiểm tra và chủ đề.
+- **Chủ động:** cho phép người học luyện tập và xem lại kết quả theo nhịp độ riêng.
+- **Liền mạch:** giữ trải nghiệm nhất quán giữa trang chủ, trang học tập và các công cụ.
+- **Bền vững:** ưu tiên lưu dữ liệu trên thiết bị; đồng bộ đám mây là tuỳ chọn.
+- **Dễ mở rộng:** giữ cấu trúc web tĩnh và các mô-đun JavaScript/CSS dùng chung.
 
-- **Một tài khoản, một menu**: avatar ở góc phải header thay cho menu ba gạch và nút README
-  riêng. Menu gồm Hồ sơ cá nhân, Giao diện, README.md, Bá Khí Studio và Cài đặt.
-- **Hồ sơ và thành tích**: trang `/profile/` có ảnh đại diện, ảnh bìa, biệt danh, giới thiệu,
-  liên kết, 50 khung avatar (27 thường + 2 Developer + 21 Founder) và 99 thành tích
-  (74 tự động + 25 trao tay: Administrator, Developer và Founder).
-- **Cài đặt tập trung**: `/settings/` gồm Hồ sơ, toàn bộ tab Trung tâm học tập, Hiển thị &
-  Trợ năng, Hình nền và Nhà phát triển.
-- **What's New gọn hơn**: chỉ hiển thị phiên bản mới nhất, tối đa 10 dòng, có
-  `Xem thêm` / `Thu gọn`; lịch sử đầy đủ vẫn mở từ nút “Xem tất cả cập nhật”.
-- **Một website, một trải nghiệm thông báo**: chuông thông báo có mặt trên trang chủ, mọi
-  trang môn học/bài học/đề kiểm tra và cả Studio. Quản trị viên đăng thông báo là máy học sinh
-  nhận được ngay, kể cả khi đang làm bài; toàn bộ giao diện thông báo dùng chung một theme tối.
-- **CHANGELOG.md tự lên sóng**: GitHub Actions đọc tệp khi bạn push, đồng bộ lên Supabase và
-  tạo đúng một thông báo cho mỗi phiên bản mới. Không cần sửa HTML mỗi lần phát hành.
-- **Học tập local-first**: tiến trình, ghi chú, đánh dấu, thành tích lưu trên máy trước;
-  Supabase chỉ là lớp đồng bộ tuỳ chọn, không bắt buộc tài khoản.
-- **Không áp lực thời gian**: không đồng hồ đếm ngược, không tính giờ, không xếp hạng thi.
-- **Quản trị tập trung**: Administrator Dashboard 12 mô-đun; Founder Dashboard 15 mô-đun (thêm Bảo trì, Dữ liệu, trao mọi badge), có xem trước thông báo/changelog
-  trước khi push, quản lý học sinh, nhật ký, giám sát, cấu hình và dữ liệu.
-- **Công cụ học tập đi kèm**: Trung tâm học tập 7 tab, Music Player, Bá Khí Studio (Word & Paint),
-  Developer Playground 2.0. Favicon tĩnh dùng chung trên toàn site.
+### 🔗 Các địa chỉ chính
 
-### Yêu cầu & tương thích
+| Khu vực | Liên kết | Mục đích |
+|---|---|---|
+| Website | [minhtruk.github.io/bakhi](https://minhtruk.github.io/bakhi/) | Truy cập và sử dụng BAKHI |
+| Repository | [github.com/MinhTruk/bakhi](https://github.com/MinhTruk/bakhi) | Mã nguồn dự án |
+| Administrator | [Mở Dashboard](https://minhtruk.github.io/bakhi/admin/) | Khu vực quản trị, cần mã xác thực |
+| Changelog | [CHANGELOG.md](CHANGELOG.md) | Lịch sử thay đổi theo phiên bản |
+| Tài liệu Supabase | [SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) | Cấu hình dịch vụ đồng bộ và thông báo |
 
-| Hạng mục | Ghi chú |
+---
+
+## ✨ Tổng quan tính năng
+
+| Nhóm | Những gì BAKHI cung cấp |
 |---|---|
-| Trình duyệt | Chrome/Edge/Firefox/Safari bản mới; cần JavaScript và `localStorage` |
-| Hosting | Bất kỳ host tĩnh nào (GitHub Pages, Netlify, Vercel, `python -m http.server`) |
-| Build | Không có bước build, không bundler, không framework runtime |
-| Supabase | Tuỳ chọn — cần cho nhận diện học sinh, đồng bộ và thông báo realtime |
-| Mạng | Trang học vẫn dùng được khi mất mạng; thông báo và đồng bộ sẽ thử lại sau |
-
-> Mở trực tiếp bằng `file://` vẫn xem được nội dung, nhưng một số tính năng (đọc
-> `CHANGELOG.md`, gọi Supabase) bị chặn bởi chính sách bảo mật của trình duyệt. Nên chạy
-> qua một web server tĩnh, kể cả khi chỉ học cục bộ.
-
-
----
-
-# ✨ Tính năng
-
-## 📚 Hệ thống tài liệu
-
-Các nội dung học tập được phân chia thành từng khu vực riêng, giúp dễ dàng tìm đúng bài học hoặc phần cần ôn.
-
-Có thể tổ chức theo:
-
-- 📖 Môn học
-- 📅 Học kỳ
-- 📝 Bài kiểm tra
-- 📑 Chủ đề
-- 🎯 Nội dung ôn tập
+| 📚 Học tập | Tổ chức nội dung theo môn, học kỳ, bài học, chủ đề và đợt kiểm tra |
+| 📝 Luyện tập | Câu hỏi tương tác, lựa chọn đáp án, xáo trộn câu hỏi, phản hồi và giải thích |
+| 🧠 Theo dõi tiến độ | Tổng quan học tập, ôn tập câu sai, ghi chú, đánh dấu, lịch sử và thành tích |
+| 👤 Cá nhân hoá | Hồ sơ, ảnh đại diện/ảnh bìa, khung avatar, giao diện và cài đặt |
+| 🔔 Thông báo | Thông báo quản trị, cập nhật phiên bản và trạng thái đã đọc |
+| 🎧 Giải trí nhẹ | Music Player có hàng đợi, lời bài hát và bố cục có thể di chuyển |
+| 🎨 Sáng tạo | Bá Khí Studio với trình soạn thảo văn bản và bảng vẽ |
+| 🛠 Phát triển | Developer Playground và các công cụ kiểm tra, tuỳ chỉnh giao diện |
+| 🔐 Quản trị | Administrator Dashboard và Founder Dashboard với các chức năng quản lý riêng |
 
 ---
 
-## 📝 Bài tập tương tác
+## 🧰 Năm nhóm công cụ chính
 
-Thay vì chỉ đọc tài liệu, BAKHI hướng đến việc cho phép người dùng **làm bài trực tiếp trên website**.
+Badge `TOOLS-05` đại diện cho năm nhóm công cụ nổi bật của BAKHI. Bên trong mỗi nhóm có thể có nhiều chức năng nhỏ hơn.
 
-Các trang bài tập có thể bao gồm:
+### 1. 🧠 Trung tâm học tập
 
-- Câu hỏi trắc nghiệm
-- Nhiều lựa chọn
-- Câu hỏi theo chủ đề
-- Bài luyện tập
-- Nội dung ôn thi
+Không gian theo dõi và quản lý quá trình tự học, mở qua `Ctrl/⌘ + K` hoặc mục **Cài đặt → Trung tâm học tập**.
+
+- **Tổng quan:** số câu đã luyện, kết quả đúng/sai, độ chính xác và tiến độ theo môn hoặc chủ đề.
+- **Ôn tập:** lưu câu trả lời sai, lọc câu cần xem lại, đánh dấu thành thạo và lên lịch ôn.
+- **Ghi chú:** tạo ghi chú theo môn hoặc câu hỏi, ghim, phân loại và xuất nội dung.
+- **Đánh dấu:** lưu nhanh câu hỏi, bài học, môn học hoặc tài liệu cần xem lại.
+- **Lịch sử:** tra cứu nội dung đã mở, câu đã luyện và hoạt động ôn tập.
+- **Thành tích:** theo dõi các mốc học tập và hoạt động trong hệ thống.
+- **Cài đặt:** focus mode, cỡ chữ, nhịp ôn, tuỳ chọn AI/Supabase và xuất/nhập dữ liệu.
+
+### 2. 🎧 Music Player
+
+Trình phát nhạc dùng chung trên website, có thể mở từ biểu tượng nhạc ở góc màn hình.
+
+- Hàng đợi phát: thêm, xoá và sắp xếp lại bài hát.
+- Shuffle, repeat, âm lượng và tua bài.
+- Hiển thị lời bài hát có mốc thời gian nếu có tệp lời tương ứng.
+- Cửa sổ có thể kéo, thu nhỏ, phóng to và thay đổi kích thước.
+- Ghi nhớ vị trí, kích thước và trạng thái giao diện.
+- Hỗ trợ Media Session khi trình duyệt và thiết bị cho phép.
+- Không tự động phát nhạc; người dùng chủ động bấm phát hoặc tiếp tục.
+
+Chi tiết: [docs/MUSIC.md](docs/MUSIC.md).
+
+### 3. 🎨 Bá Khí Studio
+
+Bộ công cụ sáng tạo chạy độc lập trong trình duyệt, gồm ba chế độ **Word**, **Paint** và **Chia đôi**.
+
+**Word mini**
+- Trang giấy A4 và các thao tác định dạng văn bản cơ bản.
+- Tiêu đề, danh sách, canh lề, màu chữ, màu nền và liên kết.
+- Chèn ảnh, hoàn tác/làm lại và đếm từ.
+- In hoặc lưu tài liệu thành PDF thông qua trình duyệt.
+
+**Paint mini**
+- Bút vẽ, bút chì, bút dạ quang và tẩy.
+- Đường thẳng, hình chữ nhật, hình tròn, mũi tên và chữ.
+- Tuỳ chỉnh bảng màu, kích thước nét và độ đậm.
+- Hoàn tác và xuất bản vẽ PNG.
+- Chèn bản vẽ vào tài liệu Word.
+
+Studio hỗ trợ nhiều tài liệu, tự lưu trên thiết bị và xuất HTML/TXT để sao lưu. Chi tiết: [docs/STUDIO.md](docs/STUDIO.md).
+
+### 4. 🛠 Developer Playground
+
+Bộ công cụ dành cho phát triển và kiểm tra giao diện. Một số chức năng yêu cầu xác thực Developer.
+
+Các công cụ gồm:
+
+- Inspector
+- CSS Studio
+- Animation Studio
+- Performance Lab
+- Storage Manager
+- Console Pro
+- Network Monitor
+- Theme Editor
+- Component Library
+- Backup Manager
+- Music controls
+
+Cửa sổ công cụ có thể kéo và đổi kích thước, ghi nhớ trạng thái sử dụng, đồng thời hỗ trợ `prefers-reduced-motion`.
+
+Chi tiết: [docs/FEATURES.md](docs/FEATURES.md) và [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+### 5. 🔐 Administrator & Founder Dashboard
+
+Khu vực quản trị dành cho người được cấp quyền. Trang Administrator yêu cầu **Administrator Code**; Founder Dashboard có các quyền và công cụ bổ sung.
+
+Các nhóm chức năng chính:
+
+- **Tổng quan:** xem trạng thái hệ thống và dữ liệu tổng hợp.
+- **Học sinh:** nhập danh sách, tìm kiếm, cập nhật và quản lý hồ sơ học sinh.
+- **Thông báo:** soạn, xem trước, xuất bản, chỉnh sửa hoặc ẩn thông báo.
+- **Lịch sử phiên bản:** quản lý changelog, bản nháp và trạng thái đồng bộ.
+- **Nhật ký:** theo dõi thao tác quản trị.
+- **Giám sát:** kiểm tra hoạt động đồng bộ, độ trễ và lỗi được ghi nhận.
+- **Quyền:** xem thông tin hàm, bảng và policy được hệ thống báo cáo.
+- **Cấu hình:** quản lý một số tuỳ chọn công khai và trạng thái bảo trì.
+- **Dữ liệu:** kiểm tra toàn vẹn và xuất dữ liệu phù hợp.
+- **Công cụ Founder:** các thao tác bảo trì và quản lý đặc quyền dành riêng cho Founder.
+
+Mọi thao tác ghi quan trọng phải được máy chủ xác thực. `service_role` key và mã quản trị không được đặt trong mã JavaScript chạy ở trình duyệt.
 
 ---
 
-## 🎲 Xáo trộn câu hỏi
+## 🧩 Nguyên tắc thiết kế
 
-Một số bài tập có thể sử dụng cơ chế xáo trộn để mỗi lần luyện tập có trải nghiệm khác nhau.
+### Local-first
 
-```text
-Lần 1 → Câu 1 → Câu 5 → Câu 3 → Câu 2
-Lần 2 → Câu 3 → Câu 1 → Câu 2 → Câu 5
-```
+Dữ liệu học tập được ghi trên thiết bị trước. Khi được cấu hình, Supabase đóng vai trò lớp đồng bộ bổ sung; website không yêu cầu người dùng phải kết nối Supabase mới có thể sử dụng các chức năng học tập cơ bản.
 
-Điều này giúp hạn chế việc ghi nhớ vị trí câu hỏi hoặc đáp án.
+### Web tĩnh, không cần build
 
----
+BAKHI sử dụng HTML, CSS và JavaScript. Repository không yêu cầu bundler hoặc framework runtime để chạy website. Có thể triển khai trực tiếp trên GitHub Pages hoặc một static host tương thích.
 
-## ⚡ Phản hồi kết quả
+### Không tạo áp lực thời gian
 
-Sau khi hoàn thành bài tập, hệ thống có thể cung cấp phản hồi trực tiếp như:
+BAKHI tập trung vào việc học theo nhịp độ cá nhân. Dự án không định hướng trải nghiệm bằng đồng hồ đếm ngược, giới hạn thời gian làm bài hoặc bảng xếp hạng thi đua.
 
-- ✅ Đáp án đúng
-- ❌ Đáp án sai
-- 📊 Điểm số
-- 💡 Giải thích
-- 🔄 Làm lại bài
+### Bảo toàn nội dung học tập
+
+Các mô-đun dùng chung được bổ sung bên ngoài nội dung giáo dục. Công cụ `content-integrity` kiểm tra hash để phát hiện thay đổi ngoài dự kiến trong các trang học.
 
 ---
 
-# 🌐 Website
+## 💻 Yêu cầu và tương thích
 
-BAKHI được triển khai bằng **GitHub Pages**, vì vậy có thể truy cập trực tiếp mà không cần cài đặt.
+| Thành phần | Yêu cầu / ghi chú |
+|---|---|
+| Trình duyệt | Phiên bản mới của Chrome, Edge, Firefox hoặc Safari |
+| JavaScript | Cần bật JavaScript |
+| Lưu trữ | Cần `localStorage` cho các chức năng lưu dữ liệu cục bộ |
+| Hosting | GitHub Pages, Netlify, Vercel hoặc static web server |
+| Build | Không cần build, bundler hoặc framework runtime |
+| Supabase | Tuỳ chọn; dùng cho nhận diện học sinh, đồng bộ và thông báo realtime |
+| Kết nối mạng | Nội dung đã tải và dữ liệu cục bộ có thể tiếp tục dùng; tính năng cloud cần kết nối mạng |
 
-### 🔗 Website
-
-**https://minhtruk.github.io/bakhi/**
-
-### 📦 Mã nguồn
-
-**https://github.com/MinhTruk/bakhi**
-
----
-
-BAKHI là một dự án web tĩnh nên **không yêu cầu backend hoặc quá trình cài đặt phức tạp**.
+> **Khuyến nghị:** chạy website qua một web server tĩnh thay vì mở trực tiếp bằng `file://`. Một số tính năng như đọc `CHANGELOG.md` hoặc gọi Supabase có thể bị trình duyệt giới hạn khi mở tệp trực tiếp.
 
 ---
 
-# 📖 Cách sử dụng
+## 🚀 Bắt đầu sử dụng
 
-### 1️⃣ Truy cập website
+### Dành cho người học
 
-Mở:
+1. Mở [BAKHI](https://minhtruk.github.io/bakhi/).
+2. Chọn môn học, học kỳ hoặc khu vực nội dung cần xem.
+3. Mở bài học, chủ đề hoặc bài luyện tập.
+4. Trả lời câu hỏi và xem phản hồi sau khi hoàn thành.
+5. Dùng Trung tâm học tập để lưu ghi chú, đánh dấu và ôn lại câu hỏi.
 
-**https://minhtruk.github.io/bakhi/**
+Không cần tạo tài khoản để bắt đầu sử dụng các chức năng local-first.
 
-### 2️⃣ Chọn nội dung
+### Dành cho người phát triển
 
-Đi đến môn học hoặc học kỳ cần ôn tập.
-
-### 3️⃣ Chọn bài
-
-Chọn bài học, đề kiểm tra hoặc chủ đề tương ứng.
-
-### 4️⃣ Làm bài
-
-Trả lời các câu hỏi trực tiếp trên website.
-
-### 5️⃣ Kiểm tra kết quả
-
-Xem điểm và đáp án để xác định phần kiến thức cần ôn lại.
+1. Clone repository về máy.
+2. Chạy một static server trong thư mục dự án.
+3. Mở website tại địa chỉ localhost được server cung cấp.
+4. Đọc `AGENTS.md` trước khi chỉnh sửa cấu trúc hoặc nội dung.
+5. Chạy các bước kiểm thử phù hợp trước khi commit.
 
 ---
 
-# 🚀 Chạy cục bộ
+## 🧪 Chạy dự án cục bộ
 
-Không cần cài dependency để xem website. Chỉ cần một web server tĩnh:
+BAKHI không yêu cầu cài dependency để xem website. Tại thư mục gốc của repository, chạy một trong các lệnh sau:
 
 ```bash
-# Cách 1: Python (có sẵn trên macOS/Linux, thường có trên Windows)
+# Python
 python -m http.server 8765
 
-# Cách 2: Node.js
+# Hoặc Node.js
 npx serve .
-
-# Sau đó mở http://127.0.0.1:8765/
 ```
 
-Nếu chỉ muốn xem nhanh, mở `index.html` bằng trình duyệt cũng được, nhưng nên dùng server
-để tránh giới hạn `file://` khi đọc `CHANGELOG.md` hoặc gọi Supabase.
+Sau đó mở:
 
-### Muốn cấu hình thông báo/đồng bộ?
-
-Làm theo [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md). Tóm tắt:
-
-1. Điền Project URL + Publishable key vào `assets/bakhi/bk-supabase.config.js`.
-2. Bật Anonymous sign-ins trong Supabase.
-3. Chạy migration SQL và deploy 7 Edge Function.
-4. Đặt secret `ADMIN_DEV_CODE` + `CHANGELOG_SYNC_TOKEN`, sau đó import `students.txt` trong
-   Administrator Dashboard và thêm GitHub Secrets cho đồng bộ changelog.
-
-Không cấu hình Supabase thì website vẫn hoạt động đầy đủ ở chế độ local-first; chỉ thiếu
-nhận diện học sinh, đồng bộ giữa thiết bị và thông báo realtime.
-
----
-
-# 🗂️ Bản đồ trang
-
-| Đường dẫn | Nội dung | Lớp nâng cấp |
-|---|---|---|
-| `/index.html` | Trang chủ, điều hướng môn học, Trung tâm học tập, What's New | `bk-core`, `bk-learn`, `bk-dev`, `bk-music`, `bk-cloud` |
-| `/admin/index.html` | Administrator Dashboard (yêu cầu Administrator Code) | `bk-cloud` (admin-only), `bk-devboard` |
-| `/ktgk1`, `/ktgk2`, `/ktck1`, `/ktck2`, `/kttx` | Nội dung giáo dục theo đợt kiểm tra và môn học | `bk-core`, `bk-page`, `bk-cloud` (chỉ thông báo) |
-| `/studio/index.html` | Bá Khí Studio — Word & Paint (Word / Paint / Chia đôi) | `bk-cloud` (chỉ thông báo), shell tài khoản |
-| `/studio/word-paint.html` | Trang tương thích: chuyển hướng về `/studio/` | — |
-| `/music/` | Tệp âm thanh, lời, ảnh bìa | — |
-| `/assets/bakhi/` | Toàn bộ JavaScript/CSS dùng chung | — |
-| `/supabase/` | Migration SQL + Edge Functions | — |
-| `/tools/` | Kiểm thử và bảo toàn nội dung (không chạy trên production) | — |
-
-Mọi trang nội dung đều tĩnh, tự chứa phần giáo dục; lớp nâng cấp chỉ được chèn thêm thẻ
-script và không sửa nội dung gốc.
-
----
-
-# 📈 Trạng thái dự án
-
-| Hạng mục | Trạng thái |
-|---|---|
-| 🌐 Website chính | 🟢 Hoạt động |
-| 🏠 Trang chủ | 🟢 Hoạt động |
-| 📚 Tài liệu học tập | 🟢 Đang phát triển |
-| 📝 Bài tập tương tác | 🟢 Đang phát triển |
-| 🎲 Xáo trộn câu hỏi | 🟢 Có |
-| 📱 Giao diện responsive | 🟢 Đang cải thiện |
-| 📊 Thống kê kết quả | 🟢 Đã hoàn thành |
-| 💾 Lưu tiến độ | 🟢 Đã có (local-first) |
-| 🧠 Trung tâm học tập | 🟢 Đã có |
-| 🛠 Developer Playground 2.0 | 🟢 Đã có |
-| 🎧 Music Player cá nhân (YouTube/Spotify/SoundCloud) | 🟢 Đã có (7.0.0) |
-| 🎨 Bá Khí Studio (Word & Paint) | 🟢 Đã có |
-| 🔔 Thông báo realtime toàn website (kể cả trang bài học, Studio) | 🟢 Đã có (3.2.0) |
-| 🛠️ Administrator Dashboard (12 mô-đun) + Founder Dashboard (15 mô-đun, bảo trì, trao badge) | 🟢 Đã có (7.0.0) |
-| ⏸️ Bảo trì toàn website + lịch sử và lối vào Administrator | 🟢 Đã có (7.0.0) |
-| 🔄 Đồng bộ CHANGELOG.md tự động qua GitHub Actions | 🟢 Đã có (3.3.0) |
-| 🌙 Giao diện thông báo tối thống nhất | 🟢 Đã có (3.3.0) |
-| 🖼️ Favicon tĩnh SVG/PNG/ICO toàn site | 🟢 Đã có (3.3.0) |
-| 🧪 Bảo toàn nội dung bằng hash (content-integrity) | 🟢 Đã có |
-| ♿ Trợ năng (bàn phím, ARIA, giảm chuyển động) | 🟢 Đang cải thiện |
-
----
-
-# 🗺️ Lộ trình phát triển
-
-### ✅ Đã thực hiện
-
-- [x] Xây dựng website chính
-- [x] Tạo hệ thống điều hướng
-- [x] Tổ chức tài liệu theo thư mục
-- [x] Triển khai bằng GitHub Pages
-- [x] Xây dựng các trang bài tập
-- [x] Thêm các chức năng tương tác
-- [x] Music Player dùng chung (queue, shuffle, repeat, lyrics, bố cục kéo/thu/phóng)
-- [x] Chuyển động nhẹ khi đổi tab (dev panel, music, trung tâm học tập)
-- [x] Cải thiện trợ năng: phím tắt, ARIA, viền tiêu điểm, giảm chuyển động
-- [x] Bá Khí Studio: soạn thảo kiểu Word + bảng vẽ kiểu Paint, lưu cục bộ, xuất HTML/TXT/PNG
-- [x] Thông báo cập nhật trên mọi trang: mỗi phiên bản trong `CHANGELOG.md` là một thông báo,
-  đánh dấu đã đọc tất cả và đọc đầy đủ trong cửa sổ toàn màn hình
-- [x] Đồng bộ `CHANGELOG.md` lên Supabase bằng GitHub Actions, chống trùng thông báo
-- [x] Giao diện thông báo tối thống nhất và favicon tĩnh SVG/PNG/ICO toàn site
-- [x] Lớp shell dùng chung: avatar + menu tài khoản thay menu ba gạch, thay nút README riêng
-- [x] Trang Hồ sơ và Cài đặt local-first; 99 thành tích và 50 khung avatar; What's New một phiên bản
-
-### 🔨 Đang phát triển
-
-- [x] Cải thiện giao diện
-- [ ] Bổ sung thêm môn học (Đang bổ sung)
-- [ ] Bổ sung thêm đề kiểm tra (Chưa có kế hoạch)
-- [x] Tối ưu giao diện trên điện thoại
-- [ ] Cải thiện hệ thống câu hỏi
-
----
-
-# 🧠 Nền tảng học tập 2.0
-
-Lớp nâng cấp 2.0 bổ sung trải nghiệm học tập tự nhịp và bộ công cụ phát triển,
-**không thay đổi bất kỳ nội dung giáo dục nào**.
-
-### Trung tâm học tập
-
-Mở bằng `Ctrl/⌘ + K`, phím `/` để tìm kiếm, hoặc vào **Cài đặt → Trung tâm học tập**
-(menu tài khoản ở góc phải header):
-
-- 📊 **Tổng quan** — số câu đã luyện, đúng/sai, độ chính xác, tiến độ theo môn/chủ đề,
-  hoạt động 14 ngày và 8 tuần, chủ đề hay sai, mốc học tập.
-- 🔁 **Ôn tập** — câu làm sai được lưu tự động; ôn theo nhịp độ dựa trên kết quả
-  (spaced repetition cấu hình được), đánh dấu thành thạo, hẹn ngày ôn, tìm/lọc.
-- 📝 **Ghi chú** — theo môn/câu hỏi, ghim, danh mục, Markdown an toàn, xuất tệp.
-- 🔖 **Đánh dấu** — câu hỏi, bài học, môn học, tài liệu.
-- 🕘 **Lịch sử** — bài đã mở, câu đã luyện/ôn; tìm và xoá từng mục.
-- 🏅 **Thành tích** — 30 mốc chia 5 nhóm (Học tập, Luyện tập, Sổ tay, Studio, Khám phá),
-  có thanh tiến độ từng mốc, bộ lọc, tìm kiếm và thông báo khi mở khoá; không streak/điểm danh.
-- ⚙️ **Cài đặt** — focus mode, cỡ chữ, nhịp ôn, AI (tuỳ chọn), Supabase (tuỳ chọn),
-  xuất/nhập dữ liệu.
-
-### Thông báo cập nhật & thông báo giáo viên
-
-- 🔔 Chuông **có mặt trên toàn website**: trang chủ (ngay bên trái nút README.md), mọi trang
-  môn học/bài học/đề kiểm tra và cả hai trang Studio. Trang không có header chung dùng
-  **chuông nổi** ở góc phải dưới.
-- Bảng thông báo mở ở góc trên bên phải khi chuông ở nửa trên màn hình và **tự mở lên trên**
-  khi chuông ở nửa dưới, nên không bao giờ bị cắt khỏi khung nhìn.
-- Hai nguồn thông báo: **thông báo từ quản trị viên** (bảng `announcements`, realtime) và
-  **phiên bản cập nhật** (bảng `changelog` / `CHANGELOG.md`).
-- Badge hiển thị số chưa đọc; **Đánh dấu đã đọc tất cả** trong bảng; bấm một mục để mở nội
-  dung đầy đủ (đóng bằng ×, `Esc` hoặc bấm nền).
-- Trạng thái đã đọc dùng chung trong cùng website: trang chủ lưu trên Supabase theo hồ sơ
-  học sinh; trang bài học/Studio lưu cục bộ ở `bakhiNotifyReads.v1`.
-- Chế độ **chỉ nhận thông báo** trên trang bài học không mở màn hình nhận diện, không đồng bộ
-  tiến trình — chỉ chuông, realtime và trạng thái đã đọc. Nhờ vậy thêm thông báo không làm
-  thay đổi cách học hiện có.
-
-### Tìm kiếm & phím tắt
-
-| Phím | Tác dụng |
-|---|---|
-| `Ctrl/⌘ + K` | Command palette (lệnh + tìm kiếm) |
-| `/` | Tìm kiếm toàn cục (khi không ở trong ô nhập) |
-| `Esc` | Đóng hộp thoại / thoát focus mode |
-| `← →` | Chuyển câu trong Ôn tập |
-| `A B C D` | Chọn đáp án khi ôn tập |
-| `Ctrl/⌘ + Shift + G` | Developer Playground (sau khi xác thực) |
-| `Space` | Phát / tạm dừng khi Music Player đang mở |
-| `← →` | Tua 5 giây khi Music Player đang mở |
-| `M` | Tắt / bật tiếng khi Music Player đang mở |
-
-Phím tắt của trình phát chỉ hoạt động khi panel nhạc đang mở và tự bỏ qua khi đang gõ.
-
-### Chế độ tập trung
-
-Ẩn bớt điều hướng và hiệu ứng, tăng khoảng đọc, chỉnh cỡ chữ, nền nhẹ tuỳ chọn.
-Không có đồng hồ phiên, không có thời lượng bắt buộc.
-
-### Dữ liệu của bạn
-
-- Lưu cục bộ trong `localStorage` (một key duy nhất `bakhiLearn.v1`, có phiên bản,
-  kiểm tra dữ liệu và tự phục hồi khi hỏng).
-- Xuất/nhập JSON bất cứ lúc nào; nhập dữ liệu **không bao giờ** ghi đè ngân hàng câu hỏi.
-- Không có backend mặc định, không gửi dữ liệu đi đâu.
-
----
-
-# 🎧 Music Player
-
-Trình phát nhạc dùng chung, mở từ logo ♪ ở góc trái dưới (logo kéo thả được, chuột
-phải để đặt lại). Chi tiết: [docs/MUSIC.md](docs/MUSIC.md).
-
-- **5 bài** trong thư viện; queue thêm/xoá/đổi thứ tự (kéo thả hoặc `Alt+↑/↓`), shuffle,
-  repeat 3 chế độ, âm lượng, tua, lời có timestamp.
-- **Bố cục tự do**: kéo thanh tiêu đề để di chuyển, kéo góc dưới-trái để đổi kích thước,
-  nút thu nhỏ / phóng to, nhấp đúp tiêu đề để đặt lại. Vị trí, kích thước và tab đang mở
-  được nhớ cho lần sau.
-- **Phím tắt khi trình phát đang mở**: `Space` phát/tạm dừng, `← →` tua 5 giây,
-  `M` tắt tiếng, `Esc` đóng, `← →` trên thanh tab để đổi tab.
-- **Thư mục nhạc đơn giản**: `music/<slug>.mp3`, `music/<slug>.txt` (lời),
-  `music/<slug>.png` (bìa) — thêm bài mới chỉ cần thêm file và một dòng trong `LIBRARY`.
-- Không autoplay, không có audio thứ hai. Bài đang nghe dở hiện nút “Tiếp tục” và chỉ
-  phát khi bạn bấm; nút chỉ biến mất khi âm thanh thực sự phát.
-- Hỗ trợ Media Session (khoá màn hình / tai nghe) khi trình duyệt cho phép.
-
----
-
-# 🎨 Bá Khí Studio — Word & Paint
-
-Ứng dụng tĩnh độc lập: [studio/](studio/index.html) — mở từ menu 3 gạch
-hoặc `Ctrl/⌘ + K` → “Mở Bá Khí Studio (Word & Paint)”. Địa chỉ cũ
-`/studio/word-paint.html` tự chuyển hướng và dữ liệu Studio cũ được nhập một lần.
-
-- **Word mini**: trang giấy A4, đậm/nghiêng/gạch chân, tiêu đề, danh sách, canh lề, màu chữ,
-  màu nền, liên kết, chèn ảnh, hoàn tác/làm lại, đếm từ, in/lưu PDF.
-- **Paint mini**: bút lông/chì/dạ quang/tẩy, đường thẳng, chữ nhật, hình tròn, mũi tên, chữ,
-  bảng màu, cỡ nét, độ đậm, hoàn tác 8 bước, tải PNG và **chèn bản vẽ vào tài liệu**.
-- **Ba chế độ**: Word · Paint · Chia đôi; nhớ chế độ đang dùng.
-- **Nhiều tài liệu** trong danh sách bên trái, đổi tên, nhân bản, xoá có xác nhận.
-- **Lưu tự động** trên máy (`bakhiStudio.v1`), xuất HTML tự chứa, xuất TXT, mở lại `.html/.txt`.
-- Không backend, không thư viện ngoài, không gửi dữ liệu đi đâu.
-
-Chi tiết & giới hạn: [docs/STUDIO.md](docs/STUDIO.md).
-
----
-
-# 🛠 Developer Playground 2.0
-
-Cửa sổ nổi (`Ctrl+Shift+G`, cần mã Developer như bảng điều khiển cũ) với 11 công cụ:
-
-Inspector 2.0 · CSS Studio · Animation Studio · Performance Lab · Storage Manager ·
-Console Pro · Network Monitor · Theme Editor · Component Library · Backup Manager · Music.
-
-Cửa sổ kéo/đổi kích thước được, nhớ vị trí, kích thước và tab; chuyển tab có chuyển
-động nhẹ và tôn trọng `prefers-reduced-motion`. Tab Music có nút mở, phóng to, thu nhỏ,
-đặt lại bố cục trình phát và cập nhật trạng thái theo sự kiện (không polling).
-Panel Developer cũ (11 tab) vẫn hoạt động nguyên vẹn.
-
-Chi tiết: [docs/FEATURES.md](docs/FEATURES.md) · [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
----
-
-# 🔐 Nhận diện học sinh & đồng bộ (Supabase)
-
-Bá Khí có lớp nhận diện và đồng bộ chạy trên Supabase, nhưng **không bắt học sinh tạo tài khoản**:
-
-- **Nhận diện bằng họ tên** — gõ đúng họ và tên (có dấu hay không dấu đều được), bấm **Xác nhận**
-  hoặc chọn trong danh sách gợi ý. Máy chủ đối chiếu lại với danh sách học sinh do quản trị viên import, nên
-  không thể “nhận vơ” một cái tên không tồn tại.
-- **Phiên ẩn danh** — mỗi thiết bị có một phiên Supabase Anonymous Auth riêng: không email,
-  không mật khẩu, không đăng nhập Google.
-- **Đồng bộ tiến trình** — luyện tập, ôn tập, ghi chú, đánh dấu, lịch sử, thành tích và tuỳ chọn
-  được lưu trên máy trước, tự đẩy lên máy chủ, tự thử lại khi mất mạng và gộp khi có dữ liệu mới
-  từ thiết bị khác.
-- **Đổi học sinh** — bấm icon cạnh chuông hoặc mục “Đổi học sinh” trong menu 3 gạch. Tiến trình
-  của người trước vẫn được giữ trên máy chủ.
-- **Danh sách học sinh không công khai** — bảng `students` khoá RLS; chỉ Edge Function dùng khoá
-  máy chủ mới đọc được, trình duyệt không bao giờ tải cả danh sách về.
-
-Hướng dẫn cài đặt, mô hình dữ liệu và cách kiểm thử: [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md).
-
----
-
-# 🔔 Trung tâm thông báo
-
-Chuông là nơi duy nhất hiển thị thông tin cập nhật, và nay có mặt trên **mọi trang**:
-
-- **Thông báo từ quản trị viên** — đăng từ Administrator Dashboard, hiện ngay trên máy học sinh nhờ
-  Supabase Realtime (không cần tải lại trang), có đếm số chưa đọc, mức ưu tiên và trạng thái
-  đã đọc. Cơ chế dự phòng: tự tải lại mỗi 60 giây và khi mạng có lại.
-- **Cập nhật phiên bản** — toàn bộ changelog, xếp theo **số phiên bản** từ cũ đến mới
-  (3.0.0 → 3.1.0 → … → 3.2.1 → 3.3.0), bấm vào để đọc đầy đủ từng mục.
-- **What's New** — thẻ “Cập nhật gần nhất” **chỉ có trên trang chính**, tóm tắt phiên bản mới
-  nhất và dẫn tới trung tâm thông báo hoặc tệp [CHANGELOG.md](CHANGELOG.md). Studio và
-  Word & Paint không dựng khối này.
-- **Theme tối thống nhất** — trung tâm thông báo, bảng, popup, chi tiết, toast và trạng thái
-  tải/rỗng/lỗi dùng chung bộ biến `--bkc-n-*`; không còn thẻ trắng hay chữ khó đọc.
-- **Cờ cấu hình** — `public.whatsnew` bật/tắt khối cập nhật gần đây, `public.maintenance`
-  hiện dải bảo trì toàn site; thay đổi từ dashboard tới trình duyệt ngay qua realtime.
-
-### Hai chế độ hoạt động
-
-| Chế độ | Trang áp dụng | Nhận diện học sinh | Đồng bộ tiến trình | Trạng thái đã đọc |
-|---|---|---|---|---|
-| Đầy đủ | `index.html` | Có (màn hình chào + gợi ý tên) | Có | Supabase `announcement_reads` |
-| Chỉ thông báo | Trang môn/bài học, Studio | Không | Không | `localStorage` → `bakhiNotifyReads.v1` |
-
-Chế độ chỉ thông báo được bật bằng thuộc tính trên thẻ script:
-
-```html
-<script src="../../assets/bakhi/bk-supabase.config.js?v=4.0.0" defer></script>
-<script src="../../assets/bakhi/bk-cloud.js?v=3.4.0" data-bk-notify-only="1" defer></script>
+```text
+http://127.0.0.1:8765/
 ```
 
-Nếu Supabase chưa cấu hình hoặc đang mất mạng, chuông vẫn xuất hiện và trang học hoạt động
-bình thường; thông báo sẽ được tải lại khi kết nối trở lại. Xem thêm
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#thông-báo-toàn-website).
-
----
-
-# 🛠️ Administrator Dashboard
-
-Trang quản trị dành riêng cho quản trị viên, **yêu cầu Administrator Code** ở cả hai lối vào:
-
-| Lối vào | Đường dẫn | Ghi chú |
-| --- | --- | --- |
-| Menu 3 gạch | nút **Administrator** → nhập mã | Mục “Administrator Dashboard” chỉ hiện sau khi mã đúng, bấm vào mở **tab mới** |
-| Trang riêng | [`/admin/`](https://minhtruk.github.io/bakhi/admin/) | Tự hỏi Administrator Code khi mở tab mới |
-
-Chín mô-đun:
-
-1. **Tổng quan** — số học sinh, thông báo, phiên bản, nhật ký hoạt động gần đây, hồ sơ cần phân biệt.
-2. **Học sinh** — import `students.txt`, tìm kiếm, sửa họ tên, đánh dấu phân biệt trùng tên, vô hiệu hoá, xem chi tiết, xuất CSV.
-3. **Thông báo** — soạn, xem trước, **PUSH NOTIFICATION NOW**, thống kê, sửa/ẩn/đăng lại/xoá.
-4. **Lịch sử phiên bản** — biểu mẫu toàn chiều rộng phía trên, danh sách phiên bản bên dưới; lọc nguồn/đồng bộ, xuất JSON, lưu nháp hoặc xuất bản.
-5. **Nhật ký** — nhật ký thao tác quản trị (ai làm gì, lúc nào), lọc và xuất.
-6. **Giám sát** — độ trễ, số bản ghi, hàng đợi đồng bộ changelog, lỗi gần đây.
-7. **Quyền** — báo cáo thật về hàm, bảng và policy; chỉ đọc.
-8. **Cấu hình** — bật/tắt What's New và thông báo bảo trì.
-9. **Dữ liệu** — kiểm tra toàn vẹn và xuất CSV/JSON; không có xoá hàng loạt.
-
-### Giao diện 4.1
-
-- **12 mô-đun Administrator (15 với Founder) trong sidebar thu gọn được**, breadcrumb, tìm kiếm, trạng thái tải/thành công/lỗi/rỗng.
-- **Bảng dữ liệu** có tìm kiếm, lọc, sắp xếp và phân trang phía máy chủ; bảng rộng cuộn trong
-  khung, không đẩy vỡ bố cục.
-- **Lịch sử phiên bản dạng cột dọc**: biểu mẫu tạo/sửa chiếm toàn chiều rộng, danh sách bên dưới.
-- **Khung nhập chuẩn**: `input`, `textarea`, `select` dùng `border-box`, rộng tối đa bằng
-  phần nội dung của thẻ — không tràn viền, không tạo thanh cuộn ngang.
-- **Bảng lệnh nhanh** (`Ctrl/⌘ + K`): nhảy tab, làm mới dữ liệu, tạo thông báo hoặc changelog mới.
-- **Xác nhận trước thao tác** ảnh hưởng dữ liệu; mọi thao tác ghi kiểm tra lại Administrator
-  Code ở máy chủ.
-- **Giao diện sáng/tối** theo theme của site, chế độ **compact** để xem nhiều dòng hơn,
-  nút trợ giúp tóm tắt phím tắt và quy trình push.
-- **Xem trước trực tiếp** thông báo/changelog ngay trong biểu mẫu trước khi xuất bản.
-- Đóng dashboard bằng nút × hoặc `Esc`; trạng thái trang và hộp thoại trước đó được khôi phục.
-
-Bảo mật: Administrator Code và `service_role` key chỉ nằm trong Supabase Edge Function Secrets;
-dashboard không bao giờ đọc hay hiển thị giá trị của chúng. Mọi thao tác ghi đều đi qua Edge Function
-có kiểm tra phiên quản trị.
-
----
-
-# 🧱 Kiến trúc kỹ thuật
-
-```
-/                       index.html (trung tâm) + bakhi-v4.js (lớp V4 cũ)
-/admin                  admin/index.html — Administrator Dashboard (Administrator Code)
-/profile                profile/index.html — Hồ sơ cá nhân + 78 thành tích
-/settings               settings/index.html — Hồ sơ, Trung tâm học tập, hiển thị, hình nền, quyền
-/assets/bakhi/
-  bk-core.js|css        Kho dữ liệu local-first, UI kit, tìm kiếm
-  bk-version.js         Nguồn phiên bản duy nhất (window.BAKHI_VERSION, BK.release)
-  bk-shell.js|css       Avatar + menu tài khoản, trợ năng toàn site, chrome cũ
-  bk-profile.js|css     Hồ sơ local-first, ảnh đại diện/bìa, khung avatar
-  bk-badges.js          78 thành tích (73 tự động + 5 Administrator/độc quyền)
-  bk-profile-ui.js      Component hồ sơ/badge dùng chung cho profile và settings
-  bk-settings.js|css    5 tab Cài đặt
-  bk-learn.js|css       Trung tâm học tập, ôn tập, ghi chú, đánh dấu, thành tích
-  bk-dev.js|css         Developer Playground 2.0
-  bk-music.js|css       Music Player dùng chung
-  bk-cloud.js|css       Nhận diện, thông báo realtime, changelog, đồng bộ (Supabase)
-  bk-devboard.js        Administrator/Founder Dashboard 12–15 mô-đun + menu quản trị
-  bk-admin-dashboard.css Giao diện dashboard 4.1 (sidebar thu gọn, bảng phân trang)
-  bk-admin.css|bk-admin-theme.js  Trang đăng nhập quản trị + theme
-  bk-supabase.config.js Nơi duy nhất chứa Project URL + Publishable key
-  bk-notify.js|css      Chuông CHANGELOG.md cũ (dự phòng, bị gỡ khi lớp Supabase hoạt động)
-  favicon.svg|*.png|.ico  Favicon tĩnh dùng chung
-  bk-bkt.js, bk-page.js Hiệu ứng chuyển trang & cầu nối trang bài học
-/ktgk1, /ktgk2, /ktck1, /ktck2, /kttx
-                        Nội dung giáo dục (HTML tĩnh, mỗi trang tự chứa)
-/music                  music/<slug>.mp3|txt|png
-/studio                 index.html (Word & Paint hợp nhất) + word-paint.html (chuyển hướng)
-/supabase/
-  migrations/           Schema + RLS + realtime cho announcements & changelog
-  functions/            admin-auth, admin-actions, search-students, bind-student-session,
-                        sync-student-progress, import-students
-/tools                  content-integrity, integrate-pages, inject-shell,
-                        qa/smoke, qa/cloud-smoke, qa/shell-smoke
-/docs                   Kiến trúc, tính năng, Music, Studio, Supabase, baseline nội dung
-```
-
-Không có bước build: website là HTML/CSS/JS tĩnh, deploy bằng GitHub Pages. Các trang nội dung
-chỉ được chèn thẻ script trỏ tới `assets/bakhi/`; công cụ `content-integrity` dùng hash để
-chứng minh phần giáo dục không thay đổi.
-
----
-
-# 🚫 Không phải nền tảng thi cử
-
-Bá Khí **không có** đề thi thử, bài tính giờ, đồng hồ đếm ngược, giới hạn thời gian,
-tự nộp bài, xếp hạng thi hay bất kỳ cơ chế tạo áp lực thời gian nào.
-
----
-
-# 🧪 Kiểm thử & bảo toàn nội dung
+### Clone repository
 
 ```bash
-# 1. Xác minh nội dung giáo dục không thay đổi (so với baseline)
+git clone https://github.com/MinhTruk/bakhi.git
+cd bakhi
+python -m http.server 8765
+```
+
+Nếu chỉ mở `index.html` trực tiếp, một số tính năng phụ thuộc HTTP hoặc API có thể không hoạt động đầy đủ.
+
+---
+
+## ☁️ Cấu hình Supabase (tuỳ chọn)
+
+Supabase được dùng như lớp dịch vụ bổ sung cho nhận diện học sinh, đồng bộ tiến trình và thông báo realtime. Khi không cấu hình Supabase, website vẫn có thể hoạt động ở chế độ local-first.
+
+Hướng dẫn đầy đủ nằm tại [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md). Quy trình khái quát:
+
+1. Tạo Supabase project.
+2. Cấu hình Project URL và Publishable/anon key trong `assets/bakhi/bk-supabase.config.js`.
+3. Bật Anonymous Sign-ins nếu dự án sử dụng phiên đăng nhập ẩn danh.
+4. Chạy các migration SQL trong thư mục `supabase/migrations/`.
+5. Deploy các Edge Functions trong `supabase/functions/` theo hướng dẫn.
+6. Cấu hình secrets cần thiết ở môi trường máy chủ và GitHub Actions.
+7. Import danh sách học sinh từ khu vực quản trị nếu sử dụng tính năng nhận diện.
+8. Kiểm tra RLS, quyền truy cập và luồng đồng bộ trước khi đưa vào sử dụng.
+
+### 🔒 Lưu ý bảo mật
+
+- Chỉ sử dụng Publishable/anon key trong cấu hình phía trình duyệt.
+- **Không bao giờ** đưa `service_role` key, `ADMIN_DEV_CODE` hoặc token bí mật vào HTML, JavaScript công khai hay commit lên GitHub.
+- Các secret máy chủ phải được lưu trong Supabase Edge Function Secrets hoặc GitHub Secrets theo đúng mục đích.
+- Mọi thao tác quản trị có ghi dữ liệu phải được xác thực ở phía máy chủ; không dựa vào việc ẩn nút trên giao diện để bảo vệ quyền.
+- Kiểm tra RLS và quyền của từng bảng trước khi bật đồng bộ cho người dùng thật.
+
+---
+
+## 🗂️ Bản đồ thư mục và trang
+
+| Đường dẫn | Nội dung |
+|---|---|
+| `/index.html` | Trang chủ, điều hướng môn học, Trung tâm học tập và What's New |
+| `/admin/` | Administrator Dashboard |
+| `/profile/` | Hồ sơ cá nhân |
+| `/settings/` | Hồ sơ, Trung tâm học tập, hiển thị, hình nền và cài đặt |
+| `/ktgk1/`, `/ktgk2/`, `/ktck1/`, `/ktck2/`, `/kttx/` | Các khu vực nội dung học tập và kiểm tra |
+| `/studio/` | Bá Khí Studio: Word, Paint và chế độ chia đôi |
+| `/studio/word-paint.html` | Đường dẫn tương thích, chuyển hướng về Studio mới |
+| `/music/` | Tệp nhạc, lời bài hát và ảnh bìa |
+| `/assets/bakhi/` | JavaScript và CSS dùng chung |
+| `/supabase/` | Migration SQL và Edge Functions |
+| `/tools/` | Công cụ tích hợp trang, QA và kiểm tra toàn vẹn |
+| `/docs/` | Tài liệu kiến trúc, tính năng và cấu hình |
+
+Các trang học tập giữ phần nội dung giáo dục trong HTML; lớp nâng cấp dùng chung được tích hợp thông qua các tệp trong `assets/bakhi/`.
+
+---
+
+## 🧱 Kiến trúc kỹ thuật
+
+```text
+/
+├── index.html                 # Trang chủ và điểm điều hướng chính
+├── admin/                     # Administrator Dashboard
+├── profile/                   # Hồ sơ cá nhân
+├── settings/                  # Trang cài đặt
+├── ktgk1/ ktgk2/ ktck1/        # Nội dung học tập theo đợt
+├── ktck2/ kttx/                # Nội dung học tập theo đợt
+├── studio/                    # Bá Khí Studio
+├── music/                     # Tài nguyên Music Player
+├── assets/bakhi/
+│   ├── bk-core.js / .css       # Core, UI kit, dữ liệu local-first
+│   ├── bk-version.js           # Nguồn phiên bản dùng chung
+│   ├── bk-shell.js / .css      # Account shell và trải nghiệm toàn site
+│   ├── bk-profile.js / .css    # Hồ sơ cá nhân
+│   ├── bk-badges.js            # Hệ thống thành tích/badge
+│   ├── bk-profile-ui.js        # Thành phần hồ sơ và badge dùng chung
+│   ├── bk-settings.js / .css   # Cài đặt
+│   ├── bk-learn.js / .css      # Trung tâm học tập
+│   ├── bk-dev.js / .css        # Developer Playground
+│   ├── bk-music.js / .css      # Music Player
+│   ├── bk-cloud.js / .css      # Supabase, đồng bộ, thông báo
+│   ├── bk-devboard.js          # Administrator/Founder Dashboard
+│   ├── bk-supabase.config.js   # Project URL và Publishable/anon key
+│   └── favicon.*               # Favicon dùng chung
+├── supabase/
+│   ├── migrations/             # Schema, RLS và cấu hình realtime
+│   └── functions/              # Supabase Edge Functions
+├── tools/                     # Công cụ tích hợp và kiểm thử
+├── docs/                      # Tài liệu dự án
+├── CHANGELOG.md                # Lịch sử thay đổi
+└── AGENTS.md                   # Quy ước dành cho agent/người đóng góp
+```
+
+### Các lớp chính
+
+| Lớp | Trách nhiệm |
+|---|---|
+| Static pages | Cung cấp nội dung học tập và cấu trúc trang |
+| Shared client modules | Bổ sung UI, hồ sơ, học tập, nhạc, Studio và công cụ phát triển |
+| Local storage | Lưu tiến trình và tuỳ chọn trên thiết bị |
+| Supabase | Tuỳ chọn cho xác thực ẩn danh, đồng bộ, dữ liệu quản trị và realtime |
+| GitHub Actions | Tự động hoá các quy trình repository, bao gồm đồng bộ changelog khi được cấu hình |
+
+Không có bước build bắt buộc. Các trang tĩnh tải trực tiếp HTML/CSS/JavaScript và các mô-đun dùng chung.
+
+---
+
+## ⌨️ Phím tắt
+
+| Phím | Chức năng | Điều kiện |
+|---|---|---|
+| `Ctrl/⌘ + K` | Mở Command Palette và tìm kiếm/lệnh | Khi tính năng được tải |
+| `/` | Mở tìm kiếm toàn cục | Không đặt con trỏ trong ô nhập |
+| `Esc` | Đóng hộp thoại hoặc thoát Focus Mode | Khi hộp thoại/chế độ tương ứng đang mở |
+| `←` / `→` | Chuyển câu trong khu vực Ôn tập | Khi đang dùng Ôn tập |
+| `A` / `B` / `C` / `D` | Chọn đáp án | Khi khu vực hỗ trợ phím tắt đang hoạt động |
+| `Ctrl/⌘ + Shift + G` | Mở Developer Playground | Sau khi xác thực Developer |
+| `Space` | Phát/tạm dừng nhạc | Khi Music Player đang mở và không nhập văn bản |
+| `←` / `→` | Tua nhạc | Khi Music Player đang mở và không nhập văn bản |
+| `M` | Tắt/bật tiếng | Khi Music Player đang mở và không nhập văn bản |
+
+Một số phím có thể có tác dụng khác nhau tuỳ khu vực đang hoạt động. Phím tắt của Music Player sẽ bỏ qua thao tác khi người dùng đang nhập văn bản.
+
+---
+
+## 💾 Lưu trữ và quyền riêng tư
+
+### Dữ liệu trên thiết bị
+
+Các tính năng local-first sử dụng `localStorage` và `sessionStorage` để lưu dữ liệu phù hợp với chức năng. Một số key quan trọng:
+
+| Key | Nội dung |
+|---|---|
+| `bakhiLearn.v1` | Luyện tập, ôn tập, ghi chú, đánh dấu, lịch sử, thành tích và tuỳ chọn học tập |
+| `bakhiSignals.v1` | Bộ đếm tín hiệu hoạt động phục vụ thành tích |
+| `bakhiNotify.v1` | Trạng thái đọc của hệ thống thông báo cũ |
+| `bakhiNotifyReads.v1` | Trạng thái đã đọc trong chế độ chỉ thông báo |
+| `bakhiStudio.v1` | Tài liệu và dữ liệu bản vẽ trong Studio |
+| `bakhiMusic.v2` | Hàng đợi, bài đang phát, shuffle/repeat và âm lượng |
+| `bakhiMusic.panel.v1` | Vị trí và kích thước cửa sổ Music Player |
+| `bakhiMusic.fab.v1` | Vị trí biểu tượng mở Music Player |
+| `bakhiStudent.v1` | Thông tin hồ sơ học sinh đã liên kết, nếu dùng Supabase |
+| `bakhiAdmin.v1` | Phiên quản trị trong `sessionStorage` |
+
+Supabase có thể tạo thêm dữ liệu phiên ẩn danh khi được bật. Các key lưu trên trình duyệt không phải nơi lưu trữ secret máy chủ.
+
+### Quyền kiểm soát dữ liệu
+
+- Người dùng có thể xuất/nhập dữ liệu học tập từ phần cài đặt được hỗ trợ.
+- Nên xuất bản sao lưu trước khi xoá dữ liệu trình duyệt hoặc đặt lại website.
+- Xoá dữ liệu trình duyệt có thể làm mất dữ liệu chỉ tồn tại cục bộ.
+- Khi bật Supabase, dữ liệu được đồng bộ theo cấu hình và chính sách của project đó.
+- Theo thiết kế hiện tại, BAKHI không cần analytics hoặc quảng cáo để cung cấp chức năng học tập.
+
+---
+
+## 🧪 Kiểm thử và bảo toàn nội dung
+
+Các công cụ trong `tools/` giúp kiểm tra cú pháp, tích hợp trang và bảo toàn nội dung học tập.
+
+```bash
+# Xác minh nội dung giáo dục so với baseline
 node tools/content-integrity.js verify
 
-# 2. Kiểm tra cú pháp JavaScript dùng chung
+# Kiểm tra cú pháp JavaScript của các mô-đun quan trọng
 node --check assets/bakhi/bk-core.js
 node --check assets/bakhi/bk-cloud.js
 node --check assets/bakhi/bk-devboard.js
 
-# 3. Smoke test DOM (cần jsdom, cài ngoài repo)
-npm install jsdom --prefix /tmp/bktest --no-save
-NODE_PATH=/tmp/bktest/node_modules node tools/qa/smoke.js
-NODE_PATH=/tmp/bktest/node_modules node tools/qa/cloud-smoke.js
-
-# 4. Chèn thẻ script cho trang HTML mới (idempotent)
+# Chèn/tích hợp script cho các trang HTML theo cấu hình công cụ
 node tools/integrate-pages.js
 ```
 
-Trên Windows PowerShell, thay `/tmp/bktest` bằng một thư mục tạm, ví dụ
-`C:\Users\<bạn>\AppData\Local\Temp\bktest`, rồi đặt `$env:NODE_PATH="...\node_modules"`.
+### Smoke test với jsdom
 
-`docs/content-baseline.json` lưu hash của **119 tệp HTML** (đã loại đúng khối script do
-nâng cấp chèn, kể cả thẻ script có thuộc tính `data-*`). Baseline ghi cả thống kê câu hỏi,
-đáp án, giải thích để phát hiện sửa nội dung ngoài ý muốn. Quy trình và quy ước chi tiết:
-[AGENTS.md](AGENTS.md).
+Một số bài kiểm thử DOM yêu cầu `jsdom`. Có thể cài trong thư mục tạm để tránh thêm dependency vào repository:
 
-Kết quả mong đợi:
-
-```
-Đã kiểm tra 119 file nội dung gốc.
-OK — không có nội dung giáo dục nào bị thay đổi.
+```bash
+npm install jsdom --prefix /tmp/bktest --no-save
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/smoke.js
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/cloud-smoke.js
 ```
 
-Nếu một tệp bị báo thay đổi, **không** cập nhật baseline ngay. Hãy xem `git diff` để chắc
-chắn chỉ có thẻ script/định dạng bị đổi, hoặc khôi phục nội dung gốc rồi kiểm tra lại. Chỉ
-chạy `node tools/content-integrity.js baseline` khi bạn **chủ động** thay đổi nội dung giáo
-dục và đã được duyệt.
+Trên Windows PowerShell, thay `/tmp/bktest` bằng một thư mục tạm phù hợp và đặt biến môi trường `NODE_PATH` trỏ đến `node_modules`.
+
+### Quy tắc khi baseline báo thay đổi
+
+1. Xem `git diff` để xác định chính xác phần thay đổi.
+2. Xác nhận nội dung giáo dục không bị chỉnh sửa ngoài dự kiến.
+3. Khôi phục phần thay đổi không được phép trước khi tiếp tục.
+4. Chỉ tạo baseline mới khi chủ động thay đổi nội dung giáo dục và đã kiểm tra kỹ.
+
+Không chạy lệnh tạo baseline chỉ để làm mất cảnh báo kiểm thử. Quy trình chi tiết nằm trong [AGENTS.md](AGENTS.md).
 
 ---
 
-# 💾 Dữ liệu lưu trên máy
+## 📈 Trạng thái và định hướng
 
-| Key | Nội dung | Ghi chú |
-|---|---|---|
-| `bakhiLearn.v1` | Luyện tập, ôn tập, ghi chú, đánh dấu, lịch sử, thành tích, tuỳ chọn | Nguồn sự thật local-first |
-| `bakhiSignals.v1` | Số đếm tín hiệu cho thành tích (Studio, nhạc, palette, backup) | Chỉ số đếm, không nội dung |
-| `bakhiNotify.v1` | Trạng thái đã đọc của chuông `bk-notify` cũ | Chỉ dùng ở trang chủ |
-| `bakhiNotifyReads.v1` | Trạng thái đã đọc ở chế độ chỉ thông báo | Dùng chung theo origin |
-| `bakhiStudio.v1` | Tài liệu Studio (HTML + bản vẽ data URL) | Có thể xuất HTML/TXT để sao lưu |
-| `bakhiMusic.v2` | Queue, bài đang phát, shuffle/repeat, âm lượng | Không autoplay |
-| `bakhiMusic.panel.v1` | Vị trí/kích thước panel nhạc | Xoá để đặt lại |
-| `bakhiMusic.fab.v1` | Vị trí logo ♪ | Chuột phải logo để đặt lại |
-| `bakhiStudent.v1` | Hồ sơ học sinh đã gắn (nếu dùng Supabase) | Không chứa mật khẩu |
-| `bakhiAdmin.v1` | Phiên quản trị trong `sessionStorage` | Mất khi đóng tab |
+BAKHI đang được phát triển và duy trì theo hướng mở rộng trải nghiệm học tập, tăng độ ổn định và hoàn thiện các mô-đun dùng chung.
 
-Supabase (khi bật) còn lưu `bakhi.auth.v1` cho phiên Anonymous Auth. Không có key nào chứa
-service-role key hay Administrator Code.
+| Khu vực | Trạng thái mô tả |
+|---|---|
+| Website và điều hướng | Đã triển khai trên GitHub Pages |
+| Nội dung học tập | Đang được bổ sung và hoàn thiện |
+| Bài tập tương tác | Có hệ thống luyện tập; ngân hàng câu hỏi tiếp tục được cập nhật |
+| Trung tâm học tập | Đã tích hợp các chức năng theo dõi, ghi chú và ôn tập |
+| Hồ sơ và cài đặt | Đã có các khu vực hồ sơ và cá nhân hoá |
+| Music Player | Đã tích hợp |
+| Bá Khí Studio | Đã tích hợp |
+| Developer Playground | Đã tích hợp |
+| Administrator/Founder Dashboard | Đã tích hợp, quyền truy cập có xác thực |
+| Supabase | Tuỳ chọn, phụ thuộc cấu hình project |
+| Trợ năng và responsive | Tiếp tục được cải thiện |
 
----
+### 🗺️ Hướng phát triển
 
-# 📚 Tài liệu chi tiết
+- Mở rộng nội dung học tập và ngân hàng câu hỏi.
+- Cải thiện trải nghiệm làm bài, phản hồi và ôn tập.
+- Tiếp tục tối ưu giao diện trên thiết bị di động.
+- Tăng độ tin cậy của đồng bộ và khả năng phục hồi dữ liệu.
+- Hoàn thiện kiểm thử, tài liệu và công cụ dành cho người phát triển.
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — kiểm toán, kiến trúc, mô hình dữ liệu, cơ chế thông báo, giới hạn
-- [docs/FEATURES.md](docs/FEATURES.md) — danh sách tính năng & trạng thái từng mục
-- [docs/MUSIC.md](docs/MUSIC.md) — Music Player: quy ước file, phím tắt, bố cục, xử lý sự cố
-- [docs/STUDIO.md](docs/STUDIO.md) — Bá Khí Studio: Word & Paint, lưu trữ, giới hạn
-- [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) — cài đặt Supabase, Administrator Code, RLS, kiểm thử
-- [CHANGELOG.md](CHANGELOG.md) — lịch sử thay đổi theo phiên bản
-- [AGENTS.md](AGENTS.md) — quy ước làm việc trong repository
+> Phiên bản mới nhất và các thay đổi cụ thể được ghi trong [CHANGELOG.md](CHANGELOG.md). README chỉ mô tả kiến trúc và nhóm tính năng, tránh cố định các con số dễ thay đổi theo từng bản phát hành.
 
 ---
 
-# ❓ Câu hỏi thường gặp
+## 📚 Tài liệu liên quan
 
-**Tôi có cần tài khoản không?**
-Không. Website dùng được ngay ở chế độ local-first. Nếu quản trị viên bật Supabase, bạn chỉ cần
-chọn đúng họ tên để đồng bộ giữa các thiết bị.
-
-**Thông báo có hiện khi đang làm bài không?**
-Có. Từ 3.2.0, chuông có mặt trên trang bài học và Studio. Bấm chuông để xem; badge tự giảm
-khi bạn đọc.
-
-**Vì sao trang bài học không hỏi tên tôi?**
-Trang bài học chạy ở chế độ **chỉ nhận thông báo**: không mở màn hình nhận diện và không
-đồng bộ tiến trình. Việc học vẫn được ghi cục bộ bởi `bk-page.js`.
-
-**Đã đọc thông báo ở trang bài học, vì sao trang chủ vẫn hiện chưa đọc?**
-Trang chủ lưu trạng thái theo hồ sơ học sinh trên Supabase; trang bài học lưu cục bộ. Hai nơi
-dùng chung origin nhưng khác nguồn dữ liệu. Đây là chủ ý để trang bài học không cần đăng nhập.
-
-**Dữ liệu của tôi có bị gửi đi đâu không?**
-Mặc định không. Chỉ khi cấu hình Supabase, tiến trình mới được đồng bộ lên project của bạn.
-Không có analytics, không quảng cáo, không theo dõi.
-
-**Làm sao đặt lại toàn bộ?**
-Xoá các key `bakhiLearn.v1`, `bakhiStudio.v1`, `bakhiMusic.*`, `bakhiNotifyReads.v1` trong
-Local Storage, hoặc dùng Cài đặt → xuất dữ liệu rồi xoá. Nên xuất JSON trước khi đặt lại.
-
-**Vì sao mở bằng `file://` không thấy thông báo?**
-Trình duyệt chặn đọc `CHANGELOG.md` và gọi mạng từ `file://`. Hãy chạy qua web server tĩnh
-(xem [Chạy cục bộ](#-chạy-cục-bộ)).
+| Tài liệu | Nội dung |
+|---|---|
+| [CHANGELOG.md](CHANGELOG.md) | Lịch sử cập nhật và thay đổi theo phiên bản |
+| [AGENTS.md](AGENTS.md) | Quy ước làm việc trong repository |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Kiến trúc, mô hình dữ liệu, luồng hoạt động và giới hạn |
+| [docs/FEATURES.md](docs/FEATURES.md) | Danh sách tính năng và mô tả chi tiết |
+| [docs/MUSIC.md](docs/MUSIC.md) | Hướng dẫn Music Player và quy ước tài nguyên |
+| [docs/STUDIO.md](docs/STUDIO.md) | Hướng dẫn Bá Khí Studio |
+| [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) | Cài đặt Supabase, RLS, secrets và kiểm thử |
 
 ---
 
-# 🤝 Quy ước đóng góp
+## ❓ Câu hỏi thường gặp
 
-1. Đọc [AGENTS.md](AGENTS.md) trước khi sửa bất kỳ tệp nào.
-2. Không sửa nội dung giáo dục. Chỉ thêm thẻ script do công cụ chèn.
-3. Chạy `content-integrity verify` trước và sau khi sửa.
-4. Giữ phong cách ES5-ish + DOM thuần, không thêm dependency runtime.
+<details>
+<summary><strong>Tôi có cần tạo tài khoản để sử dụng BAKHI không?</strong></summary>
+
+Không. Các chức năng local-first có thể sử dụng mà không cần tạo tài khoản. Nếu project bật Supabase, người dùng có thể được nhận diện theo quy trình cấu hình của website để đồng bộ dữ liệu.
+
+</details>
+
+<details>
+<summary><strong>Dữ liệu học tập được lưu ở đâu?</strong></summary>
+
+Mặc định, dữ liệu được lưu trên trình duyệt của thiết bị. Khi Supabase được cấu hình và người dùng sử dụng tính năng đồng bộ, dữ liệu phù hợp sẽ được gửi đến project Supabase.
+
+</details>
+
+<details>
+<summary><strong>Vì sao trang học không yêu cầu nhận diện học sinh?</strong></summary>
+
+Một số trang học chạy ở chế độ chỉ nhận thông báo. Chế độ này không mở màn hình nhận diện và không đồng bộ tiến trình; nội dung học vẫn có thể sử dụng cơ chế lưu cục bộ.
+
+</details>
+
+<details>
+<summary><strong>Vì sao trạng thái đã đọc thông báo có thể khác giữa trang chủ và trang học?</strong></summary>
+
+Tuỳ chế độ hoạt động, trang chủ có thể lưu trạng thái đọc theo hồ sơ trên Supabase, trong khi trang học lưu cục bộ để không yêu cầu nhận diện. Vì vậy hai khu vực có thể sử dụng nguồn trạng thái khác nhau.
+
+</details>
+
+<details>
+<summary><strong>Vì sao mở bằng file:// không có đầy đủ thông báo hoặc đồng bộ?</strong></summary>
+
+Trình duyệt giới hạn một số thao tác mạng và đọc tệp khi trang được mở trực tiếp từ ổ đĩa. Hãy chạy một static server theo hướng dẫn [Chạy dự án cục bộ](#-chạy-dự-án-cục-bộ).
+
+</details>
+
+<details>
+<summary><strong>Làm sao sao lưu hoặc đặt lại dữ liệu?</strong></summary>
+
+Hãy dùng chức năng xuất dữ liệu trong phần cài đặt nếu có, sau đó mới xoá dữ liệu website trong trình duyệt. Không nên xoá `localStorage` trước khi tạo bản sao lưu nếu bạn cần giữ tiến trình, ghi chú hoặc tài liệu Studio.
+
+</details>
+
+<details>
+<summary><strong>BAKHI có phải nền tảng thi có giới hạn thời gian không?</strong></summary>
+
+Không. BAKHI hướng đến tự học và luyện tập theo nhịp độ cá nhân, không lấy đồng hồ đếm ngược hoặc giới hạn thời gian làm cơ chế cốt lõi.
+
+</details>
+
+---
+
+## 🤝 Đóng góp
+
+Trước khi chỉnh sửa repository:
+
+1. Đọc [AGENTS.md](AGENTS.md) để nắm quy ước và giới hạn của dự án.
+2. Xác định phạm vi thay đổi, đặc biệt với các trang chứa nội dung giáo dục.
+3. Chạy `node tools/content-integrity.js verify` trước và sau khi sửa nếu thay đổi có thể ảnh hưởng các trang học.
+4. Giữ định hướng HTML/CSS/JavaScript thuần và hạn chế thêm dependency runtime.
 5. Cập nhật `CHANGELOG.md` và tài liệu liên quan khi thay đổi hành vi.
-6. Commit message bằng tiếng Việt, mô tả rõ phần đã thay đổi.
+6. Kiểm tra các luồng liên quan trước khi commit.
+
+### Quy ước commit
+
+Ưu tiên commit message tiếng Việt, ngắn gọn và mô tả đúng thay đổi, ví dụ:
+
+```text
+docs: nâng cấp README và sơ đồ kiến trúc
+fix: sửa lỗi đồng bộ trạng thái đã đọc
+feat: bổ sung bộ lọc trong trung tâm học tập
+```
 
 ---
 
-# 👤 Tác giả
+## 👤 Tác giả
+
+<div align="center">
 
 ### MinhTruk
 
-💻 Lập trình • 📚 Học tập • 🧪 Thử nghiệm
+💻 Lập trình · 📚 Học tập · 🧪 Thử nghiệm
 
-BAKHI được xây dựng trong quá trình học tập và phát triển các kỹ năng lập trình web.
+**BAKHI** được xây dựng trong quá trình học tập, thử nghiệm và phát triển các kỹ năng lập trình web.
+
+</div>
+
+---
+
+<div align="center">
+
+**BAKHI · Learn at your own pace.**
+
+[🌐 Website](https://minhtruk.github.io/bakhi/) · [📦 GitHub](https://github.com/MinhTruk/bakhi) · [📝 Changelog](CHANGELOG.md)
+
+</div>
