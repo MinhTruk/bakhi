@@ -45,7 +45,7 @@ verify_jwt = false
 [functions.chat-api]
 verify_jwt = false
 
-[functions.passkey-api]
+[functions.dev-auth]
 verify_jwt = false
 
 [functions.changelog-sync]

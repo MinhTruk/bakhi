@@ -55,7 +55,8 @@ Hướng dẫn cho agent/developer làm việc trong repository này. Đọc h�
 /ktgk1, /ktgk2, /ktck1, /ktck2, /kttx   Nội dung giáo dục (HTML tĩnh)
 /music                 music/<slug>.mp3|txt|png
 /studio                index.html (Word & Paint hợp nhất) + word-paint.html (chuyển hướng)
-/supabase/             migrations/ (schema + RLS + realtime) + functions/ (7 Edge Function)
+/supabase/             migrations/ (schema + RLS + realtime) + functions/ (11 Edge Function)
+                      + config.toml (mỗi function phải có đúng một khối [functions.<tên>])
 /.github/workflows/    changelog-sync.yml (CHANGELOG.md → Supabase)
 /tools                 content-integrity (+ content-integrity-refresh), integrate-pages, inject-favicon, make-favicon, qa/smoke, qa/cloud-smoke
 /docs                  Kiến trúc, tính năng, Music, Studio, Supabase, baseline nội dung
@@ -85,6 +86,7 @@ NODE_PATH=/tmp/bktest/node_modules node tools/qa/chat-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/admin-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/report-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/version-audit.js
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/supabase-config.js
 
 # 4. Chèn thẻ script vào các trang mới (idempotent)
 node tools/integrate-pages.js
@@ -96,6 +98,9 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 - Không có bước build. Website là HTML/CSS/JS tĩnh, deploy GitHub Pages.
 - Khi thêm trang HTML mới trong thư mục nội dung: chạy `node tools/integrate-pages.js`
   để chèn thẻ script, sau đó chạy lại kiểm tra toàn vẹn.
+- `node tools/qa/supabase-config.js` là cổng bắt buộc khi thêm/gỡ Edge Function: nó so
+  `supabase/functions/*` với `supabase/config.toml` (không còn khai báo mồ côi), kiểm tra
+  `verify_jwt = false` cho mọi function, tên function frontend gọi và cú pháp TypeScript.
 - Nếu baseline nội dung chưa tồn tại: `node tools/content-integrity.js baseline`
   **trước khi** sửa bất kỳ nội dung nào.
 - Khi một trang **không chứa nội dung giáo dục** (trang chủ, `studio/`) được viết lại

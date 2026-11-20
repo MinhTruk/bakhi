@@ -327,7 +327,9 @@ Hướng dẫn đầy đủ nằm tại [docs/SUPABASE_SETUP.md](docs/SUPABASE_S
 2. Cấu hình Project URL và Publishable/anon key trong `assets/bakhi/bk-supabase.config.js`.
 3. Bật Anonymous Sign-ins nếu dự án sử dụng phiên đăng nhập ẩn danh.
 4. Chạy các migration SQL trong thư mục `supabase/migrations/`.
-5. Deploy các Edge Functions trong `supabase/functions/` theo hướng dẫn.
+5. Deploy các Edge Functions trong `supabase/functions/` theo hướng dẫn. `supabase/config.toml`
+   phải có đúng một khối `[functions.<tên>]` cho mỗi thư mục — kiểm tra bằng
+   `node tools/qa/supabase-config.js`.
 6. Cấu hình secrets cần thiết ở môi trường máy chủ và GitHub Actions.
 7. Import danh sách học sinh từ khu vực quản trị nếu sử dụng tính năng nhận diện.
 8. Kiểm tra RLS, quyền truy cập và luồng đồng bộ trước khi đưa vào sử dụng.
@@ -518,7 +520,7 @@ BAKHI đang được phát triển và duy trì theo hướng mở rộng trải
 | Bá Khí Studio | Đã tích hợp |
 | Developer Playground | Đã tích hợp |
 | Administrator/Founder Dashboard | Đã tích hợp, quyền truy cập có xác thực |
-| Report Issue và Q&A | Đã tích hợp toàn website (8.1.0), dữ liệu qua Supabase với RLS |
+| Report Issue và Q&A | Đã tích hợp toàn website (8.1.0), hoàn thiện bảo mật và cấu hình ở 8.1.1; dữ liệu qua Supabase với RLS |
 | Supabase | Tuỳ chọn, phụ thuộc cấu hình project |
 | Trợ năng và responsive | Tiếp tục được cải thiện |
 

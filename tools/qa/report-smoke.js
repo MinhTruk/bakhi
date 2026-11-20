@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Bá Khí — QA Report Issue + Q&A (v8.1.0, jsdom).
+ * Bá Khí — QA Report Issue + Q&A (v8.1.1, jsdom).
  *
  *   npm install jsdom --prefix /tmp/bktest --no-save
  *   NODE_PATH=/tmp/bktest/node_modules node tools/qa/report-smoke.js
@@ -79,7 +79,7 @@ function boot(opts) {
   const w = dom.window;
   const calls = [];
   const toasts = [];
-  w.BAKHI_VERSION = { app: '8.1.0' };
+  w.BAKHI_VERSION = { app: '8.1.1' };
   w.BK = {
     ui: { toast: (m, t) => toasts.push({ m, t }) },
     util: { fmtTime: (iso) => 'T ' + String(iso || '').slice(11, 16) }
@@ -367,7 +367,7 @@ function boot(opts) {
           { id: 'r2', code: 'BK-01002', title: 'Giao diện tối', student_name: 'Trần Bình', category: 'ui', priority: 'low', status: 'resolved', updated_at: new Date().toISOString(), staff_unread: 0 }
         ]
       });
-      if (action === 'version') return Promise.resolve({ serverVersion: '8.1.0', titles: { total: 35 } });
+      if (action === 'version') return Promise.resolve({ serverVersion: '8.1.1', titles: { total: 35 } });
       return Promise.resolve({ ok: true });
     }
   };

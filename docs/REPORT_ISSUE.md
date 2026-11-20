@@ -1,4 +1,4 @@
-# 🚩 Report Issue + Q&A (Bá Khí 8.1.0)
+# 🚩 Report Issue + Q&A (Bá Khí 8.1.1)
 
 Tài liệu này mô tả hệ thống báo cáo vấn đề đang chạy trên production: nơi người dùng gặp nó,
 cách dữ liệu đi qua Supabase, quyền của từng vai trò và cách vận hành.
@@ -214,6 +214,18 @@ Bộ QA kiểm tra: nút nổi, cửa sổ, form, validation, payload không có
 Q&A, gửi trả lời, `Esc`, chế độ nhúng Cài đặt, hợp đồng action của hai Edge Function, RLS và
 bucket riêng tư.
 
+Trạng thái trên project `wzvslyabhizsiggurwdq` (xác minh 20/11/2026):
+
+| Hạng mục | Trạng thái | Bằng chứng |
+|---|---|---|
+| Migration `20261206000000_bakhi_v800_reports.sql` | ✅ Applied | Bốn bảng, index, trigger `reports_touch`/`report_messages_touch` có trên DB; đã ghi nhận trong `schema_migrations` |
+| Bucket `report-attachments` | ✅ Applied | `public = false`, 5 MB, nhận PNG/JPG/WEBP/GIF/PDF |
+| RLS bốn bảng | ✅ Applied | Chỉ có policy `SELECT` cho chủ sở hữu; không có policy ghi |
+| GRANT ghi của client | ✅ Đã thu hồi (8.1.1) | `has_table_privilege('authenticated', …, 'INSERT')` = `false` trên cả bốn bảng |
+| Edge Function `report-api` | ✅ Deployed | Phiên ẩn danh thật → `409 NOT_BOUND` (đúng thiết kế); không có phiên → `401 NO_SESSION` |
+| Edge Function `admin-actions` (`reports.*`) | ✅ Deployed | Không có phiên quản trị → `401 NO_DEV_SESSION` |
+| Luồng Q&A hai chiều trên dữ liệu thật | ⚠️ NOT VERIFIED | Cần một thiết bị đã gắn học sinh + mã quản trị; xem `docs/PRODUCTION_READINESS_REPORT.md` mục F |
+
 Kiểm thử thủ công trên production (cần một tài khoản học sinh đã gắn):
 
 1. Gửi báo cáo từ trang chủ và từ một trang bài học.
@@ -229,6 +241,7 @@ Kiểm thử thủ công trên production (cần một tài khoản học sinh �
 | Nút Báo cáo báo “chưa gắn học sinh” | Thiết bị chưa chọn họ tên | Chọn họ tên ở trang chủ rồi mở lại |
 | Gửi báo cáo lỗi `report-api` 404 | Chưa deploy Edge Function | `npx supabase functions deploy report-api` |
 | Tab Report trống, không có thống kê | Chưa chạy migration 8.0.0 | Chạy migration rồi tải lại dashboard |
+| `report-api` báo `SERVER_ERROR` khi gửi báo cáo | Hàm bị thiếu khai báo `[functions.report-api]` trong `config.toml` | Chạy `node tools/qa/supabase-config.js` rồi deploy lại |
 | Tab Report chỉ thấy phân trang, không có dòng nào (bản 8.0.1) | `renderPager()` xoá bảng vừa dựng | Cập nhật 8.1.0 (phân trang dùng host riêng) |
 | “Xuất CSV” báo `UNKNOWN_ACTION` | `admin-actions` chưa được deploy bản 8.1.0 | `npx supabase functions deploy admin-actions` |
 | Nút Báo cáo xuất hiện trên trang quản trị | Bản 8.0.x nạp `bk-report.js` ở `admin/`, `founder/` | Cập nhật 8.1.0 (đã gỡ + guard `BK_ADMIN_ONLY`) |

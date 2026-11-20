@@ -25,9 +25,14 @@ Hệ thống Supabase của Bá Khí gồm 4 phần:
 4. Đăng nhập tại **Cài đặt → Founder**; không cần thêm secret môi trường.
 5. Sau khi đăng nhập, bấm **Cấp toàn bộ badge & khung** nếu muốn cấp lại trọn bộ.
 
-## Trạng thái project hiện tại (15/11/2026)
+## Trạng thái project hiện tại (20/11/2026)
 
-Project `wzvslyabhizsiggurwdq` **đã được cài đặt và kiểm chứng**:
+Project `wzvslyabhizsiggurwdq` (region `ap-southeast-1`, `ACTIVE_HEALTHY`). Trạng thái dưới đây
+được đối chiếu trực tiếp qua Management API ngày 20/11/2026 — không suy đoán từ mã nguồn.
+
+Cách đọc trạng thái: **Implemented** = có trong source · **Tested** = đã kiểm thử cục bộ ·
+**Deployed** = đã triển khai lên project thật · **Verified** = đã gọi thử và thấy đúng hành vi
+trên production · **Blocked** = thiếu quyền/điều kiện.
 
 | Hạng mục | Trạng thái |
 |---|---|
@@ -36,14 +41,15 @@ Project `wzvslyabhizsiggurwdq` **đã được cài đặt và kiểm chứng**:
 | Migration `20261116000000_bakhi_security_hardening.sql` | ✅ đã chạy — thu hồi quyền hàm/bảng |
 | Migration `20261117000000_bakhi_changelog_sync.sql` | ✅ đã chạy — cột đồng bộ, RPC publish, `app_settings` |
 | Migration `20261117001000_app_settings_realtime.sql` | ✅ đã chạy — `app_settings` vào realtime |
-| 11 Edge Function | ✅ `ACTIVE`, `verify_jwt = false` |
+| 11 Edge Function (source = khai báo trong `config.toml`) | ✅ Verified — cả 11 hàm trả lỗi xác thực của chính hàm (không phải 404) khi gọi từ Internet |
+| `verify_jwt` trong `config.toml` | ✅ `false` cho cả 11 hàm (8.1.1 bỏ `passkey-api`, thêm `dev-auth`) — ⚠️ `dev-auth` **đang chạy trên project ở chế độ `verify_jwt = true`**; vẫn hoạt động vì trình duyệt luôn gửi JWT phiên, cần deploy lại dev-auth để đồng bộ config |
 | Secret `ADMIN_DEV_CODE` | ✅ đã đặt |
 | Secret `CHANGELOG_SYNC_TOKEN` | ✅ đã đặt (Edge Function + GitHub Secrets) |
 | Roster `students.txt` | ✅ 40 học sinh, 0 hồ sơ trùng tên |
 | Thông báo toàn website (3.2.0) | ✅ chuông ở trang chủ, trang bài học và Studio |
 | Đồng bộ changelog (3.3.0) | ✅ 14 phiên bản, 8 tạo mới, 1 thông báo cho 3.2.1; chạy lại 0/0 |
-| Migration `20261118000000_bakhi_dev_sessions.sql` (3.5.0) | ⏳ chờ chạy — bảng `dev_sessions` tách khỏi phiên Administrator |
-| Migration `20261119000000_bakhi_profile_badges.sql` (3.6.0) | ⏳ chờ chạy — `student_profiles`, `student_badges`, khung avatar |
+| Migration `20261118000000_bakhi_dev_sessions.sql` (3.5.0) | ✅ đã chạy — bảng `dev_sessions` tách khỏi phiên Administrator |
+| Migration `20261119000000_bakhi_profile_badges.sql` (3.6.0) | ✅ đã chạy — `student_profiles`, `student_badges`, khung avatar |
 | Migration `20261120000000_bakhi_chat.sql` (3.7.0) | ✅ đã chạy — bốn bảng chat, view `chat_profiles`, bucket `chat-images` |
 | Migration `20261125000000_bakhi_chat_presence_passkey.sql` (6.2.0) | ✅ đã chạy — `last_seen_at`; bảng passkey đã bị gỡ ở 7.8.0 |
 | Migration `20261204000000_bakhi_v780_login_code.sql` (7.8.0) | ✅ đã chạy — `student_login_codes`; xoá `student_passkeys`/`passkey_challenges` |
@@ -51,10 +57,38 @@ Project `wzvslyabhizsiggurwdq` **đã được cài đặt và kiểm chứng**:
 | Edge Functions `dev-auth`, `student-profile`, `chat-api` | ✅ đã deploy |
 | Edge Function `passkey-api` + secret `PASSKEY_RP_ID`/`PASSKEY_ORIGIN` (6.2.0) | 🗑️ đã gỡ ở 7.8.0 — thay bằng mật mã đăng nhập (`student-profile`) |
 | Edge Functions `admin-actions`, `report-api`, `student-profile`, `chat-api` (8.1.0) | ✅ đã deploy bản 8.1.0 (`admin-actions` v30, `report-api` v2) |
+| Migration `20261203000000`, `20261203000001` (7.7.0) | ✅ Applied — đối tượng `bakhi_titles`/`bakhi_title_grants`/`bakhi_titles_active`/`bakhi_grant_badges` có trên DB; ghi nhận history ngày 20/11/2026 |
+| Migration `20261204000000_bakhi_v780_login_code.sql` (7.8.0) | ✅ Applied — `student_login_codes` (RLS bật, không policy ⇒ chỉ service_role) |
+| Migration `20261205000000_bakhi_v792_maintenance_fields.sql` (7.9.2) | ✅ Applied — `app_settings.value` có đủ `maintenance_*`; `anon` có `SELECT` trên `app_settings` |
+| Migration `20261206000000_bakhi_v800_reports.sql` (8.0.0) | ✅ Applied — bốn bảng, 3 policy `SELECT`, bucket private, trigger touch |
+| Migration `20261207000000_bakhi_v811_report_privileges.sql` (8.1.1) | ✅ Applied — `anon`/`authenticated` không còn `INSERT/UPDATE/DELETE` trên bảng Report Issue |
 
-> Toàn bộ migration và Edge Function trên đã chạy/deploy trên project thật. Website vẫn
+> Lịch sử migration: `supabase_migrations.schema_migrations` có đủ 26 version đến
+> `20261207000000`. Năm migration 7.7.0–8.0.0 từng được áp dụng ngoài lịch sử; chúng đã được
+> kiểm tra từng đối tượng rồi ghi nhận version — **không chạy lại SQL**, không mất dữ liệu.
+> Website vẫn
 > hoạt động local-first: khi mất mạng hoặc thiếu phiên, đồng bộ hồ sơ/nhạc chỉ hiện trạng
 > thái và giữ dữ liệu trên thiết bị.
+
+### Bảng mapping Edge Function (kiểm tra ngày 20/11/2026)
+
+`node tools/qa/supabase-config.js` là nguồn kiểm tra tự động của bảng này: mọi thư mục trong
+`supabase/functions/` phải có đúng một khối `[functions.<tên>]` và ngược lại.
+
+| Function | Source | `config.toml` | Production |
+|---|---|---|---|
+| `admin-actions` | ✅ `admin-actions/index.ts` | ✅ `verify_jwt = false` | ✅ Deployed — `401 NO_DEV_SESSION` khi không có phiên |
+| `admin-auth` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 BAD_DEV_CODE` khi mã sai |
+| `bind-student-session` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 NO_SESSION` khi thiếu phiên |
+| `changelog-sync` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 BAD_SYNC_TOKEN` khi sai token |
+| `chat-api` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 NO_SESSION` |
+| `dev-auth` | ✅ | ✅ `verify_jwt = false` (thêm ở 8.1.1) | ✅ Deployed — `401 BAD_DEV_CODE` với mã sai (nghĩa là `DEV_PLAYGROUND_CODE` đã đặt). ⚠️ Đang chạy `verify_jwt = true`; deploy lại để đồng bộ |
+| `import-students` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 NO_DEV_SESSION` |
+| `report-api` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `409 NOT_BOUND` với phiên ẩn danh thật |
+| `search-students` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 NO_SESSION` |
+| `student-profile` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `409 NOT_BOUND` với phiên ẩn danh thật |
+| `sync-student-progress` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 NO_SESSION` |
+| `passkey-api` | 🗑️ đã gỡ ở 7.8.0 | 🗑️ đã xoá khỏi config ở 8.1.1 | Không còn |
 
 Kiểm chứng end-to-end đã chạy trực tiếp trên project (không phải mock):
 

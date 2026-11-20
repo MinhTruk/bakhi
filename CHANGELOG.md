@@ -2,6 +2,38 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.1.1] — 2026-11-20
+
+### Sửa lỗi
+
+- **`supabase/config.toml` khớp lại với Edge Function thật.** Bỏ khai báo mồ côi
+  `passkey-api` (hàm đã bị gỡ ở 7.8.0) và bổ sung `dev-auth` còn thiếu, nên lần deploy tới
+  Developer Playground không còn bị cổng JWT của Supabase chặn. `project_id` vẫn là
+  `wzvslyabhizsiggurwdq`.
+- **Lịch sử migration được đối chiếu và ghi nhận đủ.** Năm migration 7.7.0–8.0.0 đã tạo
+  schema trên project thật nhưng chưa có dòng trong `supabase_migrations.schema_migrations`
+  (`20261203–20261206`); chúng đã được kiểm tra từng đối tượng và ghi nhận đúng version,
+  **không chạy lại SQL** và không mất dữ liệu.
+- **Thu hồi quyền ghi trực tiếp trên bảng Report Issue.** `anon` và `authenticated` còn giữ
+  `INSERT/UPDATE/DELETE` ở tầng GRANT trên `reports`, `report_messages`, `report_notifications`,
+  `report_activity_logs` dù RLS đã chặn. Migration mới thu hồi các quyền đó (chỉ còn `SELECT`
+  cho chủ sở hữu) và ghim `search_path` cho trigger `bakhi_v800_touch`.
+
+### Cải tiến
+
+- **QA cấu hình Supabase.** Thêm `tools/qa/supabase-config.js`: so hai chiều
+  `supabase/functions/*` ↔ `config.toml`, bắt khai báo mồ côi, `verify_jwt` thiếu hoặc bật
+  nhầm, tên function frontend gọi không tồn tại, tham chiếu Passkey còn sót, migration trùng
+  version và cú pháp TypeScript của toàn bộ Edge Function.
+- **CI/CD.** Thêm `.github/workflows/quality-check.yml`: chạy toàn vẹn nội dung, cú pháp
+  JS/JSON, QA cấu hình Supabase, `version-audit` và 11 smoke test DOM trên mỗi push `main` /
+  pull request. Không đụng hai workflow đang chạy (changelog-sync, music-library).
+- **Phiên bản đồng nhất 8.1.1.** `bk-version.js`, `?v=` trong 122 tệp HTML, `APP_VERSION`
+  của dashboard, `bk-founder.js` và `SERVER_VERSION` của `admin-actions` cùng là `8.1.1`.
+- **Tài liệu.** Thêm `docs/DEPLOYMENT_CHECKLIST.md` và
+  `docs/PRODUCTION_READINESS_REPORT.md`; cập nhật `docs/SUPABASE_SETUP.md` sang trạng thái
+  xác minh ngày 20/11/2026.
+
 ## [8.1.0] — 2026-11-20
 
 ### Sửa lỗi

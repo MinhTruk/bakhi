@@ -1,0 +1,129 @@
+name: Quality Check
+
+# Cổng chất lượng bắt buộc trước khi triển khai.
+# Tái sử dụng toàn bộ bộ QA có sẵn trong tools/qa/ — không viết lại bài kiểm tra trùng.
+#
+#   - Toàn vẹn nội dung giáo dục (content-integrity)
+#   - Cú pháp JavaScript + JSON
+#   - Cấu hình Supabase ↔ Edge Function (supabase-config)
+#   - version-audit (đường dẫn, cache busting, phiên bản đồng nhất)
+#   - 11 smoke test DOM (jsdom + typescript)
+#
+# Bất kỳ bước nào thất bại → workflow Failed, log chỉ rõ bài kiểm tra hỏng.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.html'
+      - '**.js'
+      - '**.css'
+      - '**.sql'
+      - '**.json'
+      - '**.yml'
+      - '**.md'
+      - 'supabase/**'
+      - 'tools/**'
+  pull_request:
+    paths:
+      - '**.html'
+      - '**.js'
+      - '**.css'
+      - '**.sql'
+      - '**.json'
+      - '**.yml'
+      - '**.md'
+      - 'supabase/**'
+      - 'tools/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-check-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # jsdom + typescript được cài ngoài repo (không commit node_modules).
+  QA_DEPS: /tmp/bktest
+  NODE_PATH: /tmp/bktest/node_modules
+
+jobs:
+  quality:
+    name: Kiểm tra chất lượng
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài Node.js LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cài công cụ QA (jsdom, typescript)
+        run: npm install --prefix "$QA_DEPS" --no-save jsdom typescript@5.6.3
+
+      - name: Toàn vẹn nội dung giáo dục
+        run: node tools/content-integrity.js verify
+
+      - name: Cú pháp JavaScript
+        run: |
+          set -euo pipefail
+          fail=0
+          while IFS= read -r f; do
+            if ! node --check "$f"; then
+              echo "::error file=$f::Cú pháp JavaScript không hợp lệ"
+              fail=1
+            fi
+          done < <(git ls-files '*.js')
+          exit "$fail"
+
+      - name: Cú pháp JSON
+        run: |
+          set -euo pipefail
+          fail=0
+          while IFS= read -r f; do
+            if ! node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' "$f"; then
+              echo "::error file=$f::JSON không hợp lệ"
+              fail=1
+            fi
+          done < <(git ls-files '*.json')
+          exit "$fail"
+
+      - name: Cấu hình Supabase và Edge Functions
+        run: node tools/qa/supabase-config.js
+
+      - name: Version audit
+        run: node tools/qa/version-audit.js
+
+      - name: Smoke test DOM
+        run: |
+          set -euo pipefail
+          for t in smoke cloud-smoke shell-smoke dev-smoke badges-smoke \
+                   chat-smoke admin-smoke report-smoke founder-smoke \
+                   maintenance-smoke studio-smoke; do
+            echo "::group::$t"
+            node "tools/qa/$t.js"
+            echo "::endgroup::"
+          done
+
+      - name: Tổng hợp
+        if: always()
+        run: |
+          {
+            echo "### Quality Check"
+            echo ""
+            echo "| Hạng mục | Nguồn |"
+            echo "|---|---|"
+            echo "| Toàn vẹn nội dung | \`tools/content-integrity.js\` |"
+            echo "| Cú pháp JS/JSON | \`node --check\`, \`JSON.parse\` |"
+            echo "| Cấu hình Supabase | \`tools/qa/supabase-config.js\` |"
+            echo "| Phiên bản / cache busting | \`tools/qa/version-audit.js\` |"
+            echo "| Smoke test | 11 tệp trong \`tools/qa/\` |"
+            echo ""
+            echo "Trạng thái job: **${{ job.status }}**"
+          } >> "$GITHUB_STEP_SUMMARY"

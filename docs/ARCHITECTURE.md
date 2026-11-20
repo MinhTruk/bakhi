@@ -15,7 +15,7 @@ quyết định kỹ thuật. Cập nhật: 20/11/2026 (phiên bản 8.0.0).
 | Storage keys | `theme`, `b11theme`, `bgOpacity`, `customBg`, `fxCfg`, `uiCfg`, `hiddenSubjects`, `favCfg`, `bktCfg`, `appHighlightsDataMap`, `bakhiBackups`, `bakhiSchema`, `bakhiColors`, `bakhiErrors`, `bakhiSnips`, `devToken`, `devLock`, `bakhi_ly11_progress`, `bakhi_toan11_checklist`, `lexend-*`, `bgmMuted` + các key mới bên dưới |
 | Theme | `html.dark` + `localStorage.theme`; token V4 `--bk-*` |
 | Chuyển trang | Khối BKT (hiệu ứng bàn tay/vải) + `sessionStorage.bktF` |
-| Supabase | Đã tích hợp: migration + 7 Edge Function + RLS + realtime (xem mục 8) |
+| Supabase | Đã tích hợp: migration + 11 Edge Function + RLS + realtime (xem mục 8) |
 | Deploy | GitHub Pages, đường dẫn tương đối, không build |
 
 
@@ -254,9 +254,9 @@ DOMContentLoaded
   Founder trao. Mọi lần trao ghi `admin_grant_history`/`admin_grant_batches` và audit log.
 - **Đồng bộ máy khách**: `bk-cloud.js` đẩy hồ sơ khi `updatedAt` mới hơn bản máy chủ, kéo
   badge đã xác minh, và tự tắt (`studentDisabled`) khi Edge Function chưa được deploy (404).
-- **Trạng thái triển khai**: mã đã hoàn tất và kiểm thử cục bộ; migration + ba Edge Function
-  (`student-profile`, `admin-actions`, `sync-student-progress`) **cần được deploy** trên dự án
-  Supabase thật trước khi tính năng chạy trên website công khai.
+- **Trạng thái triển khai**: migration `20261119000000` (3.6.0) và ba Edge Function
+  (`student-profile`, `admin-actions`, `sync-student-progress`) đã được deploy và xác minh
+  trên project `wzvslyabhizsiggurwdq` (20/11/2026).
 
 ### 2.6.0.1. Bảo trì toàn hệ thống & Founder Login (7.9.2)
 

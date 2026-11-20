@@ -63,7 +63,12 @@ Trung tâm học tập, hồ sơ/cài đặt, Developer Playground, Administrato
   Migration `20261202000000_bakhi_v760_titles.sql` và
   `20261203000000_bakhi_v770_titles_rework.sql`.
 
-### A3. Report Issue + Q&A (8.1.0)
+### A3. Report Issue + Q&A (8.1.0, hoàn thiện 8.1.1)
+
+> 8.1.1 thu hồi `INSERT/UPDATE/DELETE` ở tầng GRANT của `anon`/`authenticated` trên bốn bảng
+> Report Issue (RLS đã chặn từ 8.0.0), ghim `search_path` cho trigger `bakhi_v800_touch` và
+> đưa `passkey-api` ra khỏi `config.toml`. Bảng dưới mô tả tính năng, không phải trạng thái
+> triển khai — trạng thái đó ở `docs/PRODUCTION_READINESS_REPORT.md`.
 
 | Hạng mục | Trạng thái |
 |---|---|
