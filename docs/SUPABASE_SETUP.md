@@ -50,7 +50,7 @@ Project `wzvslyabhizsiggurwdq` **đã được cài đặt và kiểm chứng**:
 | Migration `20261126000000_bakhi_platform_7.sql` (7.0.0) | ✅ đã chạy — `chat_conversation_prefs`, `maintenance_history`, `music_tracks`, `student_profiles.prefs`, `public.branding` |
 | Edge Functions `dev-auth`, `student-profile`, `chat-api` | ✅ đã deploy |
 | Edge Function `passkey-api` + secret `PASSKEY_RP_ID`/`PASSKEY_ORIGIN` (6.2.0) | 🗑️ đã gỡ ở 7.8.0 — thay bằng mật mã đăng nhập (`student-profile`) |
-| Edge Functions `admin-actions`, `student-profile`, `chat-api` (7.0.0) | ✅ đã deploy bản 7.0.0 |
+| Edge Functions `admin-actions`, `report-api`, `student-profile`, `chat-api` (8.1.0) | ✅ đã deploy bản 8.1.0 (`admin-actions` v30, `report-api` v2) |
 
 > Toàn bộ migration và Edge Function trên đã chạy/deploy trên project thật. Website vẫn
 > hoạt động local-first: khi mất mạng hoặc thiếu phiên, đồng bộ hồ sơ/nhạc chỉ hiện trạng

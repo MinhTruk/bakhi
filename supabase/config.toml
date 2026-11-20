@@ -50,3 +50,9 @@ verify_jwt = false
 
 [functions.changelog-sync]
 verify_jwt = false
+
+[functions.report-api]
+verify_jwt = false
+
+[functions.student-profile]
+verify_jwt = false
