@@ -158,6 +158,9 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 - Học sinh chỉ đọc dữ liệu của mình qua RLS; mọi thao tác ghi đi qua Edge Function
   `report-api` (học sinh) hoặc `admin-actions` → `reports.*` (Administrator/Founder).
   Không bao giờ gửi `student_id` từ trình duyệt.
+- Nút nổi neo ngay **trên chuông thông báo nổi** (đo bằng `getBoundingClientRect`, không đặt
+  cứng toạ độ) và **kéo được**; vị trí lưu ở `bakhiReportFab.v1`, `Home` trả về mặc định.
+  Không tạo nút thứ hai, không hạ/nâng z-index tuỳ tiện: nút phải nằm dưới panel thông báo.
 - Thông báo riêng dùng bảng `report_notifications` và hiển thị trong chuông `bk-cloud` hiện
   có — không dựng Notification System thứ hai.
 - Chi tiết: [docs/REPORT_ISSUE.md](docs/REPORT_ISSUE.md).

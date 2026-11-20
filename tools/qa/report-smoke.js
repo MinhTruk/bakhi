@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Bá Khí — QA Report Issue + Q&A (v8.0.0, jsdom).
+ * Bá Khí — QA Report Issue + Q&A (v8.0.1, jsdom).
  *
  *   npm install jsdom --prefix /tmp/bktest --no-save
  *   NODE_PATH=/tmp/bktest/node_modules node tools/qa/report-smoke.js
@@ -13,8 +13,10 @@
  *   5. Danh sách báo cáo hiển thị mã, trạng thái, phản hồi mới.
  *   6. Q&A hiển thị tin nhắn của học sinh và ban quản trị, gửi trả lời được.
  *   7. Esc đóng cửa sổ; nhúng trong Cài đặt hoạt động.
- *   8. Hợp đồng máy chủ: report-api + admin-actions có đủ action quyền hạn.
- *   9. Bảo mật: RLS, bucket riêng tư, không có service-role key ở frontend.
+ *   8. Nút nổi kéo được, neo trên chuông nổi và nhớ vị trí.
+ *   9. Hợp đồng máy chủ: report-api + admin-actions có đủ action quyền hạn.
+ *  10. Bảo mật: RLS, bucket riêng tư, không có service-role key ở frontend.
+ *  11. Chủ đề tối của cửa sổ báo cáo (biến --bkrep-*, color-scheme).
  */
 const { JSDOM, VirtualConsole } = require('jsdom');
 const fs = require('fs');
@@ -31,6 +33,7 @@ function wait(ms) { return new Promise((r) => setTimeout(r, ms)); }
 async function settle(n) { for (let i = 0; i < (n || 6); i++) await wait(6); }
 
 const REPORT_JS = read('assets/bakhi/bk-report.js');
+const REPORT_CSS = read('assets/bakhi/bk-report.css');
 const REPORT_API = read('supabase/functions/report-api/index.ts');
 const ADMIN_ACTIONS = read('supabase/functions/admin-actions/index.ts');
 const MIGRATION = read('supabase/migrations/20261206000000_bakhi_v800_reports.sql');
@@ -53,7 +56,8 @@ const staffMessage = {
   created_at: new Date().toISOString(), attachment_urls: []
 };
 
-function boot() {
+function boot(opts) {
+  opts = opts || {};
   const vc = new VirtualConsole();
   const errors = [];
   vc.on('jsdomError', (e) => errors.push(String((e && e.message) || e)));
@@ -66,7 +70,7 @@ function boot() {
   const w = dom.window;
   const calls = [];
   const toasts = [];
-  w.BAKHI_VERSION = { app: '8.0.0' };
+  w.BAKHI_VERSION = { app: '8.0.1' };
   w.BK = {
     ui: { toast: (m, t) => toasts.push({ m, t }) },
     util: { fmtTime: (iso) => 'T ' + String(iso || '').slice(11, 16) }
@@ -102,6 +106,14 @@ function boot() {
     },
     reportUpload: () => Promise.resolve(student.id + '/tep.png')
   };
+  /* Chuông nổi giả lập để kiểm tra việc neo nút báo cáo ngay TRÊN chuông. */
+  if (opts.bell) {
+    const bell = w.document.createElement('button');
+    bell.className = 'bkc-bell bkc-bell-float';
+    bell.style.position = 'fixed';
+    bell.getBoundingClientRect = () => ({ left: 700, right: 738, top: 650, bottom: 688, width: 38, height: 38, x: 700, y: 650 });
+    w.document.body.appendChild(bell);
+  }
   w.eval(REPORT_JS);
   return { dom, w, calls, toasts, errors };
 }
@@ -181,7 +193,60 @@ function boot() {
   ok('nhúng được vào panel Cài đặt', !!inline && !!host.querySelector('form.bkrep-form'));
   ok('chế độ nhúng không tạo thêm nút nổi thứ hai', B.w.document.querySelectorAll('#bkReportFab').length === 1);
 
-  console.log('\n== 7. Hợp đồng máy chủ ==');
+  console.log('\n== 7. Nút nổi kéo được & neo trên chuông ==');
+  const C = boot({ bell: true });
+  await settle();
+  const cfab = C.w.document.getElementById('bkReportFab');
+  ok('có nút nổi trên trang có chuông nổi', !!cfab);
+  ok('mặc định nằm ngay TRÊN chuông thông báo', !!cfab &&
+    cfab.style.bottom === (768 - 650 + 12) + 'px', 'bottom=' + (cfab && cfab.style.bottom));
+  ok('thẳng hàng phải với chuông', !!cfab && cfab.style.right === (1024 - 738) + 'px',
+    'right=' + (cfab && cfab.style.right));
+  ok('CSS cho phép kéo bằng chuột/cảm ứng', /\.bkrep-fab[^}]*touch-action:\s*none/s.test(REPORT_CSS) &&
+    /\.bkrep-fab\.is-drag/.test(REPORT_CSS));
+  ok('nút nổi nằm dưới panel thông báo để panel không bị che',
+    /z-index:\s*2147481250/.test(REPORT_CSS) && /z-index:\s*2147481300/.test(read('assets/bakhi/bk-cloud.css')));
+
+  const rect = { left: 900, top: 600, right: 1000, bottom: 640, width: 100, height: 40, x: 900, y: 600 };
+  cfab.getBoundingClientRect = () => rect;
+  function pointer(node, type, x, y) {
+    const e = new C.w.MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 });
+    Object.defineProperty(e, 'pointerId', { value: 1 });
+    node.dispatchEvent(e);
+  }
+  pointer(cfab, 'pointerdown', 950, 620);
+  pointer(cfab, 'pointermove', 500, 320);
+  pointer(cfab, 'pointerup', 500, 320);
+  await settle();
+  let saved = null;
+  try { saved = JSON.parse(C.w.localStorage.getItem('bakhiReportFab.v1') || 'null'); } catch (e) { }
+  ok('lưu vị trí đã kéo vào localStorage', !!saved && Number.isFinite(saved.x) && Number.isFinite(saved.y),
+    JSON.stringify(saved));
+  ok('áp vị trí đã kéo vào nút', cfab.style.left !== '' && cfab.style.top !== '',
+    cfab.style.left + '/' + cfab.style.top);
+  ok('đánh dấu nút đã được di chuyển', cfab.classList.contains('is-moved'));
+  cfab.click();
+  await settle();
+  const afterDragWin = C.w.document.getElementById('bkReportWin');
+  ok('kéo nút không mở cửa sổ ngoài ý muốn', !afterDragWin || afterDragWin.hidden === true);
+  C.w.BKReport.resetPosition();
+  await settle();
+  ok('Home/reset trả nút về trên chuông', cfab.style.left === '' && cfab.style.bottom !== '',
+    'left=' + cfab.style.left + ' bottom=' + cfab.style.bottom);
+  ok('reset xoá vị trí đã lưu', C.w.localStorage.getItem('bakhiReportFab.v1') === null);
+
+  console.log('\n== 8. Chủ đề tối của cửa sổ báo cáo ==');
+  ok('mặc định chủ đề tối', /color-scheme:\s*dark/.test(REPORT_CSS) && /--bkrep-bg:\s*#0b1120/.test(REPORT_CSS));
+  ok('có bảng biến cho chủ đề sáng', /html:not\(\.dark\) #bkReportWin/.test(REPORT_CSS) &&
+    /--bkrep-input-bg:\s*#ffffff/.test(REPORT_CSS));
+  ok('ô nhập và bong bóng chat dùng biến nền riêng', /--bkrep-input-bg/.test(REPORT_CSS) &&
+    /--bkrep-surface-2/.test(REPORT_CSS));
+  ok('có tinh chỉnh riêng cho html.dark', /html\.dark \.bkrep-item/.test(REPORT_CSS));
+  ok('chủ đề tối không đè nút chính/nút trong suốt',
+    /html\.dark \.bkrep-btn:not\(\.is-primary\):not\(\.is-ghost\)/.test(REPORT_CSS) &&
+    !/html\.dark \.bkrep-btn \{/.test(REPORT_CSS));
+
+  console.log('\n== 9. Hợp đồng máy chủ ==');
   ['bootstrap', 'list', 'detail', 'create', 'message.send', 'read.mark', 'notifications', 'notifications.read']
     .forEach((act) => ok('report-api có action ' + act, REPORT_API.includes("'" + act + "'")));
   ok('report-api xác minh thiết bị đã gắn học sinh', /student_devices/.test(REPORT_API) && /NOT_BOUND/.test(REPORT_API));
@@ -195,7 +260,7 @@ function boot() {
     /student_id: report\.student_id/.test(ADMIN_ACTIONS));
   ok('mọi thay đổi trạng thái ghi nhật ký', /report_activity_logs/.test(ADMIN_ACTIONS));
 
-  console.log('\n== 8. Bảo mật & dữ liệu ==');
+  console.log('\n== 10. Bảo mật & dữ liệu ==');
   ok('RLS bật cho cả bốn bảng', /alter table public\.reports enable row level security/.test(MIGRATION) &&
     /alter table public\.report_messages enable row level security/.test(MIGRATION) &&
     /alter table public\.report_notifications enable row level security/.test(MIGRATION) &&

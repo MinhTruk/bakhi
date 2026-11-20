@@ -277,7 +277,7 @@ DOMContentLoaded
 - **Giới hạn thử**: `admin-auth` dùng RPC `bakhi_rate_limit` theo IP — Founder 5 lần / 10 phút,
   trả `retryAfter`; mọi trường hợp sai đều trả “Mã Founder không hợp lệ.”
 
-### 2.9. Report Issue + Q&A (8.0.0)
+### 2.9. Report Issue + Q&A (8.0.1)
 
 ```
 bk-report.js ─► BKCloud.reportApi ─► report-api ─► reports / report_messages
@@ -290,6 +290,12 @@ bk-cloud.js (chuông) ◄── RLS select ── report_notifications
 - **Một component duy nhất.** `assets/bakhi/bk-report.js` dựng cả cửa sổ nổi (trên mọi trang
   có `bk-cloud.js`) và chế độ nhúng trong `bk-settings.js` → tab **Report Issue**. Không có
   biến thể riêng cho trang chủ hay trang môn học.
+- **Neo và kéo nút nổi.** Nút bám ngay trên chuông nổi (`.bkc-bell-float`) nhờ đo
+  `getBoundingClientRect` lúc khởi tạo và khi đổi kích thước; người dùng kéo được, vị trí lưu
+  ở `bakhiReportFab.v1`, `Home` (hoặc `BKReport.resetPosition()`) trả về mặc định. z-index
+  2147481250 đặt nút dưới panel thông báo để panel không bị che.
+- **Giao diện theo biến.** `bk-report.css` chỉ dùng biến `--bkrep-*`; chủ đề tối là mặc định
+  (`color-scheme: dark`) và chủ đề sáng ghi đè khi `<html>` không có lớp `.dark`.
 - **Trình duyệt chỉ đọc.** Ba policy SELECT (`reports_select_own`,
   `report_messages_select_own`, `report_notifications_select_own`) dùng
   `public.bakhi_current_student_id()`. Không có policy INSERT/UPDATE/DELETE cho client.

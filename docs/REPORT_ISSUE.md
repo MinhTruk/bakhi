@@ -1,4 +1,4 @@
-# 🚩 Report Issue + Q&A (Bá Khí 8.0.0)
+# 🚩 Report Issue + Q&A (Bá Khí 8.0.1)
 
 Tài liệu này mô tả hệ thống báo cáo vấn đề đang chạy trên production: nơi người dùng gặp nó,
 cách dữ liệu đi qua Supabase, quyền của từng vai trò và cách vận hành.
@@ -19,7 +19,7 @@ cách dữ liệu đi qua Supabase, quyền của từng vai trò và cách vậ
 | Vị trí | Cách mở | Ghi chú |
 |---|---|---|
 | Trang chủ | **Cài đặt → Report Issue** | Nhúng cùng component, không mở trang Cài đặt thứ hai |
-| Mọi trang môn học / bài học | Nút nổi **Báo cáo** góc phải dưới | Cửa sổ kéo được, thu nhỏ, nhớ vị trí, `Esc` để đóng |
+| Mọi trang môn học / bài học | Nút nổi **Báo cáo** ngay trên chuông thông báo | Kéo được, nhớ vị trí, `Home` trả về mặc định |
 | Chat, Hồ sơ, Cài đặt, Studio, Admin, Founder | Nút nổi **Báo cáo** | Cùng component, cùng dữ liệu |
 
 Cửa sổ có hai tab:
@@ -30,6 +30,23 @@ Cửa sổ có hai tab:
    một dòng để mở chi tiết và Q&A.
 
 Trên điện thoại, cửa sổ chuyển thành bottom sheet toàn chiều rộng; nút nổi thu về biểu tượng.
+
+### Nút nổi và vị trí
+
+- Mặc định nút nằm **ngay phía trên chuông thông báo** ở góc phải dưới và thẳng mép phải với
+  chuông; nút tự căn lại khi chuông được dựng sau hoặc khi đổi kích thước cửa sổ. Trang chủ
+  không có chuông nổi nên giữ vị trí góc phải dưới.
+- **Kéo được** bằng chuột hoặc cảm ứng. Vị trí lưu ở `bakhiReportFab.v1`, áp dụng cho mọi
+  trang ở các lần truy cập sau và luôn được giữ trong khung nhìn. Kéo nút không mở cửa sổ.
+- Bàn phím: `←` `→` `↑` `↓` di chuyển 12px (giữ `Shift`: 40px), `Home` xoá vị trí đã lưu và
+  trả nút về trên chuông. `BKReport.resetPosition()` làm điều tương tự từ mã nguồn.
+
+### Giao diện
+
+Cửa sổ và form dùng bảng biến `--bkrep-*`: chủ đề tối là mặc định (`color-scheme: dark`),
+chủ đề sáng ghi đè khi `<html>` không có lớp `.dark`. Màu nền, viền, vòng focus và chữ phụ
+được chọn để tương phản tốt trên nền tối, đồng thời khớp bảng màu Trung tâm thông báo
+(`--bkc-n-*`).
 
 ### Ngữ cảnh tự thu thập
 

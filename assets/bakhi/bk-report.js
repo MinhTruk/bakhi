@@ -19,6 +19,7 @@
     global.BKReportLoaded = true;
 
     var POS_KEY = 'bakhiReport.v1';
+    var FAB_KEY = 'bakhiReportFab.v1';
     var MAX_FILES = 4;
     var MAX_BYTES = 5 * 1024 * 1024;
     var ALLOWED = /^(image\/(png|jpe?g|webp|gif)|application\/pdf)$/i;
@@ -60,7 +61,8 @@
         tab: 'compose', booted: false, student: null, counts: null,
         list: [], listTotal: 0, listLoaded: false, listBusy: false,
         detail: null, detailBusy: false, sending: false, files: [],
-        draft: null, lastFocus: null, dragging: null
+        draft: null, lastFocus: null, dragging: null,
+        fab: null, fabDot: null, fabDrag: null, fabDraggedAt: 0
     };
 
     /* ------------------------------- Tiện ích ----------------------------- */
@@ -177,7 +179,7 @@
         var link = D.createElement('link');
         link.id = 'bkReportCss';
         link.rel = 'stylesheet';
-        link.href = base + 'assets/bakhi/bk-report.css?v=8.0.0';
+        link.href = base + 'assets/bakhi/bk-report.css?v=8.0.1';
         D.head.appendChild(link);
     }
 
@@ -302,23 +304,152 @@
     function isWindowOpen() { return !!(S.win && !S.win.hidden); }
 
     /* ------------------------------- FAB --------------------------------- */
+    /* Vị trí nút nổi:
+       • Chưa kéo lần nào → bám ngay TRÊN chuông thông báo nổi (.bkc-bell-float),
+         nhờ vậy các trang môn học không còn hai nút chồng lên nhau.
+       • Đã kéo → nhớ đúng vị trí đã kéo trong localStorage (bakhiReportFab.v1).
+       • Trang chủ không có chuông nổi → giữ mặc định góc phải dưới của CSS. */
+    function fabSaved() {
+        try {
+            var raw = JSON.parse(global.localStorage.getItem(FAB_KEY) || 'null');
+            if (raw && typeof raw === 'object' && Number.isFinite(raw.x) && Number.isFinite(raw.y)) return raw;
+        } catch (e) { }
+        return null;
+    }
+    function saveFabPos(p) {
+        try { global.localStorage.setItem(FAB_KEY, JSON.stringify(p)); } catch (e) { }
+    }
+    function clearFabPos() {
+        try { global.localStorage.removeItem(FAB_KEY); } catch (e) { }
+    }
+    function placeFab(x, y) {
+        if (!S.fab) return null;
+        var w = S.fab.offsetWidth || 108;
+        var h = S.fab.offsetHeight || 38;
+        var maxX = Math.max(8, (global.innerWidth || 1024) - w - 8);
+        var maxY = Math.max(8, (global.innerHeight || 768) - h - 8);
+        x = Math.max(8, Math.min(Math.round(x), maxX));
+        y = Math.max(8, Math.min(Math.round(y), maxY));
+        S.fab.style.left = x + 'px';
+        S.fab.style.top = y + 'px';
+        S.fab.style.right = 'auto';
+        S.fab.style.bottom = 'auto';
+        return { x: x, y: y };
+    }
+    function layoutFab() {
+        if (!S.fab || S.fabDrag) return;
+        var saved = fabSaved();
+        if (saved) {
+            placeFab(saved.x, saved.y);
+            S.fab.classList.add('is-moved');
+            return;
+        }
+        S.fab.classList.remove('is-moved');
+        S.fab.style.left = '';
+        S.fab.style.top = '';
+        S.fab.style.right = '';
+        S.fab.style.bottom = '';
+        var bell = D.querySelector('.bkc-bell-float');
+        if (!bell || !bell.getBoundingClientRect) return;
+        /* Chỉ neo khi chuông thật sự nổi (position: fixed). Chuông nằm trong header
+           được tính theo luồng trang nên không dùng làm mốc. */
+        var style = global.getComputedStyle ? global.getComputedStyle(bell) : null;
+        if (style && style.position && style.position !== 'fixed') return;
+        var box = bell.getBoundingClientRect();
+        if (!box || !box.height) return;
+        S.fab.style.right = Math.max(8, Math.round((global.innerWidth || 0) - box.right)) + 'px';
+        S.fab.style.bottom = Math.max(8, Math.round((global.innerHeight || 0) - box.top + 12)) + 'px';
+    }
+    function resetFab() {
+        clearFabPos();
+        if (S.fab) {
+            S.fab.style.left = '';
+            S.fab.style.top = '';
+            S.fab.style.right = '';
+            S.fab.style.bottom = '';
+        }
+        layoutFab();
+    }
+    function makeFabDraggable(fab) {
+        fab.addEventListener('pointerdown', function (e) {
+            if (e.button != null && e.button !== 0) return;
+            var box = fab.getBoundingClientRect();
+            S.fabDrag = {
+                id: e.pointerId, startX: e.clientX, startY: e.clientY,
+                offX: e.clientX - box.left, offY: e.clientY - box.top, moved: false
+            };
+            try { fab.setPointerCapture(e.pointerId); } catch (err) { }
+        });
+        fab.addEventListener('pointermove', function (e) {
+            var drag = S.fabDrag;
+            if (!drag || drag.id !== e.pointerId) return;
+            var dx = e.clientX - drag.startX;
+            var dy = e.clientY - drag.startY;
+            if (!drag.moved && (Math.abs(dx) + Math.abs(dy) < 6)) return;
+            drag.moved = true;
+            fab.classList.add('is-drag');
+            if (e.cancelable) e.preventDefault();
+            drag.last = placeFab(e.clientX - drag.offX, e.clientY - drag.offY);
+        });
+        function endDrag(e) {
+            var drag = S.fabDrag;
+            if (!drag || drag.id !== e.pointerId) return;
+            S.fabDrag = null;
+            fab.classList.remove('is-drag');
+            try { fab.releasePointerCapture(e.pointerId); } catch (err) { }
+            if (!drag.moved) return;
+            /* Chặn cú click phát sinh ngay sau khi kéo (không mở cửa sổ ngoài ý muốn). */
+            S.fabDraggedAt = Date.now();
+            var box = fab.getBoundingClientRect();
+            var p = drag.last || placeFab(box.left, box.top);
+            if (p) saveFabPos(p);
+            fab.classList.add('is-moved');
+        }
+        fab.addEventListener('pointerup', endDrag);
+        fab.addEventListener('pointercancel', endDrag);
+        /* Bàn phím: mũi tên di chuyển 12px (Shift 40px), Home trả về vị trí mặc định. */
+        fab.addEventListener('keydown', function (e) {
+            var step = e.shiftKey ? 40 : 12;
+            var box = fab.getBoundingClientRect();
+            var x = box.left, y = box.top, handled = true;
+            if (e.key === 'ArrowLeft') x -= step;
+            else if (e.key === 'ArrowRight') x += step;
+            else if (e.key === 'ArrowUp') y -= step;
+            else if (e.key === 'ArrowDown') y += step;
+            else if (e.key === 'Home') { e.preventDefault(); resetFab(); toast('Đã trả nút Báo cáo về vị trí mặc định.', 'info'); return; }
+            else handled = false;
+            if (!handled) return;
+            e.preventDefault();
+            var p = placeFab(x, y);
+            if (p) { saveFabPos(p); fab.classList.add('is-moved'); }
+        });
+    }
+
     function mountFab() {
         if (D.getElementById('bkReportFab')) return;
         if (!configured()) return;
         var fab = el('button', 'bkrep-fab');
         fab.id = 'bkReportFab';
         fab.type = 'button';
-        fab.title = 'Báo cáo vấn đề';
+        fab.title = 'Báo cáo vấn đề — kéo để đổi vị trí, nhấn Home để trả về mặc định';
         fab.setAttribute('aria-label', 'Báo cáo vấn đề');
         fab.appendChild(icon('fa-flag'));
         fab.appendChild(el('span', 'bkrep-fab-label', 'Báo cáo'));
         var dot = el('span', 'bkrep-fab-dot');
         dot.hidden = true;
         fab.appendChild(dot);
-        fab.addEventListener('click', function () { openWindow('compose'); });
+        fab.addEventListener('click', function () {
+            if (Date.now() - S.fabDraggedAt < 350) return;
+            openWindow('compose');
+        });
         (D.body || D.documentElement).appendChild(fab);
         S.fab = fab;
         S.fabDot = dot;
+        makeFabDraggable(fab);
+        layoutFab();
+        /* Chuông nổi có thể được dựng sau nút (defer + nhận diện học sinh):
+           căn lại vài lần, chỉ khi người dùng chưa tự kéo nút. */
+        [120, 600, 1600].forEach(function (ms) { global.setTimeout(layoutFab, ms); });
     }
 
     function paintFab() {
@@ -894,6 +1025,7 @@
             if (e.key !== 'Escape') return;
             if (isWindowOpen()) { e.preventDefault(); closeWindow(); }
         });
+        global.addEventListener('resize', function () { layoutFab(); });
     }
 
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', init);
@@ -904,6 +1036,7 @@
         openReport: function (id) { openWindow('list'); showReport(id); },
         close: closeWindow,
         mount: mount,
+        resetPosition: resetFab,
         refresh: function () { return bootstrap(true).then(function () { if (isWindowOpen()) showTab(S.tab); }); },
         count: function () { return S.counts; },
         __state: S

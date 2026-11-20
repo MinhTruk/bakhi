@@ -108,8 +108,9 @@ Hệ thống báo cáo dùng chung cho **toàn website**, với một component 
 (`assets/bakhi/bk-report.js`):
 
 - **Trang chủ:** mở **Cài đặt → Report Issue**.
-- **Mọi trang môn học, bài học, Chat, Hồ sơ, Cài đặt và Studio:** nút nổi **Báo cáo** ở góc
-  phải dưới. Cửa sổ kéo được, thu nhỏ, nhớ vị trí, đóng bằng `Esc`; trên điện thoại trở thành
+- **Mọi trang môn học, bài học, Chat, Hồ sơ, Cài đặt và Studio:** nút nổi **Báo cáo** nằm
+  ngay trên chuông thông báo ở góc phải dưới và **kéo được** (nhớ vị trí, `Home` để trả về
+  mặc định). Cửa sổ kéo được, thu nhỏ, nhớ vị trí, đóng bằng `Esc`; trên điện thoại trở thành
   bottom sheet.
 
 Mỗi báo cáo có mã `BK-xxxxx`, tiêu đề, nhóm vấn đề, loại báo cáo, mức ưu tiên, mô tả, tệp đính

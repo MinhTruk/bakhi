@@ -4,54 +4,87 @@
    thoại. Tôn trọng theme sáng/tối của site và prefers-reduced-motion.
    ========================================================================= */
 
+/* Chủ đề TỐI là mặc định (khớp --bkc-n-* của lớp thông báo), chủ đề sáng ghi đè
+   khi <html> không có lớp .dark. Mọi màu đi qua biến --bkrep-* để hai chế độ
+   chỉ khác nhau ở bảng biến, không nhân đôi quy tắc. */
 #bkReportWin,
 .bkrep-inline {
-    --bkrep-bg: #14151c;
-    --bkrep-bg-2: #1c1e27;
-    --bkrep-surface: #22242f;
-    --bkrep-line: rgba(255, 255, 255, .1);
-    --bkrep-text: #eef0f6;
-    --bkrep-muted: #a0a4b8;
-    --bkrep-primary: #7c8cff;
-    --bkrep-primary-2: #a855f7;
+    color-scheme: dark;
+    --bkrep-bg: #0b1120;
+    --bkrep-bg-2: #070c17;
+    --bkrep-bg-3: #0e1729;
+    --bkrep-surface: #16203a;
+    --bkrep-surface-2: #1e2a45;
+    --bkrep-input-bg: rgba(2, 6, 23, .55);
+    --bkrep-line: rgba(148, 163, 184, .22);
+    --bkrep-line-strong: rgba(165, 180, 252, .42);
+    --bkrep-text: #e8eefb;
+    --bkrep-muted: #9aa9c2;
+    --bkrep-primary: #818cf8;
+    --bkrep-primary-2: #c084fc;
     --bkrep-ok: #34d399;
     --bkrep-warn: #fbbf24;
-    --bkrep-error: #f87171;
+    --bkrep-error: #fb7185;
+    --bkrep-head-bg: linear-gradient(135deg, rgba(99, 102, 241, .3), rgba(168, 85, 247, .22));
+    --bkrep-ring: rgba(129, 140, 248, .22);
+    --bkrep-shadow: 0 28px 70px -28px rgba(2, 6, 23, .95), 0 2px 10px rgba(2, 6, 23, .5);
     --bkrep-radius: 14px;
 }
 
 html:not(.dark) #bkReportWin,
 html:not(.dark) .bkrep-inline {
+    color-scheme: light;
     --bkrep-bg: #ffffff;
-    --bkrep-bg-2: #f4f5fa;
-    --bkrep-surface: #eef0f7;
+    --bkrep-bg-2: #f4f6fc;
+    --bkrep-bg-3: #ffffff;
+    --bkrep-surface: #eef1f9;
+    --bkrep-surface-2: #e2e8f6;
+    --bkrep-input-bg: #ffffff;
     --bkrep-line: rgba(15, 23, 42, .12);
+    --bkrep-line-strong: rgba(79, 70, 229, .4);
     --bkrep-text: #12141c;
-    --bkrep-muted: #5b6076;
+    --bkrep-muted: #565d75;
     --bkrep-primary: #4f46e5;
+    --bkrep-primary-2: #9333ea;
+    --bkrep-ok: #059669;
+    --bkrep-warn: #b45309;
+    --bkrep-error: #dc2626;
+    --bkrep-head-bg: linear-gradient(135deg, rgba(99, 102, 241, .14), rgba(168, 85, 247, .1));
+    --bkrep-ring: rgba(79, 70, 229, .16);
+    --bkrep-shadow: 0 24px 60px -26px rgba(15, 23, 42, .45), 0 2px 8px rgba(15, 23, 42, .08);
 }
 
 /* ------------------------------- Nút nổi ------------------------------- */
+/* Vị trí do bk-report.js quyết định: trên trang có chuông nổi (.bkc-bell-float)
+   nút nằm ngay TRÊN chuông; trang khác giữ mặc định góc phải dưới. Kéo được và
+   nhớ vị trí trong localStorage (bakhiReportFab.v1). */
 .bkrep-fab {
     position: fixed;
-    right: 18px;
+    right: 16px;
     bottom: 88px;
-    z-index: 2147482000;
+    /* Trên chuông nổi nhưng DƯỚI panel thông báo (1300): khi panel mở lên trên
+       chuông, panel che nút báo cáo thay vì bị nút che. */
+    z-index: 2147481250;
     display: inline-flex;
     align-items: center;
     gap: .45rem;
     padding: .6rem .9rem;
-    border: 1px solid var(--bkrep-line, rgba(255, 255, 255, .14));
+    border: 1px solid rgba(255, 255, 255, .16);
     border-radius: 999px;
     background: linear-gradient(135deg, #7c8cff, #a855f7);
     color: #fff;
     font: 700 .78rem/1 Lexend, system-ui, sans-serif;
-    cursor: pointer;
-    box-shadow: 0 10px 28px rgba(12, 14, 30, .38);
-    transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    box-shadow: 0 10px 26px -10px rgba(76, 29, 149, .75), 0 2px 10px rgba(2, 6, 23, .45);
+    transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease, filter .16s ease;
 }
-.bkrep-fab:hover { transform: translateY(-1px); box-shadow: 0 14px 32px rgba(12, 14, 30, .46); }
+.bkrep-fab:hover { transform: translateY(-1px); box-shadow: 0 16px 32px -12px rgba(124, 58, 237, .8), 0 2px 12px rgba(2, 6, 23, .5); }
 .bkrep-fab:active { transform: translateY(0); }
+.bkrep-fab.is-drag { cursor: grabbing; transition: none; transform: none; filter: brightness(1.06); }
+.bkrep-fab.is-moved { border-style: dashed; }
 .bkrep-fab:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .bkrep-fab i { font-size: .85rem; }
 .bkrep-fab-dot {
@@ -73,7 +106,7 @@ html:not(.dark) .bkrep-inline {
     50% { box-shadow: 0 10px 34px rgba(168, 85, 247, .55); }
 }
 @media (max-width: 640px) {
-    .bkrep-fab { right: 12px; bottom: 78px; padding: .55rem .8rem; }
+    .bkrep-fab { right: 12px; bottom: 116px; padding: .55rem .8rem; }
     .bkrep-fab-label { display: none; }
 }
 
@@ -96,10 +129,10 @@ html:not(.dark) .bkrep-inline {
     display: flex;
     flex-direction: column;
     pointer-events: auto;
-    background: var(--bkrep-bg);
+    background: linear-gradient(180deg, var(--bkrep-bg), var(--bkrep-bg-2));
     border: 1px solid var(--bkrep-line);
     border-radius: var(--bkrep-radius);
-    box-shadow: 0 24px 60px rgba(4, 6, 18, .55);
+    box-shadow: var(--bkrep-shadow);
     overflow: hidden;
 }
 #bkReportWin .bkrep-shell.is-min .bkrep-body,
@@ -112,7 +145,7 @@ html:not(.dark) .bkrep-inline {
     justify-content: space-between;
     gap: .6rem;
     padding: .75rem .9rem;
-    background: linear-gradient(135deg, rgba(124, 140, 255, .18), rgba(168, 85, 247, .14));
+    background: var(--bkrep-head-bg);
     border-bottom: 1px solid var(--bkrep-line);
     cursor: grab;
 }
@@ -162,7 +195,9 @@ html:not(.dark) .bkrep-inline {
     overflow-y: auto;
     overscroll-behavior: contain;
     flex: 1;
-    background: var(--bkrep-bg-2);
+    background:
+        radial-gradient(38rem 16rem at 100% 0%, rgba(129, 140, 248, .07), transparent 60%),
+        var(--bkrep-bg-2);
 }
 #bkReportWin .bkrep-body { max-height: calc(78vh - 96px); }
 #bkReportWin .bkrep-body::-webkit-scrollbar { width: 8px; }
@@ -178,11 +213,15 @@ html:not(.dark) .bkrep-inline {
     padding: .5rem .6rem;
     border: 1px solid var(--bkrep-line);
     border-radius: 9px;
-    background: var(--bkrep-bg);
+    background: var(--bkrep-input-bg);
     color: var(--bkrep-text);
     font: 500 .82rem/1.4 inherit;
+    transition: border-color .15s, box-shadow .15s, background .15s;
 }
-.bkrep-input:focus { outline: none; border-color: var(--bkrep-primary); box-shadow: 0 0 0 3px rgba(124, 140, 255, .18); }
+.bkrep-input::placeholder { color: var(--bkrep-muted); opacity: .72; }
+.bkrep-input:hover { border-color: var(--bkrep-line-strong); }
+.bkrep-input:focus { outline: none; border-color: var(--bkrep-primary); box-shadow: 0 0 0 3px var(--bkrep-ring); }
+.bkrep-input option { background: var(--bkrep-bg); color: var(--bkrep-text); }
 .bkrep-textarea { resize: vertical; min-height: 84px; }
 .bkrep-hint { font-size: .68rem; color: var(--bkrep-muted); }
 .bkrep-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
@@ -367,9 +406,10 @@ html:not(.dark) .bkrep-inline {
 .bkrep-desc {
     margin: .6rem 0;
     padding: .6rem .7rem;
+    border: 1px solid var(--bkrep-line);
     border-left: 3px solid var(--bkrep-primary);
     border-radius: 0 8px 8px 0;
-    background: var(--bkrep-bg);
+    background: var(--bkrep-bg-3);
     font-size: .8rem;
     line-height: 1.55;
     white-space: pre-wrap;
@@ -395,8 +435,18 @@ html:not(.dark) .bkrep-inline {
 .bkrep-thread-empty { padding: .8rem; border: 1px dashed var(--bkrep-line); border-radius: 10px; font-size: .74rem; color: var(--bkrep-muted); text-align: center; }
 .bkrep-msg { display: flex; }
 .bkrep-msg.is-me { justify-content: flex-end; }
-.bkrep-bubble { max-width: 86%; padding: .5rem .65rem; border-radius: 12px; background: var(--bkrep-surface); font-size: .78rem; }
-.bkrep-msg.is-me .bkrep-bubble { background: linear-gradient(135deg, rgba(124, 140, 255, .24), rgba(168, 85, 247, .2)); }
+.bkrep-bubble {
+    max-width: 86%;
+    padding: .5rem .65rem;
+    border: 1px solid var(--bkrep-line);
+    border-radius: 12px;
+    background: var(--bkrep-surface);
+    font-size: .78rem;
+}
+.bkrep-msg.is-me .bkrep-bubble {
+    border-color: var(--bkrep-line-strong);
+    background: linear-gradient(135deg, rgba(129, 140, 248, .26), rgba(192, 132, 252, .2));
+}
 .bkrep-bubble-top { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; margin-bottom: .2rem; font-size: .68rem; }
 .bkrep-msg-time { color: var(--bkrep-muted); font-weight: 500; }
 .bkrep-tag { padding: .05rem .35rem; border-radius: 999px; background: rgba(251, 191, 36, .18); color: var(--bkrep-warn); font-size: .6rem; font-weight: 700; }
@@ -406,6 +456,27 @@ html:not(.dark) .bkrep-inline {
 /* -------------------------------- Nhúng --------------------------------- */
 .bkrep-inline { color: var(--bkrep-text); }
 .bkrep-inline .bkrep-body { background: transparent; padding: 0; max-height: none; overflow: visible; }
+
+/* --------------------- Tinh chỉnh riêng cho chủ đề tối ------------------ */
+html.dark .bkrep-item,
+html.dark .bkrep-attach,
+html.dark .bkrep-file-item,
+html.dark .bkrep-notice,
+html.dark .bkrep-desc { background: var(--bkrep-bg-3); }
+html.dark .bkrep-item:hover { background: var(--bkrep-surface); }
+/* Chỉ đổi nút thường: nút chính (gradient) và nút trong suốt giữ nguyên diện mạo. */
+html.dark .bkrep-btn:not(.is-primary):not(.is-ghost) { background: var(--bkrep-surface); }
+html.dark .bkrep-btn:not(.is-primary):not(.is-ghost):hover { background: var(--bkrep-surface-2); filter: none; }
+html.dark .bkrep-btn.is-ghost { background: transparent; }
+html.dark .bkrep-btn.is-ghost:hover { background: rgba(148, 163, 184, .14); filter: none; }
+html.dark .bkrep-x:hover { background: var(--bkrep-surface-2); }
+html.dark .bkrep-tab.is-active { background: var(--bkrep-surface); }
+html.dark .bkrep-fab { box-shadow: 0 12px 28px -12px rgba(76, 29, 149, .85), 0 2px 10px rgba(2, 6, 23, .55); }
+html.dark #bkReportWin .bkrep-body::-webkit-scrollbar-thumb { background: var(--bkrep-surface-2); }
+html.dark .bkrep-pill.is-info { background: rgba(129, 140, 248, .2); }
+html.dark .bkrep-thread-empty { background: rgba(148, 163, 184, .06); }
+html.dark .bkrep-form-msg { background: rgba(251, 113, 133, .16); }
+html.dark .bkrep-filebtn:hover { background: rgba(129, 140, 248, .12); }
 
 @media (max-width: 640px) {
     #bkReportWin .bkrep-shell {

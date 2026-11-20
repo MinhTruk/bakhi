@@ -2,6 +2,28 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.0.1] — 2026-11-20
+
+### Sửa lỗi
+
+- **Nút Báo cáo không còn chồng lên chuông thông báo.** Trên mọi trang có chuông nổi (trang
+  môn học, bài học, Chat, Hồ sơ, Cài đặt, Studio, Admin, Founder), nút **Báo cáo** mặc định
+  nằm ngay **phía trên chuông**, thẳng mép phải. Nút tự căn lại khi chuông được dựng sau nút
+  hoặc khi đổi kích thước cửa sổ. Trang chủ không có chuông nổi nên giữ vị trí góc phải dưới.
+- **Nút Báo cáo kéo được.** Giữ và kéo bằng chuột hoặc cảm ứng; vị trí được nhớ trong
+  `localStorage` (`bakhiReportFab.v1`) và áp dụng cho các lần truy cập sau, luôn được giữ
+  trong khung nhìn. Kéo nút không mở cửa sổ ngoài ý muốn. Dùng bàn phím: mũi tên di chuyển
+  12px (Shift: 40px), `Home` trả nút về vị trí mặc định.
+
+### Cải tiến
+
+- **Giao diện tối của cửa sổ Report Issue.** Bảng màu mới đồng bộ với Trung tâm thông báo
+  (`--bkc-n-*`): nền phân tầng, viền và vòng focus rõ hơn, chữ phụ có độ tương phản tốt hơn,
+  ô nhập, bong bóng Q&A và thẻ báo cáo có nền riêng, cuộn và `color-scheme` theo đúng chế độ
+  tối. Chủ đề sáng vẫn dùng cùng cấu trúc biến nên không phát sinh quy tắc trùng lặp.
+- **Phiên bản đồng nhất 8.0.1.** `bk-version.js`, `?v=` trong 122 tệp HTML, `APP_VERSION` của
+  dashboard/Founder và `SERVER_VERSION` của `admin-actions` cùng là `8.0.1`.
+
 ## [8.0.0] — 2026-11-20
 
 ### Tính năng

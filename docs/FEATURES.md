@@ -63,11 +63,13 @@ Trung tâm học tập, hồ sơ/cài đặt, Developer Playground, Administrato
   Migration `20261202000000_bakhi_v760_titles.sql` và
   `20261203000000_bakhi_v770_titles_rework.sql`.
 
-### A3. Report Issue + Q&A (8.0.0)
+### A3. Report Issue + Q&A (8.0.1)
 
 | Hạng mục | Trạng thái |
 |---|---|
 | Nút nổi trên mọi trang môn học / bài học / Studio / Chat / Hồ sơ | 🟢 Hoạt động |
+| Nút nổi neo trên chuông thông báo, kéo được và nhớ vị trí | 🟢 Hoạt động |
+| Giao diện tối đồng bộ Trung tâm thông báo (`--bkrep-*`, `color-scheme`) | 🟢 Hoạt động |
 | Mục **Cài đặt → Report Issue** trên trang chủ | 🟢 Hoạt động |
 | Biểu mẫu đầy đủ (tiêu đề, nhóm, loại, ưu tiên, mô tả, tệp, ngữ cảnh) | 🟢 Hoạt động |
 | Lịch sử và theo dõi báo cáo của chính mình | 🟢 Hoạt động |
