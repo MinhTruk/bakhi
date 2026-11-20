@@ -244,15 +244,40 @@ Deno.serve(async (req) => {
                     .eq('student_id', ctx.studentId)
                     .order('updated_at', { ascending: false })
                     .range(offset, offset + limit - 1);
-                if (body.status && str(body.status, 20) !== 'all') {
-                    query = query.eq('status', str(body.status, 20));
-                }
+                /* all | open | resolved | một trạng thái cụ thể */
+                const status = str(body.status, 20);
+                if (status === 'open') query = query.in('status', OPEN_STATUSES);
+                else if (status === 'resolved') query = query.in('status', ['resolved', 'closed']);
+                else if (status && status !== 'all') query = query.eq('status', status);
+                const q = str(body.q, 80).replace(/[%,()]/g, ' ').trim();
+                if (q) query = query.or('title.ilike.%' + q + '%,code.ilike.%' + q + '%,description.ilike.%' + q + '%');
                 const { data, count, error } = await query;
                 if (error) return fail(500, 'DB_ERROR', 'Không tải được danh sách báo cáo.');
+                const rows = (data ?? []).map(reportRow);
+                /* Xem trước phản hồi gần nhất để danh sách có ngữ cảnh. */
+                const ids = rows.map((r) => String(r.id));
+                if (ids.length) {
+                    const { data: msgs } = await client.from('report_messages')
+                        .select('report_id, body, created_at')
+                        .in('report_id', ids)
+                        .order('created_at', { ascending: false })
+                        .limit(200);
+                    const preview = new Map<string, string>();
+                    for (const m of msgs ?? []) {
+                        const key = String(m.report_id);
+                        if (!preview.has(key)) {
+                            preview.set(key, String(m.body || '').replace(/\s+/g, ' ').slice(0, 120));
+                        }
+                    }
+                    for (const row of rows) {
+                        (row as Record<string, unknown>).last_message_preview =
+                            preview.get(String(row.id)) || '';
+                    }
+                }
                 return json({
                     ok: true,
                     total: count || 0,
-                    reports: (data ?? []).map(reportRow)
+                    reports: rows
                 });
             }
 

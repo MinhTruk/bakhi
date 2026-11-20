@@ -121,9 +121,13 @@ Sau khi gửi, người báo cáo theo dõi được trạng thái và **hội t
 phản hồi, câu hỏi làm rõ, tin nhắn riêng, kết quả xử lý. Khi có phản hồi mới, học sinh nhận
 thông báo trong **Trung tâm thông báo hiện có** và bấm vào là mở đúng báo cáo.
 
+Mục **Báo cáo của tôi** có tìm kiếm, lọc *Đang mở / Đã xử lý*, tải thêm theo trang và xem
+trước phản hồi gần nhất; bản nháp đang viết được giữ khi chuyển sang trang khác.
+
 Phía quản trị, **tab Report** trong Administrator và Founder Dashboard dùng chung một nguồn dữ
-liệu: thống kê, tìm kiếm/lọc/phân trang, chi tiết báo cáo, Complete Report (bắt buộc ghi chú kết
-quả), gửi tin nhắn riêng, mở lại và lịch sử xử lý.
+liệu: thống kê, tìm kiếm/lọc/phân trang, huy hiệu chưa đọc, tự làm mới, chi tiết báo cáo, gán
+người xử lý, Complete Report (bắt buộc ghi chú kết quả), gửi tin nhắn riêng, mở lại, xuất CSV
+và lịch sử xử lý. Trang `admin/` và `founder/` không hiển thị nút báo cáo của học sinh.
 
 Quyền được kiểm tra ở máy chủ: trình duyệt chỉ đọc dữ liệu của chính mình qua RLS; mọi thao tác
 ghi đi qua Edge Function `report-api` (học sinh) hoặc `admin-actions` (quản trị). Chi tiết:
@@ -514,7 +518,7 @@ BAKHI đang được phát triển và duy trì theo hướng mở rộng trải
 | Bá Khí Studio | Đã tích hợp |
 | Developer Playground | Đã tích hợp |
 | Administrator/Founder Dashboard | Đã tích hợp, quyền truy cập có xác thực |
-| Report Issue và Q&A | Đã tích hợp toàn website, dữ liệu qua Supabase với RLS |
+| Report Issue và Q&A | Đã tích hợp toàn website (8.1.0), dữ liệu qua Supabase với RLS |
 | Supabase | Tuỳ chọn, phụ thuộc cấu hình project |
 | Trợ năng và responsive | Tiếp tục được cải thiện |
 

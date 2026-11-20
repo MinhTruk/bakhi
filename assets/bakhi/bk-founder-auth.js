@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-founder-auth.js  (8.0.1)
+   Bá Khí — bk-founder-auth.js  (8.1.0)
 
    MỘT cơ chế xác thực Founder duy nhất cho toàn hệ sinh thái:
      - Cùng nguồn mã: bảng founder_config (chỉ lưu SHA-256) đọc bởi Edge
@@ -22,7 +22,7 @@
     if (global.BKFounderAuth) return;
 
     var KEY = 'bakhiAdmin.v1';
-    var VERSION = (global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '8.0.1';
+    var VERSION = (global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '8.1.0';
     var CSS_ID = 'bk-founder-auth-css';
 
     /* ---------------------------------------------------------------------

@@ -63,7 +63,7 @@ Trung tâm học tập, hồ sơ/cài đặt, Developer Playground, Administrato
   Migration `20261202000000_bakhi_v760_titles.sql` và
   `20261203000000_bakhi_v770_titles_rework.sql`.
 
-### A3. Report Issue + Q&A (8.0.1)
+### A3. Report Issue + Q&A (8.1.0)
 
 | Hạng mục | Trạng thái |
 |---|---|
@@ -73,14 +73,17 @@ Trung tâm học tập, hồ sơ/cài đặt, Developer Playground, Administrato
 | Mục **Cài đặt → Report Issue** trên trang chủ | 🟢 Hoạt động |
 | Biểu mẫu đầy đủ (tiêu đề, nhóm, loại, ưu tiên, mô tả, tệp, ngữ cảnh) | 🟢 Hoạt động |
 | Lịch sử và theo dõi báo cáo của chính mình | 🟢 Hoạt động |
+| Tìm kiếm, lọc trạng thái và tải thêm trong “Báo cáo của tôi” | 🟢 Hoạt động |
+| Bản nháp giữ qua lần chuyển trang (`bakhiReportDraft.v1`) | 🟢 Hoạt động |
 | Q&A riêng cho từng báo cáo (hai chiều) | 🟢 Hoạt động |
 | Thông báo riêng trong Trung tâm thông báo hiện có | 🟢 Hoạt động |
 | Tab **Report** trong Administrator và Founder Dashboard | 🟢 Hoạt động |
+| Huy hiệu chưa đọc, tự làm mới, gán người xử lý trong dashboard | 🟢 Hoạt động |
 | Complete Report + lịch sử xử lý + mở lại | 🟢 Hoạt động |
 | Tệp đính kèm riêng tư (bucket private, signed URL) | 🟢 Hoạt động |
 | RLS chỉ cho đọc dữ liệu của chính mình | 🟢 Hoạt động |
+| Xuất báo cáo ra CSV theo bộ lọc (`reports.export`) | 🟢 Hoạt động |
 | Thông báo đẩy ngoài trình duyệt (Web Push) | ⚪ Chưa triển khai |
-| Xuất báo cáo ra CSV | ⚪ Chưa triển khai |
 
 Chi tiết: [REPORT_ISSUE.md](REPORT_ISSUE.md).
 

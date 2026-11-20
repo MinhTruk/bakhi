@@ -15,7 +15,7 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var APP_VERSION = '8.0.1';
+    var APP_VERSION = '8.1.0';
 
     var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
         ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];
@@ -638,7 +638,7 @@
             b.setAttribute('aria-selected', 'false');
             b.appendChild(icon(t[2]));
             b.appendChild(h('span', 'bkc-tab-label', t[1]));
-            if (t[0] === 'students') {
+            if (t[0] === 'students' || t[0] === 'reports') {
                 var badge = h('span', 'bkc-tab-badge');
                 badge.hidden = true;
                 b.appendChild(badge);
@@ -785,6 +785,7 @@
         }
     }
     function closeDash() {
+        stopReportRefresh();
         if (S.root) {
             S.root.hidden = true;
             S.root.classList.remove('is-nav-open');
@@ -797,6 +798,7 @@
     }
     function doLogout() {
         if (global.BKCloud) global.BKCloud.adminLogout();
+        stopReportRefresh();
         closeDash();
         if (typeof global.mountDevMenu === 'function') { try { global.mountDevMenu(); } catch (e) { } }
         toast('Đã đăng xuất Administrator Dashboard', 'info');
@@ -835,6 +837,7 @@
 
     function switchTab(tab) {
         S.tab = tab;
+        stopReportRefresh();
         if (!S.root) return;
         Array.prototype.forEach.call(S.root.querySelectorAll('.bkc-tab'), function (b) {
             var on = b.getAttribute('data-tab') === tab;
@@ -873,13 +876,16 @@
         if (showToast) toast('Đã làm mới dữ liệu', 'info');
     }
 
-    function paintNavBadge(n) {
+    function paintTabBadge(tab, n) {
         if (!S.root) return;
-        var badge = S.root.querySelector('.bkc-tab[data-tab="students"] .bkc-tab-badge');
+        var badge = S.root.querySelector('.bkc-tab[data-tab="' + tab + '"] .bkc-tab-badge');
         if (!badge) return;
         badge.hidden = !n;
         badge.textContent = n > 99 ? '99+' : String(n);
+        badge.title = n ? (n + ' mục cần chú ý') : '';
     }
+    function paintNavBadge(n) { paintTabBadge('students', n); }
+    function paintReportBadge(n) { paintTabBadge('reports', n); }
 
     /* -------------------------------- Overview ---------------------------- */
     function renderOverview(pane) {
@@ -1085,6 +1091,7 @@
 
     function renderReports(pane) {
         var R = S.reports;
+        stopReportRefresh();
         if (R.activeId) return renderReportDetail(pane, R.activeId);
 
         var statsHost = h('div');
@@ -1096,7 +1103,10 @@
             btn('Làm mới', 'bkc-btn-ghost bkc-btn-sm', function () {
                 loadReportStats(statsGrid);
                 loadReportList();
-            }, 'fa-rotate')
+            }, 'fa-rotate'),
+            btn('Xuất CSV', 'bkc-btn-ghost bkc-btn-sm', function () {
+                exportReports();
+            }, 'fa-file-csv')
         ], 'Tìm kiếm, lọc và mở từng báo cáo để trao đổi riêng với người gửi');
         pane.appendChild(toolbar.root);
 
@@ -1151,6 +1161,38 @@
 
         loadReportStats(statsGrid);
         loadReportList();
+        startReportRefresh(statsGrid);
+    }
+
+    /* Tự làm mới khi đang mở tab Report: người dùng thấy báo cáo mới mà không
+       phải bấm Làm mới. Chỉ chạy khi tab còn mở, dừng khi đổi tab/đóng dashboard. */
+    var reportTimer = null;
+    function startReportRefresh(statsGrid) {
+        stopReportRefresh();
+        reportTimer = global.setInterval(function () {
+            if (S.tab !== 'reports' || !S.root || S.root.hidden) return stopReportRefresh();
+            if (S.reports.activeId) return;
+            loadReportStats(statsGrid);
+            if (!S.reports.loading) loadReportList();
+        }, 45000);
+    }
+    function stopReportRefresh() {
+        if (reportTimer) { global.clearInterval(reportTimer); reportTimer = null; }
+    }
+
+    function exportReports() {
+        var R = S.reports;
+        toast('Đang tạo tệp CSV từ máy chủ…', 'info');
+        api('reports.export', {
+            q: R.q, status: R.status, category: R.category, priority: R.priority,
+            unread: R.unread, from: R.from ? R.from + 'T00:00:00' : '',
+            to: R.to ? R.to + 'T23:59:59' : ''
+        }).then(function (data) {
+            if (!data || !data.csv) throw new Error('Máy chủ không trả về dữ liệu CSV.');
+            download(data.filename || ('bakhi-reports-' + Date.now() + '.csv'),
+                '\ufeff' + data.csv, 'text/csv;charset=utf-8');
+            toast('Đã xuất ' + (data.rows || 0) + ' báo cáo', 'success');
+        }).catch(function (err) { fail(err); });
     }
 
     function loadReportStats(host) {
@@ -1167,6 +1209,7 @@
             statCard(host, 'Cần chú ý', s.attention || 0, 'Ưu tiên cao / khẩn', 'fa-triangle-exclamation', 'warn');
             statCard(host, 'Chưa đọc', s.unread || 0, 'Hội thoại có tin mới', 'fa-envelope-open-text', 'info');
             S.reports.stats = s;
+            paintReportBadge(Number(s.unread || 0) + Number(s.new || 0));
         }).catch(function (err) {
             host.textContent = '';
             host.appendChild(alertBox((err && err.message) || 'Không tải được thống kê báo cáo.', 'error'));
@@ -1176,6 +1219,7 @@
     function loadReportList() {
         var R = S.reports;
         if (!R.listHost) return;
+        R.loading = true;
         R.listHost.textContent = '';
         loading(R.listHost, 'Đang tải báo cáo…');
         api('reports.list', {
@@ -1184,6 +1228,7 @@
             unread: R.unread, from: R.from ? R.from + 'T00:00:00' : '',
             to: R.to ? R.to + 'T23:59:59' : ''
         }).then(function (data) {
+            R.loading = false;
             R.list = data.reports || [];
             R.total = data.total || 0;
             R.pageSize = data.pageSize || R.pageSize;
@@ -1216,12 +1261,18 @@
                 t.tbody.appendChild(tr);
             });
             R.listHost.appendChild(t.wrap);
-            renderPager(R.listHost, {
+            /* renderPager tự xoá host của nó — phải dùng một host riêng, nếu
+               không toàn bộ bảng vừa dựng sẽ bị xoá ngay (lỗi 8.0.1: tab Report
+               chỉ còn phần phân trang, không hiện dòng nào). */
+            var pagerHost = h('div', 'bkc-pager-host');
+            R.listHost.appendChild(pagerHost);
+            renderPager(pagerHost, {
                 total: R.total, page: R.page, pageSize: R.pageSize, unit: 'báo cáo',
                 onPage: function (p) { R.page = p; loadReportList(); },
                 onSize: function (n) { R.pageSize = n; R.page = 1; loadReportList(); }
             });
         }).catch(function (err) {
+            R.loading = false;
             R.listHost.textContent = '';
             R.listHost.appendChild(alertBox((err && err.message) || 'Không tải được danh sách báo cáo.', 'error'));
         });
@@ -1242,7 +1293,6 @@
             R.detail = data;
             host.textContent = '';
             paintReportDetail(host, data);
-            loadReportStats(h('div'));
         }).catch(function (err) {
             host.textContent = '';
             host.appendChild(alertBox((err && err.message) || 'Không mở được báo cáo.', 'error'));
@@ -1253,7 +1303,9 @@
         var r = data.report;
         var info = card(r.code + ' · ' + r.title, [
             pill(reportStatusLabel(r.status), reportStatusTone(r.status))
-        ], (data.student ? data.student.display_name : 'Học sinh') + ' · ' + fmt(r.created_at));
+        ], (data.student ? data.student.display_name : 'Học sinh') +
+            (data.student && data.student.student_code ? ' · ' + data.student.student_code : '') +
+            ' · ' + fmt(r.created_at));
         host.appendChild(info.root);
 
         var grid = h('div', 'bkc-kv');
@@ -1315,6 +1367,13 @@
                 }
             });
         }, 'fa-circle-check'));
+        bar.appendChild(selectBox([['', 'Chưa gán người xử lý'], ['admin', 'Administrator'],
+            ['founder', 'Founder']], r.assigned_to || '', function (v) {
+            api('reports.assign', { report_id: r.id, assigned_to: v }).then(function () {
+                toast(v ? ('Đã gán cho ' + (v === 'founder' ? 'Founder' : 'Administrator')) : 'Đã bỏ gán người xử lý', 'success');
+                reloadReportDetail();
+            }).catch(function (err) { fail(err); });
+        }));
         bar.appendChild(btn('Gửi tin nhắn riêng', 'bkc-btn-ghost bkc-btn-sm', function () {
             askText({
                 title: 'Gửi tin nhắn riêng cho người báo cáo',

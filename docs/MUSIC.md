@@ -147,7 +147,7 @@ Trên Windows, đặt `$env:NODE_PATH` tới thư mục `node_modules` của jsd
 - **Trang chủ & trang bài học**: `bk-core.js` nạp `bk-music.js` một lần cho mỗi trang,
   nên trình phát tồn tại xuyên suốt nhưng không chồng nguồn phát.
 - **Thông báo**: chuông thông báo là phần tử riêng, không che logo ♪.
-- **Report Issue (8.0.1)**: nút **Báo cáo** nằm ngay trên chuông thông báo ở góc phải dưới,
+- **Report Issue (8.1.0)**: nút **Báo cáo** nằm ngay trên chuông thông báo ở góc phải dưới,
   kéo được và là phần tử độc lập với logo ♪ (bên trái); báo cáo gửi từ bất kỳ trang nào cũng
   vào cùng một hệ thống.
 - **Focus mode**: panel nhạc vẫn dùng được; không tự phát, không tự đóng.

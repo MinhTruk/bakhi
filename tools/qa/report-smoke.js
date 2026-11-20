@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Bá Khí — QA Report Issue + Q&A (v8.0.1, jsdom).
+ * Bá Khí — QA Report Issue + Q&A (v8.1.0, jsdom).
  *
  *   npm install jsdom --prefix /tmp/bktest --no-save
  *   NODE_PATH=/tmp/bktest/node_modules node tools/qa/report-smoke.js
@@ -31,6 +31,15 @@ function ok(name, cond, extra) {
 function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
 function wait(ms) { return new Promise((r) => setTimeout(r, ms)); }
 async function settle(n) { for (let i = 0; i < (n || 6); i++) await wait(6); }
+async function until(fn, timeout = 4000) {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    const v = fn();
+    if (v) return v;
+    await wait(25);
+  }
+  return null;
+}
 
 const REPORT_JS = read('assets/bakhi/bk-report.js');
 const REPORT_CSS = read('assets/bakhi/bk-report.css');
@@ -70,7 +79,7 @@ function boot(opts) {
   const w = dom.window;
   const calls = [];
   const toasts = [];
-  w.BAKHI_VERSION = { app: '8.0.1' };
+  w.BAKHI_VERSION = { app: '8.1.0' };
   w.BK = {
     ui: { toast: (m, t) => toasts.push({ m, t }) },
     util: { fmtTime: (iso) => 'T ' + String(iso || '').slice(11, 16) }
@@ -145,8 +154,14 @@ function boot(opts) {
   ok('hiện lỗi validation', !/^\s*$/.test(win.querySelector('.bkrep-form-msg').textContent));
 
   console.log('\n== 3. Gửi báo cáo ==');
-  win.querySelector('input[type="text"]').value = 'Đáp án câu 5 sai';
-  win.querySelector('textarea').value = 'Câu 5 phần ôn tập có đáp án sai ạ.';
+  const titleInput = win.querySelector('input[type="text"]');
+  const descInput = win.querySelector('textarea');
+  titleInput.value = 'Đáp án câu 5 sai';
+  descInput.value = 'Câu 5 phần ôn tập có đáp án sai ạ.';
+  titleInput.dispatchEvent(new A.w.Event('input', { bubbles: true }));
+  descInput.dispatchEvent(new A.w.Event('input', { bubbles: true }));
+  await wait(420);
+  ok('lưu bản nháp khi đang gõ', (A.w.localStorage.getItem('bakhiReportDraft.v1') || '').indexOf('Đáp án câu 5 sai') !== -1);
   form.dispatchEvent(new A.w.Event('submit', { bubbles: true, cancelable: true }));
   await settle(10);
   const createCall = A.calls.filter((c) => c.action === 'create').pop();
@@ -164,6 +179,20 @@ function boot(opts) {
   ok('gọi list', A.calls.some((c) => c.action === 'list'));
   ok('hiện mã báo cáo và trạng thái', /BK-01001/.test(win.textContent) && /Mới/.test(win.textContent));
   ok('hiện nhãn phản hồi mới', /Phản hồi mới/.test(win.textContent));
+  ok('bản nháp đã được xoá sau khi gửi', A.w.localStorage.getItem('bakhiReportDraft.v1') === null);
+  const statusFilter = win.querySelector('.bkrep-filter-status');
+  ok('có ô lọc trạng thái', !!statusFilter);
+  if (statusFilter) {
+    statusFilter.value = 'open';
+    statusFilter.dispatchEvent(new A.w.Event('change', { bubbles: true }));
+    await settle(10);
+    const lastList = A.calls.filter((c) => c.action === 'list').pop();
+    ok('lọc trạng thái gửi lên máy chủ', !!lastList && lastList.status === 'open',
+      lastList && lastList.status);
+    statusFilter.value = 'all';
+    statusFilter.dispatchEvent(new A.w.Event('change', { bubbles: true }));
+    await settle(10);
+  }
 
   console.log('\n== 5. Q&A ==');
   win.querySelector('.bkrep-item').click();
@@ -276,6 +305,94 @@ function boot(opts) {
   ok('chuông nghe realtime report_notifications', /table: 'report_notifications'/.test(CLOUD));
   ok('Cài đặt có tab Report Issue', /id: 'report', label: 'Report Issue'/.test(read('assets/bakhi/bk-settings.js')));
   ok('Dashboard có tab Report', /\['reports', 'Report', 'fa-flag'\]/.test(read('assets/bakhi/bk-devboard.js')));
+  ok('máy chủ có reports.export (CSV)', ADMIN_ACTIONS.includes("'reports.export'"));
+  ok('máy chủ có reports.assign (người xử lý)', ADMIN_ACTIONS.includes("'reports.assign'"));
+
+  console.log('\n== 11. Founder/Administrator Dashboard — báo cáo hiển thị ==');
+  ok('phân trang dùng host riêng, không xoá bảng vừa dựng',
+    /var pagerHost = h\('div', 'bkc-pager-host'\)/.test(read('assets/bakhi/bk-devboard.js')) &&
+    /renderPager\(pagerHost,/.test(read('assets/bakhi/bk-devboard.js')));
+  ok('tab Report có huy hiệu số báo cáo chưa đọc',
+    /t\[0\] === 'students' \|\| t\[0\] === 'reports'/.test(read('assets/bakhi/bk-devboard.js')) &&
+    /function paintReportBadge/.test(read('assets/bakhi/bk-devboard.js')));
+  ok('dashboard có nút xuất CSV và tự làm mới',
+    /function exportReports/.test(read('assets/bakhi/bk-devboard.js')) &&
+    /function startReportRefresh/.test(read('assets/bakhi/bk-devboard.js')));
+  ok('chi tiết báo cáo có chọn người xử lý',
+    /reports\.assign/.test(read('assets/bakhi/bk-devboard.js')) &&
+    /Chưa gán người xử lý/.test(read('assets/bakhi/bk-devboard.js')));
+  ok('trang Admin/Founder không nạp nút báo cáo học sinh',
+    !/bk-report\.js/.test(read('admin/index.html')) &&
+    !/bk-report\.js/.test(read('founder/index.html')) &&
+    /if \(global\.BK_ADMIN_ONLY\) return;/.test(REPORT_JS));
+  ok('“Báo cáo của tôi” có tìm kiếm, lọc và tải thêm',
+    /bkrep-search/.test(REPORT_JS) && /loadMyReports/.test(REPORT_JS) &&
+    /Tải thêm/.test(REPORT_JS) && /bkrep-filter-status/.test(REPORT_CSS));
+  ok('bản nháp được lưu qua lần chuyển trang',
+    /bakhiReportDraft\.v1/.test(REPORT_JS) && /function loadDraft/.test(REPORT_JS) &&
+    /saveDraftSoon/.test(REPORT_JS));
+  ok('report-api lọc theo từ khoá và nhóm trạng thái',
+    /body\.q/.test(REPORT_API) && /OPEN_STATUSES/.test(REPORT_API) &&
+    /last_message_preview/.test(REPORT_API));
+  ok('chuông phát sự kiện cập nhật báo cáo', /bk:report-notes/.test(CLOUD) &&
+    /bk:report-notes/.test(REPORT_JS));
+
+  /* Dựng Founder Dashboard thật trong jsdom: tab Report phải hiện DÒNG dữ liệu
+     (lỗi 8.0.1: bảng bị renderPager xoá ngay sau khi dựng). */
+  const dash = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
+    url: 'https://minhtruk.github.io/bakhi/founder/', runScripts: 'outside-only',
+    pretendToBeVisual: true
+  });
+  const F = dash.window;
+  const FD = F.document;
+  F.matchMedia = F.matchMedia || ((q) => ({ matches: false, media: q, addEventListener() { }, removeEventListener() { } }));
+  F.BK_ADMIN_ONLY = true;
+  F.BK_DASH_SCOPE = 'founder';
+  const dashCalls = [];
+  F.BK = { ui: { toast() { } }, util: {} };
+  F.BKCloud = {
+    configured: () => true,
+    adminToken: () => 'token-token-token-token-1234',
+    adminScope: () => 'founder',
+    adminAction: (action) => {
+      dashCalls.push(action);
+      if (action === 'settings.status') return Promise.resolve({ status: {} });
+      if (action === 'settings.get') return Promise.resolve({ settings: [] });
+      if (action === 'reports.stats') return Promise.resolve({
+        stats: { total: 2, new: 1, resolved: 1, attention: 0, unread: 1 }
+      });
+      if (action === 'reports.list') return Promise.resolve({
+        total: 2, page: 1, pageSize: 20, reports: [
+          { id: 'r1', code: 'BK-01001', title: 'Lỗi đáp án câu 5', student_name: 'Nguyễn An', category: 'answer', priority: 'high', status: 'new', updated_at: new Date().toISOString(), staff_unread: 1 },
+          { id: 'r2', code: 'BK-01002', title: 'Giao diện tối', student_name: 'Trần Bình', category: 'ui', priority: 'low', status: 'resolved', updated_at: new Date().toISOString(), staff_unread: 0 }
+        ]
+      });
+      if (action === 'version') return Promise.resolve({ serverVersion: '8.1.0', titles: { total: 35 } });
+      return Promise.resolve({ ok: true });
+    }
+  };
+  F.eval(read('assets/bakhi/bk-core.js'));
+  F.eval(read('assets/bakhi/bk-badges.js'));
+  F.eval(read('assets/bakhi/bk-founder.js'));
+  F.eval(read('assets/bakhi/bk-devboard.js'));
+  F.openDevDashboard();
+  await until(() => FD.querySelector('.bkc-dash'));
+  const reportTab = FD.querySelector('.bkc-nav .bkc-tab[data-tab="reports"]');
+  ok('Founder Dashboard có tab Report', !!reportTab);
+  if (reportTab) reportTab.click();
+  const rows = await until(() => {
+    const list = FD.querySelectorAll('.bkc-pane .bkc-table tbody tr');
+    return list.length ? list : null;
+  });
+  ok('Founder Dashboard hiện dòng báo cáo', !!rows && rows.length === 2,
+    rows ? String(rows.length) : 'không có dòng');
+  ok('hiện mã và tiêu đề báo cáo', /BK-01001/.test(FD.querySelector('.bkc-pane').textContent) &&
+    /Lỗi đáp án câu 5/.test(FD.querySelector('.bkc-pane').textContent));
+  ok('gọi reports.stats và reports.list', dashCalls.includes('reports.stats') &&
+    dashCalls.includes('reports.list'));
+  const badge = FD.querySelector('.bkc-nav .bkc-tab[data-tab="reports"] .bkc-tab-badge');
+  ok('tab Report có huy hiệu chưa đọc', !!badge && badge.hidden === false && /2/.test(badge.textContent),
+    badge ? badge.textContent : 'không có');
 
   console.log('\n' + (failures ? '=== ' + failures + ' CHECK(S) FAILED ===' : '=== ALL CHECKS PASSED ==='));
   process.exit(failures ? 1 : 0);

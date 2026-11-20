@@ -2,6 +2,45 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.1.0] — 2026-11-20
+
+### Sửa lỗi
+
+- **Founder/Administrator Dashboard hiện lại danh sách báo cáo.** `renderPager()` xoá sạch
+  host của nó, và tab Report gọi nó ngay trên host vừa dựng bảng — nên sau khi tải xong chỉ
+  còn phần phân trang, không có dòng báo cáo nào. Phân trang giờ có host riêng; tab Report
+  hiển thị đầy đủ mã, tiêu đề, học sinh, nhóm, ưu tiên, trạng thái và thời gian cập nhật.
+- **Nút báo cáo của học sinh không còn xuất hiện trên trang quản trị.** `admin/` và
+  `founder/` gỡ thẻ `bk-report.js`; component cũng tự bỏ qua khi `BK_ADMIN_ONLY` được bật.
+  Người quản trị dùng tab **Report** trong dashboard, không dùng cửa sổ báo cáo học sinh.
+- **Hết tải trùng khi mở chi tiết từ chuông.** Danh sách và chi tiết dùng số thứ tự yêu cầu;
+  phản hồi danh sách đến muộn không ghi đè màn hình chi tiết nữa.
+- **Form không còn đường gửi kép.** Nút “Gửi báo cáo” chỉ submit form một lần thay vì vừa
+  `click` vừa `submit`.
+
+### Tính năng
+
+- **Tab Report đầy đủ trong cả hai dashboard.** Huy hiệu số báo cáo chưa đọc/mới trên tab,
+  tự làm mới mỗi 45 giây khi tab đang mở, chọn **người xử lý** (`Administrator`/`Founder`)
+  ngay trong chi tiết, và **xuất CSV** theo đúng bộ lọc hiện tại.
+- **“Báo cáo của tôi” có tìm kiếm, lọc và tải thêm.** Tìm theo mã/tiêu đề/nội dung, lọc
+  *Tất cả / Đang mở / Đã xử lý*, tải thêm theo trang; mỗi dòng hiện xem trước phản hồi gần nhất.
+- **Bản nháp được giữ qua lần chuyển trang.** Tiêu đề, mô tả, nhóm, loại và ưu tiên lưu ở
+  `bakhiReportDraft.v1` (350 ms sau khi ngừng gõ), xoá sau khi gửi thành công hoặc bấm
+  “Xoá nội dung”. Bộ đếm ký tự cho tiêu đề và mô tả.
+- **Chấm đỏ cập nhật theo thời gian thực.** Chuông phát sự kiện `bk:report-notes` sau khi tải
+  phản hồi mới; nút Báo cáo và danh sách đang mở cập nhật mà không cần tải lại trang.
+- **Máy chủ.** `report-api` lọc theo từ khoá và nhóm trạng thái, trả `last_message_preview`;
+  `admin-actions` thêm `reports.export` (CSV, tối đa 5.000 dòng, có ghi nhật ký).
+
+### Cải tiến
+
+- **Phiên bản đồng nhất 8.1.0.** `bk-version.js`, `?v=` trong 122 tệp HTML, `APP_VERSION`
+  của dashboard, `bk-founder.js` và `SERVER_VERSION` của `admin-actions` cùng là `8.1.0`.
+- **QA.** `report-smoke` thêm 19 kiểm tra: dựng Founder Dashboard thật trong jsdom để xác
+  nhận tab Report có dòng dữ liệu, huy hiệu chưa đọc, tìm kiếm/lọc/tải thêm, bản nháp,
+  `reports.export` và việc trang quản trị không nạp nút báo cáo học sinh.
+
 ## [8.0.1] — 2026-11-20
 
 ### Sửa lỗi

@@ -1,4 +1,4 @@
-# 🚩 Report Issue + Q&A (Bá Khí 8.0.1)
+# 🚩 Report Issue + Q&A (Bá Khí 8.1.0)
 
 Tài liệu này mô tả hệ thống báo cáo vấn đề đang chạy trên production: nơi người dùng gặp nó,
 cách dữ liệu đi qua Supabase, quyền của từng vai trò và cách vận hành.
@@ -20,14 +20,19 @@ cách dữ liệu đi qua Supabase, quyền của từng vai trò và cách vậ
 |---|---|---|
 | Trang chủ | **Cài đặt → Report Issue** | Nhúng cùng component, không mở trang Cài đặt thứ hai |
 | Mọi trang môn học / bài học | Nút nổi **Báo cáo** ngay trên chuông thông báo | Kéo được, nhớ vị trí, `Home` trả về mặc định |
-| Chat, Hồ sơ, Cài đặt, Studio, Admin, Founder | Nút nổi **Báo cáo** | Cùng component, cùng dữ liệu |
+| Chat, Hồ sơ, Cài đặt, Studio | Nút nổi **Báo cáo** | Cùng component, cùng dữ liệu |
+| Admin, Founder | Tab **Report** trong dashboard | Không dùng cửa sổ báo cáo của học sinh |
 
 Cửa sổ có hai tab:
 
 1. **Gửi báo cáo** — tiêu đề, nhóm vấn đề, loại báo cáo, mức ưu tiên, mô tả, tệp đính kèm,
    ngữ cảnh tự thu thập (thu gọn được).
-2. **Báo cáo của tôi** — danh sách báo cáo của chính tài khoản đang gắn với thiết bị. Bấm
-   một dòng để mở chi tiết và Q&A.
+2. **Báo cáo của tôi** — danh sách báo cáo của chính tài khoản đang gắn với thiết bị, có
+   tìm kiếm theo mã/tiêu đề/nội dung, lọc *Tất cả / Đang mở / Đã xử lý*, tải thêm theo trang
+   và xem trước phản hồi gần nhất. Bấm một dòng để mở chi tiết và Q&A.
+
+Bản nháp (tiêu đề, mô tả, nhóm, loại, ưu tiên) được giữ ở `bakhiReportDraft.v1` khi chuyển
+sang trang khác và chỉ xoá sau khi gửi thành công hoặc bấm **Xoá nội dung**.
 
 Trên điện thoại, cửa sổ chuyển thành bottom sheet toàn chiều rộng; nút nổi thu về biểu tượng.
 
@@ -177,7 +182,7 @@ client chọn.
 | Action | Nội dung |
 |---|---|
 | `bootstrap` | Hồ sơ đang gắn + đếm báo cáo + số thông báo chưa đọc |
-| `list` | `{ status?, limit, offset }` → báo cáo của chính mình |
+| `list` | `{ status?, q?, limit, offset }` → báo cáo của chính mình (`open`/`resolved` là nhóm trạng thái) |
 | `detail` | `{ report_id }` → báo cáo + tệp (signed URL) + Q&A; tự đánh dấu đã đọc |
 | `create` | `{ title, description, category, issue_type, priority, page_url, page_title, route, subject, context, attachments }` |
 | `message.send` | `{ report_id, body, attachments? }` |
@@ -191,7 +196,13 @@ Giới hạn: tạo 6 báo cáo/giờ, 30 tin nhắn/10 phút (`bakhi_rate_limit
 
 `reports.stats`, `reports.list`, `reports.detail`, `reports.reply`,
 `reports.privateMessage`, `reports.status`, `reports.complete`, `reports.reopen`,
-`reports.assign`.
+`reports.assign`, `reports.export`.
+
+- `reports.list` trả thêm `last_message_preview` cho mỗi dòng.
+- `reports.export` nhận đúng bộ lọc của `reports.list` (kể cả `q`) và trả CSV tối đa 5.000
+  dòng; mỗi lần xuất được ghi vào `admin_activity_logs`.
+- Tab Report có huy hiệu chưa đọc/mới, tự làm mới 45 giây/lần khi đang mở và chọn người xử
+  lý (`Administrator`/`Founder`) ngay trong chi tiết.
 
 ## 9. Kiểm thử
 
@@ -218,5 +229,8 @@ Kiểm thử thủ công trên production (cần một tài khoản học sinh �
 | Nút Báo cáo báo “chưa gắn học sinh” | Thiết bị chưa chọn họ tên | Chọn họ tên ở trang chủ rồi mở lại |
 | Gửi báo cáo lỗi `report-api` 404 | Chưa deploy Edge Function | `npx supabase functions deploy report-api` |
 | Tab Report trống, không có thống kê | Chưa chạy migration 8.0.0 | Chạy migration rồi tải lại dashboard |
+| Tab Report chỉ thấy phân trang, không có dòng nào (bản 8.0.1) | `renderPager()` xoá bảng vừa dựng | Cập nhật 8.1.0 (phân trang dùng host riêng) |
+| “Xuất CSV” báo `UNKNOWN_ACTION` | `admin-actions` chưa được deploy bản 8.1.0 | `npx supabase functions deploy admin-actions` |
+| Nút Báo cáo xuất hiện trên trang quản trị | Bản 8.0.x nạp `bk-report.js` ở `admin/`, `founder/` | Cập nhật 8.1.0 (đã gỡ + guard `BK_ADMIN_ONLY`) |
 | Học sinh không thấy phản hồi | Chưa bật realtime hoặc chưa chạy migration | Kiểm tra `report_notifications` trong publication `supabase_realtime` |
 | Tải tệp thất bại | Tệp > 5 MB hoặc sai định dạng | Dùng PNG/JPG/WEBP/GIF/PDF ≤ 5 MB |

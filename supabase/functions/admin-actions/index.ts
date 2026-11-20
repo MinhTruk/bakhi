@@ -1172,7 +1172,7 @@ const DEFAULT_TITLES: TitleDef[] = [
 ];
 
 const TITLE_BY_ID = new Map<string, TitleDef>(DEFAULT_TITLES.map((t) => [t.id, t]));
-const SERVER_VERSION = '8.0.1';
+const SERVER_VERSION = '8.1.0';
 
 /* Cơ cấu danh mục: 99 = 74 tự động + 21 Founder + 2 Developer + 2 Administrator.
    Trả kèm mọi phản hồi trao tặng để giao diện không phải tự đếm hay viết cứng. */
@@ -1722,6 +1722,11 @@ async function notifyReportStudent(
         title: String(title).slice(0, 160),
         body: String(body).slice(0, 600)
     });
+}
+
+/* CSV an toàn cho Excel: bọc ngoặc kép, nhân đôi ngoặc kép bên trong. */
+function reportCsvCell(value: unknown): string {
+    return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
 }
 
 async function reportStudentNames(client: SupabaseClient, ids: string[]) {
@@ -3907,25 +3912,33 @@ Deno.serve(async (req) => {
                Administrator và Founder dùng chung. Quyền được kiểm tra ở đây,
                không dựa vào tab nào đang mở trên trình duyệt. */
             case 'reports.stats': {
-                const { data: rows, error } = await client
-                    .from('reports')
-                    .select('status, priority, staff_unread, resolution_note')
-                    .limit(5000);
-                if (error) return fail(500, 'DB_ERROR', 'Không đọc được thống kê báo cáo.');
+                /* Đếm bằng head/count thay vì tải hàng nghìn dòng: PostgREST giới
+                   hạn số dòng trả về nên cách cũ có thể đếm thiếu khi dữ liệu lớn. */
+                const base = () => client.from('reports').select('*', { count: 'exact', head: true });
+                const [total, nw, pend, prog, wait, res, clo, unread, attention] = await Promise.all([
+                    base(),
+                    base().eq('status', 'new'),
+                    base().eq('status', 'pending'),
+                    base().eq('status', 'in_progress'),
+                    base().eq('status', 'waiting_student'),
+                    base().eq('status', 'resolved'),
+                    base().eq('status', 'closed'),
+                    base().gt('staff_unread', 0),
+                    base().in('status', ['new', 'pending', 'in_progress', 'waiting_student'])
+                        .in('priority', ['high', 'critical'])
+                ]);
+                if (total.error) return fail(500, 'DB_ERROR', 'Không đọc được thống kê báo cáo.');
                 const stats = {
-                    total: 0, new: 0, pending: 0, in_progress: 0, waiting_student: 0,
-                    resolved: 0, closed: 0, unread: 0, attention: 0
+                    total: total.count ?? 0,
+                    new: nw.count ?? 0,
+                    pending: pend.count ?? 0,
+                    in_progress: prog.count ?? 0,
+                    waiting_student: wait.count ?? 0,
+                    resolved: res.count ?? 0,
+                    closed: clo.count ?? 0,
+                    unread: unread.count ?? 0,
+                    attention: attention.count ?? 0
                 };
-                for (const row of rows ?? []) {
-                    stats.total++;
-                    const key = String(row.status || 'new') as keyof typeof stats;
-                    if (key in stats) (stats as Record<string, number>)[key]++;
-                    if (Number(row.staff_unread || 0) > 0) stats.unread++;
-                    if ((row.priority === 'high' || row.priority === 'critical') &&
-                        ['new', 'pending', 'in_progress', 'waiting_student'].includes(String(row.status))) {
-                        stats.attention++;
-                    }
-                }
                 return json({ ok: true, stats, serverVersion: SERVER_VERSION });
             }
 
@@ -3956,6 +3969,23 @@ Deno.serve(async (req) => {
                 if (error) return fail(500, 'DB_ERROR', 'Không tải được danh sách báo cáo.');
                 const names = await reportStudentNames(client,
                     (data ?? []).map((r) => String(r.student_id)));
+                /* Xem trước phản hồi gần nhất để danh sách có ngữ cảnh mà không
+                   phải mở từng báo cáo. Một truy vấn cho cả trang. */
+                const ids = (data ?? []).map((r) => String(r.id));
+                const preview = new Map<string, string>();
+                if (ids.length) {
+                    const { data: msgs } = await client.from('report_messages')
+                        .select('report_id, body, created_at')
+                        .in('report_id', ids)
+                        .order('created_at', { ascending: false })
+                        .limit(200);
+                    for (const m of msgs ?? []) {
+                        const key = String(m.report_id);
+                        if (!preview.has(key)) {
+                            preview.set(key, String(m.body || '').replace(/\s+/g, ' ').slice(0, 120));
+                        }
+                    }
+                }
                 return json({
                     ok: true,
                     total: count || 0,
@@ -3969,10 +3999,63 @@ Deno.serve(async (req) => {
                         created_at: row.created_at, updated_at: row.updated_at,
                         last_message_at: row.last_message_at,
                         last_message_by: row.last_message_by,
+                        last_message_preview: preview.get(String(row.id)) || '',
                         staff_unread: Number(row.staff_unread || 0),
                         student_unread: Number(row.student_unread || 0),
                         assigned_to: row.assigned_to || ''
                     }))
+                });
+            }
+
+            case 'reports.export': {
+                const q = str(body.q, 80).replace(/[%,()]/g, ' ').trim();
+                let query = client
+                    .from('reports')
+                    .select('code, title, description, category, priority, status, assigned_to, student_id, created_at, updated_at, resolution_note')
+                    .order('updated_at', { ascending: false })
+                    .limit(5000);
+                if (body.status && String(body.status) !== 'all') {
+                    query = query.eq('status', str(body.status, 20));
+                }
+                if (body.category && String(body.category) !== 'all') {
+                    query = query.eq('category', str(body.category, 20));
+                }
+                if (body.priority && String(body.priority) !== 'all') {
+                    query = query.eq('priority', str(body.priority, 20));
+                }
+                if (body.unread) query = query.gt('staff_unread', 0);
+                if (body.from) query = query.gte('created_at', str(body.from, 40));
+                if (body.to) query = query.lte('created_at', str(body.to, 40));
+                if (q) query = query.or('title.ilike.%' + q + '%,code.ilike.%' + q + '%,description.ilike.%' + q + '%');
+                const { data, error } = await query;
+                if (error) return fail(500, 'DB_ERROR', 'Không xuất được danh sách báo cáo.');
+                const rows = data ?? [];
+                const names = await reportStudentNames(client, rows.map((r) => String(r.student_id)));
+                const lines: string[][] = [[
+                    'Mã', 'Tiêu đề', 'Học sinh', 'Nhóm', 'Ưu tiên', 'Trạng thái',
+                    'Người xử lý', 'Ngày gửi', 'Cập nhật cuối', 'Kết quả xử lý'
+                ]];
+                for (const row of rows) {
+                    lines.push([
+                        String(row.code || ''),
+                        String(row.title || ''),
+                        names.get(String(row.student_id)) || 'Học sinh',
+                        String(row.category || ''),
+                        String(row.priority || ''),
+                        String(row.status || ''),
+                        String(row.assigned_to || ''),
+                        String(row.created_at || ''),
+                        String(row.updated_at || ''),
+                        String(row.resolution_note || '')
+                    ]);
+                }
+                const csv = lines.map((line) => line.map(reportCsvCell).join(',')).join('\r\n');
+                await logAction(client, 'reports.export', 'report', null, { rows: rows.length });
+                return json({
+                    ok: true,
+                    rows: rows.length,
+                    filename: 'bakhi-reports-' + new Date().toISOString().slice(0, 10) + '.csv',
+                    csv
                 });
             }
 

@@ -1160,6 +1160,13 @@
                 S.reportNotesLoaded = true;
                 if (S.panelOpen) renderPanel();
                 paintBell();
+                /* Cho cửa sổ Report Issue biết có phản hồi mới để cập nhật chấm
+                   đỏ và danh sách đang mở mà không cần tải lại trang. */
+                try {
+                    global.dispatchEvent(new global.CustomEvent('bk:report-notes', {
+                        detail: { total: S.reportNotes.length }
+                    }));
+                } catch (e) { }
                 return S.reportNotes;
             }).catch(function (err) {
                 /* Bảng chưa được tạo (chưa chạy migration) → bỏ qua, không phá chuông. */

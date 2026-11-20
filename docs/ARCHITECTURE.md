@@ -277,7 +277,7 @@ DOMContentLoaded
 - **Giới hạn thử**: `admin-auth` dùng RPC `bakhi_rate_limit` theo IP — Founder 5 lần / 10 phút,
   trả `retryAfter`; mọi trường hợp sai đều trả “Mã Founder không hợp lệ.”
 
-### 2.9. Report Issue + Q&A (8.0.1)
+### 2.9. Report Issue + Q&A (8.1.0)
 
 ```
 bk-report.js ─► BKCloud.reportApi ─► report-api ─► reports / report_messages
@@ -289,7 +289,11 @@ bk-cloud.js (chuông) ◄── RLS select ── report_notifications
 
 - **Một component duy nhất.** `assets/bakhi/bk-report.js` dựng cả cửa sổ nổi (trên mọi trang
   có `bk-cloud.js`) và chế độ nhúng trong `bk-settings.js` → tab **Report Issue**. Không có
-  biến thể riêng cho trang chủ hay trang môn học.
+  biến thể riêng cho trang chủ hay trang môn học. Trang `admin/` và `founder/` **không** nạp
+  component này (guard `BK_ADMIN_ONLY`): quản trị dùng tab **Report** của dashboard.
+- **Dashboard Report.** `bk-devboard.js` tải thống kê, danh sách có phân trang và chi tiết;
+  tab có huy hiệu chưa đọc, tự làm mới 45 giây/lần khi đang mở, gán người xử lý và xuất CSV
+  qua `reports.export`. Phân trang luôn dùng host riêng vì `renderPager()` xoá host của nó.
 - **Neo và kéo nút nổi.** Nút bám ngay trên chuông nổi (`.bkc-bell-float`) nhờ đo
   `getBoundingClientRect` lúc khởi tạo và khi đổi kích thước; người dùng kéo được, vị trí lưu
   ở `bakhiReportFab.v1`, `Home` (hoặc `BKReport.resetPosition()`) trả về mặc định. z-index

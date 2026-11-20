@@ -17,7 +17,7 @@
     var A11Y_KEY = 'bakhiA11y.v1';
     var S = { menu: null, btn: null, slot: null, open: false, base: './', version: '0.0.0' };
 
-    var VERSION = (global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '8.0.1';
+    var VERSION = (global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '8.1.0';
     S.version = VERSION;
 
     /* ---------------------------------------------------------------------

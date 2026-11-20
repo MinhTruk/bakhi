@@ -161,6 +161,11 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 - Nút nổi neo ngay **trên chuông thông báo nổi** (đo bằng `getBoundingClientRect`, không đặt
   cứng toạ độ) và **kéo được**; vị trí lưu ở `bakhiReportFab.v1`, `Home` trả về mặc định.
   Không tạo nút thứ hai, không hạ/nâng z-index tuỳ tiện: nút phải nằm dưới panel thông báo.
+  Nút nổi chỉ dành cho trang học sinh; `admin/` và `founder/` **không** nạp `bk-report.js`
+  (component tự bỏ qua khi `BK_ADMIN_ONLY`).
+- Tab **Report** của `bk-devboard.js` là nơi quản trị xử lý báo cáo: thống kê, danh sách có
+  phân trang, chi tiết, gán người xử lý và xuất CSV. Mọi bảng có phân trang phải dùng host
+  riêng cho `renderPager()` — hàm này xoá host của nó (lỗi 8.0.1 làm mất toàn bộ bảng).
 - Thông báo riêng dùng bảng `report_notifications` và hiển thị trong chuông `bk-cloud` hiện
   có — không dựng Notification System thứ hai.
 - Chi tiết: [docs/REPORT_ISSUE.md](docs/REPORT_ISSUE.md).

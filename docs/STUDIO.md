@@ -120,7 +120,7 @@ Tệp tĩnh độc lập, không cần backend. Chuông thông báo đặt ở g
 không che thanh công cụ. Thông báo không làm gián đoạn tài liệu đang soạn: bảng chỉ mở khi
 bấm chuông.
 
-## 8.1. Report Issue trên Studio (8.0.1)
+## 8.1. Report Issue trên Studio (8.1.0)
 
 Studio cũng nạp `bk-report.js`, nên nút **Báo cáo** nằm ngay trên chuông thông báo ở góc phải
 dưới (kéo được, nhớ vị trí) và mở cùng cửa sổ báo cáo như mọi trang khác. Báo cáo gửi từ Studio tự gắn ngữ cảnh `studio` (khu vực) và URL hiện tại, giúp

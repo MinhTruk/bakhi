@@ -20,6 +20,7 @@
 
     var POS_KEY = 'bakhiReport.v1';
     var FAB_KEY = 'bakhiReportFab.v1';
+    var DRAFT_KEY = 'bakhiReportDraft.v1';
     var MAX_FILES = 4;
     var MAX_BYTES = 5 * 1024 * 1024;
     var ALLOWED = /^(image\/(png|jpe?g|webp|gif)|application\/pdf)$/i;
@@ -60,8 +61,9 @@
         win: null, host: null, mode: 'window', view: 'compose',
         tab: 'compose', booted: false, student: null, counts: null,
         list: [], listTotal: 0, listLoaded: false, listBusy: false,
+        listQuery: '', listStatus: 'all', listSeq: 0, listHost: null,
         detail: null, detailBusy: false, sending: false, files: [],
-        draft: null, lastFocus: null, dragging: null,
+        draft: null, draftTimer: null, lastFocus: null, dragging: null,
         fab: null, fabDot: null, fabDrag: null, fabDraggedAt: 0
     };
 
@@ -133,6 +135,48 @@
     function savePos(p) {
         try { global.localStorage.setItem(POS_KEY, JSON.stringify(p)); } catch (e) { }
     }
+    /* Bản nháp được giữ qua lần chuyển trang: học sinh đang viết dở không mất
+       nội dung khi mở bài khác. Xoá ngay sau khi gửi thành công hoặc bấm
+       "Xoá nội dung". */
+    function loadDraft() {
+        try {
+            var raw = JSON.parse(global.localStorage.getItem(DRAFT_KEY) || 'null');
+            if (!raw || typeof raw !== 'object') return null;
+            var clean = {
+                title: String(raw.title || '').slice(0, 160),
+                description: String(raw.description || '').slice(0, 5000),
+                category: String(raw.category || 'bug'),
+                issue_type: String(raw.issue_type || 'bug'),
+                priority: String(raw.priority || 'normal')
+            };
+            /* Giá trị đã lưu có thể bị sửa tay: chỉ nhận lựa chọn hợp lệ. */
+            if (!CATEGORIES.some(function (p) { return p[0] === clean.category; })) clean.category = 'bug';
+            if (!ISSUE_TYPES.some(function (p) { return p[0] === clean.issue_type; })) clean.issue_type = 'bug';
+            if (!PRIORITIES.some(function (p) { return p[0] === clean.priority; })) clean.priority = 'normal';
+            if (!clean.title && !clean.description) return null;
+            return clean;
+        } catch (e) { return null; }
+    }
+    function saveDraftSoon(draft) {
+        clearTimeout(S.draftTimer);
+        S.draftTimer = global.setTimeout(function () { saveDraftNow(draft); }, 350);
+    }
+    function saveDraftNow(draft) {
+        clearTimeout(S.draftTimer);
+        S.draftTimer = null;
+        try {
+            if (!draft || (!String(draft.title || '').trim() && !String(draft.description || '').trim())) {
+                global.localStorage.removeItem(DRAFT_KEY);
+                return;
+            }
+            global.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        } catch (e) { }
+    }
+    function clearDraft() {
+        clearTimeout(S.draftTimer);
+        S.draftTimer = null;
+        try { global.localStorage.removeItem(DRAFT_KEY); } catch (e) { }
+    }
     function statusMeta(status) { return STATUS[status] || { label: status || '—', tone: 'muted' }; }
     function statusPill(status) {
         var meta = statusMeta(status);
@@ -179,7 +223,7 @@
         var link = D.createElement('link');
         link.id = 'bkReportCss';
         link.rel = 'stylesheet';
-        link.href = base + 'assets/bakhi/bk-report.css?v=8.0.1';
+        link.href = base + 'assets/bakhi/bk-report.css?v=8.1.0';
         D.head.appendChild(link);
     }
 
@@ -494,7 +538,7 @@
     }
 
     /* ------------------------------- Compose ------------------------------ */
-    function field(labelText, control, hint) {
+    function field(labelText, control, hint, max) {
         var row = el('div', 'bkrep-field');
         var lab = el('label', 'bkrep-label', labelText);
         var id = control.id || ('bkRep' + Math.random().toString(36).slice(2, 8));
@@ -502,7 +546,22 @@
         lab.setAttribute('for', id);
         row.appendChild(lab);
         row.appendChild(control);
-        if (hint) row.appendChild(el('span', 'bkrep-hint', hint));
+        if (hint || max) {
+            var foot = el('div', 'bkrep-field-foot');
+            if (hint) foot.appendChild(el('span', 'bkrep-hint', hint));
+            if (max) {
+                var count = el('span', 'bkrep-count');
+                var paint = function () {
+                    var n = String(control.value || '').length;
+                    count.textContent = n + '/' + max;
+                    count.classList.toggle('is-over', n > max);
+                };
+                control.addEventListener('input', paint);
+                paint();
+                foot.appendChild(count);
+            }
+            row.appendChild(foot);
+        }
         return row;
     }
     function select(pairs, value) {
@@ -567,7 +626,7 @@
         var host = S.body;
         if (!host) return;
         clear(host);
-        var d = S.draft || (S.draft = {
+        var d = S.draft || (S.draft = loadDraft() || {
             title: '', description: '', category: 'bug', issue_type: 'bug', priority: 'normal'
         });
 
@@ -579,12 +638,21 @@
         title.maxLength = 160;
         title.placeholder = 'Ví dụ: Đáp án câu 5 sai ở phần Ôn tập';
         title.value = d.title || '';
-        form.appendChild(field('Tiêu đề', title, 'Từ 4 đến 160 ký tự.'));
+        form.appendChild(field('Tiêu đề', title, 'Từ 4 đến 160 ký tự.', 160));
 
         var row = el('div', 'bkrep-row');
         var cat = select(CATEGORIES, d.category);
         var type = select(ISSUE_TYPES, d.issue_type);
         var pri = select(PRIORITIES, d.priority);
+        [cat, type, pri].forEach(function (box) {
+            box.addEventListener('change', function () {
+                if (!S.draft) return;
+                S.draft.category = cat.value;
+                S.draft.issue_type = type.value;
+                S.draft.priority = pri.value;
+                saveDraftSoon(S.draft);
+            });
+        });
         row.appendChild(field('Nhóm vấn đề', cat));
         row.appendChild(field('Loại báo cáo', type));
         row.appendChild(field('Mức ưu tiên', pri));
@@ -595,7 +663,7 @@
         desc.maxLength = 5000;
         desc.placeholder = 'Mô tả càng rõ càng tốt: bạn đang ở đâu, làm gì, thấy gì và mong đợi điều gì.';
         desc.value = d.description || '';
-        form.appendChild(field('Mô tả chi tiết', desc, 'Từ 10 đến 5.000 ký tự.'));
+        form.appendChild(field('Mô tả chi tiết', desc, 'Từ 10 đến 5.000 ký tự.', 5000));
 
         /* Ngữ cảnh tự thu thập — không có mật khẩu/token/cookie. */
         var ctxWrap = el('details', 'bkrep-ctx');
@@ -627,11 +695,10 @@
         var reset = btn('is-ghost', 'Xoá nội dung', 'fa-rotate-left', function () {
             S.draft = null;
             S.files = [];
+            clearDraft();
             renderComposeForm();
         });
-        var submit = btn('is-primary', 'Gửi báo cáo', 'fa-paper-plane', function () {
-            submitReport({ title: title, desc: desc, cat: cat, type: type, pri: pri, msg: msg, button: submit });
-        });
+        var submit = btn('is-primary', 'Gửi báo cáo', 'fa-paper-plane', null);
         submit.type = 'submit';
         foot.appendChild(reset);
         foot.appendChild(submit);
@@ -643,9 +710,10 @@
         });
         [title, desc].forEach(function (input) {
             input.addEventListener('input', function () {
-                if (!S.draft) return;
+                if (!S.draft) S.draft = loadDraft() || { category: 'bug', issue_type: 'bug', priority: 'normal' };
                 if (input === title) S.draft.title = input.value;
                 else S.draft.description = input.value;
+                saveDraftSoon(S.draft);
             });
         });
         host.appendChild(form);
@@ -736,6 +804,7 @@
             S.draft = null;
             S.files = [];
             S.listLoaded = false;
+            clearDraft();
             if (data.duplicate) {
                 toast('Báo cáo đã gửi. Có một báo cáo tương tự gần đây: ' + data.duplicate.code + '.', 'info');
             } else {
@@ -774,43 +843,99 @@
     /* ---------------------------- Danh sách của tôi ------------------------ */
     function showList() {
         S.tab = 'list';
+        S.view = 'list';
+        S.listSeq++;
         if (S.win) paintTabs();
         var host = S.body;
         if (!host) return;
         clear(host);
-        var loading = el('div', 'bkrep-loading');
-        loading.appendChild(el('span', 'bkrep-spinner'));
-        loading.appendChild(el('span', null, 'Đang tải báo cáo…'));
-        host.appendChild(loading);
 
-        api({ action: 'list', limit: 30, offset: 0 }).then(function (data) {
-            S.list = data.reports || [];
-            S.listTotal = data.total || 0;
-            S.listLoaded = true;
-            renderList();
-        }).catch(function (err) {
-            clear(host);
-            host.appendChild(notBoundNotice(err));
-        });
-    }
-
-    function renderList() {
-        var host = S.body;
-        if (!host) return;
-        clear(host);
         var head = el('div', 'bkrep-list-head');
-        head.appendChild(el('span', 'bkrep-list-count',
-            S.listTotal ? (S.listTotal + ' báo cáo') : 'Chưa có báo cáo nào'));
+        S.listCountEl = el('span', 'bkrep-list-count', 'Đang tải…');
+        head.appendChild(S.listCountEl);
         head.appendChild(btn('is-ghost is-sm', 'Báo cáo mới', 'fa-plus', function () {
             S.draft = null; S.files = []; showCompose();
         }));
         host.appendChild(head);
 
+        /* Tìm kiếm và lọc ngay trong “Báo cáo của tôi” — không cần mở từng
+           báo cáo hay tải lại trang. */
+        var filters = el('div', 'bkrep-filters');
+        var search = el('input', 'bkrep-input bkrep-search');
+        search.type = 'search';
+        search.placeholder = 'Tìm mã hoặc tiêu đề…';
+        search.value = S.listQuery || '';
+        search.setAttribute('aria-label', 'Tìm báo cáo của tôi');
+        var searchTimer = null;
+        search.addEventListener('input', function () {
+            S.listQuery = search.value;
+            clearTimeout(searchTimer);
+            searchTimer = global.setTimeout(function () { loadMyReports(false); }, 320);
+        });
+        filters.appendChild(search);
+        var status = select([['all', 'Tất cả'], ['open', 'Đang mở'], ['resolved', 'Đã xử lý']], S.listStatus || 'all');
+        status.className = 'bkrep-input bkrep-filter-status';
+        status.setAttribute('aria-label', 'Lọc theo trạng thái');
+        status.addEventListener('change', function () {
+            S.listStatus = status.value;
+            loadMyReports(false);
+        });
+        filters.appendChild(status);
+        host.appendChild(filters);
+
+        S.listHost = el('div', 'bkrep-list-host');
+        host.appendChild(S.listHost);
+        loadMyReports(false);
+    }
+
+    function loadMyReports(append) {
+        if (!S.listHost) return;
+        if (!append) {
+            clear(S.listHost);
+            var loading = el('div', 'bkrep-loading');
+            loading.appendChild(el('span', 'bkrep-spinner'));
+            loading.appendChild(el('span', null, 'Đang tải báo cáo…'));
+            S.listHost.appendChild(loading);
+        }
+        var seq = S.listSeq;
+        api({
+            action: 'list', limit: 20, offset: append ? S.list.length : 0,
+            q: S.listQuery || '', status: S.listStatus || 'all'
+        }).then(function (data) {
+            /* Người dùng có thể đã mở chi tiết trong lúc chờ: bỏ phản hồi cũ. */
+            if (seq !== S.listSeq) return;
+            var rows = data.reports || [];
+            S.list = append ? S.list.concat(rows) : rows;
+            S.listTotal = data.total || 0;
+            S.listLoaded = true;
+            S.view = 'list';
+            renderList();
+        }).catch(function (err) {
+            if (seq !== S.listSeq) return;
+            clear(S.listHost);
+            S.listHost.appendChild(notBoundNotice(err));
+        });
+    }
+
+    function renderList() {
+        var host = S.listHost;
+        if (!host) return;
+        clear(host);
+        if (S.listCountEl) {
+            S.listCountEl.textContent = S.listTotal
+                ? (S.listTotal + (S.listStatus !== 'all' || S.listQuery ? ' kết quả' : ' báo cáo'))
+                : 'Chưa có báo cáo nào';
+        }
+
         if (!S.list.length) {
             var empty = el('div', 'bkrep-empty');
             empty.appendChild(icon('fa-inbox'));
-            empty.appendChild(el('b', null, 'Bạn chưa gửi báo cáo nào'));
-            empty.appendChild(el('p', null, 'Khi phát hiện lỗi nội dung, giao diện hay tài khoản, hãy gửi báo cáo để ban quản trị phản hồi riêng cho bạn.'));
+            empty.appendChild(el('b', null, (S.listQuery || S.listStatus !== 'all')
+                ? 'Không có báo cáo khớp bộ lọc'
+                : 'Bạn chưa gửi báo cáo nào'));
+            empty.appendChild(el('p', null, (S.listQuery || S.listStatus !== 'all')
+                ? 'Thử từ khoá khác hoặc bỏ bộ lọc trạng thái.'
+                : 'Khi phát hiện lỗi nội dung, giao diện hay tài khoản, hãy gửi báo cáo để ban quản trị phản hồi riêng cho bạn.'));
             host.appendChild(empty);
             return;
         }
@@ -825,6 +950,9 @@
             if (r.student_unread > 0) top.appendChild(el('span', 'bkrep-unread', 'Phản hồi mới'));
             item.appendChild(top);
             item.appendChild(el('b', 'bkrep-item-title', r.title));
+            if (r.last_message_preview) {
+                item.appendChild(el('span', 'bkrep-item-preview', r.last_message_preview));
+            }
             var meta = el('div', 'bkrep-item-meta');
             meta.appendChild(el('span', null, categoryLabel(r.category)));
             meta.appendChild(el('span', null, 'Ưu tiên ' + priorityLabel(r.priority)));
@@ -835,14 +963,27 @@
             list.appendChild(item);
         });
         host.appendChild(list);
+
+        if (S.list.length < S.listTotal) {
+            var more = btn('is-ghost is-sm bkrep-more',
+                'Tải thêm (' + (S.listTotal - S.list.length) + ')', 'fa-chevron-down',
+                function () {
+                    more.disabled = true;
+                    loadMyReports(true);
+                });
+            var foot = el('div', 'bkrep-list-more');
+            foot.appendChild(more);
+            host.appendChild(foot);
+        }
     }
 
     /* ------------------------------- Chi tiết ----------------------------- */
     function showReport(id) {
         if (!id) return showList();
         S.tab = 'list';
-        if (S.win) paintTabs();
         S.view = 'detail';
+        S.listSeq++;
+        if (S.win) paintTabs();
         var host = S.body;
         if (!host) return;
         clear(host);
@@ -1018,6 +1159,10 @@
 
     function init() {
         if (!configured()) return;
+        /* Trang quản trị dùng tab Report riêng trong dashboard; nút nổi dành cho
+           học sinh không được xuất hiện ở /admin hay /founder. */
+        if (global.BK_ADMIN_ONLY) return;
+        if (!S.draft) S.draft = loadDraft();
         injectCss();
         mountFab();
         bootstrap().catch(function () { });
@@ -1026,6 +1171,16 @@
             if (isWindowOpen()) { e.preventDefault(); closeWindow(); }
         });
         global.addEventListener('resize', function () { layoutFab(); });
+        /* Trung tâm thông báo vừa tải phản hồi mới → cập nhật chấm đỏ của nút và
+           danh sách đang mở, không cần tải lại trang. */
+        global.addEventListener('bk:report-notes', function () {
+            if (!S.booted) return;
+            bootstrap(true).then(function () {
+                if (isWindowOpen() && S.view === 'list' && S.tab === 'list' && S.listHost) {
+                    loadMyReports(false);
+                }
+            }).catch(function () { });
+        });
     }
 
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', init);
@@ -1033,7 +1188,11 @@
 
     global.BKReport = {
         open: openWindow,
-        openReport: function (id) { openWindow('list'); showReport(id); },
+        openReport: function (id) {
+            if (!id) return openWindow('list');
+            openWindow('list');
+            showReport(id);
+        },
         close: closeWindow,
         mount: mount,
         resetPosition: resetFab,
