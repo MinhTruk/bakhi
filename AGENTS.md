@@ -39,7 +39,10 @@ Hướng dẫn cho agent/developer làm việc trong repository này. Đọc h�
   bk-profile-ui.js     Component hồ sơ/badge dùng chung (profile + settings)
   bk-settings.js|css   5 tab Cài đặt
   bk-core.js|css       Kho dữ liệu local-first, UI kit, tìm kiếm, adapter AI/Supabase
-  bk-learn.js|css      Trung tâm học tập, ôn tập, ghi chú, đánh dấu, lịch sử, thành tích
+  bk-learning.js|css   Learning Intelligence: sổ tay câu sai, phân tích, kế hoạch,
+                       ôn tập, mục tiêu, môn học (dùng chung khung với bk-learn)
+  bk-learn.js|css      Trung tâm học tập: khung hub, tổng quan, ghi chú, đánh dấu,
+                       thành tích, cài đặt, tìm kiếm, command palette
   bk-dev.js|css        Developer Playground 2.0 (11 công cụ, tab Music)
   bk-music.js|css      Music Player dùng chung (queue, shuffle, repeat, lyrics)
   bk-cloud.js|css      Nhận diện, thông báo realtime, changelog, đồng bộ (Supabase)
@@ -87,7 +90,14 @@ NODE_PATH=/tmp/bktest/node_modules node tools/qa/chat-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/admin-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/report-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/version-audit.js
-NODE_PATH=/tmp/bktest/node_modules node tools/qa/supabase-config.js
+node tools/qa/supabase-config.js
+# 6 cổng Learning Intelligence (8.2.0)
+node tools/qa/mistake-notebook-smoke.js
+node tools/qa/learning-analytics-smoke.js
+node tools/qa/study-planner-smoke.js
+node tools/qa/revision-engine-smoke.js
+node tools/qa/learning-data-integrity.js
+node tools/qa/learning-sync-smoke.js
 
 # 4. Chèn thẻ script vào các trang mới (idempotent)
 node tools/integrate-pages.js
@@ -180,7 +190,9 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 
 | Key | Ghi chú |
 |---|---|
-| `bakhiLearn.v1` | Nguồn sự thật duy nhất của dữ liệu học tập |
+| `bakhiLearn.v1` | Nguồn sự thật duy nhất của dữ liệu học tập (schema 2) |
+| └ `review` | Sổ tay câu sai — giữ nguyên tên khoá để tương thích dữ liệu đã đồng bộ |
+| └ `plans` / `goals` / `revisionSessions` | Kế hoạch, mục tiêu, phiên ôn (8.2.0) |
 | `bakhiSignals.v1` | Chỉ số đếm cho thành tích |
 | `bakhiNotifyReads.v1` | Đã đọc ở chế độ chỉ thông báo |
 | `bakhiStudio.v1` | Tài liệu Studio |

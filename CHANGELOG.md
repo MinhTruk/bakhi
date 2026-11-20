@@ -2,6 +2,75 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.2.0] — 2026-11-20
+
+### Tính năng
+
+- **Sổ tay câu sai (Learning Intelligence).** Câu làm sai được ghi tự động từ mọi bài luyện tập
+  kèm đáp án đã chọn, đáp án đúng, lời giải, môn/chương/bài, số lần sai, lịch sử sửa sai, sáu
+  loại lỗi (học sinh tự phân loại), ghi chú, ghim và năm trạng thái
+  New/Reviewing/Needs Attention/Mastered/Archived. Không tạo hệ thống quiz thứ hai và không bao
+  giờ sửa kết quả bài làm gốc.
+- **Phân tích học tập cá nhân.** Bảy biểu đồ (hoạt động, xu hướng độ chính xác, kết quả từng
+  môn, phân bố lỗi, tiến độ tuần/tháng), bốn khoảng thời gian (7/30/90 ngày, tất cả), chỉ số cá
+  nhân, chủ đề yếu (chỉ kết luận khi ≥ 4 câu) và **Learning Score** 0–100 có trọng số, có ngưỡng
+  dữ liệu và chống nhiễu bằng cách chỉ tính lần trả lời đầu tiên của mỗi câu trong ngày.
+- **Smart Study Planner.** Nhiệm vụ theo ngày/tuần/tháng, hạn, môn học, thời lượng ước lượng,
+  hoàn thành/hoãn/sửa/xoá, nhóm Quá hạn/Hôm nay/Sắp tới/Đã xong và gợi ý dựa trên câu đến hạn,
+  chủ đề yếu, nhiệm vụ quá hạn — chỉ đề xuất, không tự thêm vào lịch.
+- **Revision Engine.** Spaced repetition có giới hạn (`again/hard/good/easy`, trần 90 ngày,
+  `ease`, `streak`), hàng đợi đến hạn/quá hạn/sắp tới/chủ đề yếu/mới sai, phiên ôn có chấm điểm
+  và cập nhật lịch, thành thạo chỉ khi chuỗi đúng ≥ 2 **và** khoảng cách ≥ 21 ngày.
+- **Mục tiêu học tập & Môn học.** Mục tiêu đo bằng câu hỏi/bài học/câu thành thạo/ngày hoạt động,
+  tiến độ tính lại từ dữ liệu gốc; tab Môn học tổng hợp tiến độ từng môn.
+
+### Cải tiến
+
+- **Trung tâm học tập tái cấu trúc.** 11 khu vực có nhóm rõ ràng. Tab **Ôn tập** cũ (trùng logic
+  với sổ tay) và tab **Lịch sử** (gộp vào nhật ký của tab Phân tích) đã được **xoá khỏi mã
+  nguồn** — khoảng 490 dòng JS trùng lặp, không giữ wrapper/fallback song song.
+- **Một nguồn dữ liệu.** `bakhiLearn.v1` lên schema 2: thêm `plans`, `goals`, `revisionSessions`;
+  `save()` chuẩn hoá bằng `sanitize()` trước khi ghi nên dữ liệu hỏng từ đồng bộ/nhập tệp không
+  thể vào localStorage. Không có bảng hay mảng dữ liệu thứ hai cho cùng một nhiệm vụ.
+- **Đồng bộ nhiều thiết bị.** `student_progress` nhận thêm ba khoá mới trong **cùng** bảng, hợp
+  nhất theo `updatedAt`, không nhân bản khi hai lần ghi cùng lúc.
+- **Biểu đồ nhẹ.** Toàn bộ biểu đồ dựng bằng CSS/SVG trong `bk-learning.js` — không nạp thư viện
+  chart, không nạp lặp, không phụ thuộc mạng.
+- **Trang bài học.** `bk-page.js` đọc thêm phương án học sinh đã chọn (best-effort, chỉ đọc DOM)
+  để Sổ tay câu sai hiển thị "Bạn chọn" bên cạnh "Đáp án đúng".
+
+### Sửa lỗi
+
+- **Ràng buộc `student_progress.progress_key` thiếu khoá thật.** Từ 8.1.0 Edge Function vẫn gửi
+  `signals` và `badges` nhưng ràng buộc chỉ cho 7 khoá cũ. Migration `20261208000000` mở rộng
+  đúng danh sách khoá đang dùng (bao gồm `plans`, `goals`, `revisionSessions`) nên đồng bộ không
+  còn bị từ chối.
+- **`dev-auth` từng chạy `verify_jwt = true`.** Đã deploy lại; gọi không có header Authorization
+  giờ trả `401 BAD_DEV_CODE` thay vì lỗi cổng JWT.
+
+### Bảo mật & dữ liệu
+
+- Migration `20261208000000_bakhi_v820_learning_intelligence.sql`: mở rộng ràng buộc, thêm chỉ
+  mục, trigger chặn payload > 1 MB/khoá, hai view chỉ đọc `security_invoker` (chỉ `authenticated`
+  có `SELECT`). **Không** xoá bảng/cột/dòng, không chạy lại SQL cũ, đã kiểm tra idempotent và
+  rollback trong transaction.
+- Thêm `student_progress_key_idx (progress_key, updated_at desc)`.
+
+### QA
+
+- Thêm 6 cổng: `mistake-notebook-smoke` (35), `learning-analytics-smoke` (28),
+  `study-planner-smoke` (33), `revision-engine-smoke` (28), `learning-data-integrity` (37),
+  `learning-sync-smoke` (22) — tổng **183 kiểm tra mới**. Toàn bộ 11 cổng cũ vẫn xanh; CI chạy
+  **17** smoke test.
+- `smoke.js` và `shell-smoke.js` được cập nhật theo cấu trúc tab mới (11 khu vực thay vì 7) và
+  kiểm tra thêm Sổ tay câu sai/Phân tích/Kế hoạch/Mục tiêu.
+
+### Tài liệu
+
+- Thêm `docs/LEARNING_INTELLIGENCE.md`, `docs/LEARNING_ANALYTICS.md`,
+  `docs/REVISION_ENGINE.md`, `docs/DATA_MIGRATION_V820.md`, `docs/DEPLOYMENT_V820.md`,
+  `docs/RELEASE_REPORT_V820.md`; cập nhật README, AGENTS, ARCHITECTURE, FEATURES, SUPABASE_SETUP.
+
 ## [8.1.1] — 2026-11-20
 
 ### Sửa lỗi

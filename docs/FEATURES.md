@@ -274,6 +274,29 @@ URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bo
 | 9 | Tín hiệu bảng lệnh và xuất sao lưu | ✅ | Nhóm Khám phá |
 | 10 | Không lưu nội dung trong tín hiệu, không gửi lên mạng | ✅ | Chỉ `localStorage`, giới hạn 999999 |
 
+## H.3. Learning Intelligence (8.2.0)
+
+Bốn hệ thống dùng chung một kho dữ liệu (`bakhiLearn.v1` schema 2) và một bảng đồng bộ
+(`student_progress`). Chi tiết: [LEARNING_INTELLIGENCE.md](LEARNING_INTELLIGENCE.md).
+
+| # | Tính năng | Trạng thái | Ghi chú |
+|---|---|---|---|
+| 1 | Sổ tay câu sai ghi tự động từ mọi bài luyện | ✅ | `BK.practice`, chống trùng theo `key` |
+| 2 | Lưu đáp án đã chọn, đáp án đúng, lời giải, môn/chương | ✅ | `chosen` đọc best-effort từ DOM ở `bk-page.js` |
+| 3 | Sáu loại lỗi, học sinh tự phân loại | ✅ | Không tự kết luận nguyên nhân sai |
+| 4 | Trạng thái New/Reviewing/Needs Attention/Mastered/Archived | ✅ | Lưu trữ giữ nguyên lịch sử |
+| 5 | Ghi chú + ghim + tìm kiếm + lọc môn/chương/loại lỗi | ✅ | Sắp xếp theo ưu tiên |
+| 6 | Phân tích 7 biểu đồ, 4 khoảng thời gian | ✅ | 7/30/90 ngày và tất cả |
+| 7 | Learning Score 0–100 có trọng số và ngưỡng dữ liệu | ✅ | [LEARNING_ANALYTICS.md](LEARNING_ANALYTICS.md) |
+| 8 | Chủ đề yếu chỉ kết luận khi ≥ 4 câu | ✅ | Có nút ôn / thêm kế hoạch |
+| 9 | Kế hoạch ngày/tuần/tháng, quá hạn/sắp tới/đã xong | ✅ | `s.plans`, thời lượng là ước lượng |
+| 10 | Gợi ý nhiệm vụ — Nhận/Chỉnh sửa/Bỏ qua, không tự thêm | ✅ | `BK.planner.suggestions()` |
+| 11 | Revision Engine: hàng đợi 5 phạm vi + phiên ôn | ✅ | [REVISION_ENGINE.md](REVISION_ENGINE.md) |
+| 12 | Phiên ôn không sửa kết quả luyện tập gốc | ✅ | Có kiểm thử riêng |
+| 13 | Mục tiêu theo câu hỏi/bài học/thành thạo/ngày hoạt động | ✅ | Tiến độ tính lại từ dữ liệu gốc |
+| 14 | Đồng bộ nhiều thiết bị, hợp nhất theo `updatedAt` | ✅ | Cùng `student_progress`, không bảng mới |
+| 15 | Không có bộ đếm thời gian, không xếp hạng, không thi thử | ✅ | Giữ nguyên nguyên tắc cốt lõi |
+
 ## I. Trung tâm thông báo (`bk-cloud.js`, `bk-notify.js`)
 
 Từ 8.0.0, chuông có thêm nhóm **“Phản hồi báo cáo của bạn”** — đọc bảng

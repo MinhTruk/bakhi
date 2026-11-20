@@ -77,18 +77,36 @@ trên production · **Blocked** = thiếu quyền/điều kiện.
 
 | Function | Source | `config.toml` | Production |
 |---|---|---|---|
-| `admin-actions` | ✅ `admin-actions/index.ts` | ✅ `verify_jwt = false` | ✅ Deployed — `401 NO_DEV_SESSION` khi không có phiên |
+| `admin-actions` | ✅ `admin-actions/index.ts` | ✅ `verify_jwt = false` | ✅ Deployed 8.2.0 (`SERVER_VERSION 8.2.0`) — `401 NO_DEV_SESSION` khi không có phiên |
 | `admin-auth` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 BAD_DEV_CODE` khi mã sai |
 | `bind-student-session` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 NO_SESSION` khi thiếu phiên |
 | `changelog-sync` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 BAD_SYNC_TOKEN` khi sai token |
 | `chat-api` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 NO_SESSION` |
-| `dev-auth` | ✅ | ✅ `verify_jwt = false` (thêm ở 8.1.1) | ✅ Deployed — `401 BAD_DEV_CODE` với mã sai (nghĩa là `DEV_PLAYGROUND_CODE` đã đặt). ⚠️ Đang chạy `verify_jwt = true`; deploy lại để đồng bộ |
+| `dev-auth` | ✅ | ✅ `verify_jwt = false` (thêm ở 8.1.1) | ✅ Deployed 8.2.0 — gọi không có header Authorization trả `401 BAD_DEV_CODE` (không còn `UNAUTHORIZED_NO_AUTH_HEADER`) ⇒ `verify_jwt = false` đã có hiệu lực |
 | `import-students` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 NO_DEV_SESSION` |
 | `report-api` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `409 NOT_BOUND` với phiên ẩn danh thật |
 | `search-students` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 NO_SESSION` |
 | `student-profile` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `409 NOT_BOUND` với phiên ẩn danh thật |
-| `sync-student-progress` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed — `401 NO_SESSION` |
+| `sync-student-progress` | ✅ | ✅ `verify_jwt = false` | ✅ Deployed 8.2.0 — `401 BAD_SESSION` khi thiếu phiên; nhận thêm `plans`, `goals`, `revisionSessions` |
 | `passkey-api` | 🗑️ đã gỡ ở 7.8.0 | 🗑️ đã xoá khỏi config ở 8.1.1 | Không còn |
+
+### Khoá dữ liệu học tập trong `student_progress` (8.2.0)
+
+`student_progress` là bảng khoá–giá trị duy nhất cho dữ liệu học tập. Ràng buộc `progress_key`
+được mở rộng ở migration `20261208000000` để bao gồm **toàn bộ** khoá frontend thật sự gửi:
+
+| Khoá | Nội dung | Từ phiên bản |
+|---|---|---|
+| `practice` | Mọi lượt trả lời (nguồn gốc của phân tích) | 8.0.0 |
+| `review` | **Sổ tay câu sai** (schema mở rộng tại chỗ) | 8.0.0 → 8.2.0 |
+| `notes`, `bookmarks`, `history` | Ghi chú, đánh dấu, nhật ký | 8.0.0 |
+| `achievements`, `prefs` | Thành tích, tuỳ chọn | 8.0.0 |
+| `signals`, `badges` | Bộ đếm thành tích, trạng thái huy hiệu | 8.1.0 |
+| `plans`, `goals`, `revisionSessions` | Kế hoạch, mục tiêu, phiên ôn | 8.2.0 |
+
+Không có bảng mới cho các hệ thống Learning Intelligence. Hai view chỉ đọc
+`learning_mistakes_v` và `learning_plans_v` (`security_invoker = true`) suy ra dữ liệu từ JSONB
+cho truy vấn SQL, không lưu trùng. Chi tiết: [DATA_MIGRATION_V820.md](DATA_MIGRATION_V820.md).
 
 Kiểm chứng end-to-end đã chạy trực tiếp trên project (không phải mock):
 
@@ -252,7 +270,7 @@ workflow dùng `CHANGELOG_SYNC_TOKEN`; cả ba đều tự kiểm tra quyền b�
 |---|---|---|---|
 | `search-students` | Học sinh (ẩn danh) | Phiên Supabase | 40 lượt/phút/phiên |
 | `bind-student-session` | Học sinh (ẩn danh) | Phiên + họ tên đối chiếu server | 10 lượt/10 phút/thiết bị |
-| `sync-student-progress` | Học sinh (ẩn danh) | Phiên + `student_id` do server suy ra | Theo phiên |
+| `sync-student-progress` | Học sinh (ẩn danh) | Phiên + `student_id` do server suy ra | Theo phiên; ≤ 1.5 MB/request, ≤ 1 MB/khoá |
 | `admin-auth` | Quản trị viên | `ADMIN_DEV_CODE` so sánh hằng thời gian | 8 lượt/10 phút/IP |
 | `admin-actions` | Dashboard | `x-admin-token` (hash trong `admin_sessions`) | Theo phiên quản trị |
 | `import-students` | Dashboard / script | `x-admin-token` hoặc `STUDENT_ROSTER_SECRET` | Theo phiên |

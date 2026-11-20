@@ -106,6 +106,37 @@
         return m ? m[1] : '';
     }
 
+    /**
+     * 8.2.0 — cố gắng đọc phương án học sinh đã chọn để Sổ tay câu sai hiển thị
+     * "Bạn chọn" bên cạnh "Đáp án đúng". Chỉ đọc DOM, không sửa nội dung giáo dục.
+     * Không tìm được thì trả null — không đoán bừa.
+     */
+    function guessChosen(node, item) {
+        if (!item || !item.options || !item.options.length) return null;
+        var scope = null;
+        try {
+            scope = node.closest('li,tr,section,article,div') || node.parentElement;
+        } catch (e) { scope = node.parentElement; }
+        if (!scope) return null;
+        var nodes = [];
+        try {
+            nodes = scope.querySelectorAll(
+                'input[type="radio"]:checked,[data-selected="true"],.selected,.is-selected,.is-wrong,.wrong-answer,[aria-checked="true"]'
+            );
+        } catch (e) { nodes = []; }
+        for (var i = 0; i < nodes.length; i++) {
+            var n = nodes[i];
+            var raw = n.value || n.getAttribute('data-value') || n.textContent || '';
+            var text = String(raw).replace(/\s+/g, ' ').trim();
+            if (!text) continue;
+            for (var j = 0; j < item.options.length; j++) {
+                var opt = String(item.options[j]).replace(/\s+/g, ' ').trim();
+                if (opt && (text === opt || text.indexOf(opt) >= 0 || opt.indexOf(text) >= 0)) return j;
+            }
+        }
+        return null;
+    }
+
     /** Quét phản hồi đúng/sai đã hiển thị và ghi nhận — không sửa DOM. */
     function scanFeedback() {
         var b = ensureBanks();
@@ -140,6 +171,7 @@
                 topic: item.topic,
                 difficulty: item.difficulty,
                 correct: correct,
+                chosen: correct ? null : guessChosen(node, item),
                 options: item.options,
                 answer: item.answer,
                 explanation: item.explanation,

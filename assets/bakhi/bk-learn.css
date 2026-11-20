@@ -324,3 +324,95 @@ html.dark .bk-chip.on { color: #a5b4fc; }
 .bk-item-button:hover { border-color: var(--bkl-primary); }
 .bk-item-button:focus-visible { outline: 2px solid var(--bkl-primary); outline-offset: 2px; }
 .bk-item-button .bk-progress { margin-top: .4rem; }
+
+/* =========================================================================
+   8.2.0 — Learning Intelligence
+   Sổ tay câu sai · Phân tích · Kế hoạch · Ôn tập · Mục tiêu
+   ========================================================================= */
+
+.bk-hub-group {
+    font-size: .6rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--bkl-muted);
+    opacity: .75;
+    padding: .55rem .6rem .2rem;
+}
+
+.bk-overview-actions { margin-bottom: .2rem; }
+
+.bk-filters { flex-wrap: wrap; }
+
+/* Câu sai / câu hỏi trong sổ tay */
+.bk-answer-grid { display: grid; gap: .3rem; margin-top: .5rem; }
+.bk-answer {
+    font-size: .7rem; line-height: 1.45; padding: .34rem .55rem;
+    border-radius: .4rem; border: 1px solid var(--bkl-line);
+    overflow-wrap: anywhere;
+}
+.bk-answer b { font-weight: 700; }
+.bk-answer-wrong { border-color: rgba(244, 63, 94, .45); background: rgba(244, 63, 94, .08); }
+.bk-answer-right { border-color: rgba(16, 185, 129, .45); background: rgba(16, 185, 129, .08); }
+.bk-item.bk-needs-attention { border-color: rgba(244, 63, 94, .5); }
+.bk-note-line { margin-top: .35rem; font-style: italic; }
+
+.bk-explain { margin-top: .45rem; font-size: .7rem; }
+.bk-explain summary { cursor: pointer; color: var(--bkl-primary); }
+.bk-explain p, .bk-explain-open {
+    margin: .35rem 0 0; line-height: 1.6; font-size: .7rem;
+    padding: .45rem .6rem; border-radius: .4rem;
+    background: rgba(99, 102, 241, .08); overflow-wrap: anywhere;
+}
+.bk-ok-text { color: var(--bkl-ok); }
+.bk-danger-text { color: var(--bkl-danger); }
+
+/* Biểu đồ */
+.bk-chart { width: 100%; margin: .3rem 0 .7rem; color: var(--bkl-text, inherit); }
+.bk-svg { width: 100%; height: auto; display: block; }
+.bk-donut-wrap { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin: .3rem 0 .8rem; }
+.bk-donut { width: 8.6rem; height: 8.6rem; flex: 0 0 auto; }
+.bk-legend { display: flex; flex-direction: column; gap: .25rem; font-size: .7rem; min-width: 9rem; }
+.bk-legend-row { display: flex; align-items: center; gap: .4rem; }
+.bk-legend-dot { width: .55rem; height: .55rem; border-radius: 50%; flex: 0 0 auto; }
+.bk-legend-label { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bk-legend-val { font-variant-numeric: tabular-nums; color: var(--bkl-muted); }
+
+/* Learning Score */
+.bk-score { margin-bottom: .4rem; }
+.bk-score-head { display: flex; align-items: baseline; gap: .55rem; margin: .2rem 0 .45rem; }
+.bk-score-num { font-size: 2rem; font-weight: 700; line-height: 1; }
+.bk-score-sub { font-size: .68rem; color: var(--bkl-muted); }
+.bk-score-bar { height: .5rem; margin-bottom: .5rem; }
+
+/* Lịch kế hoạch */
+.bk-cal { display: grid; gap: .3rem; margin-top: .4rem; }
+.bk-cal-week { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.bk-cal-month { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.bk-cal-col, .bk-cal-day {
+    border: 1px solid var(--bkl-line); border-radius: .45rem;
+    padding: .35rem; min-height: 3.6rem; min-width: 0;
+    display: flex; flex-direction: column; gap: .2rem;
+}
+.bk-cal-col.is-today, .bk-cal-day.is-today {
+    border-color: var(--bkl-primary);
+    box-shadow: inset 0 0 0 1px rgba(99, 102, 241, .3);
+}
+.bk-cal-day.is-blank { border: 0; background: transparent; }
+.bk-cal-head, .bk-cal-num { font-size: .62rem; color: var(--bkl-muted); font-weight: 600; }
+.bk-cal-item {
+    font-size: .58rem; line-height: 1.3; padding: .18rem .3rem; border-radius: .3rem;
+    background: rgba(99, 102, 241, .16); overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+}
+.bk-cal-item.bk-cal-done { background: rgba(16, 185, 129, .16); }
+.bk-cal-item.bk-cal-postponed { background: rgba(245, 158, 11, .16); }
+.bk-cal-dot { font-size: .55rem; color: var(--bkl-primary); }
+
+.bk-plan-row.bk-plan-done { opacity: .65; }
+.bk-session-bar { height: .45rem; margin: .4rem 0 .35rem; }
+
+@media (max-width: 720px) {
+    .bk-cal-week { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .bk-cal-month { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .bk-donut { width: 6.5rem; height: 6.5rem; }
+}

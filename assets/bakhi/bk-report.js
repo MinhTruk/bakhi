@@ -223,7 +223,7 @@
         var link = D.createElement('link');
         link.id = 'bkReportCss';
         link.rel = 'stylesheet';
-        link.href = base + 'assets/bakhi/bk-report.css?v=8.1.1';
+        link.href = base + 'assets/bakhi/bk-report.css?v=8.2.0';
         D.head.appendChild(link);
     }
 

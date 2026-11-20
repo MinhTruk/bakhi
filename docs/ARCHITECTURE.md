@@ -35,7 +35,7 @@ quyết định kỹ thuật. Cập nhật: 20/11/2026 (phiên bản 8.0.0).
 ## 2. Lớp nâng cấp 2.0
 
 ```
-index.html ──► bk-core.js ──► bk-learn.js ──► bk-dev.js
+index.html ──► bk-core.js ──► bk-learning.js ──► bk-learn.js ──► bk-dev.js
                    ▲
 trang bài học ─────┴──► bk-page.js
 ```
@@ -65,8 +65,15 @@ trang bài học ─────┴──► bk-page.js
   `tools/inject-favicon.js` chèn link tương đối vào 118/119 tệp HTML (bỏ qua
   `images/anh/1.html` vì tệp rỗng). Mọi dòng chèn chứa `assets/bakhi/` nên
   `content-integrity` bỏ qua; không dùng favicon GIF.
-- **bk-learn.js/css** — UI: dock nổi, modal Trung tâm học tập 7 tab, command palette
-  (Ctrl/⌘+K), tìm kiếm toàn cục (`/`), focus mode, xuất/nhập.
+- **bk-learn.js/css** — khung Trung tâm học tập: dock nổi, hub 11 khu vực, command palette
+  (Ctrl/⌘+K), tìm kiếm toàn cục (`/`), focus mode, ghi chú, đánh dấu, thành tích, xuất/nhập.
+- **bk-learning.js/css** (8.2.0) — Learning Intelligence: 6 khu vực dùng chung khung với
+  `bk-learn` (Môn học, Sổ tay câu sai, Phân tích, Kế hoạch, Ôn tập, Mục tiêu) và biểu đồ SVG
+  tự dựng (không nạp thư viện chart). Dữ liệu lấy từ `BK.mistakes`, `BK.analytics`,
+  `BK.planner`, `BK.revision`, `BK.goals` trong `bk-core.js`.
+- **`bakhiLearn.v1` schema 2** — thêm `plans`, `goals`, `revisionSessions`; `review` (Sổ tay câu
+  sai) được mở rộng tại chỗ với `status`, `errorType`, `chosen`, `note`, `pinned`, `streak`,
+  `ease`, `intervalDays`. `save()` chuẩn hoá bằng `sanitize()` trước khi ghi.
 - **bk-dev.js/css** — Developer Playground 2.0: cửa sổ nổi kéo/đổi kích thước, nhớ
   vị trí/kích thước/tab, 11 công cụ (thêm tab Music). Không thay thế panel cũ.
 - **bk-music.js/css** — Music Player dùng chung, **trình phát theo tệp từ 7.1.0**:

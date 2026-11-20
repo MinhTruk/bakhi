@@ -58,6 +58,7 @@ const hubHtml = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Kh
 const H = makeDOM(hubHtml, 'https://minhtruk.github.io/bakhi/index.html');
 const w = H.w;
 load(w, 'assets/bakhi/bk-core.js');
+load(w, 'assets/bakhi/bk-learning.js');
 load(w, 'assets/bakhi/bk-learn.js');
 load(w, 'assets/bakhi/bk-dev.js');
 load(w, 'assets/bakhi/bk-music.js');
@@ -136,7 +137,11 @@ ok('markdown escapes HTML', md.indexOf('<img') === -1 && md.indexOf('<strong>bol
 w.BKLearn.openHub('overview');
 const hub = w.document.querySelector('.bk-hub');
 ok('hub modal rendered', !!hub);
-ok('hub has 7 tabs', hub && hub.querySelectorAll('.bk-hub-tab').length === 7);
+const EXPECTED_TABS = ['Tổng quan', 'Môn học', 'Sổ tay câu sai', 'Phân tích', 'Kế hoạch', 'Ôn tập', 'Mục tiêu', 'Ghi chú', 'Đánh dấu', 'Thành tích', 'Cài đặt'];
+const tabLabels = hub ? Array.from(hub.querySelectorAll('.bk-hub-tab')).map((b) => b.textContent.replace(/[0-9/]+$/, '').trim()) : [];
+ok('hub has 11 tabs', tabLabels.length === EXPECTED_TABS.length, String(tabLabels.length));
+ok('hub tab order matches Learning Intelligence', EXPECTED_TABS.every((t, i) => (tabLabels[i] || '').indexOf(t) >= 0), tabLabels.join('|'));
+ok('hub has grouped nav', !!hub && !!hub.querySelector('.bk-hub-group'));
 const tabs = hub ? Array.from(hub.querySelectorAll('.bk-hub-tab')) : [];
 tabs.forEach((b) => { try { b.click(); } catch (e) { failures++; console.log('  FAIL tab click threw ' + b.textContent + ' :: ' + e.message); } });
 const clickTab = (label) => {
@@ -146,8 +151,15 @@ const clickTab = (label) => {
 };
 clickTab('Tổng quan');
 ok('hub analytics shows cards', !!w.document.querySelector('.bk-card-v'));
-clickTab('Ôn tập');
-ok('hub review card rendered', !!w.document.querySelector('.bk-opts .bk-opt'));
+clickTab('Sổ tay câu sai');
+ok('hub mistake notebook rendered', !!w.document.querySelector('.bk-filters') && !!w.document.querySelector('.bk-item'));
+ok('mistake shows chosen answer row', !!w.document.querySelector('.bk-answer-wrong'));
+clickTab('Phân tích');
+ok('hub analytics renders charts', !!w.document.querySelector('.bk-svg, .bk-bars'));
+clickTab('Kế hoạch');
+ok('hub planner renders', !!w.document.querySelector('.bk-cal'));
+clickTab('Mục tiêu');
+ok('hub goals renders', w.document.body.textContent.indexOf('Mục tiêu học tập') >= 0);
 clickTab('Cài đặt');
 ok('hub settings rendered', !!w.document.querySelector('.bk-switch'));
 
@@ -157,7 +169,7 @@ hubCloseBtn.click();
 w.BKLearn.openHub('overview');
 const hubsAfterClose = w.document.querySelectorAll('.bk-hub');
 ok('hub reopens after close', hubsAfterClose.length >= 2, String(hubsAfterClose.length));
-ok('reopened hub keeps 7 tabs', hubsAfterClose[hubsAfterClose.length - 1].querySelectorAll('.bk-hub-tab').length === 7);
+ok('reopened hub keeps 11 tabs', hubsAfterClose[hubsAfterClose.length - 1].querySelectorAll('.bk-hub-tab').length === EXPECTED_TABS.length);
 w.BKLearn.openNote(null);
 ok('note editor opens', !!w.document.querySelector('.bk-textarea'));
 w.document.querySelectorAll('.bk-overlay .bk-icon-btn').forEach((b) => b.click());

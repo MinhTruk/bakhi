@@ -143,13 +143,16 @@ Badge `TOOLS-05` đại diện cho năm nhóm công cụ nổi bật của BAKHI
 
 Không gian theo dõi và quản lý quá trình tự học, mở qua `Ctrl/⌘ + K` hoặc mục **Cài đặt → Trung tâm học tập**.
 
-- **Tổng quan:** số câu đã luyện, kết quả đúng/sai, độ chính xác và tiến độ theo môn hoặc chủ đề.
-- **Ôn tập:** lưu câu trả lời sai, lọc câu cần xem lại, đánh dấu thành thạo và lên lịch ôn.
-- **Ghi chú:** tạo ghi chú theo môn hoặc câu hỏi, ghim, phân loại và xuất nội dung.
-- **Đánh dấu:** lưu nhanh câu hỏi, bài học, môn học hoặc tài liệu cần xem lại.
-- **Lịch sử:** tra cứu nội dung đã mở, câu đã luyện và hoạt động ôn tập.
-- **Thành tích:** theo dõi các mốc học tập và hoạt động trong hệ thống.
-- **Cài đặt:** focus mode, cỡ chữ, nhịp ôn, tuỳ chọn AI/Supabase và xuất/nhập dữ liệu.
+- **Tổng quan:** Learning Score, việc cần làm hôm nay, hoạt động 14 ngày và tiến độ theo môn.
+- **Môn học:** tiến độ từng môn từ dữ liệu thật (câu đã luyện, bài đã mở, câu sai, kế hoạch).
+- **Sổ tay câu sai:** câu làm sai được ghi tự động kèm đáp án đã chọn, đáp án đúng, lời giải,
+  loại lỗi, ghi chú và trạng thái ôn (8.2.0).
+- **Phân tích:** bảy biểu đồ, chỉ số cá nhân, chủ đề yếu và nhật ký hoạt động (8.2.0).
+- **Kế hoạch:** nhiệm vụ theo ngày/tuần/tháng, gợi ý thông minh không tự áp đặt (8.2.0).
+- **Ôn tập:** hàng đợi đến hạn/quá hạn/chủ đề yếu và phiên ôn spaced repetition (8.2.0).
+- **Mục tiêu:** mục tiêu đo bằng hoạt động thật, tính lại từ dữ liệu gốc (8.2.0).
+- **Ghi chú, Đánh dấu, Thành tích, Cài đặt:** công cụ cá nhân, focus mode, nhịp ôn,
+  tuỳ chọn AI/Supabase và xuất/nhập dữ liệu.
 
 ### 2. 🎧 Music Player
 
@@ -385,7 +388,8 @@ Các trang học tập giữ phần nội dung giáo dục trong HTML; lớp nâ
 │   ├── bk-badges.js            # Hệ thống thành tích/badge
 │   ├── bk-profile-ui.js        # Thành phần hồ sơ và badge dùng chung
 │   ├── bk-settings.js / .css   # Cài đặt
-│   ├── bk-learn.js / .css      # Trung tâm học tập
+│   ├── bk-learning.js / .css   # Learning Intelligence (8.2.0)
+│   ├── bk-learn.js / .css      # Khung Trung tâm học tập
 │   ├── bk-dev.js / .css        # Developer Playground
 │   ├── bk-music.js / .css      # Music Player
 │   ├── bk-cloud.js / .css      # Supabase, đồng bộ, thông báo
@@ -423,7 +427,7 @@ Không có bước build bắt buộc. Các trang tĩnh tải trực tiếp HTML
 | `Ctrl/⌘ + K` | Mở Command Palette và tìm kiếm/lệnh | Khi tính năng được tải |
 | `/` | Mở tìm kiếm toàn cục | Không đặt con trỏ trong ô nhập |
 | `Esc` | Đóng hộp thoại hoặc thoát Focus Mode | Khi hộp thoại/chế độ tương ứng đang mở |
-| `←` / `→` | Chuyển câu trong khu vực Ôn tập | Khi đang dùng Ôn tập |
+| `←` / `→` | Chuyển câu trong phiên ôn tập | Khi đang dùng Ôn tập |
 | `A` / `B` / `C` / `D` | Chọn đáp án | Khi khu vực hỗ trợ phím tắt đang hoạt động |
 | `Ctrl/⌘ + Shift + G` | Mở Developer Playground | Sau khi xác thực Developer |
 | `Space` | Phát/tạm dừng nhạc | Khi Music Player đang mở và không nhập văn bản |
@@ -514,7 +518,7 @@ BAKHI đang được phát triển và duy trì theo hướng mở rộng trải
 | Website và điều hướng | Đã triển khai trên GitHub Pages |
 | Nội dung học tập | Đang được bổ sung và hoàn thiện |
 | Bài tập tương tác | Có hệ thống luyện tập; ngân hàng câu hỏi tiếp tục được cập nhật |
-| Trung tâm học tập | Đã tích hợp các chức năng theo dõi, ghi chú và ôn tập |
+| Trung tâm học tập | 8.2.0: Sổ tay câu sai, Phân tích, Kế hoạch, Ôn tập, Mục tiêu, Môn học cùng một nguồn dữ liệu |
 | Hồ sơ và cài đặt | Đã có các khu vực hồ sơ và cá nhân hoá |
 | Music Player | Đã tích hợp |
 | Bá Khí Studio | Đã tích hợp |

@@ -63,6 +63,7 @@ function inject(file) {
   const scripts = isHome
     ? [
         `${prefix}assets/bakhi/bk-core.js`,
+        `${prefix}assets/bakhi/bk-learning.js`,
         `${prefix}assets/bakhi/bk-learn.js`,
         `${prefix}assets/bakhi/bk-dev.js`
       ]

@@ -293,8 +293,12 @@ ok('Mật mã đăng nhập tắt an toàn khi chưa có phiên/BKCloud', !!code
 
 sdoc.getElementById('bkSetTab-learning').click();
 ok('tab Trung tâm học tập gắn đúng hub dùng chung', !!sdoc.querySelector('#bkHubInline .bk-hub-nav'));
-const hubTabs = sdoc.querySelectorAll('#bkHubInline .bk-hub-tab').length;
-ok('hub nhúng có đủ 7 tab của Trung tâm học tập', hubTabs === 7, String(hubTabs));
+const hubTabEls = Array.from(sdoc.querySelectorAll('#bkHubInline .bk-hub-tab'));
+ok('hub nhúng có đủ 11 khu vực của Trung tâm học tập', hubTabEls.length === 11, String(hubTabEls.length));
+const hubLabels = hubTabEls.map((t) => t.textContent);
+ok('hub nhúng có Sổ tay câu sai, Phân tích, Kế hoạch, Mục tiêu',
+  ['Sổ tay câu sai', 'Phân tích', 'Kế hoạch', 'Mục tiêu'].every((l) => hubLabels.some((x) => x.indexOf(l) >= 0)),
+  hubLabels.join('|'));
 
 sdoc.getElementById('bkSetTab-display').click();
 ok('tab Hiển thị có điều khiển cỡ chữ', !!sdoc.querySelector('#bkSetPanel-display input[type="range"]'));

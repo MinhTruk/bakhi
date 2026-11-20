@@ -17,11 +17,44 @@
 
     var BK = global.BK = global.BK || {};
     BK.__loaded = true;
-    BK.version = '2.0.0';
+    BK.version = '3.0.0';
 
     var KEY = 'bakhiLearn.v1';
-    var SCHEMA = 1;
-    var LIMITS = { practice: 5000, history: 600, notes: 500, bookmarks: 500, review: 800 };
+    /*
+     * SCHEMA 2 (8.2.0) — Learning Intelligence.
+     * Khoá `review` được GIỮ NGUYÊN làm nơi lưu duy nhất của Sổ tay câu sai
+     * (đổi tên khoá sẽ làm mất dữ liệu đã đồng bộ trên student_progress).
+     * Schema được mở rộng tại chỗ bằng sanitize(); không tạo mảng thứ hai.
+     * Ba mảng mới: plans (Kế hoạch), goals (Mục tiêu), revisionSessions (Phiên ôn).
+     */
+    var SCHEMA = 2;
+    var LIMITS = {
+        practice: 5000, history: 600, notes: 500, bookmarks: 500, review: 1000,
+        plans: 400, goals: 60, revisionSessions: 200
+    };
+
+    /* Từ vựng dùng chung cho toàn bộ Learning Intelligence. */
+    var STATUSES = ['new', 'reviewing', 'needs_attention', 'mastered', 'archived'];
+    var ERROR_TYPES = {
+        unclassified: 'Chưa phân loại',
+        knowledge_gap: 'Thiếu kiến thức',
+        misunderstanding: 'Hiểu sai bản chất',
+        calculation: 'Sai tính toán',
+        careless: 'Bất cẩn',
+        memory: 'Nhớ nhầm'
+    };
+    var PLAN_STATES = ['planned', 'done', 'postponed', 'skipped'];
+    var GOAL_METRICS = {
+        questions: 'Câu hỏi đã luyện',
+        lessons: 'Bài học đã mở',
+        mastered: 'Câu đã thành thạo',
+        activeDays: 'Ngày có hoạt động'
+    };
+    var ANALYTICS_RANGES = [7, 30, 90, 0];
+    var STATUS_LABELS = {
+        new: 'Mới ghi nhận', reviewing: 'Đang ôn',
+        needs_attention: 'Cần chú ý', mastered: 'Đã thành thạo', archived: 'Đã lưu trữ'
+    };
 
     /* ---------------------------------------------------------------------
        Tiện ích
@@ -89,6 +122,26 @@
         var p = vnParts(ts);
         return p ? p.day + '/' + p.month + '/' + p.year : '—';
     }
+    /*
+     * Mọi khoá ngày đều tính theo giờ Hà Nội, không theo múi giờ máy — nếu không,
+     * một học sinh ở nước ngoài sẽ thấy "hôm nay" lệch một ngày so với dữ liệu.
+     * Cộng/trừ ngày thực hiện trên lịch (UTC) của chính khoá ngày đó.
+     */
+    function todayKey() { return dayKey(now()); }
+    function keyToUTC(key) {
+        var p = String(key || '').split('-');
+        if (p.length !== 3) return NaN;
+        return Date.UTC(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    }
+    function keyAdd(key, n) {
+        var t = keyToUTC(key);
+        if (!isFinite(t)) return String(key || '');
+        var d = new Date(t + Number(n || 0) * 86400000);
+        return d.getUTCFullYear() + '-' +
+            String(d.getUTCMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getUTCDate()).padStart(2, '0');
+    }
+    function dayKeyOf(offset) { return keyAdd(todayKey(), offset); }
     function fmtTime(ts) {
         if (!ts) return '—';
         var p = vnParts(ts);
@@ -186,14 +239,17 @@
         return {
             v: SCHEMA, createdAt: now(), updatedAt: now(),
             practice: [], review: [], notes: [], bookmarks: [], history: [],
+            plans: [], goals: [], revisionSessions: [],
             achievements: { unlocked: {}, counters: {} },
             prefs: {
                 focus: false, fontSize: 100, ambient: false,
                 spaced: { again: 1, hard: 3, good: 7, easy: 14, max: 90 },
+                analytics: { range: 30 },
+                planner: { suggestions: true },
                 ai: { endpoint: '', model: '' },
                 cloud: { url: '', anonKey: '' }
             },
-            meta: { version: '2.0.0' }
+            meta: { version: '3.0.0' }
         };
     }
 
@@ -218,20 +274,77 @@
             };
         });
 
+        /* Sổ tay câu sai — schema 2 mở rộng tại chỗ, tương thích dữ liệu 8.1.x. */
         s.review = arr(raw.review).filter(function (r) { return r && typeof r === 'object'; }).slice(-LIMITS.review).map(function (r) {
+            var mastered = !!r.mastered;
+            var status = STATUSES.indexOf(r.status) >= 0
+                ? r.status
+                : (mastered ? 'mastered' : (num(r.wrong, 0) > 0 ? 'reviewing' : 'new'));
+            if (mastered && status !== 'archived') status = 'mastered';
             return {
                 id: str(r.id, 64) || uid('rv'), key: str(r.key, 80) || hash(str(r.question)),
+                questionId: str(r.questionId, 80),
                 subject: str(r.subject, 24), question: str(r.question, 4000),
                 options: arr(r.options).slice(0, 8).map(function (o) { return str(o, 800); }),
                 answer: (typeof r.answer === 'number' || typeof r.answer === 'string') ? r.answer : null,
+                chosen: (typeof r.chosen === 'number' || typeof r.chosen === 'string') ? r.chosen : null,
                 explanation: str(r.explanation, 4000),
                 topic: str(r.topic, 200), difficulty: str(r.difficulty, 32),
                 source: str(r.source, 300),
                 wrong: num(r.wrong, 1), right: num(r.right, 0),
-                mastered: !!r.mastered, createdAt: num(r.createdAt, now()),
+                streak: Math.max(0, num(r.streak, 0)),
+                ease: clamp(num(r.ease, 2.5), 1.3, 3),
+                intervalDays: Math.max(0, num(r.intervalDays, 0)),
+                status: status, errorType: ERROR_TYPES[r.errorType] ? r.errorType : 'unclassified',
+                note: str(r.note, 4000), pinned: !!r.pinned,
+                mastered: status === 'mastered', createdAt: num(r.createdAt, now()),
+                updatedAt: num(r.updatedAt, num(r.lastSeen, now())),
                 lastSeen: num(r.lastSeen, now()), nextReview: num(r.nextReview, now()),
                 history: arr(r.history).slice(-30).map(function (h) {
-                    return { ts: num(h && h.ts, now()), correct: !!(h && h.correct) };
+                    return {
+                        ts: num(h && h.ts, now()), correct: !!(h && h.correct),
+                        perf: str(h && h.perf, 16), sessionId: str(h && h.sessionId, 64)
+                    };
+                })
+            };
+        });
+
+        s.plans = arr(raw.plans).filter(function (p) { return p && typeof p === 'object'; }).slice(-LIMITS.plans).map(function (p) {
+            return {
+                id: str(p.id, 64) || uid('pl'),
+                title: str(p.title, 200) || 'Nhiệm vụ học tập',
+                subject: str(p.subject, 24), lesson: str(p.lesson, 1000),
+                topic: str(p.topic, 200), date: /^\d{4}-\d{2}-\d{2}$/.test(str(p.date, 10)) ? str(p.date, 10) : dayKey(),
+                durationMin: clamp(p.durationMin, 5, 240),
+                status: PLAN_STATES.indexOf(p.status) >= 0 ? p.status : 'planned',
+                notes: str(p.notes, 2000), goalId: str(p.goalId, 64),
+                source: p.source === 'suggestion' ? 'suggestion' : 'user',
+                createdAt: num(p.createdAt, now()), updatedAt: num(p.updatedAt, now()),
+                completedAt: num(p.completedAt, 0) || null
+            };
+        });
+
+        s.goals = arr(raw.goals).filter(function (g) { return g && typeof g === 'object'; }).slice(-LIMITS.goals).map(function (g) {
+            return {
+                id: str(g.id, 64) || uid('gl'),
+                title: str(g.title, 200) || 'Mục tiêu học tập',
+                subject: str(g.subject, 24),
+                metric: GOAL_METRICS[g.metric] ? g.metric : 'questions',
+                target: clamp(g.target, 1, 100000),
+                deadline: /^\d{4}-\d{2}-\d{2}$/.test(str(g.deadline, 10)) ? str(g.deadline, 10) : '',
+                status: g.status === 'done' || g.status === 'archived' ? g.status : 'active',
+                createdAt: num(g.createdAt, now()), updatedAt: num(g.updatedAt, now()),
+                completedAt: num(g.completedAt, 0) || null
+            };
+        });
+
+        s.revisionSessions = arr(raw.revisionSessions).filter(function (x) { return x && typeof x === 'object'; }).slice(-LIMITS.revisionSessions).map(function (x) {
+            return {
+                id: str(x.id, 64) || uid('rs'),
+                scope: str(x.scope, 40) || 'due',
+                startedAt: num(x.startedAt, now()), endedAt: num(x.endedAt, 0) || null,
+                items: arr(x.items).slice(0, 200).map(function (it) {
+                    return { key: str(it && it.key, 80), correct: !!(it && it.correct) };
                 })
             };
         });
@@ -288,11 +401,26 @@
                 s.prefs.cloud.url = str(p.cloud.url, 300);
                 s.prefs.cloud.anonKey = str(p.cloud.anonKey, 500);
             }
+            if (p.analytics && typeof p.analytics === 'object') {
+                s.prefs.analytics.range = ANALYTICS_RANGES.indexOf(Number(p.analytics.range)) >= 0
+                    ? Number(p.analytics.range) : 30;
+            }
+            if (p.planner && typeof p.planner === 'object') {
+                s.prefs.planner.suggestions = p.planner.suggestions !== false;
+            }
         }
 
-        // Migration hook cho các phiên bản sau.
+        // Migration hook: 1 → 2 chỉ bổ sung trường (review.status, plans, goals,
+        // revisionSessions). Không đổi khoá, không xoá bản ghi, chạy lại nhiều lần vẫn an toàn.
         var from = num(raw.v, 0);
         if (from < SCHEMA) s.updatedAt = now();
+        /* Ghi nhận phiên bản gốc MỘT lần; các lần sanitize sau không ghi đè. */
+        var prevMigrated = raw.meta && isFinite(Number(raw.meta.migratedFrom))
+            ? Number(raw.meta.migratedFrom) : null;
+        s.meta = {
+            version: '3.0.0', schema: SCHEMA,
+            migratedFrom: prevMigrated != null ? prevMigrated : (from || SCHEMA)
+        };
         return s;
     }
 
@@ -337,9 +465,16 @@
         s.updatedAt = now();
         s.v = SCHEMA;
         cap(s);
+        /*
+         * Chuẩn hoá trước khi GHI: dữ liệu đến từ hợp nhất đồng bộ, nhập tệp
+         * hay bất kỳ nguồn ngoài đều phải đi qua sanitize trước khi vào
+         * localStorage. Nhờ vậy dữ liệu hỏng không thể tồn tại trên đĩa.
+         */
+        cache = sanitize(s);
+        cache.updatedAt = s.updatedAt;
         try {
-            global.localStorage.setItem(KEY, JSON.stringify(s));
-            emit('save', s);
+            global.localStorage.setItem(KEY, JSON.stringify(cache));
+            emit('save', cache);
             return true;
         } catch (e) {
             console.warn('[BK] Không lưu được dữ liệu học tập', e);
@@ -353,6 +488,11 @@
         if (s.notes.length > LIMITS.notes) s.notes = s.notes.slice(-LIMITS.notes);
         if (s.bookmarks.length > LIMITS.bookmarks) s.bookmarks = s.bookmarks.slice(-LIMITS.bookmarks);
         if (s.review.length > LIMITS.review) s.review = s.review.slice(-LIMITS.review);
+        if (s.plans.length > LIMITS.plans) s.plans = s.plans.slice(-LIMITS.plans);
+        if (s.goals.length > LIMITS.goals) s.goals = s.goals.slice(-LIMITS.goals);
+        if (s.revisionSessions.length > LIMITS.revisionSessions) {
+            s.revisionSessions = s.revisionSessions.slice(-LIMITS.revisionSessions);
+        }
     }
     function update(fn) {
         var s = load();
@@ -377,11 +517,44 @@
         return hash(subject + '|' + (questionId || '') + '|' + String(question).slice(0, 300));
     }
 
-    function nextInterval(prefs, performance, current) {
+    var DAY_MS = 24 * 3600 * 1000;
+
+    /**
+     * Lịch ôn tập — spaced repetition có giới hạn, tính từ dữ liệu thật:
+     * số lần đúng liên tiếp (streak), độ khó tích luỹ (ease) và khoảng cách trước đó.
+     * Một câu trả lời đúng duy nhất KHÔNG bao giờ được coi là thành thạo.
+     */
+    function scheduleMistake(item, perf, prefs, ts) {
         var sp = prefs.spaced;
-        var base = performance === 'again' ? sp.again : performance === 'hard' ? sp.hard : performance === 'easy' ? sp.easy : sp.good;
-        var grow = current ? Math.min(sp.max, current * 2) : base;
-        return Math.max(sp.again, Math.min(sp.max, performance === 'again' ? sp.again : grow));
+        item.ease = clamp(item.ease || 2.5, 1.3, 3);
+        item.intervalDays = Math.max(0, num(item.intervalDays, 0));
+        var next;
+        if (perf === 'again') {
+            item.streak = 0;
+            item.ease = Math.max(1.3, item.ease - 0.2);
+            next = sp.again;
+        } else {
+            item.streak = num(item.streak, 0) + 1;
+            if (perf === 'hard') item.ease = Math.max(1.3, item.ease - 0.15);
+            else if (perf === 'easy') item.ease = Math.min(3, item.ease + 0.15);
+            var base = perf === 'hard' ? sp.hard : perf === 'easy' ? sp.easy : sp.good;
+            next = item.intervalDays ? Math.round(item.intervalDays * item.ease) : base;
+            if (perf === 'hard' && item.intervalDays) next = Math.max(sp.hard, Math.round(item.intervalDays * 1.3));
+        }
+        next = Math.max(sp.again, Math.min(sp.max, next));
+        item.intervalDays = next;
+        item.nextReview = ts + next * DAY_MS;
+        if (perf === 'again') {
+            item.mastered = false;
+            item.status = item.wrong >= 2 ? 'needs_attention' : 'reviewing';
+        } else if (item.streak >= 2 && next >= 21) {
+            item.mastered = true;
+            item.status = 'mastered';
+        } else {
+            item.mastered = false;
+            item.status = 'reviewing';
+        }
+        return next;
     }
 
     /**
@@ -416,38 +589,51 @@
             if (!payload.correct) {
                 if (!item) {
                     item = {
-                        id: uid('rv'), key: key, subject: subject, question: question,
+                        id: uid('rv'), key: key, questionId: qid,
+                        subject: subject, question: question,
                         options: arr(payload.options).slice(0, 8), answer: payload.answer == null ? null : payload.answer,
+                        chosen: payload.chosen == null ? null : payload.chosen,
                         explanation: str(payload.explanation, 4000), topic: str(payload.topic, 200),
                         difficulty: str(payload.difficulty, 32), source: str(payload.source, 300),
-                        wrong: 0, right: 0, mastered: false, createdAt: ts, lastSeen: ts,
-                        nextReview: ts + 24 * 3600 * 1000, history: []
+                        wrong: 0, right: 0, streak: 0, ease: 2.5, intervalDays: 0,
+                        status: 'new', errorType: 'unclassified', note: '', pinned: false,
+                        mastered: false, createdAt: ts, updatedAt: ts, lastSeen: ts,
+                        nextReview: ts + DAY_MS, history: []
                     };
                     s.review.push(item);
                 }
                 item.wrong += 1;
                 item.lastSeen = ts;
-                item.mastered = false;
-                item.history.push({ ts: ts, correct: false });
-                var days = nextInterval(s.prefs, 'again', 0);
-                item.nextReview = ts + days * 24 * 3600 * 1000;
+                item.updatedAt = ts;
+                item.questionId = item.questionId || qid;
+                if (payload.chosen != null) item.chosen = payload.chosen;
+                if (!item.options.length && arr(payload.options).length) item.options = arr(payload.options).slice(0, 8);
+                if (!item.explanation) item.explanation = str(payload.explanation, 4000);
+                if (!item.answer && payload.answer != null) item.answer = payload.answer;
+                item.history.push({
+                    ts: ts, correct: false, perf: 'again',
+                    sessionId: str(payload.sessionId, 64)
+                });
+                /* Ghi sai lần mới: không bao giờ tự kết luận nguyên nhân lỗi. */
+                if (item.status === 'archived' || item.status === 'mastered') item.errorType = item.errorType || 'unclassified';
+                scheduleMistake(item, 'again', s.prefs, ts);
             } else {
                 s.achievements.counters.correct = num(s.achievements.counters.correct, 0) + 1;
                 if (item && !item.options.length && arr(payload.options).length) {
                     item.options = arr(payload.options).slice(0, 8);
                     if (!item.explanation) item.explanation = str(payload.explanation, 4000);
                 }
-                if (item && !item.mastered) {
+                if (item) {
                     item.right += 1;
                     item.lastSeen = ts;
-                    item.history.push({ ts: ts, correct: true });
-                    if (item.right >= 2) {
-                        item.mastered = true;
-                        item.nextReview = ts + s.prefs.spaced.max * 24 * 3600 * 1000;
-                    } else {
-                        var d = nextInterval(s.prefs, 'good', item.wrong > 0 ? 1 : 0);
-                        item.nextReview = ts + d * 24 * 3600 * 1000;
-                    }
+                    item.updatedAt = ts;
+                    item.chosen = payload.chosen == null ? item.chosen : payload.chosen;
+                    var perf = payload.perf || (item.right >= 2 ? 'good' : 'good');
+                    item.history.push({
+                        ts: ts, correct: true, perf: perf,
+                        sessionId: str(payload.sessionId, 64)
+                    });
+                    scheduleMistake(item, perf, s.prefs, ts);
                 }
             }
 
@@ -474,17 +660,20 @@
             if (!item) return null;
             var ts = now();
             item.lastSeen = ts;
+            item.updatedAt = ts;
+            item.questionId = item.questionId || '';
             if (performance === 'mastered') {
                 item.mastered = true;
+                item.status = 'mastered';
                 item.right += 1;
-                item.nextReview = ts + s.prefs.spaced.max * 24 * 3600 * 1000;
+                item.streak = Math.max(2, num(item.streak, 0));
+                item.intervalDays = s.prefs.spaced.max;
+                item.nextReview = ts + s.prefs.spaced.max * DAY_MS;
             } else {
-                var cur = item.wrong > 0 ? Math.max(1, Math.round((item.nextReview - item.lastSeen) / 86400000)) : 0;
-                var d = nextInterval(s.prefs, performance || 'good', cur);
-                item.nextReview = ts + d * 24 * 3600 * 1000;
                 if (performance === 'again') item.wrong += 1;
+                scheduleMistake(item, performance || 'good', s.prefs, ts);
             }
-            item.history.push({ ts: ts, correct: performance !== 'again' });
+            item.history.push({ ts: ts, correct: performance !== 'again', perf: performance || 'good' });
             pushHistory(s, {
                 kind: 'review', title: item.question.slice(0, 120), url: item.source || '',
                 subject: item.subject, meta: performance || 'good'
@@ -671,7 +860,9 @@
     }
     function lessonUrls(s) { return uniq(lessonHistory(s).map(function (h) { return h.url; })); }
     function uniq(a) { return a.filter(function (v, i) { return a.indexOf(v) === i; }); }
-    function masteredCount(s) { return s.review.filter(function (r) { return r.mastered; }).length; }
+    function masteredCount(s) {
+        return s.review.filter(function (r) { return r.status === 'mastered' || r.mastered; }).length;
+    }
 
     var ACH_GROUPS = ['Học tập', 'Luyện tập', 'Sổ tay', 'Studio', 'Khám phá'];
     function ach(id, name, icon, desc, group, goal, value) {
@@ -1031,7 +1222,7 @@
             if (sc) {
                 seenQ[r.question] = 1;
                 results.push({
-                    type: 'review', score: sc + 1, title: r.question, category: 'Cần ôn lại',
+                    type: 'review', score: sc + 1, title: r.question, category: 'Sổ tay câu sai',
                     subject: r.subject, meta: r.topic || subjectName(r.subject), url: r.source || ''
                 });
             }
@@ -1180,7 +1371,12 @@
                 var s = load();
                 return c.from(cloud.TABLE).upsert({
                     user_id: cloud.user.id,
-                    payload: { practice: s.practice, review: s.review, notes: s.notes, bookmarks: s.bookmarks, history: s.history, achievements: s.achievements, prefs: s.prefs },
+                    payload: {
+                        practice: s.practice, review: s.review, notes: s.notes,
+                        bookmarks: s.bookmarks, history: s.history,
+                        plans: s.plans, goals: s.goals, revisionSessions: s.revisionSessions,
+                        achievements: s.achievements, prefs: s.prefs
+                    },
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'user_id' });
             });
@@ -1215,6 +1411,9 @@
                 s.notes = mergeById(s.notes, remote.notes);
                 s.bookmarks = mergeById(s.bookmarks, remote.bookmarks);
                 s.history = mergeById(s.history, remote.history).slice(-LIMITS.history);
+                s.plans = mergeById(s.plans, remote.plans);
+                s.goals = mergeById(s.goals, remote.goals);
+                s.revisionSessions = mergeById(s.revisionSessions, remote.revisionSessions);
                 return { merged: true };
             });
         }
@@ -1234,14 +1433,20 @@
             data.data = {
                 practice: s.practice, review: s.review, notes: s.notes,
                 bookmarks: s.bookmarks, history: s.history,
+                plans: s.plans, goals: s.goals, revisionSessions: s.revisionSessions,
                 achievements: s.achievements, prefs: s.prefs
             };
+        } else if (scope === 'mistakes') {
+            data.data = { review: s.review };
         } else if (scope === 'notes') {
             data.data = { notes: s.notes };
         } else if (scope === 'bookmarks') {
             data.data = { bookmarks: s.bookmarks };
         } else if (scope === 'stats') {
-            data.data = { practice: s.practice, review: s.review, achievements: s.achievements };
+            data.data = {
+                practice: s.practice, review: s.review, achievements: s.achievements,
+                plans: s.plans, goals: s.goals, revisionSessions: s.revisionSessions
+            };
         }
         return data;
     }
@@ -1257,7 +1462,7 @@
         var d = raw.data;
         if (!d || typeof d !== 'object') issues.push('Thiếu khối "data".');
         var counts = {};
-        ['practice', 'review', 'notes', 'bookmarks', 'history'].forEach(function (k) {
+        ['practice', 'review', 'notes', 'bookmarks', 'history', 'plans', 'goals', 'revisionSessions'].forEach(function (k) {
             if (d && d[k] != null) {
                 if (!Array.isArray(d[k])) issues.push('"' + k + '" phải là mảng.');
                 else counts[k] = d[k].length;
@@ -1290,6 +1495,10 @@
             s.practice = mergeArrays(s.practice, d.practice, 'id').slice(-LIMITS.practice);
             s.review = mergeArrays(s.review, d.review, 'id').slice(-LIMITS.review);
             s.history = mergeArrays(s.history, d.history, 'id').slice(-LIMITS.history);
+            s.plans = mergeArrays(s.plans, d.plans, 'id').slice(-LIMITS.plans);
+            s.goals = mergeArrays(s.goals, d.goals, 'id').slice(-LIMITS.goals);
+            s.revisionSessions = mergeArrays(s.revisionSessions, d.revisionSessions, 'id')
+                .slice(-LIMITS.revisionSessions);
             if (d.achievements && d.achievements.unlocked) {
                 Object.keys(d.achievements.unlocked).forEach(function (k) {
                     if (!s.achievements.unlocked[k]) s.achievements.unlocked[k] = d.achievements.unlocked[k];
@@ -1302,9 +1511,636 @@
         return { ok: true, report: check };
     }
 
+    /* =====================================================================
+       LEARNING INTELLIGENCE (8.2.0)
+       Một nguồn dữ liệu duy nhất: s.practice (hoạt động gốc),
+       s.review (Sổ tay câu sai), s.plans, s.goals, s.revisionSessions.
+       Mọi chỉ số phân tích đều TÍNH LẠI từ dữ liệu gốc, không lưu bản sao.
+       ================================================================== */
+
+    /* ------------------------- Sổ tay câu sai -------------------------- */
+    function findMistake(id) {
+        var list = load().review;
+        for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+        return null;
+    }
+
+    function mistakeStats() {
+        var s = load();
+        var out = {
+            total: 0, active: 0, new: 0, reviewing: 0, needs_attention: 0,
+            mastered: 0, archived: 0, due: 0, unclassified: 0,
+            byErrorType: {}, bySubject: {}
+        };
+        var ts = now();
+        s.review.forEach(function (r) {
+            out.total++;
+            out[r.status] = (out[r.status] || 0) + 1;
+            if (r.status !== 'archived' && r.status !== 'mastered') out.active++;
+            if (r.nextReview <= ts && r.status !== 'archived' && r.status !== 'mastered') out.due++;
+            out.byErrorType[r.errorType] = (out.byErrorType[r.errorType] || 0) + 1;
+            out.bySubject[r.subject || 'khac'] = (out.bySubject[r.subject || 'khac'] || 0) + 1;
+            if (r.errorType === 'unclassified') out.unclassified++;
+        });
+        return out;
+    }
+
+    /** Độ ưu tiên ôn: ghim > cần chú ý > quá hạn > số lần sai. */
+    function mistakePriority(r) {
+        var overdue = r.status === 'archived' || r.status === 'mastered'
+            ? 0
+            : Math.max(0, Math.floor((now() - r.nextReview) / DAY_MS));
+        return (r.pinned ? 1000 : 0) +
+            (r.status === 'needs_attention' ? 300 : 0) +
+            Math.min(200, overdue * 4) + Math.min(150, r.wrong * 10);
+    }
+
+    function mistakeList(opts) {
+        opts = opts || {};
+        var q = norm(opts.query || '');
+        var list = load().review.filter(function (r) {
+            if (opts.status && opts.status !== 'all') {
+                if (opts.status === 'active') { if (r.status === 'archived' || r.status === 'mastered') return false; }
+                else if (r.status !== opts.status) return false;
+            }
+            if (opts.subject && r.subject !== opts.subject) return false;
+            if (opts.topic && r.topic !== opts.topic) return false;
+            if (opts.errorType && r.errorType !== opts.errorType) return false;
+            if (opts.dueOnly && !(r.nextReview <= now() && r.status !== 'mastered' && r.status !== 'archived')) return false;
+            if (q && norm([r.question, r.topic, r.note, r.explanation].join(' ')).indexOf(q) < 0) return false;
+            return true;
+        });
+        var sort = opts.sort || 'priority';
+        list.sort(function (a, b) {
+            if (sort === 'recent') return b.lastSeen - a.lastSeen;
+            if (sort === 'wrong') return b.wrong - a.wrong;
+            if (sort === 'due') return a.nextReview - b.nextReview;
+            return mistakePriority(b) - mistakePriority(a) || b.lastSeen - a.lastSeen;
+        });
+        if (opts.limit) list = list.slice(0, opts.limit);
+        return list;
+    }
+
+    function updateMistake(id, patch) {
+        patch = patch || {};
+        var saved = update(function (s) {
+            var item = null;
+            for (var i = 0; i < s.review.length; i++) if (s.review[i].id === id) { item = s.review[i]; break; }
+            if (!item) return null;
+            if (patch.note != null) item.note = str(patch.note, 4000);
+            if (patch.errorType != null) item.errorType = ERROR_TYPES[patch.errorType] ? patch.errorType : 'unclassified';
+            if (patch.pinned != null) item.pinned = !!patch.pinned;
+            if (patch.status != null && STATUSES.indexOf(patch.status) >= 0) {
+                item.status = patch.status;
+                item.mastered = patch.status === 'mastered';
+                if (patch.status === 'mastered') {
+                    item.intervalDays = s.prefs.spaced.max;
+                    item.nextReview = now() + s.prefs.spaced.max * DAY_MS;
+                } else if (patch.status === 'new') {
+                    item.nextReview = now();
+                    item.streak = 0;
+                    item.intervalDays = 0;
+                } else if (patch.status === 'reviewing' || patch.status === 'needs_attention') {
+                    item.nextReview = now();
+                }
+            }
+            item.updatedAt = now();
+            return item;
+        });
+        if (saved) emit('mistakes', saved);
+        return saved;
+    }
+
+    function removeMistake(id) {
+        return update(function (s) {
+            s.review = s.review.filter(function (r) { return r.id !== id; });
+            return true;
+        });
+    }
+
+    function mistakeTopics(subject) {
+        var seen = {}, out = [];
+        load().review.forEach(function (r) {
+            if (subject && r.subject !== subject) return;
+            if (!r.topic || seen[r.topic]) return;
+            seen[r.topic] = 1; out.push(r.topic);
+        });
+        return out.sort();
+    }
+
+    /* --------------------------- Ôn tập -------------------------------- */
+    function dueMistakes(ts) {
+        ts = ts || now();
+        return load().review.filter(function (r) {
+            return r.status !== 'archived' && r.status !== 'mastered' && r.nextReview <= ts;
+        });
+    }
+
+    function revisionQueue(scope, opts) {
+        opts = opts || {};
+        var ts = now();
+        var list;
+        if (scope === 'overdue') {
+            list = load().review.filter(function (r) {
+                return r.status !== 'archived' && r.status !== 'mastered' && r.nextReview < ts - DAY_MS;
+            });
+        } else if (scope === 'upcoming') {
+            list = load().review.filter(function (r) {
+                return r.status !== 'archived' && r.status !== 'mastered' && r.nextReview > ts;
+            }).sort(function (a, b) { return a.nextReview - b.nextReview; });
+        } else if (scope === 'recent') {
+            list = load().review.filter(function (r) { return r.status !== 'archived'; })
+                .sort(function (a, b) { return b.lastSeen - a.lastSeen; }).slice(0, opts.limit || 30);
+        } else if (scope === 'weak') {
+            var weak = {};
+            weakTopics(40).forEach(function (t) { weak[t.topic] = true; });
+            list = load().review.filter(function (r) {
+                return r.status !== 'archived' && r.status !== 'mastered' && weak[r.topic];
+            });
+        } else {
+            list = dueMistakes(ts);
+        }
+        if (opts.subject) list = list.filter(function (r) { return r.subject === opts.subject; });
+        if (opts.topic) list = list.filter(function (r) { return r.topic === opts.topic; });
+        if (scope !== 'upcoming' && scope !== 'recent') {
+            list = list.sort(function (a, b) { return mistakePriority(b) - mistakePriority(a); });
+        }
+        return list;
+    }
+
+    function startRevisionSession(scope, keys) {
+        var list = Array.isArray(keys) && keys.length
+            ? load().review.filter(function (r) { return keys.indexOf(r.key) >= 0; })
+            : revisionQueue(scope || 'due');
+        if (!list.length) return null;
+        var session = {
+            id: uid('rs'), scope: scope || 'due', startedAt: now(), endedAt: null,
+            items: list.slice(0, 40).map(function (r) { return { key: r.key, correct: false }; })
+        };
+        update(function (s) { s.revisionSessions.push(session); return session; });
+        return session;
+    }
+
+    /** Ghi câu trả lời trong Revision Session — không sửa kết quả quiz gốc. */
+    function answerRevisionSession(sessionId, key, correct, perf) {
+        var res = update(function (s) {
+            var session = null;
+            for (var i = 0; i < s.revisionSessions.length; i++) {
+                if (s.revisionSessions[i].id === sessionId) { session = s.revisionSessions[i]; break; }
+            }
+            if (!session) return null;
+            var item = null;
+            for (var j = 0; j < session.items.length; j++) {
+                if (session.items[j].key === key) { item = session.items[j]; break; }
+            }
+            if (!item) session.items.push({ key: key, correct: !!correct });
+            else item.correct = !!correct;
+            return session;
+        });
+        if (correct) {
+            var item = load().review.filter(function (r) { return r.key === key; })[0];
+            if (item) {
+                var saved = update(function (s) {
+                    var m = s.review.filter(function (r) { return r.key === key; })[0];
+                    if (!m) return null;
+                    m.right += 1;
+                    m.lastSeen = now();
+                    m.updatedAt = now();
+                    m.history.push({ ts: now(), correct: true, perf: perf || 'good', sessionId: sessionId });
+                    scheduleMistake(m, perf || 'good', s.prefs, now());
+                    return m;
+                });
+                return saved;
+            }
+        } else {
+            var wrong = update(function (s) {
+                var m = s.review.filter(function (r) { return r.key === key; })[0];
+                if (!m) return null;
+                m.wrong += 1;
+                m.lastSeen = now();
+                m.updatedAt = now();
+                m.history.push({ ts: now(), correct: false, perf: 'again', sessionId: sessionId });
+                scheduleMistake(m, 'again', s.prefs, now());
+                return m;
+            });
+            return wrong;
+        }
+        return null;
+    }
+
+    function endRevisionSession(sessionId) {
+        return update(function (s) {
+            var session = null;
+            for (var i = 0; i < s.revisionSessions.length; i++) {
+                if (s.revisionSessions[i].id === sessionId) { session = s.revisionSessions[i]; break; }
+            }
+            if (!session) return null;
+            session.endedAt = now();
+            var done = session.items.filter(function (i) { return i.correct; }).length;
+            pushHistory(s, {
+                kind: 'review', title: 'Phiên ôn tập · ' + session.items.length + ' câu',
+                url: '', subject: '', meta: done + '/' + session.items.length + ' đúng'
+            });
+            return { session: session, total: session.items.length, correct: done };
+        });
+    }
+
+    /* ------------------------- Kế hoạch học tập ------------------------ */
+    function planList(opts) {
+        opts = opts || {};
+        var today = dayKey();
+        var list = load().plans.slice();
+        if (opts.subject) list = list.filter(function (p) { return p.subject === opts.subject; });
+        if (opts.status && opts.status !== 'all') list = list.filter(function (p) { return p.status === opts.status; });
+        list.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+        if (!opts.groups) return list;
+        return {
+            all: list,
+            today: list.filter(function (p) { return p.date === today && p.status === 'planned'; }),
+            overdue: list.filter(function (p) { return p.date < today && p.status === 'planned'; }),
+            upcoming: list.filter(function (p) { return p.date > today && p.status === 'planned'; }),
+            done: list.filter(function (p) { return p.status === 'done'; }),
+            postponed: list.filter(function (p) { return p.status === 'postponed'; })
+        };
+    }
+
+    function planAdd(p) {
+        p = p || {};
+        var saved = update(function (s) {
+            var entry = {
+                id: uid('pl'), title: str(p.title, 200) || 'Nhiệm vụ học tập',
+                subject: str(p.subject, 24) || '', lesson: str(p.lesson, 1000),
+                topic: str(p.topic, 200),
+                date: /^\d{4}-\d{2}-\d{2}$/.test(str(p.date, 10)) ? str(p.date, 10) : dayKey(),
+                durationMin: clamp(p.durationMin, 5, 240),
+                status: 'planned', notes: str(p.notes, 2000),
+                goalId: str(p.goalId, 64),
+                source: p.source === 'suggestion' ? 'suggestion' : 'user',
+                createdAt: now(), updatedAt: now(), completedAt: null
+            };
+            s.plans.push(entry);
+            return entry;
+        });
+        checkAchievements();
+        emit('plans', saved);
+        return saved;
+    }
+
+    function planUpdate(id, patch) {
+        patch = patch || {};
+        var saved = update(function (s) {
+            for (var i = 0; i < s.plans.length; i++) {
+                var p = s.plans[i];
+                if (p.id !== id) continue;
+                if (patch.title != null) p.title = str(patch.title, 200) || p.title;
+                if (patch.subject != null) p.subject = str(patch.subject, 24);
+                if (patch.topic != null) p.topic = str(patch.topic, 200);
+                if (patch.notes != null) p.notes = str(patch.notes, 2000);
+                if (patch.date != null && /^\d{4}-\d{2}-\d{2}$/.test(str(patch.date, 10))) p.date = str(patch.date, 10);
+                if (patch.durationMin != null) p.durationMin = clamp(patch.durationMin, 5, 240);
+                if (patch.status != null && PLAN_STATES.indexOf(patch.status) >= 0) {
+                    p.status = patch.status;
+                    p.completedAt = patch.status === 'done' ? now() : null;
+                }
+                p.updatedAt = now();
+                return p;
+            }
+            return null;
+        });
+        if (saved) emit('plans', saved);
+        return saved;
+    }
+
+    function planRemove(id) {
+        return update(function (s) {
+            s.plans = s.plans.filter(function (p) { return p.id !== id; });
+            return true;
+        });
+    }
+
+    /** Gợi ý nhiệm vụ — chỉ ĐỀ XUẤT, không tự thêm vào lịch người học. */
+    function planSuggestions(limit) {
+        var s = load();
+        if (s.prefs.planner && s.prefs.planner.suggestions === false) return [];
+        var out = []
+        var today = dayKey();
+        var due = revisionQueue('due');
+        if (due.length) {
+            out.push({
+                kind: 'revision', title: 'Ôn ' + due.length + ' câu đã đến hạn',
+                subject: due[0].subject, date: today, durationMin: Math.min(60, 5 + due.length * 2),
+                reason: due.length + ' câu trong Sổ tay câu sai đã đến lịch ôn.'
+            });
+        }
+        weakTopics(3).forEach(function (t) {
+            out.push({
+                kind: 'weak-topic', title: 'Luyện lại chủ đề “' + t.topic + '”',
+                subject: t.subject, date: today, durationMin: 20,
+                reason: 'Độ chính xác ' + t.accuracy + '% trên ' + t.total + ' câu.'
+            });
+        });
+        var overduePlans = planList({ groups: true }).overdue;
+        if (overduePlans.length) {
+            out.push({
+                kind: 'overdue', title: 'Sắp xếp lại ' + overduePlans.length + ' nhiệm vụ quá hạn',
+                subject: '', date: today, durationMin: 10,
+                reason: 'Các nhiệm vụ này đã qua ngày dự kiến nhưng chưa hoàn thành.'
+            });
+        }
+        return out.slice(0, limit || 4);
+    }
+
+    /* ------------------------- Mục tiêu học tập ------------------------ */
+    function goalCurrent(g) {
+        var s = load();
+        var since = g.createdAt;
+        if (g.metric === 'activeDays') {
+            var days = {};
+            s.practice.forEach(function (p) { if (p.ts >= since) days[dayKey(p.ts)] = 1; });
+            s.history.forEach(function (h) { if (h.ts >= since) days[dayKey(h.ts)] = 1; });
+            return Object.keys(days).length;
+        }
+        if (g.metric === 'lessons') {
+            var urls = {};
+            s.history.forEach(function (h) {
+                if (h.kind !== 'lesson' || h.ts < since || !h.url) return;
+                if (g.subject && h.subject !== g.subject) return;
+                urls[h.url] = 1;
+            });
+            return Object.keys(urls).length;
+        }
+        if (g.metric === 'mastered') {
+            return s.review.filter(function (r) {
+                return r.status === 'mastered' && r.updatedAt >= since && (!g.subject || r.subject === g.subject);
+            }).length;
+        }
+        return s.practice.filter(function (p) {
+            return p.ts >= since && (!g.subject || p.subject === g.subject);
+        }).length;
+    }
+
+    function goalItems() {
+        return load().goals.map(function (g) {
+            var current = goalCurrent(g);
+            return {
+                goal: g, current: current, target: g.target,
+                pct: Math.max(0, Math.min(100, Math.round((current / g.target) * 100))),
+                reached: current >= g.target,
+                overdue: !!(g.deadline && g.deadline < dayKey() && g.status === 'active' && current < g.target)
+            };
+        });
+    }
+
+    function goalAdd(g) {
+        g = g || {};
+        var saved = update(function (s) {
+            var entry = {
+                id: uid('gl'), title: str(g.title, 200) || 'Mục tiêu học tập',
+                subject: str(g.subject, 24),
+                metric: GOAL_METRICS[g.metric] ? g.metric : 'questions',
+                target: clamp(g.target, 1, 100000),
+                deadline: /^\d{4}-\d{2}-\d{2}$/.test(str(g.deadline, 10)) ? str(g.deadline, 10) : '',
+                status: 'active', createdAt: now(), updatedAt: now(), completedAt: null
+            };
+            s.goals.push(entry);
+            return entry;
+        });
+        emit('goals', saved);
+        return saved;
+    }
+
+    function goalUpdate(id, patch) {
+        patch = patch || {};
+        var saved = update(function (s) {
+            for (var i = 0; i < s.goals.length; i++) {
+                var g = s.goals[i];
+                if (g.id !== id) continue;
+                if (patch.title != null) g.title = str(patch.title, 200) || g.title;
+                if (patch.target != null) g.target = clamp(patch.target, 1, 100000);
+                if (patch.deadline != null) g.deadline = /^\d{4}-\d{2}-\d{2}$/.test(str(patch.deadline, 10)) ? str(patch.deadline, 10) : '';
+                if (patch.subject != null) g.subject = str(patch.subject, 24);
+                if (patch.status != null && ['active', 'done', 'archived'].indexOf(patch.status) >= 0) {
+                    g.status = patch.status;
+                    g.completedAt = patch.status === 'done' ? now() : null;
+                }
+                g.updatedAt = now();
+                return g;
+            }
+            return null;
+        });
+        if (saved) emit('goals', saved);
+        return saved;
+    }
+
+    function goalRemove(id) {
+        return update(function (s) { s.goals = s.goals.filter(function (g) { return g.id !== id; }); return true; });
+    }
+
+    /* --------------------------- Phân tích ----------------------------- */
+    function rangeStart(days) {
+        days = Number(days) || 0;
+        if (!days) return 0;
+        var d = new Date(); d.setHours(0, 0, 0, 0);
+        return d.getTime() - (days - 1) * DAY_MS;
+    }
+
+    /**
+     * Chống "spam câu hỏi": chỉ tính lần trả lời ĐẦU TIÊN của mỗi câu trong một ngày.
+     * Nền tảng cho độ chính xác và Learning Score.
+     */
+    function effectivePractice(days) {
+        var since = rangeStart(days);
+        var seen = {};
+        var out = [];
+        load().practice.forEach(function (p) {
+            if (p.ts < since) return;
+            var k = dayKey(p.ts) + '|' + (p.questionId || hash(p.question));
+            if (seen[k]) return;
+            seen[k] = 1; out.push(p);
+        });
+        return out;
+    }
+
+    function analyticsSummary(days) {
+        var s = load();
+        var list = effectivePractice(days);
+        var correct = list.filter(function (p) { return p.correct; }).length;
+        var total = list.length;
+        var daysSet = {};
+        list.forEach(function (p) { daysSet[dayKey(p.ts)] = 1; });
+        var stats = mistakeStats();
+        var sessions = s.revisionSessions.filter(function (x) { return x.endedAt && x.startedAt >= rangeStart(days); });
+        var plans = s.plans.filter(function (p) { return p.createdAt >= rangeStart(days); });
+        return {
+            total: total, correct: correct, wrong: total - correct,
+            accuracy: total ? Math.round((correct / total) * 100) : 0,
+            activeDays: Object.keys(daysSet).length,
+            rawAttempts: s.practice.filter(function (p) { return p.ts >= rangeStart(days); }).length,
+            lessons: uniq(s.history.filter(function (h) {
+                return h.kind === 'lesson' && h.url && h.ts >= rangeStart(days);
+            }).map(function (h) { return h.url; })).length,
+            mistakes: stats.total, due: stats.due, mastered: stats.mastered,
+            reviewSessions: sessions.length,
+            reviewAnswers: sessions.reduce(function (a, x) { return a + x.items.length; }, 0),
+            plans: plans.length,
+            plansDone: plans.filter(function (p) { return p.status === 'done'; }).length,
+            goals: s.goals.filter(function (g) { return g.status === 'active'; }).length
+        };
+    }
+
+    function analyticsSeries(days) {
+        days = Number(days) || 30;
+        var out = [];
+        var last = todayKey();
+        var count = days ? days : 1;
+        if (!days) {
+            var first = load().practice[0];
+            var start = first ? dayKey(first.ts) : last;
+            count = Math.max(1, Math.min(365, Math.round((keyToUTC(last) - keyToUTC(start)) / DAY_MS) + 1));
+        }
+        var list = effectivePractice(days);
+        var buckets = {};
+        list.forEach(function (p) {
+            var k = dayKey(p.ts);
+            var b = buckets[k] = buckets[k] || { total: 0, correct: 0 };
+            b.total++; if (p.correct) b.correct++;
+        });
+        for (var i = count - 1; i >= 0; i--) {
+            var key = keyAdd(last, -i);
+            var parts = key.split('-');
+            var b = buckets[key] || { total: 0, correct: 0 };
+            out.push({
+                key: key, label: Number(parts[2]) + '/' + Number(parts[1]),
+                total: b.total, correct: b.correct,
+                accuracy: b.total ? Math.round((b.correct / b.total) * 100) : null
+            });
+        }
+        return out;
+    }
+
+    function subjectPerformance(days) {
+        var list = effectivePractice(days);
+        var map = {};
+        var s = load();
+        list.forEach(function (p) {
+            var id = p.subject || 'khac';
+            var m = map[id] = map[id] || { id: id, name: subjectName(id), total: 0, correct: 0, lastAt: 0 };
+            m.total++; if (p.correct) m.correct++;
+            if (p.ts > m.lastAt) m.lastAt = p.ts;
+        });
+        Object.keys(map).forEach(function (id) {
+            var m = map[id];
+            m.accuracy = m.total ? Math.round((m.correct / m.total) * 100) : 0;
+            m.mistakes = s.review.filter(function (r) { return r.subject === id; }).length;
+            m.mastered = s.review.filter(function (r) { return r.subject === id && r.status === 'mastered'; }).length;
+            m.lessons = uniq(s.history.filter(function (h) {
+                return h.kind === 'lesson' && h.subject === id && h.url;
+            }).map(function (h) { return h.url; })).length;
+            m.plans = s.plans.filter(function (p) { return p.subject === id; }).length;
+        });
+        return Object.keys(map).map(function (k) { return map[k]; })
+            .sort(function (a, b) { return b.total - a.total; });
+    }
+
+    /** Chủ đề yếu — cần đủ dữ liệu (>= 4 câu) mới kết luận. */
+    function weakTopics(limit) {
+        var s = load();
+        var map = {};
+        s.practice.forEach(function (p) {
+            var key = (p.topic || '') + '|' + (p.subject || 'khac');
+            if (!p.topic) return;
+            var m = map[key] = map[key] || {
+                topic: p.topic, subject: p.subject || 'khac', total: 0, correct: 0,
+                lastAt: 0, mistakes: 0
+            };
+            m.total++; if (p.correct) m.correct++;
+            if (p.ts > m.lastAt) m.lastAt = p.ts;
+        });
+        s.review.forEach(function (r) {
+            if (!r.topic) return;
+            var m = map[r.topic + '|' + (r.subject || 'khac')];
+            if (m) m.mistakes++;
+        });
+        var out = Object.keys(map).map(function (k) { return map[k]; }).filter(function (m) {
+            return m.total >= 4;
+        }).map(function (m) {
+            m.accuracy = Math.round((m.correct / m.total) * 100);
+            m.weak = m.accuracy < 70 || m.mistakes >= 2;
+            return m;
+        }).filter(function (m) { return m.weak; });
+        out.sort(function (a, b) {
+            return (a.accuracy - b.accuracy) || (b.mistakes - a.mistakes);
+        });
+        return out.slice(0, limit || 8);
+    }
+
+    function mistakeDistribution(days) {
+        var since = rangeStart(days);
+        var out = {};
+        Object.keys(ERROR_TYPES).forEach(function (k) { out[k] = 0; });
+        load().review.forEach(function (r) {
+            if (r.lastSeen < since && r.createdAt < since) return;
+            out[r.errorType] = (out[r.errorType] || 0) + 1;
+        });
+        return out;
+    }
+
+    /**
+     * Learning Score (0–100) — chỉ số tổng hợp có giới hạn, tính lại được từ dữ liệu gốc,
+     * chống spam bằng cách chỉ tính lần trả lời đầu tiên của mỗi câu/ngày.
+     * Trọng số: Accuracy 40 · Consistency 20 · Progress 20 · Revision 10 · Planning 10.
+     */
+    function learningScore() {
+        var s = load();
+        var sample = effectivePractice(90);
+        var total = sample.length;
+        var correct = sample.filter(function (p) { return p.correct; }).length;
+        var accuracy = total ? (correct / total) : 0;
+        var daysSet = {};
+        sample.forEach(function (p) { daysSet[dayKey(p.ts)] = 1; });
+        var activeDays = Object.keys(daysSet).length;
+        var stats = mistakeStats();
+        var masteredRatio = stats.total ? stats.mastered / stats.total : 0;
+        var reviewed = s.review.filter(function (r) {
+            return r.streak > 0 && r.status !== 'archived';
+        }).length;
+        var revisionRatio = stats.total ? Math.min(1, reviewed / stats.total) : 0;
+        var plansPast = s.plans.filter(function (p) {
+            return p.date <= dayKey() && p.status !== 'skipped';
+        });
+        var plansDone = plansPast.filter(function (p) { return p.status === 'done'; }).length;
+
+        var parts = [
+            { key: 'accuracy', label: 'Độ chính xác', weight: 40, ratio: accuracy },
+            { key: 'consistency', label: 'Đều đặn (14 ngày)', weight: 20, ratio: Math.min(1, activeDays / 14) },
+            { key: 'progress', label: 'Tiến bộ câu sai', weight: 20, ratio: masteredRatio },
+            { key: 'revision', label: 'Ôn tập đúng nhịp', weight: 10, ratio: revisionRatio }
+        ];
+        if (plansPast.length) {
+            parts.push({ key: 'planning', label: 'Hoàn thành kế hoạch', weight: 10, ratio: plansDone / plansPast.length });
+        }
+
+        var weightSum = parts.reduce(function (a, p) { return a + p.weight; }, 0);
+        var points = parts.reduce(function (a, p) { return a + p.weight * Math.max(0, Math.min(1, p.ratio)); }, 0);
+        var sufficient = total >= 10;
+        return {
+            sufficient: sufficient,
+            score: sufficient ? Math.round((points / weightSum) * 100) : null,
+            sample: total, activeDays: activeDays,
+            parts: parts.map(function (p) {
+                return {
+                    key: p.key, label: p.label, weight: p.weight,
+                    pct: Math.round(Math.max(0, Math.min(1, p.ratio)) * 100),
+                    points: Math.round(p.weight * Math.max(0, Math.min(1, p.ratio)) * 10) / 10
+                };
+            })
+        };
+    }
+
     BK.util = {
         uid: uid, esc: esc, norm: norm, debounce: debounce, hash: hash,
-        dayKey: dayKey, fmtDate: fmtDate, fmtTime: fmtTime, fmtClock: fmtClock, vnParts: vnParts, clamp: clamp,
+        dayKey: dayKey, todayKey: todayKey, dayKeyOf: dayKeyOf, keyAdd: keyAdd,
+        fmtDate: fmtDate, fmtTime: fmtTime, fmtClock: fmtClock, vnParts: vnParts, clamp: clamp,
         download: download, copy: copy, basePath: basePath, now: now
     };
     BK.subjects = SUBJECTS;
@@ -1322,6 +2158,36 @@
     BK.practice = practice;
     BK.markReview = markReview;
     BK.scheduleReview = scheduleReview;
+
+    /* Learning Intelligence — API dùng chung cho mọi mô-đun giao diện. */
+    BK.constants = {
+        STATUSES: STATUSES, STATUS_LABELS: STATUS_LABELS, ERROR_TYPES: ERROR_TYPES,
+        PLAN_STATES: PLAN_STATES, GOAL_METRICS: GOAL_METRICS,
+        ANALYTICS_RANGES: ANALYTICS_RANGES
+    };
+    BK.mistakes = {
+        list: mistakeList, get: findMistake, update: updateMistake,
+        remove: removeMistake, stats: mistakeStats, topics: mistakeTopics,
+        priority: mistakePriority, SCHEDULE: 'spaced-2'
+    };
+    BK.revision = {
+        due: dueMistakes, queue: revisionQueue,
+        start: startRevisionSession, answer: answerRevisionSession, end: endRevisionSession,
+        sessions: function () { return load().revisionSessions.slice().reverse(); }
+    };
+    BK.planner = {
+        list: planList, add: planAdd, update: planUpdate, remove: planRemove,
+        suggestions: planSuggestions
+    };
+    BK.goals = {
+        items: goalItems, add: goalAdd, update: goalUpdate, remove: goalRemove
+    };
+    BK.analytics = {
+        summary: analyticsSummary, series: analyticsSeries,
+        subjects: subjectPerformance, weakTopics: weakTopics,
+        distribution: mistakeDistribution, learningScore: learningScore,
+        effective: effectivePractice, rangeStart: rangeStart
+    };
     BK.addHistory = addHistory;
     BK.addNote = addNote;
     BK.updateNote = updateNote;

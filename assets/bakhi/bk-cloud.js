@@ -2090,6 +2090,10 @@
         var out = {
             practice: s.practice, review: s.review, notes: s.notes,
             bookmarks: s.bookmarks, history: s.history,
+            /* 8.2.0 — Learning Intelligence dùng chung student_progress,
+               không mở bảng thứ hai cho cùng một dữ liệu. */
+            plans: s.plans || [], goals: s.goals || [],
+            revisionSessions: s.revisionSessions || [],
             achievements: s.achievements, prefs: prefs
         };
         if (signals) out.signals = signals;

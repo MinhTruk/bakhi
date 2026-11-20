@@ -7,7 +7,8 @@ name: Quality Check
 #   - Cú pháp JavaScript + JSON
 #   - Cấu hình Supabase ↔ Edge Function (supabase-config)
 #   - version-audit (đường dẫn, cache busting, phiên bản đồng nhất)
-#   - 11 smoke test DOM (jsdom + typescript)
+#   - 17 smoke test DOM (jsdom + typescript)
+#     11 cổng hồi quy 8.0.0–8.1.1 + 6 cổng Learning Intelligence 8.2.0
 #
 # Bất kỳ bước nào thất bại → workflow Failed, log chỉ rõ bài kiểm tra hỏng.
 
@@ -65,7 +66,7 @@ jobs:
           # Ghim Node 22 LTS + jsdom 31.0.1: jsdom mới nhất đổi hành vi DOM so với các bản
           # trước (smoke test dựng giao diện thật sẽ hỏng), còn jsdom cũ kéo theo phụ thuộc
           # chỉ có ESM nên Node 20 `require()` không nạp được. Bộ đôi này đã chạy xanh
-          # toàn bộ 11 smoke test.
+          # toàn bộ 17 smoke test (11 cũ + 6 Learning Intelligence).
           node-version: '22'
 
       - name: Cài công cụ QA (jsdom, typescript)
@@ -109,7 +110,10 @@ jobs:
           set -euo pipefail
           for t in smoke cloud-smoke shell-smoke dev-smoke badges-smoke \
                    chat-smoke admin-smoke report-smoke founder-smoke \
-                   maintenance-smoke studio-smoke; do
+                   maintenance-smoke studio-smoke \
+                   mistake-notebook-smoke learning-analytics-smoke \
+                   study-planner-smoke revision-engine-smoke \
+                   learning-data-integrity learning-sync-smoke; do
             echo "::group::$t"
             node "tools/qa/$t.js"
             echo "::endgroup::"
@@ -127,7 +131,7 @@ jobs:
             echo "| Cú pháp JS/JSON | \`node --check\`, \`JSON.parse\` |"
             echo "| Cấu hình Supabase | \`tools/qa/supabase-config.js\` |"
             echo "| Phiên bản / cache busting | \`tools/qa/version-audit.js\` |"
-            echo "| Smoke test | 11 tệp trong \`tools/qa/\` |"
+            echo "| Smoke test | 17 tệp trong \`tools/qa/\` |"
             echo ""
             echo "Trạng thái job: **${{ job.status }}**"
           } >> "$GITHUB_STEP_SUMMARY"

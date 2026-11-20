@@ -79,6 +79,11 @@
         return d;
     }
     function pct(n) { return Math.round(n) + '%'; }
+    function dayShift(n) {
+        var d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return BK.util.dayKey(d.getTime() + n * 86400000);
+    }
     function subjectName(id) { return BK.subjectName(id); }
     function subjectColor(id) { return BK.subjectColor(id); }
     function badge(text, kind) {
@@ -114,21 +119,31 @@
        ================================================================== */
     var hub = { modal: null, inline: null, tab: 'overview', root: null, navItems: {} };
     var state = {
-        reviewQuery: '', reviewSubject: '', reviewShowMastered: false, reviewActive: 0,
-        noteQuery: '', noteCategory: '', historyQuery: '', historyKind: '',
+        noteQuery: '', noteCategory: '',
         bookmarkQuery: '', bookmarkType: '',
         achFilter: 'all', achQuery: ''
     };
 
+    /*
+     * 8.2.0 — Trung tâm học tập được tổ chức lại thành 6 khu vực Learning
+     * Intelligence (do bk-learning.js đảm nhận) + nhóm công cụ cá nhân.
+     * Tab "Ôn tập" cũ (trùng logic với Sổ tay câu sai) đã được thay bằng
+     * Sổ tay câu sai + Trung tâm ôn tập; tab "Lịch sử" gộp vào Phân tích.
+     */
     var TABS = [
-        { id: 'overview', label: 'Tổng quan', icon: 'fa-chart-simple' },
-        { id: 'review', label: 'Ôn tập', icon: 'fa-rotate' },
-        { id: 'notes', label: 'Ghi chú', icon: 'fa-pen-nib' },
-        { id: 'bookmarks', label: 'Đánh dấu', icon: 'fa-bookmark' },
-        { id: 'history', label: 'Lịch sử', icon: 'fa-clock-rotate-left' },
-        { id: 'achievements', label: 'Thành tích', icon: 'fa-medal' },
-        { id: 'settings', label: 'Cài đặt', icon: 'fa-gear' }
+        { id: 'overview', label: 'Tổng quan', icon: 'fa-gauge-high', group: 'Học tập' },
+        { id: 'subjects', label: 'Môn học', icon: 'fa-layer-group', group: '' },
+        { id: 'mistakes', label: 'Sổ tay câu sai', icon: 'fa-book-skull', group: '' },
+        { id: 'analytics', label: 'Phân tích', icon: 'fa-chart-line', group: '' },
+        { id: 'planner', label: 'Kế hoạch', icon: 'fa-calendar-days', group: '' },
+        { id: 'revision', label: 'Ôn tập', icon: 'fa-rotate', group: '' },
+        { id: 'goals', label: 'Mục tiêu', icon: 'fa-bullseye', group: '' },
+        { id: 'notes', label: 'Ghi chú', icon: 'fa-pen-nib', group: 'Cá nhân' },
+        { id: 'bookmarks', label: 'Đánh dấu', icon: 'fa-bookmark', group: '' },
+        { id: 'achievements', label: 'Thành tích', icon: 'fa-medal', group: '' },
+        { id: 'settings', label: 'Cài đặt', icon: 'fa-gear', group: '' }
     ];
+    var TAB_ALIASES = { review: 'mistakes', history: 'analytics', hub: 'overview', mistake: 'mistakes', plan: 'planner' };
 
     /* Dựng khung điều hướng + nội dung dùng chung cho cả modal và trang Cài đặt. */
     function buildHubBody(tab) {
@@ -139,7 +154,12 @@
         var main = el('div', 'bk-hub-main');
         main.id = 'bkHubMain';
         hub.navItems = {};
+        var lastGroup = null;
         TABS.forEach(function (t) {
+            if (t.group && t.group !== lastGroup) {
+                lastGroup = t.group;
+                nav.appendChild(el('div', 'bk-hub-group', t.group));
+            }
             var b = el('button', 'bk-hub-tab' + (t.id === (tab || 'overview') ? ' on' : ''));
             b.type = 'button';
             b.setAttribute('role', 'tab');
@@ -227,6 +247,7 @@
     }
 
     function setTab(tab) {
+        tab = TAB_ALIASES[tab] || tab;
         hub.tab = tab;
         syncAchBadge();
         Object.keys(hub.navItems).forEach(function (k) {
@@ -251,10 +272,15 @@
         if (!root) return;
         root.innerHTML = '';
         var map = {
-            overview: renderOverview, review: renderReview, notes: renderNotes,
-            bookmarks: renderBookmarks, history: renderHistory,
+            overview: renderOverview, notes: renderNotes,
+            bookmarks: renderBookmarks,
             achievements: renderAchievements, settings: renderSettings
         };
+        var learn = global.BKLearning && global.BKLearning.tabs;
+        if (learn && learn[hub.tab] && typeof learn[hub.tab].render === 'function') {
+            learn[hub.tab].render(root);
+            return;
+        }
         (map[hub.tab] || renderOverview)(root);
     }
 
@@ -262,16 +288,21 @@
     function renderOverview(root) {
         var s = BK.store.get();
         var acc = BK.stats.accuracy(s);
+        var stats = BK.mistakes.stats();
+        var score = BK.analytics.learningScore();
+        var plans = BK.planner.list({ groups: true });
+        var due = BK.revision.queue('due');
+        var goals = BK.goals.items().filter(function (g) { return g.goal.status === 'active'; });
 
-        root.appendChild(el('h3', null, 'Tiến độ học tập của bạn'));
-        root.appendChild(el('p', 'bk-sub', 'Ghi nhận hoạt động luyện tập và ôn lại — không đo thời gian, không xếp hạng, không áp lực.'));
+        root.appendChild(el('h3', null, 'Tổng quan học tập'));
+        root.appendChild(el('p', 'bk-sub', 'Một nơi duy nhất cho câu sai, phân tích, kế hoạch và ôn tập — cùng một nguồn dữ liệu, không đo thời gian, không xếp hạng.'));
 
         var cards = el('div', 'bk-cards');
         [
-            ['Đã luyện', acc.total, 'câu hỏi'],
-            ['Đúng', acc.correct, pct(acc.total ? (acc.correct / acc.total) * 100 : 0)],
-            ['Sai', acc.wrong, 'đã lưu để ôn'],
-            ['Độ chính xác', pct(acc.pct), acc.total ? acc.total + ' câu' : 'chưa có dữ liệu']
+            ['Learning Score', score.sufficient ? String(score.score) : '—', score.sufficient ? '/100 · ' + score.sample + ' câu' : 'cần thêm dữ liệu'],
+            ['Sổ tay câu sai', stats.active, stats.due + ' câu đến hạn ôn'],
+            ['Đến hạn hôm nay', due.length, due.length ? 'sẵn sàng ôn' : 'đã ôn hết'],
+            ['Việc hôm nay', plans.today.length, plans.all.length + ' nhiệm vụ tổng cộng']
         ].forEach(function (c) {
             var card = el('div', 'bk-card');
             card.appendChild(el('div', 'bk-card-k', c[0]));
@@ -285,81 +316,45 @@
             var hint = el('div', 'bk-item');
             hint.style.marginTop = '.8rem';
             hint.appendChild(el('p', 'bk-item-title', 'Bắt đầu bằng một bài luyện tập'));
-            hint.appendChild(el('p', 'muted bk-small', 'Khi bạn làm câu hỏi trên các trang bài học, kết quả sẽ được ghi nhận tự động tại đây. Câu làm sai sẽ được đưa vào mục Ôn tập.'));
+            hint.appendChild(el('p', 'muted bk-small', 'Khi bạn làm câu hỏi trên các trang bài học, kết quả sẽ được ghi nhận tự động vào đây. Câu làm sai sẽ tự vào Sổ tay câu sai và lịch ôn.'));
             root.appendChild(hint);
         }
 
-        /* Hoạt động 14 ngày */
+        /* Việc nên làm — mỗi nút mở đúng một hệ thống, không nhân bản logic. */
+        root.appendChild(el('h4', null, 'Cần bạn hôm nay'));
+        var actions = el('div', 'bk-item-actions bk-overview-actions');
+        if (due.length) {
+            actions.appendChild(ghostBtn('Ôn ' + due.length + ' câu đến hạn', function () {
+                if (global.BKLearning) global.BKLearning.startSession('due');
+                else setTab('revision');
+            }, 'fa-rotate'));
+        }
+        actions.appendChild(ghostBtn('Sổ tay câu sai (' + stats.active + ')', function () { setTab('mistakes'); }, 'fa-book-skull'));
+        actions.appendChild(ghostBtn('Kế hoạch hôm nay' + (plans.today.length ? ' (' + plans.today.length + ')' : ''), function () { setTab('planner'); }, 'fa-calendar-days'));
+        actions.appendChild(ghostBtn('Xem phân tích', function () { setTab('analytics'); }, 'fa-chart-line'));
+        actions.appendChild(ghostBtn('Mục tiêu' + (goals.length ? ' (' + goals.length + ')' : ''), function () { setTab('goals'); }, 'fa-bullseye'));
+        root.appendChild(actions);
+
+        /* Hoạt động 14 ngày — dữ liệu thật, cùng nguồn với tab Phân tích. */
         root.appendChild(el('h4', null, 'Hoạt động 14 ngày gần nhất'));
-        var days = [];
-        var today = new Date(); today.setHours(0, 0, 0, 0);
-        for (var i = 13; i >= 0; i--) {
-            var d = new Date(today.getTime() - i * 86400000);
-            var key = BK.util.dayKey(d.getTime());
-            var count = s.practice.filter(function (p) { return BK.util.dayKey(p.ts) === key; }).length;
-            days.push({ key: key, label: d.getDate() + '/' + (d.getMonth() + 1), count: count });
-        }
-        root.appendChild(barChart(days, 'Số câu luyện mỗi ngày'));
+        var series = BK.analytics.series(14);
+        root.appendChild(barChart(series.map(function (d) {
+            return { label: d.label, count: d.total };
+        }), 'Số câu luyện mỗi ngày'));
 
-        /* Hoạt động 8 tuần */
-        root.appendChild(el('h4', null, 'Hoạt động 8 tuần gần nhất'));
-        var weeks = [];
-        for (var w = 7; w >= 0; w--) {
-            var start = today.getTime() - (w * 7 + 6) * 86400000;
-            var end = today.getTime() - w * 7 * 86400000;
-            var wc = s.practice.filter(function (p) { return p.ts >= start && p.ts <= end + 86400000; }).length;
-            weeks.push({ label: w === 0 ? 'Tuần này' : '-' + w + 'w', count: wc });
-        }
-        root.appendChild(barChart(weeks, 'Số câu luyện mỗi tuần'));
-
-        /* Theo môn */
+        /* Tiến độ môn — bản tóm tắt; chi tiết ở tab Môn học. */
         root.appendChild(el('h4', null, 'Tiến độ theo môn'));
-        var bySubject = groupBy(s.practice, function (p) { return p.subject || 'khac'; });
-        var subjectIds = Object.keys(bySubject);
-        if (!subjectIds.length) {
+        var perf = BK.analytics.subjects(0).slice(0, 5);
+        if (!perf.length) {
             root.appendChild(emptyState('Chưa có dữ liệu môn học.', 'fa-layer-group'));
         } else {
-            subjectIds.sort(function (a, b) { return bySubject[b].length - bySubject[a].length; });
-            subjectIds.forEach(function (id) {
-                var items = bySubject[id];
-                var correct = items.filter(function (p) { return p.correct; }).length;
-                root.appendChild(meter(subjectName(id), correct, items.length, correct + '/' + items.length));
+            perf.forEach(function (m) {
+                root.appendChild(meter(m.name, m.correct, m.total, m.total ? m.accuracy + '%' : '—'));
             });
+            root.appendChild(ghostBtn('Xem tất cả môn', function () { setTab('subjects'); }, 'fa-arrow-right'));
         }
 
-        /* Theo chủ đề */
-        root.appendChild(el('h4', null, 'Tiến độ theo chủ đề'));
-        var byTopic = groupBy(s.practice.filter(function (p) { return p.topic; }), function (p) { return p.topic; });
-        var topics = Object.keys(byTopic).sort(function (a, b) { return byTopic[b].length - byTopic[a].length; }).slice(0, 10);
-        if (!topics.length) root.appendChild(emptyState('Chưa có chủ đề nào được ghi nhận.', 'fa-tags'));
-        topics.forEach(function (t) {
-            var items = byTopic[t];
-            var correct = items.filter(function (p) { return p.correct; }).length;
-            root.appendChild(meter(t, correct, items.length, correct + '/' + items.length));
-        });
-
-        /* Chủ đề hay sai */
-        root.appendChild(el('h4', null, 'Chủ đề thường làm sai'));
-        var wrongTopics = groupBy(s.review.filter(function (r) { return !r.mastered; }), function (r) { return r.topic || subjectName(r.subject); });
-        var wt = Object.keys(wrongTopics).sort(function (a, b) {
-            return wrongTopics[b].reduce(function (x, r) { return x + r.wrong; }, 0) - wrongTopics[a].reduce(function (x, r) { return x + r.wrong; }, 0);
-        }).slice(0, 8);
-        if (!wt.length) root.appendChild(emptyState('Chưa có câu nào cần ôn. Tốt lắm!', 'fa-circle-check'));
-        wt.forEach(function (t) {
-            var row = el('div', 'bk-meter');
-            row.appendChild(el('span', 'bk-meter-name', t));
-            var wrap = el('div');
-            var total = wrongTopics[t].reduce(function (a, r) { return a + r.wrong; }, 0);
-            var bar = el('div', 'bk-progress');
-            var fill = el('span');
-            fill.style.width = Math.min(100, total * 10) + '%';
-            bar.appendChild(fill); wrap.appendChild(bar);
-            row.appendChild(wrap);
-            row.appendChild(el('span', 'bk-meter-val', total + ' lần'));
-            root.appendChild(row);
-        });
-
-        /* Huy hiệu hồ sơ: đếm đúng danh mục badge, không dùng mốc nội bộ. */
+                /* Huy hiệu hồ sơ: đếm đúng danh mục badge, không dùng mốc nội bộ. */
         var pb = profileBadgeStats();
         root.appendChild(el('h4', null, 'Huy hiệu hồ sơ (' + pb.done + '/' + pb.total + ')'));
         var badgeCard = el('div', 'bk-item');
@@ -481,208 +476,6 @@
         });
         holder.appendChild(chart);
         return holder;
-    }
-
-    /* ----------------------------- Ôn tập ------------------------------- */
-    function renderReview(root) {
-        var s = BK.store.get();
-        var subjects = {};
-        s.review.forEach(function (r) { subjects[r.subject] = true; });
-        var subjectOptions = [{ value: '', label: 'Tất cả môn' }].concat(Object.keys(subjects).map(function (id) {
-            return { value: id, label: subjectName(id) };
-        }));
-
-        root.appendChild(el('h3', null, 'Ôn tập thông minh'));
-        root.appendChild(el('p', 'bk-sub', 'Câu làm sai được lưu tự động. Ôn lại theo nhịp độ của bạn — khoảng cách ôn dựa trên kết quả, không dựa trên thời gian học bắt buộc.'));
-
-        var controls = el('div', 'bk-row');
-        controls.style.marginBottom = '.7rem';
-        var search = textInput(state.reviewQuery, 'Tìm câu hỏi cần ôn…', function (v) {
-            state.reviewQuery = v; state.reviewActive = 0; renderTab();
-        }, 'Tìm câu hỏi cần ôn');
-        search.style.maxWidth = '16rem';
-        controls.appendChild(search);
-        var sel = select(subjectOptions, state.reviewSubject, function (v) { state.reviewSubject = v; state.reviewActive = 0; renderTab(); }, 'Lọc theo môn');
-        sel.style.maxWidth = '10rem';
-        controls.appendChild(sel);
-        var label = el('label', 'bk-row bk-small');
-        var cb = el('input');
-        cb.type = 'checkbox'; cb.checked = state.reviewShowMastered;
-        cb.addEventListener('change', function () { state.reviewShowMastered = cb.checked; state.reviewActive = 0; renderTab(); });
-        label.appendChild(cb);
-        label.appendChild(el('span', null, 'Hiện câu đã thành thạo'));
-        controls.appendChild(label);
-        root.appendChild(controls);
-
-        var q = norm(state.reviewQuery);
-        var items = s.review.filter(function (r) {
-            if (!state.reviewShowMastered && r.mastered) return false;
-            if (state.reviewSubject && r.subject !== state.reviewSubject) return false;
-            if (q && norm(r.question + ' ' + (r.topic || '')).indexOf(q) < 0) return false;
-            return true;
-        }).sort(function (a, b) {
-            if (a.mastered !== b.mastered) return a.mastered ? 1 : -1;
-            if (a.nextReview !== b.nextReview) return a.nextReview - b.nextReview;
-            return b.wrong - a.wrong;
-        });
-
-        if (!items.length) {
-            root.appendChild(emptyState('Không có câu nào trong mục ôn tập với bộ lọc hiện tại.', 'fa-circle-check'));
-            return;
-        }
-
-        var list = el('div', 'bk-list');
-        list.id = 'bkReviewList';
-        list.setAttribute('tabindex', '0');
-        list.setAttribute('aria-label', 'Danh sách câu cần ôn');
-        items.forEach(function (item, index) {
-            list.appendChild(reviewCard(item, index));
-        });
-        root.appendChild(list);
-
-        var due = items.filter(function (r) { return r.nextReview <= Date.now() && !r.mastered; }).length;
-        var summary = el('p', 'bk-small bk-muted');
-        summary.style.marginTop = '.6rem';
-        summary.textContent = items.length + ' câu · ' + due + ' câu đến hạn ôn hôm nay · dùng ← → để chuyển câu, A/B/C/D để chọn đáp án.';
-        root.appendChild(summary);
-
-        list.addEventListener('keydown', function (e) {
-            if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
-            var cards = Array.prototype.slice.call(list.querySelectorAll('.bk-item'));
-            if (!cards.length) return;
-            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                e.preventDefault(); focusCard(cards, 1); return;
-            }
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                e.preventDefault(); focusCard(cards, -1); return;
-            }
-            if (/^[a-dA-D]$/.test(e.key)) {
-                var active = list.querySelector('.bk-item.bk-active') || cards[0];
-                var idx = 'abcd'.indexOf(e.key.toLowerCase());
-                var opt = active.querySelectorAll('.bk-opt')[idx];
-                if (opt && !opt.disabled) { e.preventDefault(); opt.click(); }
-            }
-        });
-    }
-
-    function focusCard(cards, delta) {
-        var list = cards[0].parentElement;
-        var cur = list.querySelector('.bk-item.bk-active');
-        var i = cur ? cards.indexOf(cur) : -1;
-        var next = Math.max(0, Math.min(cards.length - 1, i + delta));
-        cards.forEach(function (c) { c.classList.remove('bk-active'); });
-        cards[next].classList.add('bk-active');
-        if (cards[next].scrollIntoView) cards[next].scrollIntoView({ block: 'nearest' });
-        var head = cards[next].querySelector('.bk-item-title');
-        if (head) { head.setAttribute('tabindex', '-1'); head.focus({ preventScroll: true }); }
-    }
-
-    function reviewCard(item, index) {
-        var card = el('div', 'bk-item' + (index === state.reviewActive ? ' bk-active' : ''));
-        card.dataset.key = item.key;
-        var head = el('div', 'bk-item-head');
-        var titleWrap = el('div');
-        titleWrap.style.minWidth = '0';
-        var title = el('p', 'bk-item-title');
-        title.style.fontWeight = '600';
-        title.textContent = subjectName(item.subject) + (item.topic ? ' · ' + item.topic : '');
-        titleWrap.appendChild(title);
-        var meta = el('div', 'bk-item-meta');
-        meta.appendChild(badge('Sai ' + item.wrong + ' lần', 'danger'));
-        meta.appendChild(badge('Đúng ' + item.right + ' lần', 'ok'));
-        if (item.mastered) meta.appendChild(badge('Đã thành thạo', 'ok'));
-        else if (item.nextReview <= Date.now()) meta.appendChild(badge('Đến hạn ôn', 'warn'));
-        else meta.appendChild(badge('Ôn từ ' + fmtDate(item.nextReview)));
-        if (item.difficulty) meta.appendChild(badge('Độ khó: ' + item.difficulty));
-        titleWrap.appendChild(meta);
-        head.appendChild(titleWrap);
-        card.appendChild(head);
-
-        var qtext = el('p', 'bk-qtext');
-        qtext.textContent = item.question;
-        card.appendChild(qtext);
-
-        var opts = Array.isArray(item.options) ? item.options : [];
-        var answer = item.answer;
-
-        if (opts.length && answer != null && !item.mastered) {
-            var box = el('div', 'bk-opts');
-            opts.forEach(function (opt, i) {
-                var b = el('button', 'bk-opt');
-                b.type = 'button';
-                b.dataset.opt = String(i);
-                b.appendChild(el('b', null, String.fromCharCode(65 + i) + '.'));
-                b.appendChild(el('span', null, opt));
-                b.addEventListener('click', function () { attemptReview(item, i, box); });
-                box.appendChild(b);
-            });
-            card.appendChild(box);
-        }
-
-        var actions = el('div', 'bk-item-actions');
-        if (!opts.length || answer == null) {
-            actions.appendChild(ghostBtn('Nhớ tốt', function () { mark('good'); }, 'fa-check'));
-            actions.appendChild(ghostBtn('Chưa nhớ', function () { mark('again'); }, 'fa-rotate-left'));
-        }
-        actions.appendChild(ghostBtn('Thành thạo', function () { mark('mastered'); }, 'fa-check-double'));
-        actions.appendChild(ghostBtn('Ghi chú', function () {
-            openNoteEditor(null, { subject: item.subject, questionId: item.questionId || item.key, title: subjectName(item.subject) + ' — ghi chú câu hỏi' });
-        }, 'fa-pen-nib'));
-        actions.appendChild(ghostBtn('Đánh dấu', function () {
-            var b = BK.addBookmark({
-                type: 'question', title: item.question.slice(0, 120), subject: item.subject,
-                ref: item.key, url: item.source || '', folder: 'Câu cần ôn'
-            });
-            BK.ui.toast(b ? 'Đã lưu câu hỏi vào Đánh dấu' : 'Câu này đã được đánh dấu', b ? 'success' : 'info');
-        }, 'fa-bookmark'));
-        if (item.source) {
-            var open = ghostBtn('Mở bài học', function () { location.href = item.source; }, 'fa-arrow-up-right-from-square');
-            actions.appendChild(open);
-        }
-
-        var dateWrap = el('span', 'bk-row');
-        dateWrap.style.marginLeft = 'auto';
-        var date = el('input', 'bk-input');
-        date.type = 'date'; date.style.width = '9.4rem'; date.style.padding = '.28rem .4rem';
-        date.setAttribute('aria-label', 'Hẹn ngày ôn lại');
-        var d = new Date(item.nextReview || Date.now());
-        date.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-        dateWrap.appendChild(date);
-        dateWrap.appendChild(ghostBtn('Hẹn', function () {
-            var r = BK.scheduleReview(item.key, date.value);
-            BK.ui.toast(r ? 'Đã hẹn ngày ôn lại' : 'Không hẹn được ngày này', r ? 'success' : 'error');
-            renderTab();
-        }, 'fa-calendar-check'));
-        actions.appendChild(dateWrap);
-        card.appendChild(actions);
-
-        function mark(perf) {
-            BK.markReview(item.key, perf);
-            BK.ui.toast(perf === 'mastered' ? 'Đã đánh dấu thành thạo' : perf === 'again' ? 'Sẽ ôn lại sớm' : 'Đã ghi nhận tiến bộ', 'success');
-            renderTab();
-        }
-
-        return card;
-    }
-
-    function attemptReview(item, choice, box) {
-        var answer = item.answer;
-        var correct = (typeof answer === 'number')
-            ? choice === answer
-            : String(item.options[choice]).trim() === String(answer).trim();
-        Array.prototype.forEach.call(box.querySelectorAll('.bk-opt'), function (b, i) {
-            b.disabled = true;
-            if (typeof answer === 'number' ? i === answer : String(item.options[i]).trim() === String(answer).trim()) b.classList.add('is-right');
-        });
-        if (!correct) box.querySelectorAll('.bk-opt')[choice].classList.add('is-wrong');
-        BK.practice({
-            question: item.question, questionId: item.questionId || item.key, subject: item.subject,
-            topic: item.topic, difficulty: item.difficulty, correct: correct,
-            options: item.options, answer: item.answer, explanation: item.explanation,
-            source: item.source, lesson: item.source, silent: false
-        });
-        BK.ui.toast(correct ? 'Chính xác! Tiến bộ đã được ghi nhận.' : 'Chưa đúng — câu này sẽ được ôn lại sớm.', correct ? 'success' : 'error');
-        setTimeout(renderTab, 550);
     }
 
     /* ----------------------------- Ghi chú ------------------------------ */
@@ -946,75 +739,6 @@
                 }
             ]
         });
-    }
-
-    /* ---------------------------- Lịch sử ------------------------------- */
-    function renderHistory(root) {
-        var s = BK.store.get();
-        root.appendChild(el('h3', null, 'Lịch sử học tập'));
-        root.appendChild(el('p', 'bk-sub', 'Bài học đã mở, câu đã luyện, câu đã ôn. Đây là lịch sử học tập — không phải hồ sơ thi cử.'));
-
-        var controls = el('div', 'bk-row');
-        controls.style.marginBottom = '.7rem';
-        var search = textInput(state.historyQuery, 'Tìm trong lịch sử…', function (v) { state.historyQuery = v; renderTab(); }, 'Tìm trong lịch sử');
-        search.style.maxWidth = '15rem';
-        controls.appendChild(search);
-        var sel = select([
-            { value: '', label: 'Tất cả hoạt động' }, { value: 'lesson', label: 'Bài học' },
-            { value: 'practice', label: 'Luyện tập' }, { value: 'review', label: 'Ôn tập' }
-        ], state.historyKind, function (v) { state.historyKind = v; renderTab(); }, 'Lọc hoạt động');
-        sel.style.maxWidth = '10rem';
-        controls.appendChild(sel);
-        controls.appendChild(ghostBtn('Xoá tất cả', function () {
-            BK.ui.confirm({
-                title: 'Xoá toàn bộ lịch sử',
-                message: 'Xoá toàn bộ lịch sử học tập? Ghi chú, đánh dấu và câu cần ôn sẽ được giữ lại.',
-                ok: 'Xoá lịch sử', danger: true
-            }).then(function (ok) {
-                if (!ok) return;
-                BK.store.update(function (st) { st.history = []; return st; });
-                renderTab();
-                BK.ui.toast('Đã xoá lịch sử học tập', 'success');
-            });
-        }, 'fa-trash'));
-        root.appendChild(controls);
-
-        var q = norm(state.historyQuery);
-        var items = s.history.slice().reverse().filter(function (h) {
-            if (state.historyKind && h.kind !== state.historyKind) return false;
-            if (q && norm(h.title + ' ' + h.meta + ' ' + subjectName(h.subject)).indexOf(q) < 0) return false;
-            return true;
-        }).slice(0, 200);
-
-        if (!items.length) {
-            root.appendChild(emptyState('Chưa có hoạt động nào được ghi nhận.', 'fa-clock-rotate-left'));
-            return;
-        }
-        var list = el('div', 'bk-list');
-        items.forEach(function (h) {
-            var card = el('div', 'bk-item');
-            var head = el('div', 'bk-item-head');
-            var w = el('div'); w.style.minWidth = '0';
-            var title = el('p', 'bk-item-title', h.title || '(không tiêu đề)');
-            w.appendChild(title);
-            var meta = el('div', 'bk-item-meta');
-            meta.appendChild(badge(h.kind === 'lesson' ? 'Bài học' : h.kind === 'review' ? 'Ôn tập' : 'Luyện tập',
-                h.meta === 'correct' ? 'ok' : h.meta === 'incorrect' ? 'danger' : ''));
-            if (h.subject) meta.appendChild(badge(subjectName(h.subject)));
-            meta.appendChild(el('span', null, fmtTime(h.ts)));
-            w.appendChild(meta);
-            head.appendChild(w);
-            card.appendChild(head);
-            var actions = el('div', 'bk-item-actions');
-            if (h.url) actions.appendChild(ghostBtn('Mở', function () { location.href = h.url; }, 'fa-arrow-up-right-from-square'));
-            actions.appendChild(ghostBtn('Xoá mục này', function () {
-                BK.store.update(function (st) { st.history = st.history.filter(function (x) { return x.id !== h.id; }); return st; });
-                renderTab();
-            }, 'fa-xmark'));
-            card.appendChild(actions);
-            list.appendChild(card);
-        });
-        root.appendChild(list);
     }
 
     /* --------------------------- Thành tích ----------------------------- */
@@ -1477,11 +1201,15 @@
 
     function commands() {
         var cmds = [
-            { label: 'Trung tâm học tập — Tổng quan', icon: 'fa-chart-simple', run: function () { openHub('overview'); } },
-            { label: 'Ôn tập câu đã làm sai', icon: 'fa-rotate', run: function () { openHub('review'); } },
+            { label: 'Trung tâm học tập — Tổng quan', icon: 'fa-gauge-high', run: function () { openHub('overview'); } },
+            { label: 'Sổ tay câu sai', icon: 'fa-book-skull', run: function () { openHub('mistakes'); } },
+            { label: 'Ôn tập hôm nay', icon: 'fa-rotate', run: function () { openHub('revision'); } },
+            { label: 'Phân tích học tập', icon: 'fa-chart-line', run: function () { openHub('analytics'); } },
+            { label: 'Kế hoạch học tập', icon: 'fa-calendar-days', run: function () { openHub('planner'); } },
+            { label: 'Mục tiêu học tập', icon: 'fa-bullseye', run: function () { openHub('goals'); } },
+            { label: 'Môn học của tôi', icon: 'fa-layer-group', run: function () { openHub('subjects'); } },
             { label: 'Ghi chú cá nhân', icon: 'fa-pen-nib', run: function () { openHub('notes'); } },
             { label: 'Đánh dấu', icon: 'fa-bookmark', run: function () { openHub('bookmarks'); } },
-            { label: 'Lịch sử học tập', icon: 'fa-clock-rotate-left', run: function () { openHub('history'); } },
             { label: achLabel(), icon: 'fa-medal', run: function () { openHub('achievements'); } },
             { label: 'Cài đặt học tập & dữ liệu', icon: 'fa-gear', run: function () { openHub('settings'); } },
             { label: 'Tìm kiếm toàn cục', icon: 'fa-magnifying-glass', run: function () { openSearch(); } },
@@ -1763,7 +1491,7 @@
             var note = BK.store.get().notes.filter(function (n) { return n.id === r.id; })[0];
             if (note) return openNoteEditor(note);
         }
-        if (r.type === 'review') return openHub('review');
+        if (r.type === 'review') return openHub('mistakes');
         if (r.type === 'bookmark' || r.type === 'lesson') {
             if (r.url) { location.href = r.url; return; }
         }
@@ -1782,10 +1510,12 @@
         actions.setAttribute('role', 'toolbar');
         actions.setAttribute('aria-label', 'Công cụ học tập');
         [
-            { icon: 'fa-chart-simple', label: 'Trung tâm học tập (Ctrl+K)', run: function () { openHub('overview'); } },
-            { icon: 'fa-rotate', label: 'Ôn tập câu đã sai', run: function () { openHub('review'); } },
+            { icon: 'fa-gauge-high', label: 'Trung tâm học tập (Ctrl+K)', run: function () { openHub('overview'); } },
+            { icon: 'fa-book-skull', label: 'Sổ tay câu sai', run: function () { openHub('mistakes'); } },
+            { icon: 'fa-rotate', label: 'Ôn tập hôm nay', run: function () { openHub('revision'); } },
+            { icon: 'fa-calendar-days', label: 'Kế hoạch học tập', run: function () { openHub('planner'); } },
+            { icon: 'fa-chart-line', label: 'Phân tích học tập', run: function () { openHub('analytics'); } },
             { icon: 'fa-pen-nib', label: 'Ghi chú', run: function () { openHub('notes'); } },
-            { icon: 'fa-bookmark', label: 'Đánh dấu', run: function () { openHub('bookmarks'); } },
             { icon: 'fa-magnifying-glass', label: 'Tìm kiếm (/)', run: function () { openSearch(); } },
             { icon: 'fa-moon', label: 'Chế độ tập trung', run: function () { toggleFocus(); } }
         ].forEach(function (a) {
@@ -1859,7 +1589,7 @@
             var bk = p.get('bk');
             if (!bk) return;
             if (bk === 'search') openSearch(p.get('q') || '');
-            else if (['overview', 'review', 'notes', 'bookmarks', 'history', 'achievements', 'settings'].indexOf(bk) >= 0) openHub(bk);
+            else if (TABS.some(function (t) { return t.id === bk; }) || TAB_ALIASES[bk]) openHub(bk);
         } catch (e) { /* bỏ qua */ }
     }
 
@@ -1868,8 +1598,19 @@
         buildDock();
         BK.achievements.check();
         handleUrlParams();
+        /* bk-learning.js vẽ 6 tab Learning Intelligence trong cùng khung này. */
+        if (global.BKLearning && global.BKLearning.setHooks) {
+            global.BKLearning.setHooks({
+                rerender: function () { if (hub.modal || hub.inline) renderTab(); },
+                openTab: function (id) {
+                    if (hub.modal || hub.inline) setTab(id);
+                    else openHub(id);
+                }
+            });
+        }
         BK.store.on('practice', function () {
-            if ((hub.modal || hub.inline) && (hub.tab === 'overview' || hub.tab === 'review')) renderTab();
+            var live = ['overview', 'mistakes', 'analytics', 'revision', 'planner', 'subjects', 'goals'];
+            if ((hub.modal || hub.inline) && live.indexOf(hub.tab) >= 0) renderTab();
         });
         /* Đổi học sinh: làm mới thành tích/tiến độ đang mở, không cần F5. */
         global.addEventListener('bkbadges', function () {
