@@ -63,6 +63,27 @@ Trung tâm học tập, hồ sơ/cài đặt, Developer Playground, Administrato
   Migration `20261202000000_bakhi_v760_titles.sql` và
   `20261203000000_bakhi_v770_titles_rework.sql`.
 
+### A2.2. Bảo trì toàn hệ thống & Founder Login (7.9.2)
+
+- **Một màn hình bảo trì cho mọi website**: trang chủ, 116 trang môn học/Studio, chat, hồ sơ,
+  cài đặt đều do `bk-shell.js` dựng khi `public.maintenance.enabled = true`. Màn hình nền đen
+  tuyền, căn giữa: tiêu đề **Bảo trì**, lý do (không hardcode), **Thời gian bắt đầu** lấy từ
+  máy chủ/DB, vòng xoay tải và nút **Đăng nhập Founder**. Navbar và nội dung phía dưới bị ẩn.
+- **Founder Login dùng chung**: nút mở `assets/bakhi/bk-founder-auth.js` — cùng Edge Function
+  `admin-auth` (`scope = founder`), cùng bảng `founder_config` (băm SHA-256), cùng phiên
+  `admin_sessions` và cùng thời hạn với trang `founder/`. Không có mã Founder thứ hai.
+- **Xác minh ở máy chủ**: trước khi gỡ màn hình, client gọi `admin-actions → session.check`;
+  chỉ khi máy chủ trả `scope = founder` mới cho vào. Sửa sessionStorage hay biến JavaScript
+  không có tác dụng. Ô mã bị che, có hiện/ẩn, chống gửi lặp, báo “Mã Founder không hợp lệ.”
+  khi sai và thông báo thử lại sau khi bị giới hạn 5 lần / 10 phút.
+- **Administrator không vượt được bảo trì**: màn hình cũ trong `bk-core.js` đã bị gỡ; lối nhập
+  Administrator Code bị loại bỏ hoàn toàn. `settings.set` cho `public.maintenance` chỉ Founder.
+- **Tab Bảo trì của Founder Dashboard** có Global Maintenance (bật/tắt có xác nhận, lý do, giờ
+  bắt đầu do máy chủ ghi), **Founder Access** (kiểm tra phiên, mở trang bảo trì, mở Founder
+  Dashboard) và **Maintenance History** (lý do, người thực hiện, thời gian bắt đầu/kết thúc).
+- **Đồng bộ**: realtime `app_settings` cập nhật tức thời; sau khi kết nối realtime được khôi
+  phục, `bk-cloud.js` đọc lại feature flag nên không cần xoá cache hay cài lại.
+
 ## B. Developer Playground 2.1 — 14 tab (`Ctrl+Shift+G`, sau khi xác thực Dev Code)
 
 Dev Code nằm trong **Cài đặt → Nhà phát triển → Dev Code**, xác minh ở Edge Function

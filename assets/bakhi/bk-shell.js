@@ -17,7 +17,7 @@
     var A11Y_KEY = 'bakhiA11y.v1';
     var S = { menu: null, btn: null, slot: null, open: false, base: './', version: '0.0.0' };
 
-    var VERSION = (global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '3.3.0';
+    var VERSION = (global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '7.9.2';
     S.version = VERSION;
 
     /* ---------------------------------------------------------------------
@@ -710,20 +710,103 @@
        ------------------------------------------------------------------ */
     /* ---------------------------------------------------------------------
        Bảo trì toàn website
-       - Đọc public.maintenance từ Supabase; chỉ Admin hợp lệ mới đi tiếp.
+       - Đọc public.maintenance từ Supabase; chỉ phiên Founder do máy chủ xác nhận
+         (admin-actions → session.check) mới được bỏ qua màn hình bảo trì.
        - Không phá dữ liệu, không chặn trang quản trị.
        ------------------------------------------------------------------ */
     var MAINT_TIMER = null;
     var MAINT_LAST = null;
 
-    function adminSessionActive() {
+    /* ---------------------------------------------------------------------
+       Phiên Founder — xác minh ở MÁY CHỦ. Không dựa vào localStorage, tên
+       hiển thị hay biến JavaScript; Administrator thường không có quyền bỏ
+       qua bảo trì toàn hệ thống.
+       ------------------------------------------------------------------ */
+    function founderTokenLocal() {
         try {
             var raw = global.sessionStorage.getItem('bakhiAdmin.v1');
-            if (!raw) return false;
+            if (!raw) return null;
             var data = JSON.parse(raw);
-            if (!data || !data.token) return false;
-            return !data.expiresAt || Number(data.expiresAt) > Date.now();
-        } catch (e) { return false; }
+            if (!data || !data.token) return null;
+            if (data.scope !== 'founder') return null;
+            if (data.expiresAt && new Date(data.expiresAt).getTime() < Date.now()) return null;
+            return data.token;
+        } catch (e) { return null; }
+    }
+
+    var FOUNDER = { token: null, verified: false, checking: null };
+
+    function resetFounderCache() {
+        FOUNDER.verified = false;
+        FOUNDER.token = null;
+        FOUNDER.checking = null;
+    }
+
+    /* Nạp mô-đun xác thực Founder dùng chung (một cơ chế cho toàn website). */
+    function withFounderAuth(cb) {
+        if (global.BKFounderAuth) { cb(global.BKFounderAuth); return; }
+        var selector = 'script[data-bk-founder-auth]';
+        var existing = D.querySelector(selector);
+        var ready = function () { cb(global.BKFounderAuth || null); };
+        if (existing) {
+            existing.addEventListener('load', ready);
+            existing.addEventListener('error', ready);
+            return;
+        }
+        var tag = D.createElement('script');
+        tag.src = S.base + 'assets/bakhi/bk-founder-auth.js?v=' + VERSION;
+        tag.defer = true;
+        tag.setAttribute('data-bk-founder-auth', '1');
+        tag.onload = ready;
+        tag.onerror = ready;
+        (D.head || D.documentElement).appendChild(tag);
+    }
+
+    /* Gọi admin-actions 'session.check': máy chủ đọc lại token trong
+       admin_sessions và trả scope. Chỉ scope founder mới gỡ màn hình bảo trì. */
+    function verifyFounder(force) {
+        var token = founderTokenLocal();
+        if (!token) {
+            FOUNDER.verified = false;
+            FOUNDER.token = null;
+            return Promise.resolve(false);
+        }
+        if (!force && FOUNDER.verified && FOUNDER.token === token) return Promise.resolve(true);
+        if (FOUNDER.checking && FOUNDER.token === token) return FOUNDER.checking;
+        FOUNDER.token = token;
+        FOUNDER.verified = false;
+        FOUNDER.checking = new Promise(function (resolve) {
+            withFounderAuth(function (auth) {
+                if (!auth || typeof auth.check !== 'function') { resolve(false); return; }
+                auth.check().then(function (session) {
+                    resolve(!!(session && session.scope === 'founder'));
+                }).catch(function () { resolve(false); });
+            });
+        }).then(function (ok) {
+            FOUNDER.verified = ok;
+            FOUNDER.checking = null;
+            if (ok) removeMaintenance();
+            return ok;
+        });
+        return FOUNDER.checking;
+    }
+
+    function openFounderLogin() {
+        withFounderAuth(function (auth) {
+            if (!auth || typeof auth.openDialog !== 'function') {
+                if (global.BK && BK.ui && BK.ui.toast) {
+                    BK.ui.toast('Chưa tải được mô-đun đăng nhập Founder. Hãy tải lại trang.', 'error');
+                }
+                return;
+            }
+            auth.openDialog({
+                host: D.getElementById('bkMaintenance') || D.body,
+                onSuccess: function () {
+                    removeMaintenance();
+                    try { global.location.assign(S.base + 'founder/'); } catch (e) { }
+                }
+            });
+        });
     }
 
     function fmtMaintenanceTime(iso) {
@@ -748,7 +831,7 @@
     var LOCK = { on: false, y: 0 };
 
     function maintInside(node) {
-        return !!(node && node.closest && node.closest('#bkMaintenance, #bkMaintBypass'));
+        return !!(node && node.closest && node.closest('#bkMaintenance'));
     }
 
     /* Chặn mọi phím tắt toàn cục. Phím trong hộp thoại mở khoá vẫn hoạt động
@@ -807,89 +890,23 @@
         }
     }
 
-    function openMaintBypass() {
-        if (D.getElementById('bkMaintBypass')) return;
-        var overlay = el('div', 'bk-maint-bypass');
-        overlay.id = 'bkMaintBypass';
-        var form = el('form', 'bk-maint-bypass-card');
-        form.setAttribute('role', 'dialog');
-        form.setAttribute('aria-modal', 'true');
-        form.setAttribute('aria-label', 'Mở khoá bằng Administrator Code');
-        form.appendChild(el('h2', 'bk-maint-bypass-title', 'Mở khoá tạm thời'));
-        form.appendChild(el('p', 'bk-maint-bypass-desc',
-            'Nhập Administrator Code để tiếp tục sử dụng khi website đang bảo trì. Mã được xác thực trên máy chủ và không lưu trong trình duyệt.'));
-        var input = D.createElement('input');
-        input.type = 'password';
-        input.className = 'bk-maint-bypass-input';
-        input.autocomplete = 'current-password';
-        input.placeholder = 'Administrator Code';
-        input.setAttribute('aria-label', 'Administrator Code');
-        form.appendChild(input);
-        var error = el('p', 'bk-maint-bypass-error');
-        error.setAttribute('role', 'alert');
-        error.hidden = true;
-        form.appendChild(error);
-
-        var actions = el('div', 'bk-maint-bypass-actions');
-        var cancel = D.createElement('button');
-        cancel.type = 'button';
-        cancel.className = 'bk-maint-btn bk-maint-btn-alt';
-        cancel.textContent = 'Huỷ';
-        cancel.addEventListener('click', function () { overlay.remove(); });
-        actions.appendChild(cancel);
-        var submit = D.createElement('button');
-        submit.type = 'submit';
-        submit.className = 'bk-maint-btn';
-        submit.textContent = 'Xác minh';
-        actions.appendChild(submit);
-        form.appendChild(actions);
-
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            var code = String(input.value || '').trim();
-            if (!code) {
-                error.hidden = false;
-                error.textContent = 'Hãy nhập Administrator Code.';
-                input.focus();
-                return;
-            }
-            if (!global.BKCloud || !global.BKCloud.adminLogin) {
-                error.hidden = false;
-                error.textContent = 'Chưa kết nối được dịch vụ quản trị. Hãy thử lại sau.';
-                return;
-            }
-            submit.disabled = true;
-            cancel.disabled = true;
-            error.hidden = true;
-            global.BKCloud.adminLogin(code).then(function () {
-                input.value = '';
-                overlay.remove();
-                removeMaintenance();
-            }).catch(function (err) {
-                submit.disabled = false;
-                cancel.disabled = false;
-                error.hidden = false;
-                error.textContent = String((err && (err.message || err.error)) || 'Administrator Code không đúng.');
-                input.select();
-            });
-        });
-
-        overlay.addEventListener('click', function (e) {
-            if (e.target === overlay) overlay.remove();
-        });
-        overlay.appendChild(form);
-        (D.body || D.documentElement).appendChild(overlay);
-        setTimeout(function () { input.focus(); }, 0);
+    function maintStartText(value) {
+        var iso = value && (value.maintenance_started_at || value.cycleStartedAt || value.startAt);
+        return iso ? fmtMaintenanceTime(iso) : '';
     }
 
     function paintMaintenance(value) {
         MAINT_LAST = value || {};
-        if (!MAINT_LAST.enabled || adminSessionActive()) { removeMaintenance(); return; }
+        if (!MAINT_LAST.enabled) { removeMaintenance(); return; }
+        if (FOUNDER.verified && FOUNDER.token === founderTokenLocal()) { removeMaintenance(); return; }
+
         var host = D.getElementById('bkMaintenance');
         var signature = [MAINT_LAST.title, MAINT_LAST.message, MAINT_LAST.reason,
+            MAINT_LAST.maintenance_started_at, MAINT_LAST.cycleStartedAt,
             MAINT_LAST.startAt, MAINT_LAST.endAt].join('|');
         if (host && host.getAttribute('data-signature') === signature) {
             lockPage(true);
+            verifyFounder();
             return;
         }
         if (!host) {
@@ -904,11 +921,39 @@
         }
         host.setAttribute('data-signature', signature);
         host.textContent = '';
+
         var card = D.createElement('div');
         card.className = 'bk-maint-card';
 
-        /* Vòng xoay tải + trạng thái: bảo trì là màn hình chặn toàn site,
-           không phải một thông báo nhỏ ở góc trang. */
+        var title = D.createElement('h1');
+        title.className = 'bk-maint-title';
+        title.textContent = 'Bảo trì';
+        card.appendChild(title);
+
+        var reasonText = String(MAINT_LAST.reason || '').trim();
+        var reason = D.createElement('p');
+        reason.className = 'bk-maint-reason';
+        reason.textContent = reasonText
+            || String(MAINT_LAST.message || '').trim()
+            || 'Hệ thống đang được nâng cấp. Dữ liệu học tập của bạn được giữ nguyên.';
+        card.appendChild(reason);
+
+        if (reasonText && String(MAINT_LAST.message || '').trim()) {
+            var message = D.createElement('p');
+            message.className = 'bk-maint-msg';
+            message.textContent = MAINT_LAST.message;
+            card.appendChild(message);
+        }
+
+        var started = maintStartText(MAINT_LAST);
+        if (started) {
+            var time = D.createElement('p');
+            time.className = 'bk-maint-time';
+            time.textContent = 'Thời gian bắt đầu: ' + started;
+            card.appendChild(time);
+        }
+
+        /* Icon loading dạng vòng tròn xoay + trạng thái. */
         var mark = D.createElement('div');
         mark.className = 'bk-maint-mark';
         mark.setAttribute('aria-hidden', 'true');
@@ -919,64 +964,26 @@
         loading.className = 'bk-maint-loading';
         loading.setAttribute('role', 'status');
         loading.setAttribute('aria-live', 'polite');
-        loading.textContent = 'Đang tải…';
+        loading.textContent = 'Đang bảo trì';
         card.appendChild(loading);
 
-        var title = D.createElement('h1');
-        title.className = 'bk-maint-title';
-        title.textContent = MAINT_LAST.title || 'Bá Khí đang bảo trì';
-        card.appendChild(title);
-        var msg = D.createElement('p');
-        msg.className = 'bk-maint-msg';
-        msg.textContent = MAINT_LAST.message || 'Website tạm đóng để nâng cấp. Dữ liệu học tập của bạn được giữ nguyên.';
-        card.appendChild(msg);
-        if (MAINT_LAST.reason) {
-            var reason = D.createElement('p');
-            reason.className = 'bk-maint-reason';
-            reason.textContent = 'Lý do: ' + MAINT_LAST.reason;
-            card.appendChild(reason);
-        }
-        var s = fmtMaintenanceTime(MAINT_LAST.startAt);
-        var e = fmtMaintenanceTime(MAINT_LAST.endAt);
-        if (s || e) {
-            var time = D.createElement('p');
-            time.className = 'bk-maint-time';
-            time.textContent = (s ? 'Bắt đầu: ' + s : '') + (s && e ? ' · ' : '') + (e ? 'Dự kiến mở lại: ' + e : '');
-            card.appendChild(time);
-        }
+        /* Ngoại lệ tương tác duy nhất trên màn hình bảo trì: Đăng nhập Founder. */
         var actions = D.createElement('div');
         actions.className = 'bk-maint-actions';
-        var retry = D.createElement('button');
-        retry.type = 'button';
-        retry.className = 'bk-maint-btn';
-        retry.textContent = 'Thử lại';
-        retry.addEventListener('click', function () {
-            retry.disabled = true;
-            retry.textContent = 'Đang kiểm tra…';
-            loading.textContent = 'Đang kết nối lại…';
-            loadMaintenance(true);
-            setTimeout(function () {
-                retry.disabled = false;
-                retry.textContent = 'Thử lại';
-                loading.textContent = 'Đang tải…';
-            }, 1500);
-        });
-        actions.appendChild(retry);
-        var bypass = D.createElement('button');
-        bypass.type = 'button';
-        bypass.className = 'bk-maint-btn bk-maint-btn-alt';
-        bypass.textContent = 'Nhập Administrator Code';
-        bypass.addEventListener('click', openMaintBypass);
-        actions.appendChild(bypass);
+        var login = D.createElement('button');
+        login.type = 'button';
+        login.className = 'bk-maint-btn';
+        login.id = 'bkMaintFounderLogin';
+        login.textContent = 'Đăng nhập Founder';
+        login.addEventListener('click', openFounderLogin);
+        actions.appendChild(login);
         card.appendChild(actions);
-        card.appendChild(Object.assign(D.createElement('p'), {
-            className: 'bk-maint-foot',
-            textContent: 'Mọi tính năng đang tạm khoá. Quản trị viên có thể nhập Administrator Code để mở khoá tạm thời, hoặc vào /admin/ để tắt bảo trì.'
-        }));
+
         host.appendChild(card);
         if (D.body) D.body.classList.add('bk-maintenance-on');
         lockPage(true);
         try { host.focus({ preventScroll: true }); } catch (err) { }
+        verifyFounder();
     }
 
     function loadMaintenance(force) {
@@ -1021,6 +1028,7 @@
         buildMenu();
         hookEffects();
         paintProfileBits();
+        resetFounderCache();
         loadMaintenance();
         /* Không tạo timer định kỳ trong môi trường jsdom (QA) để tiến trình thoát.
            Trình duyệt thật vẫn kiểm tra lại mỗi 2 phút và khi quay lại tab. */

@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-chat.js (7.9.1)
+   Bá Khí — bk-chat.js (7.9.2)
    Chat dùng chung: phòng chung, tin nhắn riêng, nhóm ≤ 10, cảm xúc,
    realtime, bộ đếm chưa đọc và Profile Card.
 

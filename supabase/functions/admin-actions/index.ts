@@ -94,7 +94,7 @@ async function requireAdmin(req: Request, client: SupabaseClient) {
     }
     await client.from('admin_sessions').update({ last_used_at: new Date().toISOString() }).eq('id', data.id);
     const scope = (data as { scope?: string }).scope === 'founder' ? 'founder' : 'admin';
-    return { sessionId: data.id as string, scope };
+    return { sessionId: data.id as string, scope, expiresAt: data.expires_at as string };
 }
 
 async function logAction(
@@ -121,39 +121,6 @@ function normalizeName(input: unknown): string {
         .toLowerCase()
         .replace(/\s+/g, ' ')
         .trim();
-}
-
-/**
- * Tìm hồ sơ Founder theo cờ is_founder, nếu chưa có thì đối chiếu họ tên
- * chuẩn hoá (Hứa Viết Minh Trúc / Minh Trúc) và chỉ tự đánh dấu khi khớp
- * duy nhất một hồ sơ. Dùng chung cho trao badge Founder và cấp trọn bộ.
- */
-async function findFounderStudent(client: SupabaseClient) {
-    const { data: flagged, error } = await client
-        .from('students')
-        .select('id, display_name, is_founder')
-        .eq('is_founder', true)
-        .limit(1)
-        .maybeSingle();
-    if (error) throw error;
-    if (flagged) return flagged;
-
-    const { data: candidates, error: cErr } = await client
-        .from('students')
-        .select('id, display_name, is_founder')
-        .ilike('display_name', '%Minh Trúc%')
-        .limit(30);
-    if (cErr) throw cErr;
-    const list = candidates ?? [];
-    const exact = list.filter((row) => {
-        const n = normalizeName(row.display_name);
-        return n === 'hua viet minh truc' || n === 'minh truc';
-    });
-    const picked = exact.length === 1 ? exact[0] : (list.length === 1 ? list[0] : null);
-    if (!picked) return null;
-
-    await client.from('students').update({ is_founder: true }).eq('id', picked.id);
-    return picked;
 }
 
 function cleanDisplayName(input: unknown): string {
@@ -1205,7 +1172,7 @@ const DEFAULT_TITLES: TitleDef[] = [
 ];
 
 const TITLE_BY_ID = new Map<string, TitleDef>(DEFAULT_TITLES.map((t) => [t.id, t]));
-const SERVER_VERSION = '7.9.1';
+const SERVER_VERSION = '7.9.2';
 
 /* Cơ cấu danh mục: 99 = 74 tự động + 21 Founder + 2 Developer + 2 Administrator.
    Trả kèm mọi phản hồi trao tặng để giao diện không phải tự đếm hay viết cứng. */
@@ -1721,6 +1688,25 @@ Deno.serve(async (req) => {
 
     try {
         switch (action) {
+            /* ------------------------- Phiên quản trị hiện tại ---------------------- */
+            /* Dùng cho màn hình bảo trì và khu Founder Access: máy chủ đọc lại
+               token trong admin_sessions rồi trả scope. Client không thể tự khai
+               quyền Founder bằng biến JavaScript. */
+            case 'session.check': {
+                const { data: row } = await client
+                    .from('app_settings').select('value, updated_at')
+                    .eq('key', 'public.maintenance').maybeSingle();
+                return json({
+                    ok: true,
+                    serverVersion: SERVER_VERSION,
+                    scope,
+                    sessionId,
+                    expiresAt: auth.expiresAt,
+                    maintenance: row?.value ?? null,
+                    maintenanceUpdatedAt: row?.updated_at ?? null
+                });
+            }
+
             /* ------------------------------ Tổng quan ------------------------------ */
             case 'overview': {
                 const [stu, active, ann, annPub, cl, logs] = await Promise.all([
@@ -2086,11 +2072,10 @@ Deno.serve(async (req) => {
                     .from('students').select('id, is_founder').eq('id', id).maybeSingle();
                 if (!student) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
                 if (badgeId === FOUNDER_BADGE_ID && student.is_founder !== true) {
-                    const founder = await findFounderStudent(client);
-                    if (!founder || founder.id !== id) {
-                        return fail(403, 'FOUNDER_ONLY',
-                            'Badge Người sáng lập chỉ dành cho hồ sơ Hứa Viết Minh Trúc đã xác minh.');
-                    }
+                    /* Thiên Khải Sáng Thế chỉ cấp cho hồ sơ đã có cờ is_founder.
+                       Không tự đánh dấu Founder theo tên hiển thị hay tham số client. */
+                    return fail(403, 'FOUNDER_PROFILE_REQUIRED',
+                        'Badge Thiên Khải Sáng Thế chỉ cấp cho hồ sơ Người sáng lập (is_founder = true).');
                 }
                 const exclusive = badgeId === FOUNDER_BADGE_ID || DEV_BADGE_IDS.includes(badgeId);
                 if (exclusive && scope !== 'founder') {
@@ -2150,6 +2135,12 @@ Deno.serve(async (req) => {
                 if (!row.manual_granted) {
                     return fail(400, 'NOT_MANUAL', 'Badge này do hệ thống tự đạt, không thu hồi thủ công.');
                 }
+                /* Badge độc quyền (Founder/Developer) chỉ Founder thu hồi được. */
+                const exclusiveBadge = badgeId === FOUNDER_BADGE_ID || DEV_BADGE_IDS.includes(badgeId);
+                if (exclusiveBadge && scope !== 'founder') {
+                    return fail(403, 'FOUNDER_ONLY',
+                        'Badge độc quyền (Founder/Developer) chỉ Founder mới được thu hồi.');
+                }
                 if (row.auto_earned) {
                     const { error } = await client.from('student_badges')
                         .update({ manual_granted: false, awarded_by: null, reason: '' })
@@ -2160,7 +2151,11 @@ Deno.serve(async (req) => {
                         .delete().eq('student_id', id).eq('badge_id', badgeId);
                     if (error) throw error;
                 }
-                await logAction(client, 'badges.revoke', 'student', id, { badge_id: badgeId });
+                await logAction(client, 'badges.revoke', 'student', id, {
+                    badge_id: badgeId,
+                    exclusive: exclusiveBadge,
+                    auto_earned: !!row.auto_earned
+                });
                 return json({ ok: true });
             }
 
@@ -2913,7 +2908,14 @@ Deno.serve(async (req) => {
                     const enabled = body.enabled === true;
                     const wasEnabled = currentValue.enabled === true;
                     const reason = str(body.reason, 400);
+                    /* Người thực hiện do máy chủ xác định từ phạm vi phiên, không
+                       lấy từ payload. */
                     const actor = scope === 'founder' ? 'Founder' : 'Administrator';
+                    /* Mốc bắt đầu lấy từ chu kì trước hoặc từ DB khi bật; không nhận
+                       thời gian do client gửi cho trường maintenance_started_at. */
+                    const previousStart = (currentValue.maintenance_started_at as string)
+                        ?? (currentValue.cycleStartedAt as string) ?? null;
+                    const previousBy = (currentValue.maintenance_started_by as string) ?? null;
 
                     value = {
                         enabled,
@@ -2924,7 +2926,14 @@ Deno.serve(async (req) => {
                         endAt: iso(body.endAt),
                         updatedAt: nowIso,
                         historyId: currentValue.historyId ?? null,
-                        cycleStartedAt: currentValue.cycleStartedAt ?? null
+                        cycleStartedAt: currentValue.cycleStartedAt ?? null,
+                        /* Trường chuẩn 7.9.2 (snake_case) — nguồn đọc của màn hình
+                           bảo trì; các khoá camelCase phía trên giữ để tương thích. */
+                        maintenance_enabled: enabled,
+                        maintenance_reason: reason,
+                        maintenance_started_at: enabled ? (previousStart || nowIso) : previousStart,
+                        maintenance_started_by: enabled ? (previousBy || actor) : previousBy,
+                        maintenance_updated_at: nowIso
                     };
                     description = 'Bảo trì toàn website: bật/tắt, tiêu đề, nội dung, lý do, thời gian và chu kỳ bảo trì';
 
@@ -2954,6 +2963,9 @@ Deno.serve(async (req) => {
                         if (active) {
                             value.historyId = active.id;
                             value.cycleStartedAt = active.started_at;
+                            /* Thời gian bắt đầu lấy từ cột started_at của database. */
+                            value.maintenance_started_at = active.started_at;
+                            value.maintenance_started_by = active.started_by || actor;
                             maintenance.cycle = active;
                         }
                     } else if (!enabled && wasEnabled) {
@@ -3170,7 +3182,7 @@ Deno.serve(async (req) => {
                         .eq('is_founder', true).eq('is_active', true).limit(3);
                     if (!founders || founders.length === 0) {
                         return fail(404, 'FOUNDER_NOT_FOUND',
-                            'Không có hồ sơ nào có is_founder = true. Hãy đặt cờ Founder cho tài khoản Minh Trúc.');
+                            'Không có hồ sơ nào có is_founder = true. Hãy đặt cờ Founder cho đúng tài khoản trước.');
                     }
                     if (founders.length > 1) {
                         return fail(409, 'FOUNDER_AMBIGUOUS',

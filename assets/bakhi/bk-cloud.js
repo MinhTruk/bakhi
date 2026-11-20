@@ -1733,33 +1733,17 @@
 
     function renderMaintenance() {
         var cfg = S.flags ? S.flags['public.maintenance'] : null;
-        var on = !!(cfg && cfg.enabled);
-        if (!on) {
-            if (S.maintenanceNode && S.maintenanceNode.parentNode) {
-                S.maintenanceNode.parentNode.removeChild(S.maintenanceNode);
-            }
-            S.maintenanceNode = null;
-            return;
+        /* Màn hình bảo trì DUY NHẤT do bk-shell dựng (có Đăng nhập Founder).
+           bk-cloud chỉ phát trạng thái, không tự vẽ thông báo thứ hai. */
+        if (S.maintenanceNode && S.maintenanceNode.parentNode) {
+            S.maintenanceNode.parentNode.removeChild(S.maintenanceNode);
         }
-        var message = String(cfg.message || 'Website đang bảo trì. Một số tính năng có thể tạm thời gián đoạn.');
-        if (!S.maintenanceNode) {
-            var node = el('div', 'bkc-maint bkc-dark');
-            node.setAttribute('role', 'status');
-            node.appendChild(el('i', 'fa-solid fa-screwdriver-wrench'));
-            node.appendChild(el('span', 'bkc-maint-text'));
-            var close = el('button', 'bkc-maint-x', '×');
-            close.type = 'button';
-            close.setAttribute('aria-label', 'Ẩn thông báo bảo trì');
-            close.addEventListener('click', function () {
-                if (S.maintenanceNode) S.maintenanceNode.hidden = true;
-            });
-            node.appendChild(close);
-            (D.body || D.documentElement).appendChild(node);
-            S.maintenanceNode = node;
-        }
-        S.maintenanceNode.hidden = false;
-        var text = S.maintenanceNode.querySelector('.bkc-maint-text');
-        if (text) text.textContent = message;
+        S.maintenanceNode = null;
+        try {
+            global.dispatchEvent(new global.CustomEvent('bk:maintenance', {
+                detail: cfg && cfg.enabled ? cfg : { enabled: false }
+            }));
+        } catch (e) { }
     }
 
     function sectionBlock(entry) {
@@ -2246,7 +2230,12 @@
                     scheduleChatUnread(900);
                 })
                 .subscribe(function (status) {
-                    if (status === 'SUBSCRIBED') S.realtime = 'connected';
+                    if (status === 'SUBSCRIBED') {
+                        S.realtime = 'connected';
+                        /* Kết nối lại sau gián đoạn → đọc lại app_settings để đồng bộ
+                           trạng thái bảo trì mà không cần tải lại trang. */
+                        loadSiteFlags();
+                    }
                     else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') S.realtime = 'error';
                     else if (status === 'CLOSED') S.realtime = 'closed';
                 });

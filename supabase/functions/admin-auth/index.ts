@@ -22,19 +22,28 @@ Deno.serve(async (req) => {
     const wanted = scope === 'founder' ? 'founder' : 'admin';
     const client = adminClient();
 
-    // Giới hạn tốc độ theo IP: 8 lần / 10 phút cho mỗi loại phiên.
+    // Giới hạn tốc độ theo IP: Founder 5 lần / 10 phút, Administrator 8 lần / 10 phút.
+    // Sai quá số lần → khoá tạm thời theo cửa sổ 10 phút (kể cả khi đoán đúng mã trong lúc khoá).
+    const attempts = wanted === 'founder' ? 5 : 8;
+    const windowSeconds = 600;
     const { data: allowed, error: rlError } = await client.rpc('bakhi_rate_limit', {
         p_key: wanted + '-auth:' + clientIp(req),
-        p_limit: 8,
-        p_window_seconds: 600
+        p_limit: attempts,
+        p_window_seconds: windowSeconds
     });
     if (rlError) return fail(500, 'RATE_LIMIT_ERROR', 'Không kiểm tra được giới hạn truy cập.');
-    if (!allowed) return fail(429, 'TOO_MANY_ATTEMPTS', 'Bạn đã thử quá nhiều lần. Vui lòng đợi vài phút.');
+    if (!allowed) {
+        return fail(429, 'TOO_MANY_ATTEMPTS',
+            wanted === 'founder'
+                ? 'Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau ít phút.'
+                : 'Bạn đã thử quá nhiều lần. Vui lòng đợi vài phút.',
+            { retryAfter: windowSeconds });
+    }
 
     const submitted = String(code ?? '');
     if (!submitted) {
         return fail(401, wanted === 'founder' ? 'BAD_FOUNDER_CODE' : 'BAD_DEV_CODE',
-            wanted === 'founder' ? 'Founder Code không đúng.' : 'Administrator Code không đúng.');
+            wanted === 'founder' ? 'Mã Founder không hợp lệ.' : 'Administrator Code không đúng.');
     }
 
     if (wanted === 'founder') {
@@ -47,11 +56,12 @@ Deno.serve(async (req) => {
             .maybeSingle();
         if (cfgError) return fail(500, 'DB_ERROR', 'Không đọc được cấu hình Founder.');
         if (!cfg || !cfg.code_hash) {
-            return fail(500, 'NO_FOUNDER_CODE', 'Chưa cấu hình Founder Code trong bảng founder_config.');
+            return fail(500, 'NO_FOUNDER_CODE', 'Chưa cấu hình mã Founder trong bảng founder_config.');
         }
         const submittedHash = await sha256Hex(submitted);
         if (!safeEqual(submittedHash, String(cfg.code_hash))) {
-            return fail(401, 'BAD_FOUNDER_CODE', 'Founder Code không đúng.');
+            /* Không tiết lộ chi tiết: mọi trường hợp sai đều cùng một thông báo. */
+            return fail(401, 'BAD_FOUNDER_CODE', 'Mã Founder không hợp lệ.');
         }
     } else {
         const devCode = Deno.env.get('ADMIN_DEV_CODE') ?? '';

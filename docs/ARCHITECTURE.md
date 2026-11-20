@@ -258,6 +258,25 @@ DOMContentLoaded
   (`student-profile`, `admin-actions`, `sync-student-progress`) **cần được deploy** trên dự án
   Supabase thật trước khi tính năng chạy trên website công khai.
 
+### 2.6.0.1. Bảo trì toàn hệ thống & Founder Login (7.9.2)
+
+- **Một nguồn trạng thái**: `app_settings.public.maintenance` (`maintenance_enabled`,
+  `maintenance_reason`, `maintenance_started_at`, `maintenance_started_by`,
+  `maintenance_updated_at`; giữ thêm các khoá camelCase cũ) và bảng `maintenance_history`
+  cho từng chu kỳ. Chỉ `admin-actions` (`service_role`) ghi; `settings.set` cho khoá bảo trì
+  bắt buộc `scope = founder`.
+- **Một giao diện**: `bk-shell.js` dựng `#bkMaintenance` trên mọi trang công khai;
+  `bk-cloud.js` chỉ phát sự kiện `bk:maintenance` khi feature flag đổi, không vẽ UI thứ hai.
+  Màn hình cũ trong `bk-core.js` đã bị gỡ.
+- **Một cơ chế xác thực Founder**: `assets/bakhi/bk-founder-auth.js` gọi `admin-auth`
+  (`scope = founder`, so băm SHA-256 với `founder_config`) rồi ghi phiên vào
+  `sessionStorage['bakhiAdmin.v1']` — đúng khoá mà `bk-cloud.js` và `founder/` dùng.
+  Sau đó client gọi `admin-actions → session.check`; máy chủ đọc lại token trong
+  `admin_sessions` và trả `scope`. Chỉ `scope = founder` mới gỡ màn hình bảo trì.
+  Không có cơ chế thứ hai, không có mã riêng cho màn hình bảo trì.
+- **Giới hạn thử**: `admin-auth` dùng RPC `bakhi_rate_limit` theo IP — Founder 5 lần / 10 phút,
+  trả `retryAfter`; mọi trường hợp sai đều trả “Mã Founder không hợp lệ.”
+
 ### 2.6.1. Danh hiệu — Title (7.6.0, hoàn thiện ở 7.7.0)
 
 - Danh hiệu là lớp **độc lập** với badge, khung avatar và thành tích: không tự mở khoá,

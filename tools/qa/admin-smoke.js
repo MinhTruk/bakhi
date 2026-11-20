@@ -366,13 +366,13 @@ const CHANGELOG = [{
   ok('bucket chat chỉ nhận ảnh ≤ 3 MB', /chat-images/.test(migration) && /3145728/.test(migration) &&
     /image\/png/.test(migration) && /image\/jpeg/.test(migration) && /image\/webp/.test(migration) && /image\/gif/.test(migration));
 
-  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=7\.9\.1/.test(adminPage) && /bk-founder\.js\?v=7\.9\.1/.test(adminPage));
-  ok('trang admin dùng dashboard 7.7.0', /bk-admin-dashboard\.css\?v=7\.9\.1/.test(adminPage) &&
-    /bk-devboard\.js\?v=7\.9\.1/.test(adminPage));
+  ok('trang admin nạp bk-badges để hiển thị tên badge', /bk-badges\.js\?v=7\.9\.2/.test(adminPage) && /bk-founder\.js\?v=7\.9\.2/.test(adminPage));
+  ok('trang admin dùng dashboard 7.7.0', /bk-admin-dashboard\.css\?v=7\.9\.2/.test(adminPage) &&
+    /bk-devboard\.js\?v=7\.9\.2/.test(adminPage));
 
   const founderPage = read('founder/index.html');
   ok('có trang Founder Dashboard riêng', /BK_DASH_SCOPE\s*=\s*["']founder/.test(founderPage) &&
-    /bk-devboard\.js\?v=7\.9\.1/.test(founderPage) && /bk-founder\.js\?v=7\.9\.1/.test(founderPage) && /founderLogin/.test(founderPage));
+    /bk-devboard\.js\?v=7\.9\.2/.test(founderPage) && /bk-founder\.js\?v=7\.9\.2/.test(founderPage) && /founderLogin/.test(founderPage));
   ok('Founder Dashboard có quyền cấp trọn bộ và bảo trì', /founder\.grantAll/.test(read('assets/bakhi/bk-founder.js')) &&
     /FOUNDER_ONLY/.test(adminActions) && /founder_config/.test(read('supabase/functions/admin-auth/index.ts')));
   ok('migration 6.0.0 tạo founder_config và scope', /founder_config/.test(read('supabase/migrations/20261122000000_bakhi_founder_6.sql')) &&

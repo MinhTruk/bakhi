@@ -330,28 +330,28 @@ html.bk-maint-lock body {
 .bk-maint {
     position: fixed;
     inset: 0;
-    z-index: 2147483000;
+    z-index: 2147483600;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1.2rem;
     overflow-y: auto;
-    background:
-        radial-gradient(120% 90% at 50% 0%, rgba(99, 102, 241, .28), transparent 60%),
-        radial-gradient(90% 80% at 50% 100%, rgba(168, 85, 247, .22), transparent 60%),
-        #0b1020;
-    color: #e2e8f0;
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
+    background: #000;
+    color: #e5e7eb;
 }
+/* Không hiển thị navbar, sidebar hay nội dung website phía dưới màn bảo trì. */
+body.bk-maintenance-on > *:not(#bkMaintenance):not(script):not(style):not(link) {
+    visibility: hidden !important;
+}
+body.bk-maintenance-on #bkMaintenance { visibility: visible !important; }
 .bk-maint-card {
     width: min(560px, 100%);
     max-width: 100%;
     padding: clamp(1.1rem, 4vw, 2rem);
-    border: 1px solid rgba(148, 163, 184, .28);
+    border: 1px solid #1f2937;
     border-radius: 20px;
-    background: rgba(15, 23, 42, .92);
-    box-shadow: 0 24px 70px rgba(2, 6, 23, .6);
+    background: #050505;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .8);
     text-align: center;
     overflow-wrap: anywhere;
 }
@@ -392,16 +392,20 @@ html.bk-maint-lock body {
 .bk-maint-time { margin: 0 0 .9rem; font-size: .8rem; color: #93c5fd; }
 .bk-maint-actions { display: flex; justify-content: center; gap: .6rem; flex-wrap: wrap; }
 .bk-maint-btn {
-    padding: .55rem 1.1rem;
+    padding: .62rem 1.4rem;
     border: 0;
     border-radius: 999px;
-    background: linear-gradient(135deg, #6366f1, #a855f7);
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: #111827;
     color: #fff;
     font: inherit;
     font-weight: 700;
     cursor: pointer;
 }
+.bk-maint-btn { color: #111827; }
 .bk-maint-btn:hover { filter: brightness(1.08); }
+.bk-maint-btn:active { transform: translateY(1px); }
+.bk-maint-btn:focus-visible { outline: 2px solid #fde68a; outline-offset: 3px; }
 .bk-maint-btn-alt {
     background: rgba(148, 163, 184, .16);
     border: 1px solid rgba(148, 163, 184, .35);
@@ -412,46 +416,6 @@ html.bk-maint-lock body {
 @media (prefers-reduced-motion: reduce) {
     .bk-maint-spinner { animation-duration: 2.4s; }
 }
-
-/* Hộp thoại mở khoá tạm thời bằng Administrator Code (nằm trên màn bảo trì) */
-.bk-maint-bypass {
-    position: fixed;
-    inset: 0;
-    z-index: 2147483001;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.2rem;
-    background: rgba(2, 6, 23, .72);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
-}
-.bk-maint-bypass-card {
-    width: min(420px, 100%);
-    max-width: 100%;
-    padding: clamp(1rem, 3vw, 1.4rem);
-    border: 1px solid rgba(148, 163, 184, .3);
-    border-radius: 18px;
-    background: #0f172a;
-    color: #e2e8f0;
-    box-shadow: 0 24px 70px rgba(2, 6, 23, .6);
-    overflow-wrap: anywhere;
-}
-.bk-maint-bypass-title { margin: 0 0 .4rem; font-size: 1.1rem; line-height: 1.3; }
-.bk-maint-bypass-desc { margin: 0 0 .85rem; font-size: .82rem; line-height: 1.55; color: #94a3b8; }
-.bk-maint-bypass-input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: .6rem .7rem;
-    border-radius: .6rem;
-    border: 1px solid rgba(148, 163, 184, .4);
-    background: #020617;
-    color: #e2e8f0;
-    font: inherit;
-}
-.bk-maint-bypass-input:focus { outline: 2px solid #a5b4fc; outline-offset: 1px; }
-.bk-maint-bypass-error { margin: .55rem 0 0; font-size: .78rem; color: #fca5a5; }
-.bk-maint-bypass-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .9rem; flex-wrap: wrap; }
 
 /* ============================ Lời chào trang chủ ======================== */
 .bk-greeting {

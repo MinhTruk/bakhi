@@ -2,6 +2,53 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.9.2] — 2026-11-20
+
+### Tính năng
+
+- **Đăng nhập Founder ngay trên màn hình bảo trì, cho toàn bộ website.** Mọi trang công khai
+  (trang chủ, 116 trang môn học/Studio, chat, hồ sơ, cài đặt) dùng chung một màn hình bảo trì
+  với nút **Đăng nhập Founder**. Nút mở giao diện nhập mã ngay trên màn hình đó: ô mã bị che,
+  có nút hiện/ẩn, nút quay lại, trạng thái đang xác thực và thông báo lỗi rõ ràng.
+- **Một cơ chế xác thực Founder duy nhất.** Nút trên màn hình bảo trì, trang `founder/` và
+  Founder Dashboard cùng dùng Edge Function `admin-auth` với `scope = founder`, cùng bảng
+  `founder_config` (chỉ lưu băm SHA-256), cùng bảng phiên `admin_sessions` và cùng thời hạn
+  phiên. Không có mã Founder thứ hai, không có hệ đăng nhập thứ hai.
+- **Máy chủ xác minh lại phiên** bằng action mới `admin-actions` → `session.check` trước khi
+  gỡ màn hình bảo trì. Sửa `sessionScope` trong JavaScript, dựng lại sessionStorage hay gọi
+  thẳng API đều không vượt được bước này.
+- **Founder Dashboard → Bảo trì** có thêm khu **Founder Access**: trạng thái phiên Founder,
+  trạng thái bảo trì toàn hệ thống, thời gian bắt đầu do máy chủ ghi, nút mở trang bảo trì và
+  mở Founder Dashboard. Bật/tắt bảo trì đều có hộp xác nhận.
+
+### Sửa lỗi
+
+- **Administrator không còn vượt được bảo trì toàn hệ thống.** Hai màn hình bảo trì cũ (một
+  trong `bk-shell.js`, một trong `bk-core.js`) đều cho nhập Administrator Code để mở khoá;
+  màn hình cũ trong `bk-core.js` đã bị gỡ hẳn và `bk-shell.js` chỉ chấp nhận phiên Founder do
+  máy chủ xác nhận.
+- **Chỉ còn một màn hình bảo trì.** `bk-cloud.js` không còn tự vẽ thông báo bảo trì thứ hai;
+  nó chỉ phát trạng thái để `bk-shell.js` dựng đúng giao diện chung.
+- **Administrator không còn thấy công tắc bảo trì** trong mục feature flag của dashboard;
+  máy chủ vẫn chặn `settings.set` cho `public.maintenance` (chỉ Founder).
+- **Thiên Khải Sáng Thế không còn được tự gắn cờ Founder theo tên hiển thị.** `badges.grant`
+  chỉ cấp badge `founder` khi hồ sơ đã có `is_founder = true`; việc trao và thu hồi badge độc
+  quyền đều bắt buộc phạm vi Founder và được ghi `admin_activity_logs`.
+- **Mã Founder sai trả về đúng một thông báo** “Mã Founder không hợp lệ.”, không phân biệt mã
+  rỗng, sai hay chưa cấu hình; giới hạn 5 lần thử / 10 phút theo IP kèm thời gian thử lại.
+
+### Cải tiến
+
+- Màn hình bảo trì theo đúng đặc tả: nền đen tuyền, nội dung căn giữa, tiêu đề **Bảo trì**,
+  lý do (không hardcode), **Thời gian bắt đầu** lấy từ máy chủ/DB, vòng xoay tải và nút Đăng
+  nhập Founder là tương tác duy nhất; navbar và nội dung website phía dưới bị ẩn.
+- `public.maintenance` lưu thêm `maintenance_enabled`, `maintenance_reason`,
+  `maintenance_started_at`, `maintenance_started_by`, `maintenance_updated_at`; các khoá
+  camelCase cũ được giữ để tương thích.
+- Đồng bộ trạng thái bảo trì không cần xoá cache: realtime `app_settings` cập nhật ngay, và
+  khi kết nối realtime được khôi phục, `bk-cloud.js` đọc lại toàn bộ feature flag.
+- Nâng toàn bộ website lên 7.9.2 (122 tệp HTML, `bk-version.js`, dashboard, chat, Edge Function).
+
 ## [7.9.1] — 2026-11-20
 
 ### Sửa lỗi

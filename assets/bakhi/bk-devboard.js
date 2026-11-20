@@ -15,7 +15,7 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var APP_VERSION = '7.9.1';
+    var APP_VERSION = '7.9.2';
 
     var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
         ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];
@@ -3820,6 +3820,15 @@
                 : 'Trạng thái: đang tắt · cập nhật ' + (value.updatedAt ? fmt(value.updatedAt) : '—'));
             host.appendChild(status);
 
+            /* Mốc bắt đầu do máy chủ/DB ghi, không phải ô nhập của người dùng. */
+            var startedIso = value.maintenance_started_at || value.cycleStartedAt || null;
+            host.appendChild(h('p', 'bkc-hint',
+                'Thời gian bắt đầu (máy chủ): ' + (startedIso ? fmt(startedIso) : '—') +
+                ' · Người bật: ' + (value.maintenance_started_by || '—')));
+            host.appendChild(h('p', 'bkc-hint',
+                'Administrator thường không thể bật/tắt bảo trì hoặc vượt qua màn hình bảo trì. ' +
+                'Mọi thay đổi được máy chủ kiểm tra lại phạm vi phiên.'));
+
             var previewHost = h('div');
             previewHost.appendChild(preview());
             host.appendChild(previewHost);
@@ -3833,7 +3842,7 @@
             var actions = h('div', 'bkc-actions');
             actions.appendChild(btn('Lưu cấu hình', 'bkc-btn-primary', function () { save(false); }, 'fa-floppy-disk'));
             actions.appendChild(btn('Bật bảo trì', 'bkc-btn-danger', function () { confirmSave(true); }, 'fa-lock'));
-            actions.appendChild(btn('Tắt bảo trì', 'bkc-btn-ghost', function () { save(false, true); }, 'fa-lock-open'));
+            actions.appendChild(btn('Tắt bảo trì', 'bkc-btn-ghost', function () { confirmStop(); }, 'fa-lock-open'));
             host.appendChild(actions);
 
             function payload(on) {
@@ -3858,10 +3867,20 @@
                 if (global.BK && global.BK.ui && global.BK.ui.confirm) {
                     global.BK.ui.confirm({
                         title: 'Bật bảo trì toàn website?',
-                        message: 'Mọi trang public sẽ hiển thị thông báo bảo trì ngay khi lưu. Administrator vẫn vào được Dashboard.',
+                        message: 'Toàn bộ website công khai sẽ chuyển sang màn hình bảo trì ngay khi lưu. ' +
+                            'Chỉ Founder đăng nhập được từ màn hình đó; Administrator vẫn bị khoá.',
                         ok: 'Bật bảo trì', danger: true
                     }).then(function (yes) { if (yes) save(on); });
                 } else if (global.confirm('Bật bảo trì toàn website?')) save(on);
+            }
+            function confirmStop() {
+                if (global.BK && global.BK.ui && global.BK.ui.confirm) {
+                    global.BK.ui.confirm({
+                        title: 'Tắt bảo trì toàn website?',
+                        message: 'Mọi website sẽ hoạt động trở lại ngay khi lưu. Lịch sử bảo trì được giữ nguyên.',
+                        ok: 'Tắt bảo trì', danger: false
+                    }).then(function (yes) { if (yes) save(false, true); });
+                } else if (global.confirm('Tắt bảo trì toàn website?')) save(false, true);
             }
         }
 
@@ -3877,6 +3896,57 @@
             });
         }
         load();
+
+        /* --------------------------- Founder Access -------------------------- */
+        if (isFounder()) {
+            var access = card('Founder Access', [
+                iconBtn('fa-rotate', 'Kiểm tra lại phiên Founder', function () { loadAccess(); })
+            ], 'Phiên Founder được xác minh ở máy chủ (admin-actions: session.check). Đăng nhập Founder không làm thay đổi trạng thái bảo trì.');
+            pane.appendChild(access.root);
+            var accessHost = h('div', 'bkc-form');
+            access.body.appendChild(accessHost);
+
+            var loadAccess = function () {
+                accessHost.textContent = '';
+                loading(accessHost, 'Đang kiểm tra phiên Founder…');
+                api('session.check').then(function (data) {
+                    accessHost.textContent = '';
+                    var grid = h('div', 'bkc-status-grid');
+                    grid.appendChild(infoItem('Phiên Founder',
+                        data.scope === 'founder' ? 'Còn hiệu lực' : 'Không phải Founder',
+                        data.expiresAt ? 'Hết hạn: ' + fmt(data.expiresAt) : 'Máy chủ không trả hạn phiên.',
+                        data.scope === 'founder' ? 'ok' : 'off'));
+                    var mt = data.maintenance || {};
+                    var startedIso = mt.maintenance_started_at || mt.cycleStartedAt || null;
+                    grid.appendChild(infoItem('Bảo trì toàn hệ thống',
+                        mt.enabled ? 'Đang bật' : 'Đang tắt',
+                        mt.reason ? 'Lý do: ' + mt.reason : 'Chưa có lý do.',
+                        mt.enabled ? 'warn' : 'ok'));
+                    grid.appendChild(infoItem('Thời gian bắt đầu',
+                        startedIso ? fmt(startedIso) : '—',
+                        'Mốc do máy chủ/DB ghi, không lấy từ client.', 'info'));
+                    grid.appendChild(infoItem('Máy chủ',
+                        data.serverVersion || '—', 'Phiên bản admin-actions đang chạy.', 'info'));
+                    accessHost.appendChild(grid);
+                    var acts = h('div', 'bkc-actions');
+                    acts.appendChild(btn('Mở trang bảo trì toàn cục', 'bkc-btn-ghost', function () {
+                        window.open(basePath() + 'index.html', '_blank', 'noopener');
+                    }, 'fa-lock'));
+                    acts.appendChild(btn('Mở Founder Dashboard', 'bkc-btn-ghost', function () {
+                        window.location.href = basePath() + 'founder/';
+                    }, 'fa-crown'));
+                    accessHost.appendChild(acts);
+                    accessHost.appendChild(h('p', 'bkc-hint',
+                        'Mọi website (trang chủ, trang môn học, chat, Studio) dùng chung màn hình bảo trì ' +
+                        'với nút Đăng nhập Founder. Nút này dùng đúng mã và phiên của Founder Dashboard; ' +
+                        'đăng nhập không tự động tắt bảo trì.'));
+                }).catch(function (err) {
+                    accessHost.textContent = '';
+                    accessHost.appendChild(alertBox((err && err.message) || 'Không kiểm tra được phiên Founder.', 'error'));
+                });
+            };
+            loadAccess();
+        }
 
         /* ----------------------------- Lịch sử ----------------------------- */
         var historyCard = card('Lịch sử bảo trì', [
@@ -4008,7 +4078,11 @@
             loading(flagsHost, 'Đang tải feature flag…');
             api('settings.get').then(function (data) {
                 flagsHost.textContent = '';
-                var list = data.settings || [];
+                /* Administrator thường không thấy bảo trì ở đây: quyền đổi khoá
+                   public.maintenance chỉ Founder, máy chủ cũng chặn. */
+                var list = (data.settings || []).filter(function (row) {
+                    return isFounder() || row.key !== 'public.maintenance';
+                });
                 S.data.flags = list;
                 if (!list.length) {
                     emptyState(flagsHost, 'fa-sliders', 'Chưa có feature flag',
