@@ -2,6 +2,29 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [7.9.1] — 2026-11-20
+
+### Sửa lỗi
+
+- **Bấm vào hồ sơ ở trang chủ không còn tự chạy tìm kiếm theo tên đăng nhập.** Từ 7.9.0, khung
+  tìm kiếm căn bản đã bị gỡ khỏi giao diện nhưng mã của nó vẫn còn sống trong `index.html`:
+  ô `#searchInput` vẫn nằm trong DOM (chỉ bị ẩn bằng CSS), vẫn gắn `oninput` và vẫn nhận sự kiện
+  `input` do trình duyệt/trình quản lý mật khẩu tự điền. Khi việc đó xảy ra, `handleSearch()`
+  ẩn `#categoriesTree` và hiện “Không tìm thấy kết quả phù hợp cho từ khóa …”, khiến các thẻ môn
+  học biến mất và không bấm được cho tới khi tải lại trang.
+- Đã gỡ **toàn bộ** hệ thống tìm kiếm căn bản ở trang chủ: ô nhập, khu kết quả
+  (`#searchResultsSection`), `handleSearch()`, `debouncedSearch()`, hai hàm chỉ phục vụ nó
+  (`hlText`, `norm`/`nrm1`), phím tắt `Ctrl/⌘ + /` mở ô cũ, và đoạn mã gắn cứng vào nó trong
+  hiệu ứng click.
+- `bk-shell.js` không còn dựng ô tìm kiếm trong menu hồ sơ và không còn `hookSearch()` bọc
+  `debouncedSearch`; mở menu hồ sơ chỉ đưa focus vào mục đầu tiên, không vào ô nhập nào.
+
+### Cải tiến
+
+- Thành tích **Tầm Bảo Nhất Niệm** (dùng tìm kiếm) giờ đếm ở bảng lệnh kiêm tìm kiếm toàn cục
+  trong Trung tâm học tập — tìm kiếm duy nhất còn lại của website — thay vì ô tìm kiếm đã gỡ.
+- Nâng toàn bộ website lên 7.9.1 (122 tệp HTML, `bk-version.js`, dashboard, chat, Edge Function).
+
 ## [7.9.0] — 2026-11-19
 
 ### Tính năng

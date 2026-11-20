@@ -45,12 +45,12 @@
       }
     },
     "index.html": {
-      "hash": "283ca199e6f5935bfadcb77d3dd54f80d913bafb20cba39bfadc82b50e20d386",
-      "bytes": 196271,
+      "hash": "06845faf5ace6f5ee7d0f7e03f9386dd9534097877415369578bde5a1d1970a9",
+      "bytes": 186142,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
-        "explanation": 9,
+        "explanation": 8,
         "questionField": 2,
         "optionsArray": 0,
         "essayBank": 0,
@@ -1769,6 +1769,13 @@
       "reason": "Bổ sung trang dashboard Founder vào baseline (không chứa nội dung giáo dục). Không có tệp môn/bài học nào thay đổi.",
       "files": [
         "founder/index.html"
+      ]
+    },
+    {
+      "at": "2026-11-20T02:38:04.216Z",
+      "reason": "Trang không chứa nội dung giáo dục được viết lại có chủ đích (Studio hợp nhất, liên kết /studio/). Không có tệp môn/bài học nào thay đổi.",
+      "files": [
+        "index.html"
       ]
     }
   ]

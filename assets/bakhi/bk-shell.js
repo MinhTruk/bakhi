@@ -169,7 +169,7 @@
         for (var i = 0; i < nodes.length; i++) {
             var p = nodes[i];
             if (!/3\s*gạch/i.test(p.textContent || '')) continue;
-            p.textContent = 'Chọn thư mục bên dưới để mở bài học. Bấm vào ảnh đại diện ở góc trên phải để mở hồ sơ, tìm kiếm nhanh, đổi giao diện và cài đặt.';
+            p.textContent = 'Chọn thư mục bên dưới để mở bài học. Bấm vào ảnh đại diện ở góc trên phải để mở hồ sơ, đổi giao diện và cài đặt.';
         }
     }
 
@@ -228,19 +228,6 @@
                 return orig.apply(this, arguments);
             };
             fx.__bkCounted = true;
-        }
-    }
-
-    function hookSearch() {
-        if (typeof global.debouncedSearch === 'function' && !global.debouncedSearch.__bkCounted) {
-            var orig = global.debouncedSearch;
-            global.debouncedSearch = function () {
-                if (this && this.value && String(this.value).trim().length > 1) {
-                    if (global.BK && global.BK.badges) { try { global.BK.badges.bumpCounter('search.used'); } catch (e) { } }
-                }
-                return orig.apply(this, arguments);
-            };
-            global.debouncedSearch.__bkCounted = true;
         }
     }
 
@@ -428,30 +415,6 @@
             go('profile/');
         });
         menu.appendChild(head);
-
-        /* --- Tìm kiếm nhanh (chỉ trang có ô tìm kiếm) --- */
-        if (typeof global.debouncedSearch === 'function') {
-            var search = el('div', 'bk-menu-search');
-            search.appendChild(icon('fa-magnifying-glass'));
-            var input = D.createElement('input');
-            input.type = 'search';
-            input.id = 'bkMenuSearch';
-            input.placeholder = 'Tìm môn, KTTX, GK1…';
-            input.setAttribute('aria-label', 'Tìm kiếm nhanh');
-            input.addEventListener('input', function () {
-                if (typeof global.debouncedSearch === 'function') global.debouncedSearch(input.value);
-            });
-            input.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    closeMenu();
-                    var section = D.getElementById('searchResultsSection');
-                    if (section && section.scrollIntoView) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-            search.appendChild(input);
-            menu.appendChild(search);
-        }
 
         /* --- A (tiếp). Hồ sơ --- */
         menu.appendChild(row('a', 'fa-id-card', 'Hồ sơ cá nhân', {
@@ -644,7 +607,7 @@
         if (global.BKCloud && global.BKCloud.refreshChatUnread) {
             try { global.BKCloud.refreshChatUnread(); } catch (e) { }
         }
-        var first = S.menu.querySelector('.bk-menu-row, .bk-menu-search input');
+        var first = S.menu.querySelector('.bk-menu-row');
         if (first && first.focus) {
             try { first.focus({ preventScroll: true }); } catch (e) { }
         }
@@ -1057,7 +1020,6 @@
         buildSlot();
         buildMenu();
         hookEffects();
-        hookSearch();
         paintProfileBits();
         loadMaintenance();
         /* Không tạo timer định kỳ trong môi trường jsdom (QA) để tiến trình thoát.

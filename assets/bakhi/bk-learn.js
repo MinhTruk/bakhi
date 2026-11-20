@@ -1637,6 +1637,14 @@
     function renderOverlay() {
         if (!overlay) return;
         var q = overlay.input.value.trim();
+        /* Tìm kiếm còn lại của website là bảng lệnh/tìm kiếm này — đếm một lần
+           mỗi phiên để thành tích "Tầm Bảo Nhất Niệm" vẫn đạt được. */
+        if (q.length > 1 && !overlay.counted) {
+            overlay.counted = true;
+            if (global.BK && BK.badges && BK.badges.bumpCounter) {
+                try { BK.badges.bumpCounter('search.used'); } catch (e) { }
+            }
+        }
         overlay.index = 0;
         overlay.items = [];
         overlay.results.innerHTML = '';

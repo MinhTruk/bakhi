@@ -51,7 +51,6 @@ const indexHtml = `<!DOCTYPE html><html lang="vi"><head><title>Bá Khí</title><
       <div class="relative">
         <button onclick="toggleHamburgerMenu()">menu</button>
         <div id="hamburgerDropdown" class="hidden">
-          <input id="searchInput">
           <i id="themeIcon" class="fa-solid fa-moon"></i><span id="themeText">Đang tối</span>
           <div class="flex flex-col items-end gap-2">
             <label>Chọn ảnh<input id="bgInput" type="file"></label>
@@ -79,7 +78,7 @@ const indexHtml = `<!DOCTYPE html><html lang="vi"><head><title>Bá Khí</title><
 const I = makeDOM(indexHtml, 'https://minhtruk.github.io/bakhi/index.html');
 const iw = I.w;
 iw.openReadmeModal = function () { iw.__readme = true; };
-iw.debouncedSearch = function (v) { iw.__searched = v; };
+iw.debouncedSearch = function () { iw.__searchCalls = (iw.__searchCalls || 0) + 1; };
 iw.toggleDarkMode = function () {
   const html = iw.document.documentElement;
   const dark = !html.classList.contains('dark');
@@ -174,15 +173,10 @@ ok('mục README gọi openReadmeModal của trang', iw.__readme === true);
 ok('đóng menu sau khi chọn mục', !menu.classList.contains('open') &&
   idoc.getElementById('bkUserBtn').getAttribute('aria-expanded') === 'false');
 
-/* Tìm kiếm nhanh trong menu */
+/* Không còn ô tìm kiếm trong menu hồ sơ (tìm kiếm căn bản đã gỡ từ 7.9.1) */
 idoc.getElementById('bkUserBtn').click();
-const quick = idoc.getElementById('bkMenuSearch');
-ok('menu có ô tìm kiếm nhanh', !!quick);
-if (quick) {
-  quick.value = 'toán';
-  quick.dispatchEvent(new iw.Event('input'));
-  ok('ô tìm kiếm nối vào debouncedSearch của trang', iw.__searched === 'toán');
-}
+ok('menu hồ sơ không có ô tìm kiếm', !idoc.getElementById('bkMenuSearch'));
+ok('mở hồ sơ không kích hoạt tìm kiếm của trang', (iw.__searchCalls || 0) === 0, String(iw.__searchCalls));
 
 /* Trợ năng */
 iw.BKShell.setA11y({ fontScale: 120, contrast: true, reduceMotion: true });

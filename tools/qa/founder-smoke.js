@@ -44,8 +44,8 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   console.log('\n[1] Trang Founder, mô-đun và mã bí mật');
   const page = read('founder/index.html');
   ok('trang founder dùng dashboard + mô-đun 7.7.0',
-    /bk-devboard\.js\?v=7\.9\.0/.test(page) && /bk-founder\.js\?v=7\.9\.0/.test(page) &&
-    /bk-titles\.js\?v=7\.9\.0/.test(page) &&
+    /bk-devboard\.js\?v=7\.9\.1/.test(page) && /bk-founder\.js\?v=7\.9\.1/.test(page) &&
+    /bk-titles\.js\?v=7\.9\.1/.test(page) &&
     /BK_DASH_SCOPE\s*=\s*["']founder/.test(page));
   ok('trang Founder gọi founderLogin/founderToken',
     /founderLogin/.test(page) && /founderToken/.test(page));
@@ -523,7 +523,7 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   ['chat/index.html', 'profile/index.html', 'settings/index.html', 'admin/index.html'].forEach((f) => {
     const html = read(f);
     ok(f + ' nạp bk-titles.css + bk-titles.js đúng 1 lần',
-      /bk-titles\.css\?v=7\.9\.0/.test(html) && /bk-titles\.js\?v=7\.9\.0/.test(html) &&
+      /bk-titles\.css\?v=7\.9\.1/.test(html) && /bk-titles\.js\?v=7\.9\.1/.test(html) &&
       (html.match(/bk-titles\.js/g) || []).length === 1);
   });
 

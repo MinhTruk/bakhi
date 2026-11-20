@@ -126,7 +126,8 @@ Không có animation favicon và không có Highlight Manager độc lập.
 - **Ôn câu sai**: `Ctrl+K` → “Ôn tập câu đã sai”; dùng `←/→` chuyển câu, `A/B/C/D` chọn đáp án.
 - **Ghi chú nhanh khi đang học**: `Ctrl+K` → Ghi chú.
 - **Focus mode**: `Ctrl+K` → Chế độ tập trung, hoặc `Esc` để thoát.
-- **Tìm kiếm**: phím `/` khi không ở trong ô nhập, hoặc ô tìm kiếm trong menu tài khoản.
+- **Tìm kiếm**: phím `/` khi không ở trong ô nhập (bảng lệnh kiêm tìm kiếm toàn cục). Menu hồ sơ
+  không còn ô tìm kiếm căn bản — ô này đã bị gỡ hẳn từ 7.9.1.
 - **Developer Playground**: `Ctrl+Shift+G` (chỉ khi máy đã có quyền Developer).
 - **Music Player**: logo ♪ góc trái dưới; `Space` phát/tạm dừng, `←/→` bài trước/kế
   (chỉ khi panel nhạc mở), `Esc` đóng. Thêm bài bằng liên kết YouTube/Spotify/SoundCloud

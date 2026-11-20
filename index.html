@@ -337,17 +337,6 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
 
                         <!-- Dropdown nội dung 3 gạch -->
                         <div id="hamburgerDropdown" class="hidden absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-3 z-40 space-y-3">
-                            
-                            <!-- Thanh tìm kiếm nằm ngay trong menu 3 gạch khi mở ra -->
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                    <i class="fa-solid fa-search text-xs"></i>
-                                </div>
-                                <input type="text" id="searchInput" oninput="debouncedSearch(this.value)" placeholder="Tìm kiếm môn, KTTX, GK1..." class="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition">
-                            </div>
-
-                            <hr class="border-slate-200 dark:border-slate-700">
-
                             <!-- Các tùy chọn trong menu -->
                             <div class="space-y-1.5">
                                 <!-- Dark / Light mode toggle -->
@@ -454,7 +443,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                     </div>
                     <h2 class="title-shine text-2xl md:text-3xl font-bold mb-2">Thư Mục Tài Liệu & Ôn Tập Hàng Kỳ</h2>
                     <p class="text-slate-600 dark:text-slate-300 text-sm max-w-2xl leading-relaxed">
-                        Chọn các đợt kiểm tra <b>KTTX (Thường xuyên)</b> hoặc <b>KTGK / KTCK (Định kỳ)</b> để mở thư mục các môn. Bấm vào biểu tượng <b>3 gạch ở góc trên phải</b> để tìm kiếm nhanh, xem Wiki tài liệu hoặc đổi giao diện.
+                        Chọn các đợt kiểm tra <b>KTTX (Thường xuyên)</b> hoặc <b>KTGK / KTCK (Định kỳ)</b> để mở thư mục các môn. Bấm vào <b>ảnh đại diện ở góc trên phải</b> để mở hồ sơ, đổi giao diện hoặc vào Cài đặt.
                     </p>
                 </div>
 
@@ -480,20 +469,6 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                     </div>
                 </div>
             </section>
-
-            <!-- Khu vực hiển thị kết quả tìm kiếm (Mặc định ẩn) -->
-            <div id="searchResultsSection" class="hidden space-y-4">
-                <div class="flex items-center justify-between pb-2 border-b border-indigo-500/40">
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                        <i class="fa-solid fa-magnifying-glass text-indigo-500"></i>
-                        <span>Kết Quả Tìm Kiếm</span>
-                    </h3>
-                    <span id="searchCount" class="text-xs bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-full border border-indigo-500/30">0 kết quả</span>
-                </div>
-                <div id="searchResultsList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    <!-- Kết quả render bằng JS -->
-                </div>
-            </div>
 
             <!-- Categories Tree -->
             <div id="categoriesTree" class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1090,9 +1065,6 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         function toggleHamburgerMenu() {
             const dropdown = document.getElementById('hamburgerDropdown');
             dropdown.classList.toggle('hidden');
-            if (!dropdown.classList.contains('hidden')) {
-                document.getElementById('searchInput').focus();
-            }
         }
 
         // --- TÍNH NĂNG DARK / LIGHT MODE ---
@@ -1198,89 +1170,6 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             document.getElementById('removeBgBtn').classList.add('hidden'); document.getElementById('opacityControl').classList.add('hidden'); document.getElementById('bgInput').value = '';
         }
 
-        // --- TÍNH NĂNG TÌM KIẾM ---
-        function handleSearch(keyword) {
-            const query = norm(keyword.trim());
-            const searchSection = document.getElementById('searchResultsSection');
-            const searchResultsList = document.getElementById('searchResultsList');
-            const searchCount = document.getElementById('searchCount');
-            const categoriesTree = document.getElementById('categoriesTree');
-
-            if (!query) {
-                searchSection.classList.add('hidden');
-                categoriesTree.classList.remove('hidden');
-                searchResultsList.innerHTML = '';
-                return;
-            }
-
-            searchSection.classList.remove('hidden');
-            categoriesTree.classList.add('hidden');
-
-            let matchedResults = []; const words = query.split(/\s+/).filter(Boolean);
-
-            examCategories.forEach(cat => {
-                visibleSubjects().forEach(sub => {
-                    const searchableText = norm(`${sub.name} ${cat.examType} ${cat.semester} ${cat.path} ${sub.id} ${sub.indexFile}`);
-                    if (words.every(w => searchableText.includes(w))) {
-                        matchedResults.push({
-                            subject: sub,
-                            key: cat.key,
-                            examType: cat.examType,
-                            semester: cat.semester,
-                            url: `${cat.path}/${sub.id}/${sub.indexFile}`
-                        });
-                    }
-                });
-            });
-
-            searchCount.innerText = `${matchedResults.length} kết quả`;
-
-            if (matchedResults.length === 0) {
-                searchResultsList.innerHTML = `
-                    <div class="col-span-full py-8 text-center text-slate-500 dark:text-slate-400 text-sm">
-                        <i class="fa-solid fa-triangle-exclamation mb-2 text-xl text-amber-500"></i>
-                        <p>Không tìm thấy kết quả phù hợp cho từ khóa "<b>${escapeHtml(keyword)}</b>"</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const searchHighlights = getHighlightsData();
-            searchResultsList.innerHTML = matchedResults.map(item => {
-                // Kết quả chưa highlight cũng bị khóa như cây môn học: đỏ, không có href
-                if (searchHighlights[item.key + '/' + item.subject.id] !== true) {
-                    return `
-                <div class="p-3 bg-rose-50/70 dark:bg-rose-950/30 border border-rose-400/70 dark:border-rose-500/40 rounded-xl flex items-center justify-between text-xs text-rose-600 dark:text-rose-300 hl-locked shadow-md" aria-disabled="true" title="Môn này chưa mở — đang khóa">
-                    <div class="flex items-center space-x-3 truncate">
-                        <div class="p-2 bg-rose-500/10 rounded-lg">
-                            <i class="fa-solid ${item.subject.icon} ${item.subject.color} text-base"></i>
-                        </div>
-                        <div class="truncate">
-                            <div class="font-bold truncate">${hlText(item.subject.name + ' - ' + item.examType + ' - ' + item.semester, words)}</div>
-                            <div class="text-[10px] truncate mt-0.5 opacity-80">${hlText(item.url, words)}</div>
-                        </div>
-                    </div>
-                    <i class="fa-solid fa-lock ml-2"></i>
-                </div>
-            `;
-                }
-                return `
-                <a href="${item.url}" class="p-3 bg-emerald-50/80 dark:bg-emerald-950/30 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/40 border border-emerald-500/60 dark:border-emerald-500/40 hover:border-emerald-500 rounded-xl flex items-center justify-between text-xs text-slate-700 dark:text-slate-100 transition group shadow-md">
-                    <div class="flex items-center space-x-3 truncate">
-                        <div class="p-2 bg-emerald-500/10 rounded-lg group-hover:scale-110 transition">
-                            <i class="fa-solid ${item.subject.icon} ${item.subject.color} text-base"></i>
-                        </div>
-                        <div class="truncate">
-                            <div class="font-bold text-slate-900 dark:text-slate-100 truncate">${hlText(item.subject.name + ' - ' + item.examType + ' - ' + item.semester, words)}</div>
-                            <div class="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">${hlText(item.url, words)}</div>
-                        </div>
-                    </div>
-                    <i class="fa-solid fa-arrow-right text-slate-400 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition ml-2"></i>
-                </a>
-            `;
-            }).join('');
-        }
-
         function toggleFolder(folderId, btnEl) {
             const open = document.getElementById(folderId).classList.toggle('open');
             btnEl.classList.toggle('active', open);
@@ -1326,15 +1215,6 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         }
 
         // ===== Tiện ích v4 =====
-        const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
-        const nrm1 = s => Array.from(s, c => norm(c) || c).join('');
-        function hlText(txt, words) {
-            const n = nrm1(txt), m = new Array(txt.length).fill(false);
-            words.forEach(w => { let i = w ? n.indexOf(w) : -1; while (i > -1) { for (let j = i; j < i + w.length; j++) m[j] = true; i = n.indexOf(w, i + 1); } });
-            let o = '', on = false;
-            for (let i = 0; i < txt.length; i++) { if (m[i] !== on) { o += on ? '</mark>' : '<mark class="bg-amber-300/60 text-inherit rounded px-0.5">'; on = m[i]; } o += escapeHtml(txt[i]); }
-            return o + (on ? '</mark>' : '');
-        }
         function sanitizeHtml(h) {
             const t = document.createElement('template'); t.innerHTML = h;
             t.content.querySelectorAll('script,style,iframe,object,embed,link,meta,form,base').forEach(n => n.remove());
@@ -1357,7 +1237,6 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         }
         // ===== Tiện ích hiệu năng =====
         const escapeHtml = t => t.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-        let _st; const debouncedSearch = v => { clearTimeout(_st); _st = setTimeout(() => handleSearch(v), 150); };
         let _markedP;
         function loadMarked() {
             if (window.marked) return Promise.resolve();
@@ -1467,7 +1346,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             addEventListener('pointerdown', e => {
                 if (reduce) return;
                 for (const m of shooters) if (Math.hypot(m.x - e.clientX, m.y - e.clientY) < 48) { m.life = m.max; m.boom = true; return; }
-                if (fx.tapSpark && !e.target.closest('a,button,input,label,select,textarea,section,header,footer,#categoriesTree,#searchResultsSection,#dev-panel-modal,#readme-modal')) boom(e.clientX, e.clientY, lite ? 6 : 10);
+                if (fx.tapSpark && !e.target.closest('a,button,input,label,select,textarea,section,header,footer,#categoriesTree,#dev-panel-modal,#readme-modal')) boom(e.clientX, e.clientY, lite ? 6 : 10);
             }, { passive: true });
             window.__fx = {
                 cfg: fx, DEF, spawn, boom, shot,
@@ -1611,7 +1490,6 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         document.addEventListener('keydown', e => {
             if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd' && !document.getElementById('devPanelBtnContainer').classList.contains('hidden')) { e.preventDefault(); openDevPanel(); }
             if (e.key === 'Escape') { closeDevPanel(); closeReadmeModal(); }
-            if ((e.ctrlKey || e.metaKey) && e.key === '/') { e.preventDefault(); const dd = document.getElementById('hamburgerDropdown'); dd.classList.remove('hidden'); document.getElementById('searchInput').focus(); }
         });
 
         // ===== Dev: giao diện, ẩn môn, FPS =====
@@ -2068,22 +1946,22 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
     <script src="bakhi-v4.js"></script>
 
 <!-- Bá Khí Learning Platform (chỉ thêm thẻ script, không sửa nội dung) -->
-<script src="assets/bakhi/bk-core.js?v=7.9.0" defer></script>
-<script src="assets/bakhi/bk-notify.js?v=7.9.0" defer></script>
-<script src="assets/bakhi/bk-learn.js?v=7.9.0" defer></script>
-<script src="assets/bakhi/bk-dev.js?v=7.9.0" defer></script>
+<script src="assets/bakhi/bk-core.js?v=7.9.1" defer></script>
+<script src="assets/bakhi/bk-notify.js?v=7.9.1" defer></script>
+<script src="assets/bakhi/bk-learn.js?v=7.9.1" defer></script>
+<script src="assets/bakhi/bk-dev.js?v=7.9.1" defer></script>
 
 <!-- Bá Khí × Supabase: một client duy nhất, nhận diện học sinh, thông báo, changelog -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
-<script src="assets/bakhi/bk-supabase.config.js?v=7.9.0" defer></script>
-<script src="assets/bakhi/bk-cloud.js?v=7.9.0" data-bk-whatsnew="1" defer></script>
-<script src="assets/bakhi/bk-devboard.js?v=7.9.0" defer></script>
+<script src="assets/bakhi/bk-supabase.config.js?v=7.9.1" defer></script>
+<script src="assets/bakhi/bk-cloud.js?v=7.9.1" data-bk-whatsnew="1" defer></script>
+<script src="assets/bakhi/bk-devboard.js?v=7.9.1" defer></script>
 
 <!-- assets/bakhi/shell — avatar tài khoản dùng chung -->
-<script src="assets/bakhi/bk-version.js?v=7.9.0" defer></script>
-<script src="assets/bakhi/bk-profile.js?v=7.9.0" defer></script>
-<script src="assets/bakhi/bk-badges.js?v=7.9.0" defer></script>
-    <script src="assets/bakhi/bk-roles.js?v=7.9.0" defer></script>
-<script src="assets/bakhi/bk-shell.js?v=7.9.0" defer></script>
+<script src="assets/bakhi/bk-version.js?v=7.9.1" defer></script>
+<script src="assets/bakhi/bk-profile.js?v=7.9.1" defer></script>
+<script src="assets/bakhi/bk-badges.js?v=7.9.1" defer></script>
+    <script src="assets/bakhi/bk-roles.js?v=7.9.1" defer></script>
+<script src="assets/bakhi/bk-shell.js?v=7.9.1" defer></script>
 </body>
 </html>
