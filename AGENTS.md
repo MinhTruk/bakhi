@@ -76,7 +76,8 @@ node --check assets/bakhi/bk-cloud.js
 node --check assets/bakhi/bk-devboard.js
 
 # 3. Smoke test DOM (cần jsdom, cài ngoài repo)
-npm install jsdom --prefix /tmp/bktest --no-save
+# Ghim jsdom@31.0.1: bản mới hơn đổi hành vi DOM, bản cũ kéo phụ thuộc chỉ có ESM.
+npm install jsdom@31.0.1 typescript@5.6.3 --prefix /tmp/bktest --no-save
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/cloud-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/shell-smoke.js

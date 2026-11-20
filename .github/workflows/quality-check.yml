@@ -62,10 +62,14 @@ jobs:
       - name: Cài Node.js LTS
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          # Ghim Node 22 LTS + jsdom 31.0.1: jsdom mới nhất đổi hành vi DOM so với các bản
+          # trước (smoke test dựng giao diện thật sẽ hỏng), còn jsdom cũ kéo theo phụ thuộc
+          # chỉ có ESM nên Node 20 `require()` không nạp được. Bộ đôi này đã chạy xanh
+          # toàn bộ 11 smoke test.
+          node-version: '22'
 
       - name: Cài công cụ QA (jsdom, typescript)
-        run: npm install --prefix "$QA_DEPS" --no-save jsdom typescript@5.6.3
+        run: npm install --prefix "$QA_DEPS" --no-save jsdom@31.0.1 typescript@5.6.3
 
       - name: Toàn vẹn nội dung giáo dục
         run: node tools/content-integrity.js verify

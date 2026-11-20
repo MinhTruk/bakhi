@@ -27,7 +27,7 @@ Chạy đúng thứ tự, dừng ngay khi một bước thất bại:
 node tools/content-integrity.js verify          # nội dung giáo dục không đổi
 node tools/qa/version-audit.js                  # ?v=, đường dẫn, APP_VERSION, SERVER_VERSION
 node tools/qa/supabase-config.js                # functions ↔ config.toml, verify_jwt, migration
-# (jsdom + typescript cài ngoài repo: npm install jsdom typescript@5.6.3 --prefix /tmp/bktest --no-save)
+# (jsdom + typescript cài ngoài repo: npm install jsdom@31.0.1 typescript@5.6.3 --prefix /tmp/bktest --no-save)
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/report-smoke.js
 ```
 
