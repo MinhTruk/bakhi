@@ -441,7 +441,7 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Favicon tĩnh dùng chung | ✅ | SVG + PNG 16/32/48/192/512 + ICO + apple-touch-icon; 118/119 trang |
 | Tài liệu | ✅ | README, AGENTS, ARCHITECTURE, FEATURES, MUSIC, STUDIO, SUPABASE_SETUP |
 
-## Gamification 2.0 (8.3.0)
+## Gamification 2.0 (8.3.5)
 
 | Tính năng | Trang | Ghi chú |
 |---|---|---|
@@ -452,4 +452,5 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Bộ sưu tập thành tựu | `/gamification/` | Lọc, tìm kiếm, thành tựu ẩn |
 | Thử thách Boss | `/gamification/` | Câu hỏi do quản trị biên soạn, chấm tại máy chủ |
 | Kho vật phẩm | `/gamification/` | Trang trí, không tạo lợi thế học tập |
-| Quản trị | Admin/Founder → Tiến trình | Cấu hình, định nghĩa, duyệt bất thường |
+| Quản trị | Admin/Founder → Tiến trình | Cấu hình, định nghĩa, duyệt bất thường; 8.3.5 tự sinh mã, xem trước, Cài đặt nâng cao |
+| Avatar & khung đồng bộ | Toàn website | 8.3.5 — `student_profiles.frame` là nguồn duy nhất; trang bị ở Gamification đổi navbar/hồ sơ/chat |

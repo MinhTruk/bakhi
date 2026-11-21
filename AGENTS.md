@@ -37,8 +37,10 @@ Hướng dẫn cho agent/developer làm việc trong repository này. Đọc h�
   bk-profile.js|css    Hồ sơ local-first, ảnh đại diện/bìa, 50 khung avatar SVG
   bk-roles.js          Danh vị học sinh dùng chung (student_roles, canonical id)
   bk-badges.js         99 thành tích (74 tự động + 25 trao tay)
-  bk-gamification.js|css  Tiến trình 8.3.0: XP, cấp, hàng đợi sự kiện, dashboard
+  bk-gamification.js|css  Tiến trình 8.3.5: XP, cấp, hàng đợi sự kiện, dashboard,
+                       avatar/khung dùng chung BKProfile
   bk-devboard-gamification.js  Tab quản trị Tiến trình (cấu hình, định nghĩa, Boss)
+                       — 8.3.5: mã tự sinh, xem trước, Cài đặt nâng cao
   bk-profile-ui.js     Component hồ sơ/badge dùng chung (profile + settings)
   bk-settings.js|css   5 tab Cài đặt
   bk-core.js|css       Kho dữ liệu local-first, UI kit, tìm kiếm, adapter AI/Supabase
@@ -238,11 +240,26 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   máy chủ” — đây là nguyên nhân lỗi 8.3.0, xem `docs/GAMIFICATION_BUG_AUDIT_V831.md`.
 - Lối vào Tiến trình nằm trong menu tài khoản (`bk-shell.js`), chỉ một định nghĩa.
 - Sau khi thêm trang HTML mới, chạy `node tools/inject-gamification.js` (idempotent).
+- **Avatar & khung avatar (8.3.5):** `student_profiles.frame` là nguồn sự thật DUY NHẤT cho
+  khung đang trang bị trên toàn website. `user_inventory.is_equipped` chỉ là trạng thái kho.
+  `bk_gam_equip` ghi cả hai trong cùng transaction; `bakhi_owned_frames` gồm khung badge +
+  khung nhận qua kho vật phẩm (`reward_catalog.metadata.profile_frame`). Không dựng nguồn
+  khung thứ hai, không tự hạ khung máy chủ về `none` ở client.
+- Mọi nơi hiển thị avatar dùng `BKProfile.avatarNode()` — không tự dựng ảnh/chữ cái đầu riêng
+  (đây là lỗi 8.3.5 ở hero trang Tiến trình).
+- **Mã tự sinh (8.3.5):** chỉ một `BKGamificationAdmin.slugify()` ở client và một `codeOf()`
+  ở `gamification-api`. Mã cho phép `_` và `-`; `Ma Vương` → `ma_vuong`. Không thêm hàm slug
+  thứ hai. Tạo mới phải gửi `expect_new` để máy chủ trả `CODE_TAKEN` khi mã đã tồn tại.
+- Không xoá cứng thành tựu đã có người nhận: `admin.achievement.delete` trả `IN_USE`, dùng
+  Lưu trữ (`is_active = false`) để giữ lịch sử.
 - QA gamification:
   ```bash
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/gamification-smoke.js
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/gamification-progress-load-smoke.js
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/gamification-navigation-smoke.js
+  NODE_PATH=/tmp/bktest/node_modules node tools/qa/avatar-sync-smoke.js
+  NODE_PATH=/tmp/bktest/node_modules node tools/qa/founder-achievement-smoke.js
+  NODE_PATH=/tmp/bktest/node_modules node tools/qa/v835-code-generator.js
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/xp-level-integrity.js
   node tools/qa/gamification-security-smoke.js
   SUPABASE_ACCESS_TOKEN=... node tools/qa/gamification-db-check.js   # cần quyền project

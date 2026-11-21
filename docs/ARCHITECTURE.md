@@ -659,3 +659,29 @@ Chi tiết: [GAMIFICATION_ARCHITECTURE.md](GAMIFICATION_ARCHITECTURE.md),
 → `gamification-api` → `bk_gam_state` (+ `bk_gam_sync_missions`). Client có máy trạng thái
 (restoring/loading/ready/…), retry giới hạn, timeout, chống phản hồi cũ và cache theo
 `studentId`. Chi tiết: [GAMIFICATION_PROGRESS_LOADING.md](GAMIFICATION_PROGRESS_LOADING.md).
+
+### 4.2. Avatar & khung avatar (8.3.5)
+
+`student_profiles` là nguồn dữ liệu hiển thị danh tính duy nhất: `avatar_url` (ảnh) và
+`frame` (khung đang trang bị). `BKProfile` giữ cache localStorage theo `student_id` và
+`bk-cloud.js` đồng bộ hai chiều qua `student-profile`.
+
+- Mọi nơi hiển thị avatar dùng `BKProfile.avatarNode()` (navbar, menu, Hồ sơ, Chat,
+  hero `/gamification/`).
+- Trang bị khung ở Gamification: `gamification-api` → `bk_gam_equip` ghi
+  `user_inventory.is_equipped` **và** `student_profiles.frame` trong cùng transaction;
+  API trả `{ kind, frame }`, client gọi `BKProfile.applyServerFrame()`.
+- `bakhi_owned_frames` = khung cơ bản + khung thưởng badge + khung nhận qua kho vật phẩm
+  (`reward_catalog.metadata.profile_frame`). Trigger `bakhi_profile_frame_guard` chặn
+  khung chưa sở hữu ở tầng DB.
+- Client không hạ khung máy chủ về `none`; chỉ khung không tồn tại trong danh mục mới bị hạ.
+
+Chi tiết: [AVATAR_SYNC_V835.md](AVATAR_SYNC_V835.md) ·
+[AVATAR_FRAME_SYSTEM.md](AVATAR_FRAME_SYSTEM.md).
+
+### 4.3. Sinh mã trong dashboard quản trị (8.3.5)
+
+`bk-devboard-gamification.js` tự sinh mã từ tên cho thành tựu, Boss, nhiệm vụ, node và
+phần thưởng (`BKGamificationAdmin.slugify`), cảnh báo trùng và đề xuất `_2`, `_3`, có xem
+trước và gom trường kỹ thuật vào “Cài đặt nâng cao”. Máy chủ xác nhận lại bằng `codeOf()`
+và `expect_new` → `409 CODE_TAKEN`. Chi tiết: [CODE_GENERATOR.md](CODE_GENERATOR.md).
