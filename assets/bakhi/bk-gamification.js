@@ -347,7 +347,6 @@
         state: null,
         config: null,
         loading: false,
-        error: null,
         errorCode: null,
         status: 'idle',
         lastError: null,
