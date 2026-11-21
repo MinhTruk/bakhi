@@ -639,3 +639,16 @@ Ghi chú triển khai:
   bản mới hơn mọi phiên bản đã xuất bản và chưa có thông báo liên kết.
 - Workflow chạy lại chỉ cập nhật hàng đã có (hash nội dung), không tạo thêm thông báo; lỗi
   từng phần được ghi vào `sync_state`/`sync_error` và trả HTTP 207.
+
+## 4. Gamification 2.0 (8.3.0)
+
+- Sổ XP duy nhất `xp_transactions`; bảng tiến trình `user_progression` chỉ là bản suy ra
+  có hàm đối chiếu `bk_gam_admin_drift()`.
+- Reward Engine là các hàm Postgres `bk_gam_*` chạy trong một transaction; client gọi
+  qua Edge Function `gamification-api`, không ghi bảng.
+- Client: `bk-gamification.js` (theo dõi + hàng đợi + dashboard) và
+  `bk-devboard-gamification.js` (tab quản trị). Trang `/gamification/`.
+- Không thay đổi badge/title/profile/sync hiện có.
+
+Chi tiết: [GAMIFICATION_ARCHITECTURE.md](GAMIFICATION_ARCHITECTURE.md),
+[XP_LEVEL_SYSTEM.md](XP_LEVEL_SYSTEM.md), [GAMIFICATION_SECURITY.md](GAMIFICATION_SECURITY.md).

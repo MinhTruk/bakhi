@@ -440,3 +440,15 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Kiểm thử & bảo toàn nội dung | ✅ | `content-integrity` 119 tệp + 2 bộ smoke test |
 | Favicon tĩnh dùng chung | ✅ | SVG + PNG 16/32/48/192/512 + ICO + apple-touch-icon; 118/119 trang |
 | Tài liệu | ✅ | README, AGENTS, ARCHITECTURE, FEATURES, MUSIC, STUDIO, SUPABASE_SETUP |
+
+## Gamification 2.0 (8.3.0)
+
+| Tính năng | Trang | Ghi chú |
+|---|---|---|
+| XP & cấp độ | `/gamification/` | Từ hoạt động học thật, giới hạn/ngày |
+| Nhiệm vụ ngày/tuần | `/gamification/` | Nhận thưởng một lần, chu kỳ UTC |
+| Cây kỹ năng | `/gamification/` | 5 nhánh, node mở theo điều kiện |
+| Bộ sưu tập thành tựu | `/gamification/` | Lọc, tìm kiếm, thành tựu ẩn |
+| Thử thách Boss | `/gamification/` | Câu hỏi do quản trị biên soạn, chấm tại máy chủ |
+| Kho vật phẩm | `/gamification/` | Trang trí, không tạo lợi thế học tập |
+| Quản trị | Admin/Founder → Tiến trình | Cấu hình, định nghĩa, duyệt bất thường |
