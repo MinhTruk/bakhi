@@ -278,6 +278,25 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   thứ hai. Tạo mới phải gửi `expect_new` để máy chủ trả `CODE_TAKEN` khi mã đã tồn tại.
 - Không xoá cứng thành tựu đã có người nhận: `admin.achievement.delete` trả `IN_USE`, dùng
   Lưu trữ (`is_active = false`) để giữ lịch sử.
+### 6.1. Giao diện & biểu tượng trang trí (8.4.0)
+
+- Một mô-đun duy nhất: `assets/bakhi/bk-themes.js|css` → `window.BKThemes` và
+  `window.BKUserName`. Không dựng bản thứ hai để vẽ icon cạnh tên hay nền theo mùa.
+- Sở hữu/đang dùng giao diện là dữ liệu máy chủ (`user_inventory`, kind `theme`);
+  `localStorage.bakhiTheme.v1` chỉ là cache để trang tĩnh hiện đúng ngay khi tải.
+  `BKThemes.setTheme()` từ chối giao diện chưa sở hữu.
+- `BKThemes.syncFromState(state)` được gọi trong `applyState` của `bk-gamification.js`;
+  sau khi thêm nơi đọc trạng thái mới, nhớ gọi lại hàm này.
+- Phạm vi: `page` (trang chủ, nền toàn màn hình) · `head` (trang môn học, chỉ header) ·
+  `accent` (hồ sơ/tiến trình/cài đặt) · `none` (quản trị). Đổi hành vi phải sửa
+  `BKThemes.scope()`, không thêm CSS ghi đè rải rác.
+- Mọi tên người dùng có trang trí dùng `BKUserName.node()` / `.mini()`; sau khi đổi biểu
+  tượng gọi `BKUserName.refresh()`.
+- Mọi animation phải tắt theo `prefers-reduced-motion` và lớp `bk-a11y-reduce-motion`.
+- `tools/integrate-pages.js` chèn hai thẻ vào mọi trang có `bk-core.js`. Thẻ phải nằm trên
+  dòng riêng và nối ở cuối tệp: `content-integrity` bỏ toàn bộ dòng chứa `assets/bakhi/`,
+  nên chèn vào giữa dòng sẽ làm hash nội dung đổi và bị coi là sửa nội dung giáo dục.
+
 - QA gamification:
   ```bash
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/gamification-smoke.js

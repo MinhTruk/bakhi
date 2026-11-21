@@ -2,6 +2,68 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.4.0] — 2026-11-21
+
+Phạm vi thực tế của bản này: hệ **giao diện (theme)**, **biểu tượng trang trí cạnh tên**
+dùng chung toàn website, và **bốn huy hiệu đặc biệt** trong Founder Dashboard. Các phần
+lớn khác của đề bài 8.4.0 (chuẩn hoá toàn bộ index môn học, thu hồi cây kỹ năng) chưa
+hoàn tất — xem ghi chú ở cuối mục.
+
+### Tính năng
+
+- **Hệ giao diện dùng chung (`bk-themes.js` + `bk-themes.css`).** Mười giao diện có nền
+  thật: Bình Minh, Nửa Đêm, Anh Đào, Đại Dương, Rừng Xanh, Hoàng Gia, Bạc Hà, Hồng Ngọc,
+  Halloween và Giáng Sinh. Giao diện mở khoá từ Kho vật phẩm, áp dụng theo tài khoản và
+  đồng bộ giữa các thiết bị qua `bk_gam_equip`.
+- **Phạm vi hiển thị theo trang.** Trang chủ phủ nền toàn màn hình có lớp phủ giữ tương
+  phản; trang môn học chỉ đổi khu vực đầu trang; hồ sơ, Tiến trình, Cài đặt và Kỹ năng chỉ
+  đổi màu nhấn; trang quản trị không áp dụng.
+- **Giao diện Halloween**: bí ngô khắc mặt phát sáng (ba cỡ, SVG nội tuyến), dơi bay, tông
+  cam–tím, có nhịp sáng tắt nhẹ.
+- **Giao diện Giáng Sinh**: tuyết rơi liên tục 28 hạt với kích thước/tốc độ khác nhau, cây
+  thông trang trí, tông xanh–đỏ; tuyết không chặn cuộn hay che nội dung.
+- **Tôn trọng giảm chuyển động**: khi `prefers-reduced-motion` hoặc trợ năng "Giảm chuyển
+  động" đang bật thì không tạo tuyết/dơi và tắt animation trang trí.
+- **Cài đặt → Hình nền có mục Giao diện**: xem trước, trạng thái Đang dùng / Sẵn sàng /
+  Chưa sở hữu, nút áp dụng và nút về giao diện mặc định. Ảnh nền tự tải lên vẫn độc lập.
+- **`BKUserName` — tên có biểu tượng trang trí dùng chung**: một định nghĩa duy nhất thay cho
+  các đoạn dựng icon rời rạc, đã dùng ở menu tài khoản, hồ sơ và hero trang Tiến trình;
+  hỗ trợ mini profile `[Avatar] Tên [Biểu tượng] + dòng phụ`, tên dài tự cắt ellipsis.
+- **Founder Dashboard — Give Special Badges**: thẻ riêng cho bốn huy hiệu *Ba mươi ngày học*
+  (Cực hiếm · Hoạt động), *Mười ải Boss* (Huyền thoại · Boss), *Nhà thám hiểm* (Ít gặp ·
+  Khám phá), *Mùa Khởi Đầu* (Huyền thoại · Giới hạn). Chọn một hoặc nhiều, xem trước trạng
+  thái sở hữu, xác nhận rồi trao; máy chủ bỏ qua huy hiệu đã có và ghi nguồn Founder.
+- **Thẻ cấp cây kỹ năng đổi tên thành “Give Full Skills Tree”**, giữ nguyên luồng xem
+  trước → xác nhận → ghi nhật ký.
+
+### Cải tiến
+
+- `tools/integrate-pages.js` chèn `bk-themes.css|js` vào mọi trang có `bk-core.js` (trừ
+  `admin/`, `founder/`), idempotent và **không đổi hash nội dung giáo dục** — thẻ được nối
+  thành dòng riêng ở cuối tệp để `content-integrity` vẫn khôi phục đúng bản gốc.
+- Phiên bản đồng bộ 8.4.0 toàn hệ thống: `bk-version.js`, `bk-devboard.js`,
+  `admin-actions` và chuỗi `?v=` trong 125 trang HTML.
+- Thêm `tools/qa/themes-smoke.js` (25 kiểm tra jsdom) và `docs/THEMES_V840.md`.
+
+### Cơ sở dữ liệu
+
+- Migration `20261213000000_bakhi_v840_founder_grants.sql` (idempotent): thêm
+  `theme-halloween`, `theme-christmas` vào `reward_catalog`; thêm cột
+  `user_skill_progress.founder_granted`; bảng `founder_skill_grants`; hàm chỉ đọc
+  `bk_gam_founder_tree_status(uuid)`. **Chưa áp dụng** — xem mục Chưa hoàn thành.
+- Không xoá bảng/cột, không đổi kiểu dữ liệu, không tạo hệ thống thứ hai.
+
+### Chưa hoàn thành trong 8.4.0
+
+- **Chuẩn hoá toàn bộ index môn học** (tách `hoc.html` / `kiemtra.html`, bộ component dùng
+  chung cho 114 trang): chưa thực hiện — đây là thay đổi cấu trúc trên toàn bộ nội dung
+  giáo dục và cần một đợt riêng có kiểm thử liên kết đầy đủ.
+- **Thu hồi quyền mở khoá do Founder cấp**: đã có dữ liệu dấu vết (`founder_granted`,
+  `founder_skill_grants`) nhưng chưa có hàm thu hồi/API, vì chưa thể kiểm thử trên Supabase
+  thật trong phiên này.
+- **Founder Activity Log mở rộng**: vẫn dùng `gamification_activity_logs` hiện có; chưa có
+  chế độ xem lịch sử theo thao tác Founder riêng.
+
 ## [8.3.8] — 2026-11-21
 
 ### Tính năng

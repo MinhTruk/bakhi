@@ -564,6 +564,23 @@
         });
         panel.appendChild(grid);
 
+        /* 8.4.0 — Giao diện (theme) đã sở hữu trong Kho vật phẩm. */
+        panel.appendChild(el('h2', null, 'Giao diện'));
+        var themeHost = el('div', 'bk-theme-picker');
+        panel.appendChild(themeHost);
+        if (global.BKThemes && typeof global.BKThemes.renderPicker === 'function') {
+            global.BKThemes.renderPicker(themeHost, {
+                toast: toast,
+                onApplied: function () {
+                    /* Giao diện áp dụng ngay; hình nền ảnh tự tạo (nếu có) được giữ nguyên. */
+                    try { paintPreview(null); } catch (e) { }
+                }
+            });
+        } else {
+            themeHost.appendChild(el('p', 'bk-set-lead',
+                'Chưa tải được hệ thống giao diện. Hãy tải lại trang.'));
+        }
+
         /* Tải ảnh cá nhân */
         var upload = el('button', 'bk-btn');
         upload.type = 'button';

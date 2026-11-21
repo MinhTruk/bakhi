@@ -441,6 +441,18 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Favicon tĩnh dùng chung | ✅ | SVG + PNG 16/32/48/192/512 + ICO + apple-touch-icon; 118/119 trang |
 | Tài liệu | ✅ | README, AGENTS, ARCHITECTURE, FEATURES, MUSIC, STUDIO, SUPABASE_SETUP |
 
+## Giao diện & nhận diện (8.4.0)
+
+| Hạng mục | Nơi dùng | Ghi chú |
+|---|---|---|
+| Giao diện (theme) | `/settings/?tab=wallpaper` | 10 giao diện; sở hữu từ Kho vật phẩm; đồng bộ qua `bk_gam_equip` |
+| Halloween | Trang chủ + header trang môn | Bí ngô khắc mặt phát sáng (SVG), dơi bay, cam–tím |
+| Giáng Sinh | Trang chủ + header trang môn | Tuyết rơi 28 hạt, cây thông, xanh–đỏ |
+| Tên có biểu tượng | Menu tài khoản, hồ sơ, Tiến trình | `BKUserName.node()` / `.mini()` — một định nghĩa duy nhất |
+| Give Special Badges | Founder Dashboard → Gamification | 4 huy hiệu trao tay, chống trao trùng ở máy chủ |
+
+Chi tiết kỹ thuật và cách thêm giao diện mới: `docs/THEMES_V840.md`.
+
 ## Gamification 2.0 (8.3.8)
 
 | Tính năng | Trang | Ghi chú |

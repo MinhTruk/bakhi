@@ -434,6 +434,11 @@
         S.state = state;
         writeCache(state);
         registerInventoryFrames(state);
+        /* 8.4.0: đồng bộ giao diện + biểu tượng trang trí sang lớp dùng chung
+           để trang chủ / trang môn học / hồ sơ hiện đúng lựa chọn của tài khoản. */
+        if (global.BKThemes && typeof global.BKThemes.syncFromState === 'function') {
+            try { global.BKThemes.syncFromState(state); } catch (e) { }
+        }
         if (notify && prev) announce(prev, state);
         if (S.host) renderAll();
         try {
@@ -683,11 +688,14 @@
 
         var info = el('div', 'bkg-hero-info');
         var nameRow = el('div', 'bkg-hero-name');
-        nameRow.appendChild(el('h1', null, name));
+        var nameHead = el('h1');
+        /* 8.4.0: tên + biểu tượng trang trí dùng chung BKUserName. */
+        if (global.BKUserName) nameHead.appendChild(global.BKUserName.node(name, { size: 'large' }));
+        else nameHead.textContent = name;
+        nameRow.appendChild(nameHead);
         var equippedTitle = (st.inventory || []).filter(function (i) { return i.is_equipped && i.kind === 'title'; })[0];
         if (equippedTitle) nameRow.appendChild(pill(equippedTitle.name, 'accent'));
-        var equippedDeco = (st.inventory || []).filter(function (i) { return i.is_equipped && i.kind === 'decoration'; })[0];
-        if (equippedDeco) nameRow.appendChild(icon(equippedDeco.icon || 'fa-feather', 'bkg-deco'));
+        /* Biểu tượng trang trí do BKUserName vẽ (một định nghĩa duy nhất). */
         info.appendChild(nameRow);
         info.appendChild(el('p', 'bkg-hero-sub',
             'Cấp ' + st.level + ' · ' + Number(st.total_xp).toLocaleString('vi-VN') + ' XP tổng cộng'));
@@ -1308,6 +1316,12 @@
                         global.BKProfile.applyServerFrame(res.frame || 'none');
                     }
                     if (res && res.state) applyState(res.state, false);
+                    if (item.kind === 'theme' && global.BKThemes) {
+                        try {
+                            global.BKThemes.syncFromState(res && res.state);
+                            smallToast(inUse ? 'Đã bỏ giao diện.' : 'Đã dùng giao diện — xem trong Cài đặt → Hình nền.', 'success');
+                        } catch (e) { }
+                    }
                     if (global.BKShell && typeof global.BKShell.refresh === 'function') {
                         try { global.BKShell.refresh(); } catch (e) { }
                     }

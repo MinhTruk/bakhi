@@ -87,7 +87,17 @@
         bar.appendChild(api.avatarNode({ size: 92 }));
         var meta = el('div', 'bk-profile-meta');
         var nameRow = el('div', 'bk-profile-name');
-        nameRow.appendChild(el('span', null, idc.name || api.displayName(p)));
+        var shownName = idc.name || api.displayName(p);
+        /* 8.4.0: tên + biểu tượng trang trí dùng chung; hồ sơ người khác dùng
+           biểu tượng của chính người đó khi máy chủ trả về. */
+        if (global.BKUserName) {
+            nameRow.appendChild(global.BKUserName.node(shownName, {
+                deco: idc.deco || undefined,
+                size: 'large'
+            }));
+        } else {
+            nameRow.appendChild(el('span', null, shownName));
+        }
         if (p.nickname) nameRow.appendChild(el('span', 'bk-profile-nick', '@' + p.nickname));
         meta.appendChild(nameRow);
 

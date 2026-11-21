@@ -235,6 +235,14 @@
        Avatar + menu
        ------------------------------------------------------------------ */
     function profileApi() { return global.BKProfile || null; }
+    /* 8.4.0: tên trong menu tài khoản kèm biểu tượng trang trí (BKUserName). */
+    function paintMenuName(host) {
+        if (!host) return;
+        host.textContent = '';
+        var name = displayName();
+        if (global.BKUserName) host.appendChild(global.BKUserName.node(name, { size: 'compact' }));
+        else host.textContent = name;
+    }
     function displayName() {
         var api = profileApi();
         if (api) return api.displayName();
@@ -390,7 +398,8 @@
         var head = el('div', 'bk-menu-head');
         head.appendChild(avatarNode(42));
         var text = el('div', 'bk-menu-head-text');
-        var nameEl = el('div', 'bk-menu-name', displayName());
+        var nameEl = el('div', 'bk-menu-name');
+        paintMenuName(nameEl);
         var roleEl = el('div', 'bk-menu-role');
         roleEl.id = 'bkMenuRole';
         roleEl.hidden = true;
@@ -568,7 +577,7 @@
             var fresh = avatarNode(34);
             (old.parentNode || S.btn).replaceChild(fresh, old);
         }
-        if (S.nameEl) S.nameEl.textContent = displayName();
+        if (S.nameEl) paintMenuName(S.nameEl);
         var roleEl = D.getElementById('bkMenuRole');
         if (roleEl) {
             var idc = null;

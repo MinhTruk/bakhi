@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-founder-grants.js (8.3.8)
+   Bá Khí — bk-founder-grants.js (8.4.0)
    Bốn thẻ quyền Founder trong tab Gamification:
      · Cấp trọn cây kỹ năng
      · Trao vật phẩm (có số lượng, tôn trọng giới hạn)
@@ -80,10 +80,11 @@
         }
 
         /* ---------------------------------------------------- Cây kỹ năng */
-        var treeCard = kit.card('Cấp trọn cây kỹ năng', null,
+        var treeCard = kit.card('Give Full Skills Tree — cấp trọn cây kỹ năng', null,
             'Mở toàn bộ node kỹ năng cho một học sinh, bỏ qua điều kiện thường. ' +
             'Không xoá node đã hoàn thành, không trao trùng vật phẩm, có xác nhận trước khi ghi.');
         pane.appendChild(treeCard.root);
+        renderSpecialBadges(pane, kit, opts);
         var treeReason = kit.input('text', 'Lý do cấp (không bắt buộc, tối đa 300 ký tự)');
         treeReason.maxLength = 300;
         treeCard.body.appendChild(treeReason);
@@ -607,6 +608,164 @@
         loadHistory(0);
     }
 
+
+    /* =====================================================================
+       4 huy hiệu đặc biệt — Founder trao tay (8.4.0 §2.2)
+       Mã thành tựu đã có trong migration 20261212000000 (ach-active-30,
+       ach-boss-10, ach-discovery-5, ach-season-1). Việc trao vẫn đi qua
+       gamification-api → bk_gam_grant_achievements, nên máy chủ kiểm tra
+       quyền founder và bỏ qua huy hiệu đã sở hữu (không trao trùng).
+       ===================================================================== */
+    var SPECIAL_BADGES = [
+        { id: 'ach-active-30', name: 'Ba mươi ngày học', rarity: 'Cực hiếm',
+          category: 'Hoạt động', icon: 'fa-calendar-days',
+          desc: 'Có hoạt động học tập trong 30 ngày.' },
+        { id: 'ach-boss-10', name: 'Mười ải Boss', rarity: 'Huyền thoại',
+          category: 'Boss', icon: 'fa-dragon',
+          desc: 'Vượt qua 10 thử thách Boss.' },
+        { id: 'ach-discovery-5', name: 'Nhà thám hiểm', rarity: 'Ít gặp',
+          category: 'Khám phá', icon: 'fa-map-location-dot',
+          desc: 'Thử sức 5 lượt thử thách Boss.' },
+        { id: 'ach-season-1', name: 'Mùa Khởi Đầu', rarity: 'Huyền thoại',
+          category: 'Giới hạn', icon: 'fa-sun',
+          desc: 'Có 20 ngày hoạt động trong mùa đầu tiên.' }
+    ];
+
+    function renderSpecialBadges(pane, kit, opts) {
+        if (!pane || !kit || !kit.h) return;
+        var h = kit.h;
+        var api = kit.gamificationApi || kit.api;
+        var toast = kit.toast || function () { };
+
+        function studentId() {
+            return (opts && typeof opts.getStudent === 'function') ? String(opts.getStudent() || '') : '';
+        }
+        function studentName() {
+            return (opts && typeof opts.getStudentName === 'function') ? String(opts.getStudentName() || '') : '';
+        }
+        function changed() {
+            if (opts && typeof opts.onChanged === 'function') {
+                try { opts.onChanged(); } catch (e) { }
+            }
+        }
+
+        var card = kit.card('Give Special Badges — 4 huy hiệu đặc biệt', null,
+            'Chọn học sinh ở thẻ Đối tượng nhận, rồi chọn một hoặc nhiều huy hiệu. ' +
+            'Máy chủ ghi nguồn trao là Founder, bỏ qua huy hiệu đã có và không đụng tới ' +
+            'huy hiệu học sinh tự đạt.');
+        pane.appendChild(card.root);
+
+        var grid = el(h, 'div', 'bkf-grid');
+        card.body.appendChild(grid);
+        var status = el(h, 'div', 'bkf-preview');
+        card.body.appendChild(status);
+        var actions = el(h, 'div', 'bkc-actions');
+        card.body.appendChild(actions);
+
+        var picked = {};
+
+        function paint() {
+            grid.textContent = '';
+            SPECIAL_BADGES.forEach(function (b) {
+                var on = !!picked[b.id];
+                var btn = el(h, 'button', 'bkf-item' + (on ? ' is-selected' : ''));
+                btn.type = 'button';
+                btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+                var art = el(h, 'span', 'bkf-art');
+                art.appendChild(kit.icon(b.icon));
+                btn.appendChild(art);
+                btn.appendChild(el(h, 'span', 'bkf-item-name', b.name));
+                var meta = el(h, 'span', 'bkf-item-meta');
+                meta.appendChild(el(h, 'span', 'bkf-sub', b.rarity + ' · ' + b.category));
+                btn.appendChild(meta);
+                btn.appendChild(el(h, 'span', 'bkf-item-id', b.desc));
+                btn.addEventListener('click', function () {
+                    if (picked[b.id]) delete picked[b.id];
+                    else picked[b.id] = 1;
+                    paint();
+                    var n = Object.keys(picked).length;
+                    status.textContent = n ? ('Đã chọn ' + n + ' huy hiệu.') : '';
+                });
+                grid.appendChild(btn);
+            });
+        }
+
+        function grant() {
+            var sid = studentId();
+            var ids = Object.keys(picked);
+            actions.textContent = '';
+            if (!sid) {
+                status.textContent = 'Hãy chọn “Một học sinh” ở thẻ Đối tượng nhận trước.';
+                return;
+            }
+            if (!ids.length) {
+                status.textContent = 'Hãy chọn ít nhất một huy hiệu.';
+                return;
+            }
+            status.textContent = 'Đang kiểm tra huy hiệu đã sở hữu…';
+            api('admin.achievements.preview', { student_id: sid, ids: ids }).then(function (res) {
+                var rows = (res && res.achievements) || [];
+                var owned = rows.filter(function (r) {
+                    return Number(r.owned_stages || 0) >= Number(r.stages || 1);
+                }).map(function (r) { return r.name; });
+                var lines = ids.map(function (id) {
+                    var b = SPECIAL_BADGES.filter(function (x) { return x.id === id; })[0];
+                    return '• ' + (b ? b.name : id);
+                }).join('\n');
+                var warn = owned.length
+                    ? ('\n\nĐã sở hữu (máy chủ sẽ bỏ qua): ' + owned.join(', '))
+                    : '';
+                status.textContent = 'Chuẩn bị trao cho ' + (studentName() || 'học sinh') + ':';
+                var box = el(h, 'div', 'bkf-section');
+                box.appendChild(el(h, 'p', null, 'Chuẩn bị trao cho ' + (studentName() || 'học sinh') + ':'));
+                var ul = el(h, 'ul', 'bkf-reasons');
+                lines.split('\n').forEach(function (line) {
+                    ul.appendChild(el(h, 'li', null, line.replace(/^• /, '')));
+                });
+                box.appendChild(ul);
+                if (owned.length) box.appendChild(kit.alertBox('Máy chủ sẽ bỏ qua: ' + owned.join(', '), 'warn'));
+                status.textContent = '';
+                status.appendChild(box);
+                actions.appendChild(kit.btn('Xác nhận trao ' + ids.length + ' huy hiệu', 'bkc-btn-primary', function () {
+                    if (!global.confirm || !global.confirm('Trao huy hiệu cho ' +
+                        (studentName() || 'học sinh') + '?\n\n' + lines + warn)) {
+                        return;
+                    }
+                    actions.textContent = '';
+                    status.textContent = 'Đang trao huy hiệu…';
+                    api('admin.achievements.grant', {
+                        student_id: sid,
+                        ids: ids,
+                        reason: 'Founder trao huy hiệu đặc biệt'
+                    }).then(function (out) {
+                        var result = (out && out.result) || {};
+                        var ok = result.granted || [];
+                        var skipped = result.skipped || [];
+                        status.textContent = 'Đã trao ' + ok.length + ' huy hiệu cho ' +
+                            ((out && out.student && out.student.display_name) || studentName() || 'học sinh') +
+                            (skipped.length ? ' · ' + skipped.length + ' huy hiệu đã sở hữu nên bỏ qua.' : '.');
+                        toast('Đã trao huy hiệu và ghi nhật ký Founder.', 'success');
+                        picked = {};
+                        paint();
+                        changed();
+                    }).catch(function (err) {
+                        status.textContent = (err && err.message) || 'Không trao được huy hiệu.';
+                        toast(status.textContent, 'error');
+                    });
+                }, 'fa-medal'));
+                actions.appendChild(kit.btn('Huỷ', 'bkc-btn-ghost', function () {
+                    actions.textContent = '';
+                    status.textContent = '';
+                }, 'fa-xmark'));
+            }).catch(function (err) {
+                status.textContent = (err && err.message) || 'Không kiểm tra được huy hiệu.';
+            });
+        }
+
+        card.body.appendChild(kit.btn('Trao huy hiệu đã chọn', 'bkc-btn-primary', grant, 'fa-award'));
+        paint();
+    }
+
     /* ----------------------------------------------------------------
        Quản lý cấu trúc cây kỹ năng (Founder)
        Tạo/sửa/lưu trữ node, thêm nhánh, kiểm tra vòng lặp và node cô lập.
@@ -923,6 +1082,6 @@
     global.BKFounderGrants = {
         render: render,
         renderTreeManager: renderTreeManager,
-        version: '8.3.8'
+        version: '8.4.0'
     };
 })(typeof window !== 'undefined' ? window : this);

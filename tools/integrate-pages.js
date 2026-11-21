@@ -42,6 +42,29 @@ function ensureReport(file, html) {
   return html.slice(0, idx) + tag + html.slice(idx);
 }
 
+
+/**
+ * Hệ thống giao diện + biểu tượng trang trí (8.4.0).
+ * Chỉ thêm một thẻ CSS và một thẻ script; idempotent; không sửa nội dung.
+ * Bỏ qua trang quản trị (admin/, founder/) và trang không có bk-core.js.
+ */
+function ensureThemes(file, html) {
+  if (html.includes('assets/bakhi/bk-themes.js')) return html;
+  const rel = path.relative(ROOT, file).split(path.sep).join('/');
+  if (/^(admin|founder)\//.test(rel)) return html;
+  if (!html.includes('assets/bakhi/bk-core.js')) return html;
+  const depth = rel.split('/').length - 1;
+  const prefix = depth === 0 ? '' : '../'.repeat(depth);
+  /* Nối vào CUỐI tệp, mỗi thẻ một dòng riêng và không thêm dòng trống cuối.
+     content-integrity bỏ toàn bộ dòng chứa assets/bakhi; cách nối này giữ
+     nguyên cấu trúc dòng còn lại nên hash nội dung giáo dục không đổi.
+     Trình duyệt tự đưa phần tử nối sau </html> vào body. */
+  const sep = html.endsWith('\n') ? '' : '\n';
+  return html + sep +
+    `    <link rel="stylesheet" href="${prefix}assets/bakhi/bk-themes.css?v=8.4.0">\n` +
+    `<script src="${prefix}assets/bakhi/bk-themes.js?v=8.4.0" defer></script>\n`;
+}
+
 function inject(file) {
   const rel = path.relative(ROOT, file).split(path.sep).join('/');
   let html = fs.readFileSync(file, 'utf8');
@@ -52,6 +75,11 @@ function inject(file) {
     html = withReport;
   }
   if (SKIP.has(rel)) return 'skip';
+  const withThemes = ensureThemes(file, html);
+  if (withThemes !== html) {
+    fs.writeFileSync(file, withThemes);
+    html = withThemes;
+  }
   if (html.includes('assets/bakhi/bk-core.js')) return 'already';
 
   const depth = rel.split('/').length - 1;

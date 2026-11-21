@@ -1,0 +1,105 @@
+# Giao diện & nhận diện — Bá Khí 8.4.0
+
+Tài liệu cho hệ **giao diện (theme)** và **biểu tượng trang trí cạnh tên**.
+Hai thành phần này dùng chung một mô-đun để tránh mỗi trang tự dựng một bản.
+
+| Tệp | Vai trò |
+|---|---|
+| `assets/bakhi/bk-themes.js` | `window.BKThemes` (giao diện) và `window.BKUserName` (tên + biểu tượng) |
+| `assets/bakhi/bk-themes.css` | Lớp nền, nghệ thuật theo mùa, quy tắc phạm vi, thẻ chọn giao diện, kiểu tên |
+| `tools/integrate-pages.js` | Chèn hai thẻ trên vào mọi trang có `bk-core.js` (idempotent) |
+| `tools/qa/themes-smoke.js` | Smoke test jsdom cho cả hai thành phần |
+
+## 1. Nguồn sự thật
+
+- **Sở hữu** và **đang dùng** nằm ở Supabase: `user_inventory` với
+  `reward_catalog.kind = 'theme'`; `bk_gam_equip` đặt `is_equipped` và tự bỏ trang bị
+  của giao diện cùng loại. Không có bảng thứ hai.
+- `bk-themes.js` chỉ giữ **cache cục bộ** (`localStorage.bakhiTheme.v1`) gồm
+  `{ id, owned[], deco }`. Cache này được ghi lại mỗi lần `BKThemes.syncFromState(state)`
+  chạy — tức là mỗi lần `bk-gamification.js` nhận trạng thái mới từ máy chủ.
+- `BKThemes.setTheme()` **từ chối** giao diện không có trong danh sách sở hữu, đồng thời
+  gọi `equip` để lựa chọn theo tài khoản và đồng bộ sang thiết bị khác.
+- Biểu tượng trang trí dùng đúng `is_equipped` của vật phẩm `kind = 'decoration'`;
+  cùng một cache `deco` phục vụ mọi nơi hiển thị tên.
+
+## 2. Phạm vi hiển thị
+
+`BKThemes.scope()` quyết định phạm vi, theo thứ tự:
+
+1. `data-bk-theme-scope` trên `<body>` nếu trang tự khai báo
+   (`page` / `head` / `accent` / `none`).
+2. Đường dẫn: `/ktgk1|ktgk2|ktck1|ktck2|kttx` → `head`; trang chủ `/` → `page`;
+   còn lại → `accent`.
+
+| Phạm vi | Nơi áp dụng | Cách hiển thị |
+|---|---|---|
+| `page` | Trang chủ | `#bkThemeLayer` phủ toàn màn hình, có lớp phủ giữ tương phản; nội dung nằm trên |
+| `head` | Trang môn học | Chỉ `header` / `.bk-topbar` / `.bk-page-head` nhận `bk-theme-head`; nội dung bài học giữ nguyên |
+| `accent` | Hồ sơ, Tiến trình, Cài đặt, Kỹ năng | Chỉ đổi biến màu nhấn và thanh tiến trình, **không** phủ nền |
+| `none` | Trang quản trị | Không áp dụng |
+
+Trang `admin/` và `founder/` không được chèn `bk-themes.js`.
+
+## 3. Bộ giao diện
+
+| id | Tên | Nghệ thuật |
+|---|---|---|
+| `theme-dawn` | Bình Minh | nền chuyển sắc cam → hồng |
+| `theme-midnight` | Nửa Đêm | xanh đêm + quầng sáng lạnh |
+| `theme-sakura` | Anh Đào | hồng phấn |
+| `theme-ocean` | Đại Dương | xanh biển → ngọc lam |
+| `theme-forest` | Rừng Xanh | xanh lá trầm |
+| `theme-royal` | Hoàng Gia | tím + vàng đồng |
+| `theme-mint` | Bạc Hà | xanh ngọc |
+| `theme-ember` | Hồng Ngọc | đỏ than hồng |
+| `theme-halloween` | Halloween | bí ngô khắc mặt phát sáng (3 cỡ), dơi bay, tông cam–tím |
+| `theme-christmas` | Giáng Sinh | tuyết rơi 28 hạt (kích thước/tốc độ khác nhau), cây thông, tông xanh–đỏ |
+
+Bí ngô và cây thông là SVG nội tuyến (data URI) nên không cần tải ảnh; tuyết và dơi là
+phần tử CSS thuần với `transform`/`opacity`, không chặn cuộn (`pointer-events: none`).
+
+### Thêm một giao diện mới
+
+1. Thêm một mục vào `THEMES` trong `bk-themes.js` (`id`, `name`, `art`, `accent`, `desc`).
+2. Thêm khối `html[data-bk-theme="<id>"]` trong `bk-themes.css` để đặt `--bkth-*`.
+3. Thêm dòng `reward_catalog` trong một migration mới (không sửa migration cũ).
+4. Nếu cần nghệ thuật riêng: thêm nhánh trong `buildLayer()` và biến `--bkth-art-<art>`.
+
+## 4. Tên có biểu tượng — `BKUserName`
+
+```js
+// Tên + biểu tượng đang trang bị
+node.appendChild(BKUserName.node('Nguyễn An', { size: 'large' }));
+
+// Mini profile: [Avatar] Tên [Biểu tượng] + dòng phụ
+host.appendChild(BKUserName.mini({ name: 'Nguyễn An', sub: 'Cấp 12', avatar: avatarNode }));
+
+// Hồ sơ người khác: truyền biểu tượng của chính người đó
+BKUserName.node(name, { deco: otherDeco, size: 'large' });
+
+BKUserName.refresh(); // cập nhật mọi [data-bk-user-name] sau khi đổi biểu tượng
+```
+
+Đã dùng tại: menu tài khoản (`bk-shell.js`), hồ sơ (`bk-profile-ui.js`),
+hero trang Tiến trình (`bk-gamification.js`). Tên dài được cắt bằng ellipsis;
+biểu tượng `flex: 0 0 auto` nên không chồng lên badge, tên hay khung avatar.
+
+## 5. Cài đặt → Hình nền
+
+`bk-settings.js` dựng `BKThemes.renderPicker()` ngay dưới phần hình nền có sẵn:
+xem trước, trạng thái **Đang dùng / Sẵn sàng / Chưa sở hữu**, nút áp dụng và
+nút **Về giao diện mặc định**. Ảnh nền tự tải lên (IndexedDB) vẫn hoạt động độc lập.
+
+## 6. Migration
+
+`supabase/migrations/20261213000000_bakhi_v840_founder_grants.sql`:
+
+1. Thêm `theme-halloween`, `theme-christmas` vào `reward_catalog`.
+2. Thêm cột `user_skill_progress.founder_granted` để phân biệt node Founder cấp với node
+   học sinh tự mở.
+3. Bảng `founder_skill_grants` (ai cấp, khi nào, bao nhiêu node, khi nào thu hồi).
+4. Hàm chỉ đọc `bk_gam_founder_tree_status(uuid)`.
+
+Migration **chưa được áp dụng** trong phiên 8.4.0. Chạy `supabase db push` rồi trao
+giao diện theo mùa trong tab Gamification → Trao vật phẩm.
