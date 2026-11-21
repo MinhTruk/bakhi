@@ -1317,6 +1317,11 @@
 
     function init() {
         flush();
+        /* Hàng đợi được gửi lại ngay khi lớp Supabase nhận diện xong thiết bị,
+           khi có mạng trở lại, và một lần sau khi trang ổn định. */
+        global.addEventListener('bk:identity', function () { flush(); });
+        global.addEventListener('online', function () { flush(); });
+        setTimeout(flush, 5000);
         bootPageTracking();
         if (D.getElementById('bkGamificationRoot')) mount('bkGamificationRoot');
     }
