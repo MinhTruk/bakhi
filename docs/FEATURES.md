@@ -441,17 +441,17 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Favicon tĩnh dùng chung | ✅ | SVG + PNG 16/32/48/192/512 + ICO + apple-touch-icon; 118/119 trang |
 | Tài liệu | ✅ | README, AGENTS, ARCHITECTURE, FEATURES, MUSIC, STUDIO, SUPABASE_SETUP |
 
-## Gamification 2.0 (8.3.7)
+## Gamification 2.0 (8.3.8)
 
 | Tính năng | Trang | Ghi chú |
 |---|---|---|
 | XP & cấp độ | `/gamification/` | Từ hoạt động học thật, giới hạn/ngày |
 | Lối vào Tiến trình | Menu tài khoản → Tiến trình học tập | 8.3.1, desktop + mobile |
 | Nhiệm vụ ngày/tuần | `/gamification/` | Nhận thưởng một lần, chu kỳ UTC |
-| Cây kỹ năng | `/gamification/` | 5 nhánh, node mở theo điều kiện |
-| Bộ sưu tập thành tựu | `/gamification/` | Lọc, tìm kiếm, thành tựu ẩn |
+| Cây kỹ năng | `/skills/` + `/gamification/` | 8.3.8 — sơ đồ kéo/zoom, điều kiện cấp độ/nhiệm vụ/thành tựu/node trước |
+| Bộ sưu tập thành tựu | `/gamification/` | 8.3.8 — lọc nhóm/độ hiếm, chi tiết tiến độ từng điều kiện |
 | Thử thách Boss | `/gamification/` | Câu hỏi do quản trị biên soạn, chấm tại máy chủ |
-| Kho vật phẩm | `/gamification/` | Trang trí, không tạo lợi thế học tập |
+| Kho vật phẩm | `/gamification/` | 8.3.8 — lưới, tìm kiếm, số lượng, cách nhận, công dụng |
 | Quản trị | Admin/Founder → Tiến trình | Cấu hình, định nghĩa, duyệt bất thường; 8.3.5 tự sinh mã, xem trước, Cài đặt nâng cao |
 | Avatar & khung đồng bộ | Toàn website | 8.3.5 — `student_profiles.frame` là nguồn duy nhất; trang bị ở Gamification đổi navbar/hồ sơ/chat |
 | Khung Founder luôn hợp lệ | Hồ sơ, Tiến trình | 8.3.6 — `bakhi_owned_frames` đọc bảng ánh xạ 58 khung, giữ khung đang trang bị |
@@ -460,3 +460,9 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Buff XP có thời hạn | Founder → Gamification | 8.3.6 — x1,1–x10, 1–720 giờ, áp trong `bk_gam_award`, học sinh thấy băng buff |
 | Tìm học sinh trong tab Gamification | Founder → Gamification | 8.3.7 — `admin.students.search` (tên không dấu + tên hiển thị), chỉ học sinh đang hoạt động; không còn “Hành động không hợp lệ.” |
 | Nhật ký đặt cấp độ rõ ràng | Founder → Gamification | 8.3.7 — hiện cấp, số học sinh bị ảnh hưởng và lý do |
+| Cấp trọn cây kỹ năng | Founder → Gamification | 8.3.8 — xem trước số node, xác nhận, không xoá tiến trình |
+| Trao vật phẩm / thành tựu | Founder → Gamification | 8.3.8 — số lượng, giới hạn, chống trùng, có lịch sử |
+| Trao Badge Gamification | Founder → Thành tích | 8.3.8 — lọc nhóm/độ hiếm, hiện sở hữu, trao nhiều badge |
+| Lịch sử trao tặng | Founder → Gamification | 8.3.8 — lọc theo học sinh/loại, hiện người nhận và nội dung |
+| Cấu hình cây kỹ năng | Founder → Gamification | 8.3.8 — node, nhánh, toạ độ, kiểm tra vòng lặp/cô lập |
+| Thành tựu sau buff Level/XP | Toàn hệ thống | 8.3.8 — `bk_gam_set_level`/`bk_gam_adjust` đánh giá lại trong cùng transaction |

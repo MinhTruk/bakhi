@@ -254,6 +254,20 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 - **Buff XP & đặt cấp (8.3.6):** bảng `gamification_xp_buffs` chỉ service_role đọc/ghi;
   `bk_gam_award` nhân XP bằng `bk_gam_active_buff`. Đặt cấp độ chỉ qua `bk_gam_set_level`
   (ghi sổ từng phần ≤ 100.000 XP), không `UPDATE user_progression` trực tiếp.
+- **Cây kỹ năng có điều kiện (8.3.8):** `skill_tree_nodes` có `requires`,
+  `required_missions`, `required_achievements`, `min_level`, `pos_x/pos_y`; nhánh nằm ở
+  `skill_branches`. Chỉ `bk_gam_evaluate` được chuyển node sang `completed`, và chỉ khi
+  `bk_gam_node_blockers()` rỗng. Trang `/skills/` (`bk-skills.js|css`) không tự tính điều
+  kiện — mọi trạng thái đến từ `gamification-api` action `state`.
+- **Đổi cấp/XP phải đánh giá thành tựu (8.3.8):** `bk_gam_set_level` và `bk_gam_adjust`
+  gọi `bk_gam_evaluate` trong cùng transaction. Không thêm đường ghi `user_progression`
+  trực tiếp nào khác, nếu không thành tựu mốc cấp sẽ lệch.
+- **Trao tặng của Founder (8.3.8):** `bk_gam_grant_items` (quantity + `metadata.max_quantity`),
+  `bk_gam_grant_achievements` (bỏ qua mục đã có), `bk_gam_grant_skill_tree` (xác nhận
+  `confirm: true`). Các action `admin.items.grant`, `admin.achievements.grant`,
+  `admin.skilltree.grant`, `admin.grants.history` chỉ Founder và kiểm tra scope ở máy chủ.
+- **Cấu hình cây (8.3.8):** máy chủ chặn node tự trỏ vào chính nó và chu trình
+  (`hasCycle`), `admin.skilltree.validate` trả lỗi/cảnh báo từ `bk_gam_tree_issues`.
 - **Tìm học sinh trong tab Gamification (8.3.7):** dùng `admin.students.search` của
   `gamification-api` (tìm không dấu theo `normalized_name` + `display_name`, chỉ học sinh
   đang hoạt động). Không gọi `students.search` trên `gamificationApi` — action đó thuộc
@@ -274,6 +288,7 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/v835-code-generator.js
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/v836-founder-gamification.js
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/v837-founder-search.js
+  NODE_PATH=/tmp/bktest/node_modules node tools/qa/v838-gamification.js
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/xp-level-integrity.js
   node tools/qa/gamification-security-smoke.js
   SUPABASE_ACCESS_TOKEN=... node tools/qa/gamification-db-check.js   # cần quyền project

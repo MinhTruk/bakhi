@@ -219,7 +219,7 @@
             if (!pane || !kit || !kit.h) return;
             build(pane, kit);
         },
-        version: '8.3.7'
+        version: '8.3.8'
     };
 
     /* ---------------------------------------------------------------------
@@ -334,6 +334,7 @@
         var state = ctx.state;
 
         sectionGrant(pane, ctx);
+        sectionGamificationBadges(pane, ctx);
         sectionBulk(pane, ctx);
         sectionAuto(pane, ctx);
         sectionFull(pane, ctx);
@@ -1474,6 +1475,197 @@
     /* ---------------------------------------------------------------------
        Khu vực: lịch sử cấp vật phẩm
        ------------------------------------------------------------------ */
+    /* ---------------------------------------------------------------------
+       8.3.8 — Trao Badge từ bộ sưu tập Gamification (achievement_defs)
+       Tìm theo tên, lọc nhóm/độ hiếm, xem trạng thái sở hữu, trao nhiều badge
+       trong một lần. Máy chủ chống trao trùng và kiểm tra quyền Founder.
+       ------------------------------------------------------------------ */
+    function sectionGamificationBadges(pane, ctx) {
+        var h = ctx.h;
+        var kit = ctx.kit;
+        var gam = ctx.kit.gamificationApi;
+        var box = kit.card('Badge từ bộ sưu tập Gamification', null,
+            'Đây là các thành tựu/badge của hệ thống Gamification. Chọn người nhận, lọc theo nhóm và độ hiếm, ' +
+            'xem ai đã sở hữu rồi trao nhiều badge trong một lần. Máy chủ bỏ qua badge đã có.');
+        pane.appendChild(box.root);
+        var host = h('div', 'bkf-section');
+        box.body.appendChild(host);
+
+        var student = null;
+        var catalog = [];
+        var picked = {};
+        var busy = false;
+
+        if (typeof gam !== 'function') {
+            host.appendChild(kit.alertBox(
+                'Chưa tải được lớp Gamification. Hãy tải lại trang.', 'error'));
+            return;
+        }
+
+        var recipient = makeRecipient(ctx, {
+            placeholder: 'Tìm người nhận badge Gamification…',
+            onSelect: function (s) {
+                student = s;
+                picked = {};
+                loadCatalog();
+            }
+        });
+        host.appendChild(recipient.root);
+
+        var tools = h('div', 'bkf-tools');
+        var search = kit.input('search', 'Tìm badge theo tên…');
+        search.className = 'bkc-input bkf-input';
+        search.setAttribute('aria-label', 'Tìm badge Gamification');
+        var catSel = h('select', 'bkc-input');
+        catSel.setAttribute('aria-label', 'Lọc badge theo nhóm');
+        var raritySel = h('select', 'bkc-input');
+        raritySel.setAttribute('aria-label', 'Lọc badge theo độ hiếm');
+        var CATS = {
+            learning: 'Học tập', quiz: 'Quiz', reading: 'Đọc hiểu', listening: 'Luyện nghe',
+            revision: 'Ôn tập', consistency: 'Đều đặn', skill: 'Kỹ năng', boss: 'Boss',
+            milestone: 'Cấp độ', event: 'Sự kiện', mission: 'Nhiệm vụ', activity: 'Hoạt động',
+            discovery: 'Khám phá', gamification: 'Gamification', special: 'Đặc biệt', limited: 'Giới hạn'
+        };
+        var RAR = { common: 'Phổ biến', uncommon: 'Ít gặp', rare: 'Hiếm', epic: 'Cực hiếm', legendary: 'Huyền thoại' };
+        function fillSelect(sel, allLabel, map) {
+            sel.textContent = '';
+            var o = h('option', null, allLabel);
+            o.value = 'all';
+            sel.appendChild(o);
+            Object.keys(map).forEach(function (k) {
+                var op = h('option', null, map[k]);
+                op.value = k;
+                sel.appendChild(op);
+            });
+        }
+        fillSelect(catSel, 'Mọi nhóm', CATS);
+        fillSelect(raritySel, 'Mọi độ hiếm', RAR);
+        tools.appendChild(search);
+        tools.appendChild(catSel);
+        tools.appendChild(raritySel);
+        host.appendChild(tools);
+
+        var summary = h('div', 'bkf-hint', 'Chọn người nhận để xem trạng thái sở hữu.');
+        host.appendChild(summary);
+        var grid = h('div', 'bkf-grid');
+        host.appendChild(grid);
+        var resultHost = h('div', '');
+        host.appendChild(resultHost);
+        var confirmBtn = kit.btn('Xác nhận trao badge', 'bkc-btn-primary', grant, 'fa-medal');
+        confirmBtn.disabled = true;
+        host.appendChild(confirmBtn);
+
+        function loadCatalog() {
+            if (!student) {
+                catalog = [];
+                paint();
+                return;
+            }
+            kit.loading(grid, 'Đang tải bộ sưu tập Gamification…');
+            gam('admin.achievements.catalog', { student_id: student.id }).then(function (res) {
+                catalog = (res && res.achievements) || [];
+                paint();
+            }).catch(function (err) {
+                grid.textContent = '';
+                grid.appendChild(kit.alertBox((err && err.message) || 'Không tải được bộ sưu tập.', 'error'));
+            });
+        }
+
+        function visible() {
+            var q = String(search.value || '').toLowerCase().trim();
+            return catalog.filter(function (a) {
+                if (catSel.value !== 'all' && a.category !== catSel.value) return false;
+                if (raritySel.value !== 'all' && a.rarity !== raritySel.value) return false;
+                if (q && String(a.name + ' ' + a.description).toLowerCase().indexOf(q) < 0) return false;
+                return true;
+            });
+        }
+
+        function paint() {
+            grid.textContent = '';
+            var list = visible();
+            var owned = catalog.filter(function (a) {
+                return Number(a.owned_stages || 0) >= Number(a.stages || 1);
+            }).length;
+            summary.textContent = student
+                ? ('Người nhận: ' + student.display_name + ' · đã sở hữu ' + owned + '/' + catalog.length +
+                    ' badge · đang chọn ' + Object.keys(picked).length)
+                : 'Chọn người nhận để xem trạng thái sở hữu.';
+            if (!list.length) {
+                kit.emptyState(grid, 'fa-medal', 'Không có badge phù hợp',
+                    student ? 'Thử bỏ bộ lọc.' : 'Chọn người nhận trước.');
+            } else {
+                list.forEach(function (a) {
+                    var full = Number(a.owned_stages || 0) >= Number(a.stages || 1);
+                    var on = !!picked[a.id];
+                    var tile = h('button', 'bkf-item' + (on ? ' is-selected' : '') + (full ? ' is-owned is-disabled' : ''));
+                    tile.type = 'button';
+                    tile.setAttribute('aria-pressed', on ? 'true' : 'false');
+                    if (full) tile.disabled = true;
+                    var art = h('span', 'bkf-art');
+                    art.appendChild(kit.icon(a.icon || 'fa-medal'));
+                    tile.appendChild(art);
+                    tile.appendChild(h('span', 'bkf-item-name', a.name));
+                    var meta = h('span', 'bkf-item-meta');
+                    meta.appendChild(h('span', 'bkf-sub', CATS[a.category] || a.category));
+                    meta.appendChild(h('span', 'bkf-sub', RAR[a.rarity] || a.rarity));
+                    tile.appendChild(meta);
+                    tile.appendChild(h('span', 'bkf-item-id',
+                        full ? 'Đã sở hữu' : ('Chưa sở hữu' + (a.stages > 1 ? ' · ' + a.owned_stages + '/' + a.stages + ' bậc' : ''))));
+                    tile.addEventListener('click', function () {
+                        if (picked[a.id]) delete picked[a.id]; else picked[a.id] = 1;
+                        paint();
+                    });
+                    grid.appendChild(tile);
+                });
+            }
+            confirmBtn.disabled = busy || !student || !Object.keys(picked).length;
+            confirmBtn.textContent = '';
+            confirmBtn.appendChild(kit.icon('fa-medal'));
+            confirmBtn.appendChild(D.createTextNode(Object.keys(picked).length
+                ? ' Trao ' + Object.keys(picked).length + ' badge'
+                : ' Xác nhận trao badge'));
+        }
+
+        function grant() {
+            if (busy || !student) return;
+            var ids = Object.keys(picked);
+            if (!ids.length) return;
+            busy = true;
+            paint();
+            resultHost.textContent = '';
+            kit.loading(resultHost, 'Đang trao ' + ids.length + ' badge…');
+            gam('admin.achievements.grant', {
+                student_id: student.id,
+                ids: ids,
+                reason: 'Founder trao badge Gamification'
+            }).then(function (out) {
+                var result = (out && out.result) || {};
+                var granted = result.granted || [];
+                var skipped = result.skipped || [];
+                resultHost.textContent = '';
+                resultHost.appendChild(kit.alertBox(
+                    'Đã trao ' + granted.length + ' bậc badge cho ' + student.display_name +
+                    (skipped.length ? ' · ' + skipped.length + ' mục đã sở hữu nên bỏ qua.' : '.'),
+                    granted.length ? 'success' : 'info'));
+                ctx.toast(granted.length ? 'Đã trao badge.' : 'Không có badge mới.', granted.length ? 'success' : 'info');
+                picked = {};
+                busy = false;
+                loadCatalog();
+            }).catch(function (err) {
+                resultHost.textContent = '';
+                resultHost.appendChild(kit.alertBox((err && err.message) || 'Không trao được badge.', 'error'));
+                busy = false;
+                paint();
+            });
+        }
+
+        search.addEventListener('input', paint);
+        catSel.addEventListener('change', paint);
+        raritySel.addEventListener('change', paint);
+        paint();
+    }
+
     function sectionHistory(pane, ctx) {
         var h = ctx.h;
         var kit = ctx.kit;

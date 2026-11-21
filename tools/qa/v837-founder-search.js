@@ -44,7 +44,7 @@ assert(/display_name\.ilike\.%' \+ q \+ '%/.test(edge),
 assert(/eq\('is_active', true\)/.test(edge.split("case 'admin.students.search'")[1].split("case 'admin.students.list'")[0]),
     'chỉ trả học sinh đang hoạt động');
 assert(/SEARCH_ERROR/.test(edge), 'lỗi tìm kiếm trả thông báo tiếng Việt, không lộ SQL');
-assert(/audit\(client, 'level_set', \{ level, reason, updated/.test(edge),
+assert(/audit\(client, 'level_set', \{\s*level, reason, updated/.test(edge),
     'nhật ký level_set lưu level + reason (không còn from_level/to_level)');
 
 /* ------------------------------------------------------------ 2. Máy khách */
@@ -62,14 +62,14 @@ assert(/detail\.level/.test(mod) && !/detail\.from_level/.test(mod),
 
 /* --------------------------------------------------------- 3. Phiên bản */
 const app = (read('assets/bakhi/bk-version.js').match(/app:\s*'([^']+)'/) || [])[1];
-assert(app === '8.3.7', 'bk-version.js là 8.3.7', String(app));
-assert(/APP_VERSION = '8\.3\.7'/.test(read('assets/bakhi/bk-devboard.js')),
+assert(app === '8.3.8', 'bk-version.js là 8.3.8', String(app));
+assert(/APP_VERSION = '8\.3\.8'/.test(read('assets/bakhi/bk-devboard.js')),
     'bk-devboard.js cùng phiên bản');
-assert(/SERVER_VERSION = '8\.3\.7'/.test(read('supabase/functions/admin-actions/index.ts')),
+assert(/SERVER_VERSION = '8\.3\.8'/.test(read('supabase/functions/admin-actions/index.ts')),
     'admin-actions cùng phiên bản');
-assert(/version: '8\.3\.7'/.test(read('assets/bakhi/bk-founder.js')),
+assert(/version: '8\.3\.8'/.test(read('assets/bakhi/bk-founder.js')),
     'BKFounder báo phiên bản mới');
-assert(/version: '8\.3\.7'/.test(mod), 'BKFounderGamification báo phiên bản mới');
+assert(/version: '8\.3\.8'/.test(mod), 'BKFounderGamification báo phiên bản mới');
 
 /* --------------------------------------------------- 4. Chạy giao diện thật */
 const dom = new JSDOM('<!doctype html><html><body><div id="host"></div></body></html>', {

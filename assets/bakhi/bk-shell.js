@@ -434,6 +434,18 @@
         }
         menu.appendChild(progressRow);
 
+        /* 8.3.8: Cây kỹ năng là trang riêng, lối vào nằm cạnh Tiến trình. */
+        var skillsRow = row('a', 'fa-sitemap', 'Cây kỹ năng', {
+            href: S.base + 'skills/', role: 'menuitem',
+            desc: 'Sơ đồ kỹ năng · điều kiện mở',
+            onClick: function () { closeMenu(); }
+        });
+        skillsRow.setAttribute('data-bk-skills-link', '1');
+        if (/\/skills\/(index\.html)?$/i.test(global.location.pathname)) {
+            skillsRow.setAttribute('aria-current', 'page');
+        }
+        menu.appendChild(skillsRow);
+
         /* --- Chat: phòng chung, tin nhắn riêng, nhóm nhỏ --- */
         var chatRow = row('a', 'fa-comments', 'Chat', {
             href: S.base + 'chat/', role: 'menuitem', external: true,

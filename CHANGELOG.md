@@ -2,6 +2,68 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.3.8] — 2026-11-21
+
+### Tính năng
+
+- **Cây kỹ năng thành trang riêng `/skills/`** với sơ đồ phân nhánh trực quan: kéo để di
+  chuyển, zoom, nút “Về giữa”, tìm kiếm, lọc theo nhánh, bảng chi tiết node. Đường nối đổi
+  trạng thái theo tiến trình, node vừa mở có hiệu ứng và được ghi nhớ trên thiết bị.
+- **Điều kiện mở khoá đầy đủ**: cấp độ tối thiểu, nhiệm vụ bắt buộc, thành tựu bắt buộc,
+  node tiên quyết và mốc chỉ số. Máy chủ trả danh sách điều kiện còn thiếu
+  (`bk_gam_node_blockers`) để giao diện nói rõ cần làm gì.
+- **Founder cấp trọn cây kỹ năng** cho một học sinh, có xem trước số node còn thiếu, xác
+  nhận trước khi ghi, không xoá node đã hoàn thành và không trao trùng vật phẩm thưởng.
+- **Founder trao vật phẩm** theo kho Gamification với số lượng, tôn trọng giới hạn
+  `metadata.max_quantity`; kho hiển thị số lượng đang sở hữu trước và sau khi trao.
+- **Founder trao thành tựu** nhiều mục một lần, bỏ qua thành tựu đã sở hữu.
+- **Tab Thành tích có khu trao Badge Gamification**: tìm theo tên, lọc nhóm/độ hiếm, hiện
+  trạng thái sở hữu và trao nhiều badge trong một lần.
+- **Lịch sử trao tặng** trong tab Gamification: lọc theo học sinh hoặc loại phần thưởng,
+  hiện người nhận, hành động, số lượng/nội dung và thời gian.
+- **Cấu hình cây kỹ năng cho Founder**: tạo/sửa/lưu trữ node, thêm nhánh, đặt toạ độ, kiểm
+  tra cấu trúc để phát hiện vòng lặp, tham chiếu thiếu và node cô lập.
+- **Mở rộng kho vật phẩm**: thêm 6 giao diện, 4 trang trí, 4 hình nền và 4 danh hiệu, mỗi
+  vật phẩm có cách nhận và công dụng.
+- **Mở rộng bộ sưu tập thành tựu**: thêm 17 thành tựu theo nhóm Học tập, Cấp độ, Nhiệm vụ,
+  Hoạt động, Khám phá, Gamification và Giới hạn, tất cả dựa trên chỉ số thật.
+- **Chi tiết vật phẩm và thành tựu**: modal hiện mô tả, độ hiếm, trạng thái sở hữu, số
+  lượng, cách nhận, công dụng; thành tựu hiện tiến độ từng điều kiện, phần trăm và điều
+  kiện còn thiếu.
+- **Kho vật phẩm dạng lưới** có tìm kiếm, lọc loại/sở hữu và tải thêm khi danh mục dài.
+
+### Sửa lỗi
+
+- **Buff Level và buff XP giờ mở đúng thành tựu mốc cấp.** `bk_gam_set_level` và
+  `bk_gam_adjust` gọi `bk_gam_evaluate` trong cùng transaction, nên tăng nhiều cấp trong
+  một lần vẫn trao đủ thành tựu, không bỏ sót và không trao trùng.
+- **Thành tựu có điều kiện nhiệm vụ** dùng được chỉ số `missions_completed` (đếm nhiệm vụ
+  khác nhau đã hoàn thành ít nhất một lần).
+- **Node kỹ năng không còn mở chỉ vì đủ chỉ số**: điều kiện cấp độ/nhiệm vụ/thành tựu/node
+  trước được xét cùng lúc trước khi chuyển sang `completed`.
+- **Không còn cấu hình tạo vòng lặp**: máy chủ từ chối node tự trỏ vào chính nó hoặc tạo
+  chu trình, kèm thông báo tiếng Việt chỉ rõ node cần sửa.
+
+### Cải tiến
+
+- **Đồng bộ dữ liệu**: thêm cột có giá trị mặc định (`quantity`, `min_level`, `pos_x`,
+  `pos_y`, `granted`) nên dữ liệu cũ giữ nguyên; không xoá tiến trình hay vật phẩm.
+- **Nhật ký rõ ràng**: mọi thao tác trao tặng ghi `gamification_activity_logs` và
+  `admin_activity_logs`, có người thực hiện, người nhận, nội dung và lý do.
+- **Giao diện**: dùng lại biến màu của `bk-core.css`, hỗ trợ Light/Dark, có trạng thái
+  loading/empty/error, modal đóng được bằng nút và phím, responsive trên điện thoại.
+- **Menu tài khoản** có thêm lối vào **Cây kỹ năng**.
+
+### Bảo mật
+
+- Mọi action trao tặng (`admin.items.grant`, `admin.achievements.grant`,
+  `admin.skilltree.grant`, `admin.grants.history`) kiểm tra scope `founder` ở máy chủ,
+  không dựa vào việc ẩn nút ở trình duyệt.
+- Cấp trọn cây bắt buộc `confirm: true`; trao vật phẩm/thành tựu giới hạn số mục mỗi lần,
+  lọc mã hợp lệ và chống trao trùng bằng khoá chính của bảng.
+- Học sinh vẫn chỉ đọc dữ liệu của mình qua RLS; mọi ghi đi qua `service_role` trong
+  Edge Function và ghi audit.
+
 ## [8.3.7] — 2026-11-21
 
 ### Sửa lỗi

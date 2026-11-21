@@ -98,6 +98,56 @@ async function state(client: ReturnType<typeof adminClient>, studentId: string) 
         out.buffs = [];
         out.xp_buff = 1;
     }
+
+    /* 8.3.8: chi tiết điều kiện (cấp độ, nhiệm vụ, thành tựu, node trước),
+       toạ độ cây và số lượng vật phẩm. Không thay đổi bk_gam_state cũ nên
+       trang Tiến trình vẫn chạy nếu hàm chi tiết chưa được deploy. */
+    try {
+        const { data: details } = await client.rpc('bk_gam_details', { p_student: studentId });
+        const d = (details && typeof details === 'object') ? details as Record<string, unknown> : {};
+        out.branch_defs = d.branch_defs ?? [];
+        out.skill_summary = d.skill_summary ?? {};
+
+        const nodeMap: Record<string, Record<string, unknown>> = {};
+        (Array.isArray(d.node_details) ? d.node_details : []).forEach(function (row) {
+            const item = row as Record<string, unknown>;
+            if (item && item.id) nodeMap[String(item.id)] = item;
+        });
+        (Array.isArray(out.nodes) ? out.nodes as Array<Record<string, unknown>> : []).forEach(function (n) {
+            const extra = nodeMap[String(n.id)];
+            if (extra) Object.assign(n, extra);
+        });
+
+        const achMap: Record<string, Record<string, unknown>> = {};
+        (Array.isArray(d.achievement_details) ? d.achievement_details : []).forEach(function (row) {
+            const item = row as Record<string, unknown>;
+            if (item && item.id) achMap[String(item.id)] = item;
+        });
+        (Array.isArray(out.achievements) ? out.achievements as Array<Record<string, unknown>> : []).forEach(function (a) {
+            const extra = achMap[String(a.id)];
+            if (extra) Object.assign(a, extra);
+        });
+
+        const qty: Record<string, number> = {};
+        (Array.isArray(d.items) ? d.items : []).forEach(function (row) {
+            const item = row as Record<string, unknown>;
+            if (item && item.item_id) qty[String(item.item_id)] = Number(item.quantity) || 1;
+        });
+        (Array.isArray(out.inventory) ? out.inventory as Array<Record<string, unknown>> : []).forEach(function (i) {
+            i.quantity = qty[String(i.item_id)] || 1;
+        });
+        (Array.isArray(out.catalog) ? out.catalog as Array<Record<string, unknown>> : []).forEach(function (c) {
+            const meta = (c.metadata && typeof c.metadata === 'object') ? c.metadata as Record<string, unknown> : {};
+            c.quantity = qty[String(c.item_id)] || 0;
+            c.max_quantity = Number(meta.max_quantity) || 0;
+            c.how = String(meta.how || '');
+            c.use = String(meta.use || '');
+        });
+    } catch (_e) {
+        out.branch_defs = out.branch_defs || [];
+        out.skill_summary = out.skill_summary || {};
+    }
+
     return out;
 }
 
@@ -215,6 +265,62 @@ async function audit(
         target_id: studentId,
         detail
     });
+}
+
+/** Hồ sơ ngắn của một học sinh — dùng cho các thẻ Founder. */
+async function studentBrief(client: ReturnType<typeof adminClient>, id: string) {
+    const { data } = await client
+        .from('students')
+        .select('id, display_name, student_code, is_founder, user_progression(total_xp, level)')
+        .eq('id', id)
+        .eq('is_active', true)
+        .maybeSingle();
+    if (!data) return null;
+    const row = data as Record<string, unknown>;
+    const prog = row.user_progression;
+    const first = Array.isArray(prog) ? prog[0] : prog;
+    return {
+        id: String(row.id),
+        display_name: String(row.display_name || ''),
+        student_code: String(row.student_code || ''),
+        is_founder: !!row.is_founder,
+        level: Number((first && (first as Record<string, unknown>).level) || 1),
+        total_xp: Number((first && (first as Record<string, unknown>).total_xp) || 0)
+    };
+}
+
+/** Chu trình trong quan hệ node tiên quyết — chặn cấu hình làm hỏng cây. */
+function hasCycle(nodes: Array<{ id: string; requires: string[] }>): string {
+    const map: Record<string, string[]> = {};
+    nodes.forEach(function (n) { map[n.id] = n.requires || []; });
+    const state: Record<string, number> = {};  // 1 = đang đi, 2 = xong
+    let found = '';
+    function walk(id: string): boolean {
+        if (state[id] === 1) { found = id; return true; }
+        if (state[id] === 2) return false;
+        state[id] = 1;
+        const next = map[id] || [];
+        for (const req of next) {
+            if (!map[req]) continue;
+            if (walk(req)) return true;
+        }
+        state[id] = 2;
+        return false;
+    }
+    for (const id of Object.keys(map)) {
+        if (walk(id)) return found || id;
+    }
+    return '';
+}
+
+function cleanIdList(v: unknown, max: number): string[] {
+    if (!Array.isArray(v)) return [];
+    const out: string[] = [];
+    for (const raw of v.slice(0, max)) {
+        const id = codeOf(raw);
+        if (id && out.indexOf(id) < 0) out.push(id);
+    }
+    return out;
 }
 
 Deno.serve(async (req) => {
@@ -385,8 +491,12 @@ Deno.serve(async (req) => {
     if (!admin) return fail(401, 'NO_ADMIN_SESSION', 'Phiên quản trị không hợp lệ hoặc đã hết hạn.');
 
     const scope = admin.scope;
-    /* Chỉ Founder được điều chỉnh XP và xem toàn bộ nhật ký gamification. */
-    const founderOnly = new Set(['admin.xp.adjust', 'admin.logs', 'admin.students.list']);
+    /* Chỉ Founder được điều chỉnh XP, trao phần thưởng và xem toàn bộ nhật ký. */
+    const founderOnly = new Set([
+        'admin.xp.adjust', 'admin.logs', 'admin.students.list',
+        'admin.items.grant', 'admin.achievements.grant',
+        'admin.skilltree.grant', 'admin.grants.history'
+    ]);
 
     switch (action) {
         case 'admin.overview': {
@@ -438,12 +548,13 @@ Deno.serve(async (req) => {
         }
 
         case 'admin.defs.list': {
-            const [nodes, achievements, missions, rewards, challenges] = await Promise.all([
+            const [nodes, achievements, missions, rewards, challenges, branches] = await Promise.all([
                 client.from('skill_tree_nodes').select('*').order('sort_order'),
                 client.from('achievement_defs').select('*').order('sort_order'),
                 client.from('mission_defs').select('*').order('cadence').order('sort_order'),
                 client.from('reward_catalog').select('*').order('sort_order'),
-                client.from('boss_challenges').select('*, boss_questions(count)').order('created_at', { ascending: false })
+                client.from('boss_challenges').select('*, boss_questions(count)').order('created_at', { ascending: false }),
+                client.from('skill_branches').select('*').order('sort_order')
             ]);
             return json({
                 ok: true,
@@ -451,7 +562,8 @@ Deno.serve(async (req) => {
                 achievements: achievements.data ?? [],
                 missions: missions.data ?? [],
                 rewards: rewards.data ?? [],
-                challenges: challenges.data ?? []
+                challenges: challenges.data ?? [],
+                branches: branches.data ?? []
             });
         }
 
@@ -460,24 +572,136 @@ Deno.serve(async (req) => {
             if (!node) return fail(400, 'BAD_NODE', 'Thiếu dữ liệu node.');
             const id = codeOf(node.id);
             if (!id) return fail(400, 'BAD_ID', 'Mã node không hợp lệ.');
+            const branch = codeOf(node.branch);
+            if (!branch) return fail(400, 'BAD_BRANCH', 'Thiếu nhánh kỹ năng. Hãy tạo nhánh trước khi thêm node.');
+            const { data: branchRow } = await client.from('skill_branches')
+                .select('id').eq('id', branch).maybeSingle();
+            if (!branchRow) {
+                return fail(400, 'BAD_BRANCH',
+                    'Nhánh “' + branch + '” chưa tồn tại. Hãy tạo nhánh trong thẻ “Nhánh kỹ năng” trước.');
+            }
+            const requires = cleanIdList(node.requires, 12);
+            if (requires.indexOf(id) >= 0) {
+                return fail(400, 'SELF_REQUIRE', 'Node không thể yêu cầu chính nó.');
+            }
             const row = {
                 id,
-                branch: str(node.branch, 24),
+                branch,
                 name: str(node.name, 120),
                 description: str(node.description, 600),
                 icon: str(node.icon, 60) || 'fa-circle-nodes',
                 metric: str(node.metric, 48),
                 target: Math.max(1, Math.min(100000, Number(node.target) || 1)),
-                requires: Array.isArray(node.requires) ? node.requires.map((r) => str(r, 64)) : [],
+                requires,
+                required_missions: cleanIdList(node.required_missions, 8),
+                required_achievements: cleanIdList(node.required_achievements, 8),
+                min_level: Math.max(1, Math.min(1000, Number(node.min_level) || 1)),
+                pos_x: Math.max(-4000, Math.min(4000, Math.round(Number(node.pos_x) || 0))),
+                pos_y: Math.max(-4000, Math.min(4000, Math.round(Number(node.pos_y) || 0))),
                 reward: (node.reward && typeof node.reward === 'object') ? node.reward : {},
                 sort_order: Number(node.sort_order) || 0,
                 is_active: node.is_active !== false
             };
             if (!row.name || !row.metric) return fail(400, 'INCOMPLETE', 'Node cần tên và chỉ số.');
+
+            /* Chặn vòng lặp điều kiện trước khi ghi: cây hỏng sẽ khoá toàn bộ
+               node phía sau và không có cách nào tự sửa từ giao diện học sinh. */
+            const { data: allNodes } = await client.from('skill_tree_nodes')
+                .select('id, requires, is_active').eq('is_active', true);
+            const graph = (allNodes ?? []).map(function (n: Record<string, unknown>) {
+                return {
+                    id: String(n.id),
+                    requires: Array.isArray(n.requires) ? (n.requires as string[]).map(String) : []
+                };
+            }).filter(function (n) { return n.id !== id; });
+            graph.push({ id, requires });
+            const cycle = hasCycle(graph);
+            if (cycle) {
+                return fail(400, 'CYCLE',
+                    'Điều kiện tạo vòng lặp quanh node “' + cycle +
+                    '”. Hãy bỏ một node tiên quyết để cây vẫn mở được.');
+            }
+
+            if (body.expect_new) {
+                const { data: existing } = await client.from('skill_tree_nodes')
+                    .select('id').eq('id', id).maybeSingle();
+                if (existing) {
+                    return fail(409, 'CODE_TAKEN',
+                        'Mã “' + id + '” đã được dùng cho một node khác. Hãy chọn mã khác.');
+                }
+            }
+
             const { error } = await client.from('skill_tree_nodes').upsert(row, { onConflict: 'id' });
             if (error) return fail(500, 'SAVE_ERROR', 'Không lưu được node: ' + error.message);
-            await audit(client, 'node_save', { id }, 'admin:' + scope);
+            await audit(client, 'node_save', { id, branch, min_level: row.min_level }, 'admin:' + scope);
+            return json({ ok: true, id });
+        }
+
+        case 'admin.node.delete': {
+            const id = codeOf(body.id);
+            if (!id) return fail(400, 'BAD_ID', 'Thiếu mã node.');
+            const { count: usedCount } = await client.from('user_skill_progress')
+                .select('student_id', { count: 'exact', head: true })
+                .eq('node_id', id).eq('status', 'completed');
+            if ((usedCount ?? 0) > 0) {
+                const { error } = await client.from('skill_tree_nodes')
+                    .update({ is_active: false }).eq('id', id);
+                if (error) return fail(500, 'DELETE_ERROR', 'Không lưu trữ được node.');
+                await audit(client, 'node_archived', { id }, 'admin:' + scope);
+                return json({ ok: true, archived: true });
+            }
+            const { error } = await client.from('skill_tree_nodes').delete().eq('id', id);
+            if (error) return fail(500, 'DELETE_ERROR', 'Không xoá được node.');
+            await audit(client, 'node_delete', { id }, 'admin:' + scope);
+            return json({ ok: true, archived: false });
+        }
+
+        case 'admin.branch.save': {
+            const b = body.branch as Record<string, unknown> | undefined;
+            if (!b) return fail(400, 'BAD_BRANCH', 'Thiếu dữ liệu nhánh.');
+            const id = codeOf(b.id || b.name);
+            if (!id) return fail(400, 'BAD_ID', 'Mã nhánh không hợp lệ.');
+            const row = {
+                id,
+                name: str(b.name, 80),
+                description: str(b.description, 300),
+                icon: str(b.icon, 60) || 'fa-circle-nodes',
+                sort_order: Number(b.sort_order) || 0,
+                is_active: b.is_active !== false
+            };
+            if (!row.name) return fail(400, 'INCOMPLETE', 'Nhánh cần tên.');
+            const { error } = await client.from('skill_branches').upsert(row, { onConflict: 'id' });
+            if (error) return fail(500, 'SAVE_ERROR', 'Không lưu được nhánh: ' + error.message);
+            await audit(client, 'branch_save', { id }, 'admin:' + scope);
+            return json({ ok: true, id });
+        }
+
+        case 'admin.branch.delete': {
+            const id = codeOf(body.id);
+            if (!id) return fail(400, 'BAD_ID', 'Thiếu mã nhánh.');
+            const { data: nodes } = await client.from('skill_tree_nodes')
+                .select('id').eq('branch', id).eq('is_active', true).limit(1);
+            if ((nodes ?? []).length) {
+                return fail(409, 'BRANCH_IN_USE',
+                    'Nhánh còn node đang bật. Hãy chuyển hoặc tắt các node trước khi xoá nhánh.');
+            }
+            const { error } = await client.from('skill_branches')
+                .update({ is_active: false }).eq('id', id);
+            if (error) return fail(500, 'DELETE_ERROR', 'Không lưu trữ được nhánh.');
+            await audit(client, 'branch_archived', { id }, 'admin:' + scope);
             return json({ ok: true });
+        }
+
+        case 'admin.skilltree.validate': {
+            const { data, error } = await client.rpc('bk_gam_tree_issues', {});
+            if (error) return fail(500, 'VALIDATE_ERROR', 'Không kiểm tra được cấu trúc cây.');
+            const issues = Array.isArray(data) ? data : [];
+            return json({
+                ok: true,
+                issues,
+                errors: issues.filter(function (i: Record<string, unknown>) { return i.severity === 'error'; }).length,
+                warnings: issues.filter(function (i: Record<string, unknown>) { return i.severity === 'warning'; }).length
+            });
         }
 
         case 'admin.achievement.save': {
@@ -718,6 +942,282 @@ Deno.serve(async (req) => {
             });
         }
 
+        /* ------------------- 8.3.8: Founder trao phần thưởng ------------------- */
+        case 'admin.students.detail': {
+            const id = uuidish(body.student_id);
+            if (!id) return fail(400, 'BAD_STUDENT', 'Thiếu học sinh.');
+            const brief = await studentBrief(client, id);
+            if (!brief) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh đang hoạt động.');
+            const [{ count: achCount }, { count: skillCount }, { count: itemCount }] = await Promise.all([
+                client.from('user_achievements').select('achievement_id', { count: 'exact', head: true })
+                    .eq('student_id', id).not('unlocked_at', 'is', null),
+                client.from('user_skill_progress').select('node_id', { count: 'exact', head: true })
+                    .eq('student_id', id).eq('status', 'completed'),
+                client.from('user_inventory').select('item_id', { count: 'exact', head: true })
+                    .eq('student_id', id)
+            ]);
+            return json({
+                ok: true,
+                student: Object.assign({}, brief, {
+                    achievements: achCount ?? 0,
+                    skills: skillCount ?? 0,
+                    items: itemCount ?? 0
+                })
+            });
+        }
+
+        case 'admin.items.catalog': {
+            const studentId = uuidish(body.student_id);
+            const { data: catalog } = await client.from('reward_catalog')
+                .select('id, kind, name, description, icon, rarity, metadata, sort_order')
+                .eq('is_active', true).order('sort_order').limit(500);
+            let owned: Record<string, number> = {};
+            if (studentId) {
+                const { data } = await client.from('user_inventory')
+                    .select('item_id, quantity').eq('student_id', studentId);
+                (data ?? []).forEach(function (row: Record<string, unknown>) {
+                    owned[String(row.item_id)] = Number(row.quantity) || 1;
+                });
+            }
+            return json({
+                ok: true,
+                items: (catalog ?? []).map(function (raw: Record<string, unknown>) {
+                    const meta = (raw.metadata && typeof raw.metadata === 'object')
+                        ? raw.metadata as Record<string, unknown> : {};
+                    return Object.assign({}, raw, {
+                        how: String(meta.how || ''),
+                        use: String(meta.use || ''),
+                        max_quantity: Number(meta.max_quantity) || 0,
+                        owned: owned[String(raw.id)] || 0
+                    });
+                })
+            });
+        }
+
+        case 'admin.items.preview': {
+            const studentId = uuidish(body.student_id);
+            if (!studentId) return fail(400, 'BAD_STUDENT', 'Hãy chọn một học sinh trước khi xem trước.');
+            const brief = await studentBrief(client, studentId);
+            if (!brief) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+            const items = Array.isArray(body.items) ? body.items.slice(0, 30) : [];
+            const ids = items.map(function (row) { return codeOf((row as Record<string, unknown>).item_id); })
+                .filter(Boolean);
+            const { data: catalog } = await client.from('reward_catalog')
+                .select('id, name, kind, metadata').in('id', ids.length ? ids : ['__none__']);
+            const { data: inv } = await client.from('user_inventory')
+                .select('item_id, quantity').eq('student_id', studentId);
+            const owned: Record<string, number> = {};
+            (inv ?? []).forEach(function (r: Record<string, unknown>) {
+                owned[String(r.item_id)] = Number(r.quantity) || 1;
+            });
+            const rows = (catalog ?? []).map(function (raw: Record<string, unknown>) {
+                const meta = (raw.metadata && typeof raw.metadata === 'object')
+                    ? raw.metadata as Record<string, unknown> : {};
+                const requested = items.find(function (row) {
+                    return codeOf((row as Record<string, unknown>).item_id) === String(raw.id);
+                }) as Record<string, unknown> | undefined;
+                const qty = Math.max(1, Math.min(999, Number(requested && requested.quantity) || 1));
+                const max = Number(meta.max_quantity) || 9999;
+                const before = owned[String(raw.id)] || 0;
+                return {
+                    item_id: raw.id, name: raw.name, kind: raw.kind,
+                    quantity: qty, before, after: Math.min(max, before + qty), max_quantity: max
+                };
+            });
+            return json({ ok: true, student: brief, items: rows });
+        }
+
+        case 'admin.items.grant': {
+            if (scope !== 'founder') return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder được trao vật phẩm.');
+            const studentId = uuidish(body.student_id);
+            if (!studentId) return fail(400, 'BAD_STUDENT', 'Hãy chọn một học sinh.');
+            const brief = await studentBrief(client, studentId);
+            if (!brief) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh đang hoạt động.');
+            const items = Array.isArray(body.items) ? body.items.slice(0, 30) : [];
+            const clean = items.map(function (row) {
+                const item = row as Record<string, unknown>;
+                return {
+                    item_id: codeOf(item.item_id),
+                    quantity: Math.max(1, Math.min(999, Number(item.quantity) || 1))
+                };
+            }).filter(function (row) { return !!row.item_id; });
+            if (!clean.length) return fail(400, 'NO_ITEMS', 'Hãy chọn ít nhất một vật phẩm.');
+            const reason = str(body.reason, 500);
+            const { data, error } = await client.rpc('bk_gam_grant_items', {
+                p_student: studentId,
+                p_items: clean,
+                p_actor: 'founder:' + admin.id,
+                p_reason: reason
+            });
+            if (error) return fail(500, 'GRANT_ERROR', 'Không trao được vật phẩm.');
+            await audit(client, 'items_grant_request', {
+                student_id: studentId, student: brief.display_name,
+                items: clean, reason, granted: (data && data.granted) || []
+            }, 'founder:' + admin.id, 'founder', studentId);
+            return json({ ok: true, student: brief, result: data });
+        }
+
+        case 'admin.achievements.catalog': {
+            const studentId = uuidish(body.student_id);
+            const { data: defs } = await client.from('achievement_defs')
+                .select('id, name, description, icon, rarity, category, conditions, stages, reward, is_hidden, sort_order')
+                .eq('is_active', true).order('sort_order').limit(500);
+            const owned: Record<string, number> = {};
+            if (studentId) {
+                const { data } = await client.from('user_achievements')
+                    .select('achievement_id, stage')
+                    .eq('student_id', studentId).not('unlocked_at', 'is', null);
+                (data ?? []).forEach(function (row: Record<string, unknown>) {
+                    owned[String(row.achievement_id)] = (owned[String(row.achievement_id)] || 0) + 1;
+                });
+            }
+            return json({
+                ok: true,
+                achievements: (defs ?? []).map(function (raw: Record<string, unknown>) {
+                    return Object.assign({}, raw, { owned_stages: owned[String(raw.id)] || 0 });
+                })
+            });
+        }
+
+        case 'admin.achievements.preview': {
+            const studentId = uuidish(body.student_id);
+            if (!studentId) return fail(400, 'BAD_STUDENT', 'Hãy chọn một học sinh trước khi xem trước.');
+            const brief = await studentBrief(client, studentId);
+            if (!brief) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+            const ids = cleanIdList(body.ids, 30);
+            const { data: defs } = await client.from('achievement_defs')
+                .select('id, name, rarity, stages').in('id', ids.length ? ids : ['__none__']);
+            const { data: owned } = await client.from('user_achievements')
+                .select('achievement_id, stage, unlocked_at').eq('student_id', studentId);
+            const ownedMap: Record<string, number> = {};
+            (owned ?? []).forEach(function (r: Record<string, unknown>) {
+                if (r.unlocked_at) {
+                    ownedMap[String(r.achievement_id)] = (ownedMap[String(r.achievement_id)] || 0) + 1;
+                }
+            });
+            return json({
+                ok: true, student: brief,
+                achievements: (defs ?? []).map(function (raw: Record<string, unknown>) {
+                    return Object.assign({}, raw, { owned_stages: ownedMap[String(raw.id)] || 0 });
+                })
+            });
+        }
+
+        case 'admin.achievements.grant': {
+            if (scope !== 'founder') return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder được trao thành tựu.');
+            const studentId = uuidish(body.student_id);
+            if (!studentId) return fail(400, 'BAD_STUDENT', 'Hãy chọn một học sinh.');
+            const brief = await studentBrief(client, studentId);
+            if (!brief) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh đang hoạt động.');
+            const ids = cleanIdList(body.ids, 30);
+            if (!ids.length) return fail(400, 'NO_ACHIEVEMENTS', 'Hãy chọn ít nhất một thành tựu.');
+            const reason = str(body.reason, 500);
+            const { data, error } = await client.rpc('bk_gam_grant_achievements', {
+                p_student: studentId,
+                p_ids: ids,
+                p_actor: 'founder:' + admin.id,
+                p_reason: reason
+            });
+            if (error) return fail(500, 'GRANT_ERROR', 'Không trao được thành tựu.');
+            await audit(client, 'achievements_grant_request', {
+                student_id: studentId, student: brief.display_name,
+                ids, reason, granted: (data && data.granted) || []
+            }, 'founder:' + admin.id, 'founder', studentId);
+            return json({ ok: true, student: brief, result: data });
+        }
+
+        case 'admin.skilltree.preview': {
+            const studentId = uuidish(body.student_id);
+            if (!studentId) return fail(400, 'BAD_STUDENT', 'Hãy chọn một học sinh trước khi xem trước.');
+            const brief = await studentBrief(client, studentId);
+            if (!brief) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh.');
+            const { data: nodes } = await client.from('skill_tree_nodes')
+                .select('id, name, branch, requires, min_level, required_missions, required_achievements, sort_order')
+                .eq('is_active', true).order('sort_order');
+            const { data: progress } = await client.from('user_skill_progress')
+                .select('node_id, status, granted, progress').eq('student_id', studentId);
+            const map: Record<string, Record<string, unknown>> = {};
+            (progress ?? []).forEach(function (row: Record<string, unknown>) {
+                map[String(row.node_id)] = row;
+            });
+            const list = (nodes ?? []).map(function (raw: Record<string, unknown>) {
+                const row = map[String(raw.id)] || {};
+                return {
+                    id: raw.id, name: raw.name, branch: raw.branch,
+                    status: row.status || 'locked', progress: Number(row.progress) || 0,
+                    granted: !!row.granted
+                };
+            });
+            const completed = list.filter(function (n) { return n.status === 'completed'; }).length;
+            return json({
+                ok: true, student: brief,
+                total: list.length, completed,
+                remaining: list.length - completed,
+                nodes: list
+            });
+        }
+
+        case 'admin.skilltree.grant': {
+            if (scope !== 'founder') return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder được cấp toàn bộ cây kỹ năng.');
+            const studentId = uuidish(body.student_id);
+            if (!studentId) return fail(400, 'BAD_STUDENT', 'Hãy chọn một học sinh.');
+            if (body.confirm !== true) {
+                return fail(400, 'NO_CONFIRM', 'Cần xác nhận trước khi cấp toàn bộ cây kỹ năng.');
+            }
+            const brief = await studentBrief(client, studentId);
+            if (!brief) return fail(404, 'NOT_FOUND', 'Không tìm thấy học sinh đang hoạt động.');
+            const reason = str(body.reason, 500);
+            const { data, error } = await client.rpc('bk_gam_grant_skill_tree', {
+                p_student: studentId,
+                p_actor: 'founder:' + admin.id,
+                p_reason: reason
+            });
+            if (error) return fail(500, 'GRANT_ERROR', 'Không cấp được cây kỹ năng.');
+            await audit(client, 'skilltree_grant_request', {
+                student_id: studentId, student: brief.display_name,
+                granted: (data && data.granted) || 0, reason
+            }, 'founder:' + admin.id, 'founder', studentId);
+            return json({ ok: true, student: brief, result: data });
+        }
+
+        case 'admin.grants.history': {
+            if (scope !== 'founder') return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder xem lịch sử trao tặng.');
+            const limit = Math.min(100, Math.max(1, Number(body.limit) || 30));
+            const offset = Math.max(0, Number(body.offset) || 0);
+            const studentId = uuidish(body.student_id);
+            const kind = str(body.kind, 24);
+            const actions: Record<string, string[]> = {
+                items: ['items_granted'],
+                achievements: ['achievement_granted', 'achievement_unlocked'],
+                skills: ['skill_tree_granted', 'skill_node_granted', 'skill_node_completed'],
+                level: ['level_set'],
+                buffs: ['xp_buff_created', 'xp_buff_ended'],
+                all: ['items_granted', 'achievement_granted', 'skill_tree_granted',
+                      'skill_node_granted', 'level_set', 'xp_buff_created', 'xp_buff_ended']
+            };
+            const filter = actions[kind] || actions.all;
+            let query = client.from('gamification_activity_logs')
+                .select('id, student_id, actor_kind, actor_label, action, detail, created_at, students(display_name)',
+                    { count: 'exact' })
+                .in('action', filter)
+                .order('created_at', { ascending: false })
+                .range(offset, offset + limit - 1);
+            if (studentId) query = query.eq('student_id', studentId);
+            const { data, count, error } = await query;
+            if (error) return fail(500, 'HISTORY_ERROR', 'Không đọc được lịch sử trao tặng.');
+            return json({
+                ok: true,
+                rows: (data ?? []).map(function (raw: Record<string, unknown>) {
+                    const st = raw.students;
+                    const first = Array.isArray(st) ? st[0] : st;
+                    return Object.assign({}, raw, {
+                        student_name: (first && (first as Record<string, unknown>).display_name) || ''
+                    });
+                }),
+                total: count ?? 0, limit, offset
+            });
+        }
+
         case 'admin.students.list': {
             if (!founderOnly.has(action) || scope !== 'founder') {
                 return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder xem được danh sách tiến trình toàn bộ.');
@@ -752,7 +1252,12 @@ Deno.serve(async (req) => {
                 p_meta: { scope }
             });
             if (error) return fail(500, 'ADJUST_ERROR', 'Không điều chỉnh được XP.');
-            return json({ ok: true, result: data });
+            const evalObj = (data && data.evaluation) || {};
+            return json({
+                ok: true,
+                result: data,
+                achievements: Array.isArray(evalObj.achievements) ? evalObj.achievements.length : 0
+            });
         }
 
         case 'admin.audience.preview': {
@@ -788,18 +1293,31 @@ Deno.serve(async (req) => {
             }
             const failed: Array<{ id: string; name: string; message: string }> = [];
             let updated = 0;
+            let achievements = 0;
             for (const s of list) {
-                const { error } = await client.rpc('bk_gam_set_level', {
+                const { data, error } = await client.rpc('bk_gam_set_level', {
                     p_student: s.id,
                     p_level: level,
                     p_actor: 'founder:' + admin.id,
                     p_reason: reason
                 });
-                if (error) failed.push({ id: s.id, name: s.display_name, message: 'Không đặt được cấp độ.' });
-                else updated += 1;
+                if (error) {
+                    failed.push({ id: s.id, name: s.display_name, message: 'Không đặt được cấp độ.' });
+                } else {
+                    updated += 1;
+                    /* 8.3.8: bk_gam_set_level tự đánh giá thành tựu trong cùng
+                       transaction; đây chỉ là tổng hợp để báo cáo lại. */
+                    const evalObj = (data && data.evaluation) || {};
+                    achievements += Array.isArray(evalObj.achievements) ? evalObj.achievements.length : 0;
+                }
             }
-            await audit(client, 'level_set', { level, reason, updated, failed: failed.length, audience }, 'admin:' + scope);
-            return json({ ok: true, level: level, total: list.length, updated: updated, failed: failed });
+            await audit(client, 'level_set', {
+                level, reason, updated, failed: failed.length, achievements, audience
+            }, 'admin:' + scope);
+            return json({
+                ok: true, level: level, total: list.length,
+                updated: updated, achievements: achievements, failed: failed
+            });
         }
 
         case 'admin.xp.buff.list': {

@@ -325,8 +325,8 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
     /Danh hiệu/.test(innerTabs[1].textContent) &&
     /Gamification/.test(innerTabs[2].textContent) &&
     /Founder/.test(innerTabs[3].textContent), String(innerTabs.length));
-  ok('tab mặc định là Thành tích với 5 khu vực',
-    D.querySelectorAll('.bkc-pane .bkf-section').length === 5,
+  ok('tab mặc định là Thành tích với 6 khu vực (thêm badge Gamification)',
+    D.querySelectorAll('.bkc-pane .bkf-section').length === 6,
     String(D.querySelectorAll('.bkc-pane .bkf-section').length));
   ok('dashboard đọc phiên bản máy chủ thật',
     !!calls.find((c) => c.action === 'version'));

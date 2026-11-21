@@ -683,7 +683,7 @@ Chi tiết: [GAMIFICATION_ARCHITECTURE.md](GAMIFICATION_ARCHITECTURE.md),
 Chi tiết: [AVATAR_SYNC_V835.md](AVATAR_SYNC_V835.md) ·
 [AVATAR_FRAME_SYSTEM.md](AVATAR_FRAME_SYSTEM.md).
 
-### 4.3. Quản trị tiến trình từ Founder Dashboard (8.3.6 – 8.3.7)
+### 4.3. Quản trị tiến trình từ Founder Dashboard (8.3.6 – 8.3.8)
 
 Tab **Gamification** của Founder Dashboard (`bk-founder-gamification.js`) gửi một
 `audience` (`all` | `student` | `level`) tới `gamification-api`:
@@ -705,6 +705,38 @@ rỗng. Chi tiết: [GAMIFICATION_ADMIN_V836.md](GAMIFICATION_ADMIN_V836.md).
 `students.search`, không thuộc nhánh quản trị nên máy chủ trả `UNKNOWN_ACTION`
 (“Hành động không hợp lệ.”). Nhật ký `level_set` lưu `level`, `reason`, `updated` để
 hiển thị đúng số liệu.
+
+#### 8.3.8 — Trao tặng, cây kỹ năng có điều kiện và đồng bộ thành tựu
+
+| Action | Việc làm |
+|---|---|
+| `admin.students.detail` | Hồ sơ ngắn + số thành tựu/node/vật phẩm của một học sinh |
+| `admin.items.catalog` / `admin.items.preview` | Kho vật phẩm (kèm số lượng, giới hạn) và xem trước trước/sau |
+| `admin.items.grant` | `bk_gam_grant_items` — chỉ Founder, tối đa 30 mục/lần |
+| `admin.achievements.catalog` / `admin.achievements.preview` | Bộ sưu tập và trạng thái sở hữu |
+| `admin.achievements.grant` | `bk_gam_grant_achievements` — bỏ qua mục đã sở hữu |
+| `admin.skilltree.preview` | Tiến trình cây của một học sinh (đã hoàn thành / còn lại) |
+| `admin.skilltree.grant` | `bk_gam_grant_skill_tree` — bắt buộc `confirm: true` |
+| `admin.grants.history` | Lịch sử trao tặng, lọc theo học sinh/loại |
+| `admin.node.save` / `admin.node.delete` | Node + điều kiện + toạ độ; lưu trữ khi đã có người hoàn thành |
+| `admin.branch.save` / `admin.branch.delete` | Nhánh kỹ năng động (`skill_branches`) |
+| `admin.skilltree.validate` | `bk_gam_tree_issues` — vòng lặp, tham chiếu thiếu, node cô lập |
+
+**Điều kiện node** nằm trong `skill_tree_nodes`: `requires` (node trước),
+`required_missions`, `required_achievements`, `min_level` và `metric`/`target`.
+`bk_gam_node_blockers()` trả danh sách điều kiện còn thiếu; `bk_gam_evaluate()` chỉ
+chuyển node sang `completed` khi danh sách này rỗng. `bk_gam_details()` cung cấp toạ độ,
+blockers, chi tiết điều kiện thành tựu và số lượng vật phẩm; `gamification-api` ghép vào
+`bk_gam_state` nên client không phải gọi thêm.
+
+**Sửa lỗi đồng bộ:** `bk_gam_set_level` và `bk_gam_adjust` gọi `bk_gam_evaluate` trong
+cùng transaction, vì vậy buff Level/XP mở đủ thành tựu mốc cấp (kể cả khi tăng nhiều cấp
+một lần). Reward Engine vẫn idempotent: `bk_gam_grant_item` không nhân bản; trao tay dùng
+`bk_gam_grant_items` với `user_inventory.quantity` và giới hạn `metadata.max_quantity`.
+
+**Trang `/skills/`** (`bk-skills.js|css`) chỉ hiển thị dữ liệu máy chủ: kéo/zoom/căn giữa,
+tìm kiếm, lọc nhánh, bảng chi tiết node và danh sách điều kiện còn thiếu. Không có công
+thức mở khoá thứ hai ở client.
 
 ### 4.4. Sinh mã trong dashboard quản trị (8.3.5)
 

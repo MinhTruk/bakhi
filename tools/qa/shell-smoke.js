@@ -128,11 +128,13 @@ ok('menu đúng thứ tự mục bắt buộc',
   labels[0].indexOf('Hồ sơ cá nhân') === 0 &&
   /* 8.3.1: lối vào Tiến trình đứng ngay sau Hồ sơ cá nhân. */
   labels[1].indexOf('Tiến trình học tập') === 0 &&
-  labels[2].indexOf('Chat') === 0 &&
-  labels[3].indexOf('Giao diện') === 0 &&
-  labels[4].indexOf('README.md') === 0 &&
-  labels[5].indexOf('Bá Khí Studio') === 0 &&
-  labels[6].indexOf('Cài đặt') === 0,
+  /* 8.3.8: trang Cây kỹ năng đứng ngay sau Tiến trình. */
+  labels[2].indexOf('Cây kỹ năng') === 0 &&
+  labels[3].indexOf('Chat') === 0 &&
+  labels[4].indexOf('Giao diện') === 0 &&
+  labels[5].indexOf('README.md') === 0 &&
+  labels[6].indexOf('Bá Khí Studio') === 0 &&
+  labels[7].indexOf('Cài đặt') === 0,
   JSON.stringify(labels));
 ok('menu có lối vào Tiến trình trỏ tới /gamification/',
   !!menu.querySelector('a[data-bk-progress-link][href$="gamification/"]'));

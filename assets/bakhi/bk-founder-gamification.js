@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-founder-gamification.js  (8.3.7)
+   Bá Khí — bk-founder-gamification.js  (8.3.8)
 
    Tab "Gamification" trong Founder Dashboard. Founder chọn MỘT đối tượng
    (toàn bộ học sinh / một học sinh / khoảng cấp độ) rồi:
@@ -483,6 +483,27 @@
             });
         }
 
+        /* 8.3.8: cấp trọn cây kỹ năng, trao vật phẩm/thành tựu và lịch sử. */
+        if (global.BKFounderGrants && typeof global.BKFounderGrants.render === 'function') {
+            global.BKFounderGrants.render(pane, kit, {
+                getStudent: function () {
+                    return ctx.audience.kind === 'student' ? (ctx.audience.student_id || '') : '';
+                },
+                getStudentName: function () {
+                    return ctx.selected ? String(ctx.selected.display_name || '') : '';
+                },
+                onChanged: function () { loadBuffs(); loadLogs(); }
+            });
+        } else {
+            pane.appendChild(kit.alertBox(
+                'Không tải được mô-đun trao tặng (bk-founder-grants.js). Hãy tải lại trang.', 'error'));
+        }
+
+        /* 8.3.8: cấu hình cây kỹ năng (node, nhánh, điều kiện, toạ độ). */
+        if (global.BKFounderGrants && typeof global.BKFounderGrants.renderTreeManager === 'function') {
+            global.BKFounderGrants.renderTreeManager(pane, kit);
+        }
+
         loadBuffs();
         loadLogs();
     }
@@ -497,6 +518,6 @@
 
     global.BKFounderGamification = {
         render: render,
-        version: '8.3.7'
+        version: '8.3.8'
     };
 })(typeof window !== 'undefined' ? window : this);
