@@ -318,11 +318,13 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   const pane = await until(() => D.querySelector('.bkc-pane'));
 
   const innerTabs = Array.from(D.querySelectorAll('.bkc-pane .bkf-tabbtn'));
-  ok('khu Founder chia 3 tab: Thành tích / Danh hiệu / Founder',
-    innerTabs.length === 3 &&
+  /* 8.3.6 thêm tab “Gamification” (đặt cấp độ, buff XP) vào khu Founder. */
+  ok('khu Founder chia 4 tab: Thành tích / Danh hiệu / Gamification / Founder',
+    innerTabs.length === 4 &&
     /Thành tích/.test(innerTabs[0].textContent) &&
     /Danh hiệu/.test(innerTabs[1].textContent) &&
-    /Founder/.test(innerTabs[2].textContent), String(innerTabs.length));
+    /Gamification/.test(innerTabs[2].textContent) &&
+    /Founder/.test(innerTabs[3].textContent), String(innerTabs.length));
   ok('tab mặc định là Thành tích với 5 khu vực',
     D.querySelectorAll('.bkc-pane .bkf-section').length === 5,
     String(D.querySelectorAll('.bkc-pane .bkf-section').length));

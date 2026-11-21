@@ -2,6 +2,25 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.3.7] — 2026-11-21
+
+### Sửa lỗi
+
+- **Tìm học sinh trong tab Gamification không còn báo “Hành động không hợp lệ.”**
+  Ô tìm kiếm gọi `students.search` trên `gamification-api`, nhưng action này không có
+  trong nhánh quản trị nên máy chủ xử lý như học sinh và trả `UNKNOWN_ACTION`; bước lùi
+  `students.list` cũng không tồn tại. Nay có action quản trị riêng `admin.students.search`:
+  tìm theo tên không dấu (`normalized_name`) và tên hiển thị, chỉ học sinh đang hoạt động,
+  tối đa 20 kết quả; mô-đun chỉ lùi về `admin.students.list` khi máy chủ còn bản cũ.
+- **Không còn gửi đối tượng rỗng lên máy chủ.** Chọn “Một học sinh” mà chưa chọn ai thì
+  nút Xem trước báo “Hãy tìm và chọn một học sinh trước khi xem trước.” thay vì để máy chủ
+  từ chối với thông báo chung.
+- **Nhật ký đặt cấp độ hiện đúng số liệu.** Bản 8.3.6 đọc `from_level`/`to_level` không
+  tồn tại nên cột chi tiết hiện “undefined”; nay máy chủ lưu `level`, `updated`, `reason`
+  và giao diện hiển thị “cấp 12 · 3 học sinh · lý do”.
+- **Gõ tên khác sau khi đã chọn học sinh thì bỏ lựa chọn cũ**, tránh đặt cấp hoặc buff
+  nhầm người vừa chọn trước đó.
+
 ## [8.3.6] — 2026-11-21
 
 ### Sửa lỗi

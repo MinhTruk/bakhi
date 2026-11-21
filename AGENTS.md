@@ -254,6 +254,11 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 - **Buff XP & đặt cấp (8.3.6):** bảng `gamification_xp_buffs` chỉ service_role đọc/ghi;
   `bk_gam_award` nhân XP bằng `bk_gam_active_buff`. Đặt cấp độ chỉ qua `bk_gam_set_level`
   (ghi sổ từng phần ≤ 100.000 XP), không `UPDATE user_progression` trực tiếp.
+- **Tìm học sinh trong tab Gamification (8.3.7):** dùng `admin.students.search` của
+  `gamification-api` (tìm không dấu theo `normalized_name` + `display_name`, chỉ học sinh
+  đang hoạt động). Không gọi `students.search` trên `gamificationApi` — action đó thuộc
+  nhánh học sinh nên máy chủ trả `UNKNOWN_ACTION` (“Hành động không hợp lệ.”). Chưa chọn
+  học sinh thì chặn Xem trước ở client, không gửi `audience` rỗng.
 - **Mã tự sinh (8.3.5):** chỉ một `BKGamificationAdmin.slugify()` ở client và một `codeOf()`
   ở `gamification-api`. Mã cho phép `_` và `-`; `Ma Vương` → `ma_vuong`. Không thêm hàm slug
   thứ hai. Tạo mới phải gửi `expect_new` để máy chủ trả `CODE_TAKEN` khi mã đã tồn tại.
@@ -268,6 +273,7 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/founder-achievement-smoke.js
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/v835-code-generator.js
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/v836-founder-gamification.js
+  NODE_PATH=/tmp/bktest/node_modules node tools/qa/v837-founder-search.js
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/xp-level-integrity.js
   node tools/qa/gamification-security-smoke.js
   SUPABASE_ACCESS_TOKEN=... node tools/qa/gamification-db-check.js   # cần quyền project

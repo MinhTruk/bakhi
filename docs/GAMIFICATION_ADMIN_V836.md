@@ -42,6 +42,12 @@ Kiểm chứng trên production (sau migration):
 | Một học sinh | Tìm theo tên/username, chọn đúng một hồ sơ |
 | Theo khoảng cấp độ | Học sinh có `user_progression.level` trong `[min, max]` |
 
+> **Tìm học sinh (8.3.7).** Ô tìm kiếm gọi `admin.students.search` trên `gamification-api`:
+> bỏ dấu tiếng Việt, tìm theo `normalized_name` **và** `display_name`, chỉ học sinh đang
+> hoạt động, tối đa 20 kết quả. Bản 8.3.6 gọi `students.search` (nhánh học sinh) nên máy
+> chủ trả `UNKNOWN_ACTION` — “Hành động không hợp lệ.” Chưa chọn học sinh thì nút Xem trước
+> báo tại chỗ, không gửi đối tượng rỗng lên máy chủ.
+
 Mỗi thao tác đều có bước **Xem trước**: máy chủ đếm số người thực sự bị ảnh hưởng và trả
 mẫu 8 hồ sơ. Chỉ sau khi xem trước mới xuất hiện nút xác nhận — không có thao tác hàng
 loạt nào chạy ngay khi bấm.

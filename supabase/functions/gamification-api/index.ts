@@ -42,6 +42,18 @@ function codeOf(v: unknown): string {
         .slice(0, 64);
 }
 
+/** Bỏ dấu tiếng Việt để Founder tìm học sinh không cần gõ đúng dấu. */
+function normalizeName(v: unknown): string {
+    return str(v, 80)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 function uuidish(v: unknown): string {
     const s = str(v, 60);
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s) ? s : '';
@@ -666,6 +678,46 @@ Deno.serve(async (req) => {
             return json({ ok: true, drift: drift ?? [] });
         }
 
+        /* 8.3.7: tìm học sinh cho tab Gamification. Trước đây mô-đun gọi
+           `students.search` — không có nhánh quản trị nên rơi vào nhánh học sinh
+           và trả UNKNOWN_ACTION ("Hành động không hợp lệ."). Đây là action đọc
+           duy nhất phục vụ ô “Tìm học sinh” của tab. */
+        case 'admin.students.search': {
+            const q = normalizeName(body.q)
+                .replace(/[^a-z0-9 ]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            const limit = Math.min(20, Math.max(1, Number(body.limit) || 8));
+            let query = client
+                .from('students')
+                .select('id, display_name, disambiguator, student_code, is_founder, user_progression(level)')
+                .eq('is_active', true)
+                .order('display_name')
+                .limit(limit);
+            if (q) {
+                query = query.or('normalized_name.ilike.%' + q + '%,display_name.ilike.%' + q + '%');
+            }
+            const { data, error } = await query;
+            if (error) return fail(500, 'SEARCH_ERROR', 'Không tìm được học sinh. Thử lại sau.');
+            return json({
+                ok: true,
+                query: q,
+                count: (data ?? []).length,
+                students: (data ?? []).map(function (raw: Record<string, unknown>) {
+                    const prog = raw.user_progression;
+                    const first = Array.isArray(prog) ? prog[0] : prog;
+                    return {
+                        id: raw.id,
+                        display_name: raw.display_name,
+                        disambiguator: raw.disambiguator || '',
+                        student_code: raw.student_code || '',
+                        is_founder: !!raw.is_founder,
+                        level: Number((first && (first as Record<string, unknown>).level) || 1)
+                    };
+                })
+            });
+        }
+
         case 'admin.students.list': {
             if (!founderOnly.has(action) || scope !== 'founder') {
                 return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder xem được danh sách tiến trình toàn bộ.');
@@ -746,7 +798,7 @@ Deno.serve(async (req) => {
                 if (error) failed.push({ id: s.id, name: s.display_name, message: 'Không đặt được cấp độ.' });
                 else updated += 1;
             }
-            await audit(client, 'level_set', { level, updated, failed: failed.length, audience }, 'admin:' + scope);
+            await audit(client, 'level_set', { level, reason, updated, failed: failed.length, audience }, 'admin:' + scope);
             return json({ ok: true, level: level, total: list.length, updated: updated, failed: failed });
         }
 

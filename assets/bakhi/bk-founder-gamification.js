@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-founder-gamification.js  (8.3.6)
+   Bá Khí — bk-founder-gamification.js  (8.3.7)
 
    Tab "Gamification" trong Founder Dashboard. Founder chọn MỘT đối tượng
    (toàn bộ học sinh / một học sinh / khoảng cấp độ) rồi:
@@ -136,6 +136,16 @@
             current.textContent = 'Đang chọn: ' + audienceText(ctx.audience) + '.';
         }
 
+        /* 8.3.7: gamification-api có action quản trị riêng `admin.students.search`.
+           Bản 8.3.6 gọi `students.search` — không phải action quản trị nên máy chủ
+           xử lý ở nhánh học sinh và trả UNKNOWN_ACTION: “Hành động không hợp lệ.”
+           Chỉ lùi về `admin.students.list` khi máy chủ còn là bản cũ đã cache. */
+        function isUnknownAction(err) {
+            if (!err) return false;
+            if (err.code === 'UNKNOWN_ACTION') return true;
+            return /Hành động không hợp lệ|UNKNOWN_ACTION/i.test(String(err.message || ''));
+        }
+
         function runSearch() {
             var q = String(search.value || '').trim();
             if (q.length < 2) {
@@ -144,9 +154,9 @@
             }
             searchHint.textContent = 'Đang tìm “' + q + '”…';
             searchResults.textContent = '';
-            api('students.search', { q: q, limit: 8 }).catch(function (err) {
-                if (err && err.code === 'UNKNOWN_ACTION') {
-                    return api('students.list', { q: q, limit: 8, status: 'active' });
+            api('admin.students.search', { q: q, limit: 8 }).catch(function (err) {
+                if (isUnknownAction(err)) {
+                    return api('admin.students.list', { q: q, limit: 8 });
                 }
                 throw err;
             }).then(function (res) {
@@ -189,6 +199,26 @@
         search.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') { e.preventDefault(); runSearch(); }
         });
+        /* Gõ tên khác sau khi đã chọn một học sinh thì bỏ lựa chọn cũ, tránh
+           gửi nhầm người vừa chọn trước đó vào thao tác đặt cấp/buff. */
+        search.addEventListener('input', function () {
+            if (ctx.audience.kind !== 'student' || !ctx.selected) return;
+            if (String(search.value || '').trim() === String(ctx.selected.display_name || '')) return;
+            ctx.selected = null;
+            ctx.audience = { kind: 'student' };
+            searchResults.textContent = '';
+            searchHint.textContent = 'Gõ ít nhất 2 ký tự rồi bấm Tìm.';
+            paintAudience();
+        });
+
+        /* “Một học sinh” nhưng chưa chọn ai: báo ngay tại chỗ thay vì để máy chủ
+           từ chối với thông báo chung “Đối tượng nhận không hợp lệ”. */
+        function audienceProblem() {
+            if (ctx.audience.kind === 'student' && !ctx.audience.student_id) {
+                return 'Hãy tìm và chọn một học sinh trước khi xem trước.';
+            }
+            return '';
+        }
 
         setKind('all');
 
@@ -225,6 +255,8 @@
             if (!(lv >= 1 && lv <= 100)) { toast('Cấp độ phải từ 1 đến 100.', 'error'); return; }
             var reason = String(levelReason.value || '').trim();
             if (reason.length < 3) { toast('Hãy nhập lý do đặt cấp độ.', 'error'); return; }
+            var problem = audienceProblem();
+            if (problem) { levelPreview.textContent = problem; return; }
             pendingLevel = null;
             levelConfirmWrap.textContent = '';
             levelPreview.textContent = 'Đang đếm đối tượng…';
@@ -309,6 +341,8 @@
             var hours = Math.round(num(hoursInput.value, 0));
             if (!(mult >= 1.1 && mult <= 10)) { toast('Hệ số buff phải từ 1,1 đến 10.', 'error'); return; }
             if (!(hours >= 1 && hours <= 720)) { toast('Thời hạn phải từ 1 đến 720 giờ.', 'error'); return; }
+            var problem = audienceProblem();
+            if (problem) { buffPreview.textContent = problem; return; }
             pendingBuff = null;
             buffConfirmWrap.textContent = '';
             buffPreview.textContent = 'Đang đếm đối tượng…';
@@ -430,8 +464,12 @@
                     tr.appendChild(el(h, 'td', null, l.action === 'level_set' ? 'Đặt cấp độ'
                         : (l.action === 'xp_buff_created' ? 'Tạo buff XP' : 'Kết thúc buff XP')));
                     var detail = l.detail || {};
+                    /* Nhật ký level_set lưu { level, reason, updated, audience };
+                       bản 8.3.6 đọc from_level/to_level nên hiện “undefined”. */
                     var text = l.action === 'level_set'
-                        ? ('cấp ' + detail.from_level + ' → ' + detail.to_level + ' · ' + (detail.reason || ''))
+                        ? ('cấp ' + (detail.level != null ? detail.level : '—') +
+                            (detail.updated != null ? ' · ' + detail.updated + ' học sinh' : '') +
+                            (detail.reason ? ' · ' + detail.reason : ''))
                         : (l.action === 'xp_buff_created'
                             ? ('x' + detail.multiplier + ' · ' + detail.hours + ' giờ · ' + (detail.label || ''))
                             : '');
@@ -459,6 +497,6 @@
 
     global.BKFounderGamification = {
         render: render,
-        version: '8.3.6'
+        version: '8.3.7'
     };
 })(typeof window !== 'undefined' ? window : this);

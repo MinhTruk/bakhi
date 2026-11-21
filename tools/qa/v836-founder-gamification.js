@@ -86,7 +86,7 @@ assert(owned.indexOf('wreath') !== -1, 'khung từ badge vẫn còn sau khi hợ
 const found = read('assets/bakhi/bk-founder.js');
 assert(/\[\s*'gamification',\s*'Gamification'/.test(found), 'Founder Dashboard có tab Gamification');
 assert(/else if \(name === 'gamification'\) tabGamification/.test(found), 'tab Gamification có tuyến render riêng');
-assert(/version: '8\.3\.6'/.test(found), 'BKFounder báo phiên bản 8.3.6');
+assert(/version: '8\.3\.[67]'/.test(found), 'BKFounder báo phiên bản 8.3.6+');
 const devboard = read('assets/bakhi/bk-devboard.js');
 assert(/gamificationApi: gamificationAdminApi/.test(devboard),
     'dashboard truyền gamification-api cho tab Gamification (không dùng admin-actions)');
@@ -105,6 +105,12 @@ assert(w2.BKFounderGamification && typeof w2.BKFounderGamification.render === 'f
 const calls = [];
 const api = (action, payload) => {
     calls.push({ action, payload });
+    if (action === 'admin.students.search') {
+        return Promise.resolve({
+            ok: true, count: 1,
+            students: [{ id: 'an-1', display_name: 'An', student_code: 'HS01', level: 2 }]
+        });
+    }
     if (action === 'admin.audience.preview') {
         return Promise.resolve({ ok: true, count: 3, sample: [{ id: 'a', name: 'An', level: 2 }] });
     }
@@ -193,6 +199,15 @@ function makeKit(window) {
     const searchInput = pane.querySelector('input[type="search"]');
     assert(searchInput && searchInput.closest('.bkf-aud-sub').hidden === false,
         'chọn “Một học sinh” mở ô tìm kiếm');
+
+    /* 8.3.7: phải chọn học sinh trước khi xem trước — tìm rồi bấm vào kết quả. */
+    searchInput.value = 'an';
+    byText(/^Tìm$/).click();
+    await sleep(30);
+    const firstResult = pane.querySelector('.bkf-result');
+    assert(!!firstResult, '8.3.7: tìm được học sinh bằng admin.students.search');
+    firstResult.click();
+    await sleep(10);
 
     const levelInput = pane.querySelector('input[type="number"][max="100"]');
     levelInput.value = '12';

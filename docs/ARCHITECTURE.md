@@ -683,13 +683,14 @@ Chi tiết: [GAMIFICATION_ARCHITECTURE.md](GAMIFICATION_ARCHITECTURE.md),
 Chi tiết: [AVATAR_SYNC_V835.md](AVATAR_SYNC_V835.md) ·
 [AVATAR_FRAME_SYSTEM.md](AVATAR_FRAME_SYSTEM.md).
 
-### 4.3. Quản trị tiến trình từ Founder Dashboard (8.3.6)
+### 4.3. Quản trị tiến trình từ Founder Dashboard (8.3.6 – 8.3.7)
 
 Tab **Gamification** của Founder Dashboard (`bk-founder-gamification.js`) gửi một
 `audience` (`all` | `student` | `level`) tới `gamification-api`:
 
 | Action | Việc làm |
 |---|---|
+| `admin.students.search` | Tìm học sinh theo tên không dấu + tên hiển thị (8.3.7, tối đa 20) |
 | `admin.audience.preview` | Đếm và lấy mẫu học sinh trong đối tượng (tối đa 2000) |
 | `admin.level.set` | `bk_gam_set_level` cho từng học sinh (tối đa 300/lần) |
 | `admin.xp.buff` | Tạo dòng `gamification_xp_buffs` (x1,1–x10, 1–720 giờ) |
@@ -699,6 +700,11 @@ Tab **Gamification** của Founder Dashboard (`bk-founder-gamification.js`) gử
 nhất. Học sinh thấy buff qua `buffs`/`xp_buff` trong `bk_gam_state` (API chèn thêm).
 Đặt cấp độ ghi sổ `xp_transactions` từng phần ≤ 100.000 XP nên `bk_gam_admin_drift` luôn
 rỗng. Chi tiết: [GAMIFICATION_ADMIN_V836.md](GAMIFICATION_ADMIN_V836.md).
+
+**8.3.7:** ô “Tìm học sinh” dùng `admin.students.search` — trước đây gọi
+`students.search`, không thuộc nhánh quản trị nên máy chủ trả `UNKNOWN_ACTION`
+(“Hành động không hợp lệ.”). Nhật ký `level_set` lưu `level`, `reason`, `updated` để
+hiển thị đúng số liệu.
 
 ### 4.4. Sinh mã trong dashboard quản trị (8.3.5)
 
