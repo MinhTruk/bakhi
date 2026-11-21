@@ -4146,7 +4146,7 @@
             global.BKFounder.render(pane, {
                 h: h, icon: icon, btn: btn, iconBtn: iconBtn, input: input, card: card,
                 alertBox: alertBox, table: table, emptyState: emptyState, loading: loading,
-                toast: toast, api: api, fmt: fmt
+                toast: toast, api: api, gamificationApi: gamificationAdminApi, fmt: fmt
             });
             return;
         }

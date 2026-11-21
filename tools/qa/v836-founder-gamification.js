@@ -87,6 +87,11 @@ const found = read('assets/bakhi/bk-founder.js');
 assert(/\[\s*'gamification',\s*'Gamification'/.test(found), 'Founder Dashboard có tab Gamification');
 assert(/else if \(name === 'gamification'\) tabGamification/.test(found), 'tab Gamification có tuyến render riêng');
 assert(/version: '8\.3\.6'/.test(found), 'BKFounder báo phiên bản 8.3.6');
+const devboard = read('assets/bakhi/bk-devboard.js');
+assert(/gamificationApi: gamificationAdminApi/.test(devboard),
+    'dashboard truyền gamification-api cho tab Gamification (không dùng admin-actions)');
+assert(/kit\.gamificationApi \|\| kit\.api/.test(read('assets/bakhi/bk-founder-gamification.js')),
+    'mô-đun ưu tiên gamificationApi');
 
 const dom2 = new JSDOM('<!doctype html><html><body><div id="host"></div></body></html>', {
     url: 'https://minhtruk.github.io/bakhi/founder/',

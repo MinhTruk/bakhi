@@ -51,7 +51,10 @@
     function render(pane, kit) {
         if (!pane || !kit || !kit.h) return;
         var h = kit.h;
-        var api = kit.api;
+        /* Tab Gamification gọi gamification-api (không phải admin-actions);
+           dashboard truyền đúng lớp qua gamificationApi, còn kit.api chỉ là
+           phương án dự phòng cho bản dashboard cũ đã cache. */
+        var api = kit.gamificationApi || kit.api;
         var toast = kit.toast || function () { };
         var ctx = { audience: { kind: 'all' }, selected: null };
 
