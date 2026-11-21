@@ -124,3 +124,17 @@ thiếu bản ghi — không có danh sách giao diện thứ hai.
 
 `20261214000000_bakhi_v841_founder_full_items.sql` (idempotent) cấp toàn bộ vật phẩm
 đang bật cho hồ sơ Founder, để chính Founder không phải tự trao giao diện cho mình.
+
+## 5. Ghi chú 8.4.2 — xếp lớp nền trang chủ
+
+`bk-themes.css` **không được** đặt `position` cho con của `body`. Lớp `#bkThemeLayer`
+dùng `position: fixed; inset: 0; z-index: -1; pointer-events: none`, nội dung trang vẽ
+phía trên theo luồng bình thường. Nhờ vậy header dính, chuông, nút Báo cáo và trình nhạc
+giữ đúng `position: fixed/sticky`.
+
+Với trang môn học (`scope=head`), `.bk-theme-head` chỉ thêm gốc định vị cho
+`::before/::after`; các lớp `sticky` / `fixed` / `absolute` của header được khôi phục
+bằng quy tắc riêng để thanh đầu trang vẫn dính khi cuộn.
+
+Kiểm tra hồi quy: `NODE_PATH=/tmp/bktest/node_modules node tools/qa/themes-smoke.js`
+(có mục “Xếp lớp trang chủ (hồi quy 8.4.2)”).

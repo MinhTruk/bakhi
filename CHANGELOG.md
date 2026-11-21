@@ -2,6 +2,30 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.4.2] — 2026-11-21
+
+### Sửa lỗi
+
+- **Trang chủ không còn vỡ layout khi bật giao diện.** Quy tắc
+  `html[data-bk-theme-scope="page"] body > *` trong `bk-themes.css` ép
+  `position: relative` lên **mọi** phần tử con trực tiếp của `body`, đè `position: fixed`
+  của header dính, chuông thông báo, nút **Báo cáo** và trình nhạc. Khi một tài khoản
+  trang bị giao diện (ví dụ sau khi nhận giao diện/badge trong Founder Dashboard), các nút
+  nổi giãn hết chiều ngang thành dải tím, header trôi theo trang và nội dung bị đẩy lệch.
+  Nay lớp nền dùng `z-index: -1` nên nằm dưới nội dung mà không đổi kiểu định vị của bất
+  kỳ thành phần nào; nền và lớp phủ giữ tương phản vẫn hiển thị đúng ở Light/Dark.
+- **Header trang bài học còn dính khi cuộn.** `.bk-theme-head` từng đặt
+  `position: relative` và đè `sticky` của Tailwind, làm thanh đầu trang mất tác dụng dính
+  trên mọi trang môn/KTTX khi có giao diện. Nay giữ nguyên `sticky`/`fixed`/`absolute`
+  của header, chỉ bổ sung gốc định vị cho lớp trang trí.
+
+### Cải tiến
+
+- Thêm kiểm tra hồi quy trong `tools/qa/themes-smoke.js`: chặn quy tắc ép định vị lên
+  toàn bộ `body > *`, bắt buộc lớp nền dùng `z-index` âm và vẫn `pointer-events: none`.
+- Đồng bộ phiên bản 8.4.2: `bk-version.js`, `bk-devboard.js`, `admin-actions` và chuỗi
+  `?v=` trong các trang HTML.
+
 ## [8.4.1] — 2026-11-21
 
 ### Tính năng

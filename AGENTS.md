@@ -262,6 +262,11 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 - **Đổi cấp/XP phải đánh giá thành tựu (8.3.8):** `bk_gam_set_level` và `bk_gam_adjust`
   gọi `bk_gam_evaluate` trong cùng transaction. Không thêm đường ghi `user_progression`
   trực tiếp nào khác, nếu không thành tựu mốc cấp sẽ lệch.
+- **Giao diện trang chủ (8.4.2):** `bk-themes.css` không được đặt `position` cho
+  `body > *`. Lớp `#bkThemeLayer` dùng `z-index: -1` + `pointer-events: none`; mọi thành
+  phần nổi (header dính, chuông, nút Báo cáo, trình nhạc) phải giữ `position: fixed/sticky`.
+  Với `scope=head`, `.bk-theme-head` không được đè `sticky/fixed/absolute` của header.
+  Hồi quy: `tools/qa/themes-smoke.js` mục “Xếp lớp trang chủ”.
 - **Trao tặng của Founder (8.3.8):** `bk_gam_grant_items` (quantity + `metadata.max_quantity`),
   `bk_gam_grant_achievements` (bỏ qua mục đã có), `bk_gam_grant_skill_tree` (xác nhận
   `confirm: true`). Các action `admin.items.grant`, `admin.achievements.grant`,

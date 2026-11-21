@@ -23,15 +23,14 @@
 }
 html[data-bk-theme] #bkThemeLayer { opacity: 1; }
 
-/* Trang chủ: nền phủ toàn màn hình, nội dung luôn nằm trên. */
-html[data-bk-theme-scope="page"] #bkThemeLayer { z-index: 0; }
+/* Trang chủ: nền phủ toàn màn hình, nội dung luôn nằm trên.
+   8.4.2 — lớp nền dùng z-index âm thay vì ép `position: relative` cho mọi con
+   của body. Quy tắc cũ đè `position: fixed` của header, chuông thông báo, nút
+   Báo cáo và trình nhạc nên các phần tử đó giãn hết chiều ngang và phá layout
+   trang chủ ngay khi bật giao diện (lỗi sau khi trao badge/giao diện 8.4.x). */
+html[data-bk-theme-scope="page"] #bkThemeLayer { z-index: -1; }
 html[data-bk-theme-scope="page"] body {
     background: transparent !important;
-    position: relative;
-}
-html[data-bk-theme-scope="page"] body > * {
-    position: relative;
-    z-index: 1;
 }
 /* Lớp phủ giữ độ tương phản chữ trên nền động. */
 #bkThemeLayer .bkth-veil {
@@ -55,6 +54,12 @@ html[data-bk-theme-scope="head"] .bk-theme-head {
     position: relative;
     isolation: isolate;
 }
+/* 8.4.2 — giữ đúng kiểu định vị của header: quy tắc `position: relative` ở trên
+   từng đè `sticky`/`fixed` của Tailwind nên header mất tác dụng dính khi cuộn.
+   Chỉ cần pseudo ::before/::after có gốc định vị, không cần đổi kiểu của header. */
+html[data-bk-theme-scope="head"] .bk-theme-head.sticky { position: sticky; }
+html[data-bk-theme-scope="head"] .bk-theme-head.fixed { position: fixed; }
+html[data-bk-theme-scope="head"] .bk-theme-head.absolute { position: absolute; }
 html[data-bk-theme-scope="head"] .bk-theme-head::before {
     content: "";
     position: absolute;

@@ -152,6 +152,21 @@ function makeDom(url, bodyScope) {
     check('refresh() đổi biểu tượng đã hiển thị',
         !!node.querySelector('.bk-user-deco.fa-star') && !node.querySelector('.bk-user-deco.fa-feather'));
 
+    /* ------------------------- 6. Hồi quy 8.4.2: không phá phần tử position: fixed */
+    console.log('Xếp lớp trang chủ (hồi quy 8.4.2)');
+    const CSS = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-themes.css'), 'utf8');
+    /* Lỗi 8.4.0–8.4.1: quy tắc này ép `position: relative` lên MỌI con của body,
+       làm header/chuông/nút Báo cáo/trình nhạc mất position: fixed và giãn hết
+       chiều ngang ngay khi bật giao diện trang chủ. */
+    check('không ép position lên mọi con của body',
+        !/data-bk-theme-scope="page"\]\s*body\s*>\s*\*\s*\{/.test(CSS));
+    check('lớp nền trang chủ nằm dưới nội dung bằng z-index âm',
+        /data-bk-theme-scope="page"\]\s*#bkThemeLayer\s*\{\s*z-index:\s*-1/.test(CSS));
+    check('không đặt position cho body ở phạm vi trang',
+        !/data-bk-theme-scope="page"\]\s*body\s*\{[^}]*position:/.test(CSS));
+    check('#bkThemeLayer vẫn phủ toàn màn hình và không chặn chuột',
+        /#bkThemeLayer\s*\{[^}]*position:\s*fixed[^}]*pointer-events:\s*none/.test(CSS));
+
     console.log('');
     if (failures) {
         console.log('THẤT BẠI: ' + failures + ' kiểm tra không đạt.');
