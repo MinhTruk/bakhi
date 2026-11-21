@@ -219,7 +219,7 @@
             if (!pane || !kit || !kit.h) return;
             build(pane, kit);
         },
-        version: '8.2.0'
+        version: '8.3.6'
     };
 
     /* ---------------------------------------------------------------------
@@ -228,6 +228,7 @@
     var FOUNDER_TABS = [
         ['achievements', 'Thành tích', 'fa-medal'],
         ['titles', 'Danh hiệu', 'fa-signature'],
+        ['gamification', 'Gamification', 'fa-bolt'],
         ['founder', 'Founder', 'fa-crown']
     ];
 
@@ -300,6 +301,7 @@
                 var panel = h('div', 'bkf-tabpanel');
                 if (name === 'achievements') tabAchievements(panel, ctx);
                 else if (name === 'titles') tabTitles(panel, ctx);
+                else if (name === 'gamification') tabGamification(panel, ctx);
                 else tabFounder(panel, ctx);
                 panels[name] = panel;
             }
@@ -307,6 +309,20 @@
         }
 
         show('achievements');
+    }
+
+    /* ---------------------------------------------------------------------
+       TAB GAMIFICATION (8.3.6) — đặt cấp độ, buff XP theo đối tượng
+       ------------------------------------------------------------------ */
+    function tabGamification(pane, ctx) {
+        var mod = global.BKFounderGamification;
+        if (!mod || typeof mod.render !== 'function') {
+            pane.appendChild(ctx.kit.alertBox(
+                'Không tải được mô-đun Gamification (bk-founder-gamification.js). Hãy tải lại trang.',
+                'error'));
+            return;
+        }
+        mod.render(pane, ctx.kit);
     }
 
     /* ---------------------------------------------------------------------

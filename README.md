@@ -36,7 +36,7 @@
 
 ---
 
-## 🎮 Gamification 2.0 (v8.3.5)
+## 🎮 Gamification 2.0 (v8.3.6)
 
 Một hệ thống tiến trình duy nhất cho toàn bộ hoạt động học tập:
 
@@ -44,6 +44,8 @@ Một hệ thống tiến trình duy nhất cho toàn bộ hoạt động học 
   Boss), có giới hạn mỗi ngày và chống cộng trùng.
 - **Nhiệm vụ** ngày/tuần, **cây kỹ năng** 5 nhánh, **bộ sưu tập thành tựu**,
   **thử thách Boss** và **kho vật phẩm trang trí**.
+- **Founder Dashboard → tab Gamification**: đặt cấp độ và buff XP cho toàn bộ học sinh,
+  một học sinh hoặc một khoảng cấp độ (xem trước số người bị ảnh hưởng trước khi xác nhận).
 - Dữ liệu nằm trên Supabase; mở nhiều thiết bị vẫn thấy cùng một tiến trình.
 - Trang tiến trình: [/gamification/](https://minhtruk.github.io/bakhi/gamification/)
   — mở từ menu tài khoản → **Tiến trình học tập**

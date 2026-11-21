@@ -1522,3 +1522,15 @@ html.dark .bkc-shortcut-row { background: rgba(148, 163, 184, .1); }
     .bkc-toolbar { flex-direction: column; align-items: stretch; }
     .bkc-editor-actions > * { flex: 1 1 auto; }
 }
+
+/* 8.3.6 — Tab Gamification của Founder Dashboard */
+.bkf-choice { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.bkf-choice .bkc-btn-ghost.is-active {
+    border-color: rgba(56, 189, 248, .65);
+    background: rgba(56, 189, 248, .16);
+    color: inherit;
+}
+.bkf-aud-sub { margin: 8px 0 12px; }
+.bkf-aud-sub[hidden] { display: none; }
+.bkf-preview:empty { display: none; }
+.bkf-preview { margin-top: 10px; }

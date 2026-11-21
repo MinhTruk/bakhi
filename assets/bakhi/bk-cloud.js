@@ -2209,12 +2209,25 @@
                 if (global.BK && BK.badges && BK.badges.applyServer) {
                     BK.badges.applyServer(data.badges || [], { authoritative: true });
                 }
+                /* 8.3.6: máy chủ trả danh sách khung được dùng. Trước đây client
+                   bỏ qua trường này nên bộ chọn khung chỉ thấy dữ liệu cục bộ và
+                   trang bị xong lại bị coi là "chưa mở". */
+                if (Array.isArray(data.frames) && global.BKProfile &&
+                    typeof BKProfile.setOwnedFrames === 'function') {
+                    try { BKProfile.setOwnedFrames(data.frames); } catch (e) { }
+                }
             } catch (e) { /* hồ sơ/badge hỏng không được chặn đồng bộ tiến trình */ }
             S.applyingRemote = false;
             if (firstPull && !push) S.profilePulled = true;
             if (push) S.profileDirty = false;
-            if (data.frameRejected) {
-                toast('Khung avatar chưa mở nên chưa đồng bộ được. Hãy chọn khung khác.', 'error');
+            /* 8.3.6: khung không hợp lệ chỉ báo MỘT lần và nói rõ máy chủ đã giữ
+               khung hiện tại, thay vì lặp lại lỗi mỗi lần đồng bộ. */
+            if (data.frameRejected && !S.frameRejectedNotified) {
+                S.frameRejectedNotified = true;
+                toast('Khung avatar này chưa được mở nên máy chủ giữ khung hiện tại. ' +
+                    'Hãy chọn khung khác trong Hồ sơ.', 'info');
+            } else if (!data.frameRejected) {
+                S.frameRejectedNotified = false;
             }
             emit('student', data);
             return data;

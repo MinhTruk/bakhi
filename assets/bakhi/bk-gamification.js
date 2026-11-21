@@ -707,6 +707,24 @@
         barRow.appendChild(meta);
         hero.appendChild(barRow);
 
+        /* 8.3.6: buff XP do Founder đặt — học sinh thấy rõ vì sao XP tăng nhanh. */
+        var buffs = (st.buffs || []).filter(function (b) { return b && Number(b.multiplier) > 1; });
+        if (buffs.length) {
+            var buffBar = el('div', 'bkg-buff-bar');
+            buffBar.setAttribute('role', 'status');
+            buffBar.appendChild(icon('fa-bolt'));
+            var best = buffs.reduce(function (m, b) { return Math.max(m, Number(b.multiplier) || 1); }, 1);
+            var label = el('span', null, 'Đang nhân x' + best + ' XP');
+            if (buffs[0].label) label.textContent += ' · ' + buffs[0].label;
+            buffBar.appendChild(label);
+            var until = buffs[0].ends_at ? new Date(buffs[0].ends_at) : null;
+            if (until && !isNaN(until.getTime())) {
+                buffBar.appendChild(el('span', 'bkg-buff-until',
+                    'đến ' + until.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })));
+            }
+            hero.appendChild(buffBar);
+        }
+
         var grid = el('div', 'bkg-hero-grid');
         var featured = (st.achievements || []).filter(function (a) { return a.unlocked_at; })
             .sort(function (a, b) { return new Date(b.unlocked_at) - new Date(a.unlocked_at); })[0];

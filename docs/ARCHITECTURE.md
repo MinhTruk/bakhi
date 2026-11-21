@@ -240,6 +240,7 @@ DOMContentLoaded
     RLS chỉ có policy đọc của chính mình; **thu hồi toàn bộ quyền ghi** khỏi
     `anon`/`authenticated`. Chỉ service role trong Edge Function ghi được.
   - `bakhi_owned_frames(uuid)`: 2 khung cơ bản + khung thưởng của badge đã xác minh, đọc từ
+    bảng ánh xạ `bakhi_badge_frames` (8.3.6 — không viết cứng danh sách),
     bảng ánh xạ `bakhi_badge_frames`; trigger `bakhi_profile_frame_guard` chặn gán khung chưa
     sở hữu (`FRAME_NOT_OWNED`).
   - `bakhi_grant_badges(uuid, text[], text, text)`: cấp một lô badge trong một câu lệnh
@@ -671,15 +672,35 @@ Chi tiết: [GAMIFICATION_ARCHITECTURE.md](GAMIFICATION_ARCHITECTURE.md),
 - Trang bị khung ở Gamification: `gamification-api` → `bk_gam_equip` ghi
   `user_inventory.is_equipped` **và** `student_profiles.frame` trong cùng transaction;
   API trả `{ kind, frame }`, client gọi `BKProfile.applyServerFrame()`.
-- `bakhi_owned_frames` = khung cơ bản + khung thưởng badge + khung nhận qua kho vật phẩm
-  (`reward_catalog.metadata.profile_frame`). Trigger `bakhi_profile_frame_guard` chặn
-  khung chưa sở hữu ở tầng DB.
+- `bakhi_owned_frames` = khung cơ bản + khung thưởng badge (bảng ánh xạ `bakhi_badge_frames`,
+  58 ánh xạ) + khung nhận qua kho vật phẩm (`reward_catalog.metadata.profile_frame`) +
+  khung đang trang bị trong hồ sơ (giữ nguyên khi nâng cấp). Trigger
+  `bakhi_profile_frame_guard` chặn khung chưa sở hữu ở tầng DB.
+- 8.3.6: `/gamification/` nạp `bk-profile.js` + `bk-badges.js`; `bk-cloud.js` áp danh sách
+  `frames` máy chủ trả về; lỗi khung chỉ thông báo một lần.
 - Client không hạ khung máy chủ về `none`; chỉ khung không tồn tại trong danh mục mới bị hạ.
 
 Chi tiết: [AVATAR_SYNC_V835.md](AVATAR_SYNC_V835.md) ·
 [AVATAR_FRAME_SYSTEM.md](AVATAR_FRAME_SYSTEM.md).
 
-### 4.3. Sinh mã trong dashboard quản trị (8.3.5)
+### 4.3. Quản trị tiến trình từ Founder Dashboard (8.3.6)
+
+Tab **Gamification** của Founder Dashboard (`bk-founder-gamification.js`) gửi một
+`audience` (`all` | `student` | `level`) tới `gamification-api`:
+
+| Action | Việc làm |
+|---|---|
+| `admin.audience.preview` | Đếm và lấy mẫu học sinh trong đối tượng (tối đa 2000) |
+| `admin.level.set` | `bk_gam_set_level` cho từng học sinh (tối đa 300/lần) |
+| `admin.xp.buff` | Tạo dòng `gamification_xp_buffs` (x1,1–x10, 1–720 giờ) |
+| `admin.xp.buff.list` / `admin.xp.buff.end` | Danh sách / tắt buff (giữ lịch sử) |
+
+`bk_gam_award` nhân XP bằng `bk_gam_active_buff(student)`; buff chồng nhau lấy hệ số cao
+nhất. Học sinh thấy buff qua `buffs`/`xp_buff` trong `bk_gam_state` (API chèn thêm).
+Đặt cấp độ ghi sổ `xp_transactions` từng phần ≤ 100.000 XP nên `bk_gam_admin_drift` luôn
+rỗng. Chi tiết: [GAMIFICATION_ADMIN_V836.md](GAMIFICATION_ADMIN_V836.md).
+
+### 4.4. Sinh mã trong dashboard quản trị (8.3.5)
 
 `bk-devboard-gamification.js` tự sinh mã từ tên cho thành tựu, Boss, nhiệm vụ, node và
 phần thưởng (`BKGamificationAdmin.slugify`), cảnh báo trùng và đề xuất `_2`, `_3`, có xem

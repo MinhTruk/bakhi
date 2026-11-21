@@ -760,3 +760,20 @@ html.dark .bkg-pill.is-ok { color: #34d399; }
     box-shadow: none;
     background: transparent;
 }
+
+/* 8.3.6 — Buff XP đang hiệu lực (Founder đặt trong dashboard) */
+.bkg-buff-bar {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    flex-wrap: wrap;
+    margin-top: .9rem;
+    padding: .55rem .8rem;
+    border-radius: 12px;
+    border: 1px solid rgba(250, 204, 21, .45);
+    background: rgba(250, 204, 21, .12);
+    font-size: .82rem;
+    font-weight: 600;
+}
+.bkg-buff-bar i { color: #facc15; }
+.bkg-buff-until { font-weight: 400; font-size: .74rem; color: var(--bkg-muted); }

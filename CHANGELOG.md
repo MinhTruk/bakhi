@@ -2,6 +2,33 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.3.6] — 2026-11-21
+
+### Sửa lỗi
+
+- **Khung avatar không còn bị báo “chưa mở”.** Migration 8.3.5 thay `bakhi_owned_frames`
+  bằng danh sách 21 khung viết cứng nên khung Founder và nhiều khung badge khác bị coi là
+  chưa mở: hồ sơ bị từ chối và hiện “Khung avatar chưa mở nên chưa đồng bộ được”. Nay hàm
+  đọc lại bảng ánh xạ `bakhi_badge_frames` (58 khung), cộng khung kho vật phẩm và khung đang
+  trang bị — hồ sơ đang dùng `founder-genesis`, `founder`… vẫn hợp lệ sau nâng cấp.
+- **Avatar và khung hiện đúng ở trang Tiến trình.** `/gamification/` chưa nạp
+  `bk-profile.js`/`bk-badges.js` nên hero chỉ vẽ chữ cái đầu; nay nạp đủ hai mô-đun trước
+  `bk-gamification.js`.
+- **Bộ chọn khung nhận danh sách từ máy chủ.** `bk-cloud.js` bỏ qua `frames` máy chủ trả về;
+  nay áp vào cache hồ sơ và hợp nhất với khung kho vật phẩm thay vì ghi đè lẫn nhau.
+- **Thông báo khung không hợp lệ chỉ hiện một lần**, nói rõ máy chủ giữ khung hiện tại thay
+  vì lặp lại lỗi sau mỗi lần đồng bộ.
+
+### Tính năng
+
+- **Tab Gamification trong Founder Dashboard**: chọn đối tượng (toàn bộ học sinh / một học
+  sinh / khoảng cấp độ), xem trước số người bị ảnh hưởng rồi mới xác nhận, đặt cấp độ 1–100
+  và tạo buff XP có thời hạn. Có danh sách buff đang chạy và nhật ký thao tác.
+- **Buff XP theo đối tượng** (`gamification_xp_buffs`): hệ số x1,1–x10, 1–720 giờ, áp dụng
+  ngay trong `bk_gam_award`; học sinh thấy băng “Đang nhân xN XP” ở trang Tiến trình.
+- **Đặt cấp độ ghi sổ XP từng phần** (`bk_gam_set_level`): tổng XP luôn khớp mốc cấp, không
+  tạo lệch sổ, bắt buộc lý do và ghi `gamification_activity_logs`.
+
 ## [8.3.5] — 2026-11-21
 
 ### Sửa lỗi

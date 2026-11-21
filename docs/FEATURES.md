@@ -441,7 +441,7 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Favicon tĩnh dùng chung | ✅ | SVG + PNG 16/32/48/192/512 + ICO + apple-touch-icon; 118/119 trang |
 | Tài liệu | ✅ | README, AGENTS, ARCHITECTURE, FEATURES, MUSIC, STUDIO, SUPABASE_SETUP |
 
-## Gamification 2.0 (8.3.5)
+## Gamification 2.0 (8.3.6)
 
 | Tính năng | Trang | Ghi chú |
 |---|---|---|
@@ -454,3 +454,7 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Kho vật phẩm | `/gamification/` | Trang trí, không tạo lợi thế học tập |
 | Quản trị | Admin/Founder → Tiến trình | Cấu hình, định nghĩa, duyệt bất thường; 8.3.5 tự sinh mã, xem trước, Cài đặt nâng cao |
 | Avatar & khung đồng bộ | Toàn website | 8.3.5 — `student_profiles.frame` là nguồn duy nhất; trang bị ở Gamification đổi navbar/hồ sơ/chat |
+| Khung Founder luôn hợp lệ | Hồ sơ, Tiến trình | 8.3.6 — `bakhi_owned_frames` đọc bảng ánh xạ 58 khung, giữ khung đang trang bị |
+| Avatar/khung ở trang Tiến trình | `/gamification/` | 8.3.6 — nạp `bk-profile.js`, `bk-badges.js`; hero dùng `BKProfile.avatarNode()` |
+| Đặt cấp độ theo đối tượng | Founder → Gamification | 8.3.6 — toàn bộ / một học sinh / khoảng cấp, xem trước rồi xác nhận |
+| Buff XP có thời hạn | Founder → Gamification | 8.3.6 — x1,1–x10, 1–720 giờ, áp trong `bk_gam_award`, học sinh thấy băng buff |

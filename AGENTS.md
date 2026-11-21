@@ -247,6 +247,13 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   khung thứ hai, không tự hạ khung máy chủ về `none` ở client.
 - Mọi nơi hiển thị avatar dùng `BKProfile.avatarNode()` — không tự dựng ảnh/chữ cái đầu riêng
   (đây là lỗi 8.3.5 ở hero trang Tiến trình).
+- **Khung hồ sơ (8.3.6):** `bakhi_owned_frames` phải đọc bảng ánh xạ `bakhi_badge_frames`
+  (58 khung), cộng khung kho vật phẩm và khung đang trang bị. Không thay bằng danh sách
+  viết cứng — lỗi 8.3.5 làm khung Founder bị coi là chưa mở. `/gamification/` phải nạp
+  `bk-profile.js` + `bk-badges.js` trước `bk-gamification.js`, nếu không hero mất avatar.
+- **Buff XP & đặt cấp (8.3.6):** bảng `gamification_xp_buffs` chỉ service_role đọc/ghi;
+  `bk_gam_award` nhân XP bằng `bk_gam_active_buff`. Đặt cấp độ chỉ qua `bk_gam_set_level`
+  (ghi sổ từng phần ≤ 100.000 XP), không `UPDATE user_progression` trực tiếp.
 - **Mã tự sinh (8.3.5):** chỉ một `BKGamificationAdmin.slugify()` ở client và một `codeOf()`
   ở `gamification-api`. Mã cho phép `_` và `-`; `Ma Vương` → `ma_vuong`. Không thêm hàm slug
   thứ hai. Tạo mới phải gửi `expect_new` để máy chủ trả `CODE_TAKEN` khi mã đã tồn tại.
@@ -260,6 +267,7 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/avatar-sync-smoke.js
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/founder-achievement-smoke.js
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/v835-code-generator.js
+  NODE_PATH=/tmp/bktest/node_modules node tools/qa/v836-founder-gamification.js
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/xp-level-integrity.js
   node tools/qa/gamification-security-smoke.js
   SUPABASE_ACCESS_TOKEN=... node tools/qa/gamification-db-check.js   # cần quyền project

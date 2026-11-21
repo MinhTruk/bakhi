@@ -72,7 +72,79 @@ async function resolveStudent(client: ReturnType<typeof adminClient>, authUserId
 async function state(client: ReturnType<typeof adminClient>, studentId: string) {
     const { data, error } = await client.rpc('bk_gam_state', { p_student: studentId });
     if (error) throw new Error('STATE_ERROR');
-    return data ?? {};
+    const out = (data ?? {}) as Record<string, unknown>;
+    /* 8.3.6: buff XP đang hiệu lực để trang Tiến trình hiển thị và client biết
+       vì sao XP nhận được cao hơn cấu hình. Máy chủ vẫn là nơi áp dụng. */
+    try {
+        const { data: buffs } = await client.rpc('bk_gam_active_buffs', { p_student: studentId });
+        const list = Array.isArray(buffs) ? buffs : [];
+        out.buffs = list;
+        out.xp_buff = list.reduce(function (max: number, b: { multiplier?: number }) {
+            return Math.max(max, Number(b && b.multiplier) || 1);
+        }, 1);
+    } catch (_e) {
+        out.buffs = [];
+        out.xp_buff = 1;
+    }
+    return out;
+}
+
+/* ---------------------- Đối tượng nhận buff / đặt cấp ---------------------- */
+type Audience =
+    | { kind: 'all' }
+    | { kind: 'student'; student_id: string }
+    | { kind: 'level'; min: number; max: number };
+
+function cleanAudience(v: unknown): Audience | null {
+    const a = (v && typeof v === 'object') ? v as Record<string, unknown> : null;
+    if (!a) return null;
+    const kind = str(a.kind, 12);
+    if (kind === 'all') return { kind: 'all' };
+    if (kind === 'student') {
+        const id = uuidish(a.student_id);
+        return id ? { kind: 'student', student_id: id } : null;
+    }
+    if (kind === 'level') {
+        const min = Math.max(1, Math.min(1000, Number(a.min) || 1));
+        const max = Math.max(min, Math.min(1000, Number(a.max) || 1000));
+        return { kind: 'level', min, max };
+    }
+    return null;
+}
+
+interface AudienceRow {
+    id: string;
+    display_name: string;
+    level: number;
+}
+
+async function audienceStudents(
+    client: ReturnType<typeof adminClient>,
+    audience: Audience
+): Promise<AudienceRow[]> {
+    const select = 'id, display_name, user_progression(level)';
+    if (audience.kind === 'student') {
+        const { data } = await client.from('students').select(select)
+            .eq('is_active', true).eq('id', audience.student_id);
+        const row = (data ?? [])[0] as Record<string, unknown> | undefined;
+        return row ? [toAudienceRow(row)] : [];
+    }
+    const { data } = await client.from('students').select(select)
+        .eq('is_active', true).order('display_name').limit(2000);
+    const rows = (data ?? []).map(function (r: Record<string, unknown>) { return toAudienceRow(r); });
+    if (audience.kind === 'all') return rows;
+    return rows.filter(function (r: AudienceRow) { return r.level >= audience.min && r.level <= audience.max; });
+}
+
+function toAudienceRow(raw: Record<string, unknown>): AudienceRow {
+    const prog = raw.user_progression;
+    const first = Array.isArray(prog) ? prog[0] : prog;
+    const level = Number((first && (first as Record<string, unknown>).level) || 1);
+    return {
+        id: String(raw.id || ''),
+        display_name: String(raw.display_name || ''),
+        level: Number.isFinite(level) ? level : 1
+    };
 }
 
 async function configOf(client: ReturnType<typeof adminClient>) {
@@ -629,6 +701,114 @@ Deno.serve(async (req) => {
             });
             if (error) return fail(500, 'ADJUST_ERROR', 'Không điều chỉnh được XP.');
             return json({ ok: true, result: data });
+        }
+
+        case 'admin.audience.preview': {
+            const audience = cleanAudience(body.audience);
+            if (!audience) return fail(400, 'BAD_AUDIENCE', 'Đối tượng nhận không hợp lệ.');
+            const list = await audienceStudents(client, audience);
+            return json({
+                ok: true,
+                count: list.length,
+                audience: audience,
+                sample: list.slice(0, 8).map(function (s) {
+                    return { id: s.id, name: s.display_name, level: s.level };
+                })
+            });
+        }
+
+        case 'admin.level.set': {
+            if (scope !== 'founder') return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder được đặt cấp độ.');
+            const audience = cleanAudience(body.audience);
+            if (!audience) return fail(400, 'BAD_AUDIENCE', 'Đối tượng nhận không hợp lệ.');
+            const level = Math.round(Number(body.level));
+            if (!Number.isInteger(level) || level < 1 || level > 100) {
+                return fail(400, 'BAD_LEVEL', 'Cấp độ phải là số nguyên từ 1 đến 100.');
+            }
+            const reason = str(body.reason, 300);
+            if (reason.length < 3) {
+                return fail(400, 'NO_REASON', 'Cần lý do đặt cấp độ (ít nhất 3 ký tự).');
+            }
+            const list = await audienceStudents(client, audience);
+            if (!list.length) return fail(400, 'NO_TARGET', 'Không có học sinh nào trong đối tượng đã chọn.');
+            if (list.length > 300) {
+                return fail(400, 'TOO_MANY', 'Một lần chỉ đặt cấp độ cho tối đa 300 học sinh. Hãy thu hẹp đối tượng.');
+            }
+            const failed: Array<{ id: string; name: string; message: string }> = [];
+            let updated = 0;
+            for (const s of list) {
+                const { error } = await client.rpc('bk_gam_set_level', {
+                    p_student: s.id,
+                    p_level: level,
+                    p_actor: 'founder:' + admin.id,
+                    p_reason: reason
+                });
+                if (error) failed.push({ id: s.id, name: s.display_name, message: 'Không đặt được cấp độ.' });
+                else updated += 1;
+            }
+            await audit(client, 'level_set', { level, updated, failed: failed.length, audience }, 'admin:' + scope);
+            return json({ ok: true, level: level, total: list.length, updated: updated, failed: failed });
+        }
+
+        case 'admin.xp.buff.list': {
+            const { data } = await client
+                .from('gamification_xp_buffs')
+                .select('id, label, multiplier, audience, starts_at, ends_at, is_active, created_by, created_at')
+                .order('created_at', { ascending: false })
+                .limit(50);
+            const nowMs = Date.now();
+            const rows = (data ?? []).map(function (r: Record<string, unknown>) {
+                const row = r;
+                return Object.assign({}, row, {
+                    is_live: row.is_active !== false &&
+                        new Date(String(row.starts_at)).getTime() <= nowMs &&
+                        new Date(String(row.ends_at)).getTime() > nowMs
+                });
+            });
+            return json({ ok: true, buffs: rows });
+        }
+
+        case 'admin.xp.buff': {
+            if (scope !== 'founder') return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder được tạo buff XP.');
+            const audience = cleanAudience(body.audience);
+            if (!audience) return fail(400, 'BAD_AUDIENCE', 'Đối tượng nhận không hợp lệ.');
+            const multiplier = Number(body.multiplier);
+            if (!Number.isFinite(multiplier) || multiplier < 1.1 || multiplier > 10) {
+                return fail(400, 'BAD_MULTIPLIER', 'Hệ số buff phải từ 1,1 đến 10.');
+            }
+            const hours = Math.round(Number(body.hours) || 0);
+            if (hours < 1 || hours > 720) {
+                return fail(400, 'BAD_DURATION', 'Thời hạn buff phải từ 1 đến 720 giờ.');
+            }
+            const label = str(body.label, 120) || ('Buff x' + multiplier);
+            const startsAt = new Date();
+            const endsAt = new Date(startsAt.getTime() + hours * 3600 * 1000);
+            const { data, error } = await client.from('gamification_xp_buffs').insert({
+                label,
+                multiplier: Math.round(multiplier * 100) / 100,
+                audience,
+                starts_at: startsAt.toISOString(),
+                ends_at: endsAt.toISOString(),
+                is_active: true,
+                created_by: 'founder:' + admin.id
+            }).select('id').maybeSingle();
+            if (error) return fail(500, 'BUFF_ERROR', 'Không tạo được buff XP.');
+            await audit(client, 'xp_buff_created', { label, multiplier, hours, audience }, 'admin:' + scope);
+            return json({ ok: true, id: (data && data.id) || null, ends_at: endsAt.toISOString() });
+        }
+
+        case 'admin.xp.buff.end': {
+            if (scope !== 'founder') return fail(403, 'FOUNDER_ONLY', 'Chỉ Founder được kết thúc buff XP.');
+            const id = uuidish(body.id);
+            if (!id) return fail(400, 'BAD_ID', 'Thiếu mã buff.');
+            /* Chỉ tắt cờ: giữ nguyên khung thời gian đã tạo để lịch sử đúng và
+               không vi phạm ràng buộc ends_at > starts_at khi kết thúc ngay. */
+            const { error } = await client.from('gamification_xp_buffs')
+                .update({ is_active: false })
+                .eq('id', id);
+            if (error) return fail(500, 'BUFF_ERROR', 'Không kết thúc được buff.');
+            await audit(client, 'xp_buff_ended', { id }, 'admin:' + scope);
+            return json({ ok: true });
         }
 
         case 'admin.logs': {

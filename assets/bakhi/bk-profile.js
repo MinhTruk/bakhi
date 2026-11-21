@@ -995,12 +995,17 @@
         return raw.map(function (id) { return frameById(id).id; })
             .filter(function (id, i, arr) { return id !== 'none' && arr.indexOf(id) === i; });
     }
+    /* 8.3.6: hợp nhất thay vì ghi đè. Danh sách khung đến từ hai nguồn độc lập
+       (máy chủ trả khung badge; kho vật phẩm trả khung thưởng) nên nguồn này
+       không được xoá nguồn kia. Quyền trang bị vẫn do máy chủ quyết định. */
     function setOwnedFrames(list) {
         var clean = (Array.isArray(list) ? list : [])
             .map(function (id) { return frameById(id).id; })
             .filter(function (id, i, arr) { return id !== 'none' && arr.indexOf(id) === i; });
-        lsSet(frameCacheKey(), JSON.stringify(clean));
-        return clean;
+        var cur = readFrameCache();
+        clean.forEach(function (id) { if (cur.indexOf(id) === -1) cur.push(id); });
+        lsSet(frameCacheKey(), JSON.stringify(cur));
+        return cur;
     }
 
     function canEquip(frameId) {

@@ -219,6 +219,94 @@ end $$;
 rollback;
 `;
 
+/* 8.3.6 — khung hồ sơ, đặt cấp độ và buff XP (rollback) */
+const ADMIN_TEST = `
+begin;
+do $$
+declare
+    s uuid;
+    s2 uuid;
+    v_level integer;
+    v_total bigint;
+    v_mult numeric;
+    v_award jsonb;
+    v_frames text[];
+    v_admin jsonb;
+begin
+    insert into public.students (display_name, normalized_name)
+    values ('QA Admin ' || substr(gen_random_uuid()::text, 1, 6),
+            'qa-admin-' || substr(gen_random_uuid()::text, 1, 8))
+    returning id into s;
+    insert into public.students (display_name, normalized_name)
+    values ('QA Other ' || substr(gen_random_uuid()::text, 1, 6),
+            'qa-other-' || substr(gen_random_uuid()::text, 1, 8))
+    returning id into s2;
+
+    -- 1. Khung Founder mở qua bảng ánh xạ badge (hồi quy 8.3.5)
+    insert into public.student_profiles (student_id) values (s)
+    on conflict (student_id) do nothing;
+    insert into public.student_badges (student_id, badge_id, kind, auto_earned, manual_granted, awarded_at)
+    values (s, 'founder-genesis', 'admin', false, true, now());
+    v_frames := public.bakhi_owned_frames(s);
+    assert 'founder-genesis' = any (v_frames),
+           'XA46 khung Founder của badge không nằm trong danh sách sở hữu';
+    update public.student_profiles set frame = 'founder-genesis' where student_id = s;
+    assert (select frame from public.student_profiles where student_id = s) = 'founder-genesis',
+           'XA46b không trang bị được khung Founder đã mở';
+
+    -- 2. Badge trong bảng ánh xạ mở đúng khung
+    insert into public.student_badges (student_id, badge_id, kind, auto_earned, manual_granted, awarded_at)
+    values (s, 'learn-lessons-15', 'admin', false, true, now());
+    v_frames := public.bakhi_owned_frames(s);
+    assert 'celestial' = any (v_frames),
+           'XA47 badge ánh xạ không mở khung tương ứng';
+
+    -- 3. Đặt cấp độ chính xác
+    v_admin := public.bk_gam_set_level(s, 9, 'qa:rollback', 'qa rollback');
+    assert (v_admin->>'ok')::boolean, 'XA48 không đặt được cấp độ';
+    select level, total_xp into v_level, v_total
+      from public.user_progression where student_id = s;
+    assert v_level = 9, 'XA49 cấp độ lưu sai: ' || v_level;
+    assert v_total = public.bk_gam_level_floor(9),
+           'XA50 tổng XP không khớp mốc cấp 9: ' || v_total;
+
+    -- 4. Đặt cấp độ không làm lệch sổ
+    assert not exists (select 1 from public.bk_gam_admin_drift() d where d.student_id = s),
+           'XA51 đặt cấp độ làm lệch sổ XP';
+
+    -- 5. Buff nhân XP cho đúng đối tượng
+    insert into public.gamification_xp_buffs (label, multiplier, audience, ends_at)
+    values ('QA buff', 2, jsonb_build_object('kind', 'student', 'student_id', s::text),
+            now() + interval '1 hour');
+    v_mult := public.bk_gam_active_buff(s);
+    assert v_mult = 2, 'XA52 buff không áp cho đúng học sinh: ' || v_mult;
+    assert public.bk_gam_active_buff(s2) = 1, 'XA53 buff áp nhầm sang học sinh khác';
+
+    v_award := public.bk_gam_award(s, 'lesson_study', 'qa', 'qa:buff:' || gen_random_uuid()::text);
+    assert (v_award->>'amount')::int = 20,
+           'XA54 XP không được nhân bởi buff: ' || (v_award->>'amount');
+    assert (v_award->>'buff')::numeric = 2, 'XA55 sổ XP không ghi hệ số buff';
+
+    -- 6. Buff hết hạn không áp dụng
+    insert into public.gamification_xp_buffs (label, multiplier, audience, starts_at, ends_at)
+    values ('QA expired', 3, jsonb_build_object('kind', 'student', 'student_id', s::text),
+            now() - interval '2 hours', now() - interval '1 hour');
+    assert public.bk_gam_active_buff(s) = 2, 'XA56 buff hết hạn vẫn còn hiệu lực';
+
+    -- 6b. Tắt buff đang chạy: không áp dụng nữa, vẫn giữ lịch sử
+    update public.gamification_xp_buffs set is_active = false where label = 'QA buff';
+    assert public.bk_gam_active_buff(s) = 1, 'XA56b buff đã tắt vẫn còn hiệu lực';
+
+    -- 7. Bảng buff chỉ dành cho service_role
+    assert not exists (
+        select 1 from information_schema.role_table_grants
+        where table_schema = 'public' and table_name = 'gamification_xp_buffs'
+          and grantee in ('anon', 'authenticated')
+    ), 'XA57 trình duyệt đọc được bảng buff XP';
+end $$;
+rollback;
+`;
+
 async function main() {
     if (!TOKEN) {
         console.error('Thiếu SUPABASE_ACCESS_TOKEN — bỏ qua kiểm tra tầng dữ liệu.');
@@ -318,6 +406,28 @@ async function main() {
         ok('không để lại dữ liệu thử trên production');
     } else {
         bad('engine nghiệp vụ', engine.text.replace(/\s+/g, ' ').slice(0, 400));
+    }
+
+    /* 4b. 8.3.6 — khung hồ sơ, đặt cấp độ, buff XP (rollback) */
+    const adminTest = await query(ADMIN_TEST);
+    if (adminTest.ok) {
+        ok('khung hồ sơ + đặt cấp độ + buff XP (12 nhóm kiểm tra, rollback)');
+    } else {
+        bad('quản trị gamification 8.3.6', adminTest.text.replace(/\s+/g, ' ').slice(0, 600));
+    }
+
+    /* 4c. Dữ liệu thật: không hồ sơ nào đang dùng khung ngoài danh sách sở hữu */
+    const framesQ = await query(`
+        select count(*) as n from public.student_profiles sp
+        where sp.frame is not null and sp.frame <> 'none'
+          and sp.frame <> all (public.bakhi_owned_frames(sp.student_id))
+    `);
+    if (!framesQ.ok) {
+        bad('khung hồ sơ trên dữ liệu thật', framesQ.text.slice(0, 200));
+    } else {
+        Number(framesQ.data[0].n) === 0
+            ? ok('mọi khung đang trang bị đều nằm trong danh sách sở hữu')
+            : bad('có ' + framesQ.data[0].n + ' hồ sơ dùng khung chưa mở');
     }
 
     /* 5. Không lệch sổ trên dữ liệu thật */

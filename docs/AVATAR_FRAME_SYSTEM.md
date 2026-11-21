@@ -19,10 +19,17 @@ Mỗi khung có `id`, `name`, `tier`, `rarity`, `ring`, `orn` (hoạ tiết), c�
 `bakhi_owned_frames(p_student)` (Postgres) trả về hợp của:
 
 1. Khung cơ bản: `none`, `leaf`.
-2. Khung thưởng badge đã xác minh (`student_badges` → bảng ánh xạ badge → khung).
+2. Khung thưởng badge đã xác minh (`student_badges` → `bakhi_badge_frames`, **58 ánh xạ**).
 3. **8.3.5:** khung nhận qua kho vật phẩm Gamification —
    `user_inventory` ⋈ `reward_catalog` với `kind = 'frame'` và
    `metadata ->> 'profile_frame'`.
+4. **8.3.6:** khung đang trang bị trong `student_profiles.frame` — giữ nguyên khi nâng cấp
+   để không bao giờ biến khung hợp lệ thành “chưa mở”.
+
+> **Bài học 8.3.6.** Bản 8.3.5 thay hàm này bằng danh sách 21 khung viết cứng, làm toàn bộ
+> khung Founder bị coi là chưa mở và hồ sơ bị từ chối với thông báo “Khung avatar chưa mở”.
+> Không được viết cứng danh sách khung: luôn đọc bảng ánh xạ. Trang `/gamification/` cũng
+> phải nạp `bk-profile.js` + `bk-badges.js` trước `bk-gamification.js`.
 
 Ánh xạ vật phẩm → khung hồ sơ nằm trong `reward_catalog.metadata.profile_frame`:
 
