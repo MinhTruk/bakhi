@@ -70,7 +70,7 @@ Ngày: 21/11/2026 · Commit: `760c61d` · Nhánh: `main` · Project: `wzvslyabhi
 | `xp-level-integrity.js` | **12/12 đạt** (gồm đối chiếu JS ↔ Postgres) |
 | `gamification-security-smoke.js` | **30/30 đạt** |
 | `content-integrity verify` | 123 tệp nội dung không đổi; 1 tệp HTML mới |
-| 16 bộ QA cũ (`smoke`, `cloud-smoke`, `shell`, `dev`, `badges`, `chat`, `admin`, `report`, `version-audit`, `supabase-config`, 6 cổng Learning) | **tất cả đạt** sau khi cập nhật kỳ vọng số tab 13 → 14 |
+| 17 smoke test trong `quality-check.yml` (`smoke`, `cloud-smoke`, `shell`, `dev`, `badges`, `chat`, `admin`, `report`, `founder`, `maintenance`, `studio` + 6 cổng Learning) | **tất cả đạt** sau khi cập nhật kỳ vọng số tab: Administrator 13 → 14, Founder 16 → 17 (có kiểm tra tab **Tiến trình** tồn tại) |
 | `node --check` các tệp JS đã sửa | Đạt |
 
 Không chạy được: kiểm thử bằng tài khoản học sinh thật trên production và kiểm thử

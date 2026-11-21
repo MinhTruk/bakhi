@@ -307,7 +307,10 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   const dash = await until(() => D.querySelector('.bkc-dash'));
   ok('mở được Founder Dashboard', !!dash);
   const tabs = Array.from(D.querySelectorAll('.bkc-nav .bkc-tab'));
-  ok('Founder có đủ 16 tab', tabs.length === 16, String(tabs.length));
+  /* 17 = 14 tab dùng chung với Administrator + 3 tab Founder; tab "Tiến trình" (8.3.0)
+     được thêm vào danh sách dùng chung nên Founder cũng có. */
+  ok('Founder có đủ 17 tab', tabs.length === 17 && tabs.some((t) => /Tiến trình/.test(t.textContent)),
+    tabs.length + ': ' + tabs.map((t) => t.textContent.trim()).join(' | '));
 
   await until(() => calls.find((c) => c.action === 'settings.get'));
   await wait(60);
