@@ -293,3 +293,43 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   node tools/qa/gamification-security-smoke.js
   SUPABASE_ACCESS_TOKEN=... node tools/qa/gamification-db-check.js   # cần quyền project
   ```
+
+<!-- BEGIN brain.md -->
+## Project Brain
+
+This project keeps a **Project Brain**: a persistent memory layer of its durable decisions, requirements, and constraints. Read `./BRAIN.md` for the full read/write contract.
+
+The `brain` CLI is not guaranteed to be on `PATH`. From the project root, invoke it as `node <brain-page-skill-dir>/bin/brain.mjs <subcommand> [flags]`, resolving `<brain-page-skill-dir>` to the installed `brain-page` skill directory.
+
+Maintain the brain as part of normal coding work — not as a separate task. While discussing or implementing features:
+- **Start of a task:** load relevant context with the `brain` CLI (`list-pages`, `read-page`, `read-root`). Prefer a narrow read over scanning everything.
+- **When a decision, requirement, constraint, or durable insight settles** (in chat or while coding): capture it immediately via the `brain` CLI. Do not wait to be asked and do not batch it for later.
+- **Pure implementation with no new decision:** do not write to the brain.
+- **When overturning a prior conclusion:** update the page (`update-truth` and/or `append-timeline` with `kind: reversal`, or `archive-page`).
+- Only store what will still matter in six months and is hard to reconstruct from the code alone.
+- Never hand-edit brain files. If a brain MCP server is connected and authenticated, prefer it; otherwise use the `brain` CLI.
+
+The brain skills (`brain-setup`, `brain-page`, `brain-ingest`, `brain-bootstrap`) are installed in your global skills directory. To scaffold a new project, run `node <brain-page-skill-dir>/bin/brain.mjs init` from its root.
+
+If native notes/history are available, keep relevant brain page IDs and unresolved task state in notes; search history for earlier task evidence. After context rollover, re-read relevant pages through the CLI for current project facts. Do not copy task history into the brain.
+<!-- END brain.md -->
+
+## 7. Bộ não dự án (brain.md)
+
+- Hợp đồng đọc/ghi: [`BRAIN.md`](BRAIN.md). Dữ liệu: `brain/` (6 trang gốc + `brain/pages/`).
+- Bộ công cụ brain.md v0.3.0 nằm ở **`brain-toolkit/`** (không đặt `package.json` ở gốc repo —
+  `"type": "module"` sẽ làm hỏng các script CommonJS trong `tools/`).
+- Lệnh (chạy từ gốc repo):
+  ```bash
+  node brain-toolkit/bin/brain.mjs list-pages
+  node brain-toolkit/bin/brain.mjs read-page <id>
+  node brain-toolkit/bin/brain.mjs create-page --id <id> --category <cat> --title "<t>"
+  node brain-toolkit/bin/brain.mjs update-truth --id <id>   # nội dung mới qua stdin
+  node brain-toolkit/bin/brain.mjs append-timeline --id <id> --kind decision --summary "<s>"
+  node brain-toolkit/bin/brain.mjs update-root <slug>       # thân trang qua stdin
+  ```
+- **Không sửa tay tệp trong `brain/`.** Mọi thay đổi đi qua CLI để frontmatter và timeline
+  luôn đúng cấu trúc.
+- Đầu mỗi phiên: đọc `AGENTS.md` + `BRAIN.md`, chạy `list-pages` rồi `read-page` những trang
+  liên quan (bắt đầu từ `agent-session-protocol`). Quyết định bền vững phát sinh trong lúc
+  làm thì ghi ngay vào brain.
