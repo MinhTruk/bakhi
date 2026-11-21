@@ -30,6 +30,18 @@ function str(v: unknown, max: number): string {
     return String(v ?? '').replace(/\u0000/g, '').trim().slice(0, max);
 }
 
+/** Mã do con người đọc: chữ thường, số, '_' hoặc '-'. Tự tạo từ tên ở dashboard. */
+function codeOf(v: unknown): string {
+    return str(v, 64)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/[^a-z0-9_-]+/g, '_')
+        .replace(/^[_-]+|[_-]+$/g, '')
+        .slice(0, 64);
+}
+
 function uuidish(v: unknown): string {
     const s = str(v, 60);
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s) ? s : '';
@@ -257,7 +269,14 @@ Deno.serve(async (req) => {
                 });
                 if (error) return fail(500, 'EQUIP_ERROR', 'Không đổi được vật phẩm.');
                 if (data && data.ok === false) return fail(403, 'NOT_OWNED', 'Bạn chưa sở hữu vật phẩm này.');
-                return json({ ok: true, state: await state(client, student.id) });
+                /* 8.3.5: khung avatar ghi luôn student_profiles.frame trong cùng
+                   transaction; trả về giá trị máy chủ để client cập nhật cache. */
+                return json({
+                    ok: true,
+                    kind: (data && data.kind) || null,
+                    frame: (data && data.frame) || null,
+                    state: await state(client, student.id)
+                });
             }
 
             case 'history': {
@@ -355,7 +374,7 @@ Deno.serve(async (req) => {
         case 'admin.node.save': {
             const node = body.node as Record<string, unknown> | undefined;
             if (!node) return fail(400, 'BAD_NODE', 'Thiếu dữ liệu node.');
-            const id = str(node.id, 64).toLowerCase().replace(/[^a-z0-9-]/g, '-');
+            const id = codeOf(node.id);
             if (!id) return fail(400, 'BAD_ID', 'Mã node không hợp lệ.');
             const row = {
                 id,
@@ -380,7 +399,7 @@ Deno.serve(async (req) => {
         case 'admin.achievement.save': {
             const a = body.achievement as Record<string, unknown> | undefined;
             if (!a) return fail(400, 'BAD_ACHIEVEMENT', 'Thiếu dữ liệu thành tựu.');
-            const id = str(a.id, 64).toLowerCase().replace(/[^a-z0-9-]/g, '-');
+            const id = codeOf(a.id);
             if (!id) return fail(400, 'BAD_ID', 'Mã thành tựu không hợp lệ.');
             const row = {
                 id,
@@ -401,16 +420,43 @@ Deno.serve(async (req) => {
                 sort_order: Number(a.sort_order) || 0
             };
             if (!row.name || !row.conditions.length) return fail(400, 'INCOMPLETE', 'Thành tựu cần tên và điều kiện.');
+            if (body.expect_new) {
+                const { data: existing } = await client.from('achievement_defs')
+                    .select('id').eq('id', id).maybeSingle();
+                if (existing) {
+                    return fail(409, 'CODE_TAKEN',
+                        'Mã “' + id + '” đã được dùng cho một thành tựu khác. Hãy chọn mã khác.');
+                }
+            }
             const { error } = await client.from('achievement_defs').upsert(row, { onConflict: 'id' });
             if (error) return fail(500, 'SAVE_ERROR', 'Không lưu được thành tựu: ' + error.message);
             await audit(client, 'achievement_save', { id }, 'admin:' + scope);
             return json({ ok: true });
         }
 
+        case 'admin.achievement.delete': {
+            /* Xoá cứng chỉ khi chưa ai nhận. Nếu đã có lịch sử, hướng dẫn
+               quản trị viên chuyển sang Lưu trữ (is_active = false). */
+            const id = codeOf(body.id);
+            if (!id) return fail(400, 'BAD_ID', 'Thiếu mã thành tựu.');
+            const { count } = await client.from('user_achievements')
+                .select('student_id', { count: 'exact', head: true })
+                .eq('achievement_id', id).not('unlocked_at', 'is', null);
+            if ((count ?? 0) > 0) {
+                return fail(409, 'IN_USE',
+                    'Đã có ' + count + ' học sinh nhận thành tựu này nên không thể xoá. ' +
+                    'Hãy dùng “Lưu trữ” để ẩn khỏi người học mà vẫn giữ lịch sử.');
+            }
+            const { error } = await client.from('achievement_defs').delete().eq('id', id);
+            if (error) return fail(500, 'DELETE_ERROR', 'Không xoá được thành tựu.');
+            await audit(client, 'achievement_delete', { id }, 'admin:' + scope);
+            return json({ ok: true });
+        }
+
         case 'admin.mission.save': {
             const m = body.mission as Record<string, unknown> | undefined;
             if (!m) return fail(400, 'BAD_MISSION', 'Thiếu dữ liệu nhiệm vụ.');
-            const id = str(m.id, 64).toLowerCase().replace(/[^a-z0-9-]/g, '-');
+            const id = codeOf(m.id);
             if (!id) return fail(400, 'BAD_ID', 'Mã nhiệm vụ không hợp lệ.');
             const row = {
                 id,
@@ -436,7 +482,7 @@ Deno.serve(async (req) => {
         case 'admin.reward.save': {
             const r = body.reward as Record<string, unknown> | undefined;
             if (!r) return fail(400, 'BAD_REWARD', 'Thiếu dữ liệu phần thưởng.');
-            const id = str(r.id, 64).toLowerCase().replace(/[^a-z0-9-]/g, '-');
+            const id = codeOf(r.id);
             if (!id) return fail(400, 'BAD_ID', 'Mã phần thưởng không hợp lệ.');
             const kinds = ['badge', 'title', 'frame', 'theme', 'background', 'decoration', 'xp_bonus'];
             const kind = str(r.kind, 20);
@@ -448,6 +494,7 @@ Deno.serve(async (req) => {
                 icon: str(r.icon, 60) || 'fa-gift',
                 rarity: ['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(str(r.rarity, 20)) >= 0 ? str(r.rarity, 20) : 'common',
                 metadata: (r.metadata && typeof r.metadata === 'object') ? r.metadata : {},
+
                 is_active: r.is_active !== false,
                 sort_order: Number(r.sort_order) || 0
             };
@@ -461,8 +508,19 @@ Deno.serve(async (req) => {
         case 'admin.challenge.save': {
             const c = body.challenge as Record<string, unknown> | undefined;
             if (!c) return fail(400, 'BAD_CHALLENGE', 'Thiếu dữ liệu thử thách.');
-            const slug = str(c.slug, 64).toLowerCase().replace(/[^a-z0-9-]/g, '-');
-            if (slug.length < 3) return fail(400, 'BAD_SLUG', 'Mã thử thách phải từ 3 ký tự.');
+            const slug = codeOf(c.slug);
+            if (!/^[a-z0-9][a-z0-9_-]{2,63}$/.test(slug)) {
+                return fail(400, 'BAD_SLUG',
+                    'Mã thử thách phải từ 3 ký tự, bắt đầu bằng chữ/số, chỉ gồm chữ thường, số, _ hoặc -.');
+            }
+            if (body.expect_new) {
+                const { data: existing } = await client.from('boss_challenges')
+                    .select('slug').eq('slug', slug).maybeSingle();
+                if (existing) {
+                    return fail(409, 'CODE_TAKEN',
+                        'Mã “' + slug + '” đã được dùng cho một thử thách khác. Hãy chọn mã khác.');
+                }
+            }
             const questions = Array.isArray(c.questions) ? c.questions.slice(0, 40) : [];
             if (!questions.length) return fail(400, 'NO_QUESTIONS', 'Thử thách cần ít nhất một câu hỏi.');
             const cleanQuestions = questions.map((q, i) => {

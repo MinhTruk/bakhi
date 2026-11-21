@@ -2,6 +2,41 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.3.5] — 2026-11-21
+
+### Sửa lỗi
+
+- **Avatar đồng bộ toàn website.** Gamification trước đây chỉ vẽ chữ cái đầu thay vì ảnh
+  đại diện thật. Nay hero dùng chung component `BKProfile.avatarNode()` với navbar, hồ sơ
+  và chat; đổi avatar ở Hồ sơ thì Gamification vẽ lại ngay, không cần tải lại trang.
+- **Khung avatar chỉ còn MỘT nguồn sự thật.** Khung được lưu ở hai nơi (`student_profiles.frame`
+  cho toàn site và `user_inventory.is_equipped` cho Gamification) nên trang bị ở Gamification
+  không đổi navbar/hồ sơ. Nay `student_profiles.frame` là nguồn chính thức, `bk_gam_equip` ghi
+  luôn hồ sơ trong cùng transaction, và `bakhi_owned_frames` bao gồm khung nhận qua kho vật phẩm.
+- **Bỏ khung không làm mất avatar hay vật phẩm.** Bỏ trang bị chỉ đưa khung về “Mặc định”.
+- **Khung máy chủ không bị hạ về “Mặc định”.** Cache hồ sơ không còn tự loại khung mà danh
+  sách badge cục bộ chưa biết.
+- **Đổi tài khoản không dùng nhầm hồ sơ/khung của tài khoản trước.**
+
+### Tính năng
+
+- **Tab Thành tích / Tiến trình dễ dùng cho người không biết lập trình.** Mã thành tựu,
+  Boss, nhiệm vụ, node và phần thưởng được **tự sinh từ tên** (`Ma Vương` → `ma_vuong`,
+  `Đỉnh Cao Kiến Thức` → `dinh_cao_kien_thuc`).
+- **Chống mã trùng:** cảnh báo ngay khi gõ, đề xuất `ma_vuong_2` và chỉ dùng khi người quản
+  trị bấm xác nhận; máy chủ trả `CODE_TAKEN` nếu vẫn gửi mã đã tồn tại.
+- **Xem trước trực tiếp** thành tựu/nhiệm vụ/node/vật phẩm/Boss khi đang soạn.
+- **Cài đặt nâng cao** (mã, thứ tự, thời gian đóng) được thu gọn, mặc định đóng.
+- **Tìm kiếm, lọc trạng thái** và hành động rõ ràng: Tạo mới, Sửa, Lưu thay đổi, Hủy,
+  Tạm ngừng/Kích hoạt, Lưu trữ, Xóa.
+- **Xóa thành tựu có kiểm soát:** từ chối nếu đã có học sinh nhận, hướng dẫn dùng Lưu trữ.
+- Mã Boss được phép dùng dấu gạch dưới (`ma_vuong`) — migration nới ràng buộc slug.
+
+### Cải tiến
+
+- Thông báo lỗi trong dashboard bằng tiếng Việt, chỉ rõ trường cần sửa; không lộ SQL/stack.
+- Avatar hero có kích thước cố định, khung canh giữa, không che mặt, không nhảy layout.
+
 ## [8.3.1] — 2026-11-21
 
 ### Sửa lỗi

@@ -193,6 +193,17 @@ begin
     assert (select is_equipped from public.user_inventory where student_id = s and item_id = 'frame-laurel'),
            'XA35 trạng thái trang bị không lưu';
 
+    -- 13b. 8.3.5 — khung trang bị phải đồng bộ student_profiles.frame (toàn website)
+    assert (select frame from public.student_profiles where student_id = s) = 'wreath',
+           'XA42 trang bị khung ở Gamification không cập nhật hồ sơ';
+    assert 'wreath' = any (public.bakhi_owned_frames(s)),
+           'XA43 khung thưởng Gamification không nằm trong danh sách sở hữu hồ sơ';
+    r := public.bk_gam_equip(s, 'frame-laurel', false);
+    assert (select frame from public.student_profiles where student_id = s) = 'none',
+           'XA44 bỏ khung không đưa hồ sơ về Mặc định';
+    assert exists (select 1 from public.user_inventory where student_id = s and item_id = 'frame-laurel'),
+           'XA45 bỏ khung làm mất vật phẩm trong kho';
+
     -- 14. Không lệch sổ
     assert not exists (select 1 from public.bk_gam_admin_drift() d where d.student_id = s),
            'XA36 tổng XP lệch sổ giao dịch';

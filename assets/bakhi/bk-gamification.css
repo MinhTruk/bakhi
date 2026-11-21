@@ -749,3 +749,14 @@ html.dark .bkg-pill.is-ok { color: #34d399; }
 
 .bkg-notice p { margin: 0; flex: 1 1 14rem; }
 .bkg-notice .bkg-btn { flex: 0 0 auto; }
+
+/* 8.3.5 — avatar hero dùng chung component BKProfile (ảnh + khung đồng bộ) */
+.bkg-hero-avatar {
+    flex: 0 0 auto;
+    width: 58px;
+    height: 58px;
+}
+.bkg-hero-avatar.bk-avatar {
+    box-shadow: none;
+    background: transparent;
+}

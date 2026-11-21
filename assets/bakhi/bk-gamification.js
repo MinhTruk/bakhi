@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-gamification.js (8.3.1)
+   Bá Khí — bk-gamification.js (8.3.5)
    Lớp tiến trình thống nhất: XP, cấp độ, cây kỹ năng, thành tựu, nhiệm vụ,
    thử thách Boss và kho vật phẩm.
 
@@ -433,6 +433,7 @@
         var prev = S.state || (readCache() || {}).state || null;
         S.state = state;
         writeCache(state);
+        registerInventoryFrames(state);
         if (notify && prev) announce(prev, state);
         if (S.host) renderAll();
         try {
@@ -678,11 +679,7 @@
         var initial = String(name).trim().charAt(0).toUpperCase() || 'B';
 
         var top = el('div', 'bkg-hero-top');
-        var avatar = el('div', 'bkg-avatar');
-        avatar.appendChild(el('span', null, initial));
-        var equippedFrame = (st.inventory || []).filter(function (i) { return i.is_equipped && i.kind === 'frame'; })[0];
-        if (equippedFrame) avatar.classList.add('is-framed');
-        top.appendChild(avatar);
+        top.appendChild(heroAvatar(initial));
 
         var info = el('div', 'bkg-hero-info');
         var nameRow = el('div', 'bkg-hero-name');
@@ -736,6 +733,60 @@
         hero.appendChild(actions);
 
         host.appendChild(hero);
+    }
+
+    /* 8.3.5 — Avatar và khung dùng CHUNG BKProfile với navbar/hồ sơ/chat.
+       Trước đây hero chỉ vẽ chữ cái đầu nên Gamification không bao giờ khớp
+       với ảnh đại diện thật của người học. */
+    function heroAvatar(initial) {
+        var P = global.BKProfile;
+        if (P && typeof P.avatarNode === 'function') {
+            try { return P.avatarNode({ size: 58, className: 'bkg-hero-avatar' }); } catch (e) { }
+        }
+        var fallback = el('div', 'bkg-avatar');
+        fallback.appendChild(el('span', null, initial));
+        return fallback;
+    }
+
+    function profileFrameId() {
+        var P = global.BKProfile;
+        try {
+            if (P && typeof P.get === 'function') return String(P.get().frame || 'none');
+        } catch (e) { }
+        return 'none';
+    }
+
+    var lastProfileSig = '';
+    function profileSignature() {
+        var P = global.BKProfile;
+        try {
+            if (P && typeof P.get === 'function') {
+                var p = P.get();
+                var avatar = String(p.avatar || '');
+                /* Phần đuôi + độ dài: đổi ảnh cùng kích thước vẫn phát hiện được. */
+                return avatar.length + ':' + avatar.slice(-32) + ':' + String(p.frame || 'none');
+            }
+        } catch (e) { }
+        return '';
+    }
+
+    /** Khung hồ sơ mà một vật phẩm kho tương ứng (metadata.profile_frame). */
+    function itemProfileFrame(item) {
+        var meta = item && item.metadata;
+        if (meta && typeof meta === 'object' && meta.profile_frame) return String(meta.profile_frame);
+        return String((item && item.item_id) || '');
+    }
+
+    /* 8.3.5: báo cho BKProfile biết các khung nhận qua Reward Engine để bộ chọn
+       khung ở hồ sơ có thể trang bị; máy chủ vẫn là nơi kiểm tra quyền. */
+    function registerInventoryFrames(state) {
+        var P = global.BKProfile;
+        if (!P || typeof P.setOwnedFrames !== 'function' || !state) return;
+        var ids = [];
+        (state.inventory || []).forEach(function (i) {
+            if (i && i.kind === 'frame') ids.push(itemProfileFrame(i));
+        });
+        try { P.setOwnedFrames(ids); } catch (e) { }
     }
 
     function miniCard(iconName, label, value, sub) {
@@ -968,15 +1019,28 @@
             card.appendChild(foot);
             return card;
         }
-        foot.appendChild(pill(owned && owned.is_equipped ? 'Đang dùng' : 'Đã sở hữu', owned && owned.is_equipped ? 'ok' : 'muted'));
+        /* 8.3.5: khung đang dùng đọc từ HỒ SƠ (nguồn sự thật), không chỉ từ
+           is_equipped của kho — nhờ vậy trang bị ở Hồ sơ cũng hiện đúng ở đây. */
+        var inUse = !!(owned && owned.is_equipped) ||
+            (item.kind === 'frame' && itemProfileFrame(item) === profileFrameId());
+        foot.appendChild(pill(inUse ? 'Đang dùng' : 'Đã sở hữu', inUse ? 'ok' : 'muted'));
         var btn = el('button', 'bkg-btn');
         btn.type = 'button';
-        btn.appendChild(icon(owned && owned.is_equipped ? 'fa-xmark' : 'fa-check'));
-        btn.appendChild(el('span', null, owned && owned.is_equipped ? 'Bỏ dùng' : 'Dùng'));
+        btn.appendChild(icon(inUse ? 'fa-xmark' : 'fa-check'));
+        btn.appendChild(el('span', null, inUse ? 'Bỏ dùng' : 'Dùng'));
         btn.addEventListener('click', function () {
             btn.disabled = true;
-            call({ action: 'equip', item_id: item.item_id, equipped: !(owned && owned.is_equipped) })
-                .then(function (res) { if (res.state) applyState(res.state, false); })
+            call({ action: 'equip', item_id: item.item_id, equipped: !inUse })
+                .then(function (res) {
+                    if (res && res.kind === 'frame' && global.BKProfile &&
+                        typeof global.BKProfile.applyServerFrame === 'function') {
+                        global.BKProfile.applyServerFrame(res.frame || 'none');
+                    }
+                    if (res && res.state) applyState(res.state, false);
+                    if (global.BKShell && typeof global.BKShell.refresh === 'function') {
+                        try { global.BKShell.refresh(); } catch (e) { }
+                    }
+                })
                 .catch(function (err) { smallToast((err && err.message) || 'Không đổi được vật phẩm.', 'error'); })
                 .then(function () { btn.disabled = false; });
         });
@@ -1490,10 +1554,21 @@
             global.addEventListener('bk:identity', function () {
                 S.state = null;
                 S.historyOffset = 0;
+                lastProfileSig = '';
                 renderAll();
                 refresh(true);
                 flush();
             });
+            /* 8.3.5: đổi avatar/khung ở Hồ sơ (kể cả tab khác) thì hero vẽ lại. */
+            if (global.BKProfile && typeof global.BKProfile.on === 'function') {
+                global.BKProfile.on(function () {
+                    var sig = profileSignature();
+                    if (sig === lastProfileSig) return;
+                    lastProfileSig = sig;
+                    if (S.host) renderAll();
+                });
+            }
+            lastProfileSig = profileSignature();
         }
     }
 

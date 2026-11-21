@@ -1458,3 +1458,67 @@ html.dark .bkc-shortcut-row { background: rgba(148, 163, 184, .1); }
 .bkc-pill.is-warn { background: rgba(251, 191, 36, .16); color: #fbbf24; }
 .bkc-pill.is-ok { background: rgba(52, 211, 153, .16); color: #34d399; }
 .bkc-pill.is-muted { background: rgba(148, 163, 184, .16); color: #94a3b8; }
+
+/* ---------------------------------------------------------------------------
+   8.3.5 — Biểu mẫu quản trị đơn giản: nhóm trường, xem trước, nâng cao
+   ------------------------------------------------------------------------- */
+.bkc-group-title {
+    margin: 1rem 0 .35rem;
+    font-size: .82rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    color: var(--bkc-muted, #64748b);
+}
+.bkc-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    align-items: center;
+    margin-bottom: .75rem;
+}
+.bkc-toolbar .bkc-input { flex: 1 1 200px; min-width: 0; }
+.bkc-editor { display: none; }
+.bkc-editor.is-open { display: block; }
+.bkc-editor-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.bkc-editor-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-top: 1rem;
+    padding-top: .75rem;
+    border-top: 1px solid rgba(148, 163, 184, .25);
+}
+.bkc-preview {
+    margin-top: 1rem;
+    padding: .75rem;
+    border: 1px dashed rgba(148, 163, 184, .45);
+    border-radius: .75rem;
+}
+.bkc-preview-body { display: flex; flex-wrap: wrap; gap: .75rem; }
+.bkc-preview-body > * { max-width: 320px; }
+.bkc-advanced {
+    margin-top: 1rem;
+    padding: .5rem .75rem;
+    border-radius: .65rem;
+    background: rgba(148, 163, 184, .08);
+}
+.bkc-advanced > summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: .88rem;
+}
+.bkc-advanced-body { display: grid; gap: .5rem; margin-top: .6rem; }
+.bkc-field-error {
+    margin: .35rem 0 0;
+    font-size: .85rem;
+    font-weight: 600;
+    color: #b91c1c;
+}
+.bkc-field-error .bkc-btn-ghost { margin-left: .4rem; }
+.bkc-row-actions { white-space: nowrap; }
+.bkc-btn-ghost.is-danger { color: #b91c1c; }
+@media (max-width: 640px) {
+    .bkc-toolbar { flex-direction: column; align-items: stretch; }
+    .bkc-editor-actions > * { flex: 1 1 auto; }
+}

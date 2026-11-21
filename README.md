@@ -36,7 +36,7 @@
 
 ---
 
-## 🎮 Gamification 2.0 (v8.3.1)
+## 🎮 Gamification 2.0 (v8.3.5)
 
 Một hệ thống tiến trình duy nhất cho toàn bộ hoạt động học tập:
 

@@ -117,7 +117,8 @@ jobs:
                    learning-data-integrity learning-sync-smoke \
                    gamification-smoke gamification-progress-load-smoke \
                    gamification-navigation-smoke xp-level-integrity \
-                   gamification-security-smoke; do
+                   gamification-security-smoke avatar-sync-smoke \
+                   v835-code-generator founder-achievement-smoke; do
             echo "::group::$t"
             node "tools/qa/$t.js"
             echo "::endgroup::"

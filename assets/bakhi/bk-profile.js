@@ -17,6 +17,7 @@
     if (global.BKProfile) return;
 
     var KEY = 'bakhiProfile.v1';
+    var FRAMES_KEY = 'bakhiOwnedFrames.v1';
     var SCHEMA = 1;
 
     var LIMITS = {
@@ -968,12 +969,38 @@
         return svg;
     }
 
-    /** Khung được sở hữu: khung cơ bản + phần thưởng từ badge đã mở. */
+    /** Khung được sở hữu: khung cơ bản + phần thưởng từ badge đã mở + khung
+     *  nhận qua kho vật phẩm Gamification (đăng ký bởi bk-gamification.js). */
     function ownedFrames() {
+        var base = ['none', 'leaf'];
         if (global.BK && global.BK.badges && global.BK.badges.ownedFrames) {
-            try { return global.BK.badges.ownedFrames(); } catch (e) { }
+            try { base = global.BK.badges.ownedFrames() || base; } catch (e) { }
         }
-        return ['none', 'leaf'];
+        var extra = readFrameCache();
+        for (var i = 0; i < extra.length; i++) {
+            if (base.indexOf(extra[i]) === -1) base.push(extra[i]);
+        }
+        return base;
+    }
+
+    /* 8.3.5: Gamification trao khung qua reward_catalog (ví dụ frame-laurel →
+       khung hồ sơ “wreath”). Danh sách này là cache hiển thị; máy chủ vẫn là
+       nơi quyết định quyền trang bị (bakhi_owned_frames + trigger). */
+    function frameCacheKey() {
+        return FRAMES_KEY + '.' + identity().key;
+    }
+    function readFrameCache() {
+        var raw = safeParse(lsGet(frameCacheKey()));
+        if (!Array.isArray(raw)) return [];
+        return raw.map(function (id) { return frameById(id).id; })
+            .filter(function (id, i, arr) { return id !== 'none' && arr.indexOf(id) === i; });
+    }
+    function setOwnedFrames(list) {
+        var clean = (Array.isArray(list) ? list : [])
+            .map(function (id) { return frameById(id).id; })
+            .filter(function (id, i, arr) { return id !== 'none' && arr.indexOf(id) === i; });
+        lsSet(frameCacheKey(), JSON.stringify(clean));
+        return clean;
     }
 
     function canEquip(frameId) {
@@ -1154,12 +1181,32 @@
         var incoming = sanitizeProfile(raw);
         var force = !!(opts && opts.force);
         if (!force && (!incoming.updatedAt || incoming.updatedAt <= cur.updatedAt)) return false;
-        if (!canEquip(incoming.frame)) incoming.frame = 'none';
+        /* 8.3.5: khung do máy chủ trả về đã được bakhi_owned_frames + trigger
+           kiểm tra, nên KHÔNG tự hạ về 'none' nếu danh sách cache badge chưa
+           biết khung đó (khung thưởng Gamification). Chỉ cần là khung có thật. */
         all.profiles[idc.key] = incoming;
         writeAll(all);
         applyFrameMotion();
         emit('remote');
         return true;
+    }
+
+    /**
+     * Áp khung do MÁY CHỦ trả về sau khi trang bị ở Gamification.
+     * Không đổi updatedAt và không đẩy ngược lên máy chủ (máy chủ đã ghi),
+     * nhưng phát 'bkprofile' để navbar/hồ sơ/chat vẽ lại ngay.
+     */
+    function applyServerFrame(frameId) {
+        var idc = identity();
+        var all = readAll();
+        var cur = all.profiles[idc.key] || emptyProfile();
+        var next = sanitizeProfile(Object.assign({}, cur, { frame: frameId }));
+        if (next.frame === cur.frame) return cur;
+        next.updatedAt = cur.updatedAt;
+        all.profiles[idc.key] = next;
+        writeAll(all);
+        emit('remote');
+        return next;
     }
 
     function reset() {
@@ -1338,8 +1385,10 @@
         frameById: frameById,
         frameOverlay: frameOverlay,
         ownedFrames: ownedFrames,
+        setOwnedFrames: setOwnedFrames,
         canEquip: canEquip,
         equipFrame: equipFrame,
+        applyServerFrame: applyServerFrame,
         identity: identity,
         get: get,
         save: save,

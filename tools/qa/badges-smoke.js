@@ -7,7 +7,9 @@
  *   2. Máy chủ tính lại chỉ số và badge y như client (không tin client).
  *   3. applyServer chỉ nhận id hợp lệ, chỉ nhận badge admin khi kind='admin',
  *      không xoá badge cục bộ.
- *   4. Hồ sơ: applyRemote chỉ ghi bản mới hơn, khung chưa mở bị hạ về 'none'.
+ *   4. Hồ sơ: applyRemote chỉ ghi bản mới hơn; khung do MÁY CHỦ trả về được giữ
+ *      (máy chủ đã kiểm tra quyền sở hữu từ 8.3.5), khung không tồn tại bị hạ
+ *      về 'none'.
  *   5. Migration: RLS bật, trình duyệt không ghi được student_badges, khung
  *      avatar trong SQL khớp danh mục.
  *
@@ -250,7 +252,13 @@ function main() {
   pw.BKProfile.applyRemote({
     nickname: 'Mới', bio: '', avatar: '', banner: '', frame: 'crown', links: [], updatedAt: 3000
   });
-  ok('khung chưa mở bị hạ về none', pw.BKProfile.get().frame === 'none', pw.BKProfile.get().frame);
+  /* 8.3.5: khung máy chủ đã qua bakhi_owned_frames + trigger, nên client không
+     tự hạ về 'none' (khung thưởng Gamification không nằm trong danh sách badge). */
+  ok('giữ khung hợp lệ do máy chủ trả về', pw.BKProfile.get().frame === 'crown', pw.BKProfile.get().frame);
+  pw.BKProfile.applyRemote({
+    nickname: 'Mới', bio: '', avatar: '', banner: '', frame: 'khong-ton-tai', links: [], updatedAt: 4000
+  });
+  ok('khung không tồn tại bị hạ về none', pw.BKProfile.get().frame === 'none', pw.BKProfile.get().frame);
   const url = pw.BKProfile.safeUrl('javascript:alert(1)');
   ok('liên kết javascript: bị chặn', url === '', url);
 
