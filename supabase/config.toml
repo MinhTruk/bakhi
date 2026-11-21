@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.student-profile]
 verify_jwt = false
+
+[functions.gamification-api]
+verify_jwt = false

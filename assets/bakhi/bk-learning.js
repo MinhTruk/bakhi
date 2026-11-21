@@ -523,6 +523,9 @@
         if (r.status !== 'mastered') {
             actions.appendChild(ghost('Thành thạo', function () {
                 BK.mistakes.update(r.id, { status: 'mastered' });
+                try {
+                    if (BK.gamification) BK.gamification.track('mistake_mastered', r.key, { dayScoped: false });
+                } catch (e) { }
                 BK.ui.toast('Đã đánh dấu thành thạo', 'success');
                 hooks.rerender();
             }, 'fa-check-double'));
@@ -1254,6 +1257,12 @@
         var st = state.session;
         if (!st) return;
         var res = BK.revision.end(st.id);
+        /* 8.3.0: chỉ ghi khi phiên ôn thật sự có câu trả lời. */
+        try {
+            if (BK.gamification && res && res.total > 0) {
+                BK.gamification.track('revision_session', st.id, { dayScoped: false });
+            }
+        } catch (e) { }
         state.session = null;
         hooks.rerender();
         var body = el('div');
@@ -1321,6 +1330,9 @@
                 if (g.goal.status === 'active') {
                     actions.appendChild(ghost('Đánh dấu đạt', function () {
                         BK.goals.update(g.goal.id, { status: 'done' });
+                        try {
+                            if (BK.gamification) BK.gamification.track('goal_completed', g.goal.id, { dayScoped: false });
+                        } catch (e) { }
                         BK.ui.toast('Chúc mừng! Đã đánh dấu hoàn thành mục tiêu.', 'success');
                         hooks.rerender();
                     }, 'fa-check'));

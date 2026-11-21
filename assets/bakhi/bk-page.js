@@ -20,6 +20,21 @@
     global.BKPageLoaded = true;
 
     var lastRecord = {};
+    /* 8.3.0: đếm câu đã ghi nhận trong trang để báo một hoạt động quiz thật. */
+    var answeredThisPage = 0;
+    var quizTracked = false;
+
+    function maybeTrackQuiz() {
+        if (quizTracked || answeredThisPage < 3) return;
+        var g = global.BK && global.BK.gamification;
+        if (!g) return;
+        quizTracked = true;
+        var path = global.location.pathname;
+        g.track('quiz_completed', path, { dayScoped: true, meta: { answers: answeredThisPage } });
+        if (/nghe|listening|audio/i.test(String(D.title || '') + ' ' + path)) {
+            g.track('listening_completed', path, { dayScoped: true });
+        }
+    }
 
     function readGlobal(name) {
         try {
@@ -179,6 +194,8 @@
                 lesson: D.title,
                 silent: true
             });
+            answeredThisPage++;
+            maybeTrackQuiz();
         });
     }
 

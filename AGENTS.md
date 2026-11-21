@@ -28,14 +28,17 @@ Hướng dẫn cho agent/developer làm việc trong repository này. Đọc h�
 ```
 /                      index.html (trung tâm) + bakhi-v4.js (lớp V4 cũ)
 /admin                 admin/index.html — Administrator Dashboard (Administrator Code)
-/profile               profile/index.html — Hồ sơ cá nhân + 78 thành tích
+/profile               profile/index.html — Hồ sơ cá nhân + thành tích
+/gamification          gamification/index.html — Tiến trình: XP, nhiệm vụ, bộ sưu tập, Boss, cây kỹ năng
 /settings              settings/index.html — Hồ sơ, Trung tâm học tập, hiển thị, hình nền, quyền
 /assets/bakhi/         Lớp nâng cấp dùng chung
   bk-version.js        Nguồn phiên bản duy nhất (window.BAKHI_VERSION, BK.release)
   bk-shell.js|css      Avatar + menu tài khoản, trợ năng toàn site, ẩn chrome cũ
   bk-profile.js|css    Hồ sơ local-first, ảnh đại diện/bìa, 50 khung avatar SVG
   bk-roles.js          Danh vị học sinh dùng chung (student_roles, canonical id)
-  bk-badges.js         78 thành tích (73 tự động + 5 Administrator/độc quyền)
+  bk-badges.js         99 thành tích (74 tự động + 25 trao tay)
+  bk-gamification.js|css  Tiến trình 8.3.0: XP, cấp, hàng đợi sự kiện, dashboard
+  bk-devboard-gamification.js  Tab quản trị Tiến trình (cấu hình, định nghĩa, Boss)
   bk-profile-ui.js     Component hồ sơ/badge dùng chung (profile + settings)
   bk-settings.js|css   5 tab Cài đặt
   bk-core.js|css       Kho dữ liệu local-first, UI kit, tìm kiếm, adapter AI/Supabase
@@ -220,3 +223,21 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 - Thêm timer dưới mọi hình thức vào tính năng học tập.
 - Ghi service-role key hoặc gọi Supabase bằng khoá bí mật từ trình duyệt.
 - Force-push hoặc commit file `.env`, khoá API, `node_modules`.
+
+## 6. Gamification 2.0 (8.3.0)
+
+- Supabase là nguồn sự thật cho XP/cấp độ/thành tựu/nhiệm vụ/vật phẩm. Client chỉ gửi
+  sự kiện học tập + khoá idempotency qua `gamification-api`; không tự cộng XP.
+- Mọi bảng người dùng chỉ có policy SELECT. Không thêm policy ghi; muốn đổi dữ liệu thì
+  sửa hàm `bk_gam_*` trong migration mới.
+- Không tạo engine XP/level/mission thứ hai. Công thức cấp độ chỉ ở `bk_gam_level_floor`
+  và bản sao hiển thị trong `bk-gamification.js` (QA đối chiếu tự động).
+- Badge/Title cũ không bị gamification ghi vào.
+- Sau khi thêm trang HTML mới, chạy `node tools/inject-gamification.js` (idempotent).
+- QA gamification:
+  ```bash
+  NODE_PATH=/tmp/bktest/node_modules node tools/qa/gamification-smoke.js
+  NODE_PATH=/tmp/bktest/node_modules node tools/qa/xp-level-integrity.js
+  node tools/qa/gamification-security-smoke.js
+  SUPABASE_ACCESS_TOKEN=... node tools/qa/gamification-db-check.js   # cần quyền project
+  ```

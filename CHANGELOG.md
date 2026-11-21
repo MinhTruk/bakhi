@@ -2,6 +2,52 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.3.0] — 2026-11-21
+
+### Tính năng
+
+- **Gamification 2.0 — một hệ thống tiến trình thống nhất.** XP, cấp độ, cây kỹ năng,
+  thành tựu, nhiệm vụ ngày/tuần, thử thách Boss và kho vật phẩm dùng chung **một** sổ giao dịch
+  `xp_transactions` và **một** công thức cấp độ (`bk_gam_level`). Không có engine XP thứ hai,
+  không có bảng danh hiệu hay thành tựu trùng lặp.
+- **Reward Engine phía máy chủ.** Một sự kiện học tập đi qua `gamification-api` → các hàm
+  `bk_gam_*` chạy trong **một transaction** của Postgres: ghi XP (có idempotency và giới hạn
+  mỗi ngày), tính lại cấp, mở thành tựu, cập nhật cây kỹ năng, tiến trình nhiệm vụ và cấp
+  vật phẩm. Client chỉ gửi loại hoạt động, nguồn và khoá chống trùng.
+- **Trang Tiến trình `/gamification/`.** Tổng quan (cấp, XP, thành tựu nổi bật, nhiệm vụ,
+  cây kỹ năng), nhiệm vụ ngày/tuần có nhận thưởng, bộ sưu tập thành tựu có lọc/tìm kiếm,
+  kho vật phẩm trang bị được, cây kỹ năng 5 nhánh, thử thách Boss và lịch sử XP.
+- **Tab quản trị “Tiến trình”** trong Administrator/Founder Dashboard: cấu hình XP và feature
+  flag, quản lý thành tựu/nhiệm vụ/nút cây kỹ năng/danh mục phần thưởng, soạn thử thách Boss
+  kèm ngân hàng câu hỏi; Founder có thêm điều chỉnh XP (bắt buộc lý do, ghi audit) và nhật ký.
+- **Theo dõi hoạt động học tập thật.** `bk-page.js` ghi `quiz_completed` khi trang bài học
+  ghi nhận ≥ 3 câu trả lời, `bk-learning.js` ghi `revision_session`, `mistake_mastered`,
+  `goal_completed`; mở bài học ghi `lesson_study`. Chat, báo cáo và thao tác giao diện
+  **không** cấp XP.
+- **15 bảng + 14 hàm SQL mới** (`20261209000000_bakhi_v830_gamification.sql`), RLS chỉ cho
+  đọc dòng của chính mình, không có policy ghi, `boss_questions` không đọc được từ trình duyệt.
+
+### Cải tiến
+
+- **Đồng bộ đa thiết bị.** XP nằm trên Supabase; localStorage chỉ giữ cache, tuỳ chọn và hàng
+  đợi sự kiện offline (tối đa 40, gửi lại khi có mạng). Refresh hay retry không cộng trùng.
+- **Không làm chậm hoạt động học.** Sự kiện gửi nền sau khi người học đã hoàn thành thao tác;
+  dashboard chỉ tải khi mở trang; lịch sử XP phân trang 20 dòng.
+- **Trợ năng.** Thanh tiến trình có `aria-value*`, trạng thái luôn có nhãn chữ, tôn trọng
+  `prefers-reduced-motion`, có công tắc giảm hiệu ứng và tắt thông báo.
+
+### Sửa lỗi
+
+- **Phiên bản máy chủ lệch frontend.** `SERVER_VERSION` của `admin-actions` được nâng lên
+  8.3.0 để dashboard và website hiển thị cùng một phiên bản.
+
+### Ghi chú
+
+- Badge (99), Title, danh vị, Learning Intelligence và mọi dữ liệu cũ **giữ nguyên**; không
+  xoá khoá localStorage hay bảng nào.
+- Thử thách Boss không seed sẵn câu hỏi: nội dung do quản trị viên biên soạn để không tạo
+  nội dung giáo dục giả. Xem `docs/BOSS_CHALLENGE.md` và `docs/RELEASE_REPORT_V830.md`.
+
 ## [8.2.0] — 2026-11-20
 
 ### Tính năng

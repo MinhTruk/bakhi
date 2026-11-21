@@ -36,6 +36,21 @@
 
 ---
 
+## 🎮 Gamification 2.0 (v8.3.0)
+
+Một hệ thống tiến trình duy nhất cho toàn bộ hoạt động học tập:
+
+- **XP & cấp độ** tính từ hoạt động thật (quiz, bài học, ôn tập, sổ tay, mục tiêu,
+  Boss), có giới hạn mỗi ngày và chống cộng trùng.
+- **Nhiệm vụ** ngày/tuần, **cây kỹ năng** 5 nhánh, **bộ sưu tập thành tựu**,
+  **thử thách Boss** và **kho vật phẩm trang trí**.
+- Dữ liệu nằm trên Supabase; mở nhiều thiết bị vẫn thấy cùng một tiến trình.
+- Trang tiến trình: [/gamification/](https://minhtruk.github.io/bakhi/gamification/)
+- Tài liệu: [kiến trúc](docs/GAMIFICATION_ARCHITECTURE.md) ·
+  [XP & cấp độ](docs/XP_LEVEL_SYSTEM.md) · [bảo mật](docs/GAMIFICATION_SECURITY.md)
+
+---
+
 ## 🧭 Mục lục
 
 - [Giới thiệu](#-giới-thiệu)

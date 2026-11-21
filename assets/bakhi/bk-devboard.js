@@ -15,7 +15,7 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var APP_VERSION = '8.2.0';
+    var APP_VERSION = '8.3.0';
 
     var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
         ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];
@@ -28,6 +28,7 @@
         ['students', 'Học sinh', 'fa-user-graduate'],
         ['profiles', 'Hồ sơ', 'fa-id-card'],
         ['badges', 'Thành tích', 'fa-medal'],
+        ['gamification', 'Tiến trình', 'fa-gamepad'],
         ['chat', 'Chat', 'fa-comments'],
         ['reports', 'Report', 'fa-flag'],
         ['notifications', 'Thông báo', 'fa-bullhorn'],
@@ -45,6 +46,7 @@
         students: 'Danh sách học sinh, phân biệt hồ sơ trùng tên',
         profiles: 'Xem hồ sơ, khung avatar và thành tích của từng học sinh',
         badges: 'Trao và thu hồi hai badge dành riêng cho Administrator',
+        gamification: 'Cấu hình XP, thành tựu, nhiệm vụ, cây kỹ năng, thử thách và phần thưởng',
         chat: 'Kiểm duyệt phòng chung, tin nhắn riêng và nhóm nhỏ',
         reports: 'Tiếp nhận, trao đổi và hoàn thiện báo cáo của học sinh',
         notifications: 'Soạn, xem trước và xuất bản thông báo tức thời',
@@ -854,6 +856,7 @@
             students: renderStudents,
             profiles: renderProfiles,
             badges: renderBadges,
+            gamification: renderGamification,
             chat: renderChatAdmin,
             reports: renderReports,
             notifications: renderNotifications,
@@ -4961,6 +4964,40 @@
             title: 'Phím tắt Administrator Dashboard',
             body: body,
             actions: [{ label: 'Đóng', variant: 'primary', onClick: function (c) { c(); } }]
+        });
+    }
+
+    /* ------------------------- Gamification 2.0 (8.3.0) ------------------- */
+    function gamificationAdminApi(action, payload) {
+        if (!global.BKCloud || typeof global.BKCloud.gamificationAdmin !== 'function') {
+            return Promise.reject(new Error('Chưa tải được lớp Supabase. Hãy tải lại trang.'));
+        }
+        return global.BKCloud.gamificationAdmin(action, payload).catch(function (err) {
+            if (err && err.status === 401) {
+                err.handled = true;
+                try { global.BKCloud.adminLogout(); } catch (e) { }
+                toast('Phiên quản trị đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+                closeDash();
+                if (typeof global.mountDevMenu === 'function') {
+                    try { global.mountDevMenu(); } catch (e) { }
+                }
+            }
+            throw err;
+        });
+    }
+
+    function renderGamification(pane) {
+        if (!global.BKGamificationAdmin || typeof global.BKGamificationAdmin.render !== 'function') {
+            pane.appendChild(alertBox(
+                'Chưa tải được mô-đun quản trị gamification (bk-devboard-gamification.js). Hãy tải lại trang.',
+                'error'));
+            return;
+        }
+        global.BKGamificationAdmin.render(pane, {
+            h: h, icon: icon, btn: btn, card: card, table: table, emptyRow: emptyRow,
+            fieldRow: fieldRow, input: input, textarea: textarea, checkbox: checkbox,
+            alertBox: alertBox, pill: pill, statCard: statCard, toast: toast,
+            api: gamificationAdminApi, isFounder: isFounder
         });
     }
 

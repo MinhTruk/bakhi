@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+<!-- Bá Khí static favicon — assets/bakhi/favicon.svg -->
+<link rel="icon" type="image/svg+xml" href="../assets/bakhi/favicon.svg" sizes="any" data-bk-favicon="1">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/bakhi/favicon-32x32.png" data-bk-favicon="1">
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/bakhi/favicon-192x192.png" data-bk-favicon="1">
+<link rel="icon" href="../assets/bakhi/favicon.ico" sizes="16x16 32x32 48x48" data-bk-favicon="1">
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/bakhi/apple-touch-icon.png" data-bk-favicon="1">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tiến trình học tập — Bá Khí</title>
+    <meta name="description" content="Gamification Bá Khí: cấp độ, XP, cây kỹ năng, thành tựu, nhiệm vụ, thử thách Boss và kho vật phẩm.">
+    <meta name="theme-color" content="#0f172a">
+
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="../assets/bakhi/bk-core.css?v=8.3.0">
+    <link rel="stylesheet" href="../assets/bakhi/bk-gamification.css?v=8.3.0">
+    <link rel="stylesheet" href="../assets/bakhi/bk-shell.css?v=8.3.0">
+</head>
+<body class="bk-app">
+    <header class="bk-topbar">
+        <div class="bk-topbar-inner">
+            <a class="bk-brand" href="../">
+                <span class="bk-brand-badge"><i class="fa-solid fa-folder-tree" aria-hidden="true"></i></span>
+                <span>Bá Khí</span>
+            </a>
+            <a class="bk-topbar-link" href="../profile/">Hồ sơ</a>
+            <a class="bk-topbar-link" href="../settings/?tab=profile">Cài đặt</a>
+            <a class="bk-topbar-link" href="../">Trang chủ</a>
+        </div>
+    </header>
+
+    <main class="bk-page">
+        <div class="bk-page-head">
+            <div>
+                <h1 class="bk-page-title">Tiến trình học tập</h1>
+                <p class="bk-page-sub">XP và cấp độ được tính từ hoạt động học tập thật, lưu trên máy chủ Supabase và đồng bộ giữa các thiết bị.</p>
+            </div>
+        </div>
+
+        <div id="bkGamificationRoot" class="bkg" aria-live="polite">
+            <div class="bkg-gate">
+                <div class="bkg-spinner"></div>
+                <p>Đang tải tiến trình…</p>
+            </div>
+        </div>
+
+        <noscript>
+            <p>Trang tiến trình cần JavaScript để tải dữ liệu từ máy chủ Bá Khí.</p>
+        </noscript>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+    <script src="../assets/bakhi/bk-core.js?v=8.3.0" defer></script>
+    <script src="../assets/bakhi/bk-version.js?v=8.3.0" defer></script>
+    <script src="../assets/bakhi/bk-shell.js?v=8.3.0" defer></script>
+    <script src="../assets/bakhi/bk-supabase.config.js?v=8.3.0" defer></script>
+    <script src="../assets/bakhi/bk-cloud.js?v=8.3.0" defer></script>
+    <script src="../assets/bakhi/bk-gamification.js?v=8.3.0" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.BK && window.BK.gamification) {
+                window.BK.gamification.mount('bkGamificationRoot');
+            }
+        });
+    </script>
+<script src="../assets/bakhi/bk-report.js" defer></script>
+</body>
+</html>

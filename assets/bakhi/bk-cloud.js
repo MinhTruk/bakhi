@@ -2566,6 +2566,8 @@
         chatApi: function (body) { return api(CFG.functions.chat, body); },
         /* 8.0.0: Report Issue — cùng một Edge Function cho cả website. */
         reportApi: function (body) { return api(CFG.functions.report, body); },
+        /* 8.3.0: Gamification — Reward Engine phía máy chủ (bk-gamification.js). */
+        gamificationApi: function (body) { return api(CFG.functions.gamification, body); },
         reportNotifications: function (force) { return loadReportNotes(force); },
         /* Tải tệp đính kèm vào thư mục của CHÍNH học sinh đang gắn.
            Bucket riêng tư; quyền ghi do RLS kiểm tra lại ở máy chủ. */
@@ -2672,6 +2674,14 @@
             var token = global.BKCloud.adminToken();
             if (!token) return Promise.reject(new Error('Phiên quản trị đã hết hạn. Vui lòng nhập lại Dev Code.'));
             return api(CFG.functions.adminActions, Object.assign({ action: action }, payload || {}), {
+                'x-admin-token': token
+            });
+        },
+        /* 8.3.0: quản trị Gamification — cùng phiên quản trị, Edge Function riêng. */
+        gamificationAdmin: function (action, payload) {
+            var token = global.BKCloud.adminToken();
+            if (!token) return Promise.reject(new Error('Phiên quản trị đã hết hạn. Vui lòng nhập lại Dev Code.'));
+            return api(CFG.functions.gamification, Object.assign({ action: action }, payload || {}), {
                 'x-admin-token': token
             });
         },
