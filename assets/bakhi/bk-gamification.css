@@ -722,3 +722,30 @@ html.dark .bkg-pill.is-ok { color: #34d399; }
     .bkg-spinner { animation-duration: 2.4s; }
     .bkg-levelup-ring { animation: none; }
 }
+
+
+/* 8.3.1 — trạng thái lỗi có mã riêng và băng báo lỗi một phần */
+.bkg-gate .bkg-error-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .72rem;
+    letter-spacing: .06em;
+    color: var(--bkg-muted, #7b8794);
+    opacity: .85;
+    margin: 0;
+}
+
+.bkg-notice {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+    padding: .6rem .8rem;
+    margin: 0 0 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--bkg-warn-border, rgba(214, 158, 46, .35));
+    background: var(--bkg-warn-soft, rgba(214, 158, 46, .1));
+    font-size: .86rem;
+}
+
+.bkg-notice p { margin: 0; flex: 1 1 14rem; }
+.bkg-notice .bkg-btn { flex: 0 0 auto; }

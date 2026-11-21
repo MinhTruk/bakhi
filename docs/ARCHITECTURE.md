@@ -652,3 +652,10 @@ Ghi chú triển khai:
 
 Chi tiết: [GAMIFICATION_ARCHITECTURE.md](GAMIFICATION_ARCHITECTURE.md),
 [XP_LEVEL_SYSTEM.md](XP_LEVEL_SYSTEM.md), [GAMIFICATION_SECURITY.md](GAMIFICATION_SECURITY.md).
+
+### 4.1. Progress Loader (8.3.1)
+
+`bk-gamification.js` là nơi duy nhất tải tiến trình: `BKCloud.gamificationApi({action:'state'})`
+→ `gamification-api` → `bk_gam_state` (+ `bk_gam_sync_missions`). Client có máy trạng thái
+(restoring/loading/ready/…), retry giới hạn, timeout, chống phản hồi cũ và cache theo
+`studentId`. Chi tiết: [GAMIFICATION_PROGRESS_LOADING.md](GAMIFICATION_PROGRESS_LOADING.md).

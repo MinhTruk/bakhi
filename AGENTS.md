@@ -233,10 +233,16 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 - Không tạo engine XP/level/mission thứ hai. Công thức cấp độ chỉ ở `bk_gam_level_floor`
   và bản sao hiển thị trong `bk-gamification.js` (QA đối chiếu tự động).
 - Badge/Title cũ không bị gamification ghi vào.
+- **Lớp máy chủ là `window.BKCloud`**, không phải `BK.cloud` (adapter localStorage của
+  `bk-core.js`). Dùng `BK.cloud.gamificationApi` sẽ khiến loader luôn báo “Chưa kết nối
+  máy chủ” — đây là nguyên nhân lỗi 8.3.0, xem `docs/GAMIFICATION_BUG_AUDIT_V831.md`.
+- Lối vào Tiến trình nằm trong menu tài khoản (`bk-shell.js`), chỉ một định nghĩa.
 - Sau khi thêm trang HTML mới, chạy `node tools/inject-gamification.js` (idempotent).
 - QA gamification:
   ```bash
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/gamification-smoke.js
+  NODE_PATH=/tmp/bktest/node_modules node tools/qa/gamification-progress-load-smoke.js
+  NODE_PATH=/tmp/bktest/node_modules node tools/qa/gamification-navigation-smoke.js
   NODE_PATH=/tmp/bktest/node_modules node tools/qa/xp-level-integrity.js
   node tools/qa/gamification-security-smoke.js
   SUPABASE_ACCESS_TOKEN=... node tools/qa/gamification-db-check.js   # cần quyền project

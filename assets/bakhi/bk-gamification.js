@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-gamification.js (8.3.0)
+   Bá Khí — bk-gamification.js (8.3.1)
    Lớp tiến trình thống nhất: XP, cấp độ, cây kỹ năng, thành tựu, nhiệm vụ,
    thử thách Boss và kho vật phẩm.
 
@@ -128,15 +128,28 @@
         });
     }
 
-    function studentId() {
-        var raw = readJson('bakhiStudent.v1', null);
-        if (raw && raw.studentId) return String(raw.studentId);
+    /* BKCloud (bk-cloud.js) là lớp máy chủ; BK.cloud trong bk-core.js chỉ là
+       adapter localStorage cũ và KHÔNG có gamificationApi. Luôn hỏi BKCloud trước. */
+    function cloudApi() {
+        if (global.BKCloud && typeof global.BKCloud.gamificationApi === 'function') return global.BKCloud;
+        if (BK && BK.cloud && typeof BK.cloud.gamificationApi === 'function') return BK.cloud;
+        return null;
+    }
+    function cloudIdentity() {
+        var c = cloudApi();
         try {
-            if (BK && BK.cloud && typeof BK.cloud.identity === 'function') {
-                var ident = BK.cloud.identity();
-                if (ident && ident.id) return String(ident.id);
+            if (c && typeof c.identity === 'function') {
+                var ident = c.identity();
+                if (ident && ident.id) return ident;
             }
         } catch (e) { }
+        return null;
+    }
+    function studentId() {
+        var ident = cloudIdentity();
+        if (ident && ident.id) return String(ident.id);
+        var raw = readJson('bakhiStudent.v1', null);
+        if (raw && raw.studentId) return String(raw.studentId);
         return '';
     }
     function keyFor(base) {
@@ -262,12 +275,13 @@
 
         flushing = true;
         var item = queue[0];
+        var eventSeq = ++SEQ;
         return api()({ action: 'event', activity: item.activity, source_id: item.source_id, idempotency_key: item.key })
             .then(function (res) {
                 var rest = readQueue().filter(function (e) { return e.key !== item.key; });
                 writeQueue(rest);
                 markSent(item.key);
-                if (res && res.state) applyState(res.state, true);
+                if (res && res.state) applyState(res.state, true, eventSeq);
                 if (res && res.award && res.award.awarded) {
                     smallToast('+' + res.award.amount + ' XP · ' + (ACTIVITY_LABELS[item.activity] || 'Hoạt động học tập'));
                 }
@@ -293,13 +307,40 @@
        Gọi Edge Function
        ------------------------------------------------------------------ */
     function api() {
-        if (BK && BK.cloud && typeof BK.cloud.gamificationApi === 'function') return BK.cloud.gamificationApi;
-        return null;
+        var c = cloudApi();
+        return c ? c.gamificationApi : null;
     }
+    var CALL_TIMEOUT = 15000;
     function call(body) {
         var fn = api();
-        if (!fn) return Promise.reject(new Error('Chưa kết nối máy chủ Bá Khí.'));
-        return fn(body);
+        if (!fn) {
+            var noCloud = new Error('Chưa tải được lớp kết nối Supabase (BKCloud).');
+            noCloud.code = 'NO_CLOUD';
+            return Promise.reject(noCloud);
+        }
+        var timer = null;
+        var timeout = new Promise(function (_, reject) {
+            timer = setTimeout(function () {
+                var err = new Error('Máy chủ không phản hồi sau ' + Math.round(CALL_TIMEOUT / 1000) + ' giây.');
+                err.code = 'TIMEOUT';
+                err.timeout = true;
+                reject(err);
+            }, CALL_TIMEOUT);
+        });
+        var request;
+        try {
+            request = fn(body);
+        } catch (e) {
+            clearTimeout(timer);
+            return Promise.reject(e);
+        }
+        return Promise.race([request, timeout]).then(function (res) {
+            clearTimeout(timer);
+            return res;
+        }, function (err) {
+            clearTimeout(timer);
+            throw err;
+        });
     }
 
     var S = {
@@ -307,11 +348,72 @@
         config: null,
         loading: false,
         error: null,
+        errorCode: null,
+        status: 'idle',
+        lastError: null,
+        retries: 0,
         host: null,
         historyOffset: 0,
         boss: null,
         booted: false
     };
+
+    var STATUS = {
+        idle: 'idle', restoring: 'restoring', loading: 'loading', ready: 'ready',
+        noSession: 'no_session', unauthorized: 'unauthorized', notBound: 'not_bound',
+        forbidden: 'forbidden', rateLimited: 'rate_limited', offline: 'offline',
+        server: 'server', error: 'error'
+    };
+
+    /* Mỗi trạng thái có thông báo và mã lỗi riêng — không dùng chung một câu. */
+    var ERROR_UI = {
+        no_session: {
+            icon: 'fa-user-shield', title: 'Cần nhận diện học sinh', code: 'E_NO_SESSION',
+            text: 'Tiến trình được gắn với hồ sơ học sinh trên máy chủ. Hãy nhận diện ở trang chủ rồi quay lại trang này.'
+        },
+        unauthorized: {
+            icon: 'fa-key', title: 'Phiên đăng nhập không còn hợp lệ', code: 'E_UNAUTHORIZED',
+            text: 'Phiên trên thiết bị đã hết hạn. Nhận diện lại để tiếp tục xem tiến trình.'
+        },
+        not_bound: {
+            icon: 'fa-link-slash', title: 'Thiết bị chưa gắn học sinh', code: 'E_NOT_BOUND',
+            text: 'Thiết bị này chưa được gắn với hồ sơ nào. Hãy nhận diện ở trang chủ.'
+        },
+        forbidden: {
+            icon: 'fa-lock', title: 'Không đủ quyền xem tiến trình', code: 'E_FORBIDDEN',
+            text: 'Tài khoản hiện tại không có quyền đọc dữ liệu tiến trình này.'
+        },
+        rate_limited: {
+            icon: 'fa-hourglass-half', title: 'Thao tác hơi nhanh', code: 'E_RATE_LIMITED',
+            text: 'Máy chủ tạm giới hạn tốc độ. Chờ khoảng một phút rồi thử lại.'
+        },
+        offline: {
+            icon: 'fa-wifi', title: 'Không thể kết nối máy chủ', code: 'E_NETWORK',
+            text: 'Kiểm tra kết nối mạng rồi thử lại. Tiến trình đã tải trước đó vẫn được giữ trên thiết bị.'
+        },
+        server: {
+            icon: 'fa-server', title: 'Máy chủ đang gặp sự cố', code: 'E_SERVER',
+            text: 'Máy chủ Bá Khí chưa phản hồi đúng. Thử lại sau ít phút.'
+        },
+        error: {
+            icon: 'fa-triangle-exclamation', title: 'Chưa tải được tiến trình', code: 'E_UNKNOWN',
+            text: 'Đã xảy ra lỗi khi tải dữ liệu tiến trình.'
+        }
+    };
+
+    function classify(err) {
+        if (!err) return 'error';
+        var code = String(err.code || '');
+        var status = Number(err.status || 0);
+        if (code === 'NO_SESSION' || status === 401) return 'unauthorized';
+        if (code === 'NOT_BOUND' || status === 409) return 'not_bound';
+        if (code === 'RATE_LIMITED' || status === 429) return 'rate_limited';
+        if (code === 'NO_CLOUD' || code === 'BAD_PAYLOAD') return 'error';
+        if (status === 403) return 'forbidden';
+        if (status >= 500) return 'server';
+        if (err.timeout || !status) return 'offline';
+        return 'error';
+    }
 
     function readCache() { return readJson(keyFor(CACHE_KEY), null); }
     function writeCache(state) {
@@ -319,8 +421,16 @@
         writeJson(keyFor(CACHE_KEY), { v: SCHEMA, state: state, cachedAt: Date.now() });
     }
 
-    function applyState(state, notify) {
+    /* Thứ tự phản hồi: request gửi sau luôn thắng. Chặn trường hợp phản hồi
+       `state` chậm hơn `event` ghi đè XP vừa cộng. */
+    var SEQ = 0;
+    var APPLIED = 0;
+
+    function applyState(state, notify, seq) {
         if (!state) return;
+        var order = seq == null ? ++APPLIED : seq;
+        if (order < APPLIED) return;
+        APPLIED = order;
         var prev = S.state || (readCache() || {}).state || null;
         S.state = state;
         writeCache(state);
@@ -413,38 +523,98 @@
     /* ---------------------------------------------------------------------
        Tải dữ liệu
        ------------------------------------------------------------------ */
+    var GEN = 0;
+    var RETRY_LIMIT = 2;
+
     function refresh(force) {
-        if (!studentId()) {
+        if (S.loading) return S.loading;
+        var sid = studentId();
+        if (!sid) {
             S.state = null;
-            S.error = 'identity';
+            S.errorCode = 'no_session';
+            S.status = STATUS.noSession;
             S.loading = false;
             if (S.host) renderAll();
             return Promise.resolve(null);
         }
-        if (S.loading) return S.loading;
+
         if (!force) {
             var cached = readCache();
-            if (cached && cached.state && Date.now() - num(cached.cachedAt, 0) < 60000 && !S.state) {
+            if (cached && cached.state && !S.state) {
                 S.state = cached.state;
+                S.status = STATUS.ready;
                 if (S.host) renderAll();
             }
         }
-        S.loading = call({ action: 'state' })
-            .then(function (res) {
+
+        var gen = ++GEN;
+        var attempt = 0;
+        S.status = S.state ? STATUS.ready : STATUS.loading;
+        S.errorCode = null;
+
+        function run() {
+            var stateSeq = ++SEQ;
+            return call({ action: 'state' }).then(function (res) {
+                if (gen !== GEN) return null;   /* phản hồi cũ: bỏ, không ghi đè */
+                if (!res || !res.state) {
+                    var bad = new Error('Máy chủ trả dữ liệu tiến trình không đúng cấu trúc.');
+                    bad.code = 'BAD_PAYLOAD';
+                    throw bad;
+                }
                 S.config = res.config || S.config;
-                applyState(res.state, !!S.state);
-                S.error = null;
+                S.retries = 0;
+                S.errorCode = null;
+                S.lastError = null;
+                S.status = STATUS.ready;
+                applyState(res.state, !!S.state, stateSeq);
                 S.loading = false;
                 if (S.host) renderAll();
                 return S.state;
-            })
-            .catch(function (err) {
+            }).catch(function (err) {
+                if (gen !== GEN) return null;
+                var kind = classify(err);
+                attempt++;
+                S.lastError = {
+                    code: kind,
+                    status: Number(err && err.status) || 0,
+                    message: String((err && err.message) || '')
+                };
+                /* Chỉ tự thử lại lỗi tạm thời, tối đa RETRY_LIMIT lần. */
+                if (attempt <= RETRY_LIMIT && (kind === 'offline' || kind === 'server')) {
+                    S.retries = attempt;
+                    S.errorCode = kind;
+                    S.status = S.state ? STATUS.ready : STATUS.loading;
+                    if (S.host) renderAll();
+                    return new Promise(function (resolve) { setTimeout(resolve, 900 * attempt); }).then(run);
+                }
                 S.loading = false;
-                S.error = (err && err.message) || 'Không tải được tiến trình.';
+                S.errorCode = kind;
+                S.status = S.state ? STATUS.ready : kind;
+                try {
+                    if (global.console && console.warn) {
+                        console.warn('[BKGamification] không tải được tiến trình:',
+                            kind, Number(err && err.status) || 0, String((err && err.message) || ''));
+                    }
+                } catch (e) { }
                 if (S.host) renderAll();
                 return null;
             });
+        }
+
+        S.loading = run().then(function (v) {
+            S.loading = false;
+            return v;
+        });
         return S.loading;
+    }
+
+    function retry() {
+        if (S.loading) return S.loading;
+        S.errorCode = null;
+        S.state = S.state || null;
+        S.status = S.state ? STATUS.ready : STATUS.loading;
+        if (S.host) renderAll();
+        return refresh(true);
     }
 
     /* ---------------------------------------------------------------------
@@ -504,8 +674,7 @@
         var hero = el('section', 'bkg-hero');
         hero.setAttribute('aria-label', 'Tổng quan tiến trình');
 
-        var ident = null;
-        try { ident = BK && BK.cloud && BK.cloud.identity ? BK.cloud.identity() : null; } catch (e) { }
+        var ident = cloudIdentity();
         var name = (ident && ident.display_name) || 'Học sinh Bá Khí';
         var initial = String(name).trim().charAt(0).toUpperCase() || 'B';
 
@@ -1226,47 +1395,70 @@
     /* ---------------------------------------------------------------------
        Dựng toàn bộ trang
        ------------------------------------------------------------------ */
+    function renderGate(info, action) {
+        var box = el('div', 'bkg-gate');
+        box.appendChild(icon(info.icon || 'fa-circle-info'));
+        box.appendChild(el('h2', null, info.title));
+        box.appendChild(el('p', null, info.text));
+        box.appendChild(el('p', 'bkg-error-code', info.code));
+        if (action === 'home') {
+            var a = el('a', 'bkg-btn is-primary');
+            a.href = '../';
+            a.appendChild(el('span', null, 'Về trang chủ để nhận diện'));
+            box.appendChild(a);
+        } else if (action === 'retry') {
+            var btn = el('button', 'bkg-btn is-primary');
+            btn.type = 'button';
+            btn.appendChild(el('span', null, 'Thử lại'));
+            btn.addEventListener('click', function () { retry(); });
+            box.appendChild(btn);
+        }
+        return box;
+    }
+
+    function renderPartialNotice() {
+        var info = ERROR_UI[S.errorCode] || ERROR_UI.error;
+        var bar = el('div', 'bkg-notice');
+        bar.setAttribute('role', 'status');
+        bar.appendChild(icon(info.icon));
+        bar.appendChild(el('p', null, 'Một số dữ liệu chưa tải được (' + info.code + '). Đang hiển thị bản đã lưu trên thiết bị.'));
+        var again = el('button', 'bkg-btn is-ghost');
+        again.type = 'button';
+        again.appendChild(el('span', null, 'Làm mới'));
+        again.addEventListener('click', function () { retry(); });
+        bar.appendChild(again);
+        return bar;
+    }
+
     function renderAll() {
         var host = S.host;
         if (!host) return;
         host.textContent = '';
 
         if (!studentId()) {
-            var gate = el('div', 'bkg-gate');
-            gate.appendChild(icon('fa-user-shield'));
-            gate.appendChild(el('h2', null, 'Cần nhận diện học sinh'));
-            gate.appendChild(el('p', null,
-                'Tiến trình được gắn với hồ sơ học sinh trên máy chủ. Hãy nhận diện ở trang chủ rồi quay lại trang này.'));
-            var a = el('a', 'bkg-btn is-primary');
-            a.href = '../';
-            a.appendChild(el('span', null, 'Về trang chủ để nhận diện'));
-            gate.appendChild(a);
-            host.appendChild(gate);
-            return;
-        }
-
-        if (S.error && !S.state) {
-            var errBox = el('div', 'bkg-gate');
-            errBox.appendChild(icon('fa-triangle-exclamation'));
-            errBox.appendChild(el('h2', null, 'Chưa tải được tiến trình'));
-            errBox.appendChild(el('p', null, String(S.error)));
-            var retry = el('button', 'bkg-btn is-primary');
-            retry.type = 'button';
-            retry.appendChild(el('span', null, 'Thử lại'));
-            retry.addEventListener('click', function () { refresh(true); });
-            errBox.appendChild(retry);
-            host.appendChild(errBox);
+            host.appendChild(renderGate(ERROR_UI.no_session, 'home'));
             return;
         }
 
         if (!S.state) {
-            var loading = el('div', 'bkg-gate');
-            loading.appendChild(el('div', 'bkg-spinner'));
-            loading.appendChild(el('p', null, 'Đang tải tiến trình…'));
-            host.appendChild(loading);
-            refresh(false);
+            if (S.status === STATUS.loading || S.status === STATUS.restoring ||
+                S.status === STATUS.idle) {
+                var loading = el('div', 'bkg-gate');
+                loading.appendChild(el('div', 'bkg-spinner'));
+                loading.appendChild(el('p', null, S.retries
+                    ? 'Đang kết nối lại máy chủ… (lần ' + S.retries + '/' + RETRY_LIMIT + ')'
+                    : 'Đang tải tiến trình…'));
+                host.appendChild(loading);
+                /* Không tự gọi refresh ở đây: việc tải do mount/retry/sự kiện
+                   danh tính điều phối, tránh chồng request khi đang thử lại. */
+                return;
+            }
+            host.appendChild(renderGate(ERROR_UI[S.errorCode] || ERROR_UI.error, 'retry'));
             return;
         }
+
+        /* Đã có dữ liệu nhưng lần tải mới nhất lỗi: giữ nội dung, báo nhẹ ở trên. */
+        if (S.errorCode) host.appendChild(renderPartialNotice());
 
         renderHero(host);
         renderMissions(host);
@@ -1281,6 +1473,16 @@
         if (!host) return;
         S.host = host;
         host.classList.add('bkg');
+        if (!studentId() && cloudApi()) {
+            S.status = STATUS.restoring;
+            setTimeout(function () {
+                if (S.status === STATUS.restoring && !studentId()) {
+                    S.status = STATUS.noSession;
+                    S.errorCode = 'no_session';
+                    if (S.host) renderAll();
+                }
+            }, 1200);
+        }
         renderAll();
         if (!S.booted) {
             S.booted = true;
@@ -1331,6 +1533,9 @@
         event: track,
         flush: flush,
         refresh: refresh,
+        retry: retry,
+        status: function () { return S.status; },
+        lastError: function () { return S.lastError; },
         mount: mount,
         state: state,
         config: config,

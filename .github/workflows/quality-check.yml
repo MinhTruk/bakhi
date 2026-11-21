@@ -9,6 +9,7 @@ name: Quality Check
 #   - version-audit (đường dẫn, cache busting, phiên bản đồng nhất)
 #   - 17 smoke test DOM (jsdom + typescript)
 #     11 cổng hồi quy 8.0.0–8.1.1 + 6 cổng Learning Intelligence 8.2.0
+#     + 5 cổng Gamification 8.3.0–8.3.1 (progress loader, điều hướng, XP, bảo mật)
 #
 # Bất kỳ bước nào thất bại → workflow Failed, log chỉ rõ bài kiểm tra hỏng.
 
@@ -113,7 +114,10 @@ jobs:
                    maintenance-smoke studio-smoke \
                    mistake-notebook-smoke learning-analytics-smoke \
                    study-planner-smoke revision-engine-smoke \
-                   learning-data-integrity learning-sync-smoke; do
+                   learning-data-integrity learning-sync-smoke \
+                   gamification-smoke gamification-progress-load-smoke \
+                   gamification-navigation-smoke xp-level-integrity \
+                   gamification-security-smoke; do
             echo "::group::$t"
             node "tools/qa/$t.js"
             echo "::endgroup::"
@@ -131,7 +135,7 @@ jobs:
             echo "| Cú pháp JS/JSON | \`node --check\`, \`JSON.parse\` |"
             echo "| Cấu hình Supabase | \`tools/qa/supabase-config.js\` |"
             echo "| Phiên bản / cache busting | \`tools/qa/version-audit.js\` |"
-            echo "| Smoke test | 17 tệp trong \`tools/qa/\` |"
+            echo "| Smoke test | 22 tệp trong \`tools/qa/\` |"
             echo ""
             echo "Trạng thái job: **${{ job.status }}**"
           } >> "$GITHUB_STEP_SUMMARY"

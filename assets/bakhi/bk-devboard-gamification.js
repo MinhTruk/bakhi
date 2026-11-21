@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-devboard-gamification.js (8.3.0)
+   Bá Khí — bk-devboard-gamification.js (8.3.1)
    Mô-đun quản trị Gamification nằm trong Administrator / Founder Dashboard.
 
    Tách khỏi bk-devboard.js để dashboard giữ nguyên kích thước; dashboard chỉ

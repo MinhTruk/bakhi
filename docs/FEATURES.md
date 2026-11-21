@@ -446,6 +446,7 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Tính năng | Trang | Ghi chú |
 |---|---|---|
 | XP & cấp độ | `/gamification/` | Từ hoạt động học thật, giới hạn/ngày |
+| Lối vào Tiến trình | Menu tài khoản → Tiến trình học tập | 8.3.1, desktop + mobile |
 | Nhiệm vụ ngày/tuần | `/gamification/` | Nhận thưởng một lần, chu kỳ UTC |
 | Cây kỹ năng | `/gamification/` | 5 nhánh, node mở theo điều kiện |
 | Bộ sưu tập thành tựu | `/gamification/` | Lọc, tìm kiếm, thành tựu ẩn |

@@ -422,6 +422,18 @@
             onClick: function () { closeMenu(); }
         }));
 
+        /* 8.3.1: lối vào Tiến trình (XP, nhiệm vụ, thành tựu, Boss, kho đồ). */
+        var progressRow = row('a', 'fa-gamepad', 'Tiến trình học tập', {
+            href: S.base + 'gamification/', role: 'menuitem',
+            desc: 'XP · cấp độ · nhiệm vụ',
+            onClick: function () { closeMenu(); }
+        });
+        progressRow.setAttribute('data-bk-progress-link', '1');
+        if (/\/gamification\/(index\.html)?$/i.test(global.location.pathname)) {
+            progressRow.setAttribute('aria-current', 'page');
+        }
+        menu.appendChild(progressRow);
+
         /* --- Chat: phòng chung, tin nhắn riêng, nhóm nhỏ --- */
         var chatRow = row('a', 'fa-comments', 'Chat', {
             href: S.base + 'chat/', role: 'menuitem', external: true,

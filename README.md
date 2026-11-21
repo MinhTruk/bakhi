@@ -36,7 +36,7 @@
 
 ---
 
-## 🎮 Gamification 2.0 (v8.3.0)
+## 🎮 Gamification 2.0 (v8.3.1)
 
 Một hệ thống tiến trình duy nhất cho toàn bộ hoạt động học tập:
 
@@ -46,6 +46,7 @@ Một hệ thống tiến trình duy nhất cho toàn bộ hoạt động học 
   **thử thách Boss** và **kho vật phẩm trang trí**.
 - Dữ liệu nằm trên Supabase; mở nhiều thiết bị vẫn thấy cùng một tiến trình.
 - Trang tiến trình: [/gamification/](https://minhtruk.github.io/bakhi/gamification/)
+  — mở từ menu tài khoản → **Tiến trình học tập**
 - Tài liệu: [kiến trúc](docs/GAMIFICATION_ARCHITECTURE.md) ·
   [XP & cấp độ](docs/XP_LEVEL_SYSTEM.md) · [bảo mật](docs/GAMIFICATION_SECURITY.md)
 

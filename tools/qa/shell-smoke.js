@@ -126,12 +126,16 @@ ok('bấm avatar mở menu', !!menu && menu.hidden === false);
 const labels = Array.from(menu.querySelectorAll('.bk-menu-row')).map((r) => r.textContent.trim());
 ok('menu đúng thứ tự mục bắt buộc',
   labels[0].indexOf('Hồ sơ cá nhân') === 0 &&
-  labels[1].indexOf('Chat') === 0 &&
-  labels[2].indexOf('Giao diện') === 0 &&
-  labels[3].indexOf('README.md') === 0 &&
-  labels[4].indexOf('Bá Khí Studio') === 0 &&
-  labels[5].indexOf('Cài đặt') === 0,
+  /* 8.3.1: lối vào Tiến trình đứng ngay sau Hồ sơ cá nhân. */
+  labels[1].indexOf('Tiến trình học tập') === 0 &&
+  labels[2].indexOf('Chat') === 0 &&
+  labels[3].indexOf('Giao diện') === 0 &&
+  labels[4].indexOf('README.md') === 0 &&
+  labels[5].indexOf('Bá Khí Studio') === 0 &&
+  labels[6].indexOf('Cài đặt') === 0,
   JSON.stringify(labels));
+ok('menu có lối vào Tiến trình trỏ tới /gamification/',
+  !!menu.querySelector('a[data-bk-progress-link][href$="gamification/"]'));
 ok('menu có Chat trỏ tới /chat/ đã tồn tại', !!menu.querySelector('a[href$="chat/"]'));
 const chatCount = idoc.getElementById('bkMenuChatCount');
 const shellCss = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-shell.css'), 'utf8');

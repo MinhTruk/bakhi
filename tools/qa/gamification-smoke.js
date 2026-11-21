@@ -78,7 +78,12 @@ async function main() {
             toast() { },
             modal() { }
         },
-        cloud: {
+        /* bk-core.js chỉ tạo adapter localStorage tên BK.cloud (không có API máy chủ).
+           Lớp máy chủ thật là window.BKCloud — stub đúng hình dạng production. */
+        cloud: {}
+    };
+
+    w.BKCloud = {
             identity: () => ({ id: 'student-qa', display_name: 'Học sinh QA' }),
             gamificationApi(body) {
                 calls.push(body);
@@ -110,7 +115,6 @@ async function main() {
                 }
                 return Promise.resolve({ ok: true, state: fakeState() });
             }
-        }
     };
 
     const errors = [];
@@ -198,7 +202,8 @@ async function main() {
     });
     const w2 = dom2.window;
     let calls2 = 0;
-    w2.BK = { cloud: { gamificationApi() { calls2++; return Promise.resolve({ ok: true, state: fakeState() }); } } };
+    w2.BK = { cloud: {} };
+    w2.BKCloud = { gamificationApi() { calls2++; return Promise.resolve({ ok: true, state: fakeState() }); } };
     w2.eval(SRC);
     w2.BK.gamification.track('quiz_completed', '/x/');
     w2.BK.gamification.mount(w2.document.getElementById('bkGamificationRoot'));

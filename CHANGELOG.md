@@ -2,6 +2,45 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.3.1] — 2026-11-21
+
+### Sửa lỗi
+
+- **Không tải được tiến trình — đã sửa tận gốc.** `bk-gamification.js` gọi API máy chủ qua
+  `BK.cloud`, nhưng đó là adapter localStorage của `bk-core.js`, không hề có
+  `gamificationApi`; lớp máy chủ thật là `window.BKCloud`. Mọi lần tải đều thất bại ngay
+  trên trình duyệt với câu “Chưa kết nối máy chủ Bá Khí”. Nay loader dùng `BKCloud`, lấy
+  danh tính từ `BKCloud.identity()` và chỉ fallback `BK.cloud` khi nó thật sự có API.
+- **Một thông báo lỗi cho mọi tình huống.** Loader được thay bằng máy trạng thái phân biệt
+  chưa nhận diện, đang khôi phục phiên, đang tải, chưa có dữ liệu, mất mạng, hết phiên,
+  thiếu quyền, giới hạn tốc độ, máy chủ lỗi và dữ liệu sai cấu trúc; mỗi trạng thái có mã
+  lỗi riêng (`E_NETWORK`, `E_UNAUTHORIZED`, `E_NOT_BOUND`…) và hành động phù hợp.
+- **XP nhảy về giá trị cũ.** Phản hồi `state` về muộn không còn ghi đè kết quả `event` vừa
+  cộng: mỗi request có số thứ tự, phản hồi cũ bị bỏ.
+- **Request lặp khi lỗi.** Retry giới hạn 2 lần, chỉ cho lỗi mạng/5xx, có timeout 15 giây;
+  không còn vòng lặp request do render gọi lại loader.
+- **Mất dữ liệu khi làm mới thất bại.** Dữ liệu đã tải được giữ nguyên và hiện băng
+  “Một số dữ liệu chưa tải được” kèm nút làm mới.
+
+### Tính năng
+
+- **Lối vào Tiến trình** trong menu tài khoản dùng chung, ngay sau Hồ sơ cá nhân; hoạt động
+  trên desktop và mobile, có `aria-current` khi đang ở `/gamification/`, không phụ thuộc
+  trạng thái tải dữ liệu.
+
+### Cải tiến
+
+- **QA mô phỏng đúng production.** Stub `BK.cloud` sai hình dạng đã được thay bằng
+  `window.BKCloud`; thêm `gamification-progress-load-smoke` (29 ca) và
+  `gamification-navigation-smoke` (17 ca); 5 bộ QA gamification chạy trong
+  `quality-check.yml` (tổng 22 smoke test).
+- `BK.gamification.status()` và `lastError()` để gỡ lỗi nhanh mà không lộ token.
+
+### Ghi chú
+
+- Không có migration mới, không đổi schema/RLS/Reward Engine, không xoá dữ liệu.
+- Chi tiết nguyên nhân và bằng chứng: `docs/GAMIFICATION_BUG_AUDIT_V831.md`.
+
 ## [8.3.0] — 2026-11-21
 
 ### Tính năng
