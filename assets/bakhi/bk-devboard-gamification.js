@@ -334,23 +334,23 @@
                     var codeHint = h('p', 'bkc-hint');
 
                     (spec.fields || []).forEach(function (f) {
+                        if (f.type === 'check') {
+                            /* Dùng CHÍNH ô checkbox hiển thị làm control — trước đây
+                               tạo thêm một input ẩn nên khi sửa, trạng thái hiển thị
+                               và giá trị gửi lên có thể lệch nhau. */
+                            var cb = checkbox(f.label,
+                                item ? item[f.key] !== false : (f.default !== false),
+                                function () { refreshPreview(); });
+                            controls[f.key] = cb.input;
+                            extraGrid.appendChild(cb.root);
+                            return;
+                        }
                         var control;
                         if (f.type === 'textarea') control = textarea(f.ph || '', '', 4);
                         else if (f.type === 'number') control = numberInput('');
                         else if (f.type === 'select') control = selectInput(f.options, '');
-                        else if (f.type === 'check') control = checkbox(f.label, false).input;
                         else control = txt('', f.ph || '');
                         controls[f.key] = control;
-
-                        if (f.type === 'check') {
-                            var cb = checkbox(f.label, item ? item[f.key] !== false : (f.default !== false), function (v) {
-                                control.checked = v;
-                                refreshPreview();
-                            });
-                            control.checked = cb.input.checked;
-                            extraGrid.appendChild(cb.root);
-                            return;
-                        }
                         if (f.advanced) {
                             var advBody = form.querySelector('.bkc-advanced-body');
                             if (!advBody) {

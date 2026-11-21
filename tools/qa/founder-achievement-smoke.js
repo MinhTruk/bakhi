@@ -36,6 +36,11 @@ const DEFS = {
         icon: 'fa-crown', rarity: 'legendary', category: 'mastery',
         conditions: [{ metric: 'xp_total', target: 1000 }], stages: 1,
         reward: { items: ['frame-laurel'] }, is_active: true, is_hidden: false, sort_order: 0
+    }, {
+        id: 'bi_mat', name: 'Bí Mật', description: 'Đang tắt',
+        icon: 'fa-eye-slash', rarity: 'rare', category: 'learning',
+        conditions: [{ metric: 'quiz_completed', target: 5 }], stages: 1,
+        reward: {}, is_active: false, is_hidden: true, sort_order: 1
     }],
     missions: [], nodes: [], rewards: [], challenges: []
 };
@@ -213,6 +218,19 @@ async function main() {
     }
     assert(/Tạm ngừng/.test(achCard.textContent), 'có hành động Tạm ngừng (không buộc xoá)');
     assert(/Xóa/.test(achCard.textContent), 'có hành động Xóa có kiểm soát');
+
+    /* Sửa thành tựu đang tắt: checkbox hiển thị phải khớp dữ liệu, không chỉ input ẩn */
+    const rows = Array.from(achCard.querySelectorAll('tr'));
+    const offRow = rows.find((tr) => /Bí Mật/.test(tr.textContent));
+    assert(!!offRow, 'danh sách có thành tựu đang tắt');
+    if (offRow) {
+        const offEdit = Array.from(offRow.querySelectorAll('button')).find((b) => /^Sửa$/.test(b.textContent.trim()));
+        offEdit.click();
+        const activeBox = Array.from(achCard.querySelectorAll('label.bkc-check'))
+            .find((l) => /Đang bật/.test(l.textContent));
+        assert(activeBox && activeBox.querySelector('input').checked === false,
+            'mở thành tựu đang tắt → ô “Đang bật” bỏ chọn đúng', activeBox && activeBox.textContent);
+    }
 
     /* Boss */
     const bossCard = pane.querySelector('[data-title="Thử thách Boss"]');

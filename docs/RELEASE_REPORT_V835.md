@@ -65,7 +65,7 @@ mặc định đóng. Không còn ô JSON nào.
 trước (tên, loại, môn, chương, độ khó, điểm đạt, mã, số câu, số lượt), cảnh báo trùng, lỗi
 thiếu câu hỏi bằng tiếng Việt. Lưu trữ thay vì xóa cứng để giữ lịch sử lượt thử.
 
-**Kết quả tạo/sửa Achievement.** 26/26 ca QA đạt: mã `ma_vuong`, trùng → `ma_vuong_2` +
+**Kết quả tạo/sửa Achievement.** 28/28 ca QA đạt: mã `ma_vuong`, trùng → `ma_vuong_2` +
 nút xác nhận, xem trước theo thời gian thực, sửa điền sẵn, `expect_new` gửi máy chủ, Xóa bị
 từ chối khi đã có người nhận.
 
@@ -111,7 +111,7 @@ quyền anon, `boss_questions` không đọc được từ trình duyệt).
 - **Not Run:** đăng nhập học sinh thật, đồng bộ hai thiết bị thật, F5/đổi tài khoản trên
   production, kiểm tra nhiều kích thước màn hình + Light/Dark, Console/Network trên trình duyệt.
 
-Số ca chính: avatar 16, founder dashboard 26, sinh mã 24, gamification 31, loader 29,
+Số ca chính: avatar 16, founder dashboard 28, sinh mã 24, gamification 31, loader 29,
 điều hướng 17, XP/cấp 12, bảo mật 30, DB 15 nhóm (XA1–XA45).
 
 **Lỗi còn tồn tại:** không có lỗi đã biết trong phạm vi đã kiểm.
