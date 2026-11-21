@@ -1,7 +1,8 @@
 /* =========================================================================
-   Bá Khí — bk-founder-grants.js (8.4.0)
-   Bốn thẻ quyền Founder trong tab Gamification:
+   Bá Khí — bk-founder-grants.js (8.4.1)
+   Các thẻ quyền Founder trong tab Gamification:
      · Cấp trọn cây kỹ năng
+     · Trao giao diện (Give Themes, 8.4.1)
      · Trao vật phẩm (có số lượng, tôn trọng giới hạn)
      · Trao thành tựu (nhiều thành tựu một lần, không trao trùng)
      · Lịch sử trao tặng (lọc theo người nhận / loại)
@@ -338,6 +339,20 @@
                 itemSelection.textContent = (err && err.message) || 'Không xem trước được.';
             });
         }, 'fa-eye'));
+
+        /* ------------------------------------------------------ Giao diện */
+        /* Give Themes dùng chung đối tượng nhận với các thẻ trao tặng khác và
+           tự làm mới lịch sử ngay sau khi máy chủ xác nhận. */
+        renderThemes(pane, kit, {
+            getStudent: opts && opts.getStudent,
+            getStudentName: opts && opts.getStudentName,
+            onChanged: function () {
+                if (opts && typeof opts.onChanged === 'function') {
+                    try { opts.onChanged(); } catch (e) { }
+                }
+                loadHistory(0);
+            }
+        });
 
         /* ----------------------------------------------------- Thành tựu */
         var achCard = kit.card('Trao thành tựu', [
@@ -766,6 +781,256 @@
         paint();
     }
 
+    /* =====================================================================
+       Give Themes — trao giao diện (8.4.1)
+       Cùng luồng với Give Special Badges: chọn học sinh → chọn giao diện →
+       xem trước → xác nhận. Máy chủ quyết định: trao qua bk_gam_grant_items
+       (kind = 'theme'), tôn trọng max_quantity, bỏ qua giao diện đã sở hữu
+       và ghi gamification_activity_logs.
+
+       Danh mục lấy từ admin.items.catalog để không dựng danh sách thứ hai;
+       BKThemes.THEMES chỉ bổ sung tên/mô tả cho giao diện chưa có trong kho
+       (ví dụ khi migration 20261213000000 chưa được áp dụng).
+       ===================================================================== */
+    function renderThemes(pane, kit, opts) {
+        if (!pane || !kit || !kit.h) return;
+        var h = kit.h;
+        var api = kit.gamificationApi || kit.api;
+        var toast = kit.toast || function () { };
+
+        function studentId() {
+            return (opts && typeof opts.getStudent === 'function') ? String(opts.getStudent() || '') : '';
+        }
+        function studentName() {
+            return (opts && typeof opts.getStudentName === 'function') ? String(opts.getStudentName() || '') : '';
+        }
+        function changed() {
+            if (opts && typeof opts.onChanged === 'function') {
+                try { opts.onChanged(); } catch (e) { }
+            }
+        }
+        function builtinThemes() {
+            return (global.BKThemes && Array.isArray(global.BKThemes.THEMES))
+                ? global.BKThemes.THEMES : [];
+        }
+        function builtinMeta(id) {
+            var list = builtinThemes();
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].id === id) return list[i];
+            }
+            return null;
+        }
+
+        var card = kit.card('Give Themes — trao giao diện', [
+            kit.btn('Tải kho giao diện', 'bkc-btn-ghost', function () { loadCatalog(); }, 'fa-rotate')
+        ], 'Chọn học sinh ở thẻ Đối tượng nhận, rồi chọn một hoặc nhiều giao diện. ' +
+            'Máy chủ bỏ qua giao diện học sinh đã sở hữu, không trao trùng và ghi nhật ký Founder.');
+        pane.appendChild(card.root);
+
+        var tools = el(h, 'div', 'bkf-tools');
+        var search = kit.input('search', 'Tìm giao diện…');
+        search.className = 'bkc-input bkf-input';
+        tools.appendChild(search);
+        tools.appendChild(kit.btn('Chọn tất cả chưa sở hữu', 'bkc-btn-ghost', function () {
+            rows().forEach(function (r) {
+                if (!r.owned && !r.missing) picked[r.id] = 1;
+            });
+            paintGrid();
+            paintSelection();
+        }, 'fa-list-check'));
+        tools.appendChild(kit.btn('Bỏ chọn', 'bkc-btn-ghost', function () {
+            picked = {};
+            actions.textContent = '';
+            pending = null;
+            paintGrid();
+            paintSelection();
+        }, 'fa-xmark'));
+        card.body.appendChild(tools);
+
+        var grid = el(h, 'div', 'bkf-grid');
+        card.body.appendChild(grid);
+        var status = el(h, 'div', 'bkf-preview');
+        card.body.appendChild(status);
+        var actions = el(h, 'div', 'bkc-actions');
+        card.body.appendChild(actions);
+
+        var catalog = [];
+        var picked = {};
+        var pending = null;
+
+        /* Hợp nhất danh mục máy chủ với danh mục hiển thị của BKThemes.
+           Giao diện chỉ có trong BKThemes = chưa có bản ghi trong kho. */
+        function rows() {
+            var out = [];
+            var seen = {};
+            catalog.forEach(function (item) {
+                if (item.kind !== 'theme') return;
+                var meta = builtinMeta(item.id) || {};
+                seen[item.id] = true;
+                out.push({
+                    id: item.id,
+                    name: item.name || meta.name || item.id,
+                    desc: item.description || meta.desc || '',
+                    icon: item.icon || 'fa-palette',
+                    rarity: RARITY[item.rarity] || item.rarity || '',
+                    owned: num(item.owned, 0) > 0,
+                    missing: false
+                });
+            });
+            builtinThemes().forEach(function (t) {
+                if (seen[t.id]) return;
+                out.push({
+                    id: t.id, name: t.name, desc: t.desc || '', icon: 'fa-palette',
+                    rarity: '', owned: false, missing: true
+                });
+            });
+            return out;
+        }
+
+        function paintGrid() {
+            grid.textContent = '';
+            var q = String(search.value || '').toLowerCase().trim();
+            var list = rows().filter(function (r) {
+                if (!q) return true;
+                return String(r.name + ' ' + r.desc + ' ' + r.id).toLowerCase().indexOf(q) >= 0;
+            });
+            if (!list.length) {
+                kit.emptyState(grid, 'fa-palette', 'Không có giao diện phù hợp',
+                    'Thử từ khoá khác. Nếu kho trống, hãy chạy migration giao diện theo mùa.');
+                return;
+            }
+            list.forEach(function (r) {
+                var on = !!picked[r.id];
+                var btn = el(h, 'button', 'bkf-item' + (on ? ' is-selected' : '') +
+                    ((r.owned || r.missing) ? ' is-owned' : ''));
+                btn.type = 'button';
+                btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+                if (r.owned || r.missing) btn.disabled = true;
+                var art = el(h, 'span', 'bkf-art');
+                art.appendChild(kit.icon(r.icon));
+                btn.appendChild(art);
+                btn.appendChild(el(h, 'span', 'bkf-item-name', r.name));
+                var meta = el(h, 'span', 'bkf-item-meta');
+                meta.appendChild(el(h, 'span', 'bkf-sub', r.rarity ? (r.rarity + ' · Giao diện') : 'Giao diện'));
+                btn.appendChild(meta);
+                btn.appendChild(el(h, 'span', 'bkf-item-id',
+                    r.missing ? 'Chưa có trong kho — cần chạy migration'
+                        : (r.owned ? 'Đã sở hữu' : 'Chưa sở hữu')));
+                btn.addEventListener('click', function () {
+                    if (r.owned || r.missing) return;
+                    if (picked[r.id]) delete picked[r.id];
+                    else picked[r.id] = 1;
+                    actions.textContent = '';
+                    pending = null;
+                    paintGrid();
+                    paintSelection();
+                });
+                grid.appendChild(btn);
+            });
+        }
+
+        function paintSelection() {
+            var ids = Object.keys(picked);
+            status.textContent = ids.length
+                ? ('Đã chọn ' + ids.length + ' giao diện. Bấm “Xem trước trao giao diện”.')
+                : 'Chưa chọn giao diện nào.';
+        }
+
+        function loadCatalog(done) {
+            var sid = studentId();
+            kit.loading(grid, 'Đang tải kho giao diện…');
+            api('admin.items.catalog', sid ? { student_id: sid } : {}).then(function (res) {
+                catalog = (res && res.items) || [];
+                picked = {};
+                pending = null;
+                actions.textContent = '';
+                paintGrid();
+                paintSelection();
+                if (typeof done === 'function') done();
+            }).catch(function (err) {
+                grid.textContent = '';
+                grid.appendChild(kit.alertBox((err && err.message) || 'Không tải được kho giao diện.', 'error'));
+            });
+        }
+
+        search.addEventListener('input', paintGrid);
+
+        card.body.appendChild(kit.btn('Xem trước trao giao diện', 'bkc-btn-ghost', function () {
+            var sid = studentId();
+            var ids = Object.keys(picked);
+            actions.textContent = '';
+            pending = null;
+            if (!sid) {
+                status.textContent = 'Hãy chọn “Một học sinh” ở thẻ Đối tượng nhận rồi chọn đúng người nhận.';
+                return;
+            }
+            if (!ids.length) {
+                status.textContent = 'Hãy chọn ít nhất một giao diện.';
+                return;
+            }
+            var items = ids.map(function (id) { return { item_id: id, quantity: 1 }; });
+            status.textContent = 'Đang kiểm tra giao diện đã sở hữu…';
+            api('admin.items.preview', { student_id: sid, items: items }).then(function (res) {
+                var list = (res && res.items) || [];
+                var box = el(h, 'div', 'bkf-section');
+                box.appendChild(el(h, 'p', null, 'Chuẩn bị trao cho ' + (studentName() || 'học sinh') + ':'));
+                var t = kit.table(['Giao diện', 'Đang có', 'Sau khi trao']);
+                list.forEach(function (r) {
+                    var tr = el(h, 'tr');
+                    tr.appendChild(el(h, 'td', null, String(r.name)));
+                    tr.appendChild(el(h, 'td', null, String(r.before)));
+                    tr.appendChild(el(h, 'td', null, String(r.after)));
+                    t.tbody.appendChild(tr);
+                });
+                box.appendChild(t.wrap);
+                var owned = list.filter(function (r) {
+                    return num(r.before, 0) >= num(r.quantity, 1);
+                }).map(function (r) { return r.name; });
+                if (owned.length) {
+                    box.appendChild(kit.alertBox('Máy chủ sẽ bỏ qua: ' + owned.join(', '), 'warn'));
+                }
+                status.textContent = '';
+                status.appendChild(box);
+                pending = { sid: sid, items: items, count: ids.length };
+                actions.appendChild(kit.btn('Xác nhận trao ' + ids.length + ' giao diện',
+                    'bkc-btn-primary', function () {
+                        if (!pending) return;
+                        var data = pending;
+                        pending = null;
+                        actions.textContent = '';
+                        status.textContent = 'Đang trao giao diện…';
+                        api('admin.items.grant', {
+                            student_id: data.sid,
+                            items: data.items,
+                            reason: 'Founder trao giao diện'
+                        }).then(function (out) {
+                            var result = (out && out.result) || {};
+                            var granted = result.granted || [];
+                            var skipped = result.skipped || [];
+                            var message = 'Đã trao ' + granted.length + ' giao diện cho ' +
+                                ((out && out.student && out.student.display_name) || studentName() || 'học sinh') +
+                                (skipped.length ? ' · ' + skipped.length + ' mục đã sở hữu nên bỏ qua.' : '.');
+                            toast('Đã trao giao diện và ghi nhật ký.', 'success');
+                            changed();
+                            loadCatalog(function () { status.textContent = message; });
+                        }).catch(function (err) {
+                            status.textContent = (err && err.message) || 'Không trao được giao diện.';
+                            toast(status.textContent, 'error');
+                        });
+                    }, 'fa-palette'));
+                actions.appendChild(kit.btn('Huỷ', 'bkc-btn-ghost', function () {
+                    actions.textContent = '';
+                    status.textContent = '';
+                    pending = null;
+                }, 'fa-xmark'));
+            }).catch(function (err) {
+                status.textContent = (err && err.message) || 'Không xem trước được.';
+            });
+        }, 'fa-eye'));
+
+        loadCatalog();
+    }
+
     /* ----------------------------------------------------------------
        Quản lý cấu trúc cây kỹ năng (Founder)
        Tạo/sửa/lưu trữ node, thêm nhánh, kiểm tra vòng lặp và node cô lập.
@@ -1081,7 +1346,8 @@
 
     global.BKFounderGrants = {
         render: render,
+        renderThemes: renderThemes,
         renderTreeManager: renderTreeManager,
-        version: '8.4.0'
+        version: '8.4.1'
     };
 })(typeof window !== 'undefined' ? window : this);

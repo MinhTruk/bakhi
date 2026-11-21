@@ -2,6 +2,31 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.4.1] — 2026-11-21
+
+### Tính năng
+
+- **Founder Dashboard — Give Themes.** Thẻ mới trong tab Gamification để trao giao diện
+  cho một học sinh, cùng luồng với Give Special Badges: chọn người nhận → chọn nhiều giao
+  diện → xem trước (Đang có / Sau khi trao) → xác nhận. Có tìm kiếm, nút chọn tất cả chưa
+  sở hữu và bỏ chọn; giao diện đã sở hữu bị khoá, giao diện chưa có trong `reward_catalog`
+  hiện ghi chú cần chạy migration.
+- Thao tác vẫn đi qua `admin.items.preview` / `admin.items.grant` (`bk_gam_grant_items`):
+  máy chủ kiểm tra scope Founder, bỏ qua giao diện đã sở hữu, tôn trọng giới hạn và ghi
+  `gamification_activity_logs`. Danh sách tự làm mới và lịch sử trao tặng tải lại ngay
+  sau khi trao.
+
+### Cơ sở dữ liệu
+
+- Migration `20261214000000_bakhi_v841_founder_full_items.sql` (idempotent, chỉ INSERT):
+  hồ sơ Founder (`is_founder = true`, gồm Hứa Viết Minh Trúc) mặc định sở hữu toàn bộ vật
+  phẩm đang bật trong `reward_catalog`, kể cả giao diện thêm sau này.
+
+### Cải tiến
+
+- Phiên bản đồng bộ 8.4.1: `bk-version.js`, `bk-devboard.js`, `admin-actions` và chuỗi
+  `?v=` trong 121 trang HTML.
+
 ## [8.4.0] — 2026-11-21
 
 Phạm vi thực tế của bản này: hệ **giao diện (theme)**, **biểu tượng trang trí cạnh tên**

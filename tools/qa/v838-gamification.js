@@ -203,6 +203,7 @@ function makeKit(window, api) {
             case 'admin.items.catalog':
                 return Promise.resolve({ ok: true, items: [
                     { id: 'theme-dawn', kind: 'theme', name: 'Giao diện Bình Minh', description: 'Tông sáng', icon: 'fa-sun', rarity: 'uncommon', owned: 1, max_quantity: 1 },
+                    { id: 'theme-christmas', kind: 'theme', name: 'Giao diện Giáng Sinh', description: 'Tuyết rơi', icon: 'fa-tree', rarity: 'legendary', owned: 0, max_quantity: 1 },
                     { id: 'deco-lantern', kind: 'decoration', name: 'Đèn Lồng', description: 'Trang trí', icon: 'fa-lightbulb', rarity: 'rare', owned: 0, max_quantity: 3 }
                 ] });
             case 'admin.items.preview':
@@ -304,6 +305,33 @@ function makeKit(window, api) {
             await sleep(40);
             const granted = calls.filter((c) => c.action === 'admin.achievements.grant').pop();
             assert(granted && granted.payload.ids[0] === 'ach-level-5', 'trao thành tựu gửi đúng mã');
+        }
+    }
+
+    /* 4.4 Give Themes: chọn → xem trước → xác nhận */
+    const themeCard = Array.from(pane.querySelectorAll('section.bkc-card'))
+        .filter((s) => /Give Themes/.test(s.textContent || ''))[0];
+    const themeTile = themeCard && Array.from(themeCard.querySelectorAll('.bkf-item'))
+        .filter((b) => /Giáng Sinh/.test(b.textContent || ''))[0];
+    assert(!!themeTile, 'thẻ Give Themes hiện giao diện chưa sở hữu');
+    if (themeTile) {
+        themeTile.click();
+        await sleep(20);
+        calls.length = 0;
+        byText(/Xem trước trao giao diện/).click();
+        await sleep(40);
+        assert(calls.some((c) => c.action === 'admin.items.preview' &&
+            (c.payload.items || []).some((i) => i.item_id === 'theme-christmas')),
+            'xem trước giao diện gửi đúng mã');
+        const confirmTheme = byText(/Xác nhận trao 1 giao diện/);
+        assert(!!confirmTheme, 'có bước xác nhận trước khi trao giao diện');
+        if (confirmTheme) {
+            confirmTheme.click();
+            await sleep(40);
+            const granted = calls.filter((c) => c.action === 'admin.items.grant').pop();
+            assert(granted && granted.payload.items[0].item_id === 'theme-christmas' &&
+                granted.payload.items[0].quantity === 1,
+                'trao giao diện gửi đúng mã và số lượng');
         }
     }
 

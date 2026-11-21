@@ -5,7 +5,7 @@ category: decision
 status: active
 tags: [v840, themes, decorations, founder]
 created: "2026-11-21T13:24:15"
-updated: "2026-11-21T13:24:15"
+updated: "2026-11-21T14:06:36"
 ---
 
 <!-- compiled_truth -->
@@ -41,4 +41,9 @@ v8.4.0 shipped three vertical slices; the rest of the brief was deliberately def
   kind: decision
   summary: Recorded the 8.4.0 scope and its constraints
   source: session 2026-11-21
+  affects: [v840-themes-and-founder-badges]
+
+- time: 2026-11-21T14:06:36
+  kind: decision
+  summary: "8.4.1: Founder Dashboard có thẻ Give Themes (BKFounderGrants.renderThemes) trao giao diện qua admin.items.catalog|preview|grant, không action mới; migration 20261214000000 cấp toàn bộ vật phẩm cho hồ sơ Founder."
   affects: [v840-themes-and-founder-badges]

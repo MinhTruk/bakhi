@@ -102,4 +102,25 @@ nút **Về giao diện mặc định**. Ảnh nền tự tải lên (IndexedDB)
 4. Hàm chỉ đọc `bk_gam_founder_tree_status(uuid)`.
 
 Migration **chưa được áp dụng** trong phiên 8.4.0. Chạy `supabase db push` rồi trao
-giao diện theo mùa trong tab Gamification → Trao vật phẩm.
+giao diện theo mùa trong tab Gamification → Give Themes.
+
+## 7. Give Themes — trao giao diện từ Founder Dashboard (8.4.1)
+
+Thẻ **Give Themes** nằm trong tab **Gamification** của Founder Dashboard
+(`bk-founder-grants.js` → `BKFounderGrants.renderThemes()`), cùng chỗ với
+Give Special Badges và Trao vật phẩm:
+
+1. Chọn người nhận ở thẻ **Đối tượng nhận** (một học sinh).
+2. Chọn một hoặc nhiều giao diện trong lưới (có tìm kiếm, nút chọn tất cả chưa sở hữu).
+   Giao diện đã sở hữu bị khoá; giao diện chưa có trong `reward_catalog` hiện ghi chú
+   “cần chạy migration”.
+3. **Xem trước trao giao diện** → bảng Đang có / Sau khi trao → **Xác nhận**.
+
+Không có đường ghi mới: thao tác đi qua `admin.items.preview` và `admin.items.grant`
+(`bk_gam_grant_items`), nên máy chủ vẫn kiểm tra scope Founder, tôn trọng
+`metadata.max_quantity`, bỏ qua giao diện đã sở hữu và ghi `gamification_activity_logs`.
+Danh mục lấy từ `admin.items.catalog`; `BKThemes.THEMES` chỉ bổ sung tên/mô tả khi kho
+thiếu bản ghi — không có danh sách giao diện thứ hai.
+
+`20261214000000_bakhi_v841_founder_full_items.sql` (idempotent) cấp toàn bộ vật phẩm
+đang bật cho hồ sơ Founder, để chính Founder không phải tự trao giao diện cho mình.

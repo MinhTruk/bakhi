@@ -450,6 +450,7 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Giáng Sinh | Trang chủ + header trang môn | Tuyết rơi 28 hạt, cây thông, xanh–đỏ |
 | Tên có biểu tượng | Menu tài khoản, hồ sơ, Tiến trình | `BKUserName.node()` / `.mini()` — một định nghĩa duy nhất |
 | Give Special Badges | Founder Dashboard → Gamification | 4 huy hiệu trao tay, chống trao trùng ở máy chủ |
+| Give Themes | Founder Dashboard → Gamification | 8.4.1 — trao giao diện cho một học sinh, xem trước, chống trùng, có lịch sử |
 
 Chi tiết kỹ thuật và cách thêm giao diện mới: `docs/THEMES_V840.md`.
 

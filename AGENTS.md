@@ -296,6 +296,10 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 - `tools/integrate-pages.js` chèn hai thẻ vào mọi trang có `bk-core.js`. Thẻ phải nằm trên
   dòng riêng và nối ở cuối tệp: `content-integrity` bỏ toàn bộ dòng chứa `assets/bakhi/`,
   nên chèn vào giữa dòng sẽ làm hash nội dung đổi và bị coi là sửa nội dung giáo dục.
+- **Trao giao diện (8.4.1):** thẻ **Give Themes** (`BKFounderGrants.renderThemes()`) dùng
+  chung `admin.items.catalog|preview|grant` — không thêm action/ghi bảng mới. Danh mục lấy
+  từ `admin.items.catalog`; `BKThemes.THEMES` chỉ bổ sung tên/mô tả khi kho thiếu bản ghi.
+  Thẻ tự tải lại lịch sử trao tặng sau khi trao; đừng dựng lưới giao diện thứ hai.
 
 - QA gamification:
   ```bash
