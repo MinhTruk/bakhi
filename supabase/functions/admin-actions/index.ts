@@ -1172,7 +1172,7 @@ const DEFAULT_TITLES: TitleDef[] = [
 ];
 
 const TITLE_BY_ID = new Map<string, TitleDef>(DEFAULT_TITLES.map((t) => [t.id, t]));
-const SERVER_VERSION = '8.5.3';
+const SERVER_VERSION = '8.5.4';
 
 /* Cơ cấu danh mục: 99 = 74 tự động + 21 Founder + 2 Developer + 2 Administrator.
    Trả kèm mọi phản hồi trao tặng để giao diện không phải tự đếm hay viết cứng. */

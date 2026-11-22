@@ -2,6 +2,72 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.5.4] — 2026-11-22
+
+### Tính năng
+
+- **Quản lý nhiều AI Model có thứ tự ưu tiên.** Founder Dashboard → AI Tutor → tab
+  **AI Models** cho phép thêm bao nhiêu model tuỳ nhu cầu: dòng đầu là Primary, các dòng sau
+  tự đánh số Fallback 1, 2, 3… Có nút ↑ ↓ đổi thứ tự, xoá có xác nhận (tự đánh lại số) và
+  nút **Lưu danh sách model**. Không còn giới hạn cứng một primary + một fallback.
+- **Chuỗi dự phòng thật ở máy chủ.** Mỗi câu hỏi đi lần lượt Primary → Fallback 1 → …;
+  model nào trả lời thành công được ghi lại trong `meta` và `ai_usage_logs`. Lỗi được phân
+  loại (AUTH, QUOTA, RATE_LIMIT, TIMEOUT, MODEL_NOT_FOUND, PROVIDER_DOWN, EMPTY_RESPONSE…);
+  chỉ lỗi tạm thời mới thử lại, tối đa `max_retries` (0–3), mỗi model có timeout riêng và
+  nghỉ 60 giây sau lỗi tạm thời. Lỗi cấu hình của chính model (thiếu khoá, sai định dạng)
+  dừng chuỗi để không đốt token.
+- **Kiểm tra kết nối từng model.** Nút **Kiểm tra** gửi một request tối giản (đọc danh sách
+  model, hoặc một lượt sinh 16 token) và ghi lại trạng thái, mã lỗi, thời gian phản hồi.
+- **Năm tab trong Founder Dashboard:** Tổng quan · AI Models · System Prompt · Cấu hình ·
+  Logs. Kèm khối “Thêm một AI Model — các bước cần làm” ngay trên tab AI Models.
+- **Cửa sổ chi tiết lỗi nhà cung cấp.** Khi provider lỗi, học sinh thấy thông báo ngắn và
+  nút **Xem chi tiết** mở cửa sổ có nút X: nhà cung cấp, model, mã HTTP, loại lỗi, thời
+  điểm, trạng thái dự phòng và danh sách model đã thử. Không có API key, header hay raw
+  response.
+- **Tab Logs:** lượt gọi, provider/model, token vào–ra, thời gian phản hồi, trạng thái, lỗi
+  và lịch sử fallback theo từng lần thử model.
+
+### Sửa lỗi
+
+- **`load is not a function` khi lưu System Prompt.** Nguyên nhân: trong `paint()` của
+  `bk-founder-ai.js`, biến `var load = el('div', …)` (khung chờ) trùng tên và che (shadow)
+  hàm `load()` của mô-đun, nên mọi callback bên trong `paint()` — gồm nút lưu System
+  Prompt, lưu cấu hình và nút thử lại — gọi một `<div>` thay vì hàm. Đã đổi tên biến khung
+  chờ thành `spinnerBox`; không thêm try/catch che lỗi.
+- **Nút × cạnh nút “Hỏi AI” bị bỏ hoàn toàn.** Nút nổi chỉ còn một thành phần. Cờ ẩn cũ
+  `bakhiAiFabHidden.v1` được xoá khi tải trang để nút trở lại trên máy từng bấm ×.
+- **Không đóng được cửa sổ Trợ lý AI trên điện thoại.** Nút X nay nằm ở góc trên bên phải
+  cửa sổ (vùng chạm 44×44px), chỉ xuất hiện khi cửa sổ mở; đóng không xoá hội thoại, mở lại
+  thấy đúng cuộc trò chuyện đang giữ trong phiên.
+- **Giữ nội dung đã nhập khi request thất bại** và không làm hỏng giao diện khi lỗi.
+
+### Cải tiến
+
+- **Token tách riêng đầu vào / đầu ra.** Thêm `ai_settings.max_input_tokens` (mặc định
+  3000) và `ai_settings.max_retries` (mặc định 1). Lịch sử được cắt theo ngân sách token
+  đầu vào (`trimHistoryByBudget`), không gửi toàn bộ hội thoại.
+- **Giao diện cửa sổ Trợ lý AI trên điện thoại:** dùng `visualViewport` để cao đúng vùng
+  nhìn thấy, tôn trọng `safe-area-inset` trên iOS/Android, không tràn màn hình và không bị
+  bàn phím ảo che ô soạn.
+- **System Prompt:** có trạng thái Đã lưu / Chưa lưu, nút Hoàn tác về bản đã lưu, nút Reset
+  về mặc định (có xác nhận, tạo phiên bản mới thay vì xoá lịch sử), giữ nguyên nội dung khi
+  chuyển tab.
+- **Streaming** được ghi rõ là chưa hỗ trợ (ô tuỳ chọn bị khoá) thay vì hiển thị một công
+  tắc không có tác dụng.
+
+### Cơ sở dữ liệu & triển khai
+
+- Migration mới `20261220000000_bakhi_v854_ai_model_routes.sql`: bảng `ai_model_routes`
+  (thứ tự model, bật/tắt, trạng thái kiểm tra) và `ai_model_attempts` (lịch sử từng lần
+  thử), cả hai bật RLS **không policy** và chỉ cấp quyền cho `service_role`; thêm cột
+  `max_input_tokens`, `max_retries`, `streaming_enabled` cho `ai_settings`. Không có cột
+  chứa khoá: mỗi dòng chỉ ghi **tên secret** (`key_ref`). Migration
+  chuyển cấu hình provider/model đang chạy thành các dòng Primary/Fallback **chỉ khi bảng
+  còn rỗng** — không xoá dữ liệu, không đổi lịch sử hội thoại.
+- Cần deploy lại Edge Function `ai-tutor-api`. Không cần thêm secret mới: khoá vẫn đọc từ
+  `AI_TUTOR_API_KEY` / `AI_TUTOR_FALLBACK_API_KEY`; model thứ ba trở đi dùng
+  `AI_TUTOR_KEY_3…6` nếu muốn tách khoá riêng cho từng dòng.
+
 ## [8.5.3] — 2026-11-22
 
 ### Tính năng

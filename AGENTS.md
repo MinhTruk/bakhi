@@ -398,11 +398,20 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   `founder/` (không có học sinh) và `ai-tutor/` (giao diện đầy đủ) là không gắn nút nổi.
   Thẻ chèn kèm `?v=<phiên bản>` (lấy từ `bk-version.js`); khi bump phiên bản, chạy lại
   `node tools/integrate-pages.js` để cập nhật `?v=` cho các thẻ đã có.
-- **Đóng nút nổi (8.5.3):** nút và nút × nằm trong một khối `.bkai-launcher` (định vị do
-  `placeFab()`, không đặt cứng toạ độ). Ẩn qua × ghi `localStorage.bakhiAiFabHidden.v1`;
-  `autoMount()` không dựng lại nút khi cờ này bật. Lối vào thay thế: menu tài khoản →
-  **Trợ lý AI**, trang `/ai-tutor/`, hoặc `window.BKAITutor.showFab()`. Không thêm cơ chế
-  ẩn nút thứ hai và không xoá key localStorage này khi nâng cấp.
+- **Nút nổi (8.5.4):** nút "Hỏi AI" gắn ở mọi trang học sinh; **không có nút × cạnh nút
+  nổi** (cơ chế 8.5.3 đã bỏ). Nút đóng duy nhất nằm trong cửa sổ Trợ lý AI (`.bkai-close`,
+  44×44px) và đóng cửa sổ không xoá `S.messages`. Cờ cũ `bakhiAiFabHidden.v1` được xoá khi
+  tải trang; `window.BKAITutor.showFab()` chỉ còn để tương thích. Không thêm cơ chế ẩn nút
+  thứ hai.
+- **Nhiều model & fallback (8.5.4):** nguồn sự thật là bảng `ai_model_routes` (position 0 =
+  Primary, 1+ = Fallback N); `ai_model_attempts` lưu lịch sử thử. Cả hai bật RLS **không
+  policy**, chỉ `service_role`. Chuỗi chạy trong `runProvider()` của `ai-tutor-api`; bảng
+  rỗng thì dùng cấu hình cũ `ai_settings`. Khoá model có thể nằm ở `ai_model_routes.api_key`
+  (không trả client) hoặc trong secret `AI_TUTOR_KEY_3…6` qua `key_ref`. Không dựng bảng
+  provider thứ hai, không trả khoá/detail thô cho học sinh (`safeErrorDetail()`).
+- **Token vào/ra tách riêng (8.5.4):** `ai_settings.max_input_tokens` cắt lịch sử qua
+  `trimHistoryByBudget()`; trần đầu ra vẫn ở `outputTokensForMode()`. Streaming chưa hỗ trợ —
+  đừng bật cờ `streaming_enabled` như thể đã có tác dụng.
 - **Founder Dashboard không nằm trong `inject-shell.js`**: nó đã nạp `bk-badges.js` theo
   thứ tự riêng, chèn thêm khối shell sẽ nạp trùng (version-audit sẽ fail).
 - `AI_TUTOR_MOCK=1` chỉ dùng khi kiểm thử; kết quả mang `mock: true` và UI hiện cảnh báo.

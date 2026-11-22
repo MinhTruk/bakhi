@@ -280,6 +280,32 @@ export function outputTokensForMode(
     return { maxTokens, target, deep };
 }
 
+/** Ước lượng token của một chuỗi (~4 ký tự/token) — dùng để cắt ngữ cảnh đầu vào. */
+export function estimatePromptTokens(text: string): number {
+    return Math.max(1, Math.ceil(String(text ?? '').length / 4));
+}
+
+/**
+ * Cắt lịch sử theo NGÂN SÁCH TOKEN ĐẦU VÀO (8.5.4).
+ * Giữ các lượt gần nhất vừa ngân sách, bỏ lượt cũ trước, và luôn bắt đầu bằng
+ * lượt người học để provider không nhận chuỗi bắt đầu bằng assistant.
+ */
+export function trimHistoryByBudget<T extends { role: 'user' | 'assistant'; content: string }>(
+    rows: T[], maxInputTokens: number, reservedTokens: number
+): T[] {
+    const budget = Math.max(256, (Number(maxInputTokens) || 3000) - Math.max(0, reservedTokens));
+    const tail: T[] = [];
+    let total = 0;
+    for (let i = rows.length - 1; i >= 0; i--) {
+        const cost = estimatePromptTokens(rows[i].content);
+        if (tail.length && total + cost > budget) break;
+        total += cost;
+        tail.unshift(rows[i]);
+    }
+    while (tail.length && tail[0].role !== 'user') tail.shift();
+    return tail;
+}
+
 /** Giới hạn cửa sổ ngữ cảnh: giữ N lượt cuối, luôn bắt đầu bằng lượt người học. */
 export function trimHistory<T extends { role: 'user' | 'assistant' }>(rows: T[], maxMessages: number): T[] {
     const limit = Math.max(2, Math.min(40, Number(maxMessages) || 12));

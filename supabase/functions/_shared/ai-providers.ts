@@ -34,6 +34,11 @@ export interface ProviderCall {
     maxTokens: number;
     temperature?: number;
     timeoutMs: number;
+    /** Khoá riêng của model (lưu ở backend, không bao giờ trả về client).
+        Rỗng thì đọc secret theo `role` / `keyRef`. */
+    apiKey?: string;
+    /** Tên secret thay thế khi model không có khoá riêng (vd AI_TUTOR_KEY_3). */
+    keyRef?: string;
 }
 
 export interface Usage {
@@ -185,12 +190,27 @@ export function estimateTokens(text: string): number {
     return Math.max(1, Math.ceil(String(text ?? '').length / 4));
 }
 
-function secretFor(role: 'primary' | 'fallback'): { key: string; baseUrl: string } {
+function secretFor(
+    role: 'primary' | 'fallback',
+    explicitKey = '',
+    keyRef = ''
+): { key: string; baseUrl: string } {
     const suffix = role === 'fallback' ? 'AI_TUTOR_FALLBACK_' : 'AI_TUTOR_';
+    const ref = String(keyRef || '').trim();
+    /* Thứ tự: khoá của chính model → secret được chỉ định → secret theo vai trò. */
+    const key = String(explicitKey || '').trim() ||
+        (ref ? (Deno.env.get(ref) ?? '').trim() : '') ||
+        (Deno.env.get(suffix + 'API_KEY') ?? '').trim();
     return {
-        key: (Deno.env.get(suffix + 'API_KEY') ?? '').trim(),
+        key,
         baseUrl: (Deno.env.get(suffix + 'BASE_URL') ?? '').trim().replace(/\/+$/, '')
     };
+}
+
+/** Tên hiển thị của provider (dùng cho thông báo lỗi và nhật ký). */
+export function providerLabelOf(id: unknown): string {
+    const info = providerInfo(id);
+    return info && info.label ? info.label : String(id ?? '');
 }
 
 /** Provider giả lập: chỉ bật khi AI_TUTOR_MOCK = '1' (QA offline). */
@@ -308,7 +328,7 @@ export async function callProvider(call: ProviderCall): Promise<ProviderResult> 
         };
     }
 
-    const secret = secretFor(call.role);
+    const secret = secretFor(call.role, call.apiKey, call.keyRef);
     if (!secret.key) {
         throw new ProviderError(
             'NO_KEY',
@@ -484,12 +504,14 @@ export async function listProviderModels(options: {
     provider: ProviderId;
     role: 'primary' | 'fallback';
     timeoutMs?: number;
+    apiKey?: string;
+    keyRef?: string;
 }): Promise<{ models: string[]; endpoint: string } | null> {
     const provider = normalizeProvider(options.provider);
     const info = providerInfo(provider);
     if (!info.supportsModelList) return null;
 
-    const secret = secretFor(options.role);
+    const secret = secretFor(options.role, options.apiKey, options.keyRef);
     if (!secret.key) {
         throw new ProviderError('NO_KEY', 'Chưa có khoá API cho nhà cung cấp này.', 0, provider);
     }

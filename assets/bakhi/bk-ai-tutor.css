@@ -54,7 +54,9 @@
 .bkai-dock-host {
     position: relative;
     width: min(560px, 100vw);
-    height: 100%;
+    /* Cao đúng vùng nhìn thấy (visualViewport) để bàn phím ảo không che ô soạn. */
+    height: var(--bkai-vh, 100%);
+    max-height: var(--bkai-vh, 100%);
     background: var(--bkai-bg);
     border-left: 1px solid var(--bkai-line);
     box-shadow: -18px 0 48px rgba(2, 6, 23, .45);
@@ -536,30 +538,69 @@
 .bkai-fab:hover { transform: translateY(-1px); }
 .bkai-fab[hidden] { display: none; }
 .bkai-fab:focus-visible { outline: 2px solid var(--bkai-accent); outline-offset: 2px; }
-/* Nút × nhỏ, đủ lớn để bấm trên điện thoại (≥ 28px). */
-.bkai-fab-x {
-    position: absolute;
-    top: -10px;
-    right: -8px;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    display: inline-flex;
+/* Nút × ĐÓNG CỬA SỔ trợ lý AI (chỉ tồn tại bên trong bảng nổi, 8.5.4).
+   Vùng chạm 44×44px theo khuyến nghị iOS/Android. Không có nút đóng cạnh
+   nút "Hỏi AI" nổi. */
+.bkai-close {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+    border-radius: 12px;
+    border: 1px solid var(--bkai-line);
+    background: var(--bkai-panel-2);
+    color: var(--bkai-text);
+    font-size: 16px;
+}
+.bkai-close:hover { background: rgba(248, 113, 113, .18); border-color: rgba(248, 113, 113, .45); }
+.bkai-close:focus-visible { outline: 2px solid var(--bkai-accent); outline-offset: 2px; }
+
+/* -------------------------------------------------- chi tiết lỗi provider */
+.bkai-dlg-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 950;
+    display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    border: 1px solid rgba(248, 113, 113, .55);
-    background: #16203a;
-    color: #fca5a5;
-    font: inherit;
-    font-size: 12px;
-    line-height: 1;
-    cursor: pointer;
-    z-index: 2;
-    box-shadow: 0 4px 12px rgba(2, 6, 23, .45);
+    padding: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
 }
-.bkai-fab-x:hover { background: rgba(248, 113, 113, .22); color: #fecaca; }
-.bkai-fab-x:focus-visible { outline: 2px solid var(--bkai-accent); outline-offset: 2px; }
+.bkai-dlg-scrim { position: absolute; inset: 0; background: rgba(2, 6, 23, .62); }
+.bkai-dlg {
+    position: relative;
+    width: min(520px, 100%);
+    max-height: min(80vh, var(--bkai-vh, 100vh));
+    display: flex;
+    flex-direction: column;
+    background: var(--bkai-panel, #111a2e);
+    color: var(--bkai-text, #e7edf7);
+    border: 1px solid var(--bkai-line, rgba(148, 163, 184, .22));
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(2, 6, 23, .55);
+}
+.bkai-dlg-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 10px 10px 14px;
+    border-bottom: 1px solid var(--bkai-line, rgba(148, 163, 184, .22));
+}
+.bkai-dlg-head h3 { margin: 0; font-size: 15px; }
+.bkai-dlg-body { padding: 12px 14px 14px; overflow-y: auto; font-size: 13px; }
+.bkai-dlg-list { display: grid; grid-template-columns: 42% 1fr; gap: 6px 10px; margin: 0; }
+.bkai-dlg-list dt { color: var(--bkai-dim, #93a1b8); }
+.bkai-dlg-list dd { margin: 0; overflow-wrap: anywhere; }
+.bkai-dlg-sub { margin: 14px 0 6px; font-size: 13px; }
+.bkai-dlg-attempts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.bkai-dlg-attempts li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; }
+.bkai-dlg-att-name { overflow-wrap: anywhere; }
+.bkai-dlg-att-state { font-size: 12px; color: var(--bkai-dim, #93a1b8); }
+.bkai-dlg-att-state.is-ok { color: #86efac; }
+.bkai-dlg-att-state.is-bad { color: #fca5a5; }
+.bkai-dlg-note { margin: 12px 0 0; font-size: 11px; color: var(--bkai-dim, #93a1b8); }
+.bkai-error-more { cursor: pointer; }
 
 .bkai-jump {
     align-self: center;
@@ -594,12 +635,18 @@
         max-height: 240px;
     }
     .bkai-page .bkai-main { min-height: 62vh; }
-    .bkai-dock-host { width: 100vw; }
-    .bkai-launcher { bottom: 148px; right: 14px; }
+    .bkai-dock-host {
+        width: 100vw;
+        /* Safe-area: không để nút đóng/ô soạn bị tai thỏ hay thanh home che. */
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .bkai-dock .bkai-main { border-radius: 0; }
+    .bkai-launcher { bottom: calc(148px + env(safe-area-inset-bottom, 0px)); right: 14px; }
     .bkai-fab { padding: 11px 14px; }
     .bkai-fab-label { display: none; }
-    /* Trên máy nhỏ, nút × to hơn một chút cho dễ bấm. */
-    .bkai-fab-x { width: 30px; height: 30px; top: -11px; right: -9px; }
+    .bkai-dock .bkai-close { width: 44px; height: 44px; }
+    .bkai-dlg { width: 100%; max-height: 88vh; }
 }
 
 @media (prefers-reduced-motion: reduce) {

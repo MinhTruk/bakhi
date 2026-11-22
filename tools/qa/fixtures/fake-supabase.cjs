@@ -26,7 +26,15 @@ function builder(table, state) {
     limit() { return q; },
     single() { return Promise.resolve({ data: singleRow(q, state), error: null }); },
     maybeSingle() { return Promise.resolve({ data: singleRow(q, state), error: null }); },
-    then(resolve) { resolve({ data: null, error: null }); return q; }
+    then(resolve) {
+      /* 8.5.4: danh sách model theo thứ tự ưu tiên nằm ở STATE.routes. */
+      if (table === 'ai_model_routes') {
+        resolve({ data: state.routes || [], error: null });
+        return q;
+      }
+      resolve({ data: null, error: null });
+      return q;
+    }
   };
   return q;
 }

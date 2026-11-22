@@ -40,7 +40,7 @@
         booted: false, loading: false, config: null,
         conversations: [], active: null, messages: [],
         mode: 'explain', filter: '', showArchived: false,
-        sending: false, error: null, errorCode: '', controller: null,
+        sending: false, error: null, errorCode: '', errorDetail: null, controller: null,
         pending: '', usage: null, context: null, notice: '',
         nearBottom: true, bootError: null
     };
@@ -555,11 +555,6 @@
         side.setAttribute('aria-label', 'Danh sách hội thoại');
         var sideHead = el('div', 'bkai-side-head');
         sideHead.appendChild(el('h2', 'bkai-side-title', 'Trợ lý AI'));
-        var closeBtn = btn('', 'bkai-icon-btn', 'fa-xmark');
-        closeBtn.setAttribute('aria-label', layout === 'page' ? 'Đóng' : 'Đóng bảng trợ lý AI');
-        closeBtn.hidden = layout === 'page';
-        on(closeBtn, 'click', function () { HIDE_DOCK(); });
-        sideHead.appendChild(closeBtn);
         side.appendChild(sideHead);
 
         var newBtn = btn('Hội thoại mới', 'bkai-new', 'fa-plus');
@@ -720,8 +715,8 @@
         }
         head.appendChild(sub);
 
+        var actions = el('div', 'bkai-head-actions');
         if (S.active) {
-            var actions = el('div', 'bkai-head-actions');
             var rename = btn('', 'bkai-icon-btn', 'fa-pen');
             rename.setAttribute('aria-label', 'Đổi tên hội thoại');
             rename.title = 'Đổi tên';
@@ -732,8 +727,17 @@
             del.title = 'Xoá hội thoại';
             on(del, 'click', deleteActive);
             actions.appendChild(del);
-            head.appendChild(actions);
         }
+        /* Nút X CHỈ nằm trong cửa sổ trợ lý AI (bảng nổi), không nằm cạnh nút
+           "Hỏi AI". Đóng cửa sổ không xoá hội thoại: S.messages vẫn giữ nguyên. */
+        if (S.layout === 'dock') {
+            var closeWin = btn('', 'bkai-icon-btn bkai-close', 'fa-xmark');
+            closeWin.setAttribute('aria-label', 'Đóng cửa sổ trợ lý AI');
+            closeWin.title = 'Đóng cửa sổ';
+            on(closeWin, 'click', function () { close(); });
+            actions.appendChild(closeWin);
+        }
+        if (actions.childNodes.length) head.appendChild(actions);
     }
 
     function renderConversations() {
@@ -818,11 +822,109 @@
             var retry = btn('Thử lại', 'bkai-retry', 'fa-rotate-right');
             on(retry, 'click', function () { retryLast(); });
             row.appendChild(retry);
+            if (S.errorDetail) {
+                var more = btn('Xem chi tiết', 'bkai-retry bkai-error-more', 'fa-circle-info');
+                on(more, 'click', function () { openErrorDetail(); });
+                row.appendChild(more);
+            }
             body.appendChild(row);
             err.appendChild(body);
             box.appendChild(err);
         }
         scrollToEnd(false);
+    }
+
+    /* ---------------------------------------------------------------------
+       Chi tiết lỗi nhà cung cấp (8.5.4) — cửa sổ riêng, có nút X
+       Chỉ hiển thị dữ liệu máy chủ đã lọc: provider, model, mã HTTP, loại lỗi,
+       thời điểm, trạng thái dự phòng và các model đã thử. KHÔNG BAO GIỜ có
+       API key, Authorization header hay raw response.
+       ------------------------------------------------------------------ */
+    function fmtClock(iso) {
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return '';
+        function p(n) { return String(n).padStart(2, '0'); }
+        return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()) +
+            ' · ' + p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear();
+    }
+
+    function errorDetailDialog() {
+        var existing = D.getElementById('bkaiErrDlg');
+        if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+        var d = S.errorDetail;
+        if (!d) return null;
+        var wrap = el('div', 'bkai-dlg-wrap');
+        wrap.id = 'bkaiErrDlg';
+        wrap.setAttribute('role', 'dialog');
+        wrap.setAttribute('aria-modal', 'true');
+        wrap.setAttribute('aria-label', 'Chi tiết lỗi nhà cung cấp AI');
+        var scrim = el('div', 'bkai-dlg-scrim');
+        on(scrim, 'click', closeErrorDetail);
+        wrap.appendChild(scrim);
+
+        var box = el('div', 'bkai-dlg');
+        var head = el('div', 'bkai-dlg-head');
+        head.appendChild(el('h3', null, 'Chi tiết lỗi nhà cung cấp'));
+        var x = btn('', 'bkai-icon-btn bkai-close', 'fa-xmark');
+        x.setAttribute('aria-label', 'Đóng chi tiết lỗi');
+        x.title = 'Đóng';
+        on(x, 'click', closeErrorDetail);
+        head.appendChild(x);
+        box.appendChild(head);
+
+        var body = el('div', 'bkai-dlg-body');
+        var rows = [
+            ['Nhà cung cấp', d.provider || '—'],
+            ['Model', d.model || '—'],
+            ['Mã lỗi HTTP', d.status ? String(d.status) : 'Không có'],
+            ['Loại lỗi', d.type || '—'],
+            ['Thời điểm', fmtClock(d.at)],
+            ['Đã chuyển dự phòng', d.fellBack ? 'Có' : 'Không'],
+            ['Model tiếp theo', d.nextModel || '—']
+        ];
+        var table = el('dl', 'bkai-dlg-list');
+        rows.forEach(function (pair) {
+            table.appendChild(el('dt', null, pair[0]));
+            table.appendChild(el('dd', null, pair[1]));
+        });
+        body.appendChild(table);
+
+        if (Array.isArray(d.attempts) && d.attempts.length) {
+            body.appendChild(el('h4', 'bkai-dlg-sub', 'Các model đã thử'));
+            var list = el('ul', 'bkai-dlg-attempts');
+            d.attempts.forEach(function (a) {
+                var li = el('li');
+                li.appendChild(el('span', 'bkai-dlg-att-name', (a.provider || '—') + ' · ' + (a.model || '—')));
+                li.appendChild(el('span', 'bkai-dlg-att-state' + (a.ok ? ' is-ok' : ' is-bad'),
+                    (a.ok ? 'Thành công' : (a.code || 'Lỗi')) +
+                    (a.latencyMs ? ' · ' + a.latencyMs + 'ms' : '')));
+                list.appendChild(li);
+            });
+            body.appendChild(list);
+        }
+        body.appendChild(el('p', 'bkai-dlg-note',
+            'Thông tin này không chứa khoá API hay dữ liệu nội bộ. Nếu lỗi lặp lại, bạn thử lại sau hoặc báo Ban quản trị.'));
+        box.appendChild(body);
+        wrap.appendChild(box);
+        (D.body || D.documentElement).appendChild(wrap);
+        if (x.focus) x.focus();
+        return wrap;
+    }
+
+    function openErrorDetail() {
+        var dlg = errorDetailDialog();
+        if (!dlg) return;
+        D.addEventListener('keydown', errDlgKey);
+    }
+
+    function errDlgKey(e) {
+        if (e && e.key === 'Escape') closeErrorDetail();
+    }
+
+    function closeErrorDetail() {
+        var dlg = D.getElementById('bkaiErrDlg');
+        if (dlg && dlg.parentNode) dlg.parentNode.removeChild(dlg);
+        D.removeEventListener('keydown', errDlgKey);
     }
 
     function bootNotice(text) {
@@ -1075,7 +1177,9 @@
 
         S.error = null;
         S.errorCode = '';
+        S.errorDetail = null;
         S.notice = '';
+        S.lastAttempt = text;
         S.pending = text;
         S.sending = true;
         S.nearBottom = true;
@@ -1141,6 +1245,15 @@
             S.error = friendlyError(err);
             /* Câu hỏi đã được lưu ở máy chủ nếu lỗi đến từ provider. */
             var payload = err && err.data && err.data.error;
+            S.errorDetail = (payload && payload.detail) || null;
+            /* Giữ nguyên nội dung người học đã nhập để họ gửi lại, không phải gõ lại. */
+            var inputEl = D.getElementById('bkaiInput');
+            if (inputEl && !inputEl.value) {
+                inputEl.value = text;
+                inputEl.style.height = 'auto';
+                inputEl.style.height = Math.min(150, inputEl.scrollHeight) + 'px';
+                paintComposer();
+            }
             if (payload && payload.user_message) {
                 S.messages = S.messages.filter(function (m) { return m.id !== optimistic.id; });
                 if (!hasMessage(payload.user_message.id)) S.messages.push(payload.user_message);
@@ -1233,6 +1346,7 @@
         }
         dock.hidden = false;
         D.body.classList.add('bkai-dock-open');
+        fitViewport();
         var o = opts || {};
         if (o.context) S.context = o.context;
         if (o.mode) changeMode(o.mode);
@@ -1240,6 +1354,10 @@
             var input = D.getElementById('bkaiInput');
             if (input) { input.value = o.prompt; input.focus(); paintComposer(); }
         }
+        /* Mở lại: dựng lại đúng hội thoại đang giữ trong phiên (8.5.4). */
+        renderHead();
+        renderConversations();
+        renderThread();
         renderNotice();
         if (!S.booted) boot();
         else {
@@ -1250,9 +1368,29 @@
     }
 
     function close() {
+        closeErrorDetail();
         if (!S.dock) return;
         S.dock.hidden = true;
         D.body.classList.remove('bkai-dock-open');
+        /* Lịch sử hội thoại nằm trong S.messages/S.active, không bị xoá khi đóng.
+           Mở lại sẽ thấy đúng cuộc trò chuyện trước đó. */
+    }
+
+    /* Bàn phím ảo và thanh địa chỉ di động: cửa sổ cao đúng phần nhìn thấy được,
+       không tràn ra ngoài màn hình và không bị bàn phím che mất ô soạn. */
+    function fitViewport() {
+        if (!S.dock) return;
+        var vv = global.visualViewport;
+        var h = vv ? vv.height : global.innerHeight;
+        if (h > 0) S.dock.style.setProperty('--bkai-vh', Math.round(h) + 'px');
+        if (vv && typeof vv.offsetTop === 'number') {
+            S.dock.style.setProperty('--bkai-vv-top', Math.round(vv.offsetTop) + 'px');
+        }
+    }
+
+    if (global.visualViewport) {
+        global.visualViewport.addEventListener('resize', fitViewport);
+        global.visualViewport.addEventListener('scroll', fitViewport);
     }
 
     /* Người dùng đã ẩn nút "Hỏi AI" trên thiết bị này (8.5.3). Nút chỉ là lối tắt;
@@ -1266,14 +1404,11 @@
         try { if (global.localStorage) global.localStorage.setItem(key, value); }
         catch (e) { /* chế độ riêng tư: chỉ ẩn trong phiên này */ }
     }
-    function fabHidden() {
-        return storageGet(FAB_HIDDEN_KEY) === '1';
-    }
 
     function ensureFab() {
         if (S.fab) return S.launcher || S.fab;
-        /* Bọc nút chính và nút × trong một khối định vị, để nút × luôn dính
-           góc trên bên phải và cả hai cùng nhường chỗ cho nút Báo cáo. */
+        /* Chỉ MỘT nút "Hỏi AI". Không có nút đóng nào cạnh nút nổi (8.5.4 bỏ nút ×
+           của 8.5.3): nút đóng duy nhất nằm trong cửa sổ trợ lý AI. */
         var wrap = el('div', 'bkai-launcher');
         var b = el('button', 'bkai-fab');
         b.type = 'button';
@@ -1284,20 +1419,7 @@
         b.appendChild(el('span', 'bkai-fab-label', 'Hỏi AI'));
         on(b, 'click', function () { openDetail({ context: pageContext() }); });
 
-        /* Trên điện thoại nút nổi che nội dung — cho phép đóng hẳn. */
-        var closeBtn = el('button', 'bkai-fab-x');
-        closeBtn.type = 'button';
-        closeBtn.setAttribute('aria-label', 'Ẩn nút Hỏi AI');
-        closeBtn.title = 'Ẩn nút Hỏi AI — mở lại trong menu tài khoản';
-        closeBtn.appendChild(icon('fa-xmark'));
-        on(closeBtn, 'click', function (ev) {
-            if (ev && ev.stopPropagation) ev.stopPropagation();
-            if (ev && ev.preventDefault) ev.preventDefault();
-            hideFab(true);
-        });
-
         wrap.appendChild(b);
-        wrap.appendChild(closeBtn);
         (D.body || D.documentElement).appendChild(wrap);
         S.fab = b;
         S.launcher = wrap;
@@ -1305,14 +1427,15 @@
         return wrap;
     }
 
-    function hideFab(persist) {
-        if (S.launcher) S.launcher.hidden = true;
-        else if (S.fab) S.fab.hidden = true;
-        if (persist) storageSet(FAB_HIDDEN_KEY, '1');
+    /* 8.5.3 cho phép ẩn nút nổi; 8.5.4 bỏ cơ chế đó nên cờ cũ được xoá để nút
+       trở lại trên các máy đã từng bấm ×. Không xoá key lịch sử khác. */
+    function clearLegacyFabFlag() {
+        if (storageGet(FAB_HIDDEN_KEY) === null) return;
+        storageSet(FAB_HIDDEN_KEY, '');
     }
 
     function showFab() {
-        storageSet(FAB_HIDDEN_KEY, '');
+        clearLegacyFabFlag();
         var wrap = ensureFab();
         if (wrap) wrap.hidden = false;
         placeFab();
@@ -1341,7 +1464,7 @@
        Công khai
        ------------------------------------------------------------------ */
     var API = {
-        version: '8.5.0',
+        version: '8.5.4',
         MODES: MODE_FALLBACK,
 
         /* Gắn giao diện đầy đủ vào một phần tử (trang /ai-tutor/). */
@@ -1350,7 +1473,6 @@
             var o = options || {};
             if (o.context) S.context = o.context;
             buildShell(root, 'page');
-            hideFab(false);
             boot();
             return API;
         },
@@ -1358,6 +1480,12 @@
         /* Mở bảng nổi với ngữ cảnh tuỳ chọn. */
         open: function (opts) { openDetail(opts); return API; },
         close: close,
+
+        /* Mở lại cửa sổ trợ lý AI với hội thoại đang giữ trong phiên. */
+        reopen: function () { openDetail({}); return API; },
+
+        /* Mở chi tiết lỗi gần nhất (dùng cho kiểm thử/giao diện khác). */
+        showErrorDetail: openErrorDetail,
 
         /* Hỏi nhanh về nội dung đang xem (bài học, câu hỏi, lỗi sai). */
         explain: function (context, mode) {
@@ -1382,9 +1510,8 @@
             return API;
         },
 
-        /* Ẩn / hiện lại nút nổi "Hỏi AI" (8.5.3). Ẩn được ghi nhớ trên thiết bị;
-           mở lại bằng menu tài khoản → Trợ lý AI hoặc gọi showFab(). */
-        hideFab: function () { hideFab(true); return API; },
+        /* Nút nổi "Hỏi AI" luôn hiện (8.5.4 bỏ cơ chế ẩn). showFab() giữ lại để
+           tương thích với mã cũ và menu tài khoản. */
         showFab: showFab,
 
         /* Ngữ cảnh tự nhận biết của trang hiện tại (dùng cho module khác). */
@@ -1401,7 +1528,7 @@
         if (D.body && D.body.getAttribute && D.body.getAttribute('data-bk-ai-fab') === '0') return;
         if (D.getElementById('bkai')) return;   /* trang AI Tutor đầy đủ */
         if (!apiReady()) return;
-        if (fabHidden()) return;                /* người dùng đã đóng nút trên máy này */
+        clearLegacyFabFlag();
         ensureFab();
         /* Thanh địa chỉ di động đổi chiều cao → căn lại nút nổi. */
         global.addEventListener('resize', function () {

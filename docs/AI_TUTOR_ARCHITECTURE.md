@@ -176,3 +176,37 @@ AI Tutor là lớp **phụ**. Khi provider lỗi hoặc AI bị tắt:
 - nút “Hỏi AI” mở được và hiện thông báo tiếng Việt + nút Thử lại;
 - không có lời gọi nào chặn tải trang (script `defer`, mọi request phát sinh sau thao tác
   của người dùng).
+
+## 10. Chuỗi nhiều model & fallback (8.5.4)
+
+Nguồn sự thật của thứ tự model là bảng `ai_model_routes` (migration `20261220000000`):
+
+| Cột | Ý nghĩa |
+|---|---|
+| `position` | `0` = Primary, `1+` = Fallback 1, 2, 3… |
+| `label` | Tên gợi nhớ hiển thị trên Dashboard (không dùng để định tuyến) |
+| `provider`, `model` | Provider id trong `PROVIDER_CATALOG` và tên model thật |
+| `key_ref` | TÊN secret chứa khoá (vd `AI_TUTOR_KEY_3`). Không có cột chứa khoá |
+| `enabled` | Model đang bật mới được đưa vào chuỗi |
+| `last_status`, `last_error_code`, `last_latency_ms`, `last_checked_at` | Kết quả lần kiểm tra gần nhất |
+
+`ai_model_attempts` lưu từng lần thử model trong một câu hỏi để tab **Logs** hiển thị
+lịch sử fallback thật. Cả hai bảng bật RLS **không policy**; quyền chỉ cấp cho
+`service_role`.
+
+Luồng trong `ai-tutor-api` → `runProvider()`:
+
+1. Đọc các dòng `ai_model_routes` đang bật, sắp theo `position` (tối đa 10 model).
+2. Bảng rỗng → dùng cấu hình cũ trong `ai_settings` (một primary + một fallback) để
+   tương thích ngược với 8.5.2.
+3. Gọi lần lượt; mỗi model có `timeoutMs` riêng (provider → `timeout_ms` → `AI_TUTOR_TIMEOUT`).
+4. Lỗi tạm thời (`TIMEOUT`, `PROVIDER_DOWN`, `RATE_LIMIT`, `QUOTA`, `EMPTY_RESPONSE`) được
+   thử lại tối đa `max_retries` (0–3). Lỗi `AUTH`, `MODEL_NOT_FOUND`, `UNKNOWN` không thử lại
+   nhưng vẫn chuyển sang model kế tiếp. `NO_KEY` và `BAD_CONFIG` dừng chuỗi.
+5. Model vừa lỗi tạm thời nghỉ 60 giây (`providerCooldown`, khoá `provider|model`).
+6. Model thành công được trả về trong `meta.provider`, `meta.model`, `meta.routeLabel`,
+   `meta.attempts`; `ai_usage_logs.fell_back` ghi lượt phải qua dự phòng.
+
+Chi tiết lỗi trả cho học sinh đi qua `safeErrorDetail()`: provider, model, mã HTTP, loại lỗi,
+thời điểm, trạng thái dự phòng và danh sách model đã thử. Không có khoá, header hay raw
+response; thông điệp gốc của provider chỉ hiện trong `ai_provider_diagnostics` (Founder).

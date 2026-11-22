@@ -196,7 +196,8 @@ async function run() {
   process.exitCode = failures ? 1 : 0;
 }
 
-/* 8.5.3 — nút nổi "Hỏi AI" có nút × để đóng trên điện thoại và nhớ lựa chọn. */
+/* 8.5.4 — nút nổi "Hỏi AI" KHÔNG có nút ×; nút đóng nằm trong cửa sổ trợ lý AI
+   và đóng cửa sổ không làm mất hội thoại đang giữ trong phiên. */
 async function runFab() {
   const dom = new JSDOM(
     '<!DOCTYPE html><html><body><main>Nội dung bài học</main></body></html>',
@@ -208,22 +209,48 @@ async function runFab() {
     key: 'sb_publishable_test',
     functions: { aiTutor: 'ai-tutor-api' }
   };
-  w.BKCloud = { configured: () => true, chatClient: () => Promise.resolve({}) };
+  w.BKCloud = {
+    configured: () => true,
+    chatClient: () => Promise.resolve({
+      auth: { getSession: () => Promise.resolve({ data: { session: { access_token: 't' } } }) }
+    })
+  };
+  w.fetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: true, data: {} }) });
   w.eval(fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-ai-tutor.js'), 'utf8'));
 
   const launcher = await until(() => w.document.querySelector('.bkai-launcher'));
-  ok('nút nổi Hỏi AI tự gắn trên trang bài học', !!launcher && !!w.document.getElementById('bkaiFab'));
-  const closeBtn = w.document.querySelector('.bkai-fab-x');
-  ok('nút nổi có nút × đóng', !!closeBtn && closeBtn.getAttribute('aria-label') === 'Ẩn nút Hỏi AI');
+  const fab = w.document.getElementById('bkaiFab');
+  ok('nút nổi Hỏi AI tự gắn trên trang bài học', !!launcher && !!fab);
+  ok('KHÔNG còn nút × cạnh nút nổi',
+    !w.document.querySelector('.bkai-fab-x') && launcher.children.length === 1);
 
-  if (closeBtn) closeBtn.dispatchEvent(new w.Event('click', { bubbles: true }));
-  ok('bấm × ẩn hẳn nút nổi', launcher.hidden === true);
-  ok('ghi nhớ lựa chọn đóng trên thiết bị',
-    w.localStorage.getItem('bakhiAiFabHidden.v1') === '1');
+  /* Mở cửa sổ: nút X nằm BÊN TRONG cửa sổ trợ lý AI. */
+  fab.dispatchEvent(new w.Event('click', { bubbles: true }));
+  const dock = await until(() => {
+    const d = w.document.getElementById('bkaiDock');
+    return d && d.hidden === false ? d : null;
+  });
+  ok('bấm Hỏi AI mở cửa sổ trợ lý', !!dock && dock.hidden === false);
+  const dockClose = dock && dock.querySelector('.bkai-close');
+  ok('cửa sổ có nút X đóng', !!dockClose &&
+    dockClose.getAttribute('aria-label') === 'Đóng cửa sổ trợ lý AI');
 
-  w.BKAITutor.showFab();
-  ok('BKAITutor.showFab() mở lại nút và xoá ghi nhớ',
-    launcher.hidden === false && !w.localStorage.getItem('bakhiAiFabHidden.v1'));
+  /* Giả lập hội thoại đang có trong phiên rồi đóng/mở lại. */
+  w.BKAITutor._state.messages = [
+    { id: 'm1', role: 'user', content: 'Câu hỏi đang giữ', mode: 'explain' },
+    { id: 'm2', role: 'assistant', content: 'Câu trả lời đang giữ', mode: 'explain' }
+  ];
+  w.BKAITutor._state.active = { id: 'c1', title: 'Hội thoại thử', mode: 'explain' };
+
+  if (dockClose) dockClose.dispatchEvent(new w.Event('click', { bubbles: true }));
+  ok('bấm X đóng cửa sổ', dock.hidden === true);
+  ok('đóng cửa sổ không xoá hội thoại trong phiên',
+    w.BKAITutor._state.messages.length === 2);
+
+  w.BKAITutor.open({});
+  ok('mở lại thấy đúng hội thoại trước đó',
+    dock.hidden === false &&
+    /Câu hỏi đang giữ/.test(w.document.getElementById('bkaiThread').textContent));
 
   dom.window.close();
 }

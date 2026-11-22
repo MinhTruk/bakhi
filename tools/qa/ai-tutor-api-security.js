@@ -100,7 +100,7 @@ ok('máy chủ chỉ Founder được đổi cấu hình', /FOUNDER_ONLY/.test(f
 ok('máy chủ ghi nhật ký quản trị khi đổi cấu hình', /logAction\(client, 'ai_tutor/.test(fn));
 ok('máy chủ lưu câu hỏi trước khi gọi AI',
   fn.indexOf('Lưu câu hỏi TRƯỚC khi gọi AI') !== -1 &&
-  fn.indexOf('Lưu câu hỏi TRƯỚC khi gọi AI') < fn.indexOf('turns: turns.concat('));
+  fn.indexOf('Lưu câu hỏi TRƯỚC khi gọi AI') < fn.indexOf('turns: budgetedTurns.concat('));
 ok('máy chủ xoá mềm hội thoại, không hard delete',
   /deleted_at: new Date\(\)\.toISOString\(\)/.test(fn) && !/from\('ai_conversations'\)\.delete/.test(fn));
 

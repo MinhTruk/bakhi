@@ -12,7 +12,7 @@
 
     var V = {
         /* Phiên bản phát hành (khớp mục mới nhất trong CHANGELOG.md). */
-        app: '8.5.3',
+        app: '8.5.4',
         channel: 'stable',
         releasedAt: '2026-11-22',
         /* Thông tin thương hiệu dùng chung cho header/footer/profile. */

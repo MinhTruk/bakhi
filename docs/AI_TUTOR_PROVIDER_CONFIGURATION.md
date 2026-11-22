@@ -245,3 +245,35 @@ NODE_PATH=/tmp/bktest/node_modules node tools/qa/ai-tutor-fallback.js
 
 Gọi Groq thật **chỉ** thực hiện được sau khi khoá đã nằm trong Supabase Secrets. Không có
 khoá hợp lệ thì không được tuyên bố “đã kết nối Groq”.
+
+## Thêm một AI Model trong Founder Dashboard (8.5.4)
+
+Mở **Founder Dashboard → AI Tutor → tab AI Models**. Thực hiện đúng thứ tự:
+
+1. **Bấm “+ Thêm AI Model”.** Một dòng cấu hình mới xuất hiện. Dòng đầu tiên là
+   **Primary**; các dòng sau tự đánh số **Fallback 1, 2, 3…**.
+2. **Chọn nhà cung cấp.** Danh sách lấy từ `PROVIDER_CATALOG` của máy chủ. Với nhà cung cấp
+   không có trong danh sách, chọn `Tự cấu hình (OpenAI-compatible)` và đặt
+   `AI_TUTOR_BASE_URL` trong Supabase Secrets.
+3. **Nhập tên model** đúng như nhà cung cấp công bố (ví dụ `openai/gpt-oss-20b`,
+   `gemini-3.8-flash`, `llama-3.3-70b-versatile`). Ô nhập có gợi ý nhưng không ép buộc.
+4. **Chọn khoá API (Secret).** Khoá không nhập vào Dashboard và không nằm trong database.
+   Đặt khoá trong **Supabase → Edge Functions → Secrets** với tên `AI_TUTOR_API_KEY`,
+   `AI_TUTOR_FALLBACK_API_KEY`, `AI_TUTOR_KEY_3` … `AI_TUTOR_KEY_6`, rồi chọn đúng tên
+   secret ở ô **API Key (Secret)**. Để trống nghĩa là Primary dùng `AI_TUTOR_API_KEY` và
+   các dòng fallback dùng `AI_TUTOR_FALLBACK_API_KEY`.
+5. **Bấm “Kiểm tra”.** Máy chủ đọc danh sách model của nhà cung cấp (không tốn token) hoặc
+   gửi một lượt sinh 16 token nếu provider không cho liệt kê. Kết quả hiện ngay: OK kèm thời
+   gian phản hồi, hoặc lỗi kèm mã (AUTH, MODEL_NOT_FOUND, RATE_LIMIT…).
+6. **Đổi thứ tự ưu tiên** bằng nút ↑ ↓. Không thể có hai Primary: vị trí 0 luôn là Primary.
+7. **Xoá model** bằng nút thùng rác — có hộp xác nhận, các model còn lại tự đánh số lại.
+8. **Bấm “Lưu danh sách model”.** Chỉ sau bước này học sinh mới dùng cấu hình mới. Nút
+   **Hoàn tác thay đổi** bỏ mọi sửa đổi chưa lưu.
+
+Kiểm tra sau khi lưu: tab **Tổng quan** hiện đúng Primary/fallback và số model sẵn sàng; tab
+**Logs** hiện lượt gọi và lịch sử fallback; nút **Kiểm tra toàn chuỗi model** gọi thử chuỗi
+thật.
+
+Lưu ý: model chưa có khoá vẫn lưu được nhưng sẽ bị bỏ qua khi chạy; trạng thái hiện
+“Chưa cấu hình khoá”. Khi tất cả model đều lỗi, học sinh nhận thông báo thân thiện kèm nút
+**Xem chi tiết** (không chứa khoá hay raw response).

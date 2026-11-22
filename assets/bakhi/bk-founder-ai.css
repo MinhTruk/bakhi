@@ -139,3 +139,123 @@
         white-space: normal;
     }
 }
+
+/* =========================================================================
+   8.5.4 — Founder Dashboard / AI Tutor: 5 tab, quản lý nhiều model
+   ========================================================================= */
+
+.bkai-admin-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 14px;
+    padding: 4px;
+    border: 1px solid var(--bkc-line, rgba(148, 163, 184, .22));
+    border-radius: 12px;
+    background: rgba(148, 163, 184, .06);
+}
+.bkai-admin-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: .5rem .85rem;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--bkc-muted, #93a1b8);
+    font: inherit;
+    font-size: .82rem;
+    cursor: pointer;
+    min-height: 38px;
+}
+.bkai-admin-tab:hover { color: var(--bkc-text, #e7edf7); background: rgba(148, 163, 184, .1); }
+.bkai-admin-tab.is-active {
+    background: rgba(56, 189, 248, .16);
+    border-color: rgba(56, 189, 248, .4);
+    color: var(--bkc-text, #e7edf7);
+    font-weight: 600;
+}
+.bkai-admin-tab:focus-visible { outline: 2px solid #38bdf8; outline-offset: 1px; }
+
+.bkai-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: .12rem .5rem;
+    border-radius: 999px;
+    font-size: .68rem;
+    border: 1px solid rgba(148, 163, 184, .35);
+    color: var(--bkc-muted, #93a1b8);
+    white-space: nowrap;
+}
+.bkai-pill.is-ok { border-color: rgba(74, 222, 128, .45); color: #86efac; background: rgba(74, 222, 128, .1); }
+.bkai-pill.is-warn { border-color: rgba(250, 204, 21, .45); color: #fde68a; background: rgba(250, 204, 21, .1); }
+
+.bkai-admin-steps { margin: 0 0 10px 1.1rem; padding: 0; font-size: .82rem; line-height: 1.6; }
+.bkai-admin-steps li { margin: 0 0 2px; }
+
+.bkai-model-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+.bkai-model-row {
+    border: 1px solid var(--bkc-line, rgba(148, 163, 184, .22));
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: rgba(148, 163, 184, .04);
+}
+.bkai-model-row.is-off { opacity: .6; }
+.bkai-model-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.bkai-model-pos {
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #38bdf8;
+}
+.bkai-model-name { font-size: .86rem; font-weight: 600; flex: 1 1 160px; min-width: 0; overflow-wrap: anywhere; }
+.bkai-model-tools { display: flex; gap: 4px; margin-left: auto; }
+.bkai-model-tools .bk-btn { min-width: 34px; min-height: 34px; padding: 0 .4rem; }
+.bkai-model-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.bkai-model-verify { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; grid-column: 1 / -1; }
+.bkai-key-input { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.bkai-model-actions { flex-wrap: wrap; align-items: center; gap: 8px; }
+.bkai-prompt-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 6px; }
+.bkai-prompt-area {
+    width: 100%;
+    min-height: 320px;
+    resize: vertical;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .82rem;
+    line-height: 1.55;
+}
+.bkai-admin-testresult {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 9px;
+    font-size: .8rem;
+    border: 1px solid rgba(148, 163, 184, .3);
+}
+.bkai-admin-testresult.is-ok { border-color: rgba(74, 222, 128, .45); background: rgba(74, 222, 128, .1); }
+.bkai-admin-testresult.is-bad { border-color: rgba(248, 113, 113, .45); background: rgba(248, 113, 113, .1); }
+.bkai-admin-testresult p { margin: 0; }
+.bkai-pre {
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: 9px;
+    background: rgba(2, 6, 23, .4);
+    font-size: .75rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.bkai-admin .bkc-hint.is-warn { color: #fde68a; }
+
+@media (max-width: 700px) {
+    .bkai-admin-tabs { gap: 4px; }
+    .bkai-admin-tab { flex: 1 1 calc(50% - 4px); justify-content: center; font-size: .78rem; }
+    .bkai-model-grid { grid-template-columns: 1fr; }
+    .bkai-prompt-area { min-height: 240px; }
+}
