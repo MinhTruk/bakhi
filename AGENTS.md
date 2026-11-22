@@ -267,6 +267,11 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   phần nổi (header dính, chuông, nút Báo cáo, trình nhạc) phải giữ `position: fixed/sticky`.
   Với `scope=head`, `.bk-theme-head` không được đè `sticky/fixed/absolute` của header.
   Hồi quy: `tools/qa/themes-smoke.js` mục “Xếp lớp trang chủ”.
+- **Hiệu ứng chuyển động (8.4.3):** bí ngô, dơi, tuyết nằm ở `#bkThemeFx` (`z-index: 2`,
+  `pointer-events: none`) chứ không ở `#bkThemeLayer`, vì lớp nền `z-index: -1` bị
+  `#bgOverlay`/canvas sao của trang chủ che. Khi có giao diện `page`, các lớp nền riêng
+  đó (`#bgImage`, `#bgOverlay`, `#starCanvas`, `.nebula`) nhường chỗ bằng `opacity: 0`.
+  Không dựng lớp hiệu ứng thứ hai; đổi hành vi phải sửa `buildLayer()`/`snowPile()`.
 - **Trao tặng của Founder (8.3.8):** `bk_gam_grant_items` (quantity + `metadata.max_quantity`),
   `bk_gam_grant_achievements` (bỏ qua mục đã có), `bk_gam_grant_skill_tree` (xác nhận
   `confirm: true`). Các action `admin.items.grant`, `admin.achievements.grant`,
@@ -295,6 +300,11 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 - Phạm vi: `page` (trang chủ, nền toàn màn hình) · `head` (trang môn học, chỉ header) ·
   `accent` (hồ sơ/tiến trình/cài đặt) · `none` (quản trị). Đổi hành vi phải sửa
   `BKThemes.scope()`, không thêm CSS ghi đè rải rác.
+- **Giao diện miễn phí (8.4.3):** `theme-halloween` và `theme-christmas` miễn phí cho
+  mọi học sinh. Máy chủ cấp sẵn dòng `user_inventory` (`source = 'seasonal_free'`, hàm
+  `bk_gam_free_themes`, trigger khi tạo hồ sơ + backfill); client khai báo trong
+  `BKThemes.FREE_THEMES` và `isFree()`, và `owns()`/`setTheme()` không được chặn chúng.
+  Không mở khoá giao diện nào khác, không bỏ kiểm tra sở hữu cho tám giao diện còn lại.
 - Mọi tên người dùng có trang trí dùng `BKUserName.node()` / `.mini()`; sau khi đổi biểu
   tượng gọi `BKUserName.refresh()`.
 - Mọi animation phải tắt theo `prefers-reduced-motion` và lớp `bk-a11y-reduce-motion`.

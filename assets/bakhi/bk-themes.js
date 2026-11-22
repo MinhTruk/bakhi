@@ -53,6 +53,13 @@
     var BY_ID = {};
     THEMES.forEach(function (t) { BY_ID[t.id] = t; });
 
+    /* Hai giao diện theo mùa MIỄN PHÍ cho toàn bộ học sinh (8.4.3).
+       Máy chủ cấp sẵn dòng user_inventory (migration 20261215000000); client vẫn
+       coi là đã sở hữu ngay cả khi kho chưa đồng bộ, để chọn được tức thì trong
+       Cài đặt → Hình nền. Không mở khoá bất kỳ giao diện nào khác. */
+    var FREE_THEMES = ['theme-halloween', 'theme-christmas'];
+    function isFree(id) { return FREE_THEMES.indexOf(id) >= 0; }
+
     /* ------------------------------------------------------------- Tiện ích */
     function el(tag, cls, text) {
         var node = D.createElement(tag);
@@ -130,9 +137,32 @@
     }
 
     /* ---------------------------------------------------------------- Lớp nền */
-    function clearLayer() {
-        var old = D.getElementById('bkThemeLayer');
+    function removeNode(id) {
+        var old = D.getElementById(id);
         if (old && old.parentNode) old.parentNode.removeChild(old);
+    }
+    function clearLayer() {
+        removeNode('bkThemeLayer');
+        removeNode('bkThemeFx');
+    }
+
+    /* Tuyết dùng chung cho cả ba phạm vi: nền trang chủ, lớp phủ toàn trang
+       (hồ sơ/cài đặt/tiến trình) và khung header trang môn học. */
+    function snowPile(count, cls) {
+        var snow = el('div', cls || null);
+        if (reducedMotion()) return snow;
+        for (var i = 0; i < count; i++) {
+            var size = 3 + (i % 5);
+            var flake = el('span', 'bkth-flake');
+            flake.style.left = ((i * 97) % 100) + '%';
+            flake.style.width = size + 'px';
+            flake.style.height = size + 'px';
+            flake.style.animationDuration = (9 + (i % 7) * 2) + 's';
+            flake.style.animationDelay = '-' + (i % 11) + 's';
+            flake.style.opacity = String(0.35 + ((i % 4) * 0.15));
+            snow.appendChild(flake);
+        }
+        return snow;
     }
 
     function buildLayer(theme) {
@@ -145,53 +175,80 @@
         layer.appendChild(art);
         layer.appendChild(el('div', 'bkth-veil'));
 
+        /* Hiệu ứng chuyển động nằm ở lớp riêng TRÊN nội dung (#bkThemeFx) để bí ngô
+           rơi và tuyết rơi thấy được khắp trang; nền + veil vẫn ở dưới nội dung. */
+        var fx = el('div');
+        fx.id = 'bkThemeFx';
+        fx.setAttribute('aria-hidden', 'true');
+        var hasFx = false;
+
         if (theme.art === 'halloween') {
+            hasFx = true;
             ['is-a', 'is-b', 'is-c'].forEach(function (cls) {
                 var p = el('div', 'bkth-pumpkin ' + cls);
                 p.style.backgroundImage = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 120'%3E%3Cellipse cx='80' cy='72' rx='54' ry='42' fill='%23f97316'/%3E%3Cellipse cx='80' cy='72' rx='54' ry='42' fill='none' stroke='%239a3412' stroke-width='3'/%3E%3Cellipse cx='80' cy='72' rx='34' ry='42' fill='none' stroke='%23ea580c' stroke-width='2.5'/%3E%3Cellipse cx='80' cy='72' rx='16' ry='42' fill='none' stroke='%23ea580c' stroke-width='2.5'/%3E%3Cpath d='M80 30 q8 -14 18 -16 q-6 10 -3 18z' fill='%2315803d'/%3E%3Cpath d='M54 64 l18 0 l-9 15z' fill='%23111827'/%3E%3Cpath d='M106 64 l-18 0 l9 15z' fill='%23111827'/%3E%3Cpath d='M56 86 q24 16 48 0 l-8 12 l-8 -7 l-6 10 l-6 -10 l-8 7z' fill='%23111827'/%3E%3C/svg%3E\")";
-                layer.appendChild(p);
+                fx.appendChild(p);
             });
             if (!reducedMotion()) {
                 [0, 1].forEach(function (i) {
                     var bat = el('div', 'bkth-bat');
                     bat.style.top = (12 + i * 9) + 'vw';
                     bat.style.animationDelay = (i * 6) + 's';
-                    layer.appendChild(bat);
+                    fx.appendChild(bat);
                 });
             }
         } else if (theme.art === 'christmas') {
-            var snow = el('div', 'bkth-snow');
-            if (!reducedMotion()) {
-                var count = 28;
-                for (var i = 0; i < count; i++) {
-                    var size = 2 + (i % 5);
-                    var flake = el('span', 'bkth-flake');
-                    flake.style.left = ((i * 97) % 100) + '%';
-                    flake.style.width = size + 'px';
-                    flake.style.height = size + 'px';
-                    flake.style.animationDuration = (9 + (i % 7) * 2) + 's';
-                    flake.style.animationDelay = '-' + (i % 11) + 's';
-                    flake.style.opacity = String(0.35 + ((i % 4) * 0.15));
-                    snow.appendChild(flake);
-                }
-            }
-            layer.appendChild(snow);
+            hasFx = true;
+            fx.appendChild(snowPile(44, 'bkth-snow'));
             var tree = el('div', 'bkth-tree');
             tree.style.backgroundImage = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 140'%3E%3Cpath d='M70 8 L104 56 L88 56 L112 96 L92 96 L118 132 L22 132 L48 96 L28 96 L52 56 L36 56 Z' fill='%2315803d'/%3E%3Cpath d='M70 8 L104 56 L88 56 L112 96 L92 96 L118 132 L70 132 Z' fill='%23166534' opacity='.7'/%3E%3Ccircle cx='70' cy='52' r='5' fill='%23facc15'/%3E%3Ccircle cx='56' cy='82' r='4.5' fill='%23ef4444'/%3E%3Ccircle cx='86' cy='92' r='4.5' fill='%23e2e8f0'/%3E%3Ccircle cx='64' cy='112' r='4' fill='%2338bdf8'/%3E%3Cpath d='M70 132 l-4 8 h8 z' fill='%2378350f'/%3E%3C/svg%3E\")";
             layer.appendChild(tree);
         }
 
-        if (D.body) D.body.appendChild(layer);
-        else D.addEventListener('DOMContentLoaded', function () {
-            if (D.body) D.body.appendChild(layer);
-        }, { once: true });
+        var nodes = hasFx ? [layer, fx] : [layer];
+        if (D.body) {
+            nodes.forEach(function (n) { D.body.appendChild(n); });
+        } else {
+            D.addEventListener('DOMContentLoaded', function () {
+                if (D.body) nodes.forEach(function (n) { D.body.appendChild(n); });
+            }, { once: true });
+        }
         return layer;
+    }
+
+    /* Trang chỉ dùng điểm nhấn (hồ sơ, cài đặt, tiến trình…): tuyết rơi phủ
+       toàn trang nhưng KHÔNG vẽ lại nền, để nội dung vẫn đọc rõ. */
+    function buildOverlay(theme) {
+        removeNode('bkThemeOverlay');
+        if (!theme || theme.art !== 'christmas' || !D.body) return null;
+        var layer = el('div');
+        layer.id = 'bkThemeOverlay';
+        layer.setAttribute('aria-hidden', 'true');
+        layer.appendChild(snowPile(30, 'bkth-snow'));
+        D.body.appendChild(layer);
+        return layer;
+    }
+
+    /* Trang môn học: tuyết rơi trong đúng khung header, phần bài học giữ nguyên. */
+    function buildHeadSnow(targets, theme) {
+        if (!theme || theme.art !== 'christmas') return;
+        targets.forEach(function (node) {
+            var box = el('div', 'bkth-head-snow');
+            box.setAttribute('aria-hidden', 'true');
+            box.appendChild(snowPile(20));
+            node.appendChild(box);
+        });
     }
 
     /* ------------------------------------------------------------- Áp dụng */
     function clearScopeMarks() {
         var marked = D.querySelectorAll('.bk-theme-head');
         for (var i = 0; i < marked.length; i++) marked[i].classList.remove('bk-theme-head');
+        var snowHeads = D.querySelectorAll('.bkth-head-snow');
+        for (var j = 0; j < snowHeads.length; j++) {
+            if (snowHeads[j].parentNode) snowHeads[j].parentNode.removeChild(snowHeads[j]);
+        }
+        removeNode('bkThemeOverlay');
         HTML.removeAttribute('data-bk-theme');
         HTML.removeAttribute('data-bk-theme-scope');
         clearLayer();
@@ -210,6 +267,9 @@
         } else if (scope === 'head') {
             var targets = headTargets();
             targets.forEach(function (node) { node.classList.add('bk-theme-head'); });
+            buildHeadSnow(targets, theme);
+        } else if (scope === 'accent') {
+            buildOverlay(theme);
         }
         return { id: theme.id, scope: scope };
     }
@@ -245,6 +305,7 @@
         return read().owned.slice();
     }
     function owns(id) {
+        if (isFree(id)) return true;
         var owned = ownedIds();
         if (!owned.length) return false;
         return owned.indexOf(id) >= 0;
@@ -268,6 +329,9 @@
             if (item.kind === 'decoration' && item.is_equipped && !deco) {
                 deco = { icon: String(item.icon || 'fa-feather'), name: String(item.name || '') };
             }
+        });
+        FREE_THEMES.forEach(function (id) {
+            if (owned.indexOf(id) < 0) owned.push(id);
         });
         var next = write({ id: themeId, owned: owned, deco: deco });
         paint(next.id);
@@ -347,7 +411,8 @@
         host.appendChild(preview);
 
         var note = el('p', 'bkth-note',
-            'Giao diện mở khoá từ Kho vật phẩm. Chọn một giao diện để dùng — lựa chọn được lưu trên máy chủ ' +
+            'Giao diện mở khoá từ Kho vật phẩm; riêng Halloween và Giáng Sinh miễn phí cho mọi học sinh. ' +
+            'Chọn một giao diện để dùng — lựa chọn được lưu trên máy chủ ' +
             'theo tài khoản nên vẫn giữ khi đăng nhập thiết bị khác. Trang chủ hiện nền toàn màn hình, ' +
             'trang môn học chỉ hiện ở phần đầu trang.');
         host.appendChild(note);
@@ -395,8 +460,11 @@
                     card.appendChild(lock);
                     body.appendChild(el('span', 'bkth-state', 'Mở từ Kho vật phẩm'));
                 } else {
+                    if (isFree(theme.id)) {
+                        card.appendChild(el('span', 'bkth-badge is-free', 'Miễn phí'));
+                    }
                     body.appendChild(el('span', 'bkth-state' + (isActive ? ' is-active' : ''),
-                        isActive ? 'Đang dùng' : 'Sẵn sàng'));
+                        isActive ? 'Đang dùng' : (isFree(theme.id) ? 'Sẵn sàng · miễn phí' : 'Sẵn sàng')));
                 }
                 card.addEventListener('mouseenter', function () { paintPreview(theme.id); });
                 card.addEventListener('focus', function () { paintPreview(theme.id); });
@@ -527,6 +595,8 @@
     global.BKThemes = {
         version: '8.4.0',
         THEMES: THEMES,
+        FREE_THEMES: FREE_THEMES,
+        isFree: isFree,
         boot: boot,
         current: current,
         owned: ownedIds,

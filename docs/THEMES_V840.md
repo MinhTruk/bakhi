@@ -35,8 +35,8 @@ Hai thành phần này dùng chung một mô-đun để tránh mỗi trang tự 
 | Phạm vi | Nơi áp dụng | Cách hiển thị |
 |---|---|---|
 | `page` | Trang chủ | `#bkThemeLayer` phủ toàn màn hình, có lớp phủ giữ tương phản; nội dung nằm trên |
-| `head` | Trang môn học | Chỉ `header` / `.bk-topbar` / `.bk-page-head` nhận `bk-theme-head`; nội dung bài học giữ nguyên |
-| `accent` | Hồ sơ, Tiến trình, Cài đặt, Kỹ năng | Chỉ đổi biến màu nhấn và thanh tiến trình, **không** phủ nền |
+| `head` | Trang môn học | Chỉ `header` / `.bk-topbar` / `.bk-page-head` nhận `bk-theme-head`; nội dung bài học giữ nguyên. Giáng Sinh thả tuyết **trong khung header** (`.bkth-head-snow`) |
+| `accent` | Hồ sơ, Tiến trình, Cài đặt, Kỹ năng | Chỉ đổi biến màu nhấn và thanh tiến trình, **không** phủ nền. Giáng Sinh thêm lớp tuyết toàn trang `#bkThemeOverlay` (không vẽ lại nền) |
 | `none` | Trang quản trị | Không áp dụng |
 
 Trang `admin/` và `founder/` không được chèn `bk-themes.js`.
@@ -53,8 +53,14 @@ Trang `admin/` và `founder/` không được chèn `bk-themes.js`.
 | `theme-royal` | Hoàng Gia | tím + vàng đồng |
 | `theme-mint` | Bạc Hà | xanh ngọc |
 | `theme-ember` | Hồng Ngọc | đỏ than hồng |
-| `theme-halloween` | Halloween | bí ngô khắc mặt phát sáng (3 cỡ), dơi bay, tông cam–tím |
-| `theme-christmas` | Giáng Sinh | tuyết rơi 28 hạt (kích thước/tốc độ khác nhau), cây thông, tông xanh–đỏ |
+| `theme-halloween` | Halloween | bí ngô khắc mặt phát sáng (3 cỡ) **rơi khắp trang** (`bkthPumpkinFall`), dơi bay, tông cam–tím |
+| `theme-christmas` | Giáng Sinh | **tuyết rơi toàn website** (28 hạt ở trang chủ, 16 hạt trong header trang môn, 24 hạt ở lớp phủ hồ sơ/cài đặt/tiến trình), cây thông, tông xanh–đỏ |
+
+**Halloween và Giáng Sinh miễn phí cho toàn bộ học sinh (8.4.3).** Hai giao diện này
+luôn có trong kho của mọi hồ sơ (`user_inventory.source = 'seasonal_free'`) và client
+coi là đã sở hữu (`BKThemes.FREE_THEMES`, `BKThemes.isFree()`) nên học sinh chọn được
+ngay trong Cài đặt → Hình nền, không cần Founder trao. Tám giao diện còn lại vẫn là vật
+phẩm mở khoá từ Kho vật phẩm.
 
 Bí ngô và cây thông là SVG nội tuyến (data URI) nên không cần tải ảnh; tuyết và dơi là
 phần tử CSS thuần với `transform`/`opacity`, không chặn cuộn (`pointer-events: none`).
@@ -90,6 +96,7 @@ biểu tượng `flex: 0 0 auto` nên không chồng lên badge, tên hay khung 
 `bk-settings.js` dựng `BKThemes.renderPicker()` ngay dưới phần hình nền có sẵn:
 xem trước, trạng thái **Đang dùng / Sẵn sàng / Chưa sở hữu**, nút áp dụng và
 nút **Về giao diện mặc định**. Ảnh nền tự tải lên (IndexedDB) vẫn hoạt động độc lập.
+Halloween và Giáng Sinh hiện nhãn **Miễn phí** thay cho **Chưa sở hữu** và luôn bấm được.
 
 ## 6. Migration
 
@@ -103,6 +110,17 @@ nút **Về giao diện mặc định**. Ảnh nền tự tải lên (IndexedDB)
 
 Migration **chưa được áp dụng** trong phiên 8.4.0. Chạy `supabase db push` rồi trao
 giao diện theo mùa trong tab Gamification → Give Themes.
+
+### Giao diện theo mùa miễn phí (8.4.3)
+
+`supabase/migrations/20261215000000_bakhi_v843_free_seasonal_themes.sql`:
+
+1. Bảo đảm `theme-halloween`, `theme-christmas` có trong `reward_catalog`.
+2. `bk_gam_free_themes(uuid)` cấp hai giao diện (`source = 'seasonal_free'`), idempotent.
+3. Backfill cho toàn bộ học sinh hiện có; trigger `students_free_seasonal_themes` cấp sẵn
+   cho hồ sơ tạo sau này.
+4. `bk_gam_equip` gọi `bk_gam_free_themes` khi trang bị hai giao diện này nên không còn
+   trả `NOT_OWNED`. Học sinh không cần thao tác gì thêm.
 
 ## 7. Give Themes — trao giao diện từ Founder Dashboard (8.4.1)
 
@@ -125,7 +143,7 @@ thiếu bản ghi — không có danh sách giao diện thứ hai.
 `20261214000000_bakhi_v841_founder_full_items.sql` (idempotent) cấp toàn bộ vật phẩm
 đang bật cho hồ sơ Founder, để chính Founder không phải tự trao giao diện cho mình.
 
-## 5. Ghi chú 8.4.2 — xếp lớp nền trang chủ
+## 8. Ghi chú 8.4.2 — xếp lớp nền trang chủ
 
 `bk-themes.css` **không được** đặt `position` cho con của `body`. Lớp `#bkThemeLayer`
 dùng `position: fixed; inset: 0; z-index: -1; pointer-events: none`, nội dung trang vẽ
@@ -138,3 +156,27 @@ bằng quy tắc riêng để thanh đầu trang vẫn dính khi cuộn.
 
 Kiểm tra hồi quy: `NODE_PATH=/tmp/bktest/node_modules node tools/qa/themes-smoke.js`
 (có mục “Xếp lớp trang chủ (hồi quy 8.4.2)”).
+
+## 9. Ghi chú 8.4.3 — hiệu ứng theo mùa phủ toàn trang
+
+- **Hai lớp, hai nhiệm vụ:** `#bkThemeLayer` (z-index `-1`) giữ nền gradient, lớp phủ giữ
+  tương phản và cây thông phía sau nội dung; `#bkThemeFx` (z-index `2`, `pointer-events:
+  none`) chứa hiệu ứng chuyển động nên bí ngô/dơi/tuyết hiện được **trên** thẻ nội dung
+  thay vì bị che mất.
+- **Halloween**: `.bkth-pumpkin` trong `#bkThemeFx` đặt `top: -22vh` và chạy
+  `bkthPumpkinFall` (0 → 122vh) nên bí ngô rơi qua toàn bộ chiều cao trang chủ, không còn
+  `bottom` cố định. Ba quỹ đạo (`is-a/b/c`) lệch nhau bằng `animation-delay` âm và khác độ
+  mờ/kích thước để không che chữ quá nhiều. Khi giảm chuyển động, quy tắc
+  `top: auto; bottom: 2%` đưa bí ngô về trạng thái đứng yên ở đáy.
+- **Giáng Sinh** dùng chung một hàm `snowPile(count, cls)` cho ba phạm vi:
+  - `page` → `#bkThemeLayer` (toàn màn hình, kèm cây thông).
+  - `head` → `.bkth-head-snow` gắn trong `.bk-theme-head`, `overflow: hidden` + keyframe
+    `bkthSnowHead` chạy theo `top` phần trăm nên rơi vừa mọi chiều cao header.
+  - `accent` → `#bkThemeOverlay` (fixed, `pointer-events: none`, `z-index: 1`), chỉ có hạt
+    tuyết, không có nền/veil để không che nội dung.
+- `clearScopeMarks()` gỡ `#bkThemeLayer`, `#bkThemeFx`, `.bkth-head-snow` và
+  `#bkThemeOverlay` mỗi lần `paint()`, nên đổi giao diện hoặc tắt giao diện không để lại
+  hạt tuyết hay bí ngô mồ côi.
+- **Nền riêng của trang chủ nhường chỗ:** khi có giao diện phạm vi `page`,
+  `#bgImage`, `#bgOverlay`, `#starCanvas` và `.nebula` được đặt `opacity: 0`. Trước đây
+  `#bgOverlay` (90% đục) phủ lên lớp nền `z-index: -1` nên bí ngô/tuyết gần như vô hình.

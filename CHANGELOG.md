@@ -2,6 +2,47 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.4.3] — 2026-11-22
+
+### Sửa lỗi
+
+- **Halloween: bí ngô rơi khắp trang.** Ba quả bí ngô trước đây neo ở đáy trang chủ
+  (`bottom: -2%`) nên gần như chỉ thấy một hàng ở cuối trang. Nay chúng rơi tự do từ
+  đỉnh xuống hết chiều cao màn hình (`bkthPumpkinFall`, ba quỹ đạo lệch nhau), vẫn giữ
+  hiệu ứng phát sáng và dơi bay. Khi bật giảm chuyển động, bí ngô trở lại đứng yên ở đáy
+  thay vì nằm ngoài khung nhìn phía trên.
+- **Bí ngô và tuyết không còn bị nền trang chủ che.** Lớp nền giao diện dùng
+  `z-index: -1` trong khi trang chủ có `#bgOverlay` (90% đục) và canvas sao ở `z-index: 0`,
+  nên hiệu ứng gần như vô hình sau các thẻ nội dung. Nay hiệu ứng chuyển động nằm ở lớp
+  riêng `#bkThemeFx` (`z-index: 2`, `pointer-events: none`) phía trên nội dung, còn nền +
+  lớp phủ giữ tương phản vẫn ở `#bkThemeLayer` phía sau. Khi bật giao diện trang chủ,
+  `#bgImage` / `#bgOverlay` / `#starCanvas` / `.nebula` nhường chỗ (opacity 0).
+- **Giáng Sinh: tuyết rơi toàn website.** Trước đây tuyết chỉ có ở trang chủ. Nay:
+  trang chính vẫn phủ tuyết toàn màn hình; trang môn học/bài học có tuyết rơi **bên trong
+  khung header** (`.bkth-head-snow`, cắt theo header, không đụng nội dung bài học); hồ sơ,
+  cài đặt, tiến trình và các trang chỉ dùng điểm nhấn có lớp tuyết phủ toàn trang
+  (`#bkThemeOverlay`) mà không vẽ lại nền nên chữ vẫn đọc rõ. Mọi hạt tuyết vẫn tắt hoàn
+  toàn theo `prefers-reduced-motion` và lớp `bk-a11y-reduce-motion`.
+
+### Cải tiến
+
+- **Halloween và Giáng Sinh miễn phí cho toàn bộ học sinh.** Hai giao diện theo mùa
+  trước đây chỉ dùng được khi được Founder trao; nay mọi hồ sơ đều có sẵn và chọn được
+  ngay trong **Cài đặt → Hình nền**. Migration mới
+  `20261215000000_bakhi_v843_free_seasonal_themes.sql` cấp sẵn `user_inventory`
+  (`source = 'seasonal_free'`) cho toàn bộ học sinh, trigger cấp sẵn cho hồ sơ tạo sau
+  này, và `bk_gam_equip` cấp bù khi cần nên trang bị không còn trả `NOT_OWNED`. Phía
+  client, `BKThemes.FREE_THEMES` / `BKThemes.isFree()` khiến hai giao diện luôn được coi
+  là đã sở hữu (kể cả khi kho chưa đồng bộ) và hiện nhãn **Miễn phí** thay vì khoá.
+- Thêm kiểm tra trong `tools/qa/themes-smoke.js`: bí ngô rơi từ đỉnh (không neo đáy),
+  tuyết trong header trang môn, tuyết toàn trang ở hồ sơ không kèm nền, và giảm chuyển
+  động thì không sinh hạt tuyết ở lớp phủ.
+- Thêm kiểm tra giao diện miễn phí trong `tools/qa/themes-smoke.js`: chọn được Halloween
+  và Giáng Sinh khi kho chưa có, thẻ trong Cài đặt không bị khoá và có nhãn Miễn phí,
+  `syncFromState` luôn giữ hai giao diện này trong danh sách sở hữu.
+- Đồng bộ phiên bản 8.4.3: `bk-version.js`, `bk-devboard.js`, `admin-actions` và chuỗi
+  `?v=` trong các trang HTML.
+
 ## [8.4.2] — 2026-11-21
 
 ### Sửa lỗi

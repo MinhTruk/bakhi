@@ -64,9 +64,11 @@ function makeDom(url, bodyScope) {
         html.getAttribute('data-bk-theme'));
     check('gán data-bk-theme-scope', html.getAttribute('data-bk-theme-scope') === 'page');
     const layer = w.document.getElementById('bkThemeLayer');
+    const fx = w.document.getElementById('bkThemeFx');
     check('có lớp nền #bkThemeLayer', !!layer);
+    check('có lớp hiệu ứng #bkThemeFx trên nội dung', !!fx);
     check('Halloween có 3 bí ngô khắc mặt',
-        layer && layer.querySelectorAll('.bkth-pumpkin').length === 3);
+        fx && fx.querySelectorAll('.bkth-pumpkin').length === 3);
     check('Halloween có lớp phủ giữ tương phản',
         layer && !!layer.querySelector('.bkth-veil'));
 
@@ -74,12 +76,23 @@ function makeDom(url, bodyScope) {
     console.log('Christmas (tuyết rơi)');
     await T.setTheme('theme-christmas');
     const xmas = w.document.getElementById('bkThemeLayer');
+    const xmasFx = w.document.getElementById('bkThemeFx');
     check('đổi sang Christmas', html.getAttribute('data-bk-theme') === 'theme-christmas',
         html.getAttribute('data-bk-theme'));
-    check('có tuyết rơi', xmas && xmas.querySelectorAll('.bkth-flake').length > 10);
+    check('có tuyết rơi toàn trang', xmasFx && xmasFx.querySelectorAll('.bkth-flake').length > 10);
     check('có cây thông', xmas && !!xmas.querySelector('.bkth-tree'));
     check('không còn bí ngô của theme trước',
-        xmas && xmas.querySelectorAll('.bkth-pumpkin').length === 0);
+        w.document.querySelectorAll('.bkth-pumpkin').length === 0);
+
+    /* 8.4.3 — bí ngô rơi khắp trang thay vì neo ở đáy trang. */
+    const CSS_SRC = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-themes.css'), 'utf8');
+    const pumpkinRule = (CSS_SRC.match(/\n#bkThemeFx \.bkth-pumpkin \{([^}]*)\}/) || [])[1] || '';
+    check('bí ngô rơi từ đỉnh trang', /top:\s*-22vh/.test(pumpkinRule), pumpkinRule);
+    check('bí ngô không còn neo ở đáy trang', !/bottom:\s*-?\d/.test(pumpkinRule), pumpkinRule);
+    check('có keyframe rơi bí ngô', /@keyframes bkthPumpkinFall/.test(CSS_SRC));
+    check('lớp hiệu ứng nằm trên nội dung, không chặn chuột',
+        /#bkThemeFx\s*\{[^}]*z-index:\s*2[^}]*\}/.test(CSS_SRC) &&
+        /#bkThemeFx,[\s\S]*?pointer-events:\s*none/.test(CSS_SRC));
 
     /* ------------------------------------------- 3. Chưa sở hữu thì không áp dụng */
     console.log('Quyền sở hữu');
@@ -93,6 +106,47 @@ function makeDom(url, bodyScope) {
     check('cho phép giao diện đã sở hữu', allowed.ok === true, JSON.stringify(allowed));
     check('áp dụng theme-dawn', html.getAttribute('data-bk-theme') === 'theme-dawn');
 
+    /* 8.4.3 — Halloween & Giáng Sinh miễn phí cho toàn bộ học sinh. */
+    console.log('Giao diện miễn phí (8.4.3)');
+    check('FREE_THEMES gồm đúng hai giao diện theo mùa',
+        Array.isArray(T.FREE_THEMES) && T.FREE_THEMES.length === 2 &&
+        T.isFree('theme-halloween') && T.isFree('theme-christmas') &&
+        !T.isFree('theme-royal'));
+    w.localStorage.setItem('bakhiTheme.v1', JSON.stringify({
+        id: null, owned: ['theme-dawn'], deco: null
+    }));
+    const freeHalloween = await T.setTheme('theme-halloween');
+    check('chọn được Halloween khi kho chưa có', freeHalloween.ok === true,
+        JSON.stringify(freeHalloween));
+    check('đã áp dụng Halloween miễn phí', html.getAttribute('data-bk-theme') === 'theme-halloween',
+        html.getAttribute('data-bk-theme'));
+    w.localStorage.setItem('bakhiTheme.v1', JSON.stringify({
+        id: null, owned: ['theme-dawn'], deco: null
+    }));
+    const freeXmas = await T.setTheme('theme-christmas');
+    check('chọn được Giáng Sinh khi kho chưa có', freeXmas.ok === true,
+        JSON.stringify(freeXmas));
+
+    const pickerHost = w.document.createElement('div');
+    w.document.body.appendChild(pickerHost);
+    T.renderPicker(pickerHost, {});
+    const halloweenCard = pickerHost.querySelector('.bkth-card[data-theme-id="theme-halloween"]');
+    const royalCard = pickerHost.querySelector('.bkth-card[data-theme-id="theme-royal"]');
+    check('Cài đặt: Halloween không bị khoá',
+        !!halloweenCard && !halloweenCard.disabled &&
+        !halloweenCard.classList.contains('is-locked'));
+    check('Cài đặt: Halloween có nhãn Miễn phí',
+        !!(halloweenCard && halloweenCard.querySelector('.bkth-badge.is-free')));
+    check('Cài đặt: giao diện khác vẫn khoá khi chưa sở hữu',
+        !!royalCard && royalCard.disabled === true);
+
+    const synced = T.syncFromState({
+        inventory: [{ item_id: 'theme-midnight', kind: 'theme', is_equipped: false }]
+    });
+    check('syncFromState luôn giữ hai giao diện miễn phí',
+        synced.owned.indexOf('theme-halloween') >= 0 &&
+        synced.owned.indexOf('theme-christmas') >= 0, JSON.stringify(synced.owned));
+
     /* -------------------------------------- 4. Trang môn học: chỉ đánh dấu header */
     console.log('Trang môn học (scope=head)');
     const w2 = makeDom('https://minhtruk.github.io/bakhi/ktgk1/toan/indextoan.html');
@@ -105,6 +159,10 @@ function makeDom(url, bodyScope) {
         !w2.document.getElementById('bkThemeLayer'));
     check('đánh dấu header bằng bk-theme-head',
         !!w2.document.querySelector('.bk-theme-head'));
+    const headSnow = w2.document.querySelector('.bk-theme-head .bkth-head-snow');
+    check('tuyết rơi trong khung header trang môn', !!headSnow,
+        'không thấy .bkth-head-snow');
+    check('header có hạt tuyết', headSnow && headSnow.querySelectorAll('.bkth-flake').length > 5);
 
     /* ------------------------------------------------ 5. Hồ sơ: chỉ điểm nhấn */
     console.log('Hồ sơ (scope=accent)');
@@ -117,6 +175,16 @@ function makeDom(url, bodyScope) {
     check('không phủ nền toàn màn hình ở hồ sơ',
         !w3.document.getElementById('bkThemeLayer'));
 
+    /* 8.4.3 — Giáng Sinh thả tuyết toàn website, kể cả trang chỉ điểm nhấn. */
+    w3.localStorage.setItem('bakhiTheme.v1', JSON.stringify({
+        id: 'theme-christmas', owned: ['theme-christmas'], deco: null
+    }));
+    w3.BKThemes.refresh();
+    const overlay = w3.document.getElementById('bkThemeOverlay');
+    check('hồ sơ có tuyết rơi toàn trang', !!overlay && overlay.querySelectorAll('.bkth-flake').length > 10);
+    check('lớp tuyết ở hồ sơ không vẽ lại nền',
+        !overlay || !overlay.querySelector('.bkth-christmas'));
+
     /* ------------------------------------------------------ 6. Giảm chuyển động */
     console.log('Giảm chuyển động');
     const w4 = makeDom('https://minhtruk.github.io/bakhi/');
@@ -127,9 +195,19 @@ function makeDom(url, bodyScope) {
         id: 'theme-christmas', owned: ['theme-christmas'], deco: null
     }));
     w4.BKThemes.refresh();
-    const calm = w4.document.getElementById('bkThemeLayer');
+    const calm = w4.document.getElementById('bkThemeFx');
     check('prefers-reduced-motion: không tạo tuyết',
         calm && calm.querySelectorAll('.bkth-flake').length === 0);
+    const w6 = makeDom('https://minhtruk.github.io/bakhi/profile/');
+    w6.matchMedia = function () {
+        return { matches: true, addEventListener() { }, removeEventListener() { } };
+    };
+    w6.localStorage.setItem('bakhiTheme.v1', JSON.stringify({
+        id: 'theme-christmas', owned: ['theme-christmas'], deco: null
+    }));
+    w6.BKThemes.refresh();
+    check('prefers-reduced-motion: lớp phủ hồ sơ không tạo hạt tuyết',
+        w6.document.querySelectorAll('#bkThemeOverlay .bkth-flake').length === 0);
 
     /* ------------------------------------------------ 7. Tên có biểu tượng */
     console.log('BKUserName');

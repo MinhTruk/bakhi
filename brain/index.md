@@ -1,6 +1,6 @@
 # Brain Index
 
-_Auto-generated. Last updated 2026-11-21T14:06:36.426Z._
+_Auto-generated. Last updated 2026-11-22T01:57:16.740Z._
 
 - [agent-session-protocol](pages/agent-session-protocol.md) — category: project | tags: [agents, workflow] | This is the routine to follow on **every** session in this repo, future included.
 - [brain-toolkit-location](pages/brain-toolkit-location.md) — category: decision | tags: [brain, tooling] | The brain.md installer (v0.3.0, `@mindmux/brain-md`) unpacks `LICENSE`, `README.md`, `package.json`, `bin/` and `skills/` into the project r
