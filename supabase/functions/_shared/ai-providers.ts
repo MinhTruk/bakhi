@@ -64,8 +64,11 @@ export class ProviderError extends Error {
     status: number;
     retryable: boolean;
     provider: string;
+    /** Thông điệp đã lọc của provider — CHỈ dùng cho nhật ký chẩn đoán nội bộ,
+        không bao giờ trả về client (xem ai_provider_diagnostics). */
+    detail: string;
 
-    constructor(code: AiErrorCode, message: string, status = 0, provider = '') {
+    constructor(code: AiErrorCode, message: string, status = 0, provider = '', detail = '') {
         super(message);
         this.name = 'ProviderError';
         this.code = code;
@@ -74,7 +77,20 @@ export class ProviderError extends Error {
         this.retryable = code === 'TIMEOUT' || code === 'PROVIDER_DOWN' ||
             code === 'RATE_LIMIT' || code === 'EMPTY_RESPONSE';
         this.provider = provider;
+        this.detail = detail;
     }
+}
+
+/** Lọc thông điệp provider trước khi ghi log: bỏ mọi chuỗi giống khoá API. */
+export function sanitizeProviderDetail(text: string): string {
+    return String(text ?? '')
+        .replace(/AIza[0-9A-Za-z_-]{10,}/g, '***')
+        .replace(/sk-[0-9A-Za-z_-]{10,}/g, '***')
+        .replace(/AQ\.[0-9A-Za-z_-]{10,}/g, '***')
+        .replace(/eyJ[A-Za-z0-9._-]{20,}/g, '***')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 400);
 }
 
 const BASE_URLS: Record<Exclude<ProviderId, 'custom'>, string> = {
@@ -141,24 +157,26 @@ async function mapHttpError(res: Response, provider: string): Promise<ProviderEr
     try { detail = (await res.text()).slice(0, 2000); } catch { detail = ''; }
     const low = detail.toLowerCase();
     const status = res.status;
+    /* Nhật ký nội bộ (ai_provider_diagnostics) — đã lọc khoá, không trả về client. */
+    const hint = sanitizeProviderDetail(detail);
     if (status === 401 || status === 403) {
-        return new ProviderError('AUTH', 'Khoá API của trợ lý AI không hợp lệ hoặc đã bị thu hồi.', status, provider);
+        return new ProviderError('AUTH', 'Khoá API của trợ lý AI không hợp lệ hoặc đã bị thu hồi.', status, provider, hint);
     }
     if (status === 404) {
-        return new ProviderError('MODEL_NOT_FOUND', 'Mô hình AI đã chọn không tồn tại với nhà cung cấp này.', status, provider);
+        return new ProviderError('MODEL_NOT_FOUND', 'Mô hình AI đã chọn không tồn tại với nhà cung cấp này.', status, provider, hint);
     }
     if (status === 429) {
         const quota = /quota|billing|exceeded your current quota|insufficient/.test(low);
         return new ProviderError(
             quota ? 'QUOTA' : 'RATE_LIMIT',
             quota ? 'Đã hết hạn mức của nhà cung cấp AI.' : 'Nhà cung cấp AI đang giới hạn tần suất. Thử lại sau ít phút.',
-            status, provider
+            status, provider, hint
         );
     }
     if (status >= 500) {
-        return new ProviderError('PROVIDER_DOWN', 'Dịch vụ AI tạm thời không phản hồi.', status, provider);
+        return new ProviderError('PROVIDER_DOWN', 'Dịch vụ AI tạm thời không phản hồi.', status, provider, hint);
     }
-    return new ProviderError('UNKNOWN', 'Trợ lý AI trả về lỗi không xác định.', status, provider);
+    return new ProviderError('UNKNOWN', 'Trợ lý AI trả về lỗi không xác định.', status, provider, hint);
 }
 
 function normalizeProvider(value: unknown): ProviderId {
@@ -335,10 +353,12 @@ function parseOpenAi(raw: Record<string, unknown>, provider: ProviderId, model: 
 
 /** Danh sách model gợi ý để Founder chọn — KHÔNG hardcode là "đúng nhất". */
 export const MODEL_SUGGESTIONS: Record<string, string[]> = {
-    google: ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro'],
+    /* Google đã ngừng cấp gemini-2.5-* cho người dùng mới (404). Chỉ còn 3.8-flash
+       là dùng được với khoá mới — kiểm tra 2026-11-22, xem docs/AI_TUTOR_PROVIDER_SETUP.md. */
+    google: ['gemini-3.8-flash'],
     openai: ['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o-mini'],
     groq: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'],
-    openrouter: ['google/gemini-2.5-flash', 'anthropic/claude-3.5-sonnet'],
+    openrouter: ['google/gemini-3.8-flash', 'anthropic/claude-3.5-sonnet'],
     mistral: ['mistral-small-latest', 'mistral-large-latest'],
     deepseek: ['deepseek-chat', 'deepseek-reasoner'],
     custom: []

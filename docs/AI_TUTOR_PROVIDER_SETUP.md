@@ -35,12 +35,18 @@ Nhờ vậy, đổi từ Google sang Groq chỉ cần: đổi khoá trong `AI_TU
 
 ```
 AI_TUTOR_PROVIDER = google
-AI_TUTOR_MODEL    = gemini-2.5-flash
+AI_TUTOR_MODEL    = gemini-3.8-flash
 AI_TUTOR_API_KEY  = <khoá từ aistudio.google.com/app/apikey>
 ```
 
-Gợi ý model trong dashboard: `gemini-2.5-flash`, `gemini-2.5-flash-lite`,
-`gemini-2.5-pro`.
+**Chỉ `gemini-3.8-flash` còn dùng được** (đo ngày 2026-11-22). Google đã ngừng cấp
+`gemini-2.5-flash`, `-lite`, `-pro` — gọi vào trả 404 *“no longer available to new users”*.
+Các biến thể `gemini-3.8-flash-001/-exp/-latest/-preview/-thinking` cũng 404.
+
+⚠️ **Hạn mức:** khoá miễn phí rất dễ chạm trần — model trả `503 high demand` rồi
+`429 quota exceeded`. Khi đó trợ lý báo *“Trợ lý AI đã hết hạn mức sử dụng của nhà cung cấp.”*
+Cách xử lý: bật thanh toán cho project Google AI, hoặc cấu hình provider dự phòng (mục 4),
+hoặc đợi hạn mức miễn phí được tính lại.
 
 ### 3.2. OpenAI
 
@@ -61,7 +67,7 @@ AI_TUTOR_MODEL    = llama-3.3-70b-versatile
 
 ```
 AI_TUTOR_PROVIDER = openrouter
-AI_TUTOR_MODEL    = google/gemini-2.5-flash
+AI_TUTOR_MODEL    = google/gemini-3.8-flash
 ```
 
 ### 3.5. Provider nội bộ / tương thích OpenAI

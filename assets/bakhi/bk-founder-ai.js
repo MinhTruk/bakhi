@@ -283,7 +283,7 @@
             op.value = m;
             modelList.appendChild(op);
         });
-        var modelInput = textInput(settings.model, 'ví dụ: gemini-2.5-flash');
+        var modelInput = textInput(settings.model, 'ví dụ: gemini-3.8-flash');
         modelInput.setAttribute('list', 'bkaiModelList');
         grid.appendChild(field('Mô hình mặc định', modelInput,
             'Chỉ dùng mô hình đã kiểm tra hoạt động với khoá hiện tại.'));

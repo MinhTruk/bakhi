@@ -53,6 +53,7 @@ Nếu phát hiện khoá từng bị công khai: thu hồi và tạo khoá mới
 | `ai_conversations` | chủ sở hữu | **không có policy** |
 | `ai_messages` | chủ sở hữu | **không có policy** |
 | `ai_usage_logs` | chủ sở hữu | **không có policy** |
+| `ai_provider_diagnostics` | *không ai* (chỉ `service_role`) | **không có policy**; đã `revoke all` khỏi `anon`/`authenticated` — nơi duy nhất lưu thông điệp lỗi provider sau khi lọc khoá (`sanitizeProviderDetail`) |
 | `ai_settings` | không ai (service_role) | không ai |
 | `ai_prompt_versions` | không ai (service_role) | không ai |
 

@@ -123,7 +123,7 @@ async function loadSettings(client: Ctx['client']): Promise<Record<string, unkno
     if (data) return data as Record<string, unknown>;
     /* Dòng cấu hình mất thì dùng giá trị an toàn, không ném lỗi cho học sinh. */
     return {
-        enabled: true, provider: 'google', model: 'gemini-2.5-flash',
+        enabled: true, provider: 'google', model: 'gemini-3.8-flash',
         fallback_provider: '', fallback_model: '', routing_enabled: true,
         model_simple: '', model_complex: '', model_practice: '',
         max_context_messages: 12, max_output_tokens: 1600, timeout_ms: 45000,
@@ -171,6 +171,24 @@ async function logUsage(
         ok: !!row.ok,
         error_code: str(row.errorCode, 40)
     });
+}
+
+/* Nhật ký chẩn đoán provider — chỉ service_role đọc được (không policy RLS).
+   Dùng để Founder biết *lý do thật* khi khoá/model sai, mà học sinh không thấy. */
+async function logDiagnostic(
+    client: Ctx['client'], err: ProviderError, model: string, role: 'primary' | 'fallback'
+) {
+    try {
+        await client.from('ai_provider_diagnostics').insert({
+            provider: str(err.provider, 40),
+            model: str(model, 80),
+            role,
+            status: Math.max(0, Number(err.status) || 0),
+            detail: str(err.detail, 400)
+        });
+    } catch {
+        /* Chẩn đoán lỗi không được làm hỏng câu trả lời cho học sinh. */
+    }
 }
 
 function conversationRow(row: Record<string, unknown>) {
@@ -236,16 +254,27 @@ async function runProvider(options: {
     const started = Date.now();
     let lastError: ProviderError;
 
+    const call = () => callProvider({
+        provider, model: options.model, role: 'primary',
+        system: options.system, messages: options.turns,
+        maxTokens, timeoutMs
+    });
+
+    /* Tối đa 2 lần thử cho provider chính khi lỗi là tạm thời (provider quá tải,
+       giới hạn tần suất). Không bao giờ thử vô hạn; sau đó mới xét provider dự phòng. */
     try {
-        const result = await callProvider({
-            provider, model: options.model, role: 'primary',
-            system: options.system, messages: options.turns,
-            maxTokens, timeoutMs
-        });
+        const result = await call();
         return { result, latencyMs: Date.now() - started, fellBack: false };
     } catch (err) {
         lastError = err instanceof ProviderError ? err : new ProviderError('UNKNOWN', 'Lỗi không xác định.', 0, provider);
         if (!lastError.retryable) throw lastError;
+        await new Promise((r) => setTimeout(r, 900));
+        try {
+            const result = await call();
+            return { result, latencyMs: Date.now() - started, fellBack: false };
+        } catch (again) {
+            lastError = again instanceof ProviderError ? again : lastError;
+        }
     }
 
     const fallbackProvider = String(s.fallback_provider || '');
@@ -515,6 +544,7 @@ Deno.serve(async (req) => {
                             studentId: null, action: 'admin.test', provider: e.provider,
                             ok: false, errorCode: e.code, latencyMs: Date.now() - started
                         });
+                        await logDiagnostic(client, e, String(options.model || ''), 'primary');
                         return fail(502, e.code, messageFor(e.code), { connected: false });
                     }
                 }
@@ -704,8 +734,11 @@ Deno.serve(async (req) => {
                     return fail(400, 'MODE_DISABLED', 'Chế độ học tập này đang tắt.');
                 }
 
-                const message = cleanMessage(body.message);
-                if (!message) return fail(400, 'EMPTY_MESSAGE', 'Bạn chưa nhập câu hỏi.');
+                /* Thử lại một câu đã lưu: dùng lại đúng câu hỏi cuối trong hội thoại,
+                   không tạo thêm dòng tin nhắn trùng. */
+                const isRetry = body.retry === true;
+                let message = cleanMessage(body.message);
+                if (!message && !isRetry) return fail(400, 'EMPTY_MESSAGE', 'Bạn chưa nhập câu hỏi.');
                 if (String(body.message ?? '').length > MAX_USER_MESSAGE) {
                     return fail(400, 'MESSAGE_TOO_LONG', 'Câu hỏi quá dài (tối đa ' + MAX_USER_MESSAGE + ' ký tự).');
                 }
@@ -758,7 +791,12 @@ Deno.serve(async (req) => {
                         .order('created_at', { ascending: false })
                         .limit(1)
                         .maybeSingle();
-                    if (lastUser && String(lastUser.content) === message &&
+                    if (isRetry) {
+                        if (!lastUser || !String(lastUser.content || '').trim()) {
+                            return fail(400, 'NOTHING_TO_RETRY', 'Chưa có câu hỏi nào để thử lại.');
+                        }
+                        message = cleanMessage(lastUser.content);
+                    } else if (lastUser && String(lastUser.content) === message &&
                         now - Date.parse(lastUser.created_at) < DEDUPE_WINDOW_MS) {
                         return fail(409, 'DUPLICATE', 'Câu hỏi này vừa được gửi. Bạn chờ câu trả lời nhé.');
                     }
@@ -798,16 +836,23 @@ Deno.serve(async (req) => {
                         model_practice: String(settings.model_practice || '')
                     }, mode, message);
 
-                    /* Lưu câu hỏi TRƯỚC khi gọi AI: lỗi mạng không làm mất nội dung. */
-                    const { data: userRow, error: userErr } = await client.from('ai_messages').insert({
-                        conversation_id: conversation.id,
-                        student_id: ctx.studentId,
-                        role: 'user',
-                        content: message,
-                        mode,
-                        context_ref: contextSafe
-                    }).select('*').single();
-                    if (userErr || !userRow) return fail(500, 'DB_ERROR', 'Không lưu được câu hỏi.');
+                    /* Lưu câu hỏi TRƯỚC khi gọi AI: lỗi mạng không làm mất nội dung.
+                       Khi thử lại thì dùng đúng dòng đã lưu, không ghi thêm. */
+                    let userRow: Record<string, unknown> | null = null;
+                    if (isRetry && lastUser) {
+                        userRow = { id: lastUser.id, content: message };
+                    } else {
+                        const { data, error } = await client.from('ai_messages').insert({
+                            conversation_id: conversation.id,
+                            student_id: ctx.studentId,
+                            role: 'user',
+                            content: message,
+                            mode,
+                            context_ref: contextSafe
+                        }).select('*').single();
+                        if (error || !data) return fail(500, 'DB_ERROR', 'Không lưu được câu hỏi.');
+                        userRow = data;
+                    }
 
                     let out;
                     try {
@@ -824,6 +869,7 @@ Deno.serve(async (req) => {
                             studentId: ctx.studentId, action: 'chat', provider: e.provider,
                             model: pick.model, mode, ok: false, errorCode: e.code
                         });
+                        await logDiagnostic(client, e, pick.model, 'primary');
                         return fail(502, e.code, messageFor(e.code), {
                             conversation: conversationRow(conversation),
                             user_message: messageRow(userRow),
@@ -852,7 +898,8 @@ Deno.serve(async (req) => {
                         .select('message_count, title')
                         .eq('id', conversation.id).maybeSingle();
                     await client.from('ai_conversations').update({
-                        message_count: (Number(fresh?.message_count) || 0) + (settings.save_history ? 2 : 1),
+                        message_count: (Number(fresh?.message_count) || 0) +
+                            (settings.save_history ? (isRetry ? 1 : 2) : (isRetry ? 0 : 1)),
                         last_message_at: new Date().toISOString(),
                         last_provider: out.result.provider,
                         last_model: out.result.model,

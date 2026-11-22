@@ -121,7 +121,7 @@ Ngoài phần nội dung học tập, BAKHI còn có hồ sơ cá nhân, trung t
 
 ---
 
-## 🤖 Trợ lý AI (v8.5.0)
+## 🤖 Trợ lý AI (v8.5.1)
 
 Trợ lý AI là gia sư học tập, **không** phải chatbot chung:
 
@@ -134,6 +134,9 @@ Trợ lý AI là gia sư học tập, **không** phải chatbot chung:
 - **An toàn:** khoá API chỉ nằm trong Supabase Edge Function Secrets, không bao giờ xuống
   trình duyệt; học sinh chỉ đọc được hội thoại của mình; AI không thể đổi XP hay dữ liệu học tập.
 - **Không thay thế** Chat (người ↔ người) hay Report Issue (báo lỗi nội dung).
+- **Trạng thái triển khai:** database, Edge Function và secret đã chạy trên production; câu trả lời
+  AI thật đang chờ nhà cung cấp mở hạn mức (xem `docs/RELEASE_REPORT_V850.md`). Model mặc định
+  `gemini-3.8-flash` — Google đã ngừng cấp `gemini-2.5-*`.
 
 Cấu hình: [docs/AI_TUTOR_API_KEY_SETUP.md](docs/AI_TUTOR_API_KEY_SETUP.md) · Kiến trúc:
 [docs/AI_TUTOR_ARCHITECTURE.md](docs/AI_TUTOR_ARCHITECTURE.md) · Quản trị:

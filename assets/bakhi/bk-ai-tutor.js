@@ -1058,11 +1058,14 @@
     /* ---------------------------------------------------------------------
        Gửi / dừng / thử lại
        ------------------------------------------------------------------ */
-    function send(preset) {
+    function send(preset, isRetry) {
         if (S.sending) return;
         var input = D.getElementById('bkaiInput');
         var text = String(preset != null ? preset : (input && input.value) || '').trim();
         if (!text) return;
+        /* Thử lại: câu hỏi đã nằm trong hội thoại (máy chủ đã lưu), không thêm
+           bong bóng thứ hai và không tạo dòng tin nhắn trùng. */
+        isRetry = isRetry === true;
         if (text.length > 4000) {
             S.error = 'Câu hỏi quá dài (tối đa 4.000 ký tự). Bạn chia nhỏ giúp mình nhé.';
             S.errorCode = 'MESSAGE_TOO_LONG';
@@ -1081,7 +1084,7 @@
             id: 'local-' + Date.now(), role: 'user', content: text,
             mode: S.mode, created_at: new Date().toISOString()
         };
-        S.messages.push(optimistic);
+        if (!isRetry) S.messages.push(optimistic);
         if (input) { input.value = ''; input.style.height = 'auto'; }
         renderThread();
         paintComposer();
@@ -1096,6 +1099,7 @@
             conversation_id: S.active ? S.active.id : '',
             mode: S.mode,
             message: text,
+            retry: isRetry || undefined,
             context: ctx
         }, signal).then(function (data) {
             S.sending = false;
@@ -1107,7 +1111,7 @@
             }
             /* Thay tin nhắn tạm bằng bản máy chủ trả về. */
             S.messages = S.messages.filter(function (m) { return m.id !== optimistic.id; });
-            if (data.user_message) S.messages.push(data.user_message);
+            if (data.user_message && !hasMessage(data.user_message.id)) S.messages.push(data.user_message);
             if (data.message) S.messages.push(data.message);
             if (data.meta) {
                 S.usage = data.meta.usage || S.usage;
@@ -1139,7 +1143,7 @@
             var payload = err && err.data && err.data.error;
             if (payload && payload.user_message) {
                 S.messages = S.messages.filter(function (m) { return m.id !== optimistic.id; });
-                S.messages.push(payload.user_message);
+                if (!hasMessage(payload.user_message.id)) S.messages.push(payload.user_message);
                 if (payload.conversation) {
                     S.active = Object.assign({}, S.active || {}, payload.conversation);
                     mergeConversation(payload.conversation);
@@ -1170,7 +1174,15 @@
         if (!text) return;
         S.error = null;
         S.errorCode = '';
-        send(String(text));
+        send(String(text), true);
+    }
+
+    function hasMessage(id) {
+        if (!id) return true;
+        for (var i = 0; i < S.messages.length; i++) {
+            if (S.messages[i] && S.messages[i].id === id) return true;
+        }
+        return false;
     }
 
     function mergeConversation(conv) {

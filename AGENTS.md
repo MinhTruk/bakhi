@@ -382,6 +382,14 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   thứ tự riêng, chèn thêm khối shell sẽ nạp trùng (version-audit sẽ fail).
 - `AI_TUTOR_MOCK=1` chỉ dùng khi kiểm thử; kết quả mang `mock: true` và UI hiện cảnh báo.
   Không bao giờ bật ở production.
+- **Thử lại không nhân đôi hội thoại (8.5.1):** client gửi `retry: true`; máy chủ dùng lại
+  đúng dòng `user` đã lưu, không insert dòng mới và không cộng thêm `message_count`.
+  Đừng quay lại kiểu gửi lại nguyên văn câu hỏi.
+- **Chẩn đoán provider (8.5.1):** lỗi provider được ghi vào `ai_provider_diagnostics`
+  (RLS bật, **không policy**, đã thu hồi quyền `anon`/`authenticated`), nội dung đi qua
+  `sanitizeProviderDetail()` để không bao giờ lưu khoá. Không trả chi tiết này cho học sinh.
+- **Model Google:** chỉ `gemini-3.8-flash` còn dùng được (2026-11-22); `gemini-2.5-*` trả 404.
+  Khoá miễn phí dễ chạm `503`/`429` — muốn ổn định thì cấu hình provider dự phòng.
 
 ### QA AI Tutor
 

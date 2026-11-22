@@ -127,6 +127,7 @@ students 1 ──< ai_conversations 1 ──< ai_messages
     │
     └──< ai_usage_logs
 ai_settings (1 dòng) · ai_prompt_versions (lịch sử System Prompt)
+ai_provider_diagnostics (nhật ký lỗi provider — CHỈ service_role, không policy)
 ```
 
 ## 4. Điểm tích hợp trong Bá Khí

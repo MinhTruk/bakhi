@@ -1,6 +1,6 @@
 # Brain Index
 
-_Auto-generated. Last updated 2026-11-22T03:43:43.084Z._
+_Auto-generated. Last updated 2026-11-22T10:15:23.244Z._
 
 - [agent-session-protocol](pages/agent-session-protocol.md) — category: project | tags: [agents, workflow] | This is the routine to follow on **every** session in this repo, future included.
 - [brain-toolkit-location](pages/brain-toolkit-location.md) — category: decision | tags: [brain, tooling] | The brain.md installer (v0.3.0, `@mindmux/brain-md`) unpacks `LICENSE`, `README.md`, `package.json`, `bin/` and `skills/` into the project r
@@ -11,3 +11,4 @@ _Auto-generated. Last updated 2026-11-22T03:43:43.084Z._
 - [static-no-build-architecture](pages/static-no-build-architecture.md) — category: concept | tags: [architecture, pages] | The site is plain HTML/CSS/JS deployed to **GitHub Pages with no build step**: 119 HTML files (1 home, 1 admin, 116 subject/lesson/Studio pa
 - [v840-themes-and-founder-badges](pages/v840-themes-and-founder-badges.md) — category: decision | tags: [v840, themes, decorations, founder] | v8.4.0 shipped three vertical slices; the rest of the brief was deliberately deferred and is listed in `CHANGELOG.md`.
 - [v844-pwa-search-usage](pages/v844-pwa-search-usage.md) — category: decision | # PWA, tìm kiếm toàn site và sức khoẻ tiến trình (8.4.4)
+- [v851-ai-tutor-deploy](pages/v851-ai-tutor-deploy.md) — category: decision | Trợ lý AI (AI Tutor) **đã được deploy thật** lên project Supabase `bakhi` ngày 2026-11-22 (phiên bản 8.5.1):

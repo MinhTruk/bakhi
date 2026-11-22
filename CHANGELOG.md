@@ -2,6 +2,34 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.5.1] — 2026-11-22
+
+### Sửa lỗi
+
+- **Mô hình mặc định đã bị Google ngừng cấp.** `gemini-2.5-flash` trả 404
+  (`no longer available to new users`), làm mọi câu hỏi đều báo “mô hình không còn khả dụng”.
+  Mặc định chuyển sang `gemini-3.8-flash`; migration `20261218000002` cập nhật cả ràng buộc
+  mặc định lẫn dòng `ai_settings` đang chạy. Chỉ đổi tên model, không đụng dữ liệu hội thoại.
+- **Thử lại làm lặp câu hỏi.** Nút **Thử lại** gửi lại nguyên văn câu hỏi và máy chủ ghi thêm
+  một dòng `user`, nên hội thoại có hai bong bóng giống nhau. Nay client gửi `retry: true`
+  và máy chủ dùng lại đúng câu hỏi đã lưu (`NOTHING_TO_RETRY` nếu chưa có), không tạo dòng mới,
+  không cộng sai `message_count`.
+
+### Cải tiến
+
+- **Nhật ký chẩn đoán nhà cung cấp.** Bảng mới `ai_provider_diagnostics`
+  (migration `20261218000001`), **RLS bật và không có policy nào**, đã thu hồi quyền bảng của
+  `anon`/`authenticated`: chỉ Edge Function đọc/ghi. Lưu mã HTTP và thông điệp đã lọc khoá để
+  Ban quản trị biết chính xác vì sao khoá/model sai, mà học sinh không thấy chi tiết nội bộ.
+- **Thử lại provider chính một lần** (cách nhau 0,9 giây) trước khi xét provider dự phòng —
+  xử lý các lần provider quá tải thoáng qua. Vẫn không bao giờ thử vô hạn.
+
+### Triển khai
+
+- Đã áp ba migration và deploy `ai-tutor-api` lên project `bakhi`; secret `AI_TUTOR_API_KEY`
+  đã có sẵn. Xem `docs/RELEASE_REPORT_V850.md` để biết phần nào đã xác minh thật và phần nào
+  còn chặn.
+
 ## [8.5.0] — 2026-11-22
 
 ### Tính năng

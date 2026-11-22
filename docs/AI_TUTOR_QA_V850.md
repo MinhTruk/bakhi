@@ -42,6 +42,13 @@ cú pháp TypeScript của `ai-tutor-api` cùng hai mô-đun `_shared/ai-*.ts`.
 
 ## 3. Bộ test theo kế hoạch: trạng thái thực tế
 
+> **Cập nhật 2026-11-22 (8.5.1):** backend và database đã được deploy thật lên project
+> `bakhi`, nên các mục từng "❌ chưa làm — cần Supabase" giờ đã có kết quả thật, ghi trong
+> `docs/RELEASE_REPORT_V850.md` mục 3.3: auth (`401 NO_SESSION`/`BAD_SESSION`), lưu trữ,
+> RLS (đọc chéo 0 dòng, ghi trực tiếp 403), thử lại không tạo dòng trùng, và giao diện đã
+> được xem trên trình duyệt thật. Riêng câu trả lời AI thật vẫn **BLOCKED** vì khoá Google
+> đã hết hạn mức (`429`) — không phải lỗi mã.
+
 | Đề xuất trong yêu cầu | Trạng thái |
 |---|---|
 | `ai-tutor-smoke.js` | ✅ đã làm |
