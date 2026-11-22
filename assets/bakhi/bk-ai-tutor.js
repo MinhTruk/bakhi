@@ -36,7 +36,7 @@
     ];
 
     var S = {
-        layout: 'page', root: null, dock: null, fab: null,
+        layout: 'page', root: null, dock: null, fab: null, launcher: null,
         booted: false, loading: false, config: null,
         conversations: [], active: null, messages: [],
         mode: 'explain', filter: '', showArchived: false,
@@ -1255,8 +1255,26 @@
         D.body.classList.remove('bkai-dock-open');
     }
 
+    /* Người dùng đã ẩn nút "Hỏi AI" trên thiết bị này (8.5.3). Nút chỉ là lối tắt;
+       lối vào chính vẫn là menu tài khoản → Trợ lý AI và trang /ai-tutor/. */
+    var FAB_HIDDEN_KEY = 'bakhiAiFabHidden.v1';
+    function storageGet(key) {
+        try { return global.localStorage ? global.localStorage.getItem(key) : null; }
+        catch (e) { return null; }
+    }
+    function storageSet(key, value) {
+        try { if (global.localStorage) global.localStorage.setItem(key, value); }
+        catch (e) { /* chế độ riêng tư: chỉ ẩn trong phiên này */ }
+    }
+    function fabHidden() {
+        return storageGet(FAB_HIDDEN_KEY) === '1';
+    }
+
     function ensureFab() {
-        if (S.fab) return S.fab;
+        if (S.fab) return S.launcher || S.fab;
+        /* Bọc nút chính và nút × trong một khối định vị, để nút × luôn dính
+           góc trên bên phải và cả hai cùng nhường chỗ cho nút Báo cáo. */
+        var wrap = el('div', 'bkai-launcher');
         var b = el('button', 'bkai-fab');
         b.type = 'button';
         b.id = 'bkaiFab';
@@ -1265,28 +1283,58 @@
         b.appendChild(icon('fa-wand-magic-sparkles'));
         b.appendChild(el('span', 'bkai-fab-label', 'Hỏi AI'));
         on(b, 'click', function () { openDetail({ context: pageContext() }); });
-        (D.body || D.documentElement).appendChild(b);
+
+        /* Trên điện thoại nút nổi che nội dung — cho phép đóng hẳn. */
+        var closeBtn = el('button', 'bkai-fab-x');
+        closeBtn.type = 'button';
+        closeBtn.setAttribute('aria-label', 'Ẩn nút Hỏi AI');
+        closeBtn.title = 'Ẩn nút Hỏi AI — mở lại trong menu tài khoản';
+        closeBtn.appendChild(icon('fa-xmark'));
+        on(closeBtn, 'click', function (ev) {
+            if (ev && ev.stopPropagation) ev.stopPropagation();
+            if (ev && ev.preventDefault) ev.preventDefault();
+            hideFab(true);
+        });
+
+        wrap.appendChild(b);
+        wrap.appendChild(closeBtn);
+        (D.body || D.documentElement).appendChild(wrap);
         S.fab = b;
+        S.launcher = wrap;
         placeFab();
-        return b;
+        return wrap;
+    }
+
+    function hideFab(persist) {
+        if (S.launcher) S.launcher.hidden = true;
+        else if (S.fab) S.fab.hidden = true;
+        if (persist) storageSet(FAB_HIDDEN_KEY, '1');
+    }
+
+    function showFab() {
+        storageSet(FAB_HIDDEN_KEY, '');
+        var wrap = ensureFab();
+        if (wrap) wrap.hidden = false;
+        placeFab();
+        return API;
     }
 
     /* Không đè lên nút Báo cáo: đo vị trí thật của nút đó rồi đặt mình phía trên.
        Đo bằng getBoundingClientRect (không dùng toạ độ cứng) — cùng cách bk-report
        neo vào chuông thông báo. */
     function placeFab() {
-        var fab = S.fab;
-        if (!fab) return;
+        var target = S.launcher || S.fab;
+        if (!target) return;
         var other = D.getElementById('bkrepFab') || D.querySelector('.bkrep-fab');
         if (other && other.getBoundingClientRect) {
             var rect = other.getBoundingClientRect();
             if (rect && rect.top > 0 && rect.height > 0) {
                 var gap = Math.max(120, Math.round(global.innerHeight - rect.top) + 10);
-                fab.style.bottom = gap + 'px';
+                target.style.bottom = gap + 'px';
                 return;
             }
         }
-        fab.style.bottom = '';
+        target.style.bottom = '';
     }
 
     /* ---------------------------------------------------------------------
@@ -1302,7 +1350,7 @@
             var o = options || {};
             if (o.context) S.context = o.context;
             buildShell(root, 'page');
-            if (S.fab) { S.fab.hidden = true; }
+            hideFab(false);
             boot();
             return API;
         },
@@ -1334,6 +1382,11 @@
             return API;
         },
 
+        /* Ẩn / hiện lại nút nổi "Hỏi AI" (8.5.3). Ẩn được ghi nhớ trên thiết bị;
+           mở lại bằng menu tài khoản → Trợ lý AI hoặc gọi showFab(). */
+        hideFab: function () { hideFab(true); return API; },
+        showFab: showFab,
+
         /* Ngữ cảnh tự nhận biết của trang hiện tại (dùng cho module khác). */
         pageContext: pageContext,
 
@@ -1348,6 +1401,7 @@
         if (D.body && D.body.getAttribute && D.body.getAttribute('data-bk-ai-fab') === '0') return;
         if (D.getElementById('bkai')) return;   /* trang AI Tutor đầy đủ */
         if (!apiReady()) return;
+        if (fabHidden()) return;                /* người dùng đã đóng nút trên máy này */
         ensureFab();
         /* Thanh địa chỉ di động đổi chiều cao → căn lại nút nổi. */
         global.addEventListener('resize', function () {

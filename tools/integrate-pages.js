@@ -98,18 +98,22 @@ function inject(file) {
     fs.writeFileSync(file, withReport);
     html = withReport;
   }
-  if (SKIP.has(rel)) return 'skip';
-  const withThemes = ensureThemes(file, html);
-  if (withThemes !== html) {
-    fs.writeFileSync(file, withThemes);
-    html = withThemes;
+  if (!SKIP.has(rel)) {
+    const withThemes = ensureThemes(file, html);
+    if (withThemes !== html) {
+      fs.writeFileSync(file, withThemes);
+      html = withThemes;
+    }
   }
-  /* Trợ lý AI chạy SAU themes để hai khối cùng nối ở cuối tệp, đúng thứ tự. */
+  /* Trợ lý AI chạy SAU themes để hai khối cùng nối ở cuối tệp, đúng thứ tự.
+     8.5.3: "Hỏi AI" có mặt ở MỌI trang học sinh, kể cả studio/ (ứng dụng tĩnh
+     riêng đã có bk-cloud.js); trang quản trị vẫn bỏ qua, hàm tự kiểm tra. */
   const withAi = ensureAiTutor(file, html);
   if (withAi !== html) {
     fs.writeFileSync(file, withAi);
     html = withAi;
   }
+  if (SKIP.has(rel)) return 'skip';
   if (html.includes('assets/bakhi/bk-core.js')) return 'already';
 
   const depth = rel.split('/').length - 1;

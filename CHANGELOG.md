@@ -2,6 +2,24 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.5.3] — 2026-11-22
+
+### Tính năng
+
+- **Nút × đóng nút nổi “Hỏi AI” (điện thoại).** Nút “Hỏi AI” góc phải màn hình có thêm nút
+  × nhỏ ở góc trên bên phải. Bấm × sẽ ẩn hẳn nút và ghi nhớ lựa chọn trên thiết bị
+  (`bakhiAiFabHidden.v1`), nên nút không còn che nội dung bài học trên màn hình nhỏ.
+  Lối vào Trợ lý AI vẫn còn: menu tài khoản → **Trợ lý AI**, hoặc trang `/ai-tutor/`;
+  gọi `BKAITutor.showFab()` để hiện lại nút.
+- **“Hỏi AI” có mặt ở mọi trang học sinh.** `tools/integrate-pages.js` chèn mô-đun vào cả
+  `studio/` (trước đây bị bỏ qua), nên Word & Paint cũng có nút hỏi trợ lý. Trang quản trị
+  `admin/` và `founder/` vẫn không nạp nút này; `ai-tutor/` dùng giao diện đầy đủ.
+
+### Cải tiến
+
+- Nút nổi được bọc trong khối định vị `.bkai-launcher` để nút × luôn dính góc và cả hai
+  cùng nhường chỗ cho nút Báo cáo; trên màn hình ≤ 860px nút × tăng lên 30px cho dễ bấm.
+
 ## [8.5.2] — 2026-11-22
 
 ### Tính năng

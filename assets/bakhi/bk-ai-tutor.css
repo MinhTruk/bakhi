@@ -506,12 +506,19 @@
 }
 
 /* ------------------------------------------------------------- nút nổi */
-.bkai-fab {
+/* Khối định vị bọc nút "Hỏi AI" + nút × đóng (8.5.3). */
+.bkai-launcher {
     position: fixed;
     right: 18px;
     /* Nằm trên nút Báo cáo (bk-report) — JS còn căn lại theo vị trí thật. */
     bottom: 156px;
     z-index: 880;
+    display: inline-flex;
+    align-items: center;
+}
+.bkai-launcher[hidden] { display: none; }
+.bkai-fab {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -529,6 +536,30 @@
 .bkai-fab:hover { transform: translateY(-1px); }
 .bkai-fab[hidden] { display: none; }
 .bkai-fab:focus-visible { outline: 2px solid var(--bkai-accent); outline-offset: 2px; }
+/* Nút × nhỏ, đủ lớn để bấm trên điện thoại (≥ 28px). */
+.bkai-fab-x {
+    position: absolute;
+    top: -10px;
+    right: -8px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(248, 113, 113, .55);
+    background: #16203a;
+    color: #fca5a5;
+    font: inherit;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 2;
+    box-shadow: 0 4px 12px rgba(2, 6, 23, .45);
+}
+.bkai-fab-x:hover { background: rgba(248, 113, 113, .22); color: #fecaca; }
+.bkai-fab-x:focus-visible { outline: 2px solid var(--bkai-accent); outline-offset: 2px; }
 
 .bkai-jump {
     align-self: center;
@@ -564,8 +595,11 @@
     }
     .bkai-page .bkai-main { min-height: 62vh; }
     .bkai-dock-host { width: 100vw; }
-    .bkai-fab { bottom: 148px; right: 14px; padding: 11px 14px; }
+    .bkai-launcher { bottom: 148px; right: 14px; }
+    .bkai-fab { padding: 11px 14px; }
     .bkai-fab-label { display: none; }
+    /* Trên máy nhỏ, nút × to hơn một chút cho dễ bấm. */
+    .bkai-fab-x { width: 30px; height: 30px; top: -11px; right: -9px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

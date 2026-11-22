@@ -394,6 +394,13 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   KaTeX với `trust: false`). Liên kết chỉ `http(s)`, `mailto`, đường dẫn tương đối.
 - `tools/integrate-pages.js` chèn `bk-ai-tutor.js|css` (idempotent) ở **cuối tệp**, không
   chèn trước `</body>` (một số trang cũ có thẻ `<script>` mở chưa đóng trên dòng riêng).
+  Từ 8.5.3 nút "Hỏi AI" có mặt ở **mọi trang học sinh**, kể cả `studio/`; chỉ `admin/`,
+  `founder/` (không có học sinh) và `ai-tutor/` (giao diện đầy đủ) là không gắn nút nổi.
+- **Đóng nút nổi (8.5.3):** nút và nút × nằm trong một khối `.bkai-launcher` (định vị do
+  `placeFab()`, không đặt cứng toạ độ). Ẩn qua × ghi `localStorage.bakhiAiFabHidden.v1`;
+  `autoMount()` không dựng lại nút khi cờ này bật. Lối vào thay thế: menu tài khoản →
+  **Trợ lý AI**, trang `/ai-tutor/`, hoặc `window.BKAITutor.showFab()`. Không thêm cơ chế
+  ẩn nút thứ hai và không xoá key localStorage này khi nâng cấp.
 - **Founder Dashboard không nằm trong `inject-shell.js`**: nó đã nạp `bk-badges.js` theo
   thứ tự riêng, chèn thêm khối shell sẽ nạp trùng (version-audit sẽ fail).
 - `AI_TUTOR_MOCK=1` chỉ dùng khi kiểm thử; kết quả mang `mock: true` và UI hiện cảnh báo.

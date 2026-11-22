@@ -188,9 +188,44 @@ async function run() {
   ok('không lộ mã lỗi thô cho người học', !/PROVIDER_DOWN/.test(errBox.textContent));
 
   dom.window.close();
+
+  await runFab();
+
   console.log('');
   console.log(failures ? '=== ' + failures + ' FAILURE(S) ===' : '=== ALL CHECKS PASSED ===');
   process.exitCode = failures ? 1 : 0;
+}
+
+/* 8.5.3 — nút nổi "Hỏi AI" có nút × để đóng trên điện thoại và nhớ lựa chọn. */
+async function runFab() {
+  const dom = new JSDOM(
+    '<!DOCTYPE html><html><body><main>Nội dung bài học</main></body></html>',
+    { url: 'https://minhtruk.github.io/bakhi/ktck1/toan/indextoan.html', runScripts: 'outside-only', pretendToBeVisual: true }
+  );
+  const w = dom.window;
+  w.BK_SUPABASE = {
+    url: 'https://demo.supabase.co',
+    key: 'sb_publishable_test',
+    functions: { aiTutor: 'ai-tutor-api' }
+  };
+  w.BKCloud = { configured: () => true, chatClient: () => Promise.resolve({}) };
+  w.eval(fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-ai-tutor.js'), 'utf8'));
+
+  const launcher = await until(() => w.document.querySelector('.bkai-launcher'));
+  ok('nút nổi Hỏi AI tự gắn trên trang bài học', !!launcher && !!w.document.getElementById('bkaiFab'));
+  const closeBtn = w.document.querySelector('.bkai-fab-x');
+  ok('nút nổi có nút × đóng', !!closeBtn && closeBtn.getAttribute('aria-label') === 'Ẩn nút Hỏi AI');
+
+  if (closeBtn) closeBtn.dispatchEvent(new w.Event('click', { bubbles: true }));
+  ok('bấm × ẩn hẳn nút nổi', launcher.hidden === true);
+  ok('ghi nhớ lựa chọn đóng trên thiết bị',
+    w.localStorage.getItem('bakhiAiFabHidden.v1') === '1');
+
+  w.BKAITutor.showFab();
+  ok('BKAITutor.showFab() mở lại nút và xoá ghi nhớ',
+    launcher.hidden === false && !w.localStorage.getItem('bakhiAiFabHidden.v1'));
+
+  dom.window.close();
 }
 
 run().catch((err) => {
