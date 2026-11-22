@@ -36,6 +36,14 @@ Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep
 - **`/admin` và `/founder` không còn nạp `bk-report.js`.** Trước đây hai trang quản trị
   vẫn tải tệp nút báo cáo học sinh rồi thoát ngay qua `BK_ADMIN_ONLY`; nay không tải,
   đúng quy ước trong `AGENTS.md`.
+- **Trang khách không còn lỗi 409 trong DevTools.** Nút báo cáo chỉ hỏi `report-api`
+  `bootstrap` khi thiết bị đã nhận diện học sinh; trước đây khách chưa nhận diện vẫn gọi
+  và nhận `NOT_BOUND` (409) ngay khi tải trang.
+- **Service worker không giữ mã cũ và revalidate tệp không kèm `?v=`.** Tài nguyên
+  `assets/bakhi/` có `?v=` vẫn cache-first; tệp nạp không kèm phiên bản chuyển sang
+  network-first kèm `cache: 'no-cache'` nên không bị HTTP cache 10 phút của GitHub Pages
+  giữ bản cũ. Tên cache thêm `REVISION` để worker mới dọn sạch cache cũ kể cả khi số
+  phiên bản phát hành không đổi.
 
 ### Cải tiến
 
