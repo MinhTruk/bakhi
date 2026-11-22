@@ -1,4 +1,4 @@
-# PWA, tìm kiếm toàn site và đếm lượt dùng ẩn danh (8.4.4)
+# PWA, tìm kiếm toàn site và sức khoẻ tiến trình (8.4.4)
 
 Ba phần này độc lập với giao diện, không đụng nội dung giáo dục và không thêm dependency.
 
@@ -38,25 +38,7 @@ Workers để thấy worker ở phạm vi `/bakhi/`.
 - Sau khi thêm/đổi tiêu đề trang bài học: `node tools/build-search-index.js`.
   Cổng `--check` báo lệch nếu quên sinh lại.
 
-## 3. Đếm lượt dùng ẩn danh
-
-- Bảng `public.usage_counters (day, feature, hits)`, khoá `(day, feature)`, bật RLS và
-  **không có policy nào** → trình duyệt không đọc/ghi trực tiếp.
-- Ghi duy nhất qua RPC `public.bk_usage_ping(p_feature text)`: chỉ nhận tên tính năng khớp
-  `^[a-z0-9_.:-]{2,40}$`, tự tăng `hits` theo ngày Hà Nội.
-- Client `assets/bakhi/bk-usage.js` gửi `{ p_feature: name }` — không tên, không mã học
-  sinh, không nội dung học tập; mỗi tính năng tối đa một lần mỗi phiên (`sessionStorage`).
-- Nơi gọi: `bk-core.js` (`search`), `bk-themes.js` (`theme.<id>` khi chọn giao diện).
-- Đọc số liệu (SQL, chỉ service_role):
-
-```sql
-select day, feature, hits
-  from public.usage_counters
- order by day desc, hits desc
- limit 50;
-```
-
-## 4. Sức khoẻ tiến trình
+## 3. Sức khoẻ tiến trình
 
 `bk_gam_health_drift()` trả về các hồ sơ có `total_xp`/`level` lệch so với sổ XP và công
 thức `bk_gam_level()`. Chỉ service_role gọi được.

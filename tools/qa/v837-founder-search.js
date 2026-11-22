@@ -62,14 +62,16 @@ assert(/detail\.level/.test(mod) && !/detail\.from_level/.test(mod),
 
 /* --------------------------------------------------------- 3. Phiên bản */
 const app = (read('assets/bakhi/bk-version.js').match(/app:\s*'([^']+)'/) || [])[1];
-assert(app === '8.3.8', 'bk-version.js là 8.3.8', String(app));
-assert(/APP_VERSION = '8\.3\.8'/.test(read('assets/bakhi/bk-devboard.js')),
-    'bk-devboard.js cùng phiên bản');
-assert(/SERVER_VERSION = '8\.3\.8'/.test(read('supabase/functions/admin-actions/index.ts')),
-    'admin-actions cùng phiên bản');
-assert(/version: '8\.3\.8'/.test(read('assets/bakhi/bk-founder.js')),
-    'BKFounder báo phiên bản mới');
-assert(/version: '8\.3\.8'/.test(mod), 'BKFounderGamification báo phiên bản mới');
+/* Phiên bản không ghim cứng: so với nguồn duy nhất bk-version.js. */
+assert(/^\d+\.\d+\.\d+$/.test(app), 'bk-version.js khai báo phiên bản hợp lệ', String(app));
+assert(new RegExp("APP_VERSION = '" + app.replace(/\./g, '\\.') + "'").test(read('assets/bakhi/bk-devboard.js')),
+    'bk-devboard.js cùng phiên bản', app);
+assert(new RegExp("SERVER_VERSION = '" + app.replace(/\./g, '\\.') + "'").test(read('supabase/functions/admin-actions/index.ts')),
+    'admin-actions cùng phiên bản', app);
+assert(new RegExp("version: '" + app.replace(/\./g, '\\.') + "'").test(read('assets/bakhi/bk-founder.js')),
+    'BKFounder báo phiên bản mới', app);
+assert(new RegExp("version: '" + app.replace(/\./g, '\\.') + "'").test(mod),
+    'BKFounderGamification báo phiên bản mới', app);
 
 /* --------------------------------------------------- 4. Chạy giao diện thật */
 const dom = new JSDOM('<!doctype html><html><body><div id="host"></div></body></html>', {

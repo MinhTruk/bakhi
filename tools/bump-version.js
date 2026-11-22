@@ -27,6 +27,14 @@ const VERSION_FILE = path.join(ROOT, 'assets/bakhi/bk-version.js');
 const DEVBOARD_FILE = path.join(ROOT, 'assets/bakhi/bk-devboard.js');
 const SERVER_FILE = path.join(ROOT, 'supabase/functions/admin-actions/index.ts');
 const CHANGELOG = path.join(ROOT, 'CHANGELOG.md');
+/* Mọi nơi khai báo phiên bản trong mã (không chỉ HTML): mỗi mục phải khớp
+   bk-version.js sau khi bump, nếu không giao diện/dashboard báo sai bản. */
+const VERSION_TARGETS = [
+  { file: DEVBOARD_FILE, re: /APP_VERSION = '([^']+)'/, label: 'bk-devboard APP_VERSION' },
+  { file: path.join(ROOT, 'assets/bakhi/bk-founder.js'), re: /version: '([^']+)'/, label: 'bk-founder version' },
+  { file: path.join(ROOT, 'assets/bakhi/bk-founder-gamification.js'), re: /version: '([^']+)'/, label: 'bk-founder-gamification version' },
+  { file: SERVER_FILE, re: /SERVER_VERSION = '([^']+)'/, label: 'admin-actions VERSION' }
+];
 const SKIP_DIRS = new Set(['.git', 'node_modules', 'docs', 'tools', 'artifacts']);
 
 const args = process.argv.slice(2);
@@ -99,19 +107,21 @@ for (const file of htmlFiles) {
   }
 }
 
-const devSrc = fs.readFileSync(DEVBOARD_FILE, 'utf8');
-const devVer = (devSrc.match(/APP_VERSION = '([^']+)'/) || [])[1] || '';
-const srvSrc = fs.readFileSync(SERVER_FILE, 'utf8');
-const srvVer = (srvSrc.match(/SERVER_VERSION = '([^']+)'/) || [])[1] || '';
+const targetVers = VERSION_TARGETS.map(function (t) {
+  const src = fs.readFileSync(t.file, 'utf8');
+  return { t: t, src: src, ver: (src.match(t.re) || [])[1] || '' };
+});
 
 console.log('Phiên bản đang phát hành: ' + currentApp);
 console.log('Phiên bản đích:           ' + version);
 console.log('HTML lệch ?v=:            ' + staleFiles + ' tệp / ' + staleRefs + ' tham chiếu');
-console.log('bk-devboard APP_VERSION:  ' + devVer);
-console.log('admin-actions VERSION:    ' + srvVer);
+targetVers.forEach(function (v) {
+  console.log((v.t.label + ':').padEnd(26, ' ') + v.ver);
+});
 
 if (checkOnly) {
-  const bad = staleFiles || devVer !== version || srvVer !== version || currentApp !== version;
+  const bad = staleFiles || currentApp !== version ||
+    targetVers.some(function (v) { return v.ver !== version; });
   console.log(bad ? '\nLỆCH PHIÊN BẢN — chạy: node tools/bump-version.js ' + version : '\nĐã đồng bộ.');
   process.exitCode = bad ? 1 : 0;
   return;
@@ -142,15 +152,14 @@ for (const file of htmlFiles) {
 }
 console.log('  ~ ' + touched + ' tệp HTML');
 
-const devNext = devSrc.replace(/APP_VERSION = '[^']+'/, "APP_VERSION = '" + version + "'");
-if (devNext !== devSrc) {
-  fs.writeFileSync(DEVBOARD_FILE, devNext);
-  console.log('  ~ assets/bakhi/bk-devboard.js');
-}
-const srvNext = srvSrc.replace(/SERVER_VERSION = '[^']+'/, "SERVER_VERSION = '" + version + "'");
-if (srvNext !== srvSrc) {
-  fs.writeFileSync(SERVER_FILE, srvNext);
-  console.log('  ~ supabase/functions/admin-actions/index.ts');
-}
+targetVers.forEach(function (v) {
+  const next = v.src.replace(v.t.re, function (all, _old, offset) {
+    return all.replace(/'[^']*'/, "'" + version + "'");
+  });
+  if (next !== v.src) {
+    fs.writeFileSync(v.t.file, next);
+    console.log('  ~ ' + path.relative(ROOT, v.t.file));
+  }
+});
 
 console.log('\nXong. Kiểm tra: node tools/qa/version-audit.js');

@@ -23,13 +23,19 @@ Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep
   network-first (chỉ dùng bản lưu khi mất mạng), tài nguyên `assets/bakhi/` cache-first theo
   `?v=` nên không bao giờ phục vụ JS/CSS cũ, dữ liệu Supabase không đi qua cache. Trang mất
   mạng hiện thông báo thay vì lỗi trình duyệt.
-- **Đếm lượt dùng ẩn danh.** Bảng `usage_counters` (khoá theo ngày + tên tính năng) và RPC
-  `bk_usage_ping` chỉ nhận tên tính năng — không tên, không mã học sinh, không nội dung học
-  tập. Dùng để biết giao diện/tính năng nào thực sự được dùng.
 - **Kiểm tra sức khoẻ tiến trình.** Hàm `bk_gam_health_drift()` đối chiếu sổ XP
   (`xp_transactions`) với `user_progression` và công thức cấp, chỉ service_role gọi được;
   cổng `tools/qa/gamification-health.js` kiểm tra các bất biến này và (tuỳ chọn) truy vấn
   trực tiếp project để tìm hồ sơ lệch.
+
+### Sửa lỗi
+
+- **Phiên bản đồng bộ trong mọi mô-đun.** `bk-founder.js` và `bk-founder-gamification.js`
+  còn khai báo `8.3.8` trong khi `bk-version.js` đã là `8.4.4`; nay cả hai đọc đúng bản
+  phát hành và `tools/bump-version.js` tự đổi chúng trong mọi lần bump sau này.
+- **`/admin` và `/founder` không còn nạp `bk-report.js`.** Trước đây hai trang quản trị
+  vẫn tải tệp nút báo cáo học sinh rồi thoát ngay qua `BK_ADMIN_ONLY`; nay không tải,
+  đúng quy ước trong `AGENTS.md`.
 
 ### Cải tiến
 

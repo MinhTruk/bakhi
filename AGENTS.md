@@ -46,7 +46,6 @@ Hướng dẫn cho agent/developer làm việc trong repository này. Đọc h�
   bk-core.js|css       Kho dữ liệu local-first, UI kit, tìm kiếm, adapter AI/Supabase,
                        đăng ký PWA + tải chỉ mục bài học (8.4.4)
   bk-themes.js|css     Giao diện theo mùa (tự bật theo lịch) + tên có biểu tượng
-  bk-usage.js          Bộ đếm lượt dùng ẩn danh (RPC bk_usage_ping, không danh tính)
   search-index.js      TỆP TỰ SINH: chỉ mục bài học (tools/build-search-index.js)
   manifest.webmanifest Manifest PWA (sw.js ở gốc repo)
   bk-learning.js|css   Learning Intelligence: sổ tay câu sai, phân tích, kế hoạch,

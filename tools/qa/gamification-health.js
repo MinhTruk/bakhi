@@ -9,7 +9,7 @@
  *   · Mọi đường ghi `user_progression` phải đi qua hàm có gọi bk_gam_evaluate,
  *     nếu không thành tựu mốc cấp sẽ lệch âm thầm.
  *   · Hàm `bk_gam_health_drift()` tồn tại và bị thu hồi khỏi anon/authenticated.
- *   · Bộ đếm sử dụng ẩn danh không nhận/gửi danh tính học sinh.
+ *   · Không còn bộ đếm lượt dùng ẩn danh (đã loại bỏ khỏi 8.4.4).
  *
  * Phần TRỰC TIẾP (tuỳ chọn, cần quyền project — KHÔNG đặt token trong repo):
  *   SUPABASE_ACCESS_TOKEN=... SUPABASE_PROJECT_ID=wzvs... \
@@ -72,24 +72,17 @@ ok('bk_gam_health_drift chỉ service_role gọi được',
 ok('bk_gam_health_drift dùng đúng công thức cấp',
   /public\.bk_gam_level\(p\.total_xp\)/.test(latest));
 
-/* 3. Bộ đếm ẩn danh */
-ok('usage_counters khoá theo (day, feature)',
-  /primary key \(day, feature\)/.test(latest) && /create table if not exists public\.usage_counters/.test(latest));
-ok('usage_counters bật RLS và không có policy ghi',
-  /alter table public\.usage_counters enable row level security/.test(latest) &&
-  !/create policy[^;]*on public\.usage_counters/i.test(latest));
-ok('bk_usage_ping có whitelist tên tính năng',
-  /!~ '\^\[a-z0-9_\.:-\]\{2,40\}\$'/.test(latest));
-
-const usageClient = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-usage.js'), 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '');   /* bỏ chú thích, chỉ xét mã thực sự gửi đi */
-ok('client chỉ gửi p_feature (không có student_id/email/tên)',
-  /JSON\.stringify\(\{ p_feature: name \}\)/.test(usageClient) &&
-  !/student_id|studentId|display_name/.test(usageClient) &&
-  !/email/.test(usageClient));
-ok('client chỉ gọi RPC bk_usage_ping, không ghi bảng trực tiếp',
-  /\/rest\/v1\/rpc\/bk_usage_ping/.test(usageClient) &&
-  !/\/rest\/v1\/usage_counters/.test(usageClient));
+/* 3. Bộ đếm lượt dùng ẩn danh đã được loại bỏ khỏi 8.4.4 */
+const clientDir = path.join(ROOT, 'assets/bakhi');
+const clientRefs = fs.readdirSync(clientDir)
+  .filter((f) => /\.(js|css|html)$/.test(f))
+  .filter((f) => /bk-usage|BKUsage|bk_usage_ping|usage_counters|bakhiUsage/.test(
+    fs.readFileSync(path.join(clientDir, f), 'utf8')));
+ok('không còn tham chiếu bộ đếm lượt dùng trong client', clientRefs.length === 0, clientRefs.join(', '));
+ok('không còn tệp assets/bakhi/bk-usage.js', !fs.existsSync(path.join(clientDir, 'bk-usage.js')));
+ok('migration không tạo usage_counters / bk_usage_ping',
+  !/create table[^;]*public\.usage_counters/i.test(allSql) &&
+  !/function public\.bk_usage_ping/i.test(allSql));
 
 /* 4. Tuỳ chọn: kiểm tra trực tiếp trên project */
 const token = process.env.SUPABASE_ACCESS_TOKEN;

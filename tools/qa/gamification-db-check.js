@@ -267,8 +267,13 @@ begin
     select level, total_xp into v_level, v_total
       from public.user_progression where student_id = s;
     assert v_level = 9, 'XA49 cấp độ lưu sai: ' || v_level;
-    assert v_total = public.bk_gam_level_floor(9),
-           'XA50 tổng XP không khớp mốc cấp 9: ' || v_total;
+    /* 8.3.8: bk_gam_set_level gọi bk_gam_evaluate trong cùng transaction, nên
+       thành tựu mốc cấp có thể cộng thêm XP ngay sau khi đặt cấp. Điều bất biến
+       là: không thấp hơn mốc cấp 9 và tổng XP vẫn quy ra đúng cấp 9. */
+    assert v_total >= public.bk_gam_level_floor(9),
+           'XA50 tổng XP thấp hơn mốc cấp 9: ' || v_total;
+    assert public.bk_gam_level(v_total) = 9,
+           'XA50b tổng XP không quy ra cấp 9: ' || v_total;
 
     -- 4. Đặt cấp độ không làm lệch sổ
     assert not exists (select 1 from public.bk_gam_admin_drift() d where d.student_id = s),

@@ -1237,8 +1237,6 @@
         }
 
         ensureLessonIndex();
-        ensureUsage();
-        if (global.BKUsage) { try { global.BKUsage.ping('search'); } catch (e) { } }
         lessonIndex().forEach(function (l) {
             var sc = score(l.title, l.url + ' ' + l.meta + ' ' + (l.keywords || ''));
             if (sc) results.push(Object.assign({ score: sc, snippet: l.url, category: 'Bài học' }, l));
@@ -2256,21 +2254,6 @@
         try { global.requestIdleCallback(ensureLessonIndex); } catch (e) { setTimeout(ensureLessonIndex, 1500); }
     } else {
         setTimeout(ensureLessonIndex, 1500);
-    }
-
-    /* Bộ đếm lượt dùng ẩn danh (8.4.4): chỉ tải khi thật sự dùng đến. */
-    var usageLoaded = false;
-    function ensureUsage() {
-        if (usageLoaded || global.BKUsage) return;
-        usageLoaded = true;
-        var src = basePath() + 'assets/bakhi/bk-usage.js';
-        var rel = (global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '';
-        if (rel) src += '?v=' + rel;
-        var s = D.createElement('script');
-        s.src = src;
-        s.async = true;
-        s.onerror = function () { usageLoaded = false; };
-        (D.body || D.head || D.documentElement).appendChild(s);
     }
 
     /* ---------------------------------------------------------------------

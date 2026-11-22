@@ -402,39 +402,6 @@
         autoPaint();
     }
 
-    /* ------------------------------------------------- Bộ đếm ẩn danh (8.4.4)
-       Chỉ đếm "giao diện nào được chọn" — không gửi danh tính. Tải muộn để
-       trang không phải trả giá khi không ai mở Cài đặt. */
-    var usageAsked = false;
-    function assetBase() {
-        var s = D.currentScript;
-        if (!s && D.scripts) {
-            for (var i = D.scripts.length - 1; i >= 0; i--) {
-                if (/assets\/bakhi\/bk-themes\.js/.test(D.scripts[i].src || '')) { s = D.scripts[i]; break; }
-            }
-        }
-        var src = (s && s.src) || '';
-        var idx = src.indexOf('/assets/bakhi/');
-        return idx >= 0 ? src.slice(0, idx + 1) : './';
-    }
-    function usagePing(feature) {
-        if (global.BKUsage) {
-            try { global.BKUsage.ping(feature); } catch (e) { }
-            return;
-        }
-        if (usageAsked) return;
-        usageAsked = true;
-        var s = D.createElement('script');
-        s.src = assetBase() + 'assets/bakhi/bk-usage.js' +
-            (global.BAKHI_VERSION && global.BAKHI_VERSION.app ? '?v=' + global.BAKHI_VERSION.app : '');
-        s.async = true;
-        s.onerror = function () { usageAsked = false; };
-        s.onload = function () {
-            if (global.BKUsage) { try { global.BKUsage.ping(feature); } catch (e) { } }
-        };
-        (D.body || D.head || D.documentElement).appendChild(s);
-    }
-
     /* ------------------------------------------------------------ Máy chủ */
     function api() {
         if (global.BKCloud && typeof global.BKCloud.gamificationApi === 'function') {
@@ -527,7 +494,6 @@
                 return { ok: true, id: null, synced: !(res && res.offline) };
             });
         }
-        usagePing('theme.' + theme.id);
         if (prev.id && prev.id !== theme.id) equipOnServer(prev.id, false);
         return equipOnServer(theme.id, true).then(function (res) {
             return { ok: true, id: theme.id, synced: !(res && res.offline) };
