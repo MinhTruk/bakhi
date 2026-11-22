@@ -119,6 +119,15 @@
     function configured() {
         return !!(global.BKCloud && global.BKCloud.configured && global.BKCloud.configured());
     }
+    /* Chưa nhận diện học sinh thì report-api trả 409 NOT_BOUND. Không hỏi máy chủ
+       trong trường hợp đó để trang khách không phát sinh lỗi mạng; lần mở đầu
+       tiên của cửa sổ báo cáo (openWindow) sẽ tự nạp lại sau khi đã nhận diện. */
+    function hasStudent() {
+        try {
+            var raw = global.sessionStorage.getItem('bakhiStudent.v1');
+            return !!raw && raw !== 'null';
+        } catch (e) { return false; }
+    }
     function api(body) {
         if (!global.BKCloud || typeof global.BKCloud.reportApi !== 'function') {
             return Promise.reject(new Error('Report Issue chưa sẵn sàng. Hãy tải lại trang.'));
@@ -1165,7 +1174,7 @@
         if (!S.draft) S.draft = loadDraft();
         injectCss();
         mountFab();
-        bootstrap().catch(function () { });
+        if (hasStudent()) bootstrap().catch(function () { });
         D.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
             if (isWindowOpen()) { e.preventDefault(); closeWindow(); }

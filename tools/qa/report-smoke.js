@@ -79,6 +79,11 @@ function boot(opts) {
   const w = dom.window;
   const calls = [];
   const toasts = [];
+  /* Thiết bị đã nhận diện học sinh — điều kiện để nút nổi hỏi máy chủ ngay khi
+     tải trang (khách chưa nhận diện thì không gọi, tránh 409 NOT_BOUND). */
+  if (opts.guest !== true) {
+    w.sessionStorage.setItem('bakhiStudent.v1', JSON.stringify({ id: student.id, name: student.display_name }));
+  }
   w.BAKHI_VERSION = { app: '8.2.0' };
   w.BK = {
     ui: { toast: (m, t) => toasts.push({ m, t }) },
@@ -135,6 +140,11 @@ function boot(opts) {
   ok('có nút nổi Report Issue', !!fab);
   ok('có nhãn truy cập cho nút nổi', !!fab && fab.getAttribute('aria-label') === 'Báo cáo vấn đề');
   ok('đã gọi bootstrap để lấy số chưa đọc', A.calls.some((c) => c.action === 'bootstrap'));
+  const Guest = boot({ guest: true });
+  await settle();
+  ok('khách chưa nhận diện thì không gọi bootstrap (tránh 409)',
+    !!Guest.w.document.getElementById('bkReportFab') &&
+    !Guest.calls.some((c) => c.action === 'bootstrap'));
   fab.click();
   await settle();
   const win = A.w.document.getElementById('bkReportWin');
