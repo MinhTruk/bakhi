@@ -31,6 +31,16 @@ Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep
   nút kiểm tra từng provider), *Thống kê token & lượt gọi* (bộ lọc thời gian/provider/model)
   và *Lỗi nhà cung cấp gần đây* (chỉ Founder thấy; chi tiết đã lọc bỏ khoá).
 
+### Sửa lỗi
+
+- **Thẻ Sức khoẻ nhà cung cấp báo thiếu khoá sai cho provider dự phòng.** `admin.status`
+  dùng chung cờ của khoá chính (`AI_TUTOR_API_KEY`) cho mọi provider, nên Google khi là
+  dự phòng bị gắn nhãn “Thiếu khoá” dù `AI_TUTOR_FALLBACK_API_KEY` đã có. Nay máy chủ trả
+  `primaryKeyConfigured` / `fallbackKeyConfigured` theo đúng vai trò và UI ghi rõ từng loại
+  khoá; nút **Kiểm tra** của từng provider cũng thử bằng khoá của vai trò đó.
+- **`founder-smoke` còn ghim 17 tab.** Dashboard Founder đã có 18 tab từ 8.5.0 (thêm
+  **AI Tutor**) nhưng kỳ vọng của cổng QA chưa cập nhật, làm `quality-check` báo lỗi.
+
 ### Cải tiến
 
 - `admin.status` trả thêm danh mục provider, trạng thái khoá chính/dự phòng, số lần thử lại,
@@ -40,9 +50,9 @@ Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep
 
 ### Triển khai
 
-- **Chưa áp migration và chưa deploy** trong lần thay đổi này: cần sự cho phép của người
-  quản trị. Khoá Groq/Google phải do người quản trị đặt trong Supabase → Edge Functions →
-  Secrets, không nằm trong mã nguồn hay tài liệu.
+- Migration `20261218000003` và Edge Function `ai-tutor-api` đã áp/deploy lên project
+  production ngày 2026-11-22. Khoá Groq/Google vẫn phải do người quản trị đặt trong
+  Supabase → Edge Functions → Secrets, không nằm trong mã nguồn hay tài liệu.
 
 ## [8.5.1] — 2026-11-22
 
