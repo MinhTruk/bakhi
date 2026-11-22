@@ -396,6 +396,8 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   chèn trước `</body>` (một số trang cũ có thẻ `<script>` mở chưa đóng trên dòng riêng).
   Từ 8.5.3 nút "Hỏi AI" có mặt ở **mọi trang học sinh**, kể cả `studio/`; chỉ `admin/`,
   `founder/` (không có học sinh) và `ai-tutor/` (giao diện đầy đủ) là không gắn nút nổi.
+  Thẻ chèn kèm `?v=<phiên bản>` (lấy từ `bk-version.js`); khi bump phiên bản, chạy lại
+  `node tools/integrate-pages.js` để cập nhật `?v=` cho các thẻ đã có.
 - **Đóng nút nổi (8.5.3):** nút và nút × nằm trong một khối `.bkai-launcher` (định vị do
   `placeFab()`, không đặt cứng toạ độ). Ẩn qua × ghi `localStorage.bakhiAiFabHidden.v1`;
   `autoMount()` không dựng lại nút khi cờ này bật. Lối vào thay thế: menu tài khoản →

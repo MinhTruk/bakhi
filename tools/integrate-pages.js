@@ -72,11 +72,30 @@ function ensureThemes(file, html) {
  * Chỉ thêm CSS + một thẻ script; idempotent; không sửa nội dung.
  * Bỏ qua trang quản trị, trang AI Tutor đầy đủ và trang không có bk-cloud.js.
  */
+/** Phiên bản hiện tại từ bk-version.js — dùng cho cache busting của thẻ chèn. */
+function appVersion() {
+  try {
+    const src = fs.readFileSync(path.join(ROOT, 'assets/bakhi/bk-version.js'), 'utf8');
+    const m = src.match(/app:\s*'([0-9.]+)'/);
+    return m ? m[1] : '';
+  } catch {
+    return '';
+  }
+}
+
 function ensureAiTutor(file, html) {
-  if (html.includes('assets/bakhi/bk-ai-tutor.js')) return html;
   const rel = path.relative(ROOT, file).split(path.sep).join('/');
   if (/^(admin|founder|ai-tutor)\//.test(rel)) return html;
   if (!html.includes('assets/bakhi/bk-cloud.js')) return html;
+  const version = appVersion();
+  const bust = version ? '?v=' + version : '';
+  /* Thẻ đã có: chỉ bổ sung / cập nhật ?v= để trình duyệt không dùng JS/CSS cũ
+     (nút × của 8.5.3 không hiện nếu tải bản cache 8.5.2). */
+  if (html.includes('assets/bakhi/bk-ai-tutor.js')) {
+    return html
+      .replace(/(assets\/bakhi\/bk-ai-tutor\.css)(\?v=[^"']*)?/g, '$1' + bust)
+      .replace(/(assets\/bakhi\/bk-ai-tutor\.js)(\?v=[^"']*)?/g, '$1' + bust);
+  }
   const depth = rel.split('/').length - 1;
   const prefix = depth === 0 ? '' : '../'.repeat(depth);
   /* Nối vào CUỐI tệp giống ensureThemes: một số trang cũ có thẻ <script> mở
@@ -85,8 +104,8 @@ function ensureAiTutor(file, html) {
      giáo dục không đổi. */
   const sep = html.endsWith('\n') ? '' : '\n';
   return html + sep +
-    `    <link rel="stylesheet" href="${prefix}assets/bakhi/bk-ai-tutor.css">\n` +
-    `<script src="${prefix}assets/bakhi/bk-ai-tutor.js" defer></script>\n`;
+    `    <link rel="stylesheet" href="${prefix}assets/bakhi/bk-ai-tutor.css${bust}">\n` +
+    `<script src="${prefix}assets/bakhi/bk-ai-tutor.js${bust}" defer></script>\n`;
 }
 
 function inject(file) {

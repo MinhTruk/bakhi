@@ -19,6 +19,9 @@ Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep
 
 - Nút nổi được bọc trong khối định vị `.bkai-launcher` để nút × luôn dính góc và cả hai
   cùng nhường chỗ cho nút Báo cáo; trên màn hình ≤ 860px nút × tăng lên 30px cho dễ bấm.
+- **Cache busting cho thẻ `bk-ai-tutor.js|css`:** `tools/integrate-pages.js` nay chèn kèm
+  `?v=<phiên bản hiện tại>` và cập nhật `?v=` cho thẻ đã có (122 trang), tránh việc trình
+  duyệt dùng bản 8.5.2 đã cache và không thấy nút ×.
 
 ## [8.5.2] — 2026-11-22
 
