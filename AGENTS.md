@@ -358,6 +358,22 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   Frontend **không bao giờ** gọi thẳng nhà cung cấp AI và không biết khoá API.
 - Khoá chỉ đọc bằng `Deno.env.get('AI_TUTOR_API_KEY')` (và `AI_TUTOR_FALLBACK_API_KEY`).
   Không thêm cột khoá vào bảng, không trả khoá về client, không ghi khoá vào log.
+- **Mặc định 8.5.2:** provider chính `groq` · model `openai/gpt-oss-20b`; dự phòng
+  `google` · `gemini-3.8-flash`. Đổi provider/model chỉ qua Founder Dashboard hoặc
+  `ai_settings`, không hardcode ở client.
+- **`PROVIDER_CATALOG`** (`_shared/ai-providers.ts`) là nguồn DUY NHẤT khai báo id, tên,
+  giao thức, base URL, tên secret, giới hạn ngữ cảnh, trần token ra, timeout và khả năng
+  liệt kê model. Không rải bảng provider thứ hai trong HTML/JS hay tài liệu.
+- Groq/OpenAI/Cerebras/OpenRouter/Mistral/DeepSeek dùng chung nhánh OpenAI-compatible của
+  `callProvider()`. Thêm provider mới = thêm một dòng vào `PROVIDER_CATALOG` + `BASE_URLS`,
+  không viết adapter trùng lặp.
+- **Ngân sách token** nằm một nơi: `outputTokensForMode()` + `MODE_MAX_TOKENS` trong
+  `_shared/ai-prompts.ts` (256 / 512 / 1024 / 2048). Không đặt trần token rải rác ở client.
+  Chế độ `hint`/`socratic` không được nâng trần.
+- **Thử lại và cooldown:** tối đa `AI_TUTOR_MAX_RETRIES` (0–2) cho lỗi tạm thời, sau đó
+  provider nghỉ 60 giây. Lỗi `AUTH`/`MODEL_NOT_FOUND`/`BAD_CONFIG` không kích hoạt dự phòng.
+- **Kiểm tra model** dùng `admin.provider.verify` → `listProviderModels()` (GET `/models`),
+  chỉ Founder. Không gọi mẫu văn bản dài chỉ để thử kết nối.
 - **Không tạo Chat thứ hai.** Chat (`chat-api` + `bk-chat.js`) là người ↔ người và
   **không** bị sửa. AI Tutor có bảng riêng (`ai_conversations`, `ai_messages`) nhưng
   dùng chung mô hình: đọc bằng RLS, ghi bằng Edge Function, xác thực qua `student_devices`.
@@ -389,7 +405,11 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   (RLS bật, **không policy**, đã thu hồi quyền `anon`/`authenticated`), nội dung đi qua
   `sanitizeProviderDetail()` để không bao giờ lưu khoá. Không trả chi tiết này cho học sinh.
 - **Model Google:** chỉ `gemini-3.8-flash` còn dùng được (2026-11-22); `gemini-2.5-*` trả 404.
-  Khoá miễn phí dễ chạm `503`/`429` — muốn ổn định thì cấu hình provider dự phòng.
+  Từ 8.5.2 Google là provider **dự phòng** mặc định; Groq là provider chính.
+- **Thống kê:** `ai_usage_logs.fell_back` + `.tokens_estimated` ghi trung thực lượt qua dự
+  phòng và lượt phải ước lượng token; tổng hợp bằng `bakhi_ai_usage_stats()` (SQL, không phụ
+  thuộc giới hạn 1000 dòng của PostgREST). Không lưu nội dung hội thoại để thống kê.
+- Hướng dẫn cấu hình provider từng bước: `docs/AI_TUTOR_PROVIDER_CONFIGURATION.md`.
 
 ### QA AI Tutor
 
@@ -398,6 +418,9 @@ NODE_PATH=/tmp/bktest/node_modules node tools/qa/ai-tutor-model-routing.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/ai-tutor-api-security.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/ai-tutor-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/ai-tutor-rendering-security.js
+# 8.5.2 — offline, không cần khoá, không gọi mạng ngoài
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/ai-tutor-provider-adapter.js
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/ai-tutor-fallback.js
 ```
 
 Tài liệu: `docs/AI_TUTOR_ARCHITECTURE.md` (kiến trúc), `docs/AI_TUTOR_SECURITY.md`

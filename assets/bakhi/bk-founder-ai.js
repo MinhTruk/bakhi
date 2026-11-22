@@ -1,7 +1,8 @@
 /* =========================================================================
-   Bá Khí — bk-founder-ai.js (8.5.0)
+   Bá Khí — bk-founder-ai.js (8.5.2)
    Tab "AI Tutor" trong Founder Dashboard: trạng thái, nhà cung cấp, mô hình,
-   giới hạn sử dụng và quản lý System Prompt.
+   sức khoẻ provider, thống kê token, lỗi gần đây, giới hạn sử dụng và
+   quản lý System Prompt.
 
    Nguyên tắc:
    - KHÔNG hiển thị, không đọc, không ghi API key. Khoá nằm trong Supabase
@@ -21,17 +22,28 @@
     var S = {
         host: null, data: null, loading: false, error: '',
         prompt: '', promptNote: '', versions: [], saving: false, testing: false,
-        notice: ''
+        notice: '',
+        stats: null, statsBusy: false, statsRange: 'week',
+        statsProvider: '', statsModel: '', statsHost: null
     };
 
+    /* Danh mục dùng chung với máy chủ (PROVIDER_CATALOG trong ai-providers.ts).
+       Thứ tự dưới đây chỉ là thứ tự hiển thị khi máy chủ chưa trả danh mục. */
     var PROVIDERS = [
-        { id: 'google', label: 'Google Gemini' },
-        { id: 'openai', label: 'OpenAI' },
         { id: 'groq', label: 'Groq' },
+        { id: 'google', label: 'Google AI Studio (Gemini)' },
+        { id: 'openai', label: 'OpenAI' },
+        { id: 'cerebras', label: 'Cerebras' },
         { id: 'openrouter', label: 'OpenRouter' },
         { id: 'mistral', label: 'Mistral' },
         { id: 'deepseek', label: 'DeepSeek' },
         { id: 'custom', label: 'Tự cấu hình (OpenAI-compatible)' }
+    ];
+    var RANGES = [
+        { id: 'day', label: 'Hôm nay' },
+        { id: 'week', label: '7 ngày' },
+        { id: 'month', label: '30 ngày' },
+        { id: 'all', label: 'Tất cả' }
     ];
     var MODES = [
         { id: 'explain', label: 'Giải thích' }, { id: 'steps', label: 'Từng bước' },
@@ -160,10 +172,30 @@
             S.loading = false;
             paint();
             loadVersions();
+            if (data.isFounder) loadStats();
         }).catch(function (err) {
             S.loading = false;
             S.error = err && err.message || 'Không tải được trạng thái Trợ lý AI.';
             paint();
+        });
+    }
+
+    function loadStats() {
+        if (S.statsBusy) return;
+        S.statsBusy = true;
+        renderStats();
+        call('admin.usage.stats', {
+            range: S.statsRange,
+            provider: S.statsProvider,
+            model: S.statsModel
+        }).then(function (data) {
+            S.statsBusy = false;
+            S.stats = data || null;
+            renderStats();
+        }).catch(function (err) {
+            S.statsBusy = false;
+            S.stats = { error: (err && err.message) || 'Không đọc được thống kê.' };
+            renderStats();
         });
     }
 
@@ -272,28 +304,77 @@
             'Chọn nhà cung cấp chính, mô hình mặc định và nhà cung cấp dự phòng');
         var grid = el('div', 'bkc-grid');
 
-        var providerSel = selectInput(PROVIDERS, settings.provider);
-        grid.appendChild(field('Nhà cung cấp chính', providerSel));
+        var providerSel = selectInput(providerOptions(data), settings.provider);
+        grid.appendChild(field('Nhà cung cấp chính', providerSel,
+            'Mặc định: Groq. Đổi nhà cung cấp chỉ cần đổi khoá trong Supabase Secrets, không sửa mã.'));
 
         var modelList = el('datalist');
         modelList.id = 'bkaiModelList';
-        var suggestions = (data.modelSuggestions || {})[settings.provider] || [];
-        suggestions.forEach(function (m) {
-            var op = D.createElement('option');
-            op.value = m;
-            modelList.appendChild(op);
-        });
-        var modelInput = textInput(settings.model, 'ví dụ: gemini-3.8-flash');
+        var modelInput = textInput(settings.model, 'ví dụ: openai/gpt-oss-20b');
         modelInput.setAttribute('list', 'bkaiModelList');
-        grid.appendChild(field('Mô hình mặc định', modelInput,
-            'Chỉ dùng mô hình đã kiểm tra hoạt động với khoá hiện tại.'));
-        grid.appendChild(modelList);
+        function fillModelList(provider) {
+            clear(modelList);
+            var list = (data.modelSuggestions || {})[provider] || [];
+            list.forEach(function (m) {
+                var op = D.createElement('option');
+                op.value = m;
+                modelList.appendChild(op);
+            });
+        }
+        fillModelList(settings.provider);
 
-        var fallbackSel = selectInput([{ id: '', label: '— Không dùng dự phòng —' }].concat(PROVIDERS), settings.fallbackProvider);
+        var modelField = field('Mô hình mặc định', modelInput,
+            'Chỉ dùng mô hình đã kiểm tra hoạt động với khoá hiện tại.');
+        var verifyOut = el('p', 'bkc-hint');
+        var verifyBtn = button('Kiểm tra model', 'bk-btn-ghost bk-btn-sm', 'fa-circle-check');
+        verifyBtn.disabled = !found;
+        on(verifyBtn, 'click', function () {
+            var model = modelInput.value.trim();
+            if (!model) { toast('Nhập tên mô hình trước khi kiểm tra.', 'error'); return; }
+            verifyBtn.disabled = true;
+            verifyOut.textContent = 'Đang kiểm tra ' + model + '…';
+            call('admin.provider.verify', { provider: providerSel.value, model: model })
+                .then(function (res) {
+                    verifyBtn.disabled = false;
+                    if (res.listed && res.supported === false) {
+                        verifyOut.textContent = 'Mô hình "' + model + '" KHÔNG có trong danh sách ' +
+                            res.modelCount + ' mô hình của ' + providerLabel(res.provider) +
+                            '. Có thể vẫn chạy nếu nhà cung cấp dùng tên khác — hãy thử Lưu rồi bấm "Kiểm tra kết nối".';
+                        toast('Mô hình không có trong danh sách của nhà cung cấp.', 'error');
+                    } else if (res.listed) {
+                        verifyOut.textContent = 'Đã xác nhận: ' + providerLabel(res.provider) + ' đang phục vụ "' +
+                            model + '" (' + res.modelCount + ' mô hình, ' + res.latencyMs + 'ms).';
+                        toast('Mô hình hợp lệ.', 'success');
+                    } else {
+                        verifyOut.textContent = 'Đã gọi thử ' + providerLabel(res.provider) + ' · ' + res.model +
+                            ': ' + (res.reply || 'OK') + ' (' + res.latencyMs + 'ms).';
+                        toast('Gọi thử thành công.', 'success');
+                    }
+                }).catch(function (err) {
+                    verifyBtn.disabled = false;
+                    verifyOut.textContent = 'Kiểm tra thất bại: ' + ((err && err.message) || 'không rõ lý do');
+                    toast('Kiểm tra model thất bại.', 'error');
+                });
+        });
+        grid.appendChild(modelField);
+        grid.appendChild(verifyBtn);
+        grid.appendChild(verifyOut);
+        grid.appendChild(modelList);
+        on(providerSel, 'change', function () { fillModelList(providerSel.value); });
+
+        var fallbackSel = selectInput([{ id: '', label: '— Không dùng dự phòng —' }].concat(providerOptions(data)), settings.fallbackProvider);
         grid.appendChild(field('Nhà cung cấp dự phòng', fallbackSel,
             'Chỉ chạy khi AI_TUTOR_FALLBACK_API_KEY đã được đặt trong Secrets.'));
-        var fallbackModel = textInput(settings.fallbackModel, 'ví dụ: gpt-4.1-mini');
+        var fallbackModel = textInput(settings.fallbackModel, 'ví dụ: gemini-3.8-flash');
         grid.appendChild(field('Mô hình dự phòng', fallbackModel));
+
+        var fbState = data.fallback || {};
+        var fallbackEnabled = checkbox('Tự chuyển sang nhà cung cấp dự phòng khi nhà cung cấp chính lỗi',
+            fbState.enabledInSettings !== false);
+        grid.appendChild(field('Dự phòng tự động', fallbackEnabled,
+            fbState.keyPresent
+                ? 'Khoá dự phòng đã có trong Secrets.'
+                : 'Chưa có AI_TUTOR_FALLBACK_API_KEY — bật công tắc này cũng chưa có tác dụng.'));
 
         var routing = checkbox('Bật định tuyến mô hình theo loại câu hỏi', settings.routing);
         grid.appendChild(field('Định tuyến model', routing));
@@ -305,6 +386,100 @@
         grid.appendChild(field('Mô hình cho luyện tập', modelPractice));
         providerCard._body.appendChild(grid);
         S.host.appendChild(providerCard);
+
+        /* --- Sức khoẻ nhà cung cấp --- */
+        var healthCard = card('Sức khoẻ nhà cung cấp AI',
+            'Khoá, giới hạn ngữ cảnh, token đầu ra tối đa và thời gian chờ của từng nhà cung cấp');
+        var providers = Array.isArray(data.providers) ? data.providers : [];
+        if (!providers.length) {
+            healthCard._body.appendChild(el('p', 'bkc-hint',
+                'Máy chủ chưa trả danh mục nhà cung cấp — Edge Function đang chạy bản cũ hơn 8.5.2.'));
+        }
+        providers.forEach(function (p) {
+            var row = el('div', 'bkai-admin-version');
+            row.appendChild(el('span', 'bkai-admin-version-n', p.label || p.id));
+            row.appendChild(el('span', 'bkai-admin-version-note',
+                (p.protocol === 'google' ? 'Google protocol' : 'OpenAI-compatible') +
+                ' · ctx ' + fmtNum(p.contextLimit) + ' · out ' + fmtNum(p.maxOutput) +
+                ' · ' + (p.timeoutMs || '—') + 'ms'));
+            if (p.active) row.appendChild(pill('Đang dùng', 'ok'));
+            if (p.fallbackActive) row.appendChild(pill('Dự phòng', 'ok'));
+            /* Khoá được xét theo đúng vai trò: provider dự phòng dùng khoá dự phòng,
+               không phải khoá chính. Nhãn "Thiếu khoá" chỉ hiện khi vai trò đó thật
+               sự chưa có khoá trong Secrets. */
+            if (p.role === 'primary' && !p.primaryKeyConfigured) {
+                row.appendChild(pill('Thiếu khoá chính', 'warn'));
+            } else if (p.role === 'fallback' && !p.fallbackKeyConfigured) {
+                row.appendChild(pill('Thiếu khoá dự phòng', 'warn'));
+            } else if (!p.active && !p.fallbackActive &&
+                !p.primaryKeyConfigured && !p.fallbackKeyConfigured) {
+                row.appendChild(pill('Thiếu khoá', 'warn'));
+            }
+            row.appendChild(el('span', 'bkai-admin-version-note',
+                'khoá chính: ' + (p.primaryKeyConfigured ? 'có' : 'chưa') +
+                ' · khoá dự phòng: ' + (p.fallbackKeyConfigured ? 'có' : 'chưa')));
+            if (p.cooldownMsLeft > 0) {
+                row.appendChild(pill('Tạm nghỉ ' + Math.ceil(p.cooldownMsLeft / 1000) + 's', 'warn'));
+            }
+            var out = el('span', 'bkc-hint');
+            var probe = button('Kiểm tra', 'bk-btn-ghost bk-btn-sm', 'fa-circle-check');
+            probe.disabled = !found;
+            on(probe, 'click', function () {
+                probe.disabled = true;
+                out.textContent = 'Đang đọc danh sách model…';
+                /* Kiểm tra bằng đúng khoá của vai trò provider đang giữ. */
+                var probeRole = p.active ? 'primary'
+                    : (p.fallbackActive || (p.fallbackKeyConfigured && !p.primaryKeyConfigured))
+                        ? 'fallback' : 'primary';
+                call('admin.provider.verify', { provider: p.id, role: probeRole })
+                    .then(function (res) {
+                        probe.disabled = false;
+                        out.textContent = res.listed
+                            ? ('OK · ' + res.modelCount + ' model · ' + res.latencyMs + 'ms')
+                            : ('OK · gọi thử ' + (res.reply || 'OK'));
+                        toast('Nhà cung cấp ' + (p.label || p.id) + ' phản hồi tốt.', 'success');
+                    }).catch(function (err) {
+                        probe.disabled = false;
+                        out.textContent = (err && err.message) || 'Không kết nối được.';
+                    });
+            });
+            row.appendChild(probe);
+            row.appendChild(out);
+            healthCard._body.appendChild(row);
+        });
+        var fb = data.fallback || {};
+        healthCard._body.appendChild(el('p', 'bkc-hint',
+            'Dự phòng: ' + (fb.configured ? 'bật' : 'tắt') +
+            ' · ' + (fb.provider ? providerLabel(fb.provider) : 'chưa chọn nhà cung cấp') +
+            (fb.model ? ' · ' + fb.model : '') +
+            ' · khoá dự phòng: ' + (fb.keyPresent ? 'đã có trong Secrets' : 'chưa có') +
+            ' · số lần thử lại: ' + (data.retry != null ? data.retry : 1)));
+        S.host.appendChild(healthCard);
+
+        /* --- Thống kê token & lượt gọi --- */
+        var statsCard = card('Thống kê token & lượt gọi',
+            'Token thật do nhà cung cấp trả về; lượt dùng token ước lượng được đếm riêng.');
+        var filterGrid = el('div', 'bkc-grid');
+        var rangeSel = selectInput(RANGES, S.statsRange);
+        var provFilter = selectInput(
+            [{ id: '', label: 'Tất cả nhà cung cấp' }].concat(providerOptions(data)), S.statsProvider);
+        var modelFilter = textInput(S.statsModel, 'lọc theo tên model (tuỳ chọn)');
+        filterGrid.appendChild(field('Khoảng thời gian', rangeSel));
+        filterGrid.appendChild(field('Nhà cung cấp', provFilter));
+        filterGrid.appendChild(field('Model', modelFilter));
+        statsCard._body.appendChild(filterGrid);
+        var applyStats = button('Xem thống kê', 'bk-btn-ghost', 'fa-chart-simple');
+        on(applyStats, 'click', function () {
+            S.statsRange = rangeSel.value;
+            S.statsProvider = provFilter.value;
+            S.statsModel = modelFilter.value.trim();
+            loadStats();
+        });
+        statsCard._body.appendChild(applyStats);
+        S.statsHost = el('div', 'bkai-admin-versions');
+        statsCard._body.appendChild(S.statsHost);
+        S.host.appendChild(statsCard);
+        renderStats();
 
         /* --- Giới hạn & chi phí --- */
         var limitsCard = card('Giới hạn sử dụng & chi phí',
@@ -359,6 +534,7 @@
                     model: modelInput.value.trim(),
                     fallbackProvider: fallbackSel.value,
                     fallbackModel: fallbackModel.value.trim(),
+                    fallbackEnabled: fallbackEnabled._box.checked,
                     routing: routing._box.checked,
                     modelSimple: modelSimple.value.trim(),
                     modelComplex: modelComplex.value.trim(),
@@ -439,7 +615,7 @@
         var ul = el('ul', 'bkai-admin-list');
         [
             'Không hiển thị, không trả về và không lưu API key trong trình duyệt.',
-            'Khoá AI chỉ đọc từ Supabase Edge Function Secrets (AI_TUTOR_API_KEY).',
+            'Khoá AI chỉ đọc từ Supabase Edge Function Secrets (AI_TUTOR_API_KEY cho nhà cung cấp chính, AI_TUTOR_FALLBACK_API_KEY cho dự phòng).',
             'Chỉ Founder được đổi cấu hình, system prompt và chạy kiểm tra kết nối.',
             'Học sinh chỉ đọc được hội thoại của chính mình (RLS); mọi thao tác ghi đi qua máy chủ.',
             'Mỗi thay đổi cấu hình quan trọng đều ghi vào nhật ký quản trị.'
@@ -448,6 +624,26 @@
         });
         security._body.appendChild(ul);
         S.host.appendChild(security);
+
+        /* --- Lỗi provider gần đây (chỉ Founder) --- */
+        if (found) {
+            var errCard = card('Lỗi nhà cung cấp gần đây',
+                '20 lần gần nhất. Chi tiết đã được lọc bỏ khoá và không bao giờ trả cho học sinh.');
+            var errors = Array.isArray(data.recentErrors) ? data.recentErrors : [];
+            if (!errors.length) {
+                errCard._body.appendChild(el('p', 'bkc-hint', 'Chưa ghi nhận lỗi nhà cung cấp nào.'));
+            }
+            errors.forEach(function (e) {
+                var row = el('div', 'bkai-admin-version');
+                row.appendChild(el('span', 'bkai-admin-version-n', String(e.provider || '—')));
+                row.appendChild(el('span', 'bkai-admin-version-note',
+                    String(e.model || '—') + ' · ' + String(e.role || 'primary') +
+                    ' · HTTP ' + String(e.status || 0) + (e.detail ? ' · ' + String(e.detail) : '')));
+                row.appendChild(el('span', 'bkai-admin-version-when', fmt(e.created_at)));
+                errCard._body.appendChild(row);
+            });
+            S.host.appendChild(errCard);
+        }
         void saveBtn;
     }
 
@@ -489,6 +685,80 @@
     function providerLabel(id) {
         for (var i = 0; i < PROVIDERS.length; i++) if (PROVIDERS[i].id === id) return PROVIDERS[i].label;
         return id || '';
+    }
+
+    /* Danh mục lấy từ máy chủ khi có (một nguồn sự thật), nếu không dùng danh sách tĩnh. */
+    function providerOptions(data) {
+        var list = data && Array.isArray(data.providerCatalog) ? data.providerCatalog : [];
+        if (!list.length) return PROVIDERS;
+        return list.map(function (p) { return { id: p.id, label: p.label || p.id }; });
+    }
+
+    function fmtNum(n) {
+        var v = Number(n);
+        if (!isFinite(v)) return '—';
+        return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    function renderStats() {
+        var host = S.statsHost;
+        if (!host) return;
+        clear(host);
+        if (S.statsBusy) { host.appendChild(el('p', 'bkc-hint', 'Đang tải thống kê…')); return; }
+        var d = S.stats;
+        if (!d) { host.appendChild(el('p', 'bkc-hint', 'Chưa tải thống kê.')); return; }
+        if (d.error) {
+            host.appendChild(el('p', 'bkc-hint', 'Không đọc được thống kê: ' + d.error));
+            return;
+        }
+        var t = d.totals || {};
+        var tokensIn = Number(t.tokens_in) || 0;
+        var tokensOut = Number(t.tokens_out) || 0;
+        var grid = el('div', 'bkc-stats');
+        [
+            ['Lượt gọi', fmtNum(t.requests)],
+            ['Thành công', fmtNum(t.succeeded)],
+            ['Lỗi', fmtNum(t.failed)],
+            ['Token vào', fmtNum(tokensIn)],
+            ['Token ra', fmtNum(tokensOut)],
+            ['Tổng token', fmtNum(tokensIn + tokensOut)],
+            ['Qua dự phòng', fmtNum(t.fallbacks)],
+            ['Token ước lượng', fmtNum(t.estimated_requests)],
+            ['Thời gian TB', (Number(t.avg_latency_ms) || 0) + 'ms']
+        ].forEach(function (pair) {
+            var box = el('div', 'bkc-stat');
+            box.appendChild(el('div', 'bkc-stat-k', pair[0]));
+            box.appendChild(el('div', 'bkc-stat-v', pair[1]));
+            grid.appendChild(box);
+        });
+        host.appendChild(grid);
+
+        var byModel = Array.isArray(d.byModel) ? d.byModel : [];
+        if (byModel.length) {
+            host.appendChild(el('h4', 'bkai-admin-sub', 'Theo model'));
+            byModel.forEach(function (m) {
+                var row = el('div', 'bkai-admin-version');
+                row.appendChild(el('span', 'bkai-admin-version-n', (m.model || '—')));
+                row.appendChild(el('span', 'bkai-admin-version-note',
+                    providerLabel(m.provider) + ' · ' + fmtNum(m.requests) + ' lượt · ' +
+                    (m.failed ? fmtNum(m.failed) + ' lỗi · ' : '') +
+                    fmtNum(m.tokens) + ' token'));
+                host.appendChild(row);
+            });
+        }
+
+        var byDay = Array.isArray(d.byDay) ? d.byDay : [];
+        if (byDay.length) {
+            host.appendChild(el('h4', 'bkai-admin-sub', 'Theo ngày'));
+            byDay.slice(0, 14).forEach(function (day) {
+                var row = el('div', 'bkai-admin-version');
+                row.appendChild(el('span', 'bkai-admin-version-n', day.day || ''));
+                row.appendChild(el('span', 'bkai-admin-version-note',
+                    fmtNum(day.requests) + ' lượt · ' + fmtNum(day.tokens) + ' token' +
+                    (day.failed ? ' · ' + fmtNum(day.failed) + ' lỗi' : '')));
+                host.appendChild(row);
+            });
+        }
     }
 
     function connectionStatus(connection, settings) {

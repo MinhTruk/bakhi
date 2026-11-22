@@ -238,6 +238,48 @@ export function pickModel(settings: {
     return { model: fallbackModel, reason: 'default' };
 }
 
+/**
+ * Ngân sách token đầu ra theo chế độ (8.5.2).
+ *
+ *   Quick Answer      256  → hint (chỉ một gợi ý, không lời giải đầy đủ)
+ *   Normal            512  → explain / summary / socratic
+ *   Detailed         1024  → steps / check / mistakes / practice
+ *   Deep Explanation 2048  → khi người học yêu cầu giải thích sâu
+ *
+ * Đây là TRẦN mục tiêu, không phải lệnh cắt: máy chủ lấy min(trần cấu hình,
+ * trần chế độ) để không bao giờ vượt hạn mức Founder đặt, và không hạ dưới
+ * 128 token (dưới mức đó câu trả lời bị cụt giữa câu).
+ */
+export const MODE_MAX_TOKENS: Record<TutorMode, number> = {
+    hint: 256,
+    explain: 512,
+    summary: 512,
+    socratic: 512,
+    steps: 1024,
+    check: 1024,
+    mistakes: 1024,
+    practice: 1024
+};
+
+const DEEP_REQUEST = /giải thích (thật )?sâu|chuyên sâu|đi sâu|phân tích sâu|chi tiết từng phần|deep dive|giải thích kỹ/i;
+
+/** Chọn trần token cho một lượt hỏi, theo chế độ và nội dung câu hỏi. */
+export function outputTokensForMode(
+    mode: TutorMode,
+    userMessage: string,
+    configuredMax: number
+): { maxTokens: number; target: number; deep: boolean } {
+    const configured = Number(configuredMax) || 2048;
+    /* Chế độ Gợi ý / Hỏi dẫn dắt không được nâng trần: nâng sẽ khuyến khích
+       model viết lời giải đầy đủ, trái quy tắc của chính chế độ đó. */
+    const canGoDeep = mode === 'explain' || mode === 'summary' ||
+        mode === 'steps' || mode === 'check' || mode === 'mistakes';
+    const deep = canGoDeep && DEEP_REQUEST.test(String(userMessage || ''));
+    const target = deep ? 2048 : (MODE_MAX_TOKENS[mode] || 512);
+    const maxTokens = Math.max(128, Math.min(configured, target));
+    return { maxTokens, target, deep };
+}
+
 /** Giới hạn cửa sổ ngữ cảnh: giữ N lượt cuối, luôn bắt đầu bằng lượt người học. */
 export function trimHistory<T extends { role: 'user' | 'assistant' }>(rows: T[], maxMessages: number): T[] {
     const limit = Math.max(2, Math.min(40, Number(maxMessages) || 12));

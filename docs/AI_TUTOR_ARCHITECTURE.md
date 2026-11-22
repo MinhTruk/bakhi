@@ -68,7 +68,13 @@ callProvider({ provider, model, role, system, messages, maxTokens, timeoutMs })
 ```
 
 - Hai khuôn giao thức: **Google** (`:generateContent`) và **OpenAI-compatible**
-  (`/chat/completions`) cho openai/groq/openrouter/mistral/deepseek/custom.
+  (`/chat/completions`) cho groq/openai/cerebras/openrouter/mistral/deepseek/custom.
+- **`PROVIDER_CATALOG`** là nguồn duy nhất khai báo cho từng provider: id, tên hiển thị,
+  giao thức, base URL, tên secret, giới hạn ngữ cảnh, trần token ra, thời gian chờ và khả
+  năng liệt kê model. Founder Dashboard đọc đúng danh mục này.
+- `listProviderModels()` là health check thật: `GET /models` bằng khoá đang cấu hình,
+  không tốn token sinh văn bản. Action `admin.provider.verify` (Founder) dùng nó để xác nhận
+  model có thật trước khi áp dụng.
 - Uỷ quyền chọn khoá theo **vai trò**: `primary` → `AI_TUTOR_API_KEY`,
   `fallback` → `AI_TUTOR_FALLBACK_API_KEY`. Địa chỉ tuỳ chỉnh:
   `AI_TUTOR_BASE_URL` / `AI_TUTOR_FALLBACK_BASE_URL`.
@@ -109,14 +115,33 @@ không chọn theo quảng cáo.
 
 ```
 provider chính lỗi
-  ├─ lỗi không phục hồi (AUTH, MODEL_NOT_FOUND, QUOTA, BAD_CONFIG) → trả lỗi, KHÔNG đổi provider
+  ├─ lỗi không phục hồi (AUTH, MODEL_NOT_FOUND, BAD_CONFIG) → trả lỗi, KHÔNG đổi provider
   └─ lỗi tạm thời (TIMEOUT, PROVIDER_DOWN, RATE_LIMIT, EMPTY_RESPONSE)
-        └─ nếu đã cấu hình fallback_provider + fallback_model + AI_TUTOR_FALLBACK_API_KEY
-              → gọi lại MỘT lần, giữ nguyên system + history
-              → ghi provider thực tế đã xử lý vào hội thoại và usage log
+        ├─ thử lại tối đa AI_TUTOR_MAX_RETRIES lần (0–2, cách 0,9s)
+        ├─ đánh dấu cooldown 60s cho provider đó
+        └─ nếu fallback_enabled + fallback_provider + fallback_model +
+              AI_TUTOR_FALLBACK_API_KEY và provider khác provider chính
+              → gọi lại MỘT lần, giữ nguyên system + history + trần token
+              → ghi provider thực tế + fell_back=true vào usage log
 ```
 
 Không gửi lặp vô hạn. Không chuyển dữ liệu sang dịch vụ chưa được cấu hình.
+Provider đang trong cooldown bị bỏ qua (không gọi) cho đến khi hết 60 giây.
+
+### 2.7. Ngân sách token đầu ra
+
+`outputTokensForMode(mode, message, configuredMax)` lấy `min(trần cấu hình, trần chế độ)`:
+
+| Chế độ | Trần mục tiêu |
+|---|---|
+| `hint` (Quick Answer) | 256 |
+| `explain`, `summary`, `socratic` (Normal) | 512 |
+| `steps`, `check`, `mistakes`, `practice` (Detailed) | 1024 |
+| Giải thích sâu (yêu cầu rõ trong câu hỏi) | 2048 |
+
+Không dưới 128 token (dưới mức đó câu trả lời bị cụt) và không bao giờ vượt trần
+`ai_settings.max_output_tokens` hay `ProviderInfo.maxOutput`. Chế độ `hint` và `socratic`
+**không** được nâng lên 2048 vì sẽ khuyến khích model viết sẵn lời giải.
 
 ## 3. Cơ sở dữ liệu
 

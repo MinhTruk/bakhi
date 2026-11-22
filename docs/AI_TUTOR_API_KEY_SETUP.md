@@ -32,7 +32,8 @@ Bạn chỉ cần **một** nhà cung cấp để bắt đầu. Chọn theo nhu 
 
 | Nhà cung cấp | Khi nào phù hợp |
 |---|---|
-| Google Gemini | Mặc định của Bá Khí; có gói miễn phí, phù hợp học sinh phổ thông. |
+| Groq | **Mặc định từ 8.5.2** (`openai/gpt-oss-20b`); giao thức OpenAI-compatible, có hạn mức miễn phí. |
+| Google Gemini | Dự phòng mặc định (`gemini-3.8-flash`); có gói miễn phí nhưng dễ chạm `429`/`503`. |
 | OpenAI | Cần chất lượng suy luận cao; tính phí theo lượng dùng. |
 | Groq | Cần trả lời rất nhanh. |
 | OpenRouter | Muốn một khoá dùng được nhiều mô-đun khác nhau. |
@@ -87,7 +88,10 @@ sửa mã và **không** cần deploy lại frontend.
 6. Bấm **Kiểm tra kết nối**.
 
 Kết quả mong đợi: dòng thông báo màu xanh dạng
-`Kết nối thành công: Google Gemini · gemini-2.5-flash · 780ms`.
+`Kết nối thành công: Groq · openai/gpt-oss-20b · 780ms`.
+
+Chi tiết đầy đủ (lấy khoá, kiểm tra model, cấu hình dự phòng, đọc thống kê token):
+[docs/AI_TUTOR_PROVIDER_CONFIGURATION.md](AI_TUTOR_PROVIDER_CONFIGURATION.md).
 
 Nếu thấy:
 - **“chưa có khoá API”** → secret chưa được lưu hoặc lưu sai tên. Làm lại bước 4.

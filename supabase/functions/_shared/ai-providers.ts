@@ -13,10 +13,10 @@
 // ===========================================================================
 
 export type ProviderId =
-    | 'google' | 'openai' | 'groq' | 'openrouter' | 'mistral' | 'deepseek' | 'custom';
+    | 'groq' | 'google' | 'openai' | 'cerebras' | 'openrouter' | 'mistral' | 'deepseek' | 'custom';
 
 export const PROVIDER_IDS: ProviderId[] = [
-    'google', 'openai', 'groq', 'openrouter', 'mistral', 'deepseek', 'custom'
+    'groq', 'google', 'openai', 'cerebras', 'openrouter', 'mistral', 'deepseek', 'custom'
 ];
 
 export interface ChatTurn {
@@ -85,6 +85,8 @@ export class ProviderError extends Error {
 export function sanitizeProviderDetail(text: string): string {
     return String(text ?? '')
         .replace(/AIza[0-9A-Za-z_-]{10,}/g, '***')
+        .replace(/gsk_[0-9A-Za-z_-]{10,}/g, '***')
+        .replace(/csk-[0-9A-Za-z_-]{10,}/g, '***')
         .replace(/sk-[0-9A-Za-z_-]{10,}/g, '***')
         .replace(/AQ\.[0-9A-Za-z_-]{10,}/g, '***')
         .replace(/eyJ[A-Za-z0-9._-]{20,}/g, '***')
@@ -97,10 +99,82 @@ const BASE_URLS: Record<Exclude<ProviderId, 'custom'>, string> = {
     google: 'https://generativelanguage.googleapis.com/v1beta',
     openai: 'https://api.openai.com/v1',
     groq: 'https://api.groq.com/openai/v1',
+    cerebras: 'https://api.cerebras.ai/v1',
     openrouter: 'https://openrouter.ai/api/v1',
     mistral: 'https://api.mistral.ai/v1',
     deepseek: 'https://api.deepseek.com/v1'
 };
+
+/**
+ * Danh mục provider — MỘT nơi khai báo cho cả máy chủ và Founder Dashboard.
+ * Dashboard chỉ hiển thị thông tin này, không tự đoán endpoint hay giới hạn.
+ *
+ *   protocol    'google' = Generative Language, 'openai' = /chat/completions
+ *   keyEnv      tên secret Supabase mà provider cần (không phải giá trị khoá)
+ *   contextLimit  cửa sổ ngữ cảnh (token) theo tài liệu nhà cung cấp
+ *   maxOutput   trần token đầu ra mà adapter cho phép đặt
+ *   timeoutMs   thời gian chờ mặc định
+ */
+export interface ProviderInfo {
+    id: ProviderId;
+    label: string;
+    protocol: 'google' | 'openai';
+    baseUrl: string;
+    keyEnv: string;
+    contextLimit: number;
+    maxOutput: number;
+    timeoutMs: number;
+    supportsModelList: boolean;
+}
+
+export const PROVIDER_CATALOG: ProviderInfo[] = [
+    {
+        id: 'groq', label: 'Groq', protocol: 'openai',
+        baseUrl: BASE_URLS.groq, keyEnv: 'AI_TUTOR_API_KEY',
+        contextLimit: 131072, maxOutput: 32768, timeoutMs: 30000, supportsModelList: true
+    },
+    {
+        id: 'google', label: 'Google AI Studio (Gemini)', protocol: 'google',
+        baseUrl: BASE_URLS.google, keyEnv: 'AI_TUTOR_API_KEY',
+        contextLimit: 1048576, maxOutput: 8192, timeoutMs: 30000, supportsModelList: true
+    },
+    {
+        id: 'openai', label: 'OpenAI', protocol: 'openai',
+        baseUrl: BASE_URLS.openai, keyEnv: 'AI_TUTOR_API_KEY',
+        contextLimit: 1047576, maxOutput: 16384, timeoutMs: 30000, supportsModelList: true
+    },
+    {
+        id: 'cerebras', label: 'Cerebras', protocol: 'openai',
+        baseUrl: BASE_URLS.cerebras, keyEnv: 'AI_TUTOR_API_KEY',
+        contextLimit: 131072, maxOutput: 8192, timeoutMs: 30000, supportsModelList: true
+    },
+    {
+        id: 'openrouter', label: 'OpenRouter', protocol: 'openai',
+        baseUrl: BASE_URLS.openrouter, keyEnv: 'AI_TUTOR_API_KEY',
+        contextLimit: 131072, maxOutput: 8192, timeoutMs: 45000, supportsModelList: true
+    },
+    {
+        id: 'mistral', label: 'Mistral', protocol: 'openai',
+        baseUrl: BASE_URLS.mistral, keyEnv: 'AI_TUTOR_API_KEY',
+        contextLimit: 131072, maxOutput: 8192, timeoutMs: 30000, supportsModelList: true
+    },
+    {
+        id: 'deepseek', label: 'DeepSeek', protocol: 'openai',
+        baseUrl: BASE_URLS.deepseek, keyEnv: 'AI_TUTOR_API_KEY',
+        contextLimit: 65536, maxOutput: 8192, timeoutMs: 45000, supportsModelList: false
+    },
+    {
+        id: 'custom', label: 'Tự cấu hình (OpenAI-compatible)', protocol: 'openai',
+        baseUrl: '', keyEnv: 'AI_TUTOR_API_KEY',
+        contextLimit: 32768, maxOutput: 8192, timeoutMs: 30000, supportsModelList: false
+    }
+];
+
+export function providerInfo(id: unknown): ProviderInfo {
+    const key = String(id ?? '').trim().toLowerCase();
+    for (const p of PROVIDER_CATALOG) if (p.id === key) return p;
+    return PROVIDER_CATALOG[0];
+}
 
 export function isProviderId(value: unknown): value is ProviderId {
     return PROVIDER_IDS.indexOf(String(value ?? '') as ProviderId) !== -1;
@@ -122,6 +196,28 @@ function secretFor(role: 'primary' | 'fallback'): { key: string; baseUrl: string
 /** Provider giả lập: chỉ bật khi AI_TUTOR_MOCK = '1' (QA offline). */
 export function mockEnabled(): boolean {
     return (Deno.env.get('AI_TUTOR_MOCK') ?? '') === '1';
+}
+
+function envNumber(name: string, def: number, min: number, max: number): number {
+    const n = Number(Deno.env.get(name) ?? '');
+    if (!Number.isFinite(n) || n === 0) return def;
+    return Math.min(max, Math.max(min, Math.round(n)));
+}
+
+/**
+ * Cấu hình dự phòng từ biến môi trường. Đây là lớp bổ sung, không thay
+ * cấu hình trong bảng `ai_settings`: máy chủ xét cả hai, ưu tiên DB, và
+ * chỉ chạy dự phòng khi khoá dự phòng đã có.
+ */
+export function fallbackEnv() {
+    const enabled = String(Deno.env.get('AI_TUTOR_FALLBACK_ENABLED') ?? 'true').trim().toLowerCase();
+    return {
+        enabled: enabled !== 'false' && enabled !== '0' && enabled !== 'no',
+        provider: String(Deno.env.get('AI_TUTOR_FALLBACK_PROVIDER') ?? '').trim().toLowerCase(),
+        model: String(Deno.env.get('AI_TUTOR_FALLBACK_MODEL') ?? '').trim(),
+        maxRetries: envNumber('AI_TUTOR_MAX_RETRIES', 1, 0, 2),
+        timeoutMs: envNumber('AI_TUTOR_TIMEOUT', 0, 5000, 120000)
+    };
 }
 
 function endpointFor(provider: ProviderId, baseUrl: string, model: string, google: boolean): string {
@@ -181,7 +277,10 @@ async function mapHttpError(res: Response, provider: string): Promise<ProviderEr
 
 function normalizeProvider(value: unknown): ProviderId {
     const id = String(value ?? '').trim().toLowerCase();
-    return isProviderId(id) ? id : 'google';
+    if (isProviderId(id)) return id;
+    const env = String(Deno.env.get('AI_TUTOR_PROVIDER') ?? '').trim().toLowerCase();
+    if (isProviderId(env)) return env;
+    return 'groq';
 }
 
 /** Gọi một provider. Ném ProviderError đã phân loại. */
@@ -353,13 +452,84 @@ function parseOpenAi(raw: Record<string, unknown>, provider: ProviderId, model: 
 
 /** Danh sách model gợi ý để Founder chọn — KHÔNG hardcode là "đúng nhất". */
 export const MODEL_SUGGESTIONS: Record<string, string[]> = {
+    /* Mặc định 8.5.2: Groq + openai/gpt-oss-20b (OpenAI-compatible, free tier
+       rộng hơn Gemini). Danh sách dưới đây chỉ là gợi ý; Founder có thể nhập
+       bất kỳ model id nào Groq đang phục vụ. */
+    groq: [
+        'openai/gpt-oss-20b',
+        'openai/gpt-oss-120b',
+        'llama-3.3-70b-versatile',
+        'llama-3.1-8b-instant'
+    ],
     /* Google đã ngừng cấp gemini-2.5-* cho người dùng mới (404). Chỉ còn 3.8-flash
        là dùng được với khoá mới — kiểm tra 2026-11-22, xem docs/AI_TUTOR_PROVIDER_SETUP.md. */
     google: ['gemini-3.8-flash'],
     openai: ['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o-mini'],
-    groq: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'],
+    cerebras: ['llama-3.3-70b', 'llama-3.1-8b', 'qwen-3-32b'],
     openrouter: ['google/gemini-3.8-flash', 'anthropic/claude-3.5-sonnet'],
     mistral: ['mistral-small-latest', 'mistral-large-latest'],
     deepseek: ['deepseek-chat', 'deepseek-reasoner'],
     custom: []
 };
+
+/**
+ * Health check thật: đọc danh sách model của provider bằng khoá đang cấu hình.
+ * Dùng cho nút "Kiểm tra model" của Founder Dashboard — không tốn token sinh
+ * văn bản, chỉ một request GET tới endpoint /models.
+ *
+ * Ném ProviderError đã phân loại khi không đọc được; trả null khi provider
+ * không hỗ trợ liệt kê model (khi đó Founder dùng phép thử sinh văn bản).
+ */
+export async function listProviderModels(options: {
+    provider: ProviderId;
+    role: 'primary' | 'fallback';
+    timeoutMs?: number;
+}): Promise<{ models: string[]; endpoint: string } | null> {
+    const provider = normalizeProvider(options.provider);
+    const info = providerInfo(provider);
+    if (!info.supportsModelList) return null;
+
+    const secret = secretFor(options.role);
+    if (!secret.key) {
+        throw new ProviderError('NO_KEY', 'Chưa có khoá API cho nhà cung cấp này.', 0, provider);
+    }
+    const base = secret.baseUrl || info.baseUrl;
+    if (!base) {
+        throw new ProviderError('BAD_CONFIG', 'Chưa cấu hình địa chỉ API cho provider tuỳ chỉnh.', 0, provider);
+    }
+
+    const google = provider === 'google';
+    const url = google
+        ? base.replace(/\/v1beta$/, '') + '/v1beta/models?pageSize=200'
+        : base + '/models';
+    const headers: Record<string, string> = {};
+    if (google) headers['x-goog-api-key'] = secret.key;
+    else headers['Authorization'] = 'Bearer ' + secret.key;
+
+    const res = await fetchWithTimeout(
+        url, { method: 'GET', headers },
+        Math.max(5000, Number(options.timeoutMs) || 15000), provider
+    );
+    if (!res.ok) throw await mapHttpError(res, provider);
+
+    let raw: Record<string, unknown> = {};
+    try {
+        raw = await res.json() as Record<string, unknown>;
+    } catch {
+        throw new ProviderError('EMPTY_RESPONSE', 'Không đọc được danh sách model.', res.status, provider);
+    }
+
+    const out: string[] = [];
+    if (google) {
+        for (const m of (raw.models ?? []) as Array<Record<string, unknown>>) {
+            const name = String(m?.name ?? '').replace(/^models\//, '');
+            if (name) out.push(name);
+        }
+    } else {
+        for (const m of (raw.data ?? []) as Array<Record<string, unknown>>) {
+            const id = String(m?.id ?? '');
+            if (id) out.push(id);
+        }
+    }
+    return { models: out.slice(0, 300), endpoint: url.replace(/\?.*$/, '') };
+}

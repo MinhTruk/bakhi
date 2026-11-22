@@ -13,12 +13,14 @@
 import { json, fail, preflight, readJson } from '../_shared/http.ts';
 import { adminClient, callerUserId, requireAdmin, logAction } from '../_shared/supabase.ts';
 import {
-    callProvider, ProviderError, isProviderId,
+    callProvider, ProviderError, isProviderId, providerInfo, PROVIDER_CATALOG,
+    listProviderModels, fallbackEnv, mockEnabled,
     MODEL_SUGGESTIONS, type ProviderId, type ChatTurn
 } from '../_shared/ai-providers.ts';
 import {
-    TUTOR_MODES, MODE_IDS, isMode, DEFAULT_SYSTEM_PROMPT,
-    sanitizeContext, buildSystemPrompt, pickModel, trimHistory, type TutorMode
+    TUTOR_MODES, MODE_IDS, MODE_MAX_TOKENS, isMode, DEFAULT_SYSTEM_PROMPT,
+    sanitizeContext, buildSystemPrompt, pickModel, trimHistory,
+    outputTokensForMode, type TutorMode
 } from '../_shared/ai-prompts.ts';
 
 const MAX_USER_MESSAGE = 4000;
@@ -28,6 +30,14 @@ const MESSAGE_PAGE = 60;
 const BURST_LIMIT = 10;          // request / 60 giây / học sinh
 const CONCURRENT_TTL_MS = 120000;
 const DEDUPE_WINDOW_MS = 12000;
+/* Mặc định 8.5.2: Groq là provider chính. */
+const DEFAULT_PROVIDER = 'groq';
+const DEFAULT_MODEL = 'openai/gpt-oss-20b';
+const DEFAULT_FALLBACK_PROVIDER = 'google';
+const DEFAULT_FALLBACK_MODEL = 'gemini-3.8-flash';
+/* Provider vừa lỗi tạm thời bị tạm nghỉ 60 giây để không đốt token vào lỗi lặp. */
+const COOLDOWN_MS = 60000;
+const providerCooldown = new Map<string, number>();
 
 /* Đang xử lý theo học sinh — chặn gửi chồng lặp trong cùng một isolate. */
 const inFlight = new Map<string, number>();
@@ -123,10 +133,11 @@ async function loadSettings(client: Ctx['client']): Promise<Record<string, unkno
     if (data) return data as Record<string, unknown>;
     /* Dòng cấu hình mất thì dùng giá trị an toàn, không ném lỗi cho học sinh. */
     return {
-        enabled: true, provider: 'google', model: 'gemini-3.8-flash',
-        fallback_provider: '', fallback_model: '', routing_enabled: true,
+        enabled: true, provider: DEFAULT_PROVIDER, model: DEFAULT_MODEL,
+        fallback_provider: DEFAULT_FALLBACK_PROVIDER, fallback_model: DEFAULT_FALLBACK_MODEL,
+        fallback_enabled: true, routing_enabled: true,
         model_simple: '', model_complex: '', model_practice: '',
-        max_context_messages: 12, max_output_tokens: 1600, timeout_ms: 45000,
+        max_context_messages: 10, max_output_tokens: 2048, timeout_ms: 30000,
         daily_requests: 120, daily_tokens: 120000, save_history: true,
         use_lesson_context: true, language: 'vi', allowed_modes: MODE_IDS,
         system_prompt: DEFAULT_SYSTEM_PROMPT, system_prompt_version: 1
@@ -156,7 +167,7 @@ async function logUsage(
     row: {
         studentId: string | null; action: string; provider?: string; model?: string;
         mode?: string; tokensIn?: number; tokensOut?: number; latencyMs?: number;
-        ok: boolean; errorCode?: string;
+        ok: boolean; errorCode?: string; fellBack?: boolean; estimated?: boolean;
     }
 ) {
     await client.from('ai_usage_logs').insert({
@@ -169,7 +180,9 @@ async function logUsage(
         tokens_out: Math.max(0, Math.round(row.tokensOut || 0)),
         latency_ms: Math.max(0, Math.round(row.latencyMs || 0)),
         ok: !!row.ok,
-        error_code: str(row.errorCode, 40)
+        error_code: str(row.errorCode, 40),
+        fell_back: !!row.fellBack,
+        tokens_estimated: !!row.estimated
     });
 }
 
@@ -240,59 +253,89 @@ async function ownedConversation(ctx: Ctx, id: string) {
     return data || null;
 }
 
+/** Provider dự phòng đã cấu hình và có khoá hay chưa. */
+function fallbackTarget(settings: Record<string, unknown>) {
+    const env = fallbackEnv();
+    const configured = settings.fallback_enabled !== false;
+    const provider = String(settings.fallback_provider || env.provider || '').trim().toLowerCase();
+    const model = String(settings.fallback_model || env.model || '').trim();
+    const keyPresent = !!(Deno.env.get('AI_TUTOR_FALLBACK_API_KEY') ?? '').trim();
+    const usable = configured && env.enabled && keyPresent &&
+        !!provider && !!model && isProviderId(provider) && provider !== String(settings.provider || '');
+    return { configured, provider, model, keyPresent, usable };
+}
+
 /** Gọi provider đã cấu hình, tự chuyển sang provider dự phòng khi đáng thử. */
 async function runProvider(options: {
     settings: Record<string, unknown>;
     system: string;
     turns: ChatTurn[];
     model: string;
+    mode: TutorMode;
+    message: string;
 }) {
     const s = options.settings;
-    const provider = (isProviderId(s.provider) ? s.provider : 'google') as ProviderId;
-    const timeoutMs = Number(s.timeout_ms) || 45000;
-    const maxTokens = Number(s.max_output_tokens) || 1600;
+    const env = fallbackEnv();
+    const provider = (isProviderId(s.provider) ? s.provider : DEFAULT_PROVIDER) as ProviderId;
+    const info = providerInfo(provider);
+    /* Cấu hình DB là nguồn chính; AI_TUTOR_TIMEOUT chỉ ghi đè khi được đặt. */
+    const timeoutMs = env.timeoutMs || Number(s.timeout_ms) || info.timeoutMs || 30000;
+    const configuredMax = Math.min(
+        Number(s.max_output_tokens) || 2048,
+        info.maxOutput || 2048
+    );
+    /* Tối ưu token: trần đầu ra theo chế độ, không phải một con số lớn cho mọi câu. */
+    const budget = outputTokensForMode(options.mode, options.message, configuredMax);
+    const maxTokens = budget.maxTokens;
     const started = Date.now();
     let lastError: ProviderError;
 
-    const call = () => callProvider({
-        provider, model: options.model, role: 'primary',
+    const call = (target: ProviderId, model: string, role: 'primary' | 'fallback') => callProvider({
+        provider: target, model, role,
         system: options.system, messages: options.turns,
         maxTokens, timeoutMs
     });
 
-    /* Tối đa 2 lần thử cho provider chính khi lỗi là tạm thời (provider quá tải,
-       giới hạn tần suất). Không bao giờ thử vô hạn; sau đó mới xét provider dự phòng. */
-    try {
-        const result = await call();
-        return { result, latencyMs: Date.now() - started, fellBack: false };
-    } catch (err) {
-        lastError = err instanceof ProviderError ? err : new ProviderError('UNKNOWN', 'Lỗi không xác định.', 0, provider);
-        if (!lastError.retryable) throw lastError;
-        await new Promise((r) => setTimeout(r, 900));
-        try {
-            const result = await call();
-            return { result, latencyMs: Date.now() - started, fellBack: false };
-        } catch (again) {
-            lastError = again instanceof ProviderError ? again : lastError;
+    /* Cooldown: provider vừa lỗi tạm thời không bị gọi lại ngay trong 60 giây,
+       tránh chuỗi request chắc chắn thất bại. */
+    const cooling = (providerCooldown.get(provider) || 0) > Date.now();
+    if (!cooling) {
+        for (let attempt = 0; attempt <= env.maxRetries; attempt++) {
+            try {
+                const result = await call(provider, options.model, 'primary');
+                providerCooldown.delete(provider);
+                return { result, latencyMs: Date.now() - started, fellBack: false, budget, maxTokens };
+            } catch (err) {
+                lastError = err instanceof ProviderError
+                    ? err : new ProviderError('UNKNOWN', 'Lỗi không xác định.', 0, provider);
+                /* Lỗi cấu hình/khoá/model không đáng thử lại. */
+                if (!lastError.retryable) throw lastError;
+                if (attempt < env.maxRetries) {
+                    await new Promise((r) => setTimeout(r, 900 * (attempt + 1)));
+                }
+            }
         }
+        providerCooldown.set(provider, Date.now() + COOLDOWN_MS);
+    } else {
+        lastError = new ProviderError('PROVIDER_DOWN',
+            'Nhà cung cấp AI đang tạm nghỉ sau lỗi gần nhất.', 0, provider);
     }
 
-    const fallbackProvider = String(s.fallback_provider || '');
-    const fallbackModel = String(s.fallback_model || '');
-    const fallbackKey = (Deno.env.get('AI_TUTOR_FALLBACK_API_KEY') ?? '').trim();
-    if (!fallbackProvider || !fallbackModel || !fallbackKey || !isProviderId(fallbackProvider)) {
+    const fallback = fallbackTarget(s);
+    if (!fallback.usable) {
         throw lastError;
     }
+    const fbInfo = providerInfo(fallback.provider);
     try {
-        const result = await callProvider({
-            provider: fallbackProvider as ProviderId, model: fallbackModel, role: 'fallback',
-            system: options.system, messages: options.turns,
-            maxTokens, timeoutMs
-        });
-        return { result, latencyMs: Date.now() - started, fellBack: true };
+        const result = await call(
+            fallback.provider as ProviderId, fallback.model, 'fallback'
+        );
+        return {
+            result, latencyMs: Date.now() - started, fellBack: true,
+            budget, maxTokens: Math.min(maxTokens, fbInfo.maxOutput || maxTokens)
+        };
     } catch (err) {
-        const second = err instanceof ProviderError ? err : lastError;
-        throw second;
+        throw err instanceof ProviderError ? err : lastError;
     }
 }
 
@@ -319,7 +362,20 @@ Deno.serve(async (req) => {
             .eq('id', admin.sessionId)
             .maybeSingle();
         const isFounder = String(sessionRow?.scope || '') === 'founder';
-        const FOUNDER_ONLY = ['admin.settings.save', 'admin.prompt.save', 'admin.prompt.restore', 'admin.test'];
+        const FOUNDER_ONLY = [
+            'admin.settings.save', 'admin.prompt.save', 'admin.prompt.restore',
+            'admin.test', 'admin.provider.verify', 'admin.usage.stats'
+        ];
+        /* Lịch sử lỗi provider gần đây — chỉ Founder thấy chi tiết kỹ thuật. */
+        let recentErrors: Array<Record<string, unknown>> = [];
+        if (isFounder) {
+            const { data } = await client
+                .from('ai_provider_diagnostics')
+                .select('provider, model, role, status, detail, created_at')
+                .order('created_at', { ascending: false })
+                .limit(20);
+            recentErrors = (data ?? []) as Array<Record<string, unknown>>;
+        }
         if (!isFounder && FOUNDER_ONLY.indexOf(action) !== -1) {
             return fail(403, 'FOUNDER_ONLY',
                 'Chỉ Founder được thay đổi cấu hình Trợ lý AI. Bạn vẫn xem được trạng thái.');
@@ -375,8 +431,45 @@ Deno.serve(async (req) => {
                             connection: {
                                 primaryKey: keys.primary,
                                 fallbackKey: keys.fallback,
-                                mock: (Deno.env.get('AI_TUTOR_MOCK') ?? '') === '1'
+                                mock: mockEnabled()
                             },
+                            providerCatalog: PROVIDER_CATALOG,
+                            providers: PROVIDER_CATALOG.map((p) => {
+                                const isPrimary = String(settings.provider || '') === p.id;
+                                const isFallback = String(settings.fallback_provider || fallbackEnv().provider || '') === p.id;
+                                /* Khoá đúng vai trò: provider chính đọc AI_TUTOR_API_KEY,
+                                   provider dự phòng đọc AI_TUTOR_FALLBACK_API_KEY. Trước đây
+                                   cả hai đọc chung cờ của khoá chính nên provider dự phòng
+                                   bị báo "thiếu khoá" dù khoá dự phòng đã có. */
+                                const keyConfigured = isPrimary ? keys.primary
+                                    : isFallback ? keys.fallback
+                                        : (keys.primary || keys.fallback);
+                                return {
+                                    id: p.id,
+                                    label: p.label,
+                                    protocol: p.protocol,
+                                    baseUrl: p.baseUrl,
+                                    contextLimit: p.contextLimit,
+                                    maxOutput: p.maxOutput,
+                                    timeoutMs: p.timeoutMs,
+                                    keyEnv: p.keyEnv,
+                                    fallbackKeyEnv: 'AI_TUTOR_FALLBACK_API_KEY',
+                                    primaryKeyConfigured: keys.primary,
+                                    fallbackKeyConfigured: keys.fallback,
+                                    keyConfigured,
+                                    role: isPrimary ? 'primary' : isFallback ? 'fallback' : '',
+                                    active: isPrimary,
+                                    fallbackActive: isFallback,
+                                    cooldownMsLeft: Math.max(0, (providerCooldown.get(p.id) || 0) - Date.now())
+                                };
+                            }),
+                            fallback: Object.assign(fallbackTarget(settings), {
+                                enabledInSettings: settings.fallback_enabled !== false
+                            }),
+                            retry: fallbackEnv().maxRetries,
+                            timeoutEnvMs: fallbackEnv().timeoutMs,
+                            outputBudget: MODE_MAX_TOKENS,
+                            recentErrors: isFounder ? recentErrors : [],
                             usage: {
                                 window: '24h',
                                 requests: Number(requests ?? 0) || 0,
@@ -421,6 +514,7 @@ Deno.serve(async (req) => {
                         patch.fallback_provider = fp;
                     }
                     if (s.fallbackModel != null) patch.fallback_model = str(s.fallbackModel, 80);
+                    if (s.fallbackEnabled != null) patch.fallback_enabled = !!s.fallbackEnabled;
                     if (s.routing != null) patch.routing_enabled = !!s.routing;
                     if (s.modelSimple != null) patch.model_simple = str(s.modelSimple, 80);
                     if (s.modelComplex != null) patch.model_complex = str(s.modelComplex, 80);
@@ -517,13 +611,15 @@ Deno.serve(async (req) => {
                             settings,
                             system: 'Bạn là trợ lý kiểm tra kết nối. Trả lời đúng một từ: OK',
                             turns: [{ role: 'user', content: 'Kiểm tra kết nối.' }],
-                            model: String(settings.model_simple || settings.model || '')
+                            model: String(settings.model_simple || settings.model || ''),
+                            mode: 'hint', message: 'Kiểm tra kết nối.'
                         });
                         await logUsage(client, {
                             studentId: null, action: 'admin.test',
                             provider: out.result.provider, model: out.result.model,
                             tokensIn: out.result.usage.input, tokensOut: out.result.usage.output,
-                            latencyMs: out.latencyMs, ok: true
+                            latencyMs: out.latencyMs, ok: true,
+                            fellBack: out.fellBack, estimated: out.result.usage.estimated
                         });
                         return json({
                             ok: true,
@@ -534,7 +630,9 @@ Deno.serve(async (req) => {
                                 latencyMs: out.latencyMs,
                                 reply: out.result.text.slice(0, 120),
                                 mock: out.result.mock,
-                                fellBack: out.fellBack
+                                fellBack: out.fellBack,
+                                maxTokens: out.maxTokens,
+                                estimated: out.result.usage.estimated
                             }
                         });
                     } catch (err) {
@@ -544,9 +642,90 @@ Deno.serve(async (req) => {
                             studentId: null, action: 'admin.test', provider: e.provider,
                             ok: false, errorCode: e.code, latencyMs: Date.now() - started
                         });
-                        await logDiagnostic(client, e, String(options.model || ''), 'primary');
+                        /* Tên model phải lấy từ settings — không có biến `options` trong
+                           phạm vi này (lỗi 8.5.1 làm mọi lỗi provider bị đổi thành 500). */
+                        await logDiagnostic(
+                            client, e,
+                            String(settings.model_simple || settings.model || ''),
+                            'primary'
+                        );
                         return fail(502, e.code, messageFor(e.code), { connected: false });
                     }
+                }
+
+                /* Kiểm tra một nhà cung cấp / mô hình CỤ THỂ trước khi áp dụng.
+                   Không ghi cấu hình, chỉ đọc danh sách model của provider. */
+                case 'admin.provider.verify': {
+                    const settings = await loadSettings(client);
+                    const provider = str(body.provider, 40).toLowerCase() || String(settings.provider || '');
+                    if (!isProviderId(provider)) {
+                        return fail(400, 'BAD_PROVIDER', 'Nhà cung cấp AI không hợp lệ.');
+                    }
+                    const model = str(body.model, 80);
+                    if (model && !/^[A-Za-z0-9._:\/-]{1,80}$/.test(model)) {
+                        return fail(400, 'BAD_MODEL', 'Tên mô hình không hợp lệ.');
+                    }
+                    const role: 'primary' | 'fallback' = body.role === 'fallback' ? 'fallback' : 'primary';
+                    const started = Date.now();
+                    try {
+                        const listed = await listProviderModels({ provider, role, timeoutMs: 15000 });
+                        if (listed) {
+                            const supported = model ? listed.models.indexOf(model) !== -1 : null;
+                            return json({
+                                ok: true,
+                                data: {
+                                    provider, model, role, listed: true,
+                                    supported, modelCount: listed.models.length,
+                                    models: listed.models.slice(0, 80),
+                                    latencyMs: Date.now() - started
+                                }
+                            });
+                        }
+                        /* Provider không cho liệt kê model: thử một lượt sinh rất nhỏ
+                           (tối đa 16 token) để biết khoá + model có chạy không. */
+                        const probe = await callProvider({
+                            provider: provider as ProviderId,
+                            model: model || String(settings.model || ''),
+                            role,
+                            system: 'Trả lời đúng một từ: OK',
+                            messages: [{ role: 'user', content: 'ping' }],
+                            maxTokens: 16,
+                            timeoutMs: 15000
+                        });
+                        return json({
+                            ok: true,
+                            data: {
+                                provider, model: probe.model, role, listed: false,
+                                supported: true, reply: probe.text.slice(0, 60),
+                                latencyMs: Date.now() - started
+                            }
+                        });
+                    } catch (err) {
+                        const e = err instanceof ProviderError
+                            ? err : new ProviderError('UNKNOWN', 'Lỗi không xác định.');
+                        await logDiagnostic(client, e, model || String(settings.model || ''), role);
+                        return fail(502, e.code, messageFor(e.code), { provider, model });
+                    }
+                }
+
+                /* Thống kê token theo ngày/tuần/tháng, có lọc provider và model.
+                   Tổng hợp bằng SQL (không bị giới hạn 1000 dòng của PostgREST). */
+                case 'admin.usage.stats': {
+                    const range = str(body.range, 10).toLowerCase() || 'week';
+                    const days = range === 'day' ? 1 : range === 'month' ? 30 : range === 'all' ? 3650 : 7;
+                    const since = new Date(Date.now() - days * 86400000).toISOString();
+                    const provider = str(body.provider, 40).toLowerCase();
+                    const model = str(body.model, 80);
+                    const { data, error } = await client.rpc('bakhi_ai_usage_stats', {
+                        p_since: since,
+                        p_provider: provider,
+                        p_model: model
+                    });
+                    if (error) return fail(500, 'DB_ERROR', 'Không đọc được thống kê sử dụng AI.');
+                    return json({
+                        ok: true,
+                        data: Object.assign({ range, since, provider, model }, data || {})
+                    });
                 }
 
                 default:
@@ -860,7 +1039,8 @@ Deno.serve(async (req) => {
                             settings,
                             system,
                             turns: turns.concat([{ role: 'user', content: message }]),
-                            model: pick.model
+                            model: pick.model,
+                            mode, message
                         });
                     } catch (err) {
                         const e = err instanceof ProviderError
@@ -912,7 +1092,8 @@ Deno.serve(async (req) => {
                         studentId: ctx.studentId, action: 'chat',
                         provider: out.result.provider, model: out.result.model, mode,
                         tokensIn: out.result.usage.input, tokensOut: out.result.usage.output,
-                        latencyMs: out.latencyMs, ok: true
+                        latencyMs: out.latencyMs, ok: true,
+                        fellBack: out.fellBack, estimated: out.result.usage.estimated
                     });
 
                     const after = await usageToday(client, ctx.studentId);
@@ -946,6 +1127,11 @@ Deno.serve(async (req) => {
                                 fellBack: out.fellBack,
                                 mock: out.result.mock,
                                 tokens: out.result.usage,
+                                outputBudget: {
+                                    maxTokens: out.maxTokens,
+                                    target: out.budget.target,
+                                    deep: out.budget.deep
+                                },
                                 latencyMs: out.latencyMs,
                                 usage: after,
                                 limits: { dailyRequests, dailyTokens }

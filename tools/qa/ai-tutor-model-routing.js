@@ -47,6 +47,11 @@ function loadTs(rel) {
   return m.exports;
 }
 
+/* Các mô-đun máy chủ đọc biến môi trường qua Deno.env — stub tối thiểu cho Node. */
+if (typeof globalThis.Deno === 'undefined') {
+  globalThis.Deno = { env: { get: () => undefined } };
+}
+
 const P = loadTs('supabase/functions/_shared/ai-prompts.ts');
 const V = loadTs('supabase/functions/_shared/ai-providers.ts');
 
@@ -131,11 +136,54 @@ ok('giữ các lượt mới nhất', trimmed[trimmed.length - 1].content === 'm
 ok('cửa sổ tối thiểu 2 lượt', P.trimHistory(turns, 0).length >= 2);
 
 /* --------------------------------------------------------------- 6. Provider */
-ok('danh sách provider hợp lệ', V.PROVIDER_IDS.length === 7, V.PROVIDER_IDS.join(','));
+ok('danh sách provider hợp lệ', V.PROVIDER_IDS.length === 8, V.PROVIDER_IDS.join(','));
 ok('isProviderId nhận google', V.isProviderId('google') === true);
+ok('isProviderId nhận groq', V.isProviderId('groq') === true);
+ok('isProviderId nhận cerebras', V.isProviderId('cerebras') === true);
 ok('isProviderId từ chối tên lạ', V.isProviderId('gemini-pro-max') === false);
 ok('có gợi ý model cho google', (V.MODEL_SUGGESTIONS.google || []).length > 0);
+ok('Groq là gợi ý đầu tiên và là openai/gpt-oss-20b',
+  (V.MODEL_SUGGESTIONS.groq || [])[0] === 'openai/gpt-oss-20b',
+  String((V.MODEL_SUGGESTIONS.groq || [])[0]));
 ok('ước lượng token dương', V.estimateTokens('xin chào') >= 1);
+
+/* ------------------------------------------- 7. Danh mục provider (8.5.2) */
+const groqInfo = V.providerInfo('groq');
+ok('danh mục có đủ 8 provider', (V.PROVIDER_CATALOG || []).length === 8);
+ok('Groq dùng giao thức OpenAI-compatible', groqInfo.protocol === 'openai');
+ok('Groq có base URL chính thức',
+  groqInfo.baseUrl === 'https://api.groq.com/openai/v1', groqInfo.baseUrl);
+ok('Groq đọc khoá từ AI_TUTOR_API_KEY', groqInfo.keyEnv === 'AI_TUTOR_API_KEY');
+ok('Groq khai báo context/out/timeout',
+  groqInfo.contextLimit > 0 && groqInfo.maxOutput >= 2048 && groqInfo.timeoutMs > 0);
+ok('providerInfo tên lạ rơi về provider đầu tiên', V.providerInfo('khong-ton-tai').id === 'groq');
+ok('không có provider nào thiếu baseUrl trừ custom',
+  V.PROVIDER_CATALOG.every((p) => p.id === 'custom' ? p.baseUrl === '' : /^https:\/\//.test(p.baseUrl)));
+
+/* ------------------------------------------------- 8. Ngân sách token 8.5.2 */
+ok('Quick Answer (hint) = 256', P.outputTokensForMode('hint', 'tóm tắt nhanh', 2048).maxTokens === 256);
+ok('Normal (explain) = 512', P.outputTokensForMode('explain', 'giải thích bài này', 2048).maxTokens === 512);
+ok('Detailed (steps) = 1024', P.outputTokensForMode('steps', 'giải bài này', 2048).maxTokens === 1024);
+ok('Deep Explanation = 2048 khi được yêu cầu rõ',
+  P.outputTokensForMode('explain', 'giải thích sâu giúp mình', 2048).maxTokens === 2048);
+ok('chế độ Gợi ý KHÔNG được nâng lên 2048',
+  P.outputTokensForMode('hint', 'giải thích sâu', 2048).maxTokens === 256);
+ok('không vượt trần Founder đặt',
+  P.outputTokensForMode('steps', 'giải bài', 400).maxTokens === 400);
+ok('không hạ dưới 128 token',
+  P.outputTokensForMode('hint', 'x', 64).maxTokens === 128);
+ok('mọi chế độ đều có ngân sách',
+  P.TUTOR_MODES.every((m) => (P.MODE_MAX_TOKENS[m.id] || 0) >= 256));
+
+/* ------------------------------------------- 9. Cấu hình dự phòng từ env */
+const fb = V.fallbackEnv();
+ok('dự phòng bật mặc định', fb.enabled === true);
+ok('số lần thử lại mặc định = 1', fb.maxRetries === 1, String(fb.maxRetries));
+ok('không có provider dự phòng khi env trống', fb.provider === '' && fb.model === '');
+ok('custom không hỗ trợ liệt kê model (trả null)',
+  V.PROVIDER_CATALOG.find((p) => p.id === 'custom').supportsModelList === false);
+ok('lọc khoá Groq khỏi chi tiết chẩn đoán',
+  V.sanitizeProviderDetail('invalid key gsk_CONTOHOHOANTOAN0000000000000000000000000000') === 'invalid key ***');
 const err = new V.ProviderError('TIMEOUT', 'thử', 0, 'google');
 ok('lỗi timeout được coi là có thể thử lại', err.retryable === true);
 ok('lỗi xác thực KHÔNG thử lại provider khác',

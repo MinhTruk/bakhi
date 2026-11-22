@@ -179,3 +179,23 @@ Các script kiểm thử nằm trong `artifacts/` (đã gitignore, không phát 
 thoại và tin nhắn, hạn mức/usage, giao diện 8 chế độ, trạng thái đang trả lời, xử lý lỗi và
 thử lại, không lộ khoá. Điều duy nhất chưa có là **nội dung trả lời từ AI**, vì khoá Google đã
 hết hạn mức — sau khi mở khoá (hoặc cấu hình dự phòng) thì không cần sửa thêm mã.
+
+---
+
+## 8. Bản 8.5.2 — cấu hình provider Groq (CHƯA TRIỂN KHAI)
+
+Trạng thái của bản 8.5.2 trong mã nguồn, tách biệt hoàn toàn với bản 8.5.1 đang chạy trên
+production:
+
+| Hạng mục | Trạng thái |
+|---|---|
+| Mã nguồn (adapter, prompt budget, Edge Function, Founder UI) | ✅ đã sửa |
+| Migration `20261218000003_bakhi_v852_ai_provider_groq.sql` | ⏳ đã viết, **chưa áp** |
+| Edge Function `ai-tutor-api` bản 8.5.2 | ⏳ **chưa deploy** |
+| Frontend 8.5.2 (126 tệp HTML + `?v=8.5.2`) | ⏳ **chưa push** |
+| Secrets Groq / Google | ⏳ người quản trị phải đặt trong Supabase Secrets |
+| Kết nối Groq thật | ❌ **chưa kiểm thử** — không có khoá hợp lệ trong môi trường kiểm thử |
+| Cổng QA offline (6 cổng AI Tutor + 5 cổng nền) | ✅ đã chạy, tất cả PASS |
+
+Điều này có nghĩa: **production vẫn là 8.5.1 với Google Gemini**. Không có tuyên bố nào trong
+tài liệu này nói Groq đã chạy thật.

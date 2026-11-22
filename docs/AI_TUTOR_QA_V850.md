@@ -108,7 +108,37 @@ mục QA để biết chính xác cái gì đã chạy và cái gì chưa.
 - [ ] `bk-report.js` vẫn hiện nút Báo cáo.
 - [ ] Không có lỗi console ở trang chủ và trang bài học.
 
-## 5. Lưu ý khi chạy QA
+## 5. Kiểm thử cấu hình provider (8.5.2)
+
+Các mục dưới đây **chỉ** đánh dấu được sau khi khoá đã nằm trong Supabase Secrets và
+migration `20261218000003` đã áp. Chưa chạy thì ghi rõ “chưa kiểm thử”.
+
+- [ ] **Khoá hợp lệ:** Founder → *Kiểm tra kết nối* → trả về `provider: groq`,
+      `model: openai/gpt-oss-20b`.
+- [ ] **Khoá không hợp lệ:** đổi tạm khoá sai → `AUTH`, học sinh nhận thông báo tiếng Việt,
+      không thấy body của Groq; `ai_provider_diagnostics` có dòng mới.
+- [ ] **Model không tồn tại:** nhập `openai/khong-ton-tai` → *Kiểm tra model* báo không có
+      trong danh sách; lưu rồi hỏi thử → `MODEL_NOT_FOUND`.
+- [ ] **Timeout:** đặt `AI_TUTOR_TIMEOUT=5000` + model rất chậm → `TIMEOUT`, có thử lại.
+- [ ] **429:** dùng khoá đã chạm hạn mức → `RATE_LIMIT`, dự phòng chạy nếu đã cấu hình.
+- [ ] **5xx:** tạm trỏ `custom` + `AI_TUTOR_BASE_URL` tới một host trả 503 → `PROVIDER_DOWN`.
+- [ ] **Dự phòng hoạt động:** đặt primary sai + fallback Google đúng → câu trả lời thành công,
+      `meta.fellBack: true`, `ai_usage_logs.fell_back = true`.
+- [ ] **Cả hai lỗi:** cả hai khoá sai → một thông báo lỗi duy nhất, không treo UI.
+- [ ] **Cooldown:** sau lỗi tạm thời, gửi câu thứ hai trong 60 giây → request đi thẳng dự phòng,
+      không gọi lại provider vừa lỗi.
+- [ ] **Không có request trùng:** một câu hỏi → đúng một dòng `user`, một dòng `assistant`,
+      `message_count` tăng đúng 2.
+- [ ] **Phân quyền:** Administrator mở tab AI Tutor → chỉ xem; gọi `admin.settings.save`
+      bằng token Administrator → `403 FOUNDER_ONLY`.
+- [ ] **Không lộ khoá:** tìm `gsk_`, `AIza`, `AQ.` trong HTML/JS/`assets/` → không có;
+      gọi function và đọc mọi response → không có khoá.
+- [ ] **Token đúng:** so `ai_usage_logs.tokens_in/out` với `usage` của Groq cho cùng lượt;
+      khi provider không trả usage thì `tokens_estimated = true`.
+- [ ] **Bộ lọc thống kê:** *Hôm nay / 7 ngày / 30 ngày* và lọc provider/model trả số khớp.
+- [ ] **Chức năng cũ:** 8 chế độ vẫn chạy, lịch sử cũ vẫn mở được sau khi đổi provider.
+
+## 6. Lưu ý khi chạy QA
 
 - Không dùng khoá API thật trong log hay ảnh chụp màn hình.
 - Chạy QA với `AI_TUTOR_MOCK=1` khi chưa có khoá — mọi kết quả sẽ mang nhãn giả lập.

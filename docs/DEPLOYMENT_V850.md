@@ -3,6 +3,20 @@
 Tài liệu này ghi **đúng** việc đã làm và việc còn lại. Đừng đọc nó như một kế hoạch lý thuyết:
 mọi mục đánh dấu ✅ đã thực sự chạy trên project `bakhi`.
 
+> **Khác biệt của 8.5.2 (chưa triển khai):** bản 8.5.2 chuyển mặc định sang Groq +
+> `openai/gpt-oss-20b`, thêm migration `20261218000003_bakhi_v852_ai_provider_groq.sql`
+> và các action `admin.provider.verify`, `admin.usage.stats`. Bản này **chưa** áp migration,
+> **chưa** deploy Edge Function và **chưa** push frontend. Trình tự khi được cho phép:
+>
+> 1. Đặt `AI_TUTOR_API_KEY` (khoá Groq) và `AI_TUTOR_FALLBACK_API_KEY` (khoá Google) trong
+>    *Project Settings → Edge Functions → Secrets*.
+> 2. Áp migration 00003 (Management API hoặc `supabase db push`) và xác nhận
+>    `ai_settings.provider = 'groq'`.
+> 3. Deploy `ai-tutor-api`, rồi bấm **Kiểm tra kết nối** trong Founder Dashboard.
+> 4. Push `main` để Pages phát hành frontend 8.5.2.
+>
+> Không làm bước 1 trước thì bước 3 sẽ trả `NO_KEY`. Chi tiết: `docs/AI_TUTOR_PROVIDER_CONFIGURATION.md`.
+
 | Thông tin | Giá trị |
 |---|---|
 | Project | `wzvslyabhizsiggurwdq` (tên `bakhi`) |
@@ -198,4 +212,5 @@ from public.ai_provider_diagnostics order by created_at desc limit 20;
 
 - Thêm mục `CHANGELOG.md` (push lên `main` sẽ tự đồng bộ Supabase qua workflow).
 - Kiểm tra tab **Giám sát** của Administrator Dashboard.
-- Chạy lại 4 cổng QA AI Tutor trước mỗi lần push frontend (xem `docs/AI_TUTOR_QA_V850.md`).
+- Chạy lại 6 cổng QA AI Tutor trước mỗi lần push frontend (xem `docs/AI_TUTOR_QA_V850.md`),
+  gồm `ai-tutor-provider-adapter.js` và `ai-tutor-fallback.js` (kiểm thử offline, không cần khoá).

@@ -2,6 +2,48 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.5.2] — 2026-11-22
+
+### Tính năng
+
+- **Nhà cung cấp mặc định chuyển sang Groq với `openai/gpt-oss-20b`.** Groq dùng giao thức
+  OpenAI-compatible nên không cần adapter riêng; đổi provider vẫn chỉ bằng một dòng cấu hình.
+  Migration `20261218000003` đổi giá trị mặc định của cột và dòng `ai_settings` đang chạy,
+  thêm provider `cerebras` vào danh sách hợp lệ. Không tạo bảng mới, không xoá dữ liệu.
+- **Danh mục provider dùng chung** (`PROVIDER_CATALOG` trong `_shared/ai-providers.ts`):
+  mỗi provider khai báo id, tên hiển thị, giao thức, base URL, tên secret, giới hạn ngữ cảnh,
+  trần token đầu ra, thời gian chờ và khả năng liệt kê model. Founder Dashboard đọc đúng
+  danh mục này thay vì tự đoán endpoint.
+- **Kiểm tra model trước khi áp dụng** — action `admin.provider.verify` đọc danh sách model
+  thật của provider bằng khoá trong Secrets (không tốn token sinh văn bản), chỉ Founder gọi được.
+- **Tối ưu token theo chế độ:** Gợi ý 256 · Giải thích/Tóm tắt/Hỏi dẫn dắt 512 ·
+  Từng bước/Kiểm tra/Phân tích lỗi/Luyện tập 1024 · Giải thích sâu 2048. Trần mỗi lượt là
+  `min(trần Founder đặt, trần chế độ)`, không bao giờ dưới 128 và không vượt trần đã đặt.
+  Chế độ Gợi ý **không** được nâng trần, để model không viết sẵn lời giải.
+- **Dự phòng có công tắc và cooldown:** `AI_TUTOR_FALLBACK_ENABLED`, `AI_TUTOR_MAX_RETRIES`
+  (0–2), `AI_TUTOR_TIMEOUT`. Provider vừa lỗi tạm thời nghỉ 60 giây để không đốt token vào
+  chuỗi request chắc chắn thất bại. Lỗi khoá/model/cấu hình **không** kích hoạt dự phòng.
+- **Thống kê token trung thực:** `ai_usage_logs.fell_back` và `.tokens_estimated`; hàm SQL
+  `bakhi_ai_usage_stats()` tổng hợp theo ngày/tuần/tháng, lọc provider và model, trả cả
+  token vào/ra, số lượt lỗi, số lượt qua dự phòng, số lượt dùng token ước lượng và thời gian
+  phản hồi trung bình. Không lưu nội dung hội thoại để thống kê.
+- **Founder Dashboard → AI Tutor** có thêm ba thẻ: *Sức khoẻ nhà cung cấp* (khoá, giới hạn,
+  nút kiểm tra từng provider), *Thống kê token & lượt gọi* (bộ lọc thời gian/provider/model)
+  và *Lỗi nhà cung cấp gần đây* (chỉ Founder thấy; chi tiết đã lọc bỏ khoá).
+
+### Cải tiến
+
+- `admin.status` trả thêm danh mục provider, trạng thái khoá chính/dự phòng, số lần thử lại,
+  cooldown còn lại và ngân sách token từng chế độ. Administrator chỉ xem, không sửa được.
+- Mặc định `max_output_tokens` 2048 và `timeout_ms` 30000; cửa sổ ngữ cảnh tối đa 10 lượt
+  cho cấu hình mới (giảm token gửi lên mỗi câu hỏi).
+
+### Triển khai
+
+- **Chưa áp migration và chưa deploy** trong lần thay đổi này: cần sự cho phép của người
+  quản trị. Khoá Groq/Google phải do người quản trị đặt trong Supabase → Edge Functions →
+  Secrets, không nằm trong mã nguồn hay tài liệu.
+
 ## [8.5.1] — 2026-11-22
 
 ### Sửa lỗi

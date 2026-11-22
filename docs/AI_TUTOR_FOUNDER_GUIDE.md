@@ -21,10 +21,24 @@ hội thoại.
 
 | Trường | Ghi chú |
 |---|---|
-| Nhà cung cấp chính | Google / OpenAI / Groq / OpenRouter / Mistral / DeepSeek / Custom. |
+| Nhà cung cấp chính | Groq (mặc định) / Google / OpenAI / Cerebras / OpenRouter / Mistral / DeepSeek / Custom. |
 | Mô hình mặc định | Chỉ dùng tên model đã kiểm tra hoạt động. |
 | Nhà cung cấp dự phòng | Để trống nếu không dùng. Cần `AI_TUTOR_FALLBACK_API_KEY`. |
 | Mô hình dự phòng | Bắt buộc nếu đã chọn provider dự phòng. |
+| Dự phòng tự động | Bật/tắt. Tắt công tắc này thì lỗi nhà cung cấp chính trả thẳng cho học sinh. |
+| Kiểm tra model | Đọc danh sách model thật của nhà cung cấp — làm trước khi lưu model mới. |
+
+Hai thẻ mới từ 8.5.2:
+
+- **Sức khoẻ nhà cung cấp:** từng nhà cung cấp với giao thức, giới hạn ngữ cảnh, trần token
+  ra, thời gian chờ, trạng thái khoá và nút **Kiểm tra**. Nhãn *Tạm nghỉ Ns* nghĩa là provider
+  vừa lỗi tạm thời và đang trong 60 giây cooldown.
+- **Thống kê token & lượt gọi:** lọc theo *Hôm nay / 7 ngày / 30 ngày / Tất cả*, theo nhà
+  cung cấp và model; hiển thị token vào/ra, số lượt qua dự phòng, số lượt dùng token ước
+  lượng và thời gian phản hồi trung bình.
+
+Thẻ **Lỗi nhà cung cấp gần đây** chỉ Founder thấy. Chi tiết ở đó đã được lọc bỏ khoá
+(`AIza…`, `gsk_…`, `sk-…`, `AQ.…`, `eyJ…`) và **không bao giờ** trả cho học sinh.
 | Định tuyến model | Bật/tắt phần chọn model theo loại câu hỏi. |
 | Model cho câu đơn giản / phức tạp / luyện tập | Để trống = dùng model mặc định. |
 

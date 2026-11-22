@@ -10,6 +10,7 @@ Bá Khí không gắn chặt vào một nhà cung cấp. Mọi nhà cung cấp �
 | `google` | Google Generative Language | `https://generativelanguage.googleapis.com/v1beta` |
 | `openai` | OpenAI-compatible | `https://api.openai.com/v1` |
 | `groq` | OpenAI-compatible | `https://api.groq.com/openai/v1` |
+| `cerebras` | OpenAI-compatible | `https://api.cerebras.ai/v1` |
 | `openrouter` | OpenAI-compatible | `https://openrouter.ai/api/v1` |
 | `mistral` | OpenAI-compatible | `https://api.mistral.ai/v1` |
 | `deepseek` | OpenAI-compatible | `https://api.deepseek.com/v1` |
@@ -31,7 +32,10 @@ Nhờ vậy, đổi từ Google sang Groq chỉ cần: đổi khoá trong `AI_TU
 
 ## 3. Ví dụ cấu hình từng nhà cung cấp
 
-### 3.1. Google Gemini (mặc định)
+Hướng dẫn từng bước cho người không lập trình:
+**[docs/AI_TUTOR_PROVIDER_CONFIGURATION.md](AI_TUTOR_PROVIDER_CONFIGURATION.md)**.
+
+### 3.1. Google Gemini (dự phòng mặc định từ 8.5.2)
 
 ```
 AI_TUTOR_PROVIDER = google
@@ -60,8 +64,14 @@ AI_TUTOR_API_KEY  = <khoá từ platform.openai.com/api-keys>
 
 ```
 AI_TUTOR_PROVIDER = groq
-AI_TUTOR_MODEL    = llama-3.3-70b-versatile
+AI_TUTOR_MODEL    = openai/gpt-oss-20b
 ```
+
+**Mặc định của 8.5.2.** Groq nói cùng giao thức với OpenAI nên dùng chung adapter, không có
+nhánh mã riêng. `openai/gpt-oss-20b` là lựa chọn cân bằng cho hạn mức miễn phí; các model
+khác (`openai/gpt-oss-120b`, `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`) chỉ là gợi ý
+— phải bấm **Kiểm tra model** trước khi áp dụng, vì danh sách model của nhà cung cấp thay đổi
+theo thời gian.
 
 ### 3.4. OpenRouter
 
@@ -107,12 +117,21 @@ Bật/tắt ở **Founder Dashboard → AI Tutor → Định tuyến model**.
 
 Điều kiện để fallback hoạt động:
 
-1. `fallback_provider` và `fallback_model` đã chọn và lưu.
-2. `AI_TUTOR_FALLBACK_API_KEY` tồn tại trong Secrets.
+1. Công tắc **Dự phòng tự động** đang bật (`ai_settings.fallback_enabled`, hoặc
+   `AI_TUTOR_FALLBACK_ENABLED=false` để tắt từ phía môi trường).
+2. `fallback_provider` và `fallback_model` đã chọn và lưu (hoặc đặt qua
+   `AI_TUTOR_FALLBACK_PROVIDER` / `AI_TUTOR_FALLBACK_MODEL`).
+3. `AI_TUTOR_FALLBACK_API_KEY` tồn tại trong Secrets.
+4. Provider dự phòng khác provider chính.
 
 Chỉ lỗi **tạm thời** mới chuyển provider: `TIMEOUT`, `PROVIDER_DOWN`, `RATE_LIMIT`,
 `EMPTY_RESPONSE`. Lỗi cấu hình (`AUTH`, `MODEL_NOT_FOUND`, `QUOTA`, `BAD_CONFIG`)
 **không** chuyển, vì provider khác cũng sẽ gặp lỗi tương tự.
+
+Trước khi chuyển, provider chính được thử lại tối đa `AI_TUTOR_MAX_RETRIES` lần (mặc định 1,
+0–2, cách nhau 0,9 giây). Sau khi lỗi tạm thời, provider đó **nghỉ 60 giây** (cooldown) để
+không đốt token vào chuỗi request chắc chắn thất bại — trong thời gian đó request đi thẳng
+sang dự phòng. Không có thử vô hạn, không tạo request trùng lặp.
 
 Khi fallback được dùng:
 
