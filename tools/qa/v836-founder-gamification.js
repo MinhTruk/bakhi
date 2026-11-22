@@ -86,7 +86,17 @@ assert(owned.indexOf('wreath') !== -1, 'khung từ badge vẫn còn sau khi hợ
 const found = read('assets/bakhi/bk-founder.js');
 assert(/\[\s*'gamification',\s*'Gamification'/.test(found), 'Founder Dashboard có tab Gamification');
 assert(/else if \(name === 'gamification'\) tabGamification/.test(found), 'tab Gamification có tuyến render riêng');
-assert(/version: '8\.3\.[678]'/.test(found), 'BKFounder báo phiên bản 8.3.6+');
+/* Không ghim cứng số bản: so sánh số học với mốc 8.3.6 để mọi bản sau đều đạt. */
+const foundVer = (found.match(/version: '([0-9.]+)'/) || [])[1] || '0.0.0';
+function verAtLeast(v, min) {
+  const a = v.split('.').map(Number), b = min.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if ((a[i] || 0) > (b[i] || 0)) return true;
+    if ((a[i] || 0) < (b[i] || 0)) return false;
+  }
+  return true;
+}
+assert(verAtLeast(foundVer, '8.3.6'), 'BKFounder báo phiên bản 8.3.6+', foundVer);
 const devboard = read('assets/bakhi/bk-devboard.js');
 assert(/gamificationApi: gamificationAdminApi/.test(devboard),
     'dashboard truyền gamification-api cho tab Gamification (không dùng admin-actions)');
