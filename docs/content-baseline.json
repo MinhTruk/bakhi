@@ -1723,6 +1723,34 @@
         "mcqBank": 0,
         "tfBank": 0
       }
+    },
+    "gamification/index.html": {
+      "hash": "7e5ed283cbcce8e36eaa0b2cc73f1e679d9555e44186c1d0f88e84ed4f7b3d38",
+      "bytes": 3963,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "skills/index.html": {
+      "hash": "bcb422eb4ad04a1ae1e7d13c6e748cc4179b196b692225e93101c801787a1cad",
+      "bytes": 4188,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
     }
   },
   "notes": [
@@ -1776,6 +1804,14 @@
       "reason": "Trang không chứa nội dung giáo dục được viết lại có chủ đích (Studio hợp nhất, liên kết /studio/). Không có tệp môn/bài học nào thay đổi.",
       "files": [
         "index.html"
+      ]
+    },
+    {
+      "at": "2026-11-22T02:49:34.859Z",
+      "reason": "Trang giao diện không chứa nội dung giáo dục: viết lại có chủ đích hoặc bổ sung vào baseline. Không có tệp môn/bài học nào thay đổi.",
+      "files": [
+        "gamification/index.html (mới)",
+        "skills/index.html (mới)"
       ]
     }
   ]

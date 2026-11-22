@@ -25,8 +25,12 @@ if (!fs.existsSync(BASELINE)) {
 const base = JSON.parse(fs.readFileSync(BASELINE, 'utf8'));
 const touched = [];
 for (const rel of targets) {
-  if (!base.files[rel]) {
-    console.error('Tệp không có trong baseline: ' + rel);
+  /* Trang giao diện mới (không chứa nội dung giáo dục) được THÊM vào baseline,
+     trước đây tool từ chối nên các trang như gamification/ hay skills/ nằm ngoài
+     cổng bảo vệ nội dung. Vẫn giữ nguyên bước từ chối theo dấu hiệu nội dung. */
+  const isNew = !base.files[rel];
+  if (!fs.existsSync(path.join(ROOT, rel))) {
+    console.error('Tệp không tồn tại: ' + rel);
     process.exit(1);
   }
   const raw = fs.readFileSync(path.join(ROOT, rel), 'utf8');
@@ -36,12 +40,12 @@ for (const rel of targets) {
     process.exit(1);
   }
   base.files[rel] = { hash: sha(stripInjected(raw)), bytes: Buffer.byteLength(raw), stats: statsNow };
-  touched.push(rel);
+  touched.push(rel + (isNew ? ' (mới)' : ''));
 }
 base.notes = base.notes || [];
 base.notes.push({
   at: new Date().toISOString(),
-  reason: 'Trang không chứa nội dung giáo dục được viết lại có chủ đích (Studio hợp nhất, liên kết /studio/). Không có tệp môn/bài học nào thay đổi.',
+  reason: 'Trang giao diện không chứa nội dung giáo dục: viết lại có chủ đích hoặc bổ sung vào baseline. Không có tệp môn/bài học nào thay đổi.',
   files: touched
 });
 base.algorithm = 'sha256(strip(assets/bakhi lines, CRLF→LF))';

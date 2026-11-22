@@ -108,9 +108,10 @@ function makeDom(url, bodyScope) {
 
     /* 8.4.3 — Halloween & Giáng Sinh miễn phí cho toàn bộ học sinh. */
     console.log('Giao diện miễn phí (8.4.3)');
-    check('FREE_THEMES gồm đúng hai giao diện theo mùa',
-        Array.isArray(T.FREE_THEMES) && T.FREE_THEMES.length === 2 &&
+    check('FREE_THEMES gồm bốn giao diện theo mùa',
+        Array.isArray(T.FREE_THEMES) && T.FREE_THEMES.length === 4 &&
         T.isFree('theme-halloween') && T.isFree('theme-christmas') &&
+        T.isFree('theme-tet') && T.isFree('theme-midautumn') &&
         !T.isFree('theme-royal'));
     w.localStorage.setItem('bakhiTheme.v1', JSON.stringify({
         id: null, owned: ['theme-dawn'], deco: null
@@ -229,6 +230,112 @@ function makeDom(url, bodyScope) {
     w5.BKUserName.refresh();
     check('refresh() đổi biểu tượng đã hiển thị',
         !!node.querySelector('.bk-user-deco.fa-star') && !node.querySelector('.bk-user-deco.fa-feather'));
+
+    /* ------------------------------------- 8. Tết & Trung Thu (8.4.4) */
+    console.log('Giao diện Tết và Trung Thu (8.4.4)');
+    const wTet = makeDom('https://minhtruk.github.io/bakhi/');
+    wTet.localStorage.setItem('bakhiTheme.v1', JSON.stringify({
+        id: null, owned: [], deco: null
+    }));
+    const tetRes = await wTet.BKThemes.setTheme('theme-tet');
+    check('chọn được Tết khi kho chưa có', tetRes.ok === true, JSON.stringify(tetRes));
+    const tetFx = wTet.document.getElementById('bkThemeFx');
+    check('Tết có mai vàng rơi', !!tetFx && tetFx.querySelectorAll('.bkth-mai .bkth-flake').length > 5);
+    check('Tết có đèn lồng', !!tetFx && tetFx.querySelectorAll('.bkth-lantern').length === 2);
+    check('Tết có nền riêng',
+        !!wTet.document.querySelector('#bkThemeLayer .bkth-tet'));
+
+    const wMid = makeDom('https://minhtruk.github.io/bakhi/');
+    wMid.localStorage.setItem('bakhiTheme.v1', JSON.stringify({
+        id: null, owned: [], deco: null
+    }));
+    const midRes = await wMid.BKThemes.setTheme('theme-midautumn');
+    check('chọn được Trung Thu khi kho chưa có', midRes.ok === true, JSON.stringify(midRes));
+    check('Trung Thu có trăng rằm',
+        !!wMid.document.querySelector('#bkThemeLayer .bkth-moon'));
+    const midFx = wMid.document.getElementById('bkThemeFx');
+    check('Trung Thu có đèn ông sao',
+        !!midFx && midFx.querySelectorAll('.bkth-lantern-star').length === 2);
+    check('Trung Thu có ánh sao rơi',
+        !!midFx && midFx.querySelectorAll('.bkth-sao .bkth-flake').length > 5);
+
+    const wHeadTet = makeDom('https://minhtruk.github.io/bakhi/ktgk1/van/indexvan.html');
+    wHeadTet.localStorage.setItem('bakhiTheme.v1', JSON.stringify({
+        id: 'theme-tet', owned: ['theme-tet'], deco: null
+    }));
+    wHeadTet.BKThemes.refresh();
+    check('trang môn học: mai rơi trong header, không phủ nền',
+        !!wHeadTet.document.querySelector('.bk-theme-head .bkth-head-snow .bkth-mai .bkth-flake') &&
+        !wHeadTet.document.getElementById('bkThemeLayer'));
+
+    /* -------------------------------------- 9. Tự bật theo mùa (8.4.4) */
+    console.log('Tự bật giao diện theo mùa (8.4.4)');
+    check('nhận diện mùa Tết', (T.activeSeason(new Date('2026-02-01T10:00:00')) || {}).id === 'theme-tet',
+        JSON.stringify(T.activeSeason(new Date('2026-02-01T10:00:00'))));
+    check('nhận diện mùa Giáng Sinh vắt qua năm mới',
+        (T.activeSeason(new Date('2026-12-24T10:00:00')) || {}).id === 'theme-christmas' &&
+        (T.activeSeason(new Date('2026-01-03T10:00:00')) || {}).id === 'theme-christmas');
+    check('ngoài mùa thì không tự bật', T.activeSeason(new Date('2026-06-15T10:00:00')) === null);
+
+    const wAuto = makeDom('https://minhtruk.github.io/bakhi/');
+    const RealDate = wAuto.Date;
+    wAuto.Date = function () { return new RealDate('2026-02-01T10:00:00'); };
+    wAuto.localStorage.setItem('bakhiTheme.v1', JSON.stringify({
+        id: null, owned: [], deco: null, auto: true
+    }));
+    wAuto.BKThemes.refresh();
+    const autoHtml = wAuto.document.documentElement;
+    check('chưa chọn gì + đang mùa Tết → tự bật',
+        autoHtml.getAttribute('data-bk-theme') === 'theme-tet' &&
+        autoHtml.getAttribute('data-bk-theme-auto') === '1',
+        autoHtml.getAttribute('data-bk-theme') + ' / ' + autoHtml.getAttribute('data-bk-theme-auto'));
+    await wAuto.BKThemes.setTheme('theme-royal').catch(function () { });
+    const afterPick = JSON.parse(wAuto.localStorage.getItem('bakhiTheme.v1') || '{}');
+    check('chọn tay một giao diện thì tắt tự bật mùa', afterPick.auto === false,
+        JSON.stringify(afterPick));
+    check('đã chọn tay thì season() trả null', wAuto.BKThemes.season() === null);
+
+    /* Cài đặt → Hình nền phải hiện thanh gợi ý và nút tắt tự bật. */
+    const wSeasonPick = makeDom('https://minhtruk.github.io/bakhi/settings/');
+    const RealDate2 = wSeasonPick.Date;
+    wSeasonPick.Date = function () { return new RealDate2('2026-02-01T10:00:00'); };
+    wSeasonPick.localStorage.setItem('bakhiTheme.v1', JSON.stringify({
+        id: null, owned: [], deco: null, auto: true
+    }));
+    const seasonHost = wSeasonPick.document.createElement('div');
+    wSeasonPick.document.body.appendChild(seasonHost);
+    wSeasonPick.BKThemes.renderPicker(seasonHost, {});
+    const chip = seasonHost.querySelector('.bkth-season');
+    check('Cài đặt có thanh gợi ý giao diện mùa', !!chip, 'không thấy .bkth-season');
+    const offBtn = chip && Array.prototype.slice.call(chip.querySelectorAll('button'))
+        .filter(function (b) { return /Tắt tự bật/.test(b.textContent || ''); })[0];
+    check('thanh gợi ý có nút tắt tự bật', !!offBtn);
+    if (offBtn) offBtn.click();
+    const afterOff = JSON.parse(wSeasonPick.localStorage.getItem('bakhiTheme.v1') || '{}');
+    check('nút tắt tự bật ghi auto:false và bỏ thanh gợi ý',
+        afterOff.auto === false && !seasonHost.querySelector('.bkth-season'),
+        JSON.stringify(afterOff));
+    check('tắt tự bật thì không còn giao diện mùa',
+        !wSeasonPick.document.documentElement.getAttribute('data-bk-theme'),
+        String(wSeasonPick.document.documentElement.getAttribute('data-bk-theme')));
+    wSeasonPick.Date = RealDate2;
+    wAuto.Date = RealDate;
+
+    /* ----------------------------------- 10. Giới hạn hiệu ứng (8.4.4) */
+    console.log('Giới hạn hiệu ứng trên máy yếu (8.4.4)');
+    const wSmall = makeDom('https://minhtruk.github.io/bakhi/');
+    wSmall.matchMedia = function (q) {
+        return { matches: /max-width/.test(String(q)), addEventListener() { }, removeEventListener() { } };
+    };
+    wSmall.localStorage.setItem('bakhiTheme.v1', JSON.stringify({
+        id: 'theme-christmas', owned: ['theme-christmas'], deco: null
+    }));
+    wSmall.BKThemes.refresh();
+    const smallFlakes = wSmall.document.querySelectorAll('#bkThemeFx .bkth-flake').length;
+    check('màn hình nhỏ/máy yếu: số hạt giảm nhưng vẫn có hiệu ứng',
+        smallFlakes > 5 && smallFlakes < 24, String(smallFlakes));
+    check('CSS tạm dừng animation khi tab ẩn', /\.is-paused \*/.test(CSS_SRC) &&
+        /animation-play-state:\s*paused/.test(CSS_SRC));
 
     /* ------------------------- 6. Hồi quy 8.4.2: không phá phần tử position: fixed */
     console.log('Xếp lớp trang chủ (hồi quy 8.4.2)');

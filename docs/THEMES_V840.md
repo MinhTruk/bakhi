@@ -55,12 +55,28 @@ Trang `admin/` và `founder/` không được chèn `bk-themes.js`.
 | `theme-ember` | Hồng Ngọc | đỏ than hồng |
 | `theme-halloween` | Halloween | bí ngô khắc mặt phát sáng (3 cỡ) **rơi khắp trang** (`bkthPumpkinFall`), dơi bay, tông cam–tím |
 | `theme-christmas` | Giáng Sinh | **tuyết rơi toàn website** (28 hạt ở trang chủ, 16 hạt trong header trang môn, 24 hạt ở lớp phủ hồ sơ/cài đặt/tiến trình), cây thông, tông xanh–đỏ |
+| `theme-tet` | Tết Nguyên Đán | mai vàng rơi khắp trang, hai đèn lồng đỏ đong đưa, tông đỏ–vàng |
+| `theme-midautumn` | Trung Thu | trăng rằm, hai đèn ông sao, ánh sao vàng rơi, tông vàng–tím đêm |
 
-**Halloween và Giáng Sinh miễn phí cho toàn bộ học sinh (8.4.3).** Hai giao diện này
-luôn có trong kho của mọi hồ sơ (`user_inventory.source = 'seasonal_free'`) và client
-coi là đã sở hữu (`BKThemes.FREE_THEMES`, `BKThemes.isFree()`) nên học sinh chọn được
-ngay trong Cài đặt → Hình nền, không cần Founder trao. Tám giao diện còn lại vẫn là vật
-phẩm mở khoá từ Kho vật phẩm.
+**Bốn giao diện theo mùa miễn phí cho toàn bộ học sinh (8.4.3, 8.4.4).** Halloween,
+Giáng Sinh, Tết Nguyên Đán và Trung Thu luôn có trong kho của mọi hồ sơ
+(`user_inventory.source = 'seasonal_free'`) và client coi là đã sở hữu
+(`BKThemes.FREE_THEMES`, `BKThemes.isFree()`) nên học sinh chọn được ngay trong
+Cài đặt → Hình nền, không cần Founder trao. Sáu giao diện còn lại vẫn là vật phẩm mở
+khoá từ Kho vật phẩm.
+
+**Tự bật theo mùa (8.4.4).** `BKThemes.SEASONS` khai báo khoảng ngày cố định (tháng/ngày,
+giờ máy người học): Giáng Sinh 01/12–10/01, Tết 15/01–20/02, Trung Thu 20/08–25/09,
+Halloween 10/10–02/11. Khi học sinh **chưa** chọn giao diện (`id` rỗng, `auto` khác
+`false`), `autoPaint()` vẽ giao diện của mùa hiện tại với thuộc tính
+`data-bk-theme-auto="1"` nhưng KHÔNG ghi gì lên máy chủ. Chọn tay (kể cả “Về giao diện
+mặc định”) ghi `auto: false` và tắt hẳn; bật giảm chuyển động cũng không tự bật.
+Cài đặt → Hình nền hiện thanh gợi ý `.bkth-season` với nút **Tắt tự bật theo mùa**.
+
+**Giới hạn hiệu ứng (8.4.4).** `budget()` giảm số hạt còn ~40% khi màn hình ≤ 720px,
+`deviceMemory` ≤ 4 hoặc `hardwareConcurrency` ≤ 4. Khi tab bị ẩn (`visibilitychange`),
+`#bkThemeFx`/`#bkThemeOverlay` nhận lớp `is-paused` để CSS đặt `animation-play-state: paused`
+— không vẽ khi không ai nhìn. Không thêm bộ đếm FPS hay thư viện ngoài.
 
 Bí ngô và cây thông là SVG nội tuyến (data URI) nên không cần tải ảnh; tuyết và dơi là
 phần tử CSS thuần với `transform`/`opacity`, không chặn cuộn (`pointer-events: none`).
@@ -121,6 +137,16 @@ giao diện theo mùa trong tab Gamification → Give Themes.
    cho hồ sơ tạo sau này.
 4. `bk_gam_equip` gọi `bk_gam_free_themes` khi trang bị hai giao diện này nên không còn
    trả `NOT_OWNED`. Học sinh không cần thao tác gì thêm.
+
+### Tết & Trung Thu miễn phí (8.4.4)
+
+`supabase/migrations/20261216000000_bakhi_v844_seasonal_themes_extras.sql`:
+
+1. Bổ sung `theme-tet`, `theme-midautumn` vào `reward_catalog` (idempotent).
+2. `bk_gam_free_themes()` cấp cả bốn giao diện mùa; backfill mọi học sinh.
+3. Trigger `students_free_seasonal_themes` (từ 8.4.3) gọi lại hàm này nên hồ sơ mới cũng có.
+
+Hai migration 8.4.3 và 8.4.4 đều phải chạy: `supabase db push`.
 
 ## 7. Give Themes — trao giao diện từ Founder Dashboard (8.4.1)
 

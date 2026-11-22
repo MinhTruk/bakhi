@@ -98,6 +98,8 @@ html {
     /* Ảnh nghệ thuật dùng chung cho theme + thẻ xem trước trong Cài đặt. */
     --bkth-art-halloween: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 120'%3E%3Cellipse cx='80' cy='72' rx='54' ry='42' fill='%23f97316'/%3E%3Cellipse cx='80' cy='72' rx='54' ry='42' fill='none' stroke='%239a3412' stroke-width='3'/%3E%3Cellipse cx='80' cy='72' rx='34' ry='42' fill='none' stroke='%23ea580c' stroke-width='2.5'/%3E%3Cellipse cx='80' cy='72' rx='16' ry='42' fill='none' stroke='%23ea580c' stroke-width='2.5'/%3E%3Cpath d='M80 30 q8 -14 18 -16 q-6 10 -3 18z' fill='%2315803d'/%3E%3Cpath d='M54 64 l18 0 l-9 15z' fill='%23111827'/%3E%3Cpath d='M106 64 l-18 0 l9 15z' fill='%23111827'/%3E%3Cpath d='M56 86 q24 16 48 0 l-8 12 l-8 -7 l-6 10 l-6 -10 l-8 7z' fill='%23111827'/%3E%3C/svg%3E");
     --bkth-art-christmas: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 140'%3E%3Cpath d='M70 8 L104 56 L88 56 L112 96 L92 96 L118 132 L22 132 L48 96 L28 96 L52 56 L36 56 Z' fill='%2315803d'/%3E%3Cpath d='M70 8 L104 56 L88 56 L112 96 L92 96 L118 132 L70 132 Z' fill='%23166534' opacity='.7'/%3E%3Ccircle cx='70' cy='52' r='5' fill='%23facc15'/%3E%3Ccircle cx='56' cy='82' r='4.5' fill='%23ef4444'/%3E%3Ccircle cx='86' cy='92' r='4.5' fill='%23e2e8f0'/%3E%3Ccircle cx='64' cy='112' r='4' fill='%2338bdf8'/%3E%3Cpath d='M70 132 l-4 8 h8 z' fill='%2378350f'/%3E%3C/svg%3E");
+    --bkth-art-tet: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 160'%3E%3Crect x='64' y='12' width='12' height='10' rx='3' fill='%23facc15'/%3E%3Cellipse cx='70' cy='74' rx='42' ry='50' fill='%23dc2626'/%3E%3Cellipse cx='70' cy='74' rx='42' ry='50' fill='none' stroke='%23facc15' stroke-width='3'/%3E%3Cpath d='M28 74 h84' stroke='%23facc15' stroke-width='2' opacity='.55'/%3E%3Cpath d='M70 34 v80' stroke='%23facc15' stroke-width='2' opacity='.45'/%3E%3Crect x='64' y='122' width='12' height='8' rx='3' fill='%23facc15'/%3E%3Cpath d='M70 130 v20' stroke='%23facc15' stroke-width='4'/%3E%3Cpath d='M70 150 l-5 8 h10 z' fill='%23facc15'/%3E%3C/svg%3E");
+    --bkth-art-midautumn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 140'%3E%3Cpath d='M70 10 l14 34 36 2 -28 24 9 36 -31 -20 -31 20 9 -36 -28 -24 36 -2 z' fill='%23fbbf24' stroke='%23b91c1c' stroke-width='3' stroke-linejoin='round'/%3E%3Ccircle cx='70' cy='66' r='11' fill='%23fef3c7'/%3E%3Cpath d='M70 106 v20' stroke='%23b91c1c' stroke-width='4'/%3E%3Cpath d='M70 126 l-5 8 h10 z' fill='%23fbbf24'/%3E%3C/svg%3E");
 }
 
 html[data-bk-theme] {
@@ -271,6 +273,116 @@ html:not(.dark) #bkThemeOverlay .bkth-flake { background: #ffffff; opacity: .9; 
     100% { transform: translate3d(6vw, 112vh, 0) rotate(160deg); }
 }
 
+/* ------------------------------------------------------------ Tết (8.4.4) */
+html[data-bk-theme="theme-tet"] {
+    --bkth-1: #dc2626;
+    --bkth-2: #facc15;
+    --bkth-accent: #ef4444;
+    --bkth-glow: rgba(239, 68, 68, .42);
+    --bkth-head: linear-gradient(120deg, #450a0a, #b91c1c 48%, #a16207);
+    --bkth-art: var(--bkth-art-tet);
+}
+#bkThemeLayer .bkth-tet {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 22% 76%, rgba(220, 38, 38, .3), transparent 48%),
+        radial-gradient(circle at 80% 20%, rgba(250, 204, 21, .22), transparent 50%),
+        linear-gradient(168deg, #1b0505 0%, #3f0a0a 46%, #4a1d05 100%);
+}
+/* Mai vàng rơi là các hạt dùng chung snowPile(), đổi hình dạng và quỹ đạo. */
+#bkThemeFx .bkth-mai,
+#bkThemeOverlay .bkth-mai,
+.bkth-head-snow .bkth-mai { position: absolute; inset: 0; }
+#bkThemeFx .bkth-mai .bkth-flake,
+#bkThemeOverlay .bkth-mai .bkth-flake,
+.bkth-head-snow .bkth-mai .bkth-flake {
+    border-radius: 55% 45% 60% 40%;
+    background: #fbbf24;
+    opacity: .85;
+    animation-name: bkthBlossomFall;
+}
+#bkThemeFx .bkth-lantern {
+    position: absolute;
+    top: -6vh;
+    width: clamp(54px, 6vw, 88px);
+    height: clamp(64px, 7vw, 104px);
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center top;
+    filter: drop-shadow(0 0 16px rgba(239, 68, 68, .65));
+    animation: bkthLanternSway 7s ease-in-out infinite;
+    transform-origin: top center;
+}
+#bkThemeFx .bkth-lantern.is-a { left: 8%; animation-delay: -1s; }
+#bkThemeFx .bkth-lantern.is-b { right: 12%; width: clamp(44px, 5vw, 72px); animation-delay: -3.5s; opacity: .85; }
+@keyframes bkthBlossomFall {
+    0% { transform: translate3d(0, -8vh, 0) rotate(0deg); }
+    100% { transform: translate3d(-4vw, 112vh, 0) rotate(220deg); }
+}
+@keyframes bkthLanternSway {
+    0%, 100% { transform: rotate(-3.5deg); }
+    50% { transform: rotate(3.5deg); }
+}
+
+/* ------------------------------------------------------- Trung Thu (8.4.4) */
+html[data-bk-theme="theme-midautumn"] {
+    --bkth-1: #f59e0b;
+    --bkth-2: #fbbf24;
+    --bkth-accent: #fbbf24;
+    --bkth-glow: rgba(251, 191, 36, .42);
+    --bkth-head: linear-gradient(120deg, #1e1b4b, #312e81 45%, #92400e);
+    --bkth-art: var(--bkth-art-midautumn);
+}
+#bkThemeLayer .bkth-midautumn {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(251, 191, 36, .22), transparent 55%),
+        linear-gradient(172deg, #0a0a1f 0%, #1e1b4b 52%, #3b1d0a 100%);
+}
+#bkThemeLayer .bkth-moon {
+    position: absolute;
+    top: 4%;
+    right: 7%;
+    width: clamp(74px, 9vw, 128px);
+    height: clamp(74px, 9vw, 128px);
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, #fffbeb, #fde68a 62%, #fbbf24);
+    box-shadow: 0 0 46px rgba(251, 191, 36, .55);
+    opacity: .92;
+}
+#bkThemeFx .bkth-sao,
+#bkThemeOverlay .bkth-sao,
+.bkth-head-snow .bkth-sao { position: absolute; inset: 0; }
+#bkThemeFx .bkth-sao .bkth-flake,
+#bkThemeOverlay .bkth-sao .bkth-flake,
+.bkth-head-snow .bkth-sao .bkth-flake {
+    border-radius: 50%;
+    background: #fde68a;
+    box-shadow: 0 0 6px rgba(251, 191, 36, .8);
+    opacity: .8;
+    animation-name: bkthStarDrift;
+}
+#bkThemeFx .bkth-lantern-star {
+    position: absolute;
+    width: clamp(46px, 5.5vw, 78px);
+    height: clamp(46px, 5.5vw, 78px);
+    background-image: var(--bkth-art-midautumn);
+    background-repeat: no-repeat;
+    background-size: contain;
+    filter: drop-shadow(0 0 14px rgba(251, 191, 36, .7));
+    animation: bkthLanternSway 8s ease-in-out infinite;
+    transform-origin: top center;
+}
+#bkThemeFx .bkth-lantern-star.is-a { left: 6%; top: 8vh; }
+#bkThemeFx .bkth-lantern-star.is-b { right: 20%; top: 26vh; animation-delay: -4s; opacity: .85; }
+@keyframes bkthStarDrift {
+    0% { transform: translate3d(0, -6vh, 0); opacity: 0; }
+    12% { opacity: .85; }
+    100% { transform: translate3d(3vw, 106vh, 0); opacity: 0; }
+}
+
 /* Lớp hiệu ứng chuyển động (bí ngô, dơi, tuyết) — nằm TRÊN nội dung nhưng không
    chặn chuột, nên hiệu ứng theo mùa hiện được khắp trang thay vì bị thẻ nội dung
    che mất. Nền và lớp phủ giữ tương phản vẫn ở #bkThemeLayer phía sau. */
@@ -284,6 +396,9 @@ html:not(.dark) #bkThemeOverlay .bkth-flake { background: #ffffff; opacity: .9; 
     transition: opacity .45s ease;
 }
 #bkThemeFx { z-index: 2; }
+/* Tab bị ẩn: tạm dừng mọi animation (không vẽ khi không ai nhìn, tiết kiệm pin). */
+#bkThemeFx.is-paused *,
+#bkThemeOverlay.is-paused * { animation-play-state: paused !important; }
 /* Tuyết phủ toàn trang ở phạm vi accent (hồ sơ, cài đặt, tiến trình):
    chỉ thả tuyết, không vẽ lại nền và không chặn chuột. */
 #bkThemeOverlay { z-index: 1; }
@@ -330,7 +445,9 @@ html:not(.dark) .bkth-head-snow .bkth-flake { background: #ffffff; opacity: .9; 
 
 /* Giảm chuyển động: bỏ mọi animation trang trí; bí ngô trở lại đứng yên ở đáy. */
 html.bk-a11y-reduce-motion #bkThemeFx .bkth-pumpkin,
-html.bk-a11y-reduce-motion #bkThemeFx .bkth-bat {
+html.bk-a11y-reduce-motion #bkThemeFx .bkth-bat,
+html.bk-a11y-reduce-motion #bkThemeFx .bkth-lantern,
+html.bk-a11y-reduce-motion #bkThemeFx .bkth-lantern-star {
     animation: none !important;
 }
 html.bk-a11y-reduce-motion #bkThemeFx .bkth-pumpkin { top: auto; bottom: 2%; }
@@ -338,7 +455,9 @@ html.bk-a11y-reduce-motion .bkth-flake { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
     #bkThemeFx .bkth-pumpkin,
-    #bkThemeFx .bkth-bat {
+    #bkThemeFx .bkth-bat,
+    #bkThemeFx .bkth-lantern,
+    #bkThemeFx .bkth-lantern-star {
         animation: none !important;
     }
     #bkThemeFx .bkth-pumpkin { top: auto; bottom: 2%; }
@@ -494,3 +613,18 @@ html[data-bk-theme-scope="accent"] .bk-progress > span {
 }
 .bkth-preview .bkth-veil { position: absolute; inset: 0; }
 .bkth-note { font-size: .78rem; color: var(--bkl-muted, #94a3b8); margin: .2rem 0 .6rem; line-height: 1.55; }
+/* Thanh "giao diện mùa đang tự bật" (8.4.4) */
+.bkth-season {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+    padding: .55rem .7rem;
+    margin: 0 0 .7rem;
+    border-radius: .7rem;
+    border: 1px dashed var(--bkth-accent, #6366f1);
+    background: color-mix(in srgb, var(--bkth-accent, #6366f1) 12%, transparent);
+    font-size: .78rem;
+    line-height: 1.45;
+}
+.bkth-season span { flex: 1 1 12rem; min-width: 0; }

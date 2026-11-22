@@ -5,7 +5,7 @@ category: decision
 status: active
 tags: [v840, themes, decorations, founder]
 created: "2026-11-21T13:24:15"
-updated: "2026-11-22T01:57:16"
+updated: "2026-11-22T03:19:49"
 ---
 
 <!-- compiled_truth -->
@@ -51,4 +51,9 @@ v8.4.0 shipped three vertical slices; the rest of the brief was deliberately def
 - time: 2026-11-22T01:57:16
   kind: decision
   summary: "8.4.3: Halloween & Christmas are free for every student — migration 20261215000000 grants user_inventory rows (source seasonal_free) via bk_gam_free_themes + trigger on students insert, bk_gam_equip auto-grants them; client BKThemes.FREE_THEMES/isFree() treats them as always owned, so setTheme never refuses them while the other eight themes keep the ownership check."
+  affects: [v840-themes-and-founder-badges]
+
+- time: 2026-11-22T03:19:49
+  kind: decision
+  summary: "8.4.4: them theme-tet va theme-midautumn mien phi; tu bat giao dien theo mua (SEASONS, auto:false khi chon tay, khong ghi may chu) va gioi han hat theo thiet bi/tab an"
   affects: [v840-themes-and-founder-badges]

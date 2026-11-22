@@ -43,7 +43,12 @@ Hướng dẫn cho agent/developer làm việc trong repository này. Đọc h�
                        — 8.3.5: mã tự sinh, xem trước, Cài đặt nâng cao
   bk-profile-ui.js     Component hồ sơ/badge dùng chung (profile + settings)
   bk-settings.js|css   5 tab Cài đặt
-  bk-core.js|css       Kho dữ liệu local-first, UI kit, tìm kiếm, adapter AI/Supabase
+  bk-core.js|css       Kho dữ liệu local-first, UI kit, tìm kiếm, adapter AI/Supabase,
+                       đăng ký PWA + tải chỉ mục bài học (8.4.4)
+  bk-themes.js|css     Giao diện theo mùa (tự bật theo lịch) + tên có biểu tượng
+  bk-usage.js          Bộ đếm lượt dùng ẩn danh (RPC bk_usage_ping, không danh tính)
+  search-index.js      TỆP TỰ SINH: chỉ mục bài học (tools/build-search-index.js)
+  manifest.webmanifest Manifest PWA (sw.js ở gốc repo)
   bk-learning.js|css   Learning Intelligence: sổ tay câu sai, phân tích, kế hoạch,
                        ôn tập, mục tiêu, môn học (dùng chung khung với bk-learn)
   bk-learn.js|css      Trung tâm học tập: khung hub, tổng quan, ghi chú, đánh dấu,
@@ -95,7 +100,12 @@ NODE_PATH=/tmp/bktest/node_modules node tools/qa/chat-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/admin-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/report-smoke.js
 NODE_PATH=/tmp/bktest/node_modules node tools/qa/version-audit.js
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/themes-smoke.js
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/search-index-smoke.js
+node tools/qa/gamification-health.js
 node tools/qa/supabase-config.js
+node tools/build-search-index.js --check
+node tools/bump-version.js --check
 # 6 cổng Learning Intelligence (8.2.0)
 node tools/qa/mistake-notebook-smoke.js
 node tools/qa/learning-analytics-smoke.js
@@ -300,11 +310,19 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
 - Phạm vi: `page` (trang chủ, nền toàn màn hình) · `head` (trang môn học, chỉ header) ·
   `accent` (hồ sơ/tiến trình/cài đặt) · `none` (quản trị). Đổi hành vi phải sửa
   `BKThemes.scope()`, không thêm CSS ghi đè rải rác.
-- **Giao diện miễn phí (8.4.3):** `theme-halloween` và `theme-christmas` miễn phí cho
-  mọi học sinh. Máy chủ cấp sẵn dòng `user_inventory` (`source = 'seasonal_free'`, hàm
-  `bk_gam_free_themes`, trigger khi tạo hồ sơ + backfill); client khai báo trong
-  `BKThemes.FREE_THEMES` và `isFree()`, và `owns()`/`setTheme()` không được chặn chúng.
-  Không mở khoá giao diện nào khác, không bỏ kiểm tra sở hữu cho tám giao diện còn lại.
+- **Giao diện miễn phí (8.4.3, 8.4.4):** bốn giao diện theo mùa — `theme-halloween`,
+  `theme-christmas`, `theme-tet`, `theme-midautumn` — miễn phí cho mọi học sinh. Máy chủ
+  cấp sẵn dòng `user_inventory` (`source = 'seasonal_free'`, hàm `bk_gam_free_themes`,
+  trigger khi tạo hồ sơ + backfill); client khai báo trong `BKThemes.FREE_THEMES` và
+  `isFree()`, và `owns()`/`setTheme()` không được chặn chúng. Không mở khoá giao diện nào
+  khác, không bỏ kiểm tra sở hữu cho sáu giao diện còn lại.
+- **Tự bật theo mùa (8.4.4):** `BKThemes.SEASONS` là nguồn DUY NHẤT cho khoảng ngày; tự
+  bật chỉ khi người học chưa chọn gì (`id` rỗng, `auto` không phải `false`) và không tự bật
+  khi giảm chuyển động. Chọn tay (kể cả "Về giao diện mặc định") ghi `auto: false`. Không
+  ghi trạng thái tự bật lên máy chủ, không tự `equip`.
+- **Giới hạn hiệu ứng (8.4.4):** số hạt phải đi qua `budget()` (máy yếu/màn hình nhỏ ≈ 40%),
+  và tab ẩn phải nhận lớp `is-paused` trên `#bkThemeFx`/`#bkThemeOverlay`. Không thêm
+  animation vô hạn mới mà bỏ qua hai quy tắc này.
 - Mọi tên người dùng có trang trí dùng `BKUserName.node()` / `.mini()`; sau khi đổi biểu
   tượng gọi `BKUserName.refresh()`.
 - Mọi animation phải tắt theo `prefers-reduced-motion` và lớp `bk-a11y-reduce-motion`.

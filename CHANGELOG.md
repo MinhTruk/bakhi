@@ -2,6 +2,48 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.4.4] — 2026-11-22
+
+### Tính năng
+
+- **Tết Nguyên Đán và Trung Thu miễn phí cho toàn bộ học sinh.** Hai giao diện mới
+  (`theme-tet`, `theme-midautumn`) nằm cùng nhóm bốn giao diện theo mùa miễn phí, chọn được
+  ngay trong **Cài đặt → Hình nền**: mai vàng rơi + đèn lồng đỏ cho Tết, trăng rằm + đèn ông
+  sao cho Trung Thu. Migration `20261216000000_bakhi_v844_seasonal_themes_extras.sql` bổ sung
+  `reward_catalog`, mở rộng `bk_gam_free_themes()` và backfill mọi hồ sơ.
+- **Giao diện mùa tự bật.** Khi học sinh chưa tự chọn giao diện, trang tự dùng giao diện của
+  mùa đang diễn ra (Giáng Sinh 01/12–10/01, Tết 15/01–20/02, Trung Thu 20/08–25/09,
+  Halloween 10/10–02/11). Cài đặt → Hình nền hiện thanh gợi ý kèm nút **Tắt tự bật theo mùa**;
+  chọn tay bất kỳ giao diện nào cũng tự tắt, và khi bật giảm chuyển động thì không tự bật.
+- **Tìm kiếm xuyên toàn bộ bài học.** `assets/bakhi/search-index.js` (115 trang, sinh bằng
+  `tools/build-search-index.js`) được tải muộn và gộp vào `BK.search`, nên ô tìm kiếm ở bất kỳ
+  trang nào cũng ra bài của môn khác — kể cả tìm không dấu — thay vì chỉ thấy liên kết trên
+  trang đang mở.
+- **Dùng được khi mất mạng (PWA).** `sw.js` + `manifest.webmanifest`: HTML theo kiểu
+  network-first (chỉ dùng bản lưu khi mất mạng), tài nguyên `assets/bakhi/` cache-first theo
+  `?v=` nên không bao giờ phục vụ JS/CSS cũ, dữ liệu Supabase không đi qua cache. Trang mất
+  mạng hiện thông báo thay vì lỗi trình duyệt.
+- **Đếm lượt dùng ẩn danh.** Bảng `usage_counters` (khoá theo ngày + tên tính năng) và RPC
+  `bk_usage_ping` chỉ nhận tên tính năng — không tên, không mã học sinh, không nội dung học
+  tập. Dùng để biết giao diện/tính năng nào thực sự được dùng.
+- **Kiểm tra sức khoẻ tiến trình.** Hàm `bk_gam_health_drift()` đối chiếu sổ XP
+  (`xp_transactions`) với `user_progression` và công thức cấp, chỉ service_role gọi được;
+  cổng `tools/qa/gamification-health.js` kiểm tra các bất biến này và (tuỳ chọn) truy vấn
+  trực tiếp project để tìm hồ sơ lệch.
+
+### Cải tiến
+
+- **Hiệu ứng nhẹ hơn trên máy yếu.** Số hạt tuyết/mai/sao giảm còn ~40% khi màn hình ≤ 720px,
+  `deviceMemory` ≤ 4 GB hoặc CPU ≤ 4 luồng; animation tự tạm dừng khi tab bị ẩn để không đốt pin.
+- **Bump phiên bản bằng một lệnh.** `tools/bump-version.js 8.4.5` đổi `bk-version.js`, mọi
+  chuỗi `?v=` trong HTML, `APP_VERSION` của devboard và `SERVER_VERSION` của `admin-actions`,
+  và từ chối bump khi `CHANGELOG.md` chưa có mục phát hành.
+- **Cổng nội dung phủ thêm trang giao diện.** `tools/content-integrity-refresh.js` nay thêm
+  được trang mới vào baseline (vẫn từ chối tệp có dấu hiệu nội dung giáo dục);
+  `gamification/` và `skills/` đã vào baseline nên không còn nằm ngoài cổng bảo vệ.
+- `tools/inject-pwa.js` chèn manifest vào 124/125 trang; hai trang có `<head>` nằm giữa dòng
+  (`ktgk1/anh/*`) được bỏ qua có chủ đích để không làm sai lệch hash nội dung.
+
 ## [8.4.3] — 2026-11-22
 
 ### Sửa lỗi

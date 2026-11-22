@@ -1165,6 +1165,25 @@
     /* ---------------------------------------------------------------------
        Tìm kiếm tổng hợp
        ------------------------------------------------------------------ */
+    /* Chỉ mục bài học toàn site (8.4.4): lessonIndex() chỉ thấy liên kết trên
+       trang đang mở, nên học sinh phải nhớ đường dẫn mới tìm lại được bài.
+       assets/bakhi/search-index.js (tự sinh bằng tools/build-search-index.js)
+       bổ sung tiêu đề của mọi trang bài học; tải muộn để không nặng trang. */
+    var lessonIdxLoaded = false, lessonIdxLoading = false;
+    function ensureLessonIndex() {
+        if (lessonIdxLoaded || lessonIdxLoading) return;
+        lessonIdxLoading = true;
+        var src = basePath() + 'assets/bakhi/search-index.js';
+        var rel = (global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '';
+        if (rel) src += '?v=' + rel;
+        var s = D.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.onload = function () { lessonIdxLoaded = true; lessonIdxLoading = false; };
+        s.onerror = function () { lessonIdxLoading = false; };
+        (D.body || D.head || D.documentElement).appendChild(s);
+    }
+
     function lessonIndex() {
         var out = [], seen = {};
         $$('main a[href]').forEach(function (a) {
@@ -1177,6 +1196,24 @@
             var sub = subjectOf(href);
             out.push({ type: 'lesson', title: title, url: href, subject: sub, meta: subjectName(sub) });
         });
+
+        var here = String((global.location && global.location.pathname) || '');
+        var extra = (global.BK_LESSON_INDEX || []);
+        for (var i = 0; i < extra.length; i++) {
+            var item = extra[i];
+            if (!item || !item.u || seen[item.u]) continue;
+            if (here.indexOf(item.u) >= 0) continue;   /* đừng lặp lại trang đang mở */
+            seen[item.u] = 1;
+            var sub2 = item.s || subjectOf(item.u);
+            out.push({
+                type: 'lesson',
+                title: item.t || item.n || item.u,
+                url: basePath() + item.u,
+                subject: sub2,
+                meta: [subjectName(sub2), item.e || ''].filter(Boolean).join(' · '),
+                keywords: item.k || ''
+            });
+        }
         return out;
     }
 
@@ -1199,8 +1236,11 @@
             return sc;
         }
 
+        ensureLessonIndex();
+        ensureUsage();
+        if (global.BKUsage) { try { global.BKUsage.ping('search'); } catch (e) { } }
         lessonIndex().forEach(function (l) {
-            var sc = score(l.title, l.url + ' ' + l.meta);
+            var sc = score(l.title, l.url + ' ' + l.meta + ' ' + (l.keywords || ''));
             if (sc) results.push(Object.assign({ score: sc, snippet: l.url, category: 'Bài học' }, l));
         });
 
@@ -2207,7 +2247,50 @@
         reset: function () { var sig = emptySignals(); writeSignals(sig); emit('signals', sig); return sig; }
     };
     BK.stats = { accuracy: accuracy };
-    BK.search = { all: searchAll, lessons: lessonIndex, highlight: highlight };
+    BK.search = {
+        all: searchAll, lessons: lessonIndex, highlight: highlight,
+        /* Tải trước chỉ mục bài học khi trình duyệt rảnh. */
+        warm: ensureLessonIndex
+    };
+    if (global.requestIdleCallback) {
+        try { global.requestIdleCallback(ensureLessonIndex); } catch (e) { setTimeout(ensureLessonIndex, 1500); }
+    } else {
+        setTimeout(ensureLessonIndex, 1500);
+    }
+
+    /* Bộ đếm lượt dùng ẩn danh (8.4.4): chỉ tải khi thật sự dùng đến. */
+    var usageLoaded = false;
+    function ensureUsage() {
+        if (usageLoaded || global.BKUsage) return;
+        usageLoaded = true;
+        var src = basePath() + 'assets/bakhi/bk-usage.js';
+        var rel = (global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '';
+        if (rel) src += '?v=' + rel;
+        var s = D.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.onerror = function () { usageLoaded = false; };
+        (D.body || D.head || D.documentElement).appendChild(s);
+    }
+
+    /* ---------------------------------------------------------------------
+       PWA (8.4.4): đăng ký service worker để mở lại trang khi mạng yếu.
+       Không cache dữ liệu Supabase (xem sw.js); chỉ đăng ký trên HTTPS.
+       ------------------------------------------------------------------ */
+    function registerPwa() {
+        var nav = global.navigator || {};
+        if (!nav.serviceWorker) return;
+        if (String((global.location && global.location.protocol) || '') !== 'https:') return;
+        try {
+            var src = basePath() + 'sw.js';
+            var rel = (global.BAKHI_VERSION && global.BAKHI_VERSION.app) || '';
+            if (rel) src += '?v=' + rel;
+            nav.serviceWorker.register(src).catch(function () { });
+        } catch (e) { }
+    }
+    if (global.addEventListener) {
+        global.addEventListener('load', function () { setTimeout(registerPwa, 1200); }, { once: true });
+    }
     BK.ui = {
         el: el, $: $, $$: $$, toast: toast, modal: modal, confirm: confirm,
         markdown: markdown, trapFocus: trapFocus
