@@ -10,6 +10,10 @@
 /* Thanh cuộn gọn, chỉ hiện vừa đủ — tránh cảm giác hai lớp cuộn. */
 html { scrollbar-width: thin; scrollbar-color: rgba(100, 116, 139, .42) transparent; }
 body.bk-app { overflow-x: hidden; }
+/* Nền trang trí vượt viewport (.nebula ở trang chủ) không được đẩy thanh cuộn
+   ngang trên điện thoại. `clip` không tạo vùng cuộn nên header dính và các
+   thành phần fixed vẫn hoạt động bình thường (khác `hidden`). */
+html { overflow-x: clip; }
 html.dark { scrollbar-color: rgba(148, 163, 184, .38) transparent; }
 * { scrollbar-width: thin; }
 *::-webkit-scrollbar { width: 7px; height: 7px; }
