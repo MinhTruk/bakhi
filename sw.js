@@ -15,7 +15,11 @@ var VERSION = 'dev';
 try {
     VERSION = new URL(self.location.href).searchParams.get('v') || 'dev';
 } catch (e) { }
-var CACHE = 'bakhi-' + VERSION;
+/* Tăng REVISION mỗi khi đổi logic của tệp này. Cache mang cả phiên bản lẫn
+   REVISION, nên bản worker mới luôn dọn sạch cache cũ kể cả khi số phiên bản
+   phát hành không đổi. */
+var REVISION = '1';
+var CACHE = 'bakhi-' + VERSION + '-r' + REVISION;
 var ASSET_RE = /\/assets\/bakhi\//;
 
 self.addEventListener('install', function () {
@@ -72,16 +76,28 @@ self.addEventListener('fetch', function (event) {
     }
 
     if (ASSET_RE.test(url.pathname)) {
+        function store(res) {
+            if (res && res.ok && res.type === 'basic') {
+                var copy = res.clone();
+                caches.open(CACHE).then(function (c) { c.put(req, copy); }).catch(function () { });
+            }
+            return res;
+        }
+        /* Có ?v= nghĩa là URL gắn với đúng một bản phát hành → cache-first.
+           Không có ?v= (một số tệp nạp không kèm phiên bản) thì network-first,
+           nếu không bản cũ sẽ nằm mãi trong cache dưới cùng một URL. */
+        if (url.searchParams.get('v')) {
+            event.respondWith(
+                caches.match(req).then(function (hit) {
+                    if (hit) return hit;
+                    return fetch(req).then(store);
+                })
+            );
+            return;
+        }
         event.respondWith(
-            caches.match(req).then(function (hit) {
-                if (hit) return hit;
-                return fetch(req).then(function (res) {
-                    if (res && res.ok && res.type === 'basic') {
-                        var copy = res.clone();
-                        caches.open(CACHE).then(function (c) { c.put(req, copy); }).catch(function () { });
-                    }
-                    return res;
-                });
+            fetch(req).then(store).catch(function () {
+                return caches.match(req).then(function (hit) { return hit || Response.error(); });
             })
         );
     }

@@ -15,8 +15,12 @@ Quy tắc an toàn:
 
 - **Không cache dữ liệu người học.** Mọi request tới `/rest/v1/`, `/auth/v1/`,
   `/storage/v1/`, `/functions/v1/` đi thẳng ra mạng; service worker bỏ qua.
-- **Không phục vụ JS/CSS cũ.** Tài nguyên `assets/bakhi/` chỉ được cache theo URL có
-  `?v=<phiên bản>`, nên bản mới là URL mới; cache của bản cũ bị xoá khi worker mới kích hoạt.
+- **Không phục vụ JS/CSS cũ.** Tài nguyên `assets/bakhi/` có `?v=<phiên bản>` được
+  cache-first (bản mới là URL mới); tệp nạp **không** kèm `?v=` thì network-first để không
+  giữ mãi bản cũ dưới cùng một URL.
+- **Tên cache có REVISION.** `CACHE = 'bakhi-<phiên bản>-r<REVISION>'`; tăng `REVISION`
+  trong `sw.js` mỗi khi đổi logic worker để worker mới dọn sạch cache cũ kể cả khi số
+  phiên bản phát hành không đổi.
 - **HTML luôn ưu tiên bản mới.** Chỉ khi `fetch` lỗi mới dùng bản đã lưu, sau đó là trang
   thông báo mất mạng.
 - **Hai trang bị bỏ qua:** `ktgk1/anh/anh1.html` và `ktgk1/anh/indexanh.html` có `<head>`
