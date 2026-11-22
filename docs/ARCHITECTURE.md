@@ -492,6 +492,37 @@ bk-cloud.js (chuông) ◄── RLS select ── report_notifications
 - Có thể kiểm thử độc lập bằng jsdom.
 - Giảm rủi ro regression cho panel cũ và hiệu ứng hiện có.
 
+### 2.10. Trợ lý AI — `ai-tutor-api` (8.5.0)
+
+```
+GitHub Pages (bk-ai-tutor.js)
+   → Supabase Auth (Anonymous Auth)
+   → Edge Function ai-tutor-api        ← xác thực, giới hạn, prompt, lưu DB
+   → AI Provider (Gemini/OpenAI/Groq/OpenRouter/Mistral/DeepSeek/custom)
+```
+
+| Tệp | Vai trò |
+|---|---|
+| `supabase/functions/ai-tutor-api/index.ts` | API duy nhất; nhánh học sinh + nhánh `admin.*` (Founder). |
+| `supabase/functions/_shared/ai-providers.ts` | Provider Adapter: 2 giao thức (Google, OpenAI-compatible), timeout, phân loại lỗi, provider giả lập. |
+| `supabase/functions/_shared/ai-prompts.ts` | System prompt, 8 chế độ, `sanitizeContext`, khối ngữ cảnh có nhãn, định tuyến model, cửa sổ hội thoại. |
+| `assets/bakhi/bk-ai-tutor.js|css` | Trang đầy đủ + bảng nổi + nút “Hỏi AI”; render Markdown an toàn. |
+| `assets/bakhi/bk-founder-ai.js|css` | Tab AI Tutor trong Founder Dashboard. |
+| `ai-tutor/index.html` | Trang Trợ lý AI. |
+| `supabase/migrations/20261218000000_bakhi_v850_ai_tutor.sql` | 5 bảng + RLS chỉ SELECT. |
+
+Phân tách quyền:
+
+- Học sinh: `Authorization` → `callerUserId` → `student_devices` → `student_id`.
+- Quản trị: `x-admin-token` → `requireAdmin` → `admin_sessions.scope`. Chỉ Founder được ghi.
+
+Theo cùng mô hình với Report (`report-api`) và Gamification (`gamification-api`):
+client chỉ đọc dữ liệu của mình qua RLS; mọi thao tác ghi đi qua Edge Function bằng
+`service_role` sau khi kiểm tra quyền.
+
+Chi tiết đầy đủ: `docs/AI_TUTOR_ARCHITECTURE.md`. Không sửa `chat-api`/`bk-chat.js` khi
+làm việc với Trợ lý AI (xem `docs/AI_TUTOR_AUDIT_V850.md` mục 3.1).
+
 ## 3. Mô hình dữ liệu
 
 Từ 8.0.0, bốn bảng của hệ thống báo cáo nằm trong

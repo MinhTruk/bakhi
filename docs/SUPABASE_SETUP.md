@@ -122,6 +122,26 @@ Dữ liệu test (tiến trình, thiết bị, thông báo, auth user) đã đư
 
 ---
 
+## Trợ lý AI (8.5.0) — function, migration và secrets
+
+| Hạng mục | Giá trị |
+|---|---|
+| Edge Function | `ai-tutor-api` — khai báo trong `supabase/config.toml` với `verify_jwt = false` |
+| Deploy | `supabase functions deploy ai-tutor-api --no-verify-jwt` |
+| Migration | `20261218000000_bakhi_v850_ai_tutor.sql` (`supabase db push`) |
+| Secrets bắt buộc | `AI_TUTOR_API_KEY` |
+| Secrets tuỳ chọn | `AI_TUTOR_FALLBACK_API_KEY`, `AI_TUTOR_PROVIDER`, `AI_TUTOR_MODEL`, `AI_TUTOR_BASE_URL`, `AI_TUTOR_FALLBACK_BASE_URL` |
+| Không bao giờ ở production | `AI_TUTOR_MOCK` |
+| Bảng | `ai_conversations`, `ai_messages`, `ai_usage_logs`, `ai_settings`, `ai_prompt_versions` |
+| Hàm | `bakhi_ai_usage(uuid)`, `bakhi_ai_touch()` (dùng lại `bakhi_rate_limit`) |
+
+Khoá API **không** nằm trong bảng, không nằm trong frontend, không nằm trong
+`bk-supabase.config.js` (tệp đó chỉ chứa URL + publishable key). Hướng dẫn từng bước cho
+người không lập trình: [AI_TUTOR_API_KEY_SETUP.md](AI_TUTOR_API_KEY_SETUP.md).
+Thứ tự triển khai đầy đủ: [DEPLOYMENT_V850.md](DEPLOYMENT_V850.md).
+
+---
+
 ## Bước 1. Lấy Project URL
 
 Supabase Dashboard → project của bạn → **Project Settings → Data API** →

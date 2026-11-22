@@ -455,6 +455,18 @@
         }
         menu.appendChild(skillsRow);
 
+        /* --- 8.5.0: Trợ lý AI (gia sư AI, 8 chế độ học tập) --- */
+        var aiRow = row('a', 'fa-robot', 'Trợ lý AI', {
+            href: S.base + 'ai-tutor/', role: 'menuitem',
+            desc: 'Giải thích · gợi ý · luyện tập',
+            onClick: function () { closeMenu(); }
+        });
+        aiRow.setAttribute('data-bk-ai-link', '1');
+        if (/\/ai-tutor\/(index\.html)?$/i.test(global.location.pathname)) {
+            aiRow.setAttribute('aria-current', 'page');
+        }
+        menu.appendChild(aiRow);
+
         /* --- Chat: phòng chung, tin nhắn riêng, nhóm nhỏ --- */
         var chatRow = row('a', 'fa-comments', 'Chat', {
             href: S.base + 'chat/', role: 'menuitem', external: true,

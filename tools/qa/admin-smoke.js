@@ -151,16 +151,17 @@ const CHANGELOG = [{
   const dash = await until(() => D.querySelector('.bkc-dash'));
   ok('dashboard mở được khi có phiên quản trị', !!dash);
   const tabs = Array.from(D.querySelectorAll('.bkc-nav .bkc-tab'));
-  ok('sidebar Administrator có đúng 14 tab', tabs.length === 14, String(tabs.length));
+  /* 8.5.0: thêm tab AI Tutor → 15 tab. */
+  ok('sidebar Administrator có đúng 15 tab', tabs.length === 15, String(tabs.length));
   const adminTitle = D.querySelector('.bkc-dash-title');
   ok('tiêu đề mặc định là Administrator Dashboard',
     !!adminTitle && adminTitle.textContent.trim() === 'Administrator Dashboard',
     adminTitle && adminTitle.textContent);
   const tabIds = tabs.map((b) => b.getAttribute('data-tab'));
-  ok('thứ tự tab đúng', tabIds.join(',') === 'overview,students,profiles,badges,gamification,chat,reports,notifications,whatsnew,changelog,logs,monitoring,permissions,settings', tabIds.join(','));
+  ok('thứ tự tab đúng', tabIds.join(',') === 'overview,students,profiles,badges,gamification,ai,chat,reports,notifications,whatsnew,changelog,logs,monitoring,permissions,settings', tabIds.join(','));
   ok('tab mới có nhãn tiếng Việt', /Hồ sơ/.test(tabs[2].textContent) && /Thành tích/.test(tabs[3].textContent) &&
-    /Tiến trình/.test(tabs[4].textContent) &&
-    /Chat/.test(tabs[5].textContent) && /Report/.test(tabs[6].textContent) && /What's New/.test(tabs[8].textContent), tabs.map((b) => b.textContent.trim()).join(' | '));
+    /Tiến trình/.test(tabs[4].textContent) && /AI Tutor/.test(tabs[5].textContent) &&
+    /Chat/.test(tabs[6].textContent) && /Report/.test(tabs[7].textContent) && /What's New/.test(tabs[9].textContent), tabs.map((b) => b.textContent.trim()).join(' | '));
   ok('Alt+1…9 chuyển tab được khai báo', /altKey && \/\^\[1-9\]\$\/\.test/.test(read('assets/bakhi/bk-devboard.js')));
   ok('dashboard không nạp tệp badge vào localStorage khi mở admin', /if \(global\.BK_ADMIN_ONLY\) return;/.test(read('assets/bakhi/bk-badges.js')));
 

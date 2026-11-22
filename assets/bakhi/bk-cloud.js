@@ -2581,6 +2581,8 @@
         reportApi: function (body) { return api(CFG.functions.report, body); },
         /* 8.3.0: Gamification — Reward Engine phía máy chủ (bk-gamification.js). */
         gamificationApi: function (body) { return api(CFG.functions.gamification, body); },
+        /* 8.5.0: AI Tutor — mọi thao tác đi qua ai-tutor-api, không lộ khoá AI. */
+        aiTutorApi: function (body) { return api(CFG.functions.aiTutor, body); },
         reportNotifications: function (force) { return loadReportNotes(force); },
         /* Tải tệp đính kèm vào thư mục của CHÍNH học sinh đang gắn.
            Bucket riêng tư; quyền ghi do RLS kiểm tra lại ở máy chủ. */

@@ -15,7 +15,7 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var APP_VERSION = '8.4.4';
+    var APP_VERSION = '8.5.0';
 
     var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
         ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];
@@ -29,6 +29,7 @@
         ['profiles', 'Hồ sơ', 'fa-id-card'],
         ['badges', 'Thành tích', 'fa-medal'],
         ['gamification', 'Tiến trình', 'fa-gamepad'],
+        ['ai', 'AI Tutor', 'fa-robot'],
         ['chat', 'Chat', 'fa-comments'],
         ['reports', 'Report', 'fa-flag'],
         ['notifications', 'Thông báo', 'fa-bullhorn'],
@@ -47,6 +48,7 @@
         profiles: 'Xem hồ sơ, khung avatar và thành tích của từng học sinh',
         badges: 'Trao và thu hồi hai badge dành riêng cho Administrator',
         gamification: 'Cấu hình XP, thành tựu, nhiệm vụ, cây kỹ năng, thử thách và phần thưởng',
+        ai: 'Trạng thái Trợ lý AI, nhà cung cấp, mô hình, giới hạn và System Prompt',
         chat: 'Kiểm duyệt phòng chung, tin nhắn riêng và nhóm nhỏ',
         reports: 'Tiếp nhận, trao đổi và hoàn thiện báo cáo của học sinh',
         notifications: 'Soạn, xem trước và xuất bản thông báo tức thời',
@@ -857,6 +859,7 @@
             profiles: renderProfiles,
             badges: renderBadges,
             gamification: renderGamification,
+            ai: renderAITutor,
             chat: renderChatAdmin,
             reports: renderReports,
             notifications: renderNotifications,
@@ -4138,6 +4141,22 @@
 
     /* ---------------------------------- Data ------------------------------ */
     /* ------------------------------- Founder ------------------------------ */
+    /* 8.5.0 — Trợ lý AI: giao diện nằm trong bk-founder-ai.js.
+       Máy chủ (ai-tutor-api) kiểm tra scope Founder cho mọi thao tác ghi. */
+    function renderAITutor(pane) {
+        pane.textContent = '';
+        var host = h('div', 'bkai-admin-host');
+        pane.appendChild(host);
+        if (global.BKFounderAI && typeof global.BKFounderAI.render === 'function') {
+            global.BKFounderAI.render(host);
+            return;
+        }
+        var warn = h('div', 'bkc-empty');
+        warn.appendChild(h('p', null,
+            'Chưa nạp bk-founder-ai.js. Trang quản trị cần thẻ script này để mở tab AI Tutor.'));
+        host.appendChild(warn);
+    }
+
     function renderFounder(pane) {
         /* 7.5.0: toàn bộ khu vực Founder được tách sang bk-founder.js (tìm người
            nhận, bộ chọn vật phẩm, xác nhận, báo cáo, lịch sử) để dashboard không

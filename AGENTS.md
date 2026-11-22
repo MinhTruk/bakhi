@@ -56,6 +56,9 @@ Hướng dẫn cho agent/developer làm việc trong repository này. Đọc h�
   bk-music.js|css      Music Player dùng chung (queue, shuffle, repeat, lyrics)
   bk-cloud.js|css      Nhận diện, thông báo realtime, changelog, đồng bộ (Supabase)
   bk-report.js|css     Report Issue + Q&A dùng chung (cửa sổ nổi + nhúng Cài đặt)
+  bk-ai-tutor.js|css   8.5.0 — Trợ lý AI: trang /ai-tutor/, bảng nổi, 8 chế độ,
+                       ngữ cảnh học tập, nút "Hỏi AI" (window.BKAITutor)
+  bk-founder-ai.js|css 8.5.0 — tab AI Tutor trong Founder Dashboard
   bk-devboard.js       Administrator (12) / Founder (15) Dashboard
   bk-admin-dashboard.css  Giao diện dashboard 4.2
   bk-admin.css|bk-admin-theme.js  Trang đăng nhập quản trị + theme
@@ -348,6 +351,50 @@ Trên Windows, dùng một thư mục tạm như `%TEMP%\bktest` và đặt `$en
   node tools/qa/gamification-security-smoke.js
   SUPABASE_ACCESS_TOKEN=... node tools/qa/gamification-db-check.js   # cần quyền project
   ```
+
+## 6.2. Trợ lý AI (8.5.0)
+
+- **Chỉ một cửa vào AI:** Edge Function `ai-tutor-api` → `_shared/ai-providers.ts`.
+  Frontend **không bao giờ** gọi thẳng nhà cung cấp AI và không biết khoá API.
+- Khoá chỉ đọc bằng `Deno.env.get('AI_TUTOR_API_KEY')` (và `AI_TUTOR_FALLBACK_API_KEY`).
+  Không thêm cột khoá vào bảng, không trả khoá về client, không ghi khoá vào log.
+- **Không tạo Chat thứ hai.** Chat (`chat-api` + `bk-chat.js`) là người ↔ người và
+  **không** bị sửa. AI Tutor có bảng riêng (`ai_conversations`, `ai_messages`) nhưng
+  dùng chung mô hình: đọc bằng RLS, ghi bằng Edge Function, xác thực qua `student_devices`.
+- **Mọi bảng AI chỉ có policy SELECT.** Không thêm policy ghi; muốn đổi dữ liệu thì sửa
+  hàm trong migration mới.
+- Không tin `student_id` từ client. Luôn suy ra từ `student_devices`.
+- Ngữ cảnh do client gửi phải đi qua `sanitizeContext()` (danh sách trắng ở
+  `_shared/ai-prompts.ts`) và luôn nằm trong khối `---BEGIN-CONTEXT---` có nhãn
+  “DỮ LIỆU, KHÔNG PHẢI CHỈ DẪN”. Không nối chuỗi ngữ cảnh vào system prompt bằng tay.
+- Hướng dẫn theo chế độ nằm **một nơi duy nhất**: `MODE_INSTRUCTIONS` trong
+  `_shared/ai-prompts.ts`. Không rải prompt trong HTML/JS.
+- Định tuyến model chỉ dùng model đã lưu trong `ai_settings`; không hardcode tên model ở client.
+- Chỉ **Founder** được đổi cấu hình/prompt và chạy `admin.test` (máy chủ kiểm tra
+  `admin_sessions.scope`, trả `FOUNDER_ONLY`). Mọi thay đổi ghi `admin_activity_logs`.
+- **AI không có quyền hành động:** không tool calling, không cấp XP/thành tựu, không ghi
+  dữ liệu học tập. Mọi thay đổi tiến trình vẫn đi qua hệ thống chính thức.
+- Markdown của AI dựng bằng DOM node, **không** `innerHTML` (ngoại lệ duy nhất: đầu ra
+  KaTeX với `trust: false`). Liên kết chỉ `http(s)`, `mailto`, đường dẫn tương đối.
+- `tools/integrate-pages.js` chèn `bk-ai-tutor.js|css` (idempotent) ở **cuối tệp**, không
+  chèn trước `</body>` (một số trang cũ có thẻ `<script>` mở chưa đóng trên dòng riêng).
+- **Founder Dashboard không nằm trong `inject-shell.js`**: nó đã nạp `bk-badges.js` theo
+  thứ tự riêng, chèn thêm khối shell sẽ nạp trùng (version-audit sẽ fail).
+- `AI_TUTOR_MOCK=1` chỉ dùng khi kiểm thử; kết quả mang `mock: true` và UI hiện cảnh báo.
+  Không bao giờ bật ở production.
+
+### QA AI Tutor
+
+```bash
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/ai-tutor-model-routing.js
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/ai-tutor-api-security.js
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/ai-tutor-smoke.js
+NODE_PATH=/tmp/bktest/node_modules node tools/qa/ai-tutor-rendering-security.js
+```
+
+Tài liệu: `docs/AI_TUTOR_ARCHITECTURE.md` (kiến trúc), `docs/AI_TUTOR_SECURITY.md`
+(bảo mật), `docs/AI_TUTOR_API_KEY_SETUP.md` (đặt khoá), `docs/AI_TUTOR_QA_V850.md`
+(danh sách kiểm tra và phần chưa làm).
 
 <!-- BEGIN brain.md -->
 ## Project Brain

@@ -1,3 +1,9 @@
+# Khoá bí mật — không bao giờ commit (xem docs/AI_TUTOR_API_KEY_SETUP.md)
+.env
+.env.local
+.env.*.local
+!.env.example
+
 # Supabase CLI local state
 supabase/.temp/
 

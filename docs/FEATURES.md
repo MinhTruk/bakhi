@@ -190,13 +190,25 @@ Không có animation favicon và không có Highlight Manager độc lập.
 URL hỗ trợ mở trực tiếp: `?bk=hub`, `?bk=review`, `?bk=notes`, `?bk=bookmarks`,
 `?bk=history`, `?bk=achievements`, `?bk=settings`, `?bk=search&q=...`.
 
-## F. Cấu hình AI (tuỳ chọn)
+## F. Trợ lý AI (8.5.0)
 
-1. Dựng một proxy (Cloudflare Worker, Vercel function, backend riêng) nhận
-   `POST { model, messages }` và gọi nhà cung cấp AI bằng khoá lưu ở server.
-2. Trong Bá Khí: Cài đặt → AI → nhập URL proxy + tên model.
-3. AI chỉ tạo nội dung **tham khảo**, luôn gắn nhãn “Nội dung do AI tạo — không phải
-   nội dung gốc đã kiểm duyệt”. Không có thao tác nào để AI sửa câu hỏi/đáp án gốc.
+Proxy tự dựng ở mục F của các bản trước **đã được thay thế** bằng Edge Function
+`ai-tutor-api` — không cần Cloudflare Worker hay VPS.
+
+| # | Tính năng | Ghi chú |
+|---|---|---|
+| 1 | Trang `/ai-tutor/` + bảng nổi “Hỏi AI” trên mọi trang học tập | `assets/bakhi/bk-ai-tutor.js` |
+| 2 | Tám chế độ: giải thích, từng bước, gợi ý, kiểm tra bài, luyện tập, phân tích lỗi, tóm tắt, hỏi dẫn dắt | hướng dẫn riêng từng chế độ ở máy chủ |
+| 3 | Lịch sử hội thoại: tạo, tiếp tục, tìm, đổi tên, xoá (có xác nhận, xoá mềm), sao chép | RLS chỉ đọc của chính mình |
+| 4 | Ngữ cảnh học tập tự nhận biết (môn theo thư mục, bài theo `<h1>`) + API cho Quiz/Sổ tay câu sai | `BKAITutor.explain()`, `BKAITutor.analyzeMistake()` |
+| 5 | Đa nhà cung cấp, định tuyến model, provider dự phòng | Founder Dashboard → AI Tutor |
+| 6 | Giới hạn tần suất, hạn mức câu hỏi/token trong 24 giờ, timeout | `ai_settings` |
+| 7 | Quản lý System Prompt có lịch sử phiên bản + khôi phục | `ai_prompt_versions` |
+| 8 | Markdown an toàn, công thức toán (KaTeX, fallback văn bản), code block, nút sao chép | không dùng `innerHTML` cho dữ liệu |
+
+AI chỉ tạo nội dung **tham khảo**, không bao giờ sửa câu hỏi/đáp án gốc và không cấp
+XP/thành tựu. Chi tiết: `docs/AI_TUTOR_ARCHITECTURE.md`, `docs/AI_TUTOR_SECURITY.md`,
+`docs/AI_TUTOR_API_KEY_SETUP.md`.
 
 ## G. Bá Khí Studio — Word & Paint (`studio/index.html`)
 

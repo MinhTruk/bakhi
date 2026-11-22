@@ -50,7 +50,8 @@
             studentProfile: 'student-profile',
             chat: 'chat-api',
             report: 'report-api',
-            gamification: 'gamification-api'
+            gamification: 'gamification-api',
+            aiTutor: 'ai-tutor-api'
         },
         /* Số mili giây chờ trước khi đẩy tiến trình học tập lên máy chủ. */
         syncDebounceMs: 2500,

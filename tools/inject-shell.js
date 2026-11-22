@@ -17,8 +17,11 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const TAG = '7.1.0';
 const MARKER = 'assets/bakhi/shell';
-/* Trang quản trị có hệ giao diện riêng (bkAdminTheme) — không chèn shell. */
-const SKIP = new Set(['admin/index.html', 'images/anh/1.html']);
+/* Trang quản trị có hệ giao diện riêng (bkAdminTheme) — không chèn shell.
+   Founder Dashboard cũng nằm ở đây: nó đã nạp bk-badges.js/bk-titles.js theo
+   thứ tự riêng, chèn thêm khối shell sẽ nạp trùng bk-badges.js (lỗi phát hiện
+   bởi tools/qa/version-audit.js ở 8.5.0). */
+const SKIP = new Set(['admin/index.html', 'founder/index.html', 'images/anh/1.html']);
 /* Trang đã tự khai báo lớp shell trong HTML. */
 const OWNS = new Set(['settings/index.html', 'profile/index.html']);
 

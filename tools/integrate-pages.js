@@ -34,6 +34,8 @@ function ensureReport(file, html) {
   if (html.includes('assets/bakhi/bk-report.js')) return html;
   if (!html.includes('assets/bakhi/bk-cloud.js')) return html;
   const rel = path.relative(ROOT, file).split(path.sep).join('/');
+  /* Dashboard quản trị KHÔNG nạp nút báo cáo của học sinh (AGENTS §4.2). */
+  if (/^(admin|founder)\//.test(rel)) return html;
   const depth = rel.split('/').length - 1;
   const prefix = depth === 0 ? '' : '../'.repeat(depth);
   const idx = html.lastIndexOf('</body>');
@@ -65,6 +67,28 @@ function ensureThemes(file, html) {
     `<script src="${prefix}assets/bakhi/bk-themes.js?v=8.4.0" defer></script>\n`;
 }
 
+/**
+ * Trợ lý AI (8.5.0): nút "Hỏi AI" dùng chung trên mọi trang học tập.
+ * Chỉ thêm CSS + một thẻ script; idempotent; không sửa nội dung.
+ * Bỏ qua trang quản trị, trang AI Tutor đầy đủ và trang không có bk-cloud.js.
+ */
+function ensureAiTutor(file, html) {
+  if (html.includes('assets/bakhi/bk-ai-tutor.js')) return html;
+  const rel = path.relative(ROOT, file).split(path.sep).join('/');
+  if (/^(admin|founder|ai-tutor)\//.test(rel)) return html;
+  if (!html.includes('assets/bakhi/bk-cloud.js')) return html;
+  const depth = rel.split('/').length - 1;
+  const prefix = depth === 0 ? '' : '../'.repeat(depth);
+  /* Nối vào CUỐI tệp giống ensureThemes: một số trang cũ có thẻ <script> mở
+     không đóng trên cùng dòng, chèn trước </body> sẽ lọt vào bên trong thẻ đó.
+     content-integrity bỏ toàn bộ dòng chứa assets/bakhi/ nên hash nội dung
+     giáo dục không đổi. */
+  const sep = html.endsWith('\n') ? '' : '\n';
+  return html + sep +
+    `    <link rel="stylesheet" href="${prefix}assets/bakhi/bk-ai-tutor.css">\n` +
+    `<script src="${prefix}assets/bakhi/bk-ai-tutor.js" defer></script>\n`;
+}
+
 function inject(file) {
   const rel = path.relative(ROOT, file).split(path.sep).join('/');
   let html = fs.readFileSync(file, 'utf8');
@@ -79,6 +103,12 @@ function inject(file) {
   if (withThemes !== html) {
     fs.writeFileSync(file, withThemes);
     html = withThemes;
+  }
+  /* Trợ lý AI chạy SAU themes để hai khối cùng nối ở cuối tệp, đúng thứ tự. */
+  const withAi = ensureAiTutor(file, html);
+  if (withAi !== html) {
+    fs.writeFileSync(file, withAi);
+    html = withAi;
   }
   if (html.includes('assets/bakhi/bk-core.js')) return 'already';
 

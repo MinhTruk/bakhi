@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+    <title>Trợ lý AI — Bá Khí</title>
+    <meta name="description" content="Trợ lý AI Bá Khí: giải thích kiến thức, giải bài từng bước, gợi ý, kiểm tra bài làm, tạo bài luyện tập và phân tích lỗi sai.">
+    <meta name="theme-color" content="#0f172a">
+
+    <link rel="manifest" href="../assets/bakhi/manifest.webmanifest" data-bk-pwa="1">
+    <link rel="icon" type="image/svg+xml" href="../assets/bakhi/favicon.svg" sizes="any" data-bk-favicon="1">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/bakhi/favicon-32x32.png" data-bk-favicon="1">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/bakhi/favicon-192x192.png" data-bk-favicon="1">
+    <link rel="icon" href="../assets/bakhi/favicon.ico" sizes="16x16 32x32 48x48" data-bk-favicon="1">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/bakhi/apple-touch-icon.png" data-bk-favicon="1">
+
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- KaTeX: hiển thị công thức toán. Nếu CDN không tải được, công thức vẫn
+         đọc được ở dạng văn bản (không có lỗi trang). -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+
+    <link rel="stylesheet" href="../assets/bakhi/bk-core.css?v=8.5.0">
+    <link rel="stylesheet" href="../assets/bakhi/bk-shell.css?v=8.5.0">
+    <link rel="stylesheet" href="../assets/bakhi/bk-titles.css?v=8.5.0">
+    <link rel="stylesheet" href="../assets/bakhi/bk-themes.css?v=8.5.0">
+    <link rel="stylesheet" href="../assets/bakhi/bk-ai-tutor.css?v=8.5.0">
+</head>
+<body class="bk-app" data-bk-ai-fab="0">
+    <header class="bk-topbar">
+        <div class="bk-topbar-inner">
+            <a class="bk-brand" href="../">
+                <span class="bk-brand-badge"><i class="fa-solid fa-folder-tree" aria-hidden="true"></i></span>
+                <span>Bá Khí</span>
+            </a>
+            <a class="bk-topbar-link" href="../chat/">Chat</a>
+            <a class="bk-topbar-link" href="../profile/">Hồ sơ</a>
+            <a class="bk-topbar-link" href="../settings/">Cài đặt</a>
+            <a class="bk-topbar-link" href="../">Trang chủ</a>
+        </div>
+    </header>
+
+    <main class="bk-page">
+        <noscript>
+            <p class="bk-page-sub">Trợ lý AI cần JavaScript. Bạn vẫn có thể học bình thường ở các trang bài học.</p>
+        </noscript>
+        <div id="bkai"></div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" defer></script>
+    <script src="../assets/bakhi/bk-core.js?v=8.5.0" defer></script>
+    <script src="../assets/bakhi/bk-version.js?v=8.5.0" defer></script>
+    <script src="../assets/bakhi/bk-titles.js?v=8.5.0" defer></script>
+    <script src="../assets/bakhi/bk-profile.js?v=8.5.0" defer></script>
+    <script src="../assets/bakhi/bk-badges.js?v=8.5.0" defer></script>
+    <script src="../assets/bakhi/bk-shell.js?v=8.5.0" defer></script>
+    <script src="../assets/bakhi/bk-roles.js?v=8.5.0" defer></script>
+    <script src="../assets/bakhi/bk-supabase.config.js?v=8.5.0" defer></script>
+    <script src="../assets/bakhi/bk-cloud.js?v=8.5.0" defer></script>
+    <script src="../assets/bakhi/bk-themes.js?v=8.5.0" defer></script>
+    <script src="../assets/bakhi/bk-gamification.js?v=8.5.0" defer></script>
+    <script src="../assets/bakhi/bk-ai-tutor.js?v=8.5.0" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var root = document.getElementById('bkai');
+            if (!root || !window.BKAITutor) return;
+            var subject = '';
+            try {
+                var params = new URLSearchParams(window.location.search);
+                subject = params.get('subject') || '';
+            } catch (e) { }
+            var context = window.BKAITutor.pageContext();
+            if (subject) context.subject = subject;
+            window.BKAITutor.mount(root, { context: context });
+        });
+    </script>
+<script src="../assets/bakhi/bk-report.js" defer></script>
+</body>
+</html>

@@ -2,6 +2,65 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.5.0] — 2026-11-22
+
+### Tính năng
+
+- **Trợ lý AI (AI Tutor) toàn website.** Trang mới `/ai-tutor/` và nút **Hỏi AI** trên mọi
+  trang học tập; bảng nổi tự nhận biết môn/bài đang xem. Mô-đun dùng chung
+  `assets/bakhi/bk-ai-tutor.js|css`, một nguồn duy nhất cho cả hai hình thức.
+- **Tám chế độ học tập:** Giải thích, Từng bước, Gợi ý (không cho đáp án), Kiểm tra bài làm,
+  Luyện tập, Phân tích lỗi, Tóm tắt, Hỏi dẫn dắt. Hướng dẫn riêng cho từng chế độ được nối
+  vào system prompt ở máy chủ.
+- **Kiến trúc đa nhà cung cấp.** Edge Function mới `ai-tutor-api` cùng lớp adapter
+  `_shared/ai-providers.ts` hỗ trợ Google Gemini, OpenAI, Groq, OpenRouter, Mistral,
+  DeepSeek và endpoint tương thích OpenAI tự cấu hình. Đổi provider/model không cần sửa frontend.
+- **Định tuyến model và dự phòng.** Model riêng cho câu đơn giản / phức tạp / luyện tập;
+  tự chuyển provider dự phòng **chỉ** với lỗi tạm thời và **chỉ** khi đã cấu hình khoá dự phòng.
+- **Ngữ cảnh học tập.** Ngữ cảnh đi qua danh sách trắng, được bao trong khối
+  `---BEGIN-CONTEXT---` có nhãn “dữ liệu, không phải chỉ dẫn”; API `BKAITutor.explain()` và
+  `BKAITutor.analyzeMistake()` cho Quiz/Reading/Listening/Sổ tay câu sai gọi khi cần.
+- **Lịch sử hội thoại.** Tạo, tiếp tục, tìm kiếm, đổi tên, xoá (có xác nhận, xoá mềm), sao chép
+  câu trả lời, dừng câu trả lời (huỷ request thật), thử lại khi lỗi.
+- **Founder Dashboard → tab AI Tutor.** Trạng thái, nhà cung cấp/mô hình, định tuyến, giới hạn
+  sử dụng, kiểm tra kết nối, quản lý System Prompt có lịch sử phiên bản và khôi phục.
+  Administrator chỉ xem; máy chủ trả `FOUNDER_ONLY` cho mọi thao tác ghi.
+- **Kiểm soát chi phí.** Burst 10 request/phút, hạn mức câu hỏi và token trong 24 giờ, giới hạn
+  token đầu ra, timeout, cửa sổ ngữ cảnh — tất cả cấu hình tập trung ở `ai_settings`.
+- **Migration `20261218000000_bakhi_v850_ai_tutor.sql`:** 5 bảng (`ai_conversations`,
+  `ai_messages`, `ai_usage_logs`, `ai_settings`, `ai_prompt_versions`), RLS **chỉ SELECT** cho
+  học sinh, trigger `updated_at`, hàm `bakhi_ai_usage()`.
+- **Bốn cổng QA offline:** `ai-tutor-model-routing.js`, `ai-tutor-api-security.js`,
+  `ai-tutor-smoke.js`, `ai-tutor-rendering-security.js`.
+- **Mười bốn tài liệu** từ `AI_TUTOR_AUDIT_V850.md` đến `RELEASE_REPORT_V850.md`, kèm
+  `.env.example` chỉ chứa placeholder.
+
+### Bảo mật
+
+- Khoá AI chỉ đọc từ Supabase Edge Function Secrets (`AI_TUTOR_API_KEY`), không bao giờ trả về
+  trình duyệt, không nằm trong log, không nằm trong bảng cấu hình.
+- Học sinh chỉ đọc được hội thoại của chính mình (RLS + kiểm tra sở hữu ở máy chủ); mọi thao
+  tác ghi đi qua Edge Function với `student_id` suy ra từ `student_devices`.
+- Chống prompt injection bốn lớp; AI không có tool calling nên không thể đổi XP, thành tựu hay
+  truy cập database.
+- Markdown của AI được dựng thành DOM node (không `innerHTML`), liên kết `javascript:` bị loại,
+  code block chỉ hiển thị văn bản, KaTeX chạy với `trust: false`.
+
+### Cải tiến
+
+- `tools/integrate-pages.js` chèn `bk-ai-tutor.js|css` (idempotent) vào mọi trang có `bk-cloud.js`,
+  nối ở cuối tệp để không phá các trang có thẻ `<script>` mở trên dòng riêng.
+- Menu tài khoản có thêm lối vào **Trợ lý AI**, đặt cạnh Chat và Tiến trình.
+- `bk-cloud.js` có `aiTutorApi()`; `bk-supabase.config.js` khai báo `aiTutor: 'ai-tutor-api'`;
+  `supabase/config.toml` khai báo function với `verify_jwt = false`.
+
+### Ghi chú
+
+- `chat-api` / `bk-chat.js` **không** bị sửa. Chat là hệ thống người ↔ người, AI Tutor là
+  người ↔ máy; lý do tách bảng được ghi ở `docs/AI_TUTOR_AUDIT_V850.md` mục 3.1.
+- Chưa triển khai production trong bản này (chưa có khoá API). Trạng thái: **PARTIALLY READY** —
+  xem `docs/RELEASE_REPORT_V850.md`.
+
 ## [8.4.4] — 2026-11-22
 
 ### Tính năng

@@ -116,7 +116,28 @@ Ngoài phần nội dung học tập, BAKHI còn có hồ sơ cá nhân, trung t
 | 🎧 Giải trí nhẹ | Music Player có hàng đợi, lời bài hát và bố cục có thể di chuyển |
 | 🎨 Sáng tạo | Bá Khí Studio với trình soạn thảo văn bản và bảng vẽ |
 | 🛠 Phát triển | Developer Playground và các công cụ kiểm tra, tuỳ chỉnh giao diện |
+| 🤖 Trợ lý AI | Gia sư AI 8 chế độ (giải thích, từng bước, gợi ý, kiểm tra bài, luyện tập, phân tích lỗi, tóm tắt, hỏi dẫn dắt) với ngữ cảnh bài đang học và lịch sử hội thoại — [mở Trợ lý AI](https://minhtruk.github.io/bakhi/ai-tutor/) |
 | 🔐 Quản trị | Administrator Dashboard và Founder Dashboard với các chức năng quản lý riêng |
+
+---
+
+## 🤖 Trợ lý AI (v8.5.0)
+
+Trợ lý AI là gia sư học tập, **không** phải chatbot chung:
+
+- **Hai lối vào:** trang riêng <https://minhtruk.github.io/bakhi/ai-tutor/> và nút **Hỏi AI**
+  trên mọi trang học tập (bảng nổi tự biết môn/bài đang xem).
+- **Tám chế độ:** Giải thích · Từng bước · Gợi ý (không cho đáp án) · Kiểm tra bài làm ·
+  Luyện tập · Phân tích lỗi · Tóm tắt · Hỏi dẫn dắt.
+- **Đa nhà cung cấp:** Gemini, OpenAI, Groq, OpenRouter, Mistral, DeepSeek hoặc endpoint
+  tương thích OpenAI. Đổi provider/model trong Founder Dashboard, không sửa mã.
+- **An toàn:** khoá API chỉ nằm trong Supabase Edge Function Secrets, không bao giờ xuống
+  trình duyệt; học sinh chỉ đọc được hội thoại của mình; AI không thể đổi XP hay dữ liệu học tập.
+- **Không thay thế** Chat (người ↔ người) hay Report Issue (báo lỗi nội dung).
+
+Cấu hình: [docs/AI_TUTOR_API_KEY_SETUP.md](docs/AI_TUTOR_API_KEY_SETUP.md) · Kiến trúc:
+[docs/AI_TUTOR_ARCHITECTURE.md](docs/AI_TUTOR_ARCHITECTURE.md) · Quản trị:
+[docs/AI_TUTOR_FOUNDER_GUIDE.md](docs/AI_TUTOR_FOUNDER_GUIDE.md).
 
 ---
 
