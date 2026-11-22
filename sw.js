@@ -18,7 +18,7 @@ try {
 /* Tăng REVISION mỗi khi đổi logic của tệp này. Cache mang cả phiên bản lẫn
    REVISION, nên bản worker mới luôn dọn sạch cache cũ kể cả khi số phiên bản
    phát hành không đổi. */
-var REVISION = '1';
+var REVISION = '2';
 var CACHE = 'bakhi-' + VERSION + '-r' + REVISION;
 var ASSET_RE = /\/assets\/bakhi\//;
 
@@ -95,8 +95,10 @@ self.addEventListener('fetch', function (event) {
             );
             return;
         }
+        /* no-cache: buộc revalidate với máy chủ (GitHub Pages gửi max-age 600s)
+           để tệp không kèm ?v= không bị giữ bản cũ tới 10 phút sau khi deploy. */
         event.respondWith(
-            fetch(req).then(store).catch(function () {
+            fetch(req, { cache: 'no-cache' }).then(store).catch(function () {
                 return caches.match(req).then(function (hit) { return hit || Response.error(); });
             })
         );
