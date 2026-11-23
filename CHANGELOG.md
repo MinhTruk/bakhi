@@ -2,6 +2,56 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.5.5] — 2026-11-22
+
+### Tính năng
+
+- **Xoá thông báo trong Trung tâm thông báo.** Thông báo phản hồi báo cáo, thông báo cập
+  nhật và thông báo bảo trì có nút xoá riêng (vùng chạm 40px trên thiết bị cảm ứng) và
+  nút **Xoá thông báo (N)** xoá hàng loạt sau khi xác nhận. Việc xoá được lưu bền vững:
+  `announcement_reads.dismissed_at` và `report_notifications.dismissed_at` khi đã gắn hồ
+  sơ, cộng bản ghi thiết bị `bakhiNotifyDismissed.v1`; tải lại trang không thấy lại thông
+  báo đã xoá. **Thông báo cập nhật phiên bản không có nút xoá** và luôn được giữ khi xoá
+  hàng loạt. Dữ liệu gốc (`announcements`, `changelog`, `reports`) không bị xoá.
+- **Lịch sử trò chuyện kiểu ChatGPT trên điện thoại.** Trang `/ai-tutor/` ẩn sidebar lịch
+  sử dưới 860px, thêm nút mở ở góc trên bên trái; sidebar trượt từ trái vào cùng lớp phủ,
+  đóng bằng lớp phủ, phím Esc hoặc khi chọn/tạo hội thoại. Giữ nguyên danh sách, tìm kiếm,
+  đổi tên, xoá và toàn bộ dữ liệu hội thoại; desktop không đổi bố cục.
+- **Design Tokens dùng chung `assets/bakhi/bk-tokens.css`.** Một bảng màu duy nhất
+  (nền `#0b0f14`, bề mặt `#161f2b`, hover `#202c3a`, viền `#293646`, chữ `#e8edf5` /
+  `#9aa8b8` / `#718096`) được nạp trên **mọi** trang, kể cả `studio/`, `admin/`,
+  `founder/` và các trang bài học.
+
+### Cải tiến
+
+- **Header cửa sổ Trợ lý AI một hàng:** tiêu đề "Trợ lý AI" bên trái, cụm nút (đổi tên,
+  xoá hội thoại, đóng) sát phải, cùng hàng và căn giữa theo chiều dọc; dòng phụ luôn nằm
+  dưới nên không đẩy nút X lệch chỗ. Vùng chạm nút đóng giữ 44×44px.
+- **Đồng bộ Dark Theme toàn nền tảng:** `bk-core.css` không còn mặc định màu sáng; mọi
+  mô-đun (`--bkc-n-*`, `--bkrep-*`, `--bkai-*`, nhạc, quản trị, gamification, cây kỹ năng,
+  hồ sơ, cài đặt) lấy màu từ bộ token chung. Chế độ sáng chỉ bật khi người học chọn trong
+  menu tài khoản (`html.light`), không component nào tự chuyển nền sáng.
+
+### Sửa lỗi
+
+- **Founder / Administrator Dashboard bị sáng.** `.bkc-dash`, `.bkc-side`, `.bkc-modal` và
+  trang đăng nhập `/admin` mặc định nền sáng và chỉ tối khi `<html>` có class `.dark` —
+  nhưng các trang này không đặt class đó. Nay tối là mặc định.
+- **Cửa sổ Report Issue tự chuyển nền trắng trên trang bài học.** Điều kiện
+  `html:not(.dark)` biến mọi trang không có class `.dark` thành chế độ sáng; đã đổi sang
+  chế độ sáng chủ động `html.light`.
+- **Trung tâm thông báo báo "Chưa có thông báo nào" khi chỉ có phản hồi báo cáo.** Điều
+  kiện rỗng nay tính cả thông báo báo cáo.
+
+### Thay đổi kỹ thuật
+
+- Migration `20261225000000_bakhi_v855_notification_dismissals.sql`: thêm cột
+  `dismissed_at` (nullable) cho `announcement_reads` và `report_notifications` cùng hai
+  index bộ phận. Không tạo bảng mới, không đổi RLS.
+- Edge Function `report-api`: action `notifications.dismiss` (chỉ đánh dấu `dismissed_at`
+  trên dòng của chính học sinh đang gắn).
+- `tools/integrate-pages.js` chèn `bk-tokens.css` cho mọi tệp HTML (idempotent, gắn `?v=`).
+
 ## [8.5.4] — 2026-11-22
 
 ### Tính năng

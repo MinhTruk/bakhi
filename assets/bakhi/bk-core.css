@@ -35,11 +35,13 @@ html.dark *::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 18
     --bkl-radius-sm: 10px;
     --bkl-shadow: 0 18px 50px -20px rgba(2, 6, 23, .45);
     --bkl-space: var(--bk-space, 1rem);
-    --bkl-text: #0f172a;
-    --bkl-muted: #64748b;
-    --bkl-surface: #ffffff;
-    --bkl-surface-2: #f8fafc;
-    --bkl-line: rgba(100, 116, 139, .22);
+    /* Mặc định TỐI (8.5.5): token màu đến từ bk-tokens.css. Giá trị dự phòng
+       ghi thẳng ở đây để trang vẫn đúng giao diện nếu tệp token chưa tải. */
+    --bkl-text: var(--bk-text, #e8edf5);
+    --bkl-muted: var(--bk-text-2, #9aa8b8);
+    --bkl-surface: var(--bk-surface, #161f2b);
+    --bkl-surface-2: var(--bk-surface-2, #111821);
+    --bkl-line: var(--bk-line-soft, rgba(148, 163, 184, .18));
     --bkl-font-scale: 1;
 }
 
@@ -50,13 +52,8 @@ html.dark *::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 18
 .bk-app *::before,
 .bk-app *::after { box-sizing: border-box; }
 
-html.dark {
-    --bkl-text: #e2e8f0;
-    --bkl-muted: #94a3b8;
-    --bkl-surface: #1e293b;
-    --bkl-surface-2: #0f172a;
-    --bkl-line: rgba(148, 163, 184, .22);
-}
+/* Chế độ sáng chỉ khi người học chủ động chọn; màu sáng đến từ bk-tokens.css
+   (html.light → --bk-*). Không còn khối html.dark riêng: tối là mặc định. */
 
 .bk-toast-host {
     position: fixed;

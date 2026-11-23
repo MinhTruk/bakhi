@@ -4,8 +4,10 @@
    Toàn bộ màu đi qua biến --adm-* nên đổi được Dark / Light tức thời.
    ========================================================================= */
 
+/* 8.5.5 — TỐI là mặc định: /admin không phải trang nào cũng đặt class .dark. */
+body.bkadm,
 html[data-bk-theme="dark"] body.bkadm,
-html.dark body.bkadm {
+html:not(.light) body.bkadm {
     --adm-bg: #060a14;
     --adm-bg-2: #0b1120;
     --adm-card: rgba(13, 20, 36, .86);
@@ -26,7 +28,7 @@ html.dark body.bkadm {
 }
 
 html[data-bk-theme="light"] body.bkadm,
-html:not(.dark) body.bkadm {
+html.light body.bkadm {
     --adm-bg: #eef2fb;
     --adm-bg-2: #f8fafc;
     --adm-card: rgba(255, 255, 255, .9);
@@ -428,7 +430,7 @@ body.bkadm::after {
 .bkadm-foot a:hover { text-decoration: underline; }
 
 html[data-bk-theme="light"] body.bkadm .bkadm-foot a,
-html:not(.dark) body.bkadm .bkadm-foot a { color: #4f46e5; }
+html.light body.bkadm .bkadm-foot a { color: #4f46e5; }
 
 .bkadm-statusline {
     display: flex;

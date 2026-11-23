@@ -90,7 +90,7 @@
 }
 @keyframes bknt-in { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
 
-html:not(.dark) .bknt-panel {
+html.light .bknt-panel {
     --bknt-bg: #fff;
     --bknt-surface: #f8fafc;
     --bknt-fg: #0f172a;
@@ -274,7 +274,7 @@ html:not(.dark) .bknt-panel {
     animation: bknt-pop .18s cubic-bezier(.2, .9, .25, 1.05) both;
 }
 @keyframes bknt-pop { from { opacity: 0; transform: translateY(10px) scale(.99); } to { opacity: 1; transform: none; } }
-html:not(.dark) .bknt-sheet {
+html.light .bknt-sheet {
     --bknt-bg: #fff;
     --bknt-surface: #f8fafc;
     --bknt-fg: #0f172a;
@@ -312,7 +312,7 @@ html:not(.dark) .bknt-sheet {
 .bknt-body li { margin: .3rem 0; list-style: disc outside; display: list-item; }
 .bknt-body li::marker { color: var(--bknt-accent); }
 .bknt-body strong { color: #fff; }
-html:not(.dark) .bknt-body strong { color: #020617; }
+html.light .bknt-body strong { color: #020617; }
 .bknt-body code {
     padding: .1rem .3rem;
     border-radius: .3rem;

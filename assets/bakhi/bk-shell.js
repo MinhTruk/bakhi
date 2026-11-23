@@ -122,7 +122,10 @@
     function applyTheme(theme) {
         var dark = theme !== 'light';
         if (themeCapable()) {
+            /* 8.5.5 — tối là mặc định của toàn website; chế độ sáng là lựa chọn
+               chủ động nên phải đặt lớp .light (xem bk-tokens.css). */
             D.documentElement.classList.toggle('dark', dark);
+            D.documentElement.classList.toggle('light', !dark);
             D.documentElement.style.colorScheme = dark ? 'dark' : 'light';
         }
         lsSet('theme', dark ? 'dark' : 'light');
@@ -1065,7 +1068,9 @@
         var themable = !!D.getElementById('themeIcon') ||
             !!(D.body && D.body.classList && D.body.classList.contains('bk-app'));
         if (themable) {
-            D.documentElement.classList.toggle('dark', currentTheme() === 'dark');
+            var bootDark = currentTheme() === 'dark';
+            D.documentElement.classList.toggle('dark', bootDark);
+            D.documentElement.classList.toggle('light', !bootDark);
         }
         cleanLegacyChrome();
         normalizeSchoolName();
@@ -1104,7 +1109,9 @@
         global.addEventListener('storage', function (e) {
             if (!e) return;
             if (e.key === 'theme') {
-                D.documentElement.classList.toggle('dark', currentTheme() === 'dark');
+                var syncDark = currentTheme() === 'dark';
+                D.documentElement.classList.toggle('dark', syncDark);
+                D.documentElement.classList.toggle('light', !syncDark);
                 paintThemeRow();
             }
             if (e.key === 'bakhiProfile.v1' || e.key === 'bakhiStudent.v1') paintProfileBits();

@@ -6,13 +6,14 @@
    ========================================================================= */
 
 .bkai {
-    --bkai-bg: var(--bk-bg, #0b1220);
-    --bkai-panel: var(--bk-panel, #111a2e);
-    --bkai-panel-2: var(--bk-panel-2, #16213a);
-    --bkai-line: var(--bk-line, rgba(148, 163, 184, .22));
-    --bkai-text: var(--bk-text, #e7edf7);
-    --bkai-dim: var(--bk-dim, #93a1b8);
-    --bkai-accent: var(--bk-accent, #38bdf8);
+    /* 8.5.5 — Trợ lý AI dùng chung token --bk-* của toàn website. */
+    --bkai-bg: var(--bk-bg, #0b0f14);
+    --bkai-panel: var(--bk-surface, #161f2b);
+    --bkai-panel-2: var(--bk-surface-2, #111821);
+    --bkai-line: var(--bk-line-soft, rgba(148, 163, 184, .18));
+    --bkai-text: var(--bk-text, #e8edf5);
+    --bkai-dim: var(--bk-text-2, #9aa8b8);
+    --bkai-accent: var(--bk-highlight, #38bdf8);
     --bkai-accent-soft: rgba(56, 189, 248, .14);
     --bkai-user: rgba(56, 189, 248, .12);
     --bkai-radius: 14px;
@@ -189,6 +190,8 @@
 .bkai-side-link:hover { text-decoration: underline; }
 
 /* ---------------------------------------------------------------- đầu khung */
+/* 8.5.5 — Header MỘT HÀNG: tiêu đề bên trái, nút đóng sát phải, căn giữa dọc.
+   Dòng phụ luôn xuống dưới tiêu đề (flex-basis 100%) nên không đẩy nút đóng lệch. */
 .bkai-head {
     display: flex;
     flex-wrap: wrap;
@@ -198,16 +201,29 @@
     border-bottom: 1px solid var(--bkai-line);
 }
 .bkai-head-title {
+    order: 1;
     font-weight: 600;
     font-size: 15px;
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.bkai-head-sub { width: 100%; font-size: 12px; color: var(--bkai-dim); display: flex; gap: 4px; flex-wrap: wrap; }
-.bkai-head-actions { display: flex; gap: 4px; }
+.bkai-head-sub {
+    order: 4;
+    flex: 1 1 100%;
+    width: 100%;
+    font-size: 12px; color: var(--bkai-dim); display: flex; gap: 4px; flex-wrap: wrap;
+}
+.bkai-head-actions {
+    order: 3;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 0 0 auto;
+    margin-left: auto;
+}
 
 .bkai-icon-btn {
     display: inline-flex;
@@ -225,6 +241,22 @@
 .bkai-icon-btn:hover { background: var(--bkai-panel-2); color: var(--bkai-text); }
 .bkai-icon-btn:focus-visible { outline: 2px solid var(--bkai-accent); outline-offset: 1px; }
 .bkai-icon-btn[hidden] { display: none; }
+
+/* Nút mở sidebar lịch sử (chỉ trang đầy đủ, chỉ dưới 860px). */
+.bkai-menu-btn {
+    order: 0;
+    display: none;
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    margin-right: -4px;
+}
+
+/* Lớp phủ + sidebar off-canvas của trang /ai-tutor/ (8.5.5).
+   Mặc định không hoạt động: chỉ bật trong media query điện thoại. */
+.bkai-side-scrim { display: none; }
+html.bkai-side-lock,
+html.bkai-side-lock body { overflow: hidden; }
 
 /* -------------------------------------------------------------- thông báo */
 .bkai-notice {
@@ -625,16 +657,56 @@
 .bk-ai .bk-btn { font: inherit; }
 
 @media (max-width: 860px) {
+    /* Lịch sử trò chuyện ẩn mặc định; mở bằng nút ở góc trên bên trái. */
     .bkai-page .bkai-shell {
         grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: auto minmax(0, 1fr);
-        height: auto;
-        min-height: 0;
+        grid-template-rows: minmax(0, 1fr);
+        height: min(76dvh, 860px);
+        min-height: 420px;
     }
+    .bkai-page .bkai-main { min-height: 0; height: 100%; }
+    .bkai-page .bkai-menu-btn { display: inline-flex; }
+
     .bkai-page .bkai-side {
-        max-height: 240px;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 940;
+        width: min(20rem, 86vw);
+        max-height: none;
+        border-radius: 0;
+        border: 0;
+        border-right: 1px solid var(--bkai-line);
+        padding-top: calc(12px + env(safe-area-inset-top, 0px));
+        padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        transform: translateX(-102%);
+        /* visibility trễ đúng bằng thời gian trượt để còn thấy animation đóng. */
+        transition: transform .22s cubic-bezier(.2, .8, .2, 1), box-shadow .22s ease,
+            visibility 0s linear .22s;
+        box-shadow: none;
+        visibility: hidden;
+        overscroll-behavior: contain;
     }
-    .bkai-page .bkai-main { min-height: 62vh; }
+    .bkai-page.is-side-open .bkai-side {
+        transform: none;
+        visibility: visible;
+        box-shadow: 18px 0 48px rgba(2, 6, 23, .6);
+        transition: transform .22s cubic-bezier(.2, .8, .2, 1), box-shadow .22s ease,
+            visibility 0s;
+    }
+    .bkai-page .bkai-side-scrim {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 930;
+        background: var(--bk-overlay, rgba(2, 6, 23, .62));
+        backdrop-filter: blur(2px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .18s ease;
+    }
+    .bkai-page.is-side-open .bkai-side-scrim { opacity: 1; pointer-events: auto; }
     .bkai-dock-host {
         width: 100vw;
         /* Safe-area: không để nút đóng/ô soạn bị tai thỏ hay thanh home che. */
@@ -654,8 +726,13 @@
     .bkai-dock-host,
     .bkai-dots span { animation: none !important; }
     .bkai-thread { scroll-behavior: auto; }
+    .bkai-page .bkai-side,
+    .bkai-page.is-side-open .bkai-side,
+    .bkai-page .bkai-side-scrim { transition: none !important; }
 }
 
 /* Tôn trọng công tắc giảm chuyển động của toàn website. */
 .bk-a11y-reduce-motion .bkai-dock-host,
 .bk-a11y-reduce-motion .bkai-dots span { animation: none !important; }
+.bk-a11y-reduce-motion .bkai-page .bkai-side,
+.bk-a11y-reduce-motion .bkai-page .bkai-side-scrim { transition: none !important; }

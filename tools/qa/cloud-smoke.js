@@ -418,6 +418,55 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     ok('mở được chi tiết phiên bản trong thông báo', !!clModal && /Tính năng mới/.test(clModal.textContent));
     if (clModal) w.document.querySelector('.bkc-modal .bkc-x').click();
 
+    /* --- 8.5.5: xoá thông báo khỏi trung tâm --------------------------- */
+    console.log('\n[4b] Xoá thông báo (8.5.5)');
+    const rows = w.document.querySelectorAll('.bkc-item-row');
+    ok('mỗi thông báo xoá được nằm trong hàng riêng có nút xoá', rows.length === 2,
+        String(rows.length));
+    ok('nút xoá là phần tử anh em (không lồng trong nút thông báo)',
+        Array.from(rows).every((r) => r.querySelector('.bkc-item-del') &&
+            !r.querySelector('.bkc-item .bkc-item-del')));
+    ok('thông báo cập nhật phiên bản KHÔNG có nút xoá',
+        Array.from(w.document.querySelectorAll('.bkc-item-version'))
+            .every((n) => !n.closest('.bkc-item-row')));
+    const dismissAllBtn = w.document.getElementById('bkcDismissAll');
+    ok('có nút xoá hàng loạt, đếm đúng số thông báo được phép xoá',
+        !!dismissAllBtn && /\(2\)/.test(dismissAllBtn.textContent),
+        dismissAllBtn && dismissAllBtn.textContent);
+
+    /* Hộp xác nhận: mở ra, huỷ thì không xoá gì. */
+    const beforeBulk = w.document.querySelectorAll('.bkc-item').length;
+    if (dismissAllBtn) dismissAllBtn.click();
+    const confirmBox = await until(() => w.document.querySelector('.bkc-modal'));
+    ok('xoá hàng loạt hỏi xác nhận trước', !!confirmBox && /Xoá tất cả thông báo\?/.test(confirmBox.textContent));
+    ok('hộp xác nhận nói rõ giữ lại thông báo phiên bản',
+        !!confirmBox && /phiên bản luôn được giữ nguyên/.test(confirmBox.textContent));
+    const cancelBtn = confirmBox && Array.from(confirmBox.querySelectorAll('button'))
+        .find((b) => b.textContent.trim() === 'Huỷ');
+    if (cancelBtn) cancelBtn.click();
+    await wait(30);
+    ok('huỷ xác nhận không xoá thông báo nào',
+        w.document.querySelectorAll('.bkc-item').length === beforeBulk &&
+        !w.document.querySelector('.bkc-modal'));
+
+    /* Xoá một thông báo bảo trì: biến khỏi panel, badge giảm, lưu bền vững. */
+    if (w.document.getElementById('bkcPanel').hidden) w.document.getElementById('bkcBell').click();
+    await until(() => !w.document.getElementById('bkcPanel').hidden);
+    const maintenanceRow = Array.from(w.document.querySelectorAll('.bkc-item'))
+        .find((n) => /Bảo trì hệ thống/.test(n.textContent));
+    const maintenanceDel = maintenanceRow && maintenanceRow.closest('.bkc-item-row')
+        .querySelector('.bkc-item-del');
+    ok('thông báo bảo trì có nút xoá', !!maintenanceDel);
+    if (maintenanceDel) maintenanceDel.click();
+    const removed = await until(() =>
+        !Array.from(w.document.querySelectorAll('.bkc-item'))
+            .some((n) => /Bảo trì hệ thống/.test(n.textContent)));
+    ok('xoá xong thông báo biến khỏi panel ngay (không tải lại trang)', !!removed);
+    const dismissedMap = JSON.parse(w.localStorage.getItem('bakhiNotifyDismissed.v1') || '{}');
+    ok('mốc đã xoá được lưu bền vững trên thiết bị', !!dismissedMap.a2, JSON.stringify(dismissedMap));
+    ok('vẫn giữ nguyên nhóm cập nhật phiên bản sau khi xoá',
+        w.document.querySelectorAll('.bkc-item-version').length === 3);
+
     console.log('\n[5] What\'s New trên trang chính (chỉ bật khi opt-in)');
     const wn = await until(() => {
         const node = w.document.getElementById('bkcWhatsNew');

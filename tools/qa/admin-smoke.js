@@ -394,10 +394,11 @@ const CHANGELOG = [{
   ok('thẻ đăng nhập toàn màn hình trên điện thoại',
     /@media \(max-width: 640px\)[\s\S]*?\.bkadm-card\s*\{[^}]*min-height:\s*100dvh/.test(adminCss) &&
     /body\.bkadm,[\s\S]*?box-sizing:\s*border-box/.test(adminCss));
+  /* 8.5.5: dashboard tối là mặc định; chế độ sáng chỉ khi chọn html.light. */
   ok('popup dashboard có nền đục và token màu riêng',
-    /\.bkc-modal\s*\{[^}]*--bkc-panel:\s*#ffffff/.test(dashCss) &&
+    /\.bkc-modal\s*\{[^}]*--bkc-panel:\s*#0d1526/.test(dashCss) &&
     /\.bkc-sheet\s*\{[^}]*background:\s*var\(--bkc-panel,\s*#ffffff\)/.test(dashCss) &&
-    /html\.dark \.bkc-modal\s*\{[^}]*--bkc-panel:\s*#0d1526/.test(dashCss));
+    /html\.light \.bkc-modal\s*\{[^}]*--bkc-panel:\s*#ffffff/.test(dashCss));
   ok('không có lỗi runtime jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
 
   console.log('\n' + (failures ? '=== ' + failures + ' CHECK(S) FAILED ===' : '=== ALL CHECKS PASSED ==='));

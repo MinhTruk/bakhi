@@ -36,7 +36,9 @@
     }
     function apply(theme, persist) {
         var next = normalize(theme);
+        /* 8.5.5 — tối là mặc định; .light đánh dấu lựa chọn sáng chủ động. */
         root.classList.toggle('dark', next === 'dark');
+        root.classList.toggle('light', next !== 'dark');
         root.setAttribute('data-bk-theme', next);
         root.style.colorScheme = next;
         if (persist !== false) {

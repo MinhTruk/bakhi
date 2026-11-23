@@ -275,8 +275,11 @@ function boot(opts) {
   ok('reset xoá vị trí đã lưu', C.w.localStorage.getItem('bakhiReportFab.v1') === null);
 
   console.log('\n== 8. Chủ đề tối của cửa sổ báo cáo ==');
-  ok('mặc định chủ đề tối', /color-scheme:\s*dark/.test(REPORT_CSS) && /--bkrep-bg:\s*#0b1120/.test(REPORT_CSS));
-  ok('có bảng biến cho chủ đề sáng', /html:not\(\.dark\) #bkReportWin/.test(REPORT_CSS) &&
+  /* 8.5.5: màu tối lấy từ token chung --bk-*, chế độ sáng chỉ khi chọn html.light. */
+  ok('mặc định chủ đề tối', /color-scheme:\s*dark/.test(REPORT_CSS) &&
+    /--bkrep-bg:\s*var\(--bk-bg/.test(REPORT_CSS));
+  ok('bảng biến sáng chỉ bật khi chọn html.light', /html\.light #bkReportWin/.test(REPORT_CSS) &&
+    !/html:not\(\.dark\) #bkReportWin/.test(REPORT_CSS) &&
     /--bkrep-input-bg:\s*#ffffff/.test(REPORT_CSS));
   ok('ô nhập và bong bóng chat dùng biến nền riêng', /--bkrep-input-bg/.test(REPORT_CSS) &&
     /--bkrep-surface-2/.test(REPORT_CSS));

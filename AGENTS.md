@@ -445,6 +445,34 @@ Tài liệu: `docs/AI_TUTOR_ARCHITECTURE.md` (kiến trúc), `docs/AI_TUTOR_SECU
 (bảo mật), `docs/AI_TUTOR_API_KEY_SETUP.md` (đặt khoá), `docs/AI_TUTOR_QA_V850.md`
 (danh sách kiểm tra và phần chưa làm).
 
+### 6.3. Giao diện tối dùng chung, thông báo & mobile (8.5.5)
+
+- **Một bảng màu duy nhất:** `assets/bakhi/bk-tokens.css`. Mọi mô-đun phải lấy màu từ
+  token `--bk-*` (nền `#0b0f14`, bề mặt `#161f2b`, hover `#202c3a`, viền `#293646`, chữ
+  `#e8edf5` / `#9aa8b8` / `#718096`) thay vì viết hex riêng. Không tạo bộ token thứ hai.
+- **Tối là mặc định trên mọi trang**, kể cả trang không đặt `class="dark"` trên `<html>`
+  (`studio/`, `admin/`, `founder/`, trang bài học). Chế độ sáng chỉ bật khi người học chọn
+  trong menu tài khoản → `html.light`. Không viết `html:not(.dark)` cho nhánh sáng: đó là
+  lỗi làm cửa sổ Report Issue và dashboard trắng trên trang bài học (đã sửa ở 8.5.5).
+- Token cũ `--bkl-*` (bk-core) được ánh xạ sang `--bk-*` trong `bk-tokens.css`; `bkg`/`bks`
+  và các mô-đun khác kế thừa nên không phải sửa từng quy tắc.
+- `tools/integrate-pages.js` chèn `bk-tokens.css` cho **mọi** tệp HTML (idempotent, có
+  `?v=`). Thẻ nối ở cuối tệp nên token áp sau CSS cũ; `content-integrity` bỏ dòng chứa
+  `assets/bakhi/` nên hash nội dung giáo dục không đổi.
+- **Xoá thông báo (8.5.5):** chỉ xoá BẢN HIỂN THỊ của người học, không xoá dữ liệu gốc.
+  · phản hồi báo cáo → `report_notifications.dismissed_at` (qua `report-api`
+  `notifications.dismiss`), · thông báo cập nhật/bảo trì/chung →
+  `announcement_reads.dismissed_at`, · thiết bị → `bakhiNotifyDismissed.v1`.
+  **Thông báo cập nhật phiên bản (`changelog_version` khác null, nhóm `S.changelog`)
+  không có nút xoá và không bao giờ bị xoá hàng loạt** — hàng loạt đi qua
+  `canDismissAnnouncement()`. Nút xoá là phần tử anh em của `.bkc-item` (không lồng
+  `<button>` trong `<button>`), vùng chạm ≥ 40px trên thiết bị cảm ứng.
+- **Lịch sử Trợ lý AI trên điện thoại (8.5.5):** dưới 860px sidebar off-canvas, mở bằng
+  `#bkaiMenuBtn`, đóng bằng lớp phủ / `Esc` / chọn hội thoại. Desktop giữ bố cục hai cột;
+  không dựng hệ lịch sử thứ hai (vẫn dùng `S.conversations`). Khoá cuộn nền bằng
+  `html.bkai-side-lock`.
+- QA: `node tools/qa/v855-ui.js` (tĩnh, không cần jsdom) + `cloud-smoke` mục [4b].
+
 <!-- BEGIN brain.md -->
 ## Project Brain
 

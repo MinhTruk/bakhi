@@ -518,6 +518,6 @@
 
     global.BKFounderGamification = {
         render: render,
-        version: '8.5.4'
+        version: '8.5.5'
     };
 })(typeof window !== 'undefined' ? window : this);

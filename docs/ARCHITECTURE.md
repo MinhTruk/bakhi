@@ -137,6 +137,15 @@ DOMContentLoaded
 - Toàn bộ bề mặt thông báo dùng chung bộ biến `--bkc-n-*` trong `bk-cloud.css` và lớp
   `.bkc-dark`: trung tâm thông báo, bảng, popup, danh sách, chi tiết, toast, modal, trạng
   thái tải/rỗng/lỗi. Không có thẻ trắng nào còn sót trong luồng thông báo.
+- **8.5.5:** `--bkc-n-*` không còn là bảng màu riêng — nó trỏ về token chung `--bk-*`
+  trong `assets/bakhi/bk-tokens.css`, thứ được nạp trên mọi trang. Tối là mặc định;
+  `html.light` chỉ bật khi người học chọn. `.bkc-dark` giữ bảng tối cố định để panel
+  không bao giờ trắng.
+- **Xoá thông báo (8.5.5):** người học xoá bản hiển thị, không xoá dữ liệu gốc.
+  `announcement_reads.dismissed_at` (ghi trực tiếp qua RLS sẵn có) cho thông báo cập
+  nhật/bảo trì/chung, `report_notifications.dismissed_at` (qua `report-api`
+  `notifications.dismiss`) cho phản hồi báo cáo, cộng `bakhiNotifyDismissed.v1` trên
+  thiết bị. Nhóm `changelog` và announcement có `changelog_version` không xoá được.
 - **What's New là tuỳ chọn**: `bk-cloud.js` chỉ dựng khối cập nhật gần đây khi thẻ script
   có `data-bk-whatsnew="1"` hoặc trang đã có khung `#bkcWhatsNew`. Chỉ `index.html` bật cờ
   này; `studio/index.html` (Word & Paint hợp nhất) chạy chế độ chỉ thông báo nên không
@@ -533,7 +542,7 @@ Từ 8.0.0, bốn bảng của hệ thống báo cáo nằm trong
 | `reports` | Báo cáo, trạng thái, kết quả xử lý | Chỉ hàng của mình (RLS) |
 | `report_messages` | Q&A của một báo cáo | Chỉ thuộc báo cáo của mình |
 | `report_activity_logs` | Nhật ký xử lý | Không (qua `admin-actions`) |
-| `report_notifications` | Thông báo riêng cho người báo cáo | Chỉ hàng của mình |
+| `report_notifications` | Thông báo riêng cho người báo cáo (`dismissed_at` từ 8.5.5 = đã xoá khỏi chuông) | Chỉ hàng của mình |
 
 Bucket `report-attachments` để private; học sinh ghi/đọc trong thư mục `<student_id>/`,
 quản trị viên xem qua signed URL do Edge Function sinh ra.

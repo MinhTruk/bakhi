@@ -1,0 +1,110 @@
+/* =========================================================================
+   Bá Khí — bk-tokens.css (8.5.5)
+   NGUỒN DUY NHẤT cho bảng màu toàn website.
+
+   Mọi mô-đun (thông báo, hồ sơ, Trợ lý AI, nhạc, báo cáo, gamification,
+   dashboard quản trị…) phải tham chiếu bộ token --bk-* dưới đây thay vì
+   viết màu riêng. Token --bkl-* của bk-core.css được ánh xạ sang --bk-* để
+   các lớp cũ tự theo giao diện mà không phải sửa từng quy tắc.
+
+   MẶC ĐỊNH LÀ TỐI trên mọi trang (kể cả trang không đặt class .dark trên
+   <html>: studio, admin, founder, trang bài học). Chế độ sáng chỉ bật khi
+   người học chủ động chọn trong menu tài khoản → html.light.
+   ========================================================================= */
+
+:root,
+html.dark {
+    color-scheme: dark;
+
+    /* ---------------------------- Nền & bề mặt -------------------------- */
+    --bk-bg: #0b0f14;            /* nền chính */
+    --bk-bg-2: #111821;          /* nền phụ / trang */
+    --bk-surface: #161f2b;       /* thẻ, bảng, panel */
+    --bk-surface-2: #111821;     /* panel lồng, header dính */
+    --bk-surface-3: #1b2531;     /* lớp lồng sâu hơn */
+    --bk-hover: #202c3a;         /* hover / active nhẹ */
+    --bk-input: #0e151e;         /* nền ô nhập */
+
+    /* ------------------------------ Đường kẻ ---------------------------- */
+    --bk-line: #293646;          /* viền đặc */
+    --bk-line-soft: rgba(148, 163, 184, .18);
+    --bk-line-strong: rgba(148, 163, 184, .38);
+
+    /* --------------------------------- Chữ ------------------------------ */
+    --bk-text: #e8edf5;          /* chữ chính */
+    --bk-text-2: #9aa8b8;        /* chữ phụ */
+    --bk-text-3: #718096;        /* chữ mờ */
+
+    /* ------------------------------- Màu nhận diện ---------------------- */
+    --bk-brand: var(--bk-primary, #6366f1);
+    --bk-brand-2: var(--bk-secondary, #a855f7);
+    --bk-brand-soft: #a5b4fc;
+    --bk-highlight: #38bdf8;
+    --bk-ok: #34d399;
+    --bk-warn: #fbbf24;
+    --bk-danger: #fb7185;
+
+    /* --------------------------- Đổ bóng / lớp phủ ---------------------- */
+    --bk-elev-1: 0 10px 24px -16px rgba(2, 6, 23, .8);
+    --bk-elev-2: 0 24px 60px -24px rgba(2, 6, 23, .92);
+    --bk-overlay: rgba(2, 6, 23, .62);
+
+    /* --------------- Ánh xạ token cũ của bk-core.css (--bkl-*) ---------- */
+    --bkl-text: var(--bk-text);
+    --bkl-muted: var(--bk-text-2);
+    --bkl-surface: var(--bk-surface);
+    --bkl-surface-2: var(--bk-surface-2);
+    --bkl-line: var(--bk-line-soft);
+    --bkl-ok: var(--bk-ok);
+    --bkl-warn: var(--bk-warn);
+    --bkl-danger: var(--bk-danger);
+}
+
+/* Chế độ sáng: chỉ khi người học bật trong menu tài khoản (html.light).
+   Không component nào được tự đổi sang nền sáng ngoài ý muốn. */
+html.light {
+    color-scheme: light;
+
+    --bk-bg: #f4f6fb;
+    --bk-bg-2: #f8fafc;
+    --bk-surface: #ffffff;
+    --bk-surface-2: #f5f7fc;
+    --bk-surface-3: #eef2f9;
+    --bk-hover: #eef2f8;
+    --bk-input: #ffffff;
+
+    --bk-line: #d7dee9;
+    --bk-line-soft: rgba(100, 116, 139, .22);
+    --bk-line-strong: rgba(100, 116, 139, .38);
+
+    --bk-text: #0f172a;
+    --bk-text-2: #4b5b73;
+    --bk-text-3: #6b7a93;
+
+    --bk-brand-soft: #4f46e5;
+    --bk-highlight: #0284c7;
+    --bk-ok: #059669;
+    --bk-warn: #b45309;
+    --bk-danger: #dc2626;
+
+    --bk-elev-1: 0 10px 24px -18px rgba(15, 23, 42, .35);
+    --bk-elev-2: 0 24px 60px -26px rgba(15, 23, 42, .45);
+    --bk-overlay: rgba(15, 23, 42, .48);
+}
+
+/* ------------------------------- Nền tảng ------------------------------- */
+html { scrollbar-color: var(--bk-line-strong) transparent; }
+
+::selection {
+    background: rgba(56, 189, 248, .26);
+    color: var(--bk-text);
+}
+
+/* Ô nhập / nút / thẻ trong lớp nổi giữ màu chữ của token thay vì màu hệ
+   điều hành, tránh chữ tối trên nền tối. */
+.bkc-dark,
+.bkai,
+.bkrep-inline,
+#bkReportWin {
+    color-scheme: dark;
+}

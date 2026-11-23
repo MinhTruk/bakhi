@@ -10,29 +10,29 @@
 #bkReportWin,
 .bkrep-inline {
     color-scheme: dark;
-    --bkrep-bg: #0b1120;
-    --bkrep-bg-2: #070c17;
-    --bkrep-bg-3: #0e1729;
-    --bkrep-surface: #16203a;
-    --bkrep-surface-2: #1e2a45;
-    --bkrep-input-bg: rgba(2, 6, 23, .55);
-    --bkrep-line: rgba(148, 163, 184, .22);
-    --bkrep-line-strong: rgba(165, 180, 252, .42);
-    --bkrep-text: #e8eefb;
-    --bkrep-muted: #9aa9c2;
+    --bkrep-bg: var(--bk-bg, #0b0f14);
+    --bkrep-bg-2: var(--bk-bg-2, #111821);
+    --bkrep-bg-3: var(--bk-surface-2, #111821);
+    --bkrep-surface: var(--bk-surface, #161f2b);
+    --bkrep-surface-2: var(--bk-hover, #202c3a);
+    --bkrep-input-bg: var(--bk-input, #0e151e);
+    --bkrep-line: var(--bk-line-soft, rgba(148, 163, 184, .18));
+    --bkrep-line-strong: var(--bk-line-strong, rgba(165, 180, 252, .42));
+    --bkrep-text: var(--bk-text, #e8edf5);
+    --bkrep-muted: var(--bk-text-2, #9aa8b8);
     --bkrep-primary: #818cf8;
     --bkrep-primary-2: #c084fc;
-    --bkrep-ok: #34d399;
-    --bkrep-warn: #fbbf24;
-    --bkrep-error: #fb7185;
+    --bkrep-ok: var(--bk-ok, #34d399);
+    --bkrep-warn: var(--bk-warn, #fbbf24);
+    --bkrep-error: var(--bk-danger, #fb7185);
     --bkrep-head-bg: linear-gradient(135deg, rgba(99, 102, 241, .3), rgba(168, 85, 247, .22));
     --bkrep-ring: rgba(129, 140, 248, .22);
     --bkrep-shadow: 0 28px 70px -28px rgba(2, 6, 23, .95), 0 2px 10px rgba(2, 6, 23, .5);
     --bkrep-radius: 14px;
 }
 
-html:not(.dark) #bkReportWin,
-html:not(.dark) .bkrep-inline {
+html.light #bkReportWin,
+html.light .bkrep-inline {
     color-scheme: light;
     --bkrep-bg: #ffffff;
     --bkrep-bg-2: #f4f6fc;

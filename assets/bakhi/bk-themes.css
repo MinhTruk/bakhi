@@ -50,7 +50,7 @@ html[data-bk-theme-scope="page"] .nebula {
         rgba(3, 7, 18, .72) 55%,
         rgba(3, 7, 18, .88) 100%);
 }
-html:not(.dark) #bkThemeLayer .bkth-veil {
+html.light #bkThemeLayer .bkth-veil {
     background: linear-gradient(180deg,
         rgba(248, 250, 252, .72) 0%,
         rgba(248, 250, 252, .84) 60%,
@@ -244,7 +244,7 @@ html[data-bk-theme="theme-christmas"] {
         radial-gradient(circle at 78% 76%, rgba(220, 38, 38, .22), transparent 52%),
         linear-gradient(168deg, #04121f 0%, #0b2540 46%, #14532d 100%);
 }
-html:not(.dark) #bkThemeLayer .bkth-christmas {
+html.light #bkThemeLayer .bkth-christmas {
     background:
         radial-gradient(circle at 20% 18%, rgba(255, 255, 255, .9), transparent 46%),
         linear-gradient(168deg, #dbeafe 0%, #bfdbfe 48%, #dcfce7 100%);
@@ -266,8 +266,8 @@ html:not(.dark) #bkThemeLayer .bkth-christmas {
     animation-iteration-count: infinite;
     will-change: transform;
 }
-html:not(.dark) #bkThemeFx .bkth-flake,
-html:not(.dark) #bkThemeOverlay .bkth-flake { background: #ffffff; opacity: .9; }
+html.light #bkThemeFx .bkth-flake,
+html.light #bkThemeOverlay .bkth-flake { background: #ffffff; opacity: .9; }
 @keyframes bkthSnow {
     0% { transform: translate3d(0, -8vh, 0) rotate(0deg); }
     100% { transform: translate3d(6vw, 112vh, 0) rotate(160deg); }
@@ -425,7 +425,7 @@ html[data-bk-theme] #bkThemeOverlay { opacity: 1; }
     animation-iteration-count: infinite;
     will-change: top, transform;
 }
-html:not(.dark) .bkth-head-snow .bkth-flake { background: #ffffff; opacity: .9; }
+html.light .bkth-head-snow .bkth-flake { background: #ffffff; opacity: .9; }
 @keyframes bkthSnowHead {
     0% { top: -12%; transform: translate3d(0, 0, 0); }
     100% { top: 106%; transform: translate3d(14px, 0, 0); }

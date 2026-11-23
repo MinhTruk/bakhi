@@ -23,6 +23,10 @@
     var ADMIN_KEY = 'bakhiAdmin.v1';
     var DEV_KEY = 'bakhiDev.v1';
     var NOTIFY_READ_KEY = 'bakhiNotifyReads.v1';
+    /* 8.5.5 — id thông báo người học đã XOÁ (khỏi trung tâm thông báo).
+       Chỉ là bản ghi hiển thị: dữ liệu gốc (announcements/reports/changelog)
+       không bị xoá. Khi đã gắn hồ sơ, mốc này còn được lưu ở máy chủ. */
+    var NOTIFY_DISMISS_KEY = 'bakhiNotifyDismissed.v1';
     var OFFLINE_MSG = 'Không kết nối được máy chủ. Dữ liệu học tập vẫn được lưu trên thiết bị này.';
 
     /* Chế độ chỉ nhận thông báo cho các trang môn học / bài học / studio:
@@ -101,6 +105,15 @@
     }
     function saveLocalReads(map) {
         lsSet(NOTIFY_READ_KEY, map || {});
+    }
+    /* Thông báo đã xoá: bền vững trên thiết bị (không phải biến tạm), để tải
+       lại trang thông báo đã xoá không tự hiện ra. */
+    function localDismissed() {
+        var map = lsGet(NOTIFY_DISMISS_KEY);
+        return map && typeof map === 'object' && !Array.isArray(map) ? map : {};
+    }
+    function saveLocalDismissed(map) {
+        lsSet(NOTIFY_DISMISS_KEY, map || {});
     }
     function fmtDate(iso) {
         if (!iso) return '';
@@ -1054,28 +1067,42 @@
     /* ---------------------------------------------------------------------
        Trạng thái đã đọc + thông báo
        ------------------------------------------------------------------ */
-    function readAnnouncementIds() {
-        if (NOTIFY_ONLY) return Promise.resolve(localReads());
-        if (!S.bound || !S.student) return Promise.resolve(localReads());
-        return client().from('announcement_reads')
-            .select('announcement_id, read_at')
-            .eq('student_id', S.student.id)
-            .then(function (res) {
-                var map = {};
-                (res.data || []).forEach(function (r) { map[r.announcement_id] = r.read_at; });
-                /*
-                 * Trang bài học chỉ có chế độ thông báo nên lưu trạng thái đã đọc
-                 * trong localStorage. Khi quay lại trang chủ, hợp nhất các mốc đó
-                 * vào bản Supabase thay vì làm thông báo "chưa đọc" trở lại.
-                 */
-                var local = localReads();
-                var localOnly = [];
-                Object.keys(local).forEach(function (id) {
-                    if (!map[id]) { map[id] = local[id]; localOnly.push(id); }
-                });
-                S.localOnlyReads = localOnly;
-                return map;
+    /* Trả về { reads, dismissed } cho chuông thông báo.
+       `dismissed_at` là cột của 8.5.5; nếu máy chủ chưa chạy migration thì
+       tự lùi về bộ cột cũ để chuông vẫn hoạt động (không vỡ toàn bộ panel). */
+    function readAnnouncementState() {
+        var local = { reads: localReads(), dismissed: localDismissed() };
+        if (NOTIFY_ONLY) return Promise.resolve(local);
+        if (!S.bound || !S.student) return Promise.resolve(local);
+        function query(cols) {
+            return client().from('announcement_reads')
+                .select(cols)
+                .eq('student_id', S.student.id);
+        }
+        return query('announcement_id, read_at, dismissed_at').then(function (res) {
+            if (res.error) throw res.error;
+            return res;
+        }).catch(function () {
+            return query('announcement_id, read_at');
+        }).then(function (res) {
+            var reads = {};
+            var dismissed = localDismissed();
+            (res.data || []).forEach(function (r) {
+                reads[r.announcement_id] = r.read_at;
+                if (r.dismissed_at) dismissed[r.announcement_id] = r.dismissed_at;
             });
+            /*
+             * Trang bài học chỉ có chế độ thông báo nên lưu trạng thái đã đọc
+             * trong localStorage. Khi quay lại trang chủ, hợp nhất các mốc đó
+             * vào bản Supabase thay vì làm thông báo "chưa đọc" trở lại.
+             */
+            var localOnly = [];
+            Object.keys(local.reads).forEach(function (id) {
+                if (!reads[id]) { reads[id] = local.reads[id]; localOnly.push(id); }
+            });
+            S.localOnlyReads = localOnly;
+            return { reads: reads, dismissed: dismissed };
+        });
     }
 
     function loadAnnouncements(force) {
@@ -1095,11 +1122,20 @@
             .limit(50)
             .then(function (res) {
                 if (res.error) throw res.error;
-                S.announcements = res.data || [];
-                return readAnnouncementIds().catch(function () { return {}; });
-            }).then(function (reads) {
-                S.reads = reads || {};
+                S.allAnnouncements = res.data || [];
+                return readAnnouncementState().catch(function () {
+                    return { reads: {}, dismissed: localDismissed() };
+                });
+            }).then(function (state) {
+                state = state || {};
+                S.reads = state.reads || {};
+                S.dismissed = state.dismissed || localDismissed();
                 saveLocalReads(S.reads);
+                saveLocalDismissed(S.dismissed);
+                /* Thông báo đã xoá không được quay lại sau khi tải trang. */
+                S.announcements = (S.allAnnouncements || []).filter(function (a) {
+                    return !S.dismissed[a.id];
+                });
                 var pending = (S.localOnlyReads || []).filter(function (id) {
                     return S.announcements.some(function (a) { return a.id === id; });
                 });
@@ -1148,13 +1184,15 @@
             return Promise.resolve(S.reportNotes);
         }
         S.reportNotesAt = now();
+        var goneIds = S.dismissed || localDismissed();
         return client().from('report_notifications')
-            .select('id, report_id, kind, title, body, read_at, created_at')
+            .select('id, student_id, report_id, kind, title, body, read_at, dismissed_at, created_at')
             .order('created_at', { ascending: false })
             .limit(20)
             .then(function (res) {
                 if (res.error) throw res.error;
                 S.reportNotes = (res.data || []).filter(function (n) {
+                    if (n.dismissed_at || goneIds[n.id]) return false;
                     return !ident || !n.student_id || String(n.student_id) === String(ident.id);
                 });
                 S.reportNotesLoaded = true;
@@ -1203,6 +1241,148 @@
         unread.forEach(function (n) { n.read_at = stamp; });
         paintBell();
         return api(CFG.functions.report, { action: 'notifications.read' }).catch(function () { });
+    }
+
+    /* ------------------------------------------------------------------
+       Xoá thông báo khỏi trung tâm (8.5.5)
+       Chỉ xoá BẢN HIỂN THỊ của người học, không xoá dữ liệu gốc:
+         · phản hồi báo cáo  → report_notifications.dismissed_at
+         · thông báo cập nhật / bảo trì / chung → announcement_reads.dismissed_at
+         · thông báo cập nhật PHIÊN BẢN (có changelog_version) → KHÔNG xoá được
+       ------------------------------------------------------------------ */
+    function canDismissAnnouncement(a) {
+        return !!a && !a.changelog_version;
+    }
+
+    function rememberDismissed(id) {
+        if (!id) return;
+        S.dismissed = S.dismissed || localDismissed();
+        S.dismissed[id] = new Date().toISOString();
+        saveLocalDismissed(S.dismissed);
+    }
+
+    function dismissibleCount() {
+        return S.reportNotes.length + S.announcements.filter(canDismissAnnouncement).length;
+    }
+
+    function dismissAnnouncement(a) {
+        if (!canDismissAnnouncement(a)) return;
+        rememberDismissed(a.id);
+        S.announcements = S.announcements.filter(function (x) { return x.id !== a.id; });
+        if (S.allAnnouncements) {
+            S.allAnnouncements = S.allAnnouncements.filter(function (x) { return x.id !== a.id; });
+        }
+        paintBell();
+        /* Vẽ lại cả khi panel đang ẩn để DOM không giữ lại thông báo đã xoá. */
+        if (S.list) renderPanel();
+        if (S.bound && S.student) {
+            client().from('announcement_reads').upsert({
+                student_id: S.student.id,
+                announcement_id: a.id,
+                read_at: S.reads[a.id] || S.dismissed[a.id],
+                dismissed_at: S.dismissed[a.id]
+            }, { onConflict: 'student_id,announcement_id' }).then(function (res) {
+                if (res.error) console.warn('[BKCloud] dismiss', res.error.message);
+            });
+        }
+        toast('Đã xoá thông báo', 'success');
+    }
+
+    function dismissReportNote(note) {
+        if (!note) return;
+        rememberDismissed(note.id);
+        S.reportNotes = S.reportNotes.filter(function (x) { return x.id !== note.id; });
+        paintBell();
+        if (S.list) renderPanel();
+        api(CFG.functions.report, { action: 'notifications.dismiss', notification_id: note.id })
+            .catch(function () { });
+        toast('Đã xoá thông báo', 'success');
+    }
+
+    function dismissAll() {
+        var notes = S.reportNotes.slice();
+        var anns = S.announcements.filter(canDismissAnnouncement);
+        if (!notes.length && !anns.length) {
+            toast('Không còn thông báo nào để xoá.', 'info');
+            return;
+        }
+        confirmDismissAll(notes.length + anns.length, function () {
+            var stamp = new Date().toISOString();
+            notes.forEach(function (note) {
+                rememberDismissed(note.id);
+                api(CFG.functions.report, { action: 'notifications.dismiss', notification_id: note.id })
+                    .catch(function () { });
+            });
+            S.reportNotes = [];
+            anns.forEach(function (a) { rememberDismissed(a.id); });
+            S.announcements = S.announcements.filter(function (a) { return !canDismissAnnouncement(a); });
+            if (S.allAnnouncements) {
+                S.allAnnouncements = S.allAnnouncements.filter(function (a) { return !canDismissAnnouncement(a); });
+            }
+            if (S.bound && S.student && anns.length) {
+                client().from('announcement_reads').upsert(anns.map(function (a) {
+                    return {
+                        student_id: S.student.id,
+                        announcement_id: a.id,
+                        read_at: S.reads[a.id] || S.dismissed[a.id] || stamp,
+                        dismissed_at: S.dismissed[a.id] || stamp
+                    };
+                }), { onConflict: 'student_id,announcement_id' }).then(function (res) {
+                    if (res.error) console.warn('[BKCloud] dismiss all', res.error.message);
+                });
+            }
+            paintBell();
+            renderPanel();
+            toast('Đã xoá thông báo có thể xoá. Thông báo phiên bản vẫn được giữ.', 'success');
+        });
+    }
+
+    /* Hộp xác nhận dùng chung .bkc-modal/.bkc-sheet (đã có Dark Theme). */
+    function confirmDismissAll(count, onYes) {
+        var wrap = el('div', 'bkc-modal bkc-dark');
+        wrap.setAttribute('role', 'dialog');
+        wrap.setAttribute('aria-modal', 'true');
+        wrap.setAttribute('aria-label', 'Xoá tất cả thông báo có thể xoá');
+        var sheet = el('div', 'bkc-sheet bkc-dark');
+        var head = el('div', 'bkc-sheet-head');
+        head.appendChild(el('h2', 'bkc-sheet-title', 'Xoá tất cả thông báo?'));
+        var x = el('button', 'bkc-x', '×');
+        x.type = 'button';
+        x.setAttribute('aria-label', 'Đóng hộp xác nhận');
+        head.appendChild(x);
+        sheet.appendChild(head);
+
+        var body = el('div', 'bkc-sheet-body');
+        body.appendChild(el('p', null,
+            'Sẽ xoá ' + count + ' thông báo khỏi trung tâm thông báo của bạn: phản hồi báo cáo, ' +
+            'thông báo cập nhật và thông báo bảo trì.'));
+        body.appendChild(el('p', 'bkc-muted',
+            'Thông báo cập nhật phiên bản luôn được giữ nguyên. Dữ liệu gốc (báo cáo, ' +
+            'thông báo của quản trị viên) không bị xoá.'));
+        sheet.appendChild(body);
+
+        var foot = el('div', 'bkc-sheet-foot');
+        var cancel = el('button', 'bkc-btn bkc-btn-ghost', 'Huỷ');
+        cancel.type = 'button';
+        var ok = el('button', 'bkc-btn bkc-btn-danger', 'Xoá ' + count + ' thông báo');
+        ok.type = 'button';
+        foot.appendChild(cancel);
+        foot.appendChild(ok);
+        sheet.appendChild(foot);
+        wrap.appendChild(sheet);
+
+        var close = function () {
+            wrap.remove();
+            D.removeEventListener('keydown', onKey);
+        };
+        var onKey = function (e) { if (e.key === 'Escape') { e.preventDefault(); close(); } };
+        x.addEventListener('click', close);
+        cancel.addEventListener('click', close);
+        ok.addEventListener('click', function () { close(); onYes(); });
+        wrap.addEventListener('click', function (e) { if (e.target === wrap) close(); });
+        (D.body || D.documentElement).appendChild(wrap);
+        D.addEventListener('keydown', onKey);
+        ok.focus();
     }
 
     function typeLabel(type) {
@@ -1318,6 +1498,13 @@
         markAll.type = 'button';
         markAll.addEventListener('click', markAllRead);
         actions.appendChild(markAll);
+        /* Xoá hàng loạt: chỉ tác động nhóm được phép xoá (8.5.5). */
+        var delAll = el('button', 'bkc-link-btn is-danger', 'Xoá thông báo');
+        delAll.type = 'button';
+        delAll.id = 'bkcDismissAll';
+        delAll.addEventListener('click', dismissAll);
+        actions.appendChild(delAll);
+        S.dismissAllBtn = delAll;
         panel.appendChild(actions);
 
         var list = el('div', 'bkc-panel-list');
@@ -1411,10 +1598,41 @@
         return head;
     }
 
+    /* Hàng thông báo + nút xoá. Nút xoá là ANH EM của nút thông báo để không
+       lồng <button> trong <button>; hiệu ứng mờ dần rồi mới xoá dữ liệu. */
+    function itemRow(item, onDelete, label) {
+        var row = el('div', 'bkc-item-row');
+        row.appendChild(item);
+        if (typeof onDelete === 'function') {
+            var del = el('button', 'bkc-item-del');
+            del.type = 'button';
+            del.title = label || 'Xoá thông báo';
+            del.setAttribute('aria-label', label || 'Xoá thông báo');
+            del.innerHTML = '<i class="fa-solid fa-trash-can" aria-hidden="true"></i>';
+            del.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (row.classList.contains('is-removing')) return;
+                row.classList.add('is-removing');
+                del.disabled = true;
+                global.setTimeout(function () { onDelete(); }, 180);
+            });
+            row.appendChild(del);
+        }
+        return row;
+    }
+
     function renderPanel() {
         if (!S.list) return;
         S.list.textContent = '';
-        var hasAny = S.announcements.length || S.changelog.length;
+        var hasAny = S.announcements.length || S.changelog.length || S.reportNotes.length;
+        if (S.dismissAllBtn) {
+            var canRemove = dismissibleCount();
+            S.dismissAllBtn.disabled = canRemove === 0;
+            S.dismissAllBtn.textContent = canRemove
+                ? 'Xoá thông báo (' + canRemove + ')'
+                : 'Xoá thông báo';
+        }
 
         if (S.annLoading && !hasAny) {
             var busy = el('div', 'bkc-loading');
@@ -1459,7 +1677,8 @@
                 item.appendChild(el('b', 'bkc-item-title', n.title));
                 item.appendChild(el('span', 'bkc-item-sum', clip(n.body, 120)));
                 item.addEventListener('click', function () { openReportNotification(n); });
-                S.list.appendChild(item);
+                S.list.appendChild(itemRow(item, function () { dismissReportNote(n); },
+                    'Xoá thông báo báo cáo'));
             });
         }
 
@@ -1485,7 +1704,11 @@
                 item.appendChild(el('b', 'bkc-item-title', a.title));
                 item.appendChild(el('span', 'bkc-item-sum', clip(a.content, 120)));
                 item.addEventListener('click', function () { openArticle(a.id); });
-                S.list.appendChild(item);
+                /* Thông báo cập nhật PHIÊN BẢN (có changelog_version) không có
+                   nút xoá — chỉ thông báo cập nhật/bảo trì/chung mới xoá được. */
+                S.list.appendChild(canDismissAnnouncement(a)
+                    ? itemRow(item, function () { dismissAnnouncement(a); }, 'Xoá thông báo')
+                    : itemRow(item, null));
             });
         }
 

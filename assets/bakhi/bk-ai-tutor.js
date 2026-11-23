@@ -552,7 +552,9 @@
 
         /* --- danh sách hội thoại --- */
         var side = el('aside', 'bkai-side');
+        side.id = 'bkaiSide';
         side.setAttribute('aria-label', 'Danh sách hội thoại');
+        S.side = side;
         var sideHead = el('div', 'bkai-side-head');
         sideHead.appendChild(el('h2', 'bkai-side-title', 'Trợ lý AI'));
         side.appendChild(sideHead);
@@ -677,6 +679,21 @@
         shell.appendChild(main);
         root.appendChild(shell);
 
+        /* Trang đầy đủ: lớp phủ đóng sidebar trên điện thoại (không có ở bảng nổi). */
+        if (layout === 'page') {
+            var scrim = el('div', 'bkai-side-scrim');
+            scrim.setAttribute('aria-hidden', 'true');
+            on(scrim, 'click', function () { setSidebar(false); });
+            root.insertBefore(scrim, shell);
+            S.sideScrim = scrim;
+            if (!S.sideKeys) {
+                S.sideKeys = true;
+                D.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape' && S.sideOpen) { e.preventDefault(); setSidebar(false); }
+                });
+            }
+        }
+
         renderModes(modes);
         renderHead();
         renderNotice();
@@ -702,6 +719,17 @@
         var head = D.getElementById('bkaiHead');
         if (!head) return;
         clear(head);
+        /* Điện thoại: nút mở lịch sử trò chuyện ở góc trên bên trái (kiểu ChatGPT). */
+        if (S.layout === 'page') {
+            var menu = btn('', 'bkai-icon-btn bkai-menu-btn', 'fa-bars');
+            menu.id = 'bkaiMenuBtn';
+            menu.setAttribute('aria-label', 'Mở lịch sử trò chuyện');
+            menu.setAttribute('aria-controls', 'bkaiSide');
+            menu.setAttribute('aria-expanded', S.sideOpen ? 'true' : 'false');
+            menu.title = 'Lịch sử trò chuyện';
+            on(menu, 'click', function () { setSidebar(!S.sideOpen); });
+            head.appendChild(menu);
+        }
         var title = S.active ? String(S.active.title || 'Hội thoại') : 'Trợ lý AI';
         head.appendChild(el('div', 'bkai-head-title', title));
         var sub = el('div', 'bkai-head-sub');
@@ -713,8 +741,6 @@
         } else {
             sub.appendChild(el('span', null, 'Chọn một chế độ rồi đặt câu hỏi để bắt đầu.'));
         }
-        head.appendChild(sub);
-
         var actions = el('div', 'bkai-head-actions');
         if (S.active) {
             var rename = btn('', 'bkai-icon-btn', 'fa-pen');
@@ -738,6 +764,26 @@
             actions.appendChild(closeWin);
         }
         if (actions.childNodes.length) head.appendChild(actions);
+        /* Dòng phụ nằm dưới cùng hàng tiêu đề (CSS order 4). */
+        head.appendChild(sub);
+    }
+
+    /* Sidebar lịch sử kiểu ChatGPT trên điện thoại (8.5.5).
+       Chỉ có tác dụng ở trang đầy đủ; desktop vẫn hiện sidebar như cũ vì
+       CSS chỉ biến nó thành off-canvas dưới 860px. */
+    function setSidebar(open) {
+        if (S.layout !== 'page' || !S.root) return;
+        S.sideOpen = !!open;
+        S.root.classList.toggle('is-side-open', S.sideOpen);
+        if (D.documentElement && D.documentElement.classList) {
+            D.documentElement.classList.toggle('bkai-side-lock', S.sideOpen);
+        }
+        var menu = D.getElementById('bkaiMenuBtn');
+        if (menu) menu.setAttribute('aria-expanded', S.sideOpen ? 'true' : 'false');
+        if (!S.sideOpen && menu && S.side && D.activeElement &&
+            S.side.contains(D.activeElement)) {
+            menu.focus();
+        }
     }
 
     function renderConversations() {
@@ -1087,6 +1133,8 @@
 
     function openConversation(id) {
         if (S.sending) return;
+        /* Chọn hội thoại → đóng sidebar trên điện thoại, giữ nguyên dữ liệu. */
+        if (S.sideOpen) setSidebar(false);
         S.active = null;
         S.messages = [];
         S.error = null;
@@ -1112,6 +1160,7 @@
 
     function startNew() {
         if (S.sending) return;
+        if (S.sideOpen) setSidebar(false);
         S.active = null;
         S.messages = [];
         S.error = null;
@@ -1464,7 +1513,7 @@
        Công khai
        ------------------------------------------------------------------ */
     var API = {
-        version: '8.5.4',
+        version: '8.5.5',
         MODES: MODE_FALLBACK,
 
         /* Gắn giao diện đầy đủ vào một phần tử (trang /ai-tutor/). */

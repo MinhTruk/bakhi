@@ -483,6 +483,20 @@ Deno.serve(async (req) => {
                 return json({ ok: true });
             }
 
+            /* ------------------ Xoá thông báo khỏi trung tâm (8.5.5) ------------
+               Chỉ đánh dấu dismissed_at trên đúng dòng của học sinh đang gắn.
+               Không xoá report_notifications, không đụng tới reports gốc. */
+            case 'notifications.dismiss': {
+                const id = uuid(body.notification_id);
+                if (!id) return fail(400, 'BAD_NOTIFICATION', 'Thiếu thông báo cần xoá.');
+                const { error } = await client.from('report_notifications')
+                    .update({ dismissed_at: new Date().toISOString() })
+                    .eq('id', id)
+                    .eq('student_id', ctx.studentId);
+                if (error) return fail(500, 'DB_ERROR', 'Không xoá được thông báo.');
+                return json({ ok: true });
+            }
+
             default:
                 return fail(400, 'UNKNOWN_ACTION', 'Thao tác không hợp lệ.');
         }

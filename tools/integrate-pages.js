@@ -108,9 +108,35 @@ function ensureAiTutor(file, html) {
     `<script src="${prefix}assets/bakhi/bk-ai-tutor.js${bust}" defer></script>\n`;
 }
 
+/**
+ * Design Tokens dùng chung (8.5.5).
+ * Nạp cho MỌI trang HTML — kể cả studio/, admin/ và founder/ — vì cả nền tảng
+ * dùng cùng một bảng màu tối. Thẻ nối ở CUỐI tệp nên bk-tokens.css áp sau các
+ * CSS cũ, đúng ý đồ ghi đè token; content-integrity bỏ dòng chứa assets/bakhi/
+ * nên hash nội dung giáo dục không đổi.
+ */
+function ensureTokens(file, html) {
+  const version = appVersion();
+  const bust = version ? '?v=' + version : '';
+  if (html.includes('assets/bakhi/bk-tokens.css')) {
+    return html.replace(/(assets\/bakhi\/bk-tokens\.css)(\?v=[^"']*)?/g, '$1' + bust);
+  }
+  const rel = path.relative(ROOT, file).split(path.sep).join('/');
+  const depth = rel.split('/').length - 1;
+  const prefix = depth === 0 ? '' : '../'.repeat(depth);
+  const sep = html.endsWith('\n') ? '' : '\n';
+  return html + sep +
+    `    <link rel="stylesheet" href="${prefix}assets/bakhi/bk-tokens.css${bust}">\n`;
+}
+
 function inject(file) {
   const rel = path.relative(ROOT, file).split(path.sep).join('/');
   let html = fs.readFileSync(file, 'utf8');
+  const withTokens = ensureTokens(file, html);
+  if (withTokens !== html) {
+    fs.writeFileSync(file, withTokens);
+    html = withTokens;
+  }
   /* Report Issue cũng có mặt ở Studio (trang tĩnh độc lập). */
   const withReport = ensureReport(file, html);
   if (withReport !== html) {

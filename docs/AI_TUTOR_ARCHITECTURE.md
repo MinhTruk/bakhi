@@ -210,3 +210,20 @@ Luồng trong `ai-tutor-api` → `runProvider()`:
 Chi tiết lỗi trả cho học sinh đi qua `safeErrorDetail()`: provider, model, mã HTTP, loại lỗi,
 thời điểm, trạng thái dự phòng và danh sách model đã thử. Không có khoá, header hay raw
 response; thông điệp gốc của provider chỉ hiện trong `ai_provider_diagnostics` (Founder).
+
+## 11. Giao diện trên điện thoại (8.5.5)
+
+- **Header một hàng:** `.bkai-head` xếp bằng `order` — `#bkaiMenuBtn` (0), tiêu đề (1),
+  cụm nút (3, `margin-left:auto`), dòng phụ (4, `flex-basis:100%`). Nút đóng `.bkai-close`
+  (44×44px) chỉ tồn tại khi `S.layout === 'dock'` và nằm cuối cụm nút, tức sát phải tiêu đề.
+  Đóng cửa sổ chỉ ẩn `.bkai-dock-host`; `S.messages`/`S.active` giữ nguyên.
+- **Sidebar kiểu ChatGPT:** dưới 860px `.bkai-page .bkai-side` chuyển thành off-canvas
+  (`position:fixed`, `transform:translateX(-102%)`, `visibility:hidden` có trễ để còn thấy
+  animation đóng). `.bkai-page.is-side-open` trượt vào; `.bkai-side-scrim` là lớp phủ đóng.
+  Khoá cuộn nền bằng `html.bkai-side-lock`. `setSidebar()` cập nhật `aria-expanded`.
+- **Đóng sidebar:** bấm lớp phủ, `Esc`, hoặc chọn/tạo hội thoại (`openConversation`,
+  `startNew`). Không tải lại và không tạo cuộc trò chuyện mới ngoài ý muốn.
+- **Desktop không đổi:** từ 861px trở lên, `.bkai-page .bkai-shell` vẫn là grid hai cột
+  `280px minmax(0, 1fr)` và nút mở sidebar bị ẩn.
+- **Màu:** `.bkai` lấy `--bkai-*` từ token chung `--bk-*` (`bk-tokens.css`), nên cửa sổ nổi
+  và trang đầy đủ dùng cùng bảng màu với phần còn lại của website.

@@ -63,14 +63,17 @@ ok('mọi đường ghi user_progression đều đánh giá lại thành tựu (
   missingEval.length === 0, missingEval.join(', '));
 
 /* 2. Hàm kiểm tra lệch dữ liệu */
-ok('có bk_gam_health_drift()', /create or replace function public\.bk_gam_health_drift\(\)/.test(allSql) ||
-  /create or replace function public\.bk_gam_health_drift\(\)/.test(latest));
+/* Hàm có thể được định nghĩa lại qua nhiều migration: xét bản CUỐI CÙNG của
+   chính hàm đó, không phải "tệp migration mới nhất". Thêm một migration khác
+   (như 8.5.5) không được làm cổng này báo sai. */
+const healthFn = lastDef.get('bk_gam_health_drift') || '';
+ok('có bk_gam_health_drift()', !!healthFn);
 ok('bk_gam_health_drift đối chiếu sổ XP với user_progression',
-  /xp_transactions/.test(latest) && /total_xp/.test(latest));
+  /xp_transactions/.test(healthFn) && /total_xp/.test(healthFn));
 ok('bk_gam_health_drift chỉ service_role gọi được',
-  /revoke all on function public\.bk_gam_health_drift\(\) from public, anon, authenticated;/.test(latest));
+  /revoke all on function public\.bk_gam_health_drift\(\) from public, anon, authenticated;/.test(allSql));
 ok('bk_gam_health_drift dùng đúng công thức cấp',
-  /public\.bk_gam_level\(p\.total_xp\)/.test(latest));
+  /public\.bk_gam_level\(p\.total_xp\)/.test(healthFn));
 
 /* 3. Bộ đếm lượt dùng ẩn danh đã được loại bỏ khỏi 8.4.4 */
 const clientDir = path.join(ROOT, 'assets/bakhi');

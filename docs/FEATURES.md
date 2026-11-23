@@ -335,6 +335,8 @@ Từ 8.0.0, chuông có thêm nhóm **“Phản hồi báo cáo của bạn”**
 | 16 | Cờ `public.whatsnew` và `public.maintenance` | ✅ | Đọc từ `app_settings`, realtime |
 | 17 | Dải thông báo bảo trì toàn site | ✅ | Bật/tắt từ dashboard, có nút ẩn |
 | 18 | Đồng bộ CHANGELOG.md tự động, chống trùng | ✅ | GitHub Actions + `changelog-sync` + RPC publish |
+| 19 | **Xoá thông báo** từng mục và hàng loạt (8.5.5) | ✅ | Phản hồi báo cáo, thông báo cập nhật, bảo trì; lưu ở `dismissed_at` + `bakhiNotifyDismissed.v1` |
+| 20 | Thông báo cập nhật **phiên bản** không xoá được | ✅ | Không có nút xoá; xoá hàng loạt bỏ qua `changelog_version` |
 
 ### Hai chế độ thông báo
 
@@ -344,6 +346,7 @@ Từ 8.0.0, chuông có thêm nhóm **“Phản hồi báo cáo của bạn”**
 | Đồng bộ tiến trình | Có | Không |
 | Vị trí chuông | Header cạnh README.md | Nổi góc phải dưới |
 | Đã đọc | `announcement_reads` (Supabase) | `bakhiNotifyReads.v1` (local) |
+| Đã xoá (8.5.5) | `announcement_reads.dismissed_at` | `bakhiNotifyDismissed.v1` (local) |
 | Realtime + poll | Có | Có |
 | Ảnh hưởng dữ liệu học | Không | Không |
 
@@ -454,6 +457,13 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 | Tài liệu | ✅ | README, AGENTS, ARCHITECTURE, FEATURES, MUSIC, STUDIO, SUPABASE_SETUP |
 
 ## Giao diện & nhận diện (8.4.0)
+
+> **8.5.5 — Design Tokens dùng chung.** Toàn bộ màu đi qua `assets/bakhi/bk-tokens.css`
+> (token `--bk-*`, ánh xạ `--bkl-*`). Tối là mặc định trên **mọi** trang, kể cả `studio/`,
+> `admin/`, `founder/` và trang bài học; chế độ sáng chỉ bật khi người học chọn trong menu
+> tài khoản (`html.light`). Đồng bộ cho hồ sơ mini, bảng thông báo, Trợ lý AI (trang +
+> cửa sổ nổi), trình phát nhạc, Report Panel, modal/popup/dropdown/tooltip, dashboard,
+> gamification, cây kỹ năng, cài đặt và các trạng thái lỗi/tải.
 
 | Hạng mục | Nơi dùng | Ghi chú |
 |---|---|---|

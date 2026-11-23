@@ -60,7 +60,7 @@
 .bkai-admin-check input[type="checkbox"] {
     width: 16px;
     height: 16px;
-    accent-color: #38bdf8;
+    accent-color: var(--bk-highlight,#38bdf8);
     flex: 0 0 auto;
 }
 
@@ -123,7 +123,7 @@
 
 .bkai-admin .bkc-pill.is-warn {
     border-color: rgba(250, 204, 21, .5);
-    color: #fde68a;
+    color: var(--bk-warn,#fbbf24);
 }
 
 .bkai-admin .bkc-alert.is-warn {
@@ -162,20 +162,20 @@
     border-radius: 9px;
     border: 1px solid transparent;
     background: transparent;
-    color: var(--bkc-muted, #93a1b8);
+    color: var(--bkc-muted, var(--bk-text-2,#9aa8b8));
     font: inherit;
     font-size: .82rem;
     cursor: pointer;
     min-height: 38px;
 }
-.bkai-admin-tab:hover { color: var(--bkc-text, #e7edf7); background: rgba(148, 163, 184, .1); }
+.bkai-admin-tab:hover { color: var(--bkc-text, var(--bk-text,#e8edf5)); background: rgba(148, 163, 184, .1); }
 .bkai-admin-tab.is-active {
     background: rgba(56, 189, 248, .16);
     border-color: rgba(56, 189, 248, .4);
-    color: var(--bkc-text, #e7edf7);
+    color: var(--bkc-text, var(--bk-text,#e8edf5));
     font-weight: 600;
 }
-.bkai-admin-tab:focus-visible { outline: 2px solid #38bdf8; outline-offset: 1px; }
+.bkai-admin-tab:focus-visible { outline: 2px solid var(--bk-highlight,#38bdf8); outline-offset: 1px; }
 
 .bkai-pill {
     display: inline-flex;
@@ -184,11 +184,11 @@
     border-radius: 999px;
     font-size: .68rem;
     border: 1px solid rgba(148, 163, 184, .35);
-    color: var(--bkc-muted, #93a1b8);
+    color: var(--bkc-muted, var(--bk-text-2,#9aa8b8));
     white-space: nowrap;
 }
-.bkai-pill.is-ok { border-color: rgba(74, 222, 128, .45); color: #86efac; background: rgba(74, 222, 128, .1); }
-.bkai-pill.is-warn { border-color: rgba(250, 204, 21, .45); color: #fde68a; background: rgba(250, 204, 21, .1); }
+.bkai-pill.is-ok { border-color: rgba(74, 222, 128, .45); color: var(--bk-ok,#34d399); background: rgba(74, 222, 128, .1); }
+.bkai-pill.is-warn { border-color: rgba(250, 204, 21, .45); color: var(--bk-warn,#fbbf24); background: rgba(250, 204, 21, .1); }
 
 .bkai-admin-steps { margin: 0 0 10px 1.1rem; padding: 0; font-size: .82rem; line-height: 1.6; }
 .bkai-admin-steps li { margin: 0 0 2px; }
@@ -213,7 +213,7 @@
     font-weight: 700;
     letter-spacing: .04em;
     text-transform: uppercase;
-    color: #38bdf8;
+    color: var(--bk-highlight,#38bdf8);
 }
 .bkai-model-name { font-size: .86rem; font-weight: 600; flex: 1 1 160px; min-width: 0; overflow-wrap: anywhere; }
 .bkai-model-tools { display: flex; gap: 4px; margin-left: auto; }
@@ -251,7 +251,7 @@
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
-.bkai-admin .bkc-hint.is-warn { color: #fde68a; }
+.bkai-admin .bkc-hint.is-warn { color: var(--bk-warn,#fbbf24); }
 
 @media (max-width: 700px) {
     .bkai-admin-tabs { gap: 4px; }
