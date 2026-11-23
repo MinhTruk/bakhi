@@ -89,12 +89,73 @@
         return null;
     }
 
+    /* ---------------------------------------------------------------------
+       8.6.0 — Cầu nối backend Rust (TUỲ CHỌN, mặc định tắt)
+
+       Toàn bộ cuộc gọi AI của module này đi qua `post()`. Khi
+       BK_BACKEND.mode === 'rust' và rustBaseUrl hợp lệ, request được gửi tới
+       POST <rustBaseUrl>/api/v1/ai/chat với cùng body và cùng hình dạng
+       phản hồi như Edge Function — phần còn lại của giao diện không đổi.
+
+       Không tự chuyển về Edge Function khi backend Rust lỗi (chat không
+       idempotent). Muốn quay lại hoàn toàn: đặt mode = 'edge'.
+       ------------------------------------------------------------------ */
+    function rustConfig() {
+        var cfg = global.BK_BACKEND;
+        if (!cfg || String(cfg.mode || '').toLowerCase() !== 'rust') return null;
+        var base = String(cfg.rustBaseUrl || '').trim().replace(/\/+$/, '');
+        if (!/^https:\/\/[a-z0-9.-]+/i.test(base)) return null;
+        return { base: base, timeoutMs: Math.max(5000, Number(cfg.timeoutMs) || 45000) };
+    }
+
+    function readEnvelope(res) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+            if (!res.ok || (data && data.ok === false)) {
+                var error = new Error((data && data.error && data.error.message) || ('Lỗi máy chủ (' + res.status + ')'));
+                error.code = (data && data.error && data.error.code) || ('HTTP_' + res.status);
+                error.status = res.status;
+                error.data = data;
+                throw error;
+            }
+            return data.data || data;
+        });
+    }
+
+    function rustPost(body, signal) {
+        var conf = rustConfig();
+        if (!conf) return null;
+        return global.BKCloud.chatClient().then(function (client) {
+            return client.auth.getSession().then(function (res) {
+                var session = res && res.data && res.data.session;
+                var token = session && session.access_token;
+                if (!token) throw new Error('Phiên đăng nhập đã hết hạn. Hãy tải lại trang chủ để nhận diện lại.');
+                return global.fetch(conf.base + '/api/v1/ai/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: 'Bearer ' + token
+                    },
+                    body: JSON.stringify(body || {}),
+                    signal: signal
+                });
+            });
+        }).then(readEnvelope);
+    }
+
+    /* Công cụ kiểm tra nhanh cho Developer Playground / hỗ trợ kỹ thuật. */
+    global.BKRust = {
+        enabled: function () { return !!rustConfig(); },
+        baseUrl: function () { var c = rustConfig(); return c ? c.base : ''; }
+    };
+
     /* Gọi Edge Function với AbortController để "Dừng" là huỷ request thật. */
     function post(body, signal) {
         var cfg = global.BK_SUPABASE;
         if (!apiReady() || !cfg || !cfg.url) {
             return Promise.reject(new Error('Trợ lý AI cần kết nối máy chủ.'));
         }
+        var viaRust = rustPost(body, signal);
+        if (viaRust) return viaRust;
         return global.BKCloud.chatClient().then(function (client) {
             return client.auth.getSession().then(function (res) {
                 var session = res && res.data && res.data.session;
@@ -1513,7 +1574,7 @@
        Công khai
        ------------------------------------------------------------------ */
     var API = {
-        version: '8.5.6',
+        version: '8.6.0',
         MODES: MODE_FALLBACK,
 
         /* Gắn giao diện đầy đủ vào một phần tử (trang /ai-tutor/). */

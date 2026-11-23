@@ -1,0 +1,71 @@
+{
+  "generatedAt": "2026-11-23T15:52:57.015Z",
+  "environment": {
+    "runtime": "v26.13.1",
+    "platform": "linux",
+    "cpuCount": 2,
+    "backendVersion": "8.6.0",
+    "mode": "release build, local, mock Supabase + mock AI provider"
+  },
+  "scenarios": [
+    {
+      "name": "GET /api/v1/health",
+      "requests": 4000,
+      "concurrency": 32,
+      "failures": 0,
+      "throughput_rps": 3850,
+      "p50_ms": 6.81,
+      "p95_ms": 14.1,
+      "p99_ms": 32.37,
+      "mean_ms": 8.28
+    },
+    {
+      "name": "POST /api/v1/data/learning-stats",
+      "requests": 2000,
+      "concurrency": 16,
+      "failures": 0,
+      "throughput_rps": 1599,
+      "p50_ms": 9.11,
+      "p95_ms": 16.32,
+      "p99_ms": 23.79,
+      "mean_ms": 9.92
+    },
+    {
+      "name": "GET /api/v1/me",
+      "requests": 1500,
+      "concurrency": 16,
+      "failures": 0,
+      "throughput_rps": 2219,
+      "p50_ms": 6.38,
+      "p95_ms": 10.55,
+      "p99_ms": 30.37,
+      "mean_ms": 7.19
+    },
+    {
+      "name": "POST /api/v1/ai/chat",
+      "requests": 600,
+      "concurrency": 8,
+      "failures": 0,
+      "throughput_rps": 655,
+      "p50_ms": 11.23,
+      "p95_ms": 21.22,
+      "p99_ms": 36.93,
+      "mean_ms": 12.18
+    }
+  ],
+  "resources": {
+    "rssKb": 7000,
+    "cpuSecondsDuringScenarios": 2.48
+  },
+  "jsBaselineAggregation": {
+    "iterations": 500,
+    "totalMs": 87.37,
+    "perCallMs": 0.17,
+    "sink": 3313000
+  },
+  "notes": [
+    "Máy chủ Supabase và AI provider đều là giả lập cục bộ: số đo phản ánh chi phí của backend Rust, không phải độ trễ thật của Supabase/provider.",
+    "jsBaselineAggregation chạy trong cùng tiến trình Node, không qua HTTP — là cận dưới của JavaScript.",
+    "Chat đo toàn bộ đường đi: xác thực, đọc cấu hình, ghi hội thoại/tin nhắn/usage qua REST giả lập, gọi provider giả lập."
+  ]
+}

@@ -9,3 +9,6 @@ supabase/.temp/
 
 # Ảnh chụp/tep tam do agent tao ra khi kiem tra (khong phai ma nguon)
 artifacts/
+
+# Rust build output (backend riêng)
+rust-backend/target/

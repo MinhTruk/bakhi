@@ -33,7 +33,9 @@ const VERSION_TARGETS = [
   { file: DEVBOARD_FILE, re: /APP_VERSION = '([^']+)'/, label: 'bk-devboard APP_VERSION' },
   { file: path.join(ROOT, 'assets/bakhi/bk-founder.js'), re: /version: '([^']+)'/, label: 'bk-founder version' },
   { file: path.join(ROOT, 'assets/bakhi/bk-founder-gamification.js'), re: /version: '([^']+)'/, label: 'bk-founder-gamification version' },
-  { file: SERVER_FILE, re: /SERVER_VERSION = '([^']+)'/, label: 'admin-actions VERSION' }
+  { file: SERVER_FILE, re: /SERVER_VERSION = '([^']+)'/, label: 'admin-actions VERSION' },
+  /* 8.6.0: mô-đun Trợ lý AI công bố phiên bản riêng trong trạng thái của nó. */
+  { file: path.join(ROOT, 'assets/bakhi/bk-ai-tutor.js'), re: /version: '([^']+)',/, label: 'bk-ai-tutor version' }
 ];
 const SKIP_DIRS = new Set(['.git', 'node_modules', 'docs', 'tools', 'artifacts']);
 

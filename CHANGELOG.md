@@ -2,6 +2,46 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.6.0] — 2026-11-23
+
+**Rust Hybrid Architecture.** Backend Rust độc lập cho các tác vụ phù hợp; website tĩnh,
+Supabase và toàn bộ giao diện giữ nguyên. Không có thay đổi nào trên giao diện người dùng.
+
+### Tính năng
+
+- **Backend Rust mới (`rust-backend/`)** — Axum + Tokio + Serde, kiến trúc modular
+  monolith. Có `/api/v1/health`, `/api/v1/ready`, `/api/v1/me`, `/api/v1/ai/chat`,
+  `/api/v1/data/learning-stats`; Dockerfile nhiều tầng; workflow CI riêng
+  (`.github/workflows/rust-backend.yml`) chạy `cargo fmt --check`, `cargo clippy -D warnings`,
+  `cargo test` và build Docker.
+- **AI Gateway bằng Rust** — điều phối provider giống Edge Function `ai-tutor-api`: đọc
+  `ai_settings` + `ai_model_routes`, chạy chuỗi Primary → Fallback, thử lại chỉ với lỗi tạm
+  thời, timeout theo cấu hình, ghi `ai_usage_logs`. Giữ nguyên system prompt, 8 chế độ,
+  định tuyến model, ngân sách token và hình dạng phản hồi nên giao diện không phải sửa.
+- **Endpoint tổng hợp dữ liệu học tập** — độ chính xác theo môn, chủ đề yếu nhất, chuỗi
+  ngày học, nhịp học theo tuần; hàm thuần, không truy cập database.
+- **Chọn backend khi cần (`BK_BACKEND`)** — khoá cấu hình trong
+  `assets/bakhi/bk-supabase.config.js`, **mặc định `edge`**. Khi đặt `mode: 'rust'` và
+  `rustBaseUrl` hợp lệ, Trợ lý AI gọi backend Rust qua đúng một điểm vào (`post()`);
+  không tự chuyển ngầm về Edge Function vì chat không idempotent.
+
+### Cải tiến
+
+- **Bảo mật backend:** xác thực bằng Supabase Auth (không tự phát minh đăng nhập), CORS
+  theo danh sách origin, giới hạn kích thước body, request ID, giới hạn tần suất theo IP
+  và theo người dùng, che khoá trong log, error envelope thống nhất không lộ stack trace
+  hay chi tiết nhà cung cấp AI.
+- **Hiệu năng:** một HTTP client dùng chung cho mọi request (keep-alive, pool 32 kết nối),
+  provider registry khởi tạo một lần, không tạo client mới trong mỗi lượt gọi.
+- **Tài liệu:** `docs/RUST_ARCHITECTURE_V860.md`, `docs/RUST_DEPLOYMENT_V860.md`,
+  `docs/RUST_MIGRATION_V860.md`, `docs/RUST_BENCHMARK_V860.md`.
+
+### Ghi chú triển khai
+
+- Backend Rust **chưa được deploy** — chưa có hosting dịch vụ và chưa cấu hình secret trên
+  nền tảng. Website tiếp tục chạy đúng như 8.5.6 qua Supabase Edge Function.
+- Không thay đổi schema Supabase, không thay đổi Edge Function, không xoá API cũ.
+
 ## [8.5.6] — 2026-11-23
 
 ### Tính năng

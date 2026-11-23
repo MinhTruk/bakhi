@@ -793,3 +793,21 @@ thức mở khoá thứ hai ở client.
 phần thưởng (`BKGamificationAdmin.slugify`), cảnh báo trùng và đề xuất `_2`, `_3`, có xem
 trước và gom trường kỹ thuật vào “Cài đặt nâng cao”. Máy chủ xác nhận lại bằng `codeOf()`
 và `expect_new` → `409 CODE_TAKEN`. Chi tiết: [CODE_GENERATOR.md](CODE_GENERATOR.md).
+
+## 8. Backend Rust (8.6.0)
+
+Từ 8.6.0 repository có thêm dịch vụ backend Rust độc lập ở `rust-backend/`. Đây là **lựa
+chọn thêm vào**, không thay thế lớp hiện có:
+
+- Website tĩnh (HTML/CSS/JS) và Supabase vẫn đảm nhiệm toàn bộ giao diện, dữ liệu, xác thực,
+  realtime và Edge Function.
+- Backend Rust phục vụ `/api/v1/health`, `/api/v1/ready`, `/api/v1/me`,
+  `/api/v1/ai/chat`, `/api/v1/data/learning-stats`.
+- Mặc định frontend **không** gọi backend này (`BK_BACKEND.mode = 'edge'` trong
+  `assets/bakhi/bk-supabase.config.js`). Khi bật `mode: 'rust'`, chỉ `bk-ai-tutor.js` đổi
+  đích của `post()`; mọi thứ khác giữ nguyên.
+- Không có migration database và không có thay đổi schema nào trong 8.6.0.
+
+Chi tiết kiến trúc, triển khai, migration/rollback và số đo hiệu năng:
+`docs/RUST_ARCHITECTURE_V860.md`, `docs/RUST_DEPLOYMENT_V860.md`,
+`docs/RUST_MIGRATION_V860.md`, `docs/RUST_BENCHMARK_V860.md`.

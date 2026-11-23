@@ -210,9 +210,9 @@ ok('màn hình bảo trì vẫn là nền đen tuyền có chủ đích',
 /* ------------------------------------------------------------------ 5 */
 console.log('\n== 5. Phiên bản ==');
 const VERSION = read('assets/bakhi/bk-version.js');
-ok('phiên bản phát hành là 8.5.6', /app: '8\.5\.6'/.test(VERSION));
-ok('dashboard quản trị báo đúng phiên bản', /APP_VERSION = '8\.5\.6'/.test(DEVBOARD));
-ok('máy chủ báo đúng phiên bản', /SERVER_VERSION = '8\.5\.6'/.test(SERVER));
+ok('phiên bản phát hành là 8.6.0', /app: '8\.6\.0'/.test(VERSION));
+ok('dashboard quản trị báo đúng phiên bản', /APP_VERSION = '8\.6\.0'/.test(DEVBOARD));
+ok('máy chủ báo đúng phiên bản', /SERVER_VERSION = '8\.6\.0'/.test(SERVER));
 
 console.log('\n' + (failures ? '=== ' + failures + ' CHECK(S) FAILED ===' : '=== ALL CHECKS PASSED ==='));
 process.exit(failures ? 1 : 0);

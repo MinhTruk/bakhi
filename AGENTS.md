@@ -505,6 +505,33 @@ Tài liệu: `docs/AI_TUTOR_ARCHITECTURE.md` (kiến trúc), `docs/AI_TUTOR_SECU
 - Migration 8.5.6: **không có**. Đừng thêm bảng dismissal thứ hai — mọi thứ đã nằm trong
   `announcement_reads.dismissed_at` + `bakhiNotifyDismissed.v1`.
 
+### 6.5. Backend Rust (8.6.0)
+
+- **Một backend riêng, không thay thế Edge Function.** Mã ở `rust-backend/` (Axum + Tokio).
+  Website, Supabase và toàn bộ Edge Function giữ nguyên. Chi tiết:
+  `docs/RUST_ARCHITECTURE_V860.md`.
+- **Mặc định vẫn là Edge Function.** `assets/bakhi/bk-supabase.config.js` khai báo
+  `global.BK_BACKEND = { mode: 'edge', rustBaseUrl: '', … }`. Chỉ khi đặt `mode: 'rust'` và
+  `rustBaseUrl` là https thì `bk-ai-tutor.js` mới gọi `POST <base>/api/v1/ai/chat`.
+  Không có nơi nào khác được gọi thẳng backend Rust.
+- **Không tự fallback khi lỗi.** Chat không idempotent: chuyển ngầm sang Edge Function có
+  thể tạo câu trả lời trùng. Rollback = đặt `mode: 'edge'` + bump bản vá.
+- **Không tin `student_id` từ client.** Backend suy ra từ `students.auth_user_id` của tài
+  khoản đã xác thực qua Supabase Auth.
+- **Service role chỉ cho việc đã ghi rõ trong mã:** đọc `ai_settings` + `ai_model_routes`,
+  ghi/đọc hội thoại AI và `ai_usage_logs`. Truy vấn hồ sơ người học dùng JWT người dùng để
+  RLS áp dụng. Không thêm đường dùng service role thay quyền người dùng.
+- **System prompt là bản sao có chủ đích.** `rust-backend/src/services/prompts.rs` chép
+  nguyên văn `supabase/functions/_shared/ai-prompts.ts`. Sửa prompt/chế độ/ngân sách token
+  thì **phải sửa cả hai** và chạy `cargo test` + QA AI Tutor.
+- **Khoá AI cùng tên biến** (`AI_TUTOR_API_KEY`, `AI_TUTOR_FALLBACK_API_KEY`) để chuyển đổi
+  không phải sửa cấu hình. Không đặt khoá ở frontend, không log khoá.
+- **CI riêng:** `.github/workflows/rust-backend.yml` chỉ chạy khi `rust-backend/**` đổi.
+  Trước khi push: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`,
+  `cargo test --all-targets`.
+- **Chưa deploy.** Đừng ghi "đã deploy" trong CHANGELOG/tài liệu khi nền tảng chưa có
+  hosting và secret. Xem `docs/RUST_MIGRATION_V860.md` mục 8.
+
 <!-- BEGIN brain.md -->
 ## Project Brain
 

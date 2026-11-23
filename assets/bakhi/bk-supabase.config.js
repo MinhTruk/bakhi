@@ -63,4 +63,28 @@
         return !!(global.BK_SUPABASE.url && global.BK_SUPABASE.key &&
             /^https?:\/\//i.test(global.BK_SUPABASE.url) && !/<<<|>>>/.test(global.BK_SUPABASE.key));
     };
+
+    /* ---------------------------------------------------------------------
+       [KHU VỰC 3 – BACKEND TUỲ CHỌN (8.6.0)]
+
+       Bá Khí có thể chạy Trợ lý AI qua backend Rust (rust-backend/) hoặc qua
+       Supabase Edge Function như trước. MẶC ĐỊNH LÀ EDGE FUNCTION — không đổi
+       hành vi của website khi chưa cấu hình.
+
+       Bật backend Rust:
+         mode: 'rust'
+         rustBaseUrl: 'https://<tên-miền-backend>'   (bắt buộc https)
+
+       Chỉ chuyển khi backend Rust đã chạy và đã kiểm thử: /api/v1/health trả
+       ok. Không đặt khoá bí mật ở đây — backend tự đọc khoá từ secret của nó.
+       Xem docs/RUST_ARCHITECTURE_V860.md và docs/RUST_DEPLOYMENT_V860.md.
+       ------------------------------------------------------------------ */
+    global.BK_BACKEND = {
+        mode: 'edge',          /* 'edge' (mặc định) | 'rust' */
+        rustBaseUrl: '',       /* ví dụ: 'https://bakhi-api.example.com' */
+        timeoutMs: 45000,
+        /* KHÔNG tự chuyển sang Edge Function khi request Rust lỗi: chat không
+           idempotent, chuyển ngầm có thể tạo câu trả lời trùng. */
+        fallbackOnError: false
+    };
 })(typeof window !== 'undefined' ? window : this);
