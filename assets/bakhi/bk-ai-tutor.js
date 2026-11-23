@@ -1513,7 +1513,7 @@
        Công khai
        ------------------------------------------------------------------ */
     var API = {
-        version: '8.5.5',
+        version: '8.5.6',
         MODES: MODE_FALLBACK,
 
         /* Gắn giao diện đầy đủ vào một phần tử (trang /ai-tutor/). */

@@ -1246,8 +1246,11 @@
             try { global.toggleDarkMode(); return; } catch (e) { /* dùng fallback */ }
         }
         var root = D.documentElement;
+        /* 8.5.6 — luôn áp dụng qua nguồn trạng thái chung (bk-theme-boot.js). */
         var dark = !root.classList.contains('dark');
+        if (global.BKThemeBoot) { global.BKThemeBoot.apply(dark ? 'dark' : 'light', true); return; }
         root.classList.toggle('dark', dark);
+        root.classList.toggle('light', !dark);
         try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch (e) { /* bỏ qua */ }
     }
 

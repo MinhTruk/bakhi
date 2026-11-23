@@ -7,7 +7,11 @@
 (function (global) {
     'use strict';
 
-    var KEY = 'bkAdminTheme';
+    /* 8.5.6 — dùng CHUNG khoá `theme` với toàn website. Khoá cũ `bkAdminTheme`
+       chỉ còn để đọc lựa chọn đã lưu trước bản này và ghi song song cho trang
+       còn cache JS cũ. Nhờ vậy chọn giao diện ở /admin cũng đổi mọi trang. */
+    var KEY = 'theme';
+    var LEGACY_KEY = 'bkAdminTheme';
     var root = global.document ? global.document.documentElement : null;
     if (!root) return;
 
@@ -15,8 +19,15 @@
         return String(value || '').toLowerCase() === 'light' ? 'light' : 'dark';
     }
     function read() {
+        if (global.BKThemeBoot) {
+            try { return normalize(global.BKThemeBoot.read()); } catch (e) { }
+        }
         try {
-            return normalize(global.localStorage.getItem(KEY) || 'dark');
+            var shared = global.localStorage.getItem(KEY);
+            if (shared === 'light' || shared === 'dark') return normalize(shared);
+            var legacy = global.localStorage.getItem(LEGACY_KEY);
+            if (legacy === 'light' || legacy === 'dark') return normalize(legacy);
+            return 'dark';
         } catch (e) {
             return 'dark';
         }
@@ -36,14 +47,21 @@
     }
     function apply(theme, persist) {
         var next = normalize(theme);
-        /* 8.5.5 — tối là mặc định; .light đánh dấu lựa chọn sáng chủ động. */
-        root.classList.toggle('dark', next === 'dark');
-        root.classList.toggle('light', next !== 'dark');
-        root.setAttribute('data-bk-theme', next);
-        root.style.colorScheme = next;
-        if (persist !== false) {
-            try { global.localStorage.setItem(KEY, next); } catch (e) { }
+        /* 8.5.5 — tối là mặc định; .light đánh dấu lựa chọn sáng chủ động.
+           8.5.6 — đi qua bk-theme-boot để mọi khung nổi đổi cùng lúc. */
+        if (global.BKThemeBoot) {
+            global.BKThemeBoot.apply(next, persist !== false);
+        } else {
+            root.classList.toggle('dark', next === 'dark');
+            root.classList.toggle('light', next !== 'dark');
+            root.setAttribute('data-bk-theme', next);
+            root.style.colorScheme = next;
+            if (persist !== false) {
+                try { global.localStorage.setItem(KEY, next); } catch (e) { }
+            }
         }
+        /* Giữ khoá cũ đồng bộ cho trang còn cache bản JS trước 8.5.6. */
+        try { global.localStorage.setItem(LEGACY_KEY, next); } catch (e) { }
         icons(next);
         try {
             global.dispatchEvent(new global.CustomEvent('bkadmin:theme', { detail: { theme: next } }));
@@ -75,6 +93,13 @@
 
     /* Áp dụng ngay trong <head> để không nháy màu khi tải trang. */
     apply(read(), false);
+
+    /* Tab khác đổi giao diện → trang quản trị đổi theo ngay. */
+    global.addEventListener('storage', function (e) {
+        if (!e) return;
+        if (e.key !== KEY && e.key !== LEGACY_KEY) return;
+        apply(read(), false);
+    });
 
     /* Tự gắn mọi nút [data-bk-theme-toggle] có sẵn trong trang. */
     function bindAll() {

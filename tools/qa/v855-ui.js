@@ -41,14 +41,17 @@ ok('có khoá lưu bền vững riêng cho thông báo đã xoá',
   /NOTIFY_DISMISS_KEY = 'bakhiNotifyDismissed\.v1'/.test(CLOUD_JS));
 ok('ghi localStorage qua lsSet (không phải biến tạm/CSS)',
   /function saveLocalDismissed\(map\) \{\s*lsSet\(NOTIFY_DISMISS_KEY/.test(CLOUD_JS));
-ok('chỉ xoá được thông báo không phải bản cập nhật phiên bản',
-  /function canDismissAnnouncement\(a\) \{\s*return !!a && !a\.changelog_version;\s*\}/.test(CLOUD_JS));
+/* 8.5.6 — mọi thông báo thường (kể cả cập nhật phiên bản) đều xoá được; chỉ
+   thông báo quản trị phiên bị chặn, phân loại bằng dữ liệu. */
+ok('mọi thông báo thường xoá được, chỉ chặn thông báo quản trị phiên',
+  /function canDismissAnnouncement\(a\) \{\s*return !!a && !isSessionNotice\(a\);\s*\}/.test(CLOUD_JS) &&
+  /a\.type === 'session'/.test(CLOUD_JS));
 ok('tải lại trang vẫn lọc thông báo đã xoá',
   /S\.announcements = \(S\.allAnnouncements \|\| \[\]\)\.filter\(function \(a\) \{\s*return !S\.dismissed\[a\.id\]/.test(CLOUD_JS));
 ok('phản hồi báo cáo cũng lọc theo dismissed_at',
   /if \(n\.dismissed_at \|\| goneIds\[n\.id\]\) return false;/.test(CLOUD_JS));
 ok('lưu mốc xoá lên announcement_reads.dismissed_at',
-  /dismissed_at: S\.dismissed\[a\.id\]/.test(CLOUD_JS) &&
+  /dismissed_at: stamp/.test(CLOUD_JS) &&
   /from\('announcement_reads'\)\.upsert\(/.test(CLOUD_JS));
 ok('xoá hàng loạt chỉ xử lý nhóm được phép',
   /var anns = S\.announcements\.filter\(canDismissAnnouncement\)/.test(CLOUD_JS) &&
@@ -57,9 +60,8 @@ ok('không bao giờ xoá dữ liệu gốc (không delete bảng nguồn)',
   !/from\('announcements'\)\.delete|from\('changelog'\)\.delete|from\('report_notifications'\)\.delete/.test(CLOUD_JS));
 ok('xoá hàng loạt có hộp xác nhận',
   /function confirmDismissAll\(/.test(CLOUD_JS) && /Xoá tất cả thông báo\?/.test(CLOUD_JS));
-ok('nhóm cập nhật phiên bản không có nút xoá',
-  /S\.changelog\.slice\(\)\.sort/.test(CLOUD_JS) &&
-  !/entry\.version[\s\S]{0,400}itemRow/.test(CLOUD_JS));
+ok('mục cập nhật phiên bản cũng có nút xoá (8.5.6)',
+  /S\.list\.appendChild\(itemRow\(item, function \(\) \{ dismissChangelog\(entry\); \}/.test(CLOUD_JS));
 ok('CSS: nút xoá có hiệu ứng chuyển trạng thái',
   /\.bkc-item-row\.is-removing \{[^}]*opacity: 0/.test(CLOUD_CSS));
 ok('CSS: vùng chạm ≥ 40px trên thiết bị cảm ứng',
@@ -101,7 +103,9 @@ ok('dashboard dùng html.light cho chế độ sáng',
 ok('trung tâm thông báo lấy màu từ token',
   /--bkc-n-surface: var\(--bk-surface/.test(CLOUD_CSS) &&
   /--bkc-n-text: var\(--bk-text/.test(CLOUD_CSS));
-ok('bảng nổi .bkc-dark luôn tối', /\.bkc-dark \{[\s\S]{0,400}--bkc-n-surface: #161f2b/.test(CLOUD_CSS));
+ok('bảng nổi .bkc-dark theo giao diện hiện tại (8.5.6)',
+  /\.bkc-dark \{[\s\S]{0,400}--bkc-n-surface: var\(--bk-surface/.test(CLOUD_CSS) &&
+  /html\.light \.bkc-dark \{/.test(CLOUD_CSS));
 ok('Trợ lý AI lấy màu từ token', /--bkai-panel: var\(--bk-surface/.test(AI_CSS));
 ok('trình phát nhạc lấy màu từ token', /var\(--bk-text,#e8edf5\)/.test(read('assets/bakhi/bk-music.css')));
 ok('mọi trang HTML đều nạp bk-tokens.css', (function () {
@@ -186,8 +190,8 @@ ok('không tạo hệ lịch sử thứ hai (dùng S.conversations)', /S\.conver
 /* ------------------------------------------------------------------ 5 */
 console.log('\n== 5. Phiên bản ==');
 const VERSION = read('assets/bakhi/bk-version.js');
-ok('phiên bản phát hành là 8.5.5', /app: '8\.5\.5'/.test(VERSION));
-ok('Trợ lý AI báo đúng phiên bản', /version: '8\.5\.5'/.test(AI_JS));
+ok('phiên bản phát hành là 8.5.6', /app: '8\.5\.6'/.test(VERSION));
+ok('Trợ lý AI báo đúng phiên bản', /version: '8\.5\.6'/.test(AI_JS));
 
 console.log('\n' + (failures ? '=== ' + failures + ' CHECK(S) FAILED ===' : '=== ALL CHECKS PASSED ==='));
 process.exit(failures ? 1 : 0);

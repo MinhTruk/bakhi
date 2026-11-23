@@ -139,13 +139,22 @@ DOMContentLoaded
   thái tải/rỗng/lỗi. Không có thẻ trắng nào còn sót trong luồng thông báo.
 - **8.5.5:** `--bkc-n-*` không còn là bảng màu riêng — nó trỏ về token chung `--bk-*`
   trong `assets/bakhi/bk-tokens.css`, thứ được nạp trên mọi trang. Tối là mặc định;
-  `html.light` chỉ bật khi người học chọn. `.bkc-dark` giữ bảng tối cố định để panel
-  không bao giờ trắng.
-- **Xoá thông báo (8.5.5):** người học xoá bản hiển thị, không xoá dữ liệu gốc.
-  `announcement_reads.dismissed_at` (ghi trực tiếp qua RLS sẵn có) cho thông báo cập
-  nhật/bảo trì/chung, `report_notifications.dismissed_at` (qua `report-api`
-  `notifications.dismiss`) cho phản hồi báo cáo, cộng `bakhiNotifyDismissed.v1` trên
-  thiết bị. Nhóm `changelog` và announcement có `changelog_version` không xoá được.
+  `html.light` chỉ bật khi người học chọn.
+- **8.5.6:** `.bkc-dark` chỉ còn là dấu “thành phần nổi”, lấy đúng bảng màu đang dùng
+  (`html.light .bkc-dark` → bảng sáng). Màn hình nhận diện, hộp xác nhận, gợi ý tên,
+  xem trước changelog và toast cũng đi qua token.
+- **Xoá thông báo (8.5.5 → 8.5.6):** người học xoá bản hiển thị, không xoá dữ liệu gốc.
+  `announcement_reads.dismissed_at` cho thông báo cập nhật/bảo trì/chung — ghi máy chủ
+  TRƯỚC, lỗi thì giữ thông báo và cho thử lại; mục nhóm `changelog` lưu mốc
+  `changelog:<id>` trong `bakhiNotifyDismissed.v1`; phản hồi báo cáo vẫn đi qua
+  `report-api` (`notifications.dismiss`) nhưng **không** dùng nút xoá thông thường và
+  không bị xoá hàng loạt. Mọi thông báo thường (kể cả cập nhật phiên bản) đều xoá được;
+  chỉ thông báo quản trị phiên bị chặn, phân loại bằng dữ liệu (`isSessionNotice()`).
+  `storage` event đồng bộ trạng thái xoá sang các tab khác.
+- **Một nguồn giao diện (8.5.6):** `assets/bakhi/bk-theme-boot.js` chạy đồng bộ trong
+  `<head>` và đặt `html.dark`/`html.light` + `data-bk-theme` từ khoá `theme` trước khi
+  trình duyệt vẽ (không FOUC). `BKShell.applyTheme()` áp dụng trên mọi trang; `/admin`
+  dùng chung khoá này (khoá cũ `bkAdminTheme` chỉ đọc một lần).
 - **What's New là tuỳ chọn**: `bk-cloud.js` chỉ dựng khối cập nhật gần đây khi thẻ script
   có `data-bk-whatsnew="1"` hoặc trang đã có khung `#bkcWhatsNew`. Chỉ `index.html` bật cờ
   này; `studio/index.html` (Word & Paint hợp nhất) chạy chế độ chỉ thông báo nên không

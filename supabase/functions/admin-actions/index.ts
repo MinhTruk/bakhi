@@ -1172,7 +1172,7 @@ const DEFAULT_TITLES: TitleDef[] = [
 ];
 
 const TITLE_BY_ID = new Map<string, TitleDef>(DEFAULT_TITLES.map((t) => [t.id, t]));
-const SERVER_VERSION = '8.5.5';
+const SERVER_VERSION = '8.5.6';
 
 /* Cơ cấu danh mục: 99 = 74 tự động + 21 Founder + 2 Developer + 2 Administrator.
    Trả kèm mọi phản hồi trao tặng để giao diện không phải tự đếm hay viết cứng. */
@@ -1663,6 +1663,12 @@ function titleRow(row: Record<string, unknown>, holders = 0) {
    ------------------------------------------------------------------------ */
 const REPORT_BUCKET = 'report-attachments';
 const REPORT_STATUSES = ['new', 'pending', 'in_progress', 'waiting_student', 'resolved', 'closed'];
+/* 8.5.6 — nhóm “cần xử lý”: mọi trạng thái chưa hoàn thành. Dùng cho bộ lọc
+   `status = 'active'` của reports.list/export và cho khu vực thông báo ở tab
+   Report. Không bao giờ tính báo cáo đã giải quyết/đã đóng. */
+const REPORT_ACTIVE_STATUSES = ['new', 'pending', 'in_progress', 'waiting_student'];
+/* 8.5.6 — chỉ báo cáo đã hoàn thành (terminal) mới được xoá. */
+const REPORT_DELETABLE_STATUSES = ['resolved', 'closed'];
 const REPORT_CATEGORIES = ['bug', 'ui', 'content', 'answer', 'account', 'performance',
     'feature', 'data', 'other'];
 const REPORT_PRIORITIES = ['low', 'normal', 'high', 'critical'];
@@ -2718,6 +2724,31 @@ Deno.serve(async (req) => {
                 if (error) throw error;
                 await logAction(client, 'announcements.delete', 'announcement', id, {});
                 return json({ ok: true });
+            }
+
+            /* 8.5.6 — xoá nhiều thông báo trong MỘT lượt (Founder Dashboard).
+               Chỉ xoá đúng các id máy chủ xác nhận là tồn tại; trả về danh sách
+               đã xoá và danh sách thất bại để giao diện báo kết quả trung thực. */
+            case 'announcements.bulkDelete': {
+                const raw = Array.isArray(body.ids) ? body.ids : [];
+                const ids = Array.from(new Set(raw.map((x) => str(x, 40)).filter(Boolean))).slice(0, 100);
+                if (!ids.length) return fail(400, 'MISSING_IDS', 'Chưa chọn thông báo nào.');
+                const { data: existing, error: readError } = await client.from('announcements')
+                    .select('id, title').in('id', ids);
+                if (readError) throw readError;
+                const found = existing ?? [];
+                const foundIds = found.map((row) => String(row.id));
+                const missing = ids.filter((id) => !foundIds.includes(id));
+                if (!foundIds.length) {
+                    return json({ ok: true, deleted: 0, deletedIds: [], failed: missing });
+                }
+                const { error } = await client.from('announcements').delete().in('id', foundIds);
+                if (error) throw error;
+                await logAction(client, 'announcements.bulkDelete', 'announcement', null, {
+                    count: foundIds.length,
+                    titles: found.map((row) => str(row.title, 80)).slice(0, 20)
+                });
+                return json({ ok: true, deleted: foundIds.length, deletedIds: foundIds, failed: missing });
             }
 
             /* ------------------------------- Changelog ----------------------------- */
@@ -3952,7 +3983,9 @@ Deno.serve(async (req) => {
                     .select('*', { count: 'exact' })
                     .order('updated_at', { ascending: false })
                     .range(from, from + pageSize - 1);
-                if (body.status && String(body.status) !== 'all') {
+                if (body.status && String(body.status) === 'active') {
+                    query = query.in('status', REPORT_ACTIVE_STATUSES);
+                } else if (body.status && String(body.status) !== 'all') {
                     query = query.eq('status', str(body.status, 20));
                 }
                 if (body.category && String(body.category) !== 'all') {
@@ -4014,7 +4047,9 @@ Deno.serve(async (req) => {
                     .select('code, title, description, category, priority, status, assigned_to, student_id, created_at, updated_at, resolution_note')
                     .order('updated_at', { ascending: false })
                     .limit(5000);
-                if (body.status && String(body.status) !== 'all') {
+                if (body.status && String(body.status) === 'active') {
+                    query = query.in('status', REPORT_ACTIVE_STATUSES);
+                } else if (body.status && String(body.status) !== 'all') {
                     query = query.eq('status', str(body.status, 20));
                 }
                 if (body.category && String(body.category) !== 'all') {
@@ -4261,6 +4296,31 @@ Deno.serve(async (req) => {
                     'report.assigned', String(row.assigned_to || ''), to || '');
                 await logAction(client, 'reports.assign', 'report', id, { to });
                 return json({ ok: true, assigned_to: to || '' });
+            }
+
+            /* 8.5.6 — xoá báo cáo ĐÃ HOÀN THÀNH.
+               · Trạng thái được kiểm tra ở MÁY CHỦ trên dữ liệu thật (không tin
+                 nhãn hiển thị ở client).
+               · report_messages / report_activity_logs / report_notifications có
+                 FK ON DELETE CASCADE nên dữ liệu liên quan được dọn trong cùng
+                 câu lệnh; không đụng tới báo cáo khác.
+               · Nhật ký quản trị được ghi TRƯỚC khi xoá để vẫn có dấu vết. */
+            case 'reports.delete': {
+                const id = str(body.report_id, 40);
+                if (!id) return fail(400, 'BAD_REPORT', 'Thiếu mã báo cáo.');
+                const { data: row } = await client.from('reports')
+                    .select('id, code, title, status, student_id').eq('id', id).maybeSingle();
+                if (!row) return fail(404, 'NOT_FOUND', 'Không tìm thấy báo cáo.');
+                if (!REPORT_DELETABLE_STATUSES.includes(String(row.status))) {
+                    return fail(409, 'NOT_COMPLETED',
+                        'Chỉ xoá được báo cáo đã hoàn thành (đã giải quyết hoặc đã đóng).');
+                }
+                await logAction(client, 'reports.delete', 'report', id, {
+                    code: row.code, status: row.status, title: str(row.title, 80)
+                });
+                const { error } = await client.from('reports').delete().eq('id', id);
+                if (error) throw error;
+                return json({ ok: true, deleted: 1, code: row.code });
             }
 
             /* ---------------- Máy chủ đang chạy bản nào (chẩn đoán) -------------- */

@@ -1545,3 +1545,124 @@ html:not(.light) .bkc-shortcut-row { background: rgba(148, 163, 184, .1); }
 .bkf-aud-sub[hidden] { display: none; }
 .bkf-preview:empty { display: none; }
 .bkf-preview { margin-top: 10px; }
+
+/* =========================================================================
+   8.5.6 — Chọn nhiều thông báo & khu vực nhận diện báo cáo mới
+   Mọi màu đi qua --bkc-* / --bk-* nên hiển thị đúng ở cả hai giao diện.
+   ========================================================================= */
+
+/* ------------------------- Thanh chọn nhiều ---------------------------- */
+.bkc-bulkbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem;
+    margin: .1rem 0 .7rem;
+    padding: .45rem .55rem;
+    border: 1px solid var(--bkc-line);
+    border-radius: 12px;
+    background: var(--bkc-panel-2);
+}
+.bkc-bulkbar[hidden] { display: none; }
+.bkc-bulkbar-count {
+    margin-right: auto;
+    color: var(--bkc-muted);
+    font: 600 .72rem/1.3 Lexend, system-ui, sans-serif;
+}
+
+/* Ô chọn: đủ lớn để bấm trên điện thoại, màu nhấn theo thương hiệu. */
+.bkc-check {
+    width: 1.05rem;
+    height: 1.05rem;
+    margin: 0;
+    accent-color: #6366f1;
+    cursor: pointer;
+    vertical-align: middle;
+}
+.bkc-pick-cell { width: 2.1rem; padding-right: 0 !important; }
+.bkc-table thead th .bkc-check { display: block; }
+@media (pointer: coarse) {
+    .bkc-check { width: 1.35rem; height: 1.35rem; }
+    .bkc-pick-cell { width: 2.7rem; }
+}
+@media (max-width: 640px) {
+    .bkc-bulkbar { gap: .3rem; }
+    .bkc-bulkbar .bkc-btn { flex: 1 1 auto; justify-content: center; }
+    .bkc-bulkbar-count { flex: 1 1 100%; margin-right: 0; }
+}
+
+/* --------------------- Khu vực nhận diện báo cáo ----------------------- */
+.bkc-spotlight {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    flex-wrap: wrap;
+    margin-bottom: .9rem;
+    padding: .8rem .9rem;
+    border: 1px solid var(--bkc-line);
+    border-left: 3px solid var(--bk-highlight, #38bdf8);
+    border-radius: 14px;
+    background: var(--bkc-panel);
+    box-shadow: var(--bk-elev-1, 0 10px 24px -16px rgba(2, 6, 23, .8));
+    animation: bkcSpotIn .22s ease-out both;
+}
+.bkc-spotlight.is-new {
+    border-left-color: var(--bk-danger, #fb7185);
+    background:
+        radial-gradient(120% 160% at 0% 0%, rgba(244, 63, 94, .12), transparent 62%),
+        var(--bkc-panel);
+}
+.bkc-spotlight.is-empty { border-left-color: var(--bk-ok, #34d399); }
+html.light .bkc-spotlight { box-shadow: var(--bk-elev-1); }
+html.light .bkc-spotlight.is-new {
+    background:
+        radial-gradient(120% 160% at 0% 0%, rgba(244, 63, 94, .08), transparent 62%),
+        var(--bkc-panel);
+}
+.bkc-spotlight-ic {
+    flex: 0 0 auto;
+    width: 2.3rem;
+    height: 2.3rem;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: var(--bkc-soft);
+    color: var(--bkc-accent);
+    font-size: .95rem;
+}
+.bkc-spotlight.is-new .bkc-spotlight-ic {
+    background: rgba(244, 63, 94, .14);
+    color: #fb7185;
+}
+html.light .bkc-spotlight.is-new .bkc-spotlight-ic { color: #e11d48; }
+.bkc-spotlight.is-empty .bkc-spotlight-ic {
+    background: rgba(52, 211, 153, .14);
+    color: #34d399;
+}
+html.light .bkc-spotlight.is-empty .bkc-spotlight-ic { color: #059669; }
+.bkc-spotlight-main {
+    flex: 1 1 12rem;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .16rem;
+}
+.bkc-spotlight-title { font: 700 .86rem/1.35 Lexend, system-ui, sans-serif; }
+.bkc-spotlight-sub {
+    color: var(--bkc-muted);
+    font: 500 .7rem/1.4 Lexend, system-ui, sans-serif;
+}
+.bkc-spotlight .bkc-btn { flex: 0 0 auto; }
+
+@keyframes bkcSpotIn {
+    from { opacity: 0; transform: translateY(-4px); }
+}
+@media (max-width: 560px) {
+    .bkc-spotlight { gap: .6rem; padding: .7rem .75rem; }
+    .bkc-spotlight .bkc-btn { width: 100%; justify-content: center; }
+}
+
+/* Người dùng giảm chuyển động: bỏ hiệu ứng, giữ nguyên bố cục. */
+@media (prefers-reduced-motion: reduce) {
+    .bkc-spotlight { animation: none; }
+}

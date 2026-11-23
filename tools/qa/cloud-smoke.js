@@ -421,17 +421,20 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     /* --- 8.5.5: xoá thông báo khỏi trung tâm --------------------------- */
     console.log('\n[4b] Xoá thông báo (8.5.5)');
     const rows = w.document.querySelectorAll('.bkc-item-row');
-    ok('mỗi thông báo xoá được nằm trong hàng riêng có nút xoá', rows.length === 2,
+    /* 8.5.6 — 2 thông báo + 3 mục cập nhật phiên bản, tất cả đều xoá được. */
+    ok('mỗi thông báo xoá được nằm trong hàng riêng có nút xoá', rows.length === 5,
         String(rows.length));
     ok('nút xoá là phần tử anh em (không lồng trong nút thông báo)',
         Array.from(rows).every((r) => r.querySelector('.bkc-item-del') &&
             !r.querySelector('.bkc-item .bkc-item-del')));
-    ok('thông báo cập nhật phiên bản KHÔNG có nút xoá',
+    ok('thông báo cập nhật phiên bản cũng có nút xoá',
+        Array.from(w.document.querySelectorAll('.bkc-item-version')).length === 3 &&
         Array.from(w.document.querySelectorAll('.bkc-item-version'))
-            .every((n) => !n.closest('.bkc-item-row')));
+            .every((n) => n.closest('.bkc-item-row') &&
+                n.closest('.bkc-item-row').querySelector('.bkc-item-del')));
     const dismissAllBtn = w.document.getElementById('bkcDismissAll');
     ok('có nút xoá hàng loạt, đếm đúng số thông báo được phép xoá',
-        !!dismissAllBtn && /\(2\)/.test(dismissAllBtn.textContent),
+        !!dismissAllBtn && /\(5\)/.test(dismissAllBtn.textContent),
         dismissAllBtn && dismissAllBtn.textContent);
 
     /* Hộp xác nhận: mở ra, huỷ thì không xoá gì. */
@@ -439,8 +442,8 @@ const html = `<!DOCTYPE html><html lang="vi" class="dark"><head><title>Bá Khí<
     if (dismissAllBtn) dismissAllBtn.click();
     const confirmBox = await until(() => w.document.querySelector('.bkc-modal'));
     ok('xoá hàng loạt hỏi xác nhận trước', !!confirmBox && /Xoá tất cả thông báo\?/.test(confirmBox.textContent));
-    ok('hộp xác nhận nói rõ giữ lại thông báo phiên bản',
-        !!confirmBox && /phiên bản luôn được giữ nguyên/.test(confirmBox.textContent));
+    ok('hộp xác nhận nói rõ phản hồi báo cáo đi theo cơ chế riêng',
+        !!confirmBox && /Phản hồi báo cáo và thông báo quản trị phiên/.test(confirmBox.textContent));
     const cancelBtn = confirmBox && Array.from(confirmBox.querySelectorAll('button'))
         .find((b) => b.textContent.trim() === 'Huỷ');
     if (cancelBtn) cancelBtn.click();

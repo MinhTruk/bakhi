@@ -459,19 +459,51 @@ Tài liệu: `docs/AI_TUTOR_ARCHITECTURE.md` (kiến trúc), `docs/AI_TUTOR_SECU
 - `tools/integrate-pages.js` chèn `bk-tokens.css` cho **mọi** tệp HTML (idempotent, có
   `?v=`). Thẻ nối ở cuối tệp nên token áp sau CSS cũ; `content-integrity` bỏ dòng chứa
   `assets/bakhi/` nên hash nội dung giáo dục không đổi.
-- **Xoá thông báo (8.5.5):** chỉ xoá BẢN HIỂN THỊ của người học, không xoá dữ liệu gốc.
-  · phản hồi báo cáo → `report_notifications.dismissed_at` (qua `report-api`
-  `notifications.dismiss`), · thông báo cập nhật/bảo trì/chung →
-  `announcement_reads.dismissed_at`, · thiết bị → `bakhiNotifyDismissed.v1`.
-  **Thông báo cập nhật phiên bản (`changelog_version` khác null, nhóm `S.changelog`)
-  không có nút xoá và không bao giờ bị xoá hàng loạt** — hàng loạt đi qua
-  `canDismissAnnouncement()`. Nút xoá là phần tử anh em của `.bkc-item` (không lồng
-  `<button>` trong `<button>`), vùng chạm ≥ 40px trên thiết bị cảm ứng.
+- **Xoá thông báo:** chỉ xoá BẢN HIỂN THỊ của người học, không xoá dữ liệu gốc.
+  Từ 8.5.6 **mọi thông báo thường đều xoá được** (kể cả cập nhật phiên bản):
+  · thông báo cập nhật/bảo trì/chung → `announcement_reads.dismissed_at` (ghi máy chủ
+  TRƯỚC rồi mới bỏ khỏi giao diện; lỗi thì giữ lại để thử lại),
+  · mục nhóm `S.changelog` → mốc `changelog:<id>` trong `bakhiNotifyDismissed.v1`,
+  · thiết bị → `bakhiNotifyDismissed.v1` (đồng bộ tab qua `storage`).
+  **Chỉ hai loại bị chặn:** thông báo quản trị phiên (`isSessionNotice()`: `type =
+  'session'`, `notice_kind`/`category = 'admin_session'`, `admin_session: true`) và phản
+  hồi báo cáo (`report_notifications`) — loại sau đi theo cơ chế báo cáo hiện có, không bị
+  xoá hàng loạt can thiệp. Phân loại bằng DỮ LIỆU, không so sánh văn bản. Nút xoá là phần
+  tử anh em của `.bkc-item` (không lồng `<button>` trong `<button>`), vùng chạm ≥ 40px
+  trên thiết bị cảm ứng.
 - **Lịch sử Trợ lý AI trên điện thoại (8.5.5):** dưới 860px sidebar off-canvas, mở bằng
   `#bkaiMenuBtn`, đóng bằng lớp phủ / `Esc` / chọn hội thoại. Desktop giữ bố cục hai cột;
   không dựng hệ lịch sử thứ hai (vẫn dùng `S.conversations`). Khoá cuộn nền bằng
   `html.bkai-side-lock`.
-- QA: `node tools/qa/v855-ui.js` (tĩnh, không cần jsdom) + `cloud-smoke` mục [4b].
+- QA: `node tools/qa/v855-ui.js` + `node tools/qa/v856-ui.js` (tĩnh, không cần jsdom) và
+  `cloud-smoke` mục [4b].
+
+### 6.4. Một nguồn giao diện & quản trị thông báo/báo cáo (8.5.6)
+
+- **Nguồn trạng thái giao diện duy nhất:** khoá `localStorage.theme` (`dark` | `light`).
+  `assets/bakhi/bk-theme-boot.js` chạy đồng bộ trong `<head>` (được
+  `tools/integrate-pages.js` chèn vào **đầu một dòng mới** ngay sau dòng chứa `<head>`)
+  và đặt `html.dark`/`html.light` + `data-bk-theme` trước khi trình duyệt vẽ. Không đặt
+  script trước `<!DOCTYPE>` (mất doctype → quirks mode) và không sửa byte của dòng cũ
+  (hash nội dung giáo dục phải giữ nguyên).
+- **Không chặn theo trang:** `BKShell.applyTheme()` áp dụng trên MỌI trang; đừng dựa vào
+  `#themeIcon`/`body.bk-app` (lỗi 8.5.5 làm trang bài học, Studio, quản trị luôn tối).
+- `/admin` dùng chung khoá `theme`; `bkAdminTheme` chỉ là khoá cũ đọc một lần.
+- **`.bkc-dark` không còn ép nền tối:** nó chỉ đánh dấu thành phần nổi và lấy token
+  `--bk-*` (`html.light .bkc-dark` đổi sang bảng màu sáng). Muốn thêm khung nổi mới, dùng
+  token, không viết hex.
+- **Glow theo giao diện:** `--bk-glow`, `--bk-glow-soft`, `--bk-glow-danger`; giao diện sáng
+  hạ xuống bóng mờ. Mọi animation mới phải có nhánh `prefers-reduced-motion`.
+- **Founder Dashboard — thông báo:** chọn nhiều bằng checkbox `.bkc-check`, lựa chọn lưu ở
+  `S.notif.selected` và **được làm mới mỗi lần tải danh sách**; xoá qua
+  `admin-actions` → `announcements.bulkDelete` (chỉ xoá id tồn tại, trả `deletedIds` và
+  `failed` để báo kết quả từng phần). Không xoá bằng vòng lặp `announcements.delete`.
+- **Founder Dashboard — báo cáo:** khu vực nhận diện đầu tab Report đếm báo cáo **chưa
+  hoàn thành** (`REPORT_ACTIVE_STATUSES`); bộ lọc `status = 'active'` do máy chủ hiểu.
+  Xoá báo cáo chỉ qua `reports.delete`, máy chủ từ chối nếu trạng thái không thuộc
+  `resolved`/`closed`; dữ liệu liên quan đi theo `ON DELETE CASCADE`.
+- Migration 8.5.6: **không có**. Đừng thêm bảng dismissal thứ hai — mọi thứ đã nằm trong
+  `announcement_reads.dismissed_at` + `bakhiNotifyDismissed.v1`.
 
 <!-- BEGIN brain.md -->
 ## Project Brain

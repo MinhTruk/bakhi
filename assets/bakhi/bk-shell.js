@@ -111,6 +111,10 @@
        Giao diện sáng/tối (dùng khoá `theme` sẵn có)
        ------------------------------------------------------------------ */
     function currentTheme() {
+        /* 8.5.6 — bk-theme-boot.js là nguồn trạng thái chung cho mọi trang. */
+        if (global.BKThemeBoot) {
+            try { return global.BKThemeBoot.current(); } catch (e) { }
+        }
         var t = lsGet('theme');
         return t === 'light' ? 'light' : 'dark';
     }
@@ -121,14 +125,18 @@
     }
     function applyTheme(theme) {
         var dark = theme !== 'light';
-        if (themeCapable()) {
-            /* 8.5.5 — tối là mặc định của toàn website; chế độ sáng là lựa chọn
-               chủ động nên phải đặt lớp .light (xem bk-tokens.css). */
+        /* 8.5.6 — áp dụng trên MỌI trang, không chỉ nơi có #themeIcon/.bk-app.
+           Trước đây trang bài học/Studio/quản trị bỏ qua bước này nên vẫn tối
+           dù người học đã chọn sáng. */
+        if (global.BKThemeBoot) {
+            global.BKThemeBoot.apply(dark ? 'dark' : 'light', true);
+        } else {
             D.documentElement.classList.toggle('dark', dark);
             D.documentElement.classList.toggle('light', !dark);
+            D.documentElement.setAttribute('data-bk-theme', dark ? 'dark' : 'light');
             D.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+            lsSet('theme', dark ? 'dark' : 'light');
         }
-        lsSet('theme', dark ? 'dark' : 'light');
         if (global.BK && global.BK.badges) {
             try { global.BK.badges.bumpCounter('theme.toggles'); } catch (e) { }
         }
@@ -1062,16 +1070,17 @@
         ensureCss('bk-shell');
         ensureCss('bk-profile');
         applyA11y();
-        /* Chỉ đổi lớp .dark ở nơi giao diện thật sự theo chủ đề (trang chủ có
-           #themeIcon, trang mới dùng .bk-app). Trang bài học và Studio có bảng
-           màu riêng nên giữ nguyên. */
-        var themable = !!D.getElementById('themeIcon') ||
-            !!(D.body && D.body.classList && D.body.classList.contains('bk-app'));
-        if (themable) {
-            var bootDark = currentTheme() === 'dark';
-            D.documentElement.classList.toggle('dark', bootDark);
-            D.documentElement.classList.toggle('light', !bootDark);
+        /* 8.5.6 — khôi phục giao diện đã chọn trên MỌI trang (bk-theme-boot
+           đã chạy trong <head>; đây là bước đối chiếu lại cho chắc chắn). */
+        var bootTheme = currentTheme();
+        if (global.BKThemeBoot) {
+            global.BKThemeBoot.apply(bootTheme, false);
+        } else {
+            D.documentElement.classList.toggle('dark', bootTheme === 'dark');
+            D.documentElement.classList.toggle('light', bootTheme === 'light');
+            D.documentElement.setAttribute('data-bk-theme', bootTheme);
         }
+        syncLegacyTheme(bootTheme === 'dark');
         cleanLegacyChrome();
         normalizeSchoolName();
         buildSlot();
@@ -1108,10 +1117,15 @@
         }
         global.addEventListener('storage', function (e) {
             if (!e) return;
-            if (e.key === 'theme') {
-                var syncDark = currentTheme() === 'dark';
-                D.documentElement.classList.toggle('dark', syncDark);
-                D.documentElement.classList.toggle('light', !syncDark);
+            if (e.key === 'theme' || e.key === 'bkAdminTheme') {
+                var syncTheme = currentTheme();
+                if (global.BKThemeBoot) {
+                    global.BKThemeBoot.apply(syncTheme, false);
+                } else {
+                    D.documentElement.classList.toggle('dark', syncTheme === 'dark');
+                    D.documentElement.classList.toggle('light', syncTheme === 'light');
+                }
+                syncLegacyTheme(syncTheme === 'dark');
                 paintThemeRow();
             }
             if (e.key === 'bakhiProfile.v1' || e.key === 'bakhiStudent.v1') paintProfileBits();

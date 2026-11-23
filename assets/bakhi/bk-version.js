@@ -12,9 +12,9 @@
 
     var V = {
         /* Phiên bản phát hành (khớp mục mới nhất trong CHANGELOG.md). */
-        app: '8.5.5',
+        app: '8.5.6',
         channel: 'stable',
-        releasedAt: '2026-11-22',
+        releasedAt: '2026-11-23',
         /* Thông tin thương hiệu dùng chung cho header/footer/profile. */
         brand: 'Bá Khí',
         school: 'THPT Huỳnh Ngọc Huệ',

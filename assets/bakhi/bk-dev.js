@@ -1434,8 +1434,12 @@
         pane.appendChild(row(
             btn('Sáng / Tối', 'bk-btn', 'fa-circle-half-stroke', function () {
                 if (typeof global.toggleDarkMode === 'function') { try { global.toggleDarkMode(); return; } catch (e) { } }
+                /* 8.5.6 — luôn áp dụng qua nguồn trạng thái chung để mọi khung
+                   (thông báo, Trợ lý AI, nhạc…) đổi cùng lúc. */
                 var dark = !D.documentElement.classList.contains('dark');
+                if (global.BKThemeBoot) { global.BKThemeBoot.apply(dark ? 'dark' : 'light', true); return; }
                 D.documentElement.classList.toggle('dark', dark);
+                D.documentElement.classList.toggle('light', !dark);
                 try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch (e) { }
             }),
             btn('Khôi phục mặc định', '', 'fa-rotate-left', function () {

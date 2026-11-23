@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi" class="dark">
 <head>
+<script src="assets/bakhi/bk-theme-boot.js?v=8.5.6"></script>
 <link rel="manifest" href="assets/bakhi/manifest.webmanifest" data-bk-pwa="1"><meta name="theme-color" content="#0f172a" data-bk-pwa="1">
     <meta charset="UTF-8">
     <!-- Bá Khí: không nháy nội dung trước khi xác định phiên học sinh -->
@@ -1073,12 +1074,19 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             const savedTheme = localStorage.getItem('theme');
             const themeIcon = document.getElementById('themeIcon');
             const themeText = document.getElementById('themeText');
-            if (savedTheme === 'light') {
-                document.documentElement.classList.remove('dark');
+            const light = savedTheme === 'light';
+            /* 8.5.6 — tối là mặc định, sáng là lớp .light (bk-tokens.css). */
+            if (window.BKThemeBoot) {
+                window.BKThemeBoot.apply(light ? 'light' : 'dark', false);
+            } else {
+                document.documentElement.classList.toggle('dark', !light);
+                document.documentElement.classList.toggle('light', light);
+                document.documentElement.setAttribute('data-bk-theme', light ? 'light' : 'dark');
+            }
+            if (light) {
                 themeIcon.className = 'fa-solid fa-sun text-amber-500';
                 themeText.innerText = 'Đang sáng';
             } else {
-                document.documentElement.classList.add('dark');
                 themeIcon.className = 'fa-solid fa-moon text-indigo-500';
                 themeText.innerText = 'Đang tối';
             }
@@ -1090,8 +1098,16 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             const toDark = !html.classList.contains('dark');
             const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
             const apply = () => {
-                html.classList.toggle('dark', toDark);
-                localStorage.setItem('theme', toDark ? 'dark' : 'light');
+                /* 8.5.6 — một nguồn trạng thái duy nhất: BKThemeBoot ghi localStorage
+                   và đặt cả .dark/.light lẫn data-bk-theme cho toàn website. */
+                if (window.BKThemeBoot) {
+                    window.BKThemeBoot.apply(toDark ? 'dark' : 'light', true);
+                } else {
+                    html.classList.toggle('dark', toDark);
+                    html.classList.toggle('light', !toDark);
+                    html.setAttribute('data-bk-theme', toDark ? 'dark' : 'light');
+                    localStorage.setItem('theme', toDark ? 'dark' : 'light');
+                }
                 icon.className = toDark ? 'fa-solid fa-moon text-indigo-500' : 'fa-solid fa-sun text-amber-500';
                 document.getElementById('themeText').innerText = toDark ? 'Đang tối' : 'Đang sáng';
                 if (_bgUrl) applyBackground(_bgUrl, localStorage.getItem('bgOpacity') || '0.88');
@@ -1947,30 +1963,30 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
     <script src="bakhi-v4.js"></script>
 
 <!-- Bá Khí Learning Platform (chỉ thêm thẻ script, không sửa nội dung) -->
-<script src="assets/bakhi/bk-core.js?v=8.5.5" defer></script>
-<script src="assets/bakhi/bk-notify.js?v=8.5.5" defer></script>
-<script src="assets/bakhi/bk-learning.js?v=8.5.5" defer></script>
-<script src="assets/bakhi/bk-learn.js?v=8.5.5" defer></script>
-<script src="assets/bakhi/bk-dev.js?v=8.5.5" defer></script>
+<script src="assets/bakhi/bk-core.js?v=8.5.6" defer></script>
+<script src="assets/bakhi/bk-notify.js?v=8.5.6" defer></script>
+<script src="assets/bakhi/bk-learning.js?v=8.5.6" defer></script>
+<script src="assets/bakhi/bk-learn.js?v=8.5.6" defer></script>
+<script src="assets/bakhi/bk-dev.js?v=8.5.6" defer></script>
 
 <!-- Bá Khí × Supabase: một client duy nhất, nhận diện học sinh, thông báo, changelog -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
-<script src="assets/bakhi/bk-supabase.config.js?v=8.5.5" defer></script>
-<script src="assets/bakhi/bk-cloud.js?v=8.5.5" data-bk-whatsnew="1" defer></script>
-<script src="assets/bakhi/bk-gamification.js?v=8.5.5" defer></script>
-<script src="assets/bakhi/bk-devboard.js?v=8.5.5" defer></script>
+<script src="assets/bakhi/bk-supabase.config.js?v=8.5.6" defer></script>
+<script src="assets/bakhi/bk-cloud.js?v=8.5.6" data-bk-whatsnew="1" defer></script>
+<script src="assets/bakhi/bk-gamification.js?v=8.5.6" defer></script>
+<script src="assets/bakhi/bk-devboard.js?v=8.5.6" defer></script>
 
 <!-- assets/bakhi/shell — avatar tài khoản dùng chung -->
-<script src="assets/bakhi/bk-version.js?v=8.5.5" defer></script>
-<script src="assets/bakhi/bk-profile.js?v=8.5.5" defer></script>
-<script src="assets/bakhi/bk-badges.js?v=8.5.5" defer></script>
-    <script src="assets/bakhi/bk-roles.js?v=8.5.5" defer></script>
-<script src="assets/bakhi/bk-shell.js?v=8.5.5" defer></script>
+<script src="assets/bakhi/bk-version.js?v=8.5.6" defer></script>
+<script src="assets/bakhi/bk-profile.js?v=8.5.6" defer></script>
+<script src="assets/bakhi/bk-badges.js?v=8.5.6" defer></script>
+    <script src="assets/bakhi/bk-roles.js?v=8.5.6" defer></script>
+<script src="assets/bakhi/bk-shell.js?v=8.5.6" defer></script>
 <script src="assets/bakhi/bk-report.js" defer></script>
 </body>
 </html>
-    <link rel="stylesheet" href="assets/bakhi/bk-themes.css?v=8.5.5">
-<script src="assets/bakhi/bk-themes.js?v=8.5.5" defer></script>
-    <link rel="stylesheet" href="assets/bakhi/bk-ai-tutor.css?v=8.5.5">
-<script src="assets/bakhi/bk-ai-tutor.js?v=8.5.5" defer></script>
-    <link rel="stylesheet" href="assets/bakhi/bk-tokens.css?v=8.5.5">
+    <link rel="stylesheet" href="assets/bakhi/bk-themes.css?v=8.5.6">
+<script src="assets/bakhi/bk-themes.js?v=8.5.6" defer></script>
+    <link rel="stylesheet" href="assets/bakhi/bk-ai-tutor.css?v=8.5.6">
+<script src="assets/bakhi/bk-ai-tutor.js?v=8.5.6" defer></script>
+    <link rel="stylesheet" href="assets/bakhi/bk-tokens.css?v=8.5.6">

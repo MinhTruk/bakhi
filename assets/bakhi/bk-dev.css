@@ -12,9 +12,9 @@
     width: 2.6rem;
     height: 2.6rem;
     border-radius: 50%;
-    border: 1px solid rgba(148, 163, 184, .35);
-    background: rgba(15, 23, 42, .9);
-    color: #a5b4fc;
+    border: 1px solid var(--bk-line, rgba(148, 163, 184, .35));
+    background: var(--bk-surface-2, rgba(15, 23, 42, .9));
+    color: var(--bk-brand-soft, #a5b4fc);
     display: grid;
     place-items: center;
     cursor: pointer;
@@ -36,10 +36,11 @@
     min-height: 16rem;
     border-radius: 16px;
     overflow: hidden;
-    background: #0b1220;
-    color: #e2e8f0;
-    border: 1px solid rgba(148, 163, 184, .28);
-    box-shadow: 0 30px 70px -30px rgba(0, 0, 0, .9);
+    /* 8.5.6 — Dev Playground theo giao diện hiện tại. */
+    background: var(--bk-bg-2, #0b1220);
+    color: var(--bk-text, #e2e8f0);
+    border: 1px solid var(--bk-line, rgba(148, 163, 184, .28));
+    box-shadow: var(--bk-elev-2, 0 30px 70px -30px rgba(0, 0, 0, .9));
     font-family: Lexend, system-ui, sans-serif;
     font-size: 12px;
 }
@@ -55,8 +56,8 @@
     align-items: center;
     gap: .5rem;
     padding: .45rem .55rem .45rem .75rem;
-    background: linear-gradient(90deg, #1e1b4b, #0b1220 60%);
-    border-bottom: 1px solid rgba(148, 163, 184, .22);
+    background: linear-gradient(90deg, var(--bk-surface-3, #1e1b4b), var(--bk-bg-2, #0b1220) 60%);
+    border-bottom: 1px solid var(--bk-line-soft, rgba(148, 163, 184, .22));
     cursor: move;
     user-select: none;
     touch-action: none;
@@ -112,7 +113,7 @@
 .bkdev-tab.on { opacity: 1; color: #a5b4fc; border-color: #6366f1; }
 .bkdev-tab:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
 
-.bkdev-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: .8rem .9rem 1.2rem; background: #0b1220; }
+.bkdev-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: .8rem .9rem 1.2rem; background: var(--bk-bg-2, #0b1220); }
 .bkdev-pane[hidden] { display: none; }
 .bkdev-h4 { font-size: .74rem; font-weight: 700; margin: .9rem 0 .35rem; color: #cbd5e1; }
 .bkdev-h4:first-child { margin-top: 0; }
@@ -128,8 +129,8 @@
 .bkdev-panel .bk-btn { background: #4f46e5; }
 .bkdev-panel .bk-btn-ghost { background: rgba(148, 163, 184, .16); color: inherit; }
 .bkdev-panel .bk-input, .bkdev-panel .bk-select, .bkdev-panel .bk-textarea {
-    background: #0f172a;
-    border-color: rgba(148, 163, 184, .3);
+    background: var(--bk-input, #0f172a);
+    border-color: var(--bk-line, rgba(148, 163, 184, .3));
     color: inherit;
 }
 .bkdev-panel .bk-item, .bkdev-panel .bk-card { background: rgba(148, 163, 184, .07); border-color: rgba(148, 163, 184, .18); }
@@ -142,8 +143,9 @@
     overflow: auto;
     padding: .5rem .6rem;
     border-radius: .5rem;
-    background: #020617;
-    border: 1px solid rgba(148, 163, 184, .2);
+    background: var(--bk-input, #020617);
+    border: 1px solid var(--bk-line-soft, rgba(148, 163, 184, .2));
+    color: var(--bk-text-2, inherit);
 }
 .bkdev-out .ok { color: #34d399; }
 .bkdev-out .err { color: #fb7185; }
@@ -252,8 +254,8 @@
     gap: .7rem;
     flex-wrap: wrap;
     padding: .32rem .7rem;
-    border-top: 1px solid rgba(148, 163, 184, .2);
-    background: #0f172a;
+    border-top: 1px solid var(--bk-line-soft, rgba(148, 163, 184, .2));
+    background: var(--bk-surface-2, #0f172a);
     font: 600 9.5px ui-monospace, monospace;
     opacity: .85;
     flex-shrink: 0;

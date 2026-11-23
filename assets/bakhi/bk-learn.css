@@ -70,8 +70,9 @@
     padding: .25rem .55rem;
     border-radius: .4rem;
     font-size: .68rem;
-    background: #0f172a;
-    color: #f8fafc;
+    /* 8.5.6 — nhãn dock theo giao diện hiện tại. */
+    background: var(--bk-surface-3, #0f172a);
+    color: var(--bk-text, #f8fafc);
     opacity: 0;
     pointer-events: none;
     transform: translateX(4px);

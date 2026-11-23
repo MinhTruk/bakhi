@@ -1244,15 +1244,39 @@
     }
 
     /* ------------------------------------------------------------------
-       Xoá thông báo khỏi trung tâm (8.5.5)
+       Xoá thông báo khỏi trung tâm (8.5.5, cập nhật 8.5.6)
        Chỉ xoá BẢN HIỂN THỊ của người học, không xoá dữ liệu gốc:
-         · phản hồi báo cáo  → report_notifications.dismissed_at
-         · thông báo cập nhật / bảo trì / chung → announcement_reads.dismissed_at
-         · thông báo cập nhật PHIÊN BẢN (có changelog_version) → KHÔNG xoá được
+         · thông báo cập nhật / bảo trì / chung (kể cả cập nhật phiên bản)
+           → announcement_reads.dismissed_at (ghi máy chủ trước)
+         · mục nhóm “Cập nhật phiên bản” → mốc changelog:<id> trên thiết bị
+         · phản hồi báo cáo → KHÔNG dùng nút xoá thông thường (cơ chế báo cáo)
+         · thông báo quản trị phiên → KHÔNG xoá được
        ------------------------------------------------------------------ */
-    function canDismissAnnouncement(a) {
-        return !!a && !a.changelog_version;
+    /* 8.5.6 — Phân loại bằng DỮ LIỆU, không so sánh nội dung văn bản:
+       · Thông báo quản trị phiên (session/admin) → KHÔNG có nút xoá.
+       · Phản hồi báo cáo (report_notifications) → quản lý theo cơ chế báo cáo
+         hiện có, không bị nút xoá thông thường hay xoá hàng loạt can thiệp.
+       · Mọi thông báo còn lại (cập nhật phiên bản, cập nhật tính năng, bảo trì,
+         hệ thống, chung) → xoá được. */
+    function isSessionNotice(a) {
+        return !!a && (a.type === 'session' || a.admin_session === true ||
+            a.notice_kind === 'admin_session' || a.category === 'admin_session');
     }
+
+    function canDismissAnnouncement(a) {
+        return !!a && !isSessionNotice(a);
+    }
+
+    /* Mục trong nhóm “Cập nhật phiên bản” (bảng changelog) cũng xoá được.
+       S.changelog vẫn giữ dữ liệu cho khối What's New; chỉ trung tâm thông báo
+       ẩn mục đã xoá. */
+    function canDismissChangelog(entry) {
+        if (!entry || !entry.id) return false;
+        var gone = S.dismissed || localDismissed();
+        return !gone[changelogKey(entry.id)];
+    }
+
+    function changelogKey(id) { return 'changelog:' + id; }
 
     function rememberDismissed(id) {
         if (!id) return;
@@ -1262,78 +1286,118 @@
     }
 
     function dismissibleCount() {
-        return S.reportNotes.length + S.announcements.filter(canDismissAnnouncement).length;
+        return S.announcements.filter(canDismissAnnouncement).length +
+            S.changelog.filter(canDismissChangelog).length;
     }
 
-    function dismissAnnouncement(a) {
-        if (!canDismissAnnouncement(a)) return;
-        rememberDismissed(a.id);
-        S.announcements = S.announcements.filter(function (x) { return x.id !== a.id; });
+    function dropAnnouncement(id) {
+        S.announcements = S.announcements.filter(function (x) { return x.id !== id; });
         if (S.allAnnouncements) {
-            S.allAnnouncements = S.allAnnouncements.filter(function (x) { return x.id !== a.id; });
+            S.allAnnouncements = S.allAnnouncements.filter(function (x) { return x.id !== id; });
         }
         paintBell();
         /* Vẽ lại cả khi panel đang ẩn để DOM không giữ lại thông báo đã xoá. */
         if (S.list) renderPanel();
-        if (S.bound && S.student) {
-            client().from('announcement_reads').upsert({
-                student_id: S.student.id,
-                announcement_id: a.id,
-                read_at: S.reads[a.id] || S.dismissed[a.id],
-                dismissed_at: S.dismissed[a.id]
-            }, { onConflict: 'student_id,announcement_id' }).then(function (res) {
-                if (res.error) console.warn('[BKCloud] dismiss', res.error.message);
-            });
-        }
-        toast('Đã xoá thông báo', 'success');
     }
 
-    function dismissReportNote(note) {
-        if (!note) return;
-        rememberDismissed(note.id);
-        S.reportNotes = S.reportNotes.filter(function (x) { return x.id !== note.id; });
+    /* Xoá một thông báo: GHI MÁY CHỦ TRƯỚC rồi mới bỏ khỏi giao diện. Nếu ghi
+       lỗi, thông báo được giữ lại và người học có thể bấm xoá lại. */
+    function dismissAnnouncement(a) {
+        if (!canDismissAnnouncement(a)) return Promise.resolve(false);
+        if (!S.bound || !S.student) {
+            rememberDismissed(a.id);
+            dropAnnouncement(a.id);
+            toast('Đã xoá thông báo', 'success');
+            return Promise.resolve(true);
+        }
+        var stamp = new Date().toISOString();
+        return client().from('announcement_reads').upsert({
+            student_id: S.student.id,
+            announcement_id: a.id,
+            read_at: S.reads[a.id] || stamp,
+            dismissed_at: stamp
+        }, { onConflict: 'student_id,announcement_id' }).then(function (res) {
+            if (res.error) throw res.error;
+            rememberDismissed(a.id);
+            dropAnnouncement(a.id);
+            toast('Đã xoá thông báo', 'success');
+            return true;
+        }).catch(function (err) {
+            console.warn('[BKCloud] dismiss', err && err.message);
+            /* Giữ nguyên thông báo để người học thử lại. */
+            if (S.list) renderPanel();
+            toast('Không xoá được thông báo. Hãy kiểm tra kết nối và thử lại.', 'error');
+            return false;
+        });
+    }
+
+    /* Mục cập nhật phiên bản không có bảng trạng thái riêng: lưu mốc xoá trên
+       thiết bị và đồng bộ tức thời sang các trang/tab khác của cùng trình duyệt. */
+    function dismissChangelog(entry) {
+        if (!canDismissChangelog(entry)) return Promise.resolve(false);
+        rememberDismissed(changelogKey(entry.id));
         paintBell();
         if (S.list) renderPanel();
-        api(CFG.functions.report, { action: 'notifications.dismiss', notification_id: note.id })
-            .catch(function () { });
         toast('Đã xoá thông báo', 'success');
+        return Promise.resolve(true);
     }
 
     function dismissAll() {
-        var notes = S.reportNotes.slice();
         var anns = S.announcements.filter(canDismissAnnouncement);
-        if (!notes.length && !anns.length) {
+        var entries = S.changelog.filter(canDismissChangelog);
+        if (!anns.length && !entries.length) {
             toast('Không còn thông báo nào để xoá.', 'info');
             return;
         }
-        confirmDismissAll(notes.length + anns.length, function () {
+        confirmDismissAll(anns.length + entries.length, function () {
             var stamp = new Date().toISOString();
-            notes.forEach(function (note) {
-                rememberDismissed(note.id);
-                api(CFG.functions.report, { action: 'notifications.dismiss', notification_id: note.id })
-                    .catch(function () { });
+            var rows = anns.map(function (a) {
+                return {
+                    student_id: S.student ? S.student.id : null,
+                    announcement_id: a.id,
+                    read_at: S.reads[a.id] || stamp,
+                    dismissed_at: stamp
+                };
             });
-            S.reportNotes = [];
-            anns.forEach(function (a) { rememberDismissed(a.id); });
-            S.announcements = S.announcements.filter(function (a) { return !canDismissAnnouncement(a); });
+            var write = (S.bound && S.student && rows.length)
+                ? client().from('announcement_reads')
+                    .upsert(rows, { onConflict: 'student_id,announcement_id' })
+                    .then(function (res) { if (res.error) throw res.error; })
+                : Promise.resolve();
+            write.then(function () {
+                anns.forEach(function (a) { rememberDismissed(a.id); });
+                entries.forEach(function (c) { rememberDismissed(changelogKey(c.id)); });
+                S.announcements = S.announcements.filter(function (a) { return !canDismissAnnouncement(a); });
+                if (S.allAnnouncements) {
+                    S.allAnnouncements = S.allAnnouncements.filter(function (a) { return !canDismissAnnouncement(a); });
+                }
+                paintBell();
+                renderPanel();
+                toast('Đã xoá ' + (anns.length + entries.length) + ' thông báo', 'success');
+            }).catch(function (err) {
+                console.warn('[BKCloud] dismiss all', err && err.message);
+                /* Không xoá gì khi máy chủ chưa ghi được → không mất trạng thái. */
+                if (S.list) renderPanel();
+                toast('Không xoá được thông báo. Hãy kiểm tra kết nối và thử lại.', 'error');
+            });
+        });
+    }
+
+    /* Đồng bộ giữa nhiều tab: tab này xoá → mọi tab đang mở cập nhật ngay. */
+    if (!S.dismissBound) {
+        S.dismissBound = true;
+        global.addEventListener('storage', function (e) {
+            if (!e || e.key !== NOTIFY_DISMISS_KEY) return;
+            var map = localDismissed();
+            S.dismissed = map;
             if (S.allAnnouncements) {
-                S.allAnnouncements = S.allAnnouncements.filter(function (a) { return !canDismissAnnouncement(a); });
+                S.announcements = (S.allAnnouncements || []).filter(function (a) { return !map[a.id]; });
             }
-            if (S.bound && S.student && anns.length) {
-                client().from('announcement_reads').upsert(anns.map(function (a) {
-                    return {
-                        student_id: S.student.id,
-                        announcement_id: a.id,
-                        read_at: S.reads[a.id] || S.dismissed[a.id] || stamp,
-                        dismissed_at: S.dismissed[a.id] || stamp
-                    };
-                }), { onConflict: 'student_id,announcement_id' }).then(function (res) {
-                    if (res.error) console.warn('[BKCloud] dismiss all', res.error.message);
-                });
+            if (S.reportNotes.length) {
+                S.reportNotes = S.reportNotes.filter(function (n) { return !map[n.id]; });
             }
             paintBell();
-            renderPanel();
-            toast('Đã xoá thông báo có thể xoá. Thông báo phiên bản vẫn được giữ.', 'success');
+            if (S.list) renderPanel();
         });
     }
 
@@ -1354,11 +1418,11 @@
 
         var body = el('div', 'bkc-sheet-body');
         body.appendChild(el('p', null,
-            'Sẽ xoá ' + count + ' thông báo khỏi trung tâm thông báo của bạn: phản hồi báo cáo, ' +
-            'thông báo cập nhật và thông báo bảo trì.'));
+            'Sẽ xoá ' + count + ' thông báo khỏi trung tâm thông báo của bạn: cập nhật phiên bản, ' +
+            'cập nhật tính năng, bảo trì và thông báo chung.'));
         body.appendChild(el('p', 'bkc-muted',
-            'Thông báo cập nhật phiên bản luôn được giữ nguyên. Dữ liệu gốc (báo cáo, ' +
-            'thông báo của quản trị viên) không bị xoá.'));
+            'Phản hồi báo cáo và thông báo quản trị phiên được quản lý theo cơ chế riêng. ' +
+            'Dữ liệu gốc (báo cáo, thông báo của quản trị viên) không bị xoá.'));
         sheet.appendChild(body);
 
         var foot = el('div', 'bkc-sheet-foot');
@@ -1615,7 +1679,8 @@
                 if (row.classList.contains('is-removing')) return;
                 row.classList.add('is-removing');
                 del.disabled = true;
-                global.setTimeout(function () { onDelete(); }, 180);
+                /* Khớp thời gian animation co lại trong bk-cloud.css. */
+                global.setTimeout(function () { onDelete(); }, 200);
             });
             row.appendChild(del);
         }
@@ -1625,7 +1690,8 @@
     function renderPanel() {
         if (!S.list) return;
         S.list.textContent = '';
-        var hasAny = S.announcements.length || S.changelog.length || S.reportNotes.length;
+        var versionEntries = S.changelog.filter(canDismissChangelog);
+        var hasAny = S.announcements.length || versionEntries.length || S.reportNotes.length;
         if (S.dismissAllBtn) {
             var canRemove = dismissibleCount();
             S.dismissAllBtn.disabled = canRemove === 0;
@@ -1677,8 +1743,9 @@
                 item.appendChild(el('b', 'bkc-item-title', n.title));
                 item.appendChild(el('span', 'bkc-item-sum', clip(n.body, 120)));
                 item.addEventListener('click', function () { openReportNotification(n); });
-                S.list.appendChild(itemRow(item, function () { dismissReportNote(n); },
-                    'Xoá thông báo báo cáo'));
+                /* 8.5.6 — phản hồi báo cáo KHÔNG có nút xoá thông thường: nó
+                   thuộc cơ chế báo cáo (đã đọc / hoàn thiện / đóng). */
+                S.list.appendChild(item);
             });
         }
 
@@ -1712,10 +1779,10 @@
             });
         }
 
-        if (S.changelog.length) {
+        if (versionEntries.length) {
             S.list.appendChild(panelGroup('Cập nhật phiên bản'));
             /* Xếp theo SỐ phiên bản tăng dần: 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0. */
-            S.changelog.slice().sort(function (a, b) {
+            versionEntries.slice().sort(function (a, b) {
                 return compareVersion(a.version, b.version);
             }).forEach(function (entry) {
                 var item = el('button', 'bkc-item bkc-item-version');
@@ -1727,7 +1794,8 @@
                 item.appendChild(el('b', 'bkc-item-title', entry.title));
                 if (entry.summary) item.appendChild(el('span', 'bkc-item-sum', clip(entry.summary, 120)));
                 item.addEventListener('click', function () { openChangelogEntry(entry); });
-                S.list.appendChild(item);
+                S.list.appendChild(itemRow(item, function () { dismissChangelog(entry); },
+                    'Xoá thông báo phiên bản ' + entry.version));
             });
         }
 

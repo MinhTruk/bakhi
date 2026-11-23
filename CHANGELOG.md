@@ -2,6 +2,71 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.5.6] — 2026-11-23
+
+### Tính năng
+
+- **Xoá mọi thông báo thông thường trong Trung tâm thông báo.** Thông báo cập nhật
+  phiên bản, cập nhật tính năng, bảo trì, thông báo hệ thống và thông báo chung đều có
+  nút xoá riêng; mục trong nhóm “Cập nhật phiên bản” cũng xoá được. Loại thông báo được
+  xác định bằng **dữ liệu** (`type`, `admin_session`, `notice_kind`, `category`) chứ không
+  so sánh văn bản hiển thị.
+- **Hai loại thông báo được bảo vệ:** thông báo quản trị phiên không có nút xoá, và phản
+  hồi báo cáo tiếp tục đi theo cơ chế báo cáo hiện có (đọc / hoàn thiện / đóng) — không
+  bị nút xoá thông thường hay xoá hàng loạt can thiệp.
+- **Founder Dashboard — chọn nhiều thông báo để xoá.** Mỗi dòng có checkbox, hàng tiêu đề
+  có **Chọn tất cả**, thanh công cụ có **Bỏ chọn**, số lượng đang chọn và **Xoá đã chọn**
+  (chỉ bật khi có lựa chọn). Hộp xác nhận nêu rõ số lượng; kết quả từng phần được báo
+  trung thực (`Đã xoá 3/5 thông báo…`) và lựa chọn được giữ lại cho lần thử tiếp.
+- **Founder Dashboard — xoá báo cáo đã hoàn thành.** Báo cáo ở trạng thái đã giải quyết
+  hoặc đã đóng có nút **Xoá báo cáo** trong menu thao tác của dòng và trong trang chi
+  tiết, kèm hộp xác nhận. Máy chủ (`reports.delete`) kiểm tra trạng thái thật trong cơ sở
+  dữ liệu và từ chối mọi báo cáo chưa hoàn thành.
+- **Tab Report — khu vực nhận diện báo cáo mới.** Đầu tab hiển thị số báo cáo cần xử lý
+  (`Mới`, `Đang xử lý`, `Chờ học sinh`) tách khỏi số đã hoàn thành, cập nhật theo dữ liệu
+  thật và tự làm mới khi tab đang mở. Bấm vào khu vực này để lọc ngay nhóm **Cần xử lý**.
+- **Một nguồn trạng thái giao diện cho toàn website.** `assets/bakhi/bk-theme-boot.js`
+  chạy đồng bộ ngay trước `<head>` trên mọi trang, đọc khoá `theme` và đặt
+  `html.dark`/`html.light` + `data-bk-theme` trước khi trình duyệt vẽ khung đầu tiên nên
+  không còn nháy tối → sáng. Theme đổi ở tab này được các tab khác nhận ngay.
+
+### Cải tiến
+
+- **Animation xoá thông báo:** hàng thông báo thu gọn (grid 1fr → 0fr) rồi mờ dần trước
+  khi biến mất, không cắt nội dung dài; tắt hoàn toàn khi người dùng giảm chuyển động.
+- **Giao diện sáng đầy đủ cho thành phần nổi:** bảng thông báo, hộp xác nhận, xem trước
+  changelog (`.bkc-dark`), màn hình nhận diện, gợi ý tên, toast, nhãn dock học tập, Dev
+  Playground và toast Tiến trình nay lấy màu từ token `--bk-*`. Màn hình bảo trì vẫn cố ý
+  giữ nền đen tuyền ở cả hai giao diện vì đây là trạng thái chặn toàn site, không phải
+  thành phần nằm trong trang.
+- **Bộ token bổ sung cho animation:** `--bk-glow`, `--bk-glow-soft`, `--bk-glow-danger`,
+  `--bk-skeleton`, `--bk-press`; giao diện sáng hạ glow thành bóng mờ để không chói.
+- Chuyển giao diện mượt bằng transition trên nền/chữ của khung trang, không transition
+  toàn bộ phần tử.
+
+### Sửa lỗi
+
+- **Trang chủ không bật được Light Theme.** `toggleDarkMode()` và `initTheme()` chỉ bỏ
+  class `.dark` mà không thêm `.light`, trong khi từ 8.5.5 giao diện sáng được đánh dấu
+  bằng `html.light` — toàn trang vẫn tối sau khi bấm đổi giao diện.
+- **Trang bài học, Studio và quản trị bỏ qua giao diện đã chọn.** `bk-shell.js` chỉ áp
+  dụng theme khi trang có `#themeIcon` hoặc `body.bk-app`, nên các trang khác luôn tối dù
+  người học đã chọn sáng.
+- **`/admin` dùng khoá giao diện riêng** (`bkAdminTheme`) nên không đồng bộ với phần còn
+  lại của website; nay dùng chung khoá `theme` và chuyển giá trị cũ một lần.
+- **Xoá thông báo thất bại vẫn biến mất khỏi giao diện.** Nay máy chủ được ghi trước; nếu
+  lỗi, thông báo được giữ lại kèm thông báo lỗi để thử lại.
+
+### Thay đổi kỹ thuật
+
+- `assets/bakhi/bk-theme-boot.js` (mới) — nguồn khởi tạo giao diện dùng chung.
+- `tools/integrate-pages.js` chèn script khởi tạo giao diện cho mọi tệp HTML (idempotent).
+- Edge Function `admin-actions`: thêm `announcements.bulkDelete`, `reports.delete`; bộ lọc
+  `reports.list`/`reports.export` nhận `status = 'active'` (mọi trạng thái chưa hoàn thành).
+- Không có migration mới: dùng `announcement_reads.dismissed_at` đã có từ 8.5.5; xoá báo
+  cáo dựa trên khoá ngoại `ON DELETE CASCADE` sẵn có.
+- QA mới: `tools/qa/v856-ui.js`.
+
 ## [8.5.5] — 2026-11-22
 
 ### Tính năng

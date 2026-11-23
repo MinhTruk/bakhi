@@ -670,11 +670,12 @@ html.dark .bkg-pill.is-ok { color: #34d399; }
     gap: .5rem;
     padding: .55rem .7rem;
     border-radius: 10px;
-    background: #0f172a;
-    color: #e2e8f0;
+    /* 8.5.6 — theo giao diện hiện tại (trước đây cố định tối). */
+    background: var(--bk-surface-3, #0f172a);
+    color: var(--bk-text, #e2e8f0);
     font-size: .78rem;
-    border: 1px solid rgba(148, 163, 184, .3);
-    box-shadow: 0 16px 30px -18px rgba(2, 6, 23, .8);
+    border: 1px solid var(--bk-line, rgba(148, 163, 184, .3));
+    box-shadow: var(--bk-elev-1, 0 16px 30px -18px rgba(2, 6, 23, .8));
     opacity: 0;
     transform: translateY(6px);
     transition: opacity .2s ease, transform .2s ease;
@@ -682,7 +683,7 @@ html.dark .bkg-pill.is-ok { color: #34d399; }
 .bkg-toast.is-in { opacity: 1; transform: translateY(0); }
 .bkg-toast.is-static { transition: none; transform: none; }
 .bkg-toast.is-error i { color: #fb7185; }
-.bkg-toast i { color: #a5b4fc; }
+.bkg-toast i { color: var(--bk-brand-soft, #a5b4fc); }
 
 /* -------------------------------------------------------------- Level up */
 .bkg-levelup { text-align: center; display: flex; flex-direction: column; align-items: center; gap: .5rem; }

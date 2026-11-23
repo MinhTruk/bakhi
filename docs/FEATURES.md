@@ -328,15 +328,19 @@ Từ 8.0.0, chuông có thêm nhóm **“Phản hồi báo cáo của bạn”**
 | 9 | Liên kết “Xem CHANGELOG.md” đúng đường dẫn ở mọi cấp thư mục | ✅ | Dùng `basePath()` |
 | 10 | Khối “Cập nhật gần đây” hiển thị 10 mục mới nhất theo số phiên bản, có `Xem thêm`/`Thu gọn`, **chỉ bật ở trang chủ** | ✅ | `data-bk-whatsnew="1"`; `WN_LIMIT = 10`; Studio/Word & Paint không dựng khối này |
 | 11 | Chuông cũ `bk-notify.js` tự được gỡ khi lớp mới hoạt động | ✅ | Tránh hiện hai chuông |
-| 12 | Giao diện thông báo tối thống nhất | ✅ | Biến `--bkc-n-*` + `.bkc-dark`; không còn thẻ trắng |
+| 12 | Giao diện thông báo theo Light/Dark | ✅ | `--bkc-n-*` + `.bkc-dark` lấy token hiện tại (8.5.6) |
 | 13 | Trạng thái tải / rỗng / lỗi rõ ràng trong bảng thông báo | ✅ | Có nút thử lại khi lỗi |
 | 14 | Markdown an toàn + liên kết `http(s)` | ✅ | Escape trước, không chèn HTML thô |
 | 15 | Thông báo sinh từ CHANGELOG mở đúng phiên bản | ✅ | Liên kết qua `changelog_version` |
 | 16 | Cờ `public.whatsnew` và `public.maintenance` | ✅ | Đọc từ `app_settings`, realtime |
 | 17 | Dải thông báo bảo trì toàn site | ✅ | Bật/tắt từ dashboard, có nút ẩn |
 | 18 | Đồng bộ CHANGELOG.md tự động, chống trùng | ✅ | GitHub Actions + `changelog-sync` + RPC publish |
-| 19 | **Xoá thông báo** từng mục và hàng loạt (8.5.5) | ✅ | Phản hồi báo cáo, thông báo cập nhật, bảo trì; lưu ở `dismissed_at` + `bakhiNotifyDismissed.v1` |
-| 20 | Thông báo cập nhật **phiên bản** không xoá được | ✅ | Không có nút xoá; xoá hàng loạt bỏ qua `changelog_version` |
+| 19 | **Xoá thông báo** từng mục và hàng loạt (8.5.5 → 8.5.6) | ✅ | Cập nhật phiên bản, cập nhật, bảo trì, chung; ghi máy chủ trước, đồng bộ nhiều tab |
+| 20 | Thông báo cập nhật **phiên bản** xoá được (8.5.6) | ✅ | Có nút xoá; xoá hàng loạt bao gồm |
+| 21 | Chặn xoá thông báo quản trị phiên + phản hồi báo cáo (8.5.6) | ✅ | `isSessionNotice()` + cơ chế báo cáo riêng; phân loại bằng dữ liệu |
+| 22 | Founder chọn nhiều thông báo và xoá hàng loạt (8.5.6) | ✅ | Checkbox, Chọn tất cả/Bỏ chọn, `announcements.bulkDelete`, báo kết quả từng phần |
+| 23 | Founder xoá báo cáo đã hoàn thành (8.5.6) | ✅ | `reports.delete` kiểm tra trạng thái ở máy chủ; chỉ `resolved`/`closed` |
+| 24 | Tab Report có khu vực nhận diện báo cáo mới (8.5.6) | ✅ | Đếm báo cáo chưa hoàn thành, lọc `status='active'` |
 
 ### Hai chế độ thông báo
 
@@ -346,7 +350,8 @@ Từ 8.0.0, chuông có thêm nhóm **“Phản hồi báo cáo của bạn”**
 | Đồng bộ tiến trình | Có | Không |
 | Vị trí chuông | Header cạnh README.md | Nổi góc phải dưới |
 | Đã đọc | `announcement_reads` (Supabase) | `bakhiNotifyReads.v1` (local) |
-| Đã xoá (8.5.5) | `announcement_reads.dismissed_at` | `bakhiNotifyDismissed.v1` (local) |
+| Đã xoá (8.5.5+) | `announcement_reads.dismissed_at` | `bakhiNotifyDismissed.v1` (local) |
+| Phản hồi báo cáo | Không có nút xoá thông thường (8.5.6) | Không xoá hàng loạt |
 | Realtime + poll | Có | Có |
 | Ảnh hưởng dữ liệu học | Không | Không |
 
@@ -461,7 +466,11 @@ không tự nộp bài, không xếp hạng thi, không deadline, không cơ ch�
 > **8.5.5 — Design Tokens dùng chung.** Toàn bộ màu đi qua `assets/bakhi/bk-tokens.css`
 > (token `--bk-*`, ánh xạ `--bkl-*`). Tối là mặc định trên **mọi** trang, kể cả `studio/`,
 > `admin/`, `founder/` và trang bài học; chế độ sáng chỉ bật khi người học chọn trong menu
-> tài khoản (`html.light`). Đồng bộ cho hồ sơ mini, bảng thông báo, Trợ lý AI (trang +
+> tài khoản (`html.light`).
+>
+> **8.5.6 — Một nguồn giao diện.** `bk-theme-boot.js` khởi tạo sớm trong `<head>` (không
+> FOUC), áp dụng trên mọi trang và đồng bộ giữa các tab qua `storage`. Glow/shadow có bộ
+> token riêng cho từng giao diện và mọi animation tôn trọng `prefers-reduced-motion`. Đồng bộ cho hồ sơ mini, bảng thông báo, Trợ lý AI (trang +
 > cửa sổ nổi), trình phát nhạc, Report Panel, modal/popup/dropdown/tooltip, dashboard,
 > gamification, cây kỹ năng, cài đặt và các trạng thái lỗi/tải.
 

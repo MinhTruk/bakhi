@@ -129,9 +129,48 @@ function ensureTokens(file, html) {
     `    <link rel="stylesheet" href="${prefix}assets/bakhi/bk-tokens.css${bust}">\n`;
 }
 
+/* 8.5.6 — khởi tạo giao diện SỚM: chèn script đồng bộ ngay TRƯỚC <head> để
+   html.light/.dark có mặt trước khi trình duyệt vẽ khung đầu tiên (chống FOUC).
+   Thẻ nằm trên dòng riêng và chứa `assets/bakhi/` nên content-integrity bỏ
+   qua dòng này, hash nội dung giáo dục không đổi. Idempotent, có ?v=. */
+function ensureThemeBoot(file, html) {
+  const version = appVersion();
+  const bust = version ? '?v=' + version : '';
+  if (/assets\/bakhi\/bk-theme-boot\.js/.test(html)) {
+    return html.replace(/(assets\/bakhi\/bk-theme-boot\.js)(\?v=[^"']*)?/g, '$1' + bust);
+  }
+  const rel = path.relative(ROOT, file).split(path.sep).join('/');
+  const depth = rel.split('/').length - 1;
+  const prefix = depth === 0 ? '' : '../'.repeat(depth);
+  const tag = `<script src="${prefix}assets/bakhi/bk-theme-boot.js${bust}"></script>`;
+  /* Chèn vào ĐẦU MỘT DÒNG MỚI ngay sau dòng chứa <head>…>: không sửa byte nào
+     của dòng cũ nên hash nội dung giáo dục giữ nguyên (content-integrity bỏ
+     toàn bộ dòng có assets/bakhi/). Không chèn trước <!DOCTYPE> vì sẽ làm
+     trình duyệt bỏ doctype và rơi vào quirks mode. */
+  const insertAfterLine = (anchorIndex) => {
+    if (anchorIndex < 0) return null;
+    const nl = html.indexOf('\n', anchorIndex);
+    if (nl < 0) return null;
+    return html.slice(0, nl + 1) + tag + '\n' + html.slice(nl + 1);
+  };
+  const headMatch = /<head(\s[^>]*)?>/i.exec(html);
+  let out = insertAfterLine(headMatch ? headMatch.index + headMatch[0].length : -1);
+  if (out) return out;
+  const bodyMatch = /<body(\s[^>]*)?>/i.exec(html);
+  out = insertAfterLine(bodyMatch ? bodyMatch.index + bodyMatch[0].length : -1);
+  if (out) return out;
+  const sep = html.endsWith('\n') ? '' : '\n';
+  return html + sep + tag + '\n';
+}
+
 function inject(file) {
   const rel = path.relative(ROOT, file).split(path.sep).join('/');
   let html = fs.readFileSync(file, 'utf8');
+  const withBoot = ensureThemeBoot(file, html);
+  if (withBoot !== html) {
+    fs.writeFileSync(file, withBoot);
+    html = withBoot;
+  }
   const withTokens = ensureTokens(file, html);
   if (withTokens !== html) {
     fs.writeFileSync(file, withTokens);

@@ -48,6 +48,13 @@ html.dark {
     --bk-elev-1: 0 10px 24px -16px rgba(2, 6, 23, .8);
     --bk-elev-2: 0 24px 60px -24px rgba(2, 6, 23, .92);
     --bk-overlay: rgba(2, 6, 23, .62);
+    /* 8.5.6 — quầng sáng dùng chung cho animation/nhấn mạnh. Ở giao diện tối
+       đây là glow thật; ở giao diện sáng được hạ xuống bóng mờ để không chói. */
+    --bk-glow: 0 0 0 1px rgba(99, 102, 241, .32), 0 0 28px -6px rgba(99, 102, 241, .5);
+    --bk-glow-soft: 0 0 18px -8px rgba(56, 189, 248, .55);
+    --bk-glow-danger: 0 0 22px -8px rgba(251, 113, 133, .55);
+    --bk-skeleton: linear-gradient(90deg, rgba(148, 163, 184, .08), rgba(148, 163, 184, .22), rgba(148, 163, 184, .08));
+    --bk-press: rgba(148, 163, 184, .16);
 
     /* --------------- Ánh xạ token cũ của bk-core.css (--bkl-*) ---------- */
     --bkl-text: var(--bk-text);
@@ -90,6 +97,22 @@ html.light {
     --bk-elev-1: 0 10px 24px -18px rgba(15, 23, 42, .35);
     --bk-elev-2: 0 24px 60px -26px rgba(15, 23, 42, .45);
     --bk-overlay: rgba(15, 23, 42, .48);
+
+    /* Glow của giao diện tối không nhìn rõ (và gây chói) trên nền sáng:
+       thay bằng bóng mờ, giữ nguyên cảm giác “nổi” của thành phần. */
+    --bk-glow: 0 0 0 1px rgba(99, 102, 241, .22), 0 8px 20px -12px rgba(15, 23, 42, .35);
+    --bk-glow-soft: 0 6px 16px -12px rgba(2, 132, 199, .45);
+    --bk-glow-danger: 0 6px 16px -12px rgba(220, 38, 38, .4);
+    --bk-skeleton: linear-gradient(90deg, rgba(100, 116, 139, .1), rgba(100, 116, 139, .2), rgba(100, 116, 139, .1));
+    --bk-press: rgba(100, 116, 139, .16);
+}
+
+/* Chuyển giao diện mượt: chỉ đổi nền/chữ của khung, không transition mọi
+   phần tử (tránh giật khi cuộn và tránh “nháy” từng mảnh rời rạc). Các thành
+   phần nổi đã có transition riêng nên đổi màu cùng lúc với trang. */
+@media (prefers-reduced-motion: no-preference) {
+    html { transition: background-color .24s ease, color .24s ease; }
+    body { transition: background-color .24s ease, color .24s ease; }
 }
 
 /* ------------------------------- Nền tảng ------------------------------- */
@@ -107,4 +130,13 @@ html { scrollbar-color: var(--bk-line-strong) transparent; }
 .bkrep-inline,
 #bkReportWin {
     color-scheme: dark;
+}
+
+/* 8.5.6 — Ở giao diện sáng, chính những khung này cũng phải khai báo
+   color-scheme light để thanh cuộn, ô nhập và control gốc không bị tối. */
+html.light .bkc-dark,
+html.light .bkai,
+html.light .bkrep-inline,
+html.light #bkReportWin {
+    color-scheme: light;
 }

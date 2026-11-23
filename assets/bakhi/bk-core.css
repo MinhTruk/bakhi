@@ -73,18 +73,19 @@ html.dark *::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 18
     gap: .55rem;
     padding: .7rem .9rem;
     border-radius: var(--bkl-radius-sm);
-    background: #0f172a;
-    color: #f8fafc;
+    /* 8.5.6 — toast theo giao diện hiện tại, không còn mảng tối cố định. */
+    background: var(--bk-surface-3, #0f172a);
+    color: var(--bk-text, #f8fafc);
     font: 500 .78rem/1.4 Lexend, system-ui, sans-serif;
-    box-shadow: 0 12px 30px -12px rgba(2, 6, 23, .7);
-    border: 1px solid rgba(148, 163, 184, .28);
+    box-shadow: var(--bk-elev-1, 0 12px 30px -12px rgba(2, 6, 23, .7));
+    border: 1px solid var(--bk-line, rgba(148, 163, 184, .28));
     animation: bkToastIn .22s ease-out both;
     pointer-events: auto;
 }
 .bk-toast i { font-size: .9rem; opacity: .95; }
-.bk-toast-success i { color: #34d399; }
-.bk-toast-error i { color: #fb7185; }
-.bk-toast-info i { color: #7dd3fc; }
+.bk-toast-success i { color: var(--bk-ok, #34d399); }
+.bk-toast-error i { color: var(--bk-danger, #fb7185); }
+.bk-toast-info i { color: var(--bk-highlight, #7dd3fc); }
 .bk-toast-out { opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s; }
 @keyframes bkToastIn { from { opacity: 0; transform: translateY(10px) scale(.97); } }
 @media (prefers-reduced-motion: reduce) {
