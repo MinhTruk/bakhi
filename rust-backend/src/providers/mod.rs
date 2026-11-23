@@ -8,13 +8,18 @@
 //   * Khoá API chỉ đọc từ biến môi trường máy chủ (cùng tên với Edge Function).
 //   * Phản hồi lỗi chỉ chứa MÃ LỖI + thông điệp tiếng Việt; chi tiết thô của
 //     provider được lọc khoá và chỉ dùng cho log chẩn đoán nội bộ.
+//
+// 8.6.1: `Retry-After` của provider được đọc và tôn trọng; circuit breaker
+// theo từng provider nằm ở `circuit.rs`.
 // ===========================================================================
 
+pub mod circuit;
 pub mod gemini;
 pub mod openai;
 
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
@@ -138,6 +143,8 @@ pub enum AiErrorCode {
     ProviderDown,
     EmptyResponse,
     BadConfig,
+    /// Provider đang bị circuit breaker mở — không gửi request.
+    CircuitOpen,
     Unknown,
 }
 
@@ -154,6 +161,7 @@ impl AiErrorCode {
             Self::ProviderDown => "PROVIDER_DOWN",
             Self::EmptyResponse => "EMPTY_RESPONSE",
             Self::BadConfig => "BAD_CONFIG",
+            Self::CircuitOpen => "CIRCUIT_OPEN",
             Self::Unknown => "UNKNOWN",
         }
     }
@@ -168,7 +176,7 @@ impl AiErrorCode {
             Self::RateLimit => "Trợ lý AI đang nhận quá nhiều yêu cầu. Bạn thử lại sau ít phút nhé.",
             Self::Quota => "Trợ lý AI đã hết hạn mức sử dụng của nhà cung cấp. Bạn thử lại sau nhé.",
             Self::Timeout => "Trợ lý AI phản hồi quá lâu. Bạn thử lại giúp mình nhé.",
-            Self::ProviderDown => "Dịch vụ AI tạm thời không phản hồi. Bạn vẫn học bình thường được ở các trang bài học.",
+            Self::ProviderDown | Self::CircuitOpen => "Dịch vụ AI tạm thời không phản hồi. Bạn vẫn học bình thường được ở các trang bài học.",
             Self::EmptyResponse => "Trợ lý AI không trả về nội dung. Bạn thử diễn đạt lại câu hỏi nhé.",
             Self::BadConfig => "Cấu hình trợ lý AI chưa đúng. Ban quản trị kiểm tra lại nhà cung cấp và mô hình.",
             Self::Unknown => "Trợ lý AI trả về lỗi không xác định.",
@@ -176,6 +184,7 @@ impl AiErrorCode {
     }
 
     /// Chỉ lỗi tạm thời mới đáng thử lại / chuyển dự phòng.
+    /// Lỗi xác thực, model không tồn tại, cấu hình sai, request sai: KHÔNG thử lại.
     pub fn retryable(self) -> bool {
         matches!(
             self,
@@ -192,6 +201,8 @@ pub struct ProviderError {
     pub provider: Provider,
     /// Đã lọc khoá, tối đa 400 ký tự — KHÔNG trả về client.
     pub detail: String,
+    /// `Retry-After` provider gửi kèm (đã giới hạn trần), nếu có.
+    pub retry_after: Option<Duration>,
 }
 
 impl ProviderError {
@@ -201,6 +212,7 @@ impl ProviderError {
             status: None,
             provider,
             detail: String::new(),
+            retry_after: None,
         }
     }
 
@@ -211,6 +223,12 @@ impl ProviderError {
 
     pub fn with_detail(mut self, raw: &str) -> Self {
         self.detail = sanitize_detail(raw);
+        self
+    }
+
+    pub fn with_retry_after(mut self, after: Option<Duration>) -> Self {
+        // Trần 30 giây: không để một header lạ giữ request quá lâu.
+        self.retry_after = after.map(|value| value.min(Duration::from_secs(30)));
         self
     }
 
@@ -353,6 +371,69 @@ pub(crate) fn usage_from(
     }
 }
 
+/// Đọc `Retry-After` (giây hoặc HTTP-date) thành Duration.
+pub(crate) fn parse_retry_after(raw: Option<&str>) -> Option<Duration> {
+    let raw = raw?.trim();
+    if raw.is_empty() {
+        return None;
+    }
+    if let Ok(seconds) = raw.parse::<u64>() {
+        return Some(Duration::from_secs(seconds));
+    }
+    // HTTP-date: chỉ cần độ chính xác tương đối. Sai định dạng ⇒ bỏ qua.
+    parse_http_date(raw).map(|when| when.saturating_duration_since(Instant::now()))
+}
+
+/// Phân tích HTTP-date dạng IMF-fixdate ("Wed, 21 Oct 2015 07:28:00 GMT").
+fn parse_http_date(raw: &str) -> Option<Instant> {
+    // Không thêm thư viện thời gian: đọc đủ để tính khoảng chờ tương đối.
+    let mut parts = raw.split_whitespace();
+    let _weekday = parts.next()?;
+    let day: u64 = parts.next()?.parse().ok()?;
+    let month = match parts.next()? {
+        "Jan" => 1,
+        "Feb" => 2,
+        "Mar" => 3,
+        "Apr" => 4,
+        "May" => 5,
+        "Jun" => 6,
+        "Jul" => 7,
+        "Aug" => 8,
+        "Sep" => 9,
+        "Oct" => 10,
+        "Nov" => 11,
+        "Dec" => 12,
+        _ => return None,
+    };
+    let year: i64 = parts.next()?.parse().ok()?;
+    let time = parts.next()?;
+    let mut clock = time.split(':');
+    let hour: i64 = clock.next()?.parse().ok()?;
+    let minute: i64 = clock.next()?.parse().ok()?;
+    let second: i64 = clock.next()?.parse().ok()?;
+
+    let days = days_from_civil(year, month, day);
+    let epoch_seconds = days * 86_400 + hour * 3600 + minute * 60 + second;
+    let now_seconds = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .ok()?
+        .as_secs() as i64;
+    if epoch_seconds <= now_seconds {
+        return Some(Instant::now());
+    }
+    Some(Instant::now() + Duration::from_secs((epoch_seconds - now_seconds) as u64))
+}
+
+fn days_from_civil(year: i64, month: u64, day: u64) -> i64 {
+    let y = if month <= 2 { year - 1 } else { year };
+    let era = if y >= 0 { y } else { y - 399 } / 400;
+    let yoe = (y - era * 400) as u64;
+    let mp = if month > 2 { month - 3 } else { month + 9 };
+    let doy = (153 * mp + 2) / 5 + day - 1;
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    era * 146_097 + doe as i64 - 719_468
+}
+
 /// Provider giả lập cho kiểm thử — chỉ bật bằng `AI_TUTOR_MOCK=1`.
 pub struct MockProvider;
 
@@ -393,6 +474,8 @@ pub(crate) fn classify_http(status: u16, body: &str, provider: Provider) -> Prov
         AiErrorCode::Auth
     } else if status == 404 {
         AiErrorCode::ModelNotFound
+    } else if status == 408 {
+        AiErrorCode::Timeout
     } else if status == 429 {
         if lower.contains("quota") || lower.contains("billing") || lower.contains("insufficient") {
             AiErrorCode::Quota
@@ -402,6 +485,7 @@ pub(crate) fn classify_http(status: u16, body: &str, provider: Provider) -> Prov
     } else if status >= 500 {
         AiErrorCode::ProviderDown
     } else {
+        // 400 và mọi mã 4xx khác: lỗi request/cấu hình, KHÔNG thử lại.
         AiErrorCode::Unknown
     };
     ProviderError::new(code, provider)
@@ -440,6 +524,8 @@ mod tests {
         assert!(!AiErrorCode::Auth.retryable());
         assert!(!AiErrorCode::ModelNotFound.retryable());
         assert!(!AiErrorCode::BadConfig.retryable());
+        assert!(!AiErrorCode::Quota.retryable());
+        assert!(!AiErrorCode::CircuitOpen.retryable());
     }
 
     #[test]
@@ -462,6 +548,10 @@ mod tests {
             AiErrorCode::ModelNotFound
         );
         assert_eq!(
+            classify_http(408, "", Provider::Groq).code,
+            AiErrorCode::Timeout
+        );
+        assert_eq!(
             classify_http(429, "", Provider::Groq).code,
             AiErrorCode::RateLimit
         );
@@ -473,5 +563,19 @@ mod tests {
             classify_http(503, "", Provider::Groq).code,
             AiErrorCode::ProviderDown
         );
+        // 400: lỗi request — không thử lại, không chuyển dự phòng.
+        let bad_request = classify_http(400, "bad", Provider::Groq);
+        assert_eq!(bad_request.code, AiErrorCode::Unknown);
+        assert!(!bad_request.retryable());
+    }
+
+    #[test]
+    fn retry_after_parses_seconds_and_caps_values() {
+        assert_eq!(parse_retry_after(Some("7")), Some(Duration::from_secs(7)));
+        let capped = ProviderError::new(AiErrorCode::RateLimit, Provider::Groq)
+            .with_retry_after(parse_retry_after(Some("900")));
+        assert_eq!(capped.retry_after, Some(Duration::from_secs(30)));
+        assert_eq!(parse_retry_after(Some("not-a-number")), None);
+        assert_eq!(parse_retry_after(None), None);
     }
 }

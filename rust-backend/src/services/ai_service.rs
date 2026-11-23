@@ -13,7 +13,7 @@
 // ===========================================================================
 
 use std::sync::Arc;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -28,7 +28,7 @@ use crate::services::prompts::{
     self, build_system_prompt, output_tokens_for_mode, pick_model, sanitize_context, trim_history,
     trim_history_by_budget, SafeContext, TutorMode,
 };
-use crate::services::supabase::{urlencode, RestAuth, SupabaseClient};
+use crate::services::supabase::{urlencode, RestAuth, SupabaseClient, UsageLog};
 use crate::AppState;
 
 pub const MAX_USER_MESSAGE: usize = 4000;
@@ -318,7 +318,11 @@ impl AiService {
         list
     }
 
-    /// Chạy chuỗi provider: thử lại lỗi tạm thời rồi chuyển provider kế tiếp.
+    /// Chạy chuỗi provider: thử lại lỗi tạm thời (tôn trọng Retry-After) rồi
+    /// chuyển provider kế tiếp. Tổng thời gian không vượt quá gateway timeout.
+    ///
+    /// Circuit breaker chỉ *bỏ qua* provider đang OPEN; thứ tự Primary → Fallback
+    /// không đổi và provider khác vẫn chạy bình thường.
     pub async fn run_chain(
         &self,
         settings: &AiSettings,
@@ -329,21 +333,48 @@ impl AiService {
         message: &str,
     ) -> Result<GatewayOutcome, (ProviderError, Vec<Attempt>)> {
         let started = Instant::now();
+        let deadline = started + self.settings.ai_gateway_timeout;
         let (max_tokens, target_tokens, deep) =
             output_tokens_for_mode(mode, message, settings.max_output_tokens.max(128));
         let candidates = self.candidates(settings, routes);
-        let timeout = std::time::Duration::from_millis(settings.timeout_ms.clamp(5_000, 120_000));
+        let per_attempt = Duration::from_millis(settings.timeout_ms.clamp(1_000, 120_000));
 
         let mut attempts: Vec<Attempt> = Vec::new();
         let mut last_error: Option<ProviderError> = None;
 
-        for (index, candidate) in candidates.iter().enumerate() {
+        'providers: for (index, candidate) in candidates.iter().enumerate() {
+            if Instant::now() >= deadline {
+                last_error = Some(ProviderError::new(AiErrorCode::Timeout, candidate.provider));
+                break;
+            }
+
+            if !self.state.circuits.allow(candidate.provider) {
+                attempts.push(Attempt {
+                    provider: candidate.provider,
+                    model: candidate.model.clone(),
+                    ok: false,
+                    code: Some(AiErrorCode::CircuitOpen),
+                    latency_ms: 0,
+                });
+                tracing::warn!(
+                    target: "bakhi::circuit",
+                    provider = candidate.provider.as_str(),
+                    "bỏ qua provider đang OPEN"
+                );
+                last_error = Some(ProviderError::new(
+                    AiErrorCode::CircuitOpen,
+                    candidate.provider,
+                ));
+                continue;
+            }
+
             let provider_impl = if self.settings.ai_mock {
                 Some(Arc::new(MockProvider) as Arc<dyn crate::providers::AiProvider>)
             } else {
                 self.state.providers.get(candidate.provider)
             };
             let Some(provider_impl) = provider_impl else {
+                self.state.circuits.record_failure(candidate.provider);
                 last_error = Some(ProviderError::new(
                     AiErrorCode::BadConfig,
                     candidate.provider,
@@ -351,7 +382,16 @@ impl AiService {
                 continue;
             };
 
-            for _attempt in 0..=self.settings.ai_max_retries {
+            for retry in 0..=self.settings.ai_max_retries {
+                if retry > 0 {
+                    self.state.metrics.record_retry();
+                }
+                let remaining = deadline.saturating_duration_since(Instant::now());
+                if remaining < Duration::from_millis(50) {
+                    last_error = Some(ProviderError::new(AiErrorCode::Timeout, candidate.provider));
+                    break 'providers;
+                }
+
                 let attempt_start = Instant::now();
                 let request = ProviderRequest {
                     provider: candidate.provider,
@@ -362,28 +402,36 @@ impl AiService {
                     temperature: 0.4,
                     api_key: candidate.api_key.clone(),
                 };
-                let outcome = tokio::time::timeout(timeout, provider_impl.generate(request)).await;
+                // Không để một attempt vượt quá hạn của cả chuỗi.
+                let budget = per_attempt.min(remaining);
+                let outcome = tokio::time::timeout(budget, provider_impl.generate(request)).await;
 
                 match outcome {
                     Err(_) => {
                         let error = ProviderError::new(AiErrorCode::Timeout, candidate.provider);
+                        let latency_ms = attempt_start.elapsed().as_millis() as u64;
+                        self.state.circuits.record_failure(candidate.provider);
+                        self.state.metrics.record_provider_attempt(latency_ms);
                         attempts.push(Attempt {
                             provider: candidate.provider,
                             model: candidate.model.clone(),
                             ok: false,
                             code: Some(error.code),
-                            latency_ms: attempt_start.elapsed().as_millis() as u64,
+                            latency_ms,
                         });
                         last_error = Some(error);
-                        // Timeout là lỗi tạm thời: thử lại theo cấu hình.
+                        // Timeout là lỗi tạm thời: thử lại nếu còn lượt và còn giờ.
                     }
                     Ok(Ok(result)) => {
+                        let latency_ms = attempt_start.elapsed().as_millis() as u64;
+                        self.state.circuits.record_success(candidate.provider);
+                        self.state.metrics.record_provider_attempt(latency_ms);
                         attempts.push(Attempt {
                             provider: candidate.provider,
                             model: candidate.model.clone(),
                             ok: true,
                             code: None,
-                            latency_ms: attempt_start.elapsed().as_millis() as u64,
+                            latency_ms,
                         });
                         return Ok(GatewayOutcome {
                             result,
@@ -397,33 +445,98 @@ impl AiService {
                         });
                     }
                     Ok(Err(error)) => {
+                        let latency_ms = attempt_start.elapsed().as_millis() as u64;
+                        self.state.metrics.record_provider_attempt(latency_ms);
                         attempts.push(Attempt {
                             provider: candidate.provider,
                             model: candidate.model.clone(),
                             ok: false,
                             code: Some(error.code),
-                            latency_ms: attempt_start.elapsed().as_millis() as u64,
+                            latency_ms,
                         });
-                        let retryable = error.retryable();
-                        if !retryable || self.settings.ai_max_retries == 0 {
+
+                        if !error.retryable() {
+                            // AUTH / MODEL_NOT_FOUND / BAD_CONFIG / request sai:
+                            // không thử lại và không chuyển dự phòng. QUOTA thì
+                            // không thử lại nhưng vẫn thử provider kế tiếp.
+                            let stops_chain = matches!(
+                                error.code,
+                                AiErrorCode::Auth
+                                    | AiErrorCode::ModelNotFound
+                                    | AiErrorCode::BadConfig
+                                    | AiErrorCode::Unknown
+                            );
                             last_error = Some(error);
+                            if stops_chain {
+                                break 'providers;
+                            }
                             break;
                         }
+
+                        self.state.circuits.record_failure(candidate.provider);
+                        let wait = error.retry_after.unwrap_or(self.settings.retry_backoff);
                         last_error = Some(error);
+                        if retry == self.settings.ai_max_retries {
+                            break;
+                        }
+                        let remaining = deadline.saturating_duration_since(Instant::now());
+                        if wait >= remaining {
+                            break 'providers;
+                        }
+                        tokio::time::sleep(wait).await;
                     }
                 }
             }
         }
 
-        Err((
-            last_error
-                .unwrap_or_else(|| ProviderError::new(AiErrorCode::BadConfig, Provider::Custom)),
-            attempts,
-        ))
+        let error = match last_error {
+            // Mọi provider đều OPEN: giữ mã cũ để frontend không phải biết
+            // khái niệm circuit breaker.
+            Some(error) if error.code == AiErrorCode::CircuitOpen => {
+                ProviderError::new(AiErrorCode::ProviderDown, error.provider)
+            }
+            Some(error) => error,
+            None => ProviderError::new(AiErrorCode::BadConfig, Provider::Custom),
+        };
+        Err((error, attempts))
     }
 
     /// Xử lý action `chat` — tương thích với Edge Function `ai-tutor-api`.
     pub async fn chat(&self, user: &AuthUser, request: ChatRequest) -> Result<Value, ApiError> {
+        // Giới hạn đồng thời theo người dùng (mặc định 1): giống khoá `inFlight`
+        // của Edge Function, hai tab không gọi AI chồng nhau. Có hạn chờ.
+        let _permit = match self.state.concurrency.acquire_ai(&user.id).await {
+            Some(permit) => permit,
+            None => {
+                return Err(ApiError::busy(
+                    "Trợ lý AI đang trả lời câu trước. Bạn chờ một chút nhé.",
+                ))
+            }
+        };
+
+        let started = Instant::now();
+        let result = self.chat_inner(user, request).await;
+        match &result {
+            Ok(value) => {
+                let fell_back = value
+                    .get("meta")
+                    .and_then(|meta| meta.get("fellBack"))
+                    .and_then(|value| value.as_bool())
+                    .unwrap_or(false);
+                self.state
+                    .metrics
+                    .record_ai(true, started.elapsed().as_millis() as u64, fell_back);
+            }
+            Err(_) => {
+                self.state
+                    .metrics
+                    .record_ai(false, started.elapsed().as_millis() as u64, false);
+            }
+        }
+        result
+    }
+
+    async fn chat_inner(&self, user: &AuthUser, request: ChatRequest) -> Result<Value, ApiError> {
         let settings = self.load_settings().await?;
         if !settings.enabled {
             return Err(ApiError::service_unavailable(
@@ -482,29 +595,46 @@ impl AiService {
 
         let context = sanitize_context(request.context.as_ref());
 
-        // Hồ sơ học sinh — suy ra từ tài khoản đã xác thực bằng service role
-        // (đọc một dòng id, không đọc dữ liệu học tập của người khác).
-        let student_row = self.student_id(user).await?;
-        let student_id = student_row.as_deref();
+        // Hồ sơ học sinh — auth user → student_devices → students. Không tin id
+        // do client gửi. Hồ sơ ngừng hoạt động bị chặn như Edge Function.
+        let student = self.student_record(user).await?;
+        if let Some(record) = &student {
+            if !record.is_active {
+                return Err(ApiError::inactive());
+            }
+        }
+        let student_id = student.as_ref().map(|record| record.id.as_str());
 
         if settings.daily_requests > 0 || settings.daily_tokens > 0 {
             if let Some(sid) = student_id {
                 let (requests, tokens) = self.usage_today(sid).await;
                 if settings.daily_requests > 0 && requests >= settings.daily_requests as i64 {
-                    return Err(ApiError::rate_limited(format!(
-                        "Bạn đã dùng hết {} câu hỏi AI hôm nay. Hạn mức sẽ được tính lại sau 24 giờ.",
-                        settings.daily_requests
-                    )));
+                    return Err(ApiError::new(
+                        axum::http::StatusCode::TOO_MANY_REQUESTS,
+                        "DAILY_LIMIT",
+                        format!(
+                            "Bạn đã dùng hết {} câu hỏi AI hôm nay. Hạn mức sẽ được tính lại sau 24 giờ.",
+                            settings.daily_requests
+                        ),
+                    )
+                    .retryable(true));
                 }
                 if settings.daily_tokens > 0 && tokens >= settings.daily_tokens as i64 {
-                    return Err(ApiError::rate_limited(
+                    return Err(ApiError::new(
+                        axum::http::StatusCode::TOO_MANY_REQUESTS,
+                        "DAILY_TOKEN_LIMIT",
                         "Bạn đã chạm hạn mức dung lượng AI hôm nay. Hạn mức sẽ được tính lại sau 24 giờ.",
-                    ));
+                    )
+                    .retryable(true));
                 }
             }
         }
 
-        if !self.settings.persist_conversations || student_id.is_none() {
+        if self.settings.persist_conversations && student_id.is_none() {
+            // Giống Edge Function: tài khoản chưa gắn hồ sơ học sinh.
+            return Err(ApiError::not_bound());
+        }
+        if !self.settings.persist_conversations {
             // Chế độ không lưu: một lượt hỏi–đáp, không ghi database.
             return self
                 .ephemeral_chat(&settings, mode, message, context, student_id)
@@ -609,18 +739,16 @@ impl AiService {
         match outcome {
             Err((error, _attempts)) => {
                 self.supabase
-                    .log_ai_usage(
-                        Some(&student_id),
-                        "chat",
-                        error.provider.as_str(),
-                        &choice.model,
-                        mode.as_str(),
-                        0,
-                        0,
-                        0,
-                        false,
-                        error.code.as_str(),
-                    )
+                    .log_ai_usage(UsageLog {
+                        student_id: Some(&student_id),
+                        action: "chat",
+                        provider: error.provider.as_str(),
+                        model: &choice.model,
+                        mode: mode.as_str(),
+                        error_code: error.code.as_str(),
+                        ok: false,
+                        ..UsageLog::default()
+                    })
                     .await;
                 let retryable = error.code.retryable();
                 Err(ApiError::bad_gateway(
@@ -673,18 +801,20 @@ impl AiService {
                 .await;
 
                 self.supabase
-                    .log_ai_usage(
-                        Some(&student_id),
-                        "chat",
-                        outcome.result.provider.as_str(),
-                        &outcome.result.model,
-                        mode.as_str(),
-                        outcome.result.usage.input,
-                        outcome.result.usage.output,
-                        outcome.latency_ms,
-                        true,
-                        "",
-                    )
+                    .log_ai_usage(UsageLog {
+                        student_id: Some(&student_id),
+                        action: "chat",
+                        provider: outcome.result.provider.as_str(),
+                        model: &outcome.result.model,
+                        mode: mode.as_str(),
+                        tokens_in: outcome.result.usage.input,
+                        tokens_out: outcome.result.usage.output,
+                        latency_ms: outcome.latency_ms,
+                        ok: true,
+                        fell_back: outcome.fell_back,
+                        estimated: outcome.result.usage.estimated,
+                        ..UsageLog::default()
+                    })
                     .await;
 
                 let (after_requests, after_tokens) = self.usage_today(&student_id).await;
@@ -777,18 +907,20 @@ impl AiService {
         {
             Ok(outcome) => {
                 self.supabase
-                    .log_ai_usage(
+                    .log_ai_usage(UsageLog {
                         student_id,
-                        "chat",
-                        outcome.result.provider.as_str(),
-                        &outcome.result.model,
-                        mode.as_str(),
-                        outcome.result.usage.input,
-                        outcome.result.usage.output,
-                        outcome.latency_ms,
-                        true,
-                        "",
-                    )
+                        action: "chat",
+                        provider: outcome.result.provider.as_str(),
+                        model: &outcome.result.model,
+                        mode: mode.as_str(),
+                        tokens_in: outcome.result.usage.input,
+                        tokens_out: outcome.result.usage.output,
+                        latency_ms: outcome.latency_ms,
+                        ok: true,
+                        fell_back: outcome.fell_back,
+                        estimated: outcome.result.usage.estimated,
+                        ..UsageLog::default()
+                    })
                     .await;
                 Ok(json!({
                     "conversation": Value::Null,
@@ -827,18 +959,11 @@ impl AiService {
         }
     }
 
-    async fn student_id(&self, user: &AuthUser) -> Result<Option<String>, ApiError> {
-        let path = format!(
-            "students?auth_user_id=eq.{}&select=id&limit=1",
-            urlencode(&user.id)
-        );
-        let rows = self.supabase.select(&path, RestAuth::Service).await?;
-        Ok(rows
-            .as_array()
-            .and_then(|list| list.first())
-            .and_then(|row| row.get("id"))
-            .and_then(|id| id.as_str())
-            .map(|id| id.to_string()))
+    async fn student_record(
+        &self,
+        user: &AuthUser,
+    ) -> Result<Option<crate::services::supabase::StudentRecord>, ApiError> {
+        self.supabase.student_record(user).await
     }
 
     async fn usage_today(&self, student_id: &str) -> (i64, i64) {
@@ -1066,11 +1191,17 @@ pub fn clean_message(raw: &str) -> String {
 
 pub fn auto_title(message: &str, mode: TutorMode) -> String {
     let compact = message.split_whitespace().collect::<Vec<_>>().join(" ");
-    let title: String = compact.chars().take(70).collect();
-    if title.trim().is_empty() {
-        format!("Hội thoại {}", mode.as_str())
-    } else {
+    if compact.is_empty() {
+        return format!("Hội thoại {}", mode.as_str());
+    }
+    // Giống Edge Function: 64 ký tự, cắt bằng dấu ba chấm.
+    if compact.chars().count() > 64 {
+        let mut title: String = compact.chars().take(61).collect();
+        title = title.trim_end().to_string();
+        title.push('…');
         title
+    } else {
+        compact
     }
 }
 
@@ -1216,6 +1347,15 @@ mod tests {
             "Giải thích định lý Pi-ta-go"
         );
         assert_eq!(auto_title("   ", TutorMode::Hint), "Hội thoại hint");
+    }
+
+    #[test]
+    fn auto_title_truncates_like_edge_function() {
+        let long = "a".repeat(120);
+        let title = auto_title(&long, TutorMode::Explain);
+        assert!(title.ends_with('…'));
+        assert_eq!(title.chars().count(), 62);
+        assert!(title.chars().count() <= 64);
     }
 
     #[test]

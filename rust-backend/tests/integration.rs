@@ -1,223 +1,18 @@
 // ===========================================================================
 // Bá Khí — Rust backend · tests/integration.rs
 //
-// Kiểm thử end-to-end qua Router thật, với Supabase và provider giả lập chạy
-// trên 127.0.0.1. Không gọi mạng ngoài, không cần khoá thật.
+// End-to-end cũ (8.6.0) giữ nguyên hành vi, chuyển sang harness dùng chung.
+// Các nhóm test mới nằm ở health_tests / auth_tests / api_contract_tests /
+// ai_gateway_tests / fallback_tests / circuit_breaker_tests /
+// learning_stats_tests / error_handling_tests / concurrency_tests.
 // ===========================================================================
 
-use std::sync::{Arc, Mutex};
+mod common;
 
 use axum::body::Body;
-use axum::extract::State;
 use axum::http::{header, Method, Request, StatusCode};
-use axum::response::Response;
-use axum::Router;
-use bakhi_backend::config::Settings;
-use bakhi_backend::{build_router, AppState};
-use http_body_util::BodyExt;
-use serde_json::{json, Value};
-use tower::ServiceExt;
-
-const VALID_TOKEN: &str = "valid-token-for-integration-tests";
-
-#[derive(Clone, Default)]
-struct MockState {
-    calls: Arc<Mutex<Vec<String>>>,
-    provider_mode: Arc<Mutex<String>>,
-}
-
-impl MockState {
-    fn record(&self, entry: impl Into<String>) {
-        self.calls.lock().unwrap().push(entry.into());
-    }
-    fn calls(&self) -> Vec<String> {
-        self.calls.lock().unwrap().clone()
-    }
-    fn set_provider_mode(&self, mode: &str) {
-        *self.provider_mode.lock().unwrap() = mode.to_string();
-    }
-}
-
-fn json_response(status: StatusCode, body: Value) -> Response {
-    Response::builder()
-        .status(status)
-        .header(header::CONTENT_TYPE, "application/json")
-        .body(Body::from(body.to_string()))
-        .unwrap()
-}
-
-async fn mock_handler(State(state): State<MockState>, request: Request<Body>) -> Response {
-    let method = request.method().clone();
-    let path = request.uri().path().to_string();
-    let query = request.uri().query().unwrap_or("").to_string();
-    let authorization = request
-        .headers()
-        .get(header::AUTHORIZATION)
-        .and_then(|v| v.to_str().ok())
-        .unwrap_or("")
-        .to_string();
-    let body_bytes = axum::body::to_bytes(request.into_body(), 1_000_000)
-        .await
-        .unwrap_or_default();
-    state.record(format!("{method} {path}?{query}"));
-
-    match (method, path.as_str()) {
-        (Method::GET, "/auth/v1/user") => {
-            if authorization == format!("Bearer {VALID_TOKEN}") {
-                json_response(
-                    StatusCode::OK,
-                    json!({ "id": "11111111-2222-3333-4444-555555555555", "email": "hocsinh@example.com" }),
-                )
-            } else {
-                json_response(StatusCode::UNAUTHORIZED, json!({ "msg": "invalid token" }))
-            }
-        }
-        (Method::GET, "/auth/v1/health") => json_response(StatusCode::OK, json!({})),
-        (Method::GET, "/rest/v1/students") => json_response(
-            StatusCode::OK,
-            json!([{ "id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "display_name": "An", "student_code": "BK-0001" }]),
-        ),
-        (Method::GET, "/rest/v1/ai_settings") => json_response(
-            StatusCode::OK,
-            json!([{
-                "enabled": true,
-                "provider": "groq",
-                "model": "test-model",
-                "fallback_provider": "",
-                "fallback_model": "",
-                "routing_enabled": false,
-                "max_context_messages": 10,
-                "max_output_tokens": 512,
-                "timeout_ms": 5000,
-                "daily_requests": 0,
-                "daily_tokens": 0,
-                "save_history": true,
-                "use_lesson_context": true,
-                "language": "vi",
-                "allowed_modes": ["explain","steps","hint","check","practice","mistakes","summary","socratic"],
-                "system_prompt": "",
-                "max_input_tokens": 3000
-            }]),
-        ),
-        (Method::GET, "/rest/v1/ai_model_routes") => json_response(
-            StatusCode::OK,
-            json!([{ "position": 0, "label": "Primary", "provider": "groq", "model": "test-model", "key_ref": "", "enabled": true }]),
-        ),
-        (Method::GET, "/rest/v1/ai_usage_logs") => json_response(StatusCode::OK, json!([])),
-        // Không có lịch sử: hội thoại mới bắt đầu từ câu hỏi hiện tại.
-        (Method::GET, "/rest/v1/ai_messages") => json_response(StatusCode::OK, json!([])),
-        (Method::POST, "/rest/v1/ai_conversations") => json_response(
-            StatusCode::CREATED,
-            json!([{ "id": "99999999-8888-7777-6666-555555555555", "title": "Hội thoại mới", "message_count": 0 }]),
-        ),
-        (Method::POST, "/rest/v1/ai_messages") => {
-            let parsed: Value = serde_json::from_slice(&body_bytes).unwrap_or(Value::Null);
-            json_response(
-                StatusCode::CREATED,
-                json!([{
-                    "id": format!("msg-{}", state.calls().len()),
-                    "role": parsed.get("role").cloned().unwrap_or(json!("user")),
-                    "content": parsed.get("content").cloned().unwrap_or(json!("")),
-                    "created_at": "2026-11-23T10:00:00Z"
-                }]),
-            )
-        }
-        (Method::PATCH, _) => {
-            state.record("PATCH appplied");
-            Response::builder()
-                .status(StatusCode::NO_CONTENT)
-                .body(Body::empty())
-                .unwrap()
-        }
-        (Method::POST, path) if path.starts_with("/v1/chat/completions") => {
-            let mode = state.provider_mode.lock().unwrap().clone();
-            let parsed: Value = serde_json::from_slice(&body_bytes).unwrap_or(Value::Null);
-            let sent_key = authorization;
-            if mode == "auth_error" {
-                return json_response(
-                    StatusCode::UNAUTHORIZED,
-                    json!({ "error": { "message": format!("Incorrect API key provided: {sent_key}") } }),
-                );
-            }
-            if mode == "server_error" {
-                return json_response(
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    json!({ "error": "boom" }),
-                );
-            }
-            let model = parsed
-                .get("model")
-                .and_then(|v| v.as_str())
-                .unwrap_or("test-model");
-            json_response(
-                StatusCode::OK,
-                json!({
-                    "model": model,
-                    "choices": [{
-                        "message": { "role": "assistant", "content": "Chào bạn, cùng học nhé!" },
-                        "finish_reason": "stop"
-                    }],
-                    "usage": { "prompt_tokens": 42, "completion_tokens": 7, "total_tokens": 49 }
-                }),
-            )
-        }
-        _ => json_response(StatusCode::NOT_FOUND, json!({ "error": "unmocked" })),
-    }
-}
-
-struct Harness {
-    app: Router,
-    mock: MockState,
-}
-
-async fn harness(tweak: impl FnOnce(&mut Settings)) -> Harness {
-    let mock = MockState::default();
-
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
-    let addr = listener.local_addr().unwrap();
-    let server = Router::new()
-        .fallback(mock_handler)
-        .with_state(mock.clone());
-    tokio::spawn(async move {
-        axum::serve(listener, server).await.ok();
-    });
-
-    let mut settings = Settings::for_tests();
-    settings.supabase_url = format!("http://{addr}");
-    settings.ai_base_url = Some(format!("http://{addr}/v1"));
-    settings.persist_conversations = true;
-    tweak(&mut settings);
-
-    let state = AppState::new(settings).unwrap();
-    Harness {
-        app: build_router(state),
-        mock,
-    }
-}
-
-fn post_json(uri: &str, body: Value, token: Option<&str>) -> Request<Body> {
-    let mut builder = Request::builder()
-        .method(Method::POST)
-        .uri(uri)
-        .header(header::CONTENT_TYPE, "application/json");
-    if let Some(token) = token {
-        builder = builder.header(header::AUTHORIZATION, format!("Bearer {token}"));
-    }
-    builder.body(Body::from(body.to_string())).unwrap()
-}
-
-fn get(uri: &str, token: Option<&str>) -> Request<Body> {
-    let mut builder = Request::builder().method(Method::GET).uri(uri);
-    if let Some(token) = token {
-        builder = builder.header(header::AUTHORIZATION, format!("Bearer {token}"));
-    }
-    builder.body(Body::empty()).unwrap()
-}
-
-async fn body_json(response: Response) -> Value {
-    let bytes = response.into_body().collect().await.unwrap().to_bytes();
-    serde_json::from_slice(&bytes).unwrap_or(Value::Null)
-}
+use common::*;
+use serde_json::json;
 
 #[tokio::test]
 async fn health_is_public_and_reports_version() {
@@ -267,10 +62,7 @@ async fn me_returns_authenticated_identity_and_student() {
         .unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     let body = body_json(response).await;
-    assert_eq!(
-        body["data"]["user"]["id"],
-        "11111111-2222-3333-4444-555555555555"
-    );
+    assert_eq!(body["data"]["user"]["id"], AUTH_USER_ID);
     assert_eq!(body["data"]["student"]["student_code"], "BK-0001");
 }
 
@@ -358,7 +150,7 @@ async fn chat_rejects_malformed_json() {
 }
 
 #[tokio::test]
-async fn chat_rejects_disabled_mode() {
+async fn chat_rejects_unknown_mode_by_falling_back_to_explain() {
     let harness = harness(|_| {}).await;
     let response = harness
         .app

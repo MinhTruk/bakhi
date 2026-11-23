@@ -36,6 +36,10 @@ ENV HOST=0.0.0.0 \
 
 EXPOSE 8080
 
+# Orchestration gửi SIGTERM trước khi kill: server bật draining, ngừng nhận request
+# mới và chờ request đang chạy tối đa SHUTDOWN_GRACE_MS rồi mới kết thúc.
+STOPSIGNAL SIGTERM
+
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -fsS "http://127.0.0.1:${PORT}/api/v1/health" || exit 1
 

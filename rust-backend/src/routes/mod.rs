@@ -6,6 +6,7 @@ pub mod ai;
 pub mod data;
 pub mod health;
 pub mod me;
+pub mod metrics;
 
 use axum::http::{header, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};

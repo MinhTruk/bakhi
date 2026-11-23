@@ -1,0 +1,74 @@
+{
+  "ok": true,
+  "data": {
+    "conversation": {
+      "id": "99999999-8888-7777-6666-555555555555",
+      "title": "Giải thích định lý Pi-ta-go",
+      "mode": "explain",
+      "message_count": 2,
+      "last_provider": "groq",
+      "last_model": "test-model"
+    },
+    "user_message": {
+      "id": "msg-1",
+      "role": "user",
+      "content": "Giải thích định lý Pi-ta-go",
+      "mode": "explain",
+      "provider": "",
+      "model": "",
+      "context_ref": {},
+      "error_code": "",
+      "created_at": "2026-11-23T10:00:00Z"
+    },
+    "message": {
+      "id": "msg-2",
+      "role": "assistant",
+      "content": "Chào bạn, cùng học nhé!",
+      "mode": "explain",
+      "provider": "groq",
+      "model": "test-model",
+      "context_ref": {},
+      "error_code": "",
+      "created_at": "2026-11-23T10:00:00Z"
+    },
+    "meta": {
+      "provider": "groq",
+      "providerLabel": "Groq",
+      "model": "test-model",
+      "mode": "explain",
+      "routing": "off",
+      "routeLabel": "Primary",
+      "attempts": [
+        {
+          "provider": "Groq",
+          "model": "test-model",
+          "ok": true,
+          "code": "",
+          "latencyMs": 1
+        }
+      ],
+      "fellBack": false,
+      "mock": false,
+      "tokens": {
+        "input": 42,
+        "output": 7,
+        "total": 49,
+        "estimated": false
+      },
+      "outputBudget": {
+        "maxTokens": 512,
+        "target": 512,
+        "deep": false
+      },
+      "latencyMs": 2,
+      "usage": {
+        "requests": 0,
+        "tokens": 0
+      },
+      "limits": {
+        "dailyRequests": 0,
+        "dailyTokens": 0
+      }
+    }
+  }
+}

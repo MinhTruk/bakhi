@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "error": {
+    "code": "CODE",
+    "message": "Thông điệp tiếng Việt.",
+    "retryable": false
+  },
+  "request_id": "00000000-0000-0000-0000-000000000000"
+}

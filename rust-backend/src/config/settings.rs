@@ -3,6 +3,11 @@
 //
 // Toàn bộ cấu hình đọc từ biến môi trường. KHÔNG có giá trị bí mật mặc định,
 // KHÔNG ghi giá trị bí mật vào log (Debug được cài đặt thủ công để che).
+//
+// 8.6.1: thêm timeout theo từng lớp (kết nối → provider → gateway → request),
+// giới hạn đồng thời, circuit breaker và thời gian chờ khi shutdown. Mọi ràng
+// buộc được kiểm tra NGAY khi khởi động — cấu hình sai làm tiến trình dừng với
+// thông điệp rõ ràng, không để lỗi xuất hiện lúc đang phục vụ học sinh.
 // ===========================================================================
 
 use std::collections::HashMap;
@@ -12,12 +17,28 @@ use std::time::Duration;
 
 /// Thời gian chờ và giới hạn mặc định — dùng chung cho mọi môi trường.
 const DEFAULT_PORT: u16 = 8080;
-const DEFAULT_AI_TIMEOUT_MS: u64 = 30_000;
+const DEFAULT_CONNECT_TIMEOUT_MS: u64 = 5_000;
+const DEFAULT_PROVIDER_TIMEOUT_MS: u64 = 30_000;
+const DEFAULT_GATEWAY_TIMEOUT_MS: u64 = 40_000;
 const DEFAULT_REQUEST_TIMEOUT_MS: u64 = 45_000;
+const DEFAULT_SUPABASE_TIMEOUT_MS: u64 = 10_000;
+const DEFAULT_SHUTDOWN_GRACE_MS: u64 = 20_000;
+const DEFAULT_RETRY_BACKOFF_MS: u64 = 500;
+const DEFAULT_CONCURRENCY_WAIT_MS: u64 = 750;
 const DEFAULT_MAX_BODY_BYTES: usize = 256 * 1024;
 const DEFAULT_RATE_PER_MIN: u32 = 240;
 const DEFAULT_AI_RATE_PER_MIN: u32 = 30;
 const DEFAULT_MAX_RETRIES: u8 = 1;
+const DEFAULT_MAX_CONCURRENCY: usize = 512;
+const DEFAULT_AI_CONCURRENCY: usize = 32;
+const DEFAULT_USER_CONCURRENCY: usize = 1;
+const DEFAULT_CIRCUIT_THRESHOLD: u32 = 5;
+const DEFAULT_CIRCUIT_COOLDOWN_MS: u64 = 30_000;
+const DEFAULT_CIRCUIT_HALF_OPEN: u32 = 1;
+
+const MIN_BODY_BYTES: usize = 1_024;
+const MAX_BODY_BYTES_LIMIT: usize = 16 * 1024 * 1024;
+const MAX_CONCURRENCY_LIMIT: usize = 65_535;
 
 /// Origin mặc định của website (GitHub Pages). Chỉ dùng khi CORS_ORIGINS trống.
 const DEFAULT_CORS_ORIGIN: &str = "https://minhtruk.github.io";
@@ -28,6 +49,10 @@ pub enum ConfigError {
     Missing(&'static str),
     #[error("giá trị không hợp lệ cho biến môi trường: {0}")]
     Invalid(&'static str),
+    /// Cấu hình đọc được nhưng các giá trị mâu thuẫn nhau (ví dụ gateway timeout
+    /// lớn hơn request timeout). Thông điệp nêu tên biến, không nêu giá trị bí mật.
+    #[error("cấu hình không nhất quán: {0}")]
+    UnsafeCombination(&'static str),
 }
 
 #[derive(Clone)]
@@ -39,8 +64,9 @@ pub struct Settings {
 
     pub supabase_url: String,
     pub supabase_anon_key: String,
-    /// Chỉ dùng cho tác vụ đọc cấu hình máy chủ (ai_settings, ai_model_routes)
-    /// và ghi nhật ký sử dụng. Không dùng thay quyền người dùng.
+    /// Chỉ dùng cho tác vụ đọc cấu hình máy chủ (ai_settings, ai_model_routes),
+    /// ánh xạ danh tính (student_devices → students) và ghi nhật ký sử dụng.
+    /// Không dùng thay quyền người dùng để đọc dữ liệu học tập.
     pub supabase_service_key: Option<String>,
 
     pub ai_primary_key: Option<String>,
@@ -52,17 +78,51 @@ pub struct Settings {
     pub ai_base_url: Option<String>,
     pub ai_mock: bool,
     pub ai_max_retries: u8,
+    /// Timeout một lần gọi provider (một attempt).
     pub ai_timeout: Duration,
+    /// Trần thời gian cho toàn bộ chuỗi Primary → Fallback (mọi attempt).
+    pub ai_gateway_timeout: Duration,
 
+    /// Timeout kết nối TCP tới Supabase / provider.
+    pub connect_timeout: Duration,
+    /// Timeout một request HTTP tới Supabase (PostgREST/Auth).
+    pub supabase_timeout: Duration,
+    /// Timeout tổng cho một request HTTP của Axum.
     pub request_timeout: Duration,
+    /// Thời gian tối đa chờ request đang chạy khi nhận SIGTERM/SIGINT.
+    pub shutdown_grace: Duration,
+    /// Chờ tối thiểu trước khi thử lại (có thể tăng theo Retry-After).
+    pub retry_backoff: Duration,
+
     pub max_body_bytes: usize,
     pub rate_limit_per_min: u32,
     pub ai_rate_per_min: u32,
+
+    /// Số request đồng thời toàn dịch vụ.
+    pub max_concurrency: usize,
+    /// Số lượt gọi AI đồng thời.
+    pub max_ai_concurrency: usize,
+    /// Số lượt gọi AI đồng thời cho mỗi người dùng.
+    pub max_user_concurrency: usize,
+    /// Thời gian chờ lấy semaphore trước khi trả 429.
+    pub concurrency_wait: Duration,
+
+    /// Số lỗi liên tiếp để mở circuit của một provider.
+    pub circuit_threshold: u32,
+    /// Thời gian provider nghỉ trước khi thử HALF_OPEN.
+    pub circuit_cooldown: Duration,
+    /// Số request thử nghiệm tối đa khi HALF_OPEN.
+    pub circuit_half_open_limit: u32,
 
     /// Ghi hội thoại AI vào Supabase như Edge Function hiện tại.
     pub persist_conversations: bool,
     /// Tin header X-Forwarded-For của proxy phía trước.
     pub trust_proxy: bool,
+
+    /// `GET /api/v1/metrics` (định dạng Prometheus) — mặc định tắt.
+    pub metrics_enabled: bool,
+    /// Token bắt buộc khi bật metrics. Rỗng ⇒ endpoint trả 404 dù đã bật.
+    pub metrics_token: Option<String>,
 }
 
 impl fmt::Debug for Settings {
@@ -94,12 +154,26 @@ impl fmt::Debug for Settings {
             .field("ai_mock", &self.ai_mock)
             .field("ai_max_retries", &self.ai_max_retries)
             .field("ai_timeout", &self.ai_timeout)
+            .field("ai_gateway_timeout", &self.ai_gateway_timeout)
+            .field("connect_timeout", &self.connect_timeout)
+            .field("supabase_timeout", &self.supabase_timeout)
             .field("request_timeout", &self.request_timeout)
+            .field("shutdown_grace", &self.shutdown_grace)
+            .field("retry_backoff", &self.retry_backoff)
             .field("max_body_bytes", &self.max_body_bytes)
             .field("rate_limit_per_min", &self.rate_limit_per_min)
             .field("ai_rate_per_min", &self.ai_rate_per_min)
+            .field("max_concurrency", &self.max_concurrency)
+            .field("max_ai_concurrency", &self.max_ai_concurrency)
+            .field("max_user_concurrency", &self.max_user_concurrency)
+            .field("concurrency_wait", &self.concurrency_wait)
+            .field("circuit_threshold", &self.circuit_threshold)
+            .field("circuit_cooldown", &self.circuit_cooldown)
+            .field("circuit_half_open_limit", &self.circuit_half_open_limit)
             .field("persist_conversations", &self.persist_conversations)
             .field("trust_proxy", &self.trust_proxy)
+            .field("metrics_enabled", &self.metrics_enabled)
+            .field("metrics_token", &self.metrics_token.as_deref().map(redact))
             .finish()
     }
 }
@@ -181,7 +255,7 @@ impl Settings {
             }
         }
 
-        Ok(Self {
+        let settings = Self {
             host: var("HOST").unwrap_or_else(|| "0.0.0.0".to_string()),
             port: parse_num::<u16>("PORT")?.unwrap_or(DEFAULT_PORT),
             cors_origins,
@@ -199,23 +273,130 @@ impl Settings {
                 .unwrap_or(DEFAULT_MAX_RETRIES)
                 .min(2),
             ai_timeout: Duration::from_millis(
-                parse_num::<u64>("AI_TUTOR_TIMEOUT")?.unwrap_or(DEFAULT_AI_TIMEOUT_MS),
+                parse_num::<u64>("AI_TUTOR_TIMEOUT")?.unwrap_or(DEFAULT_PROVIDER_TIMEOUT_MS),
+            ),
+            ai_gateway_timeout: Duration::from_millis(
+                parse_num::<u64>("AI_GATEWAY_TIMEOUT_MS")?.unwrap_or(DEFAULT_GATEWAY_TIMEOUT_MS),
+            ),
+            connect_timeout: Duration::from_millis(
+                parse_num::<u64>("CONNECT_TIMEOUT_MS")?.unwrap_or(DEFAULT_CONNECT_TIMEOUT_MS),
+            ),
+            supabase_timeout: Duration::from_millis(
+                parse_num::<u64>("SUPABASE_TIMEOUT_MS")?.unwrap_or(DEFAULT_SUPABASE_TIMEOUT_MS),
             ),
             request_timeout: Duration::from_millis(
                 parse_num::<u64>("REQUEST_TIMEOUT_MS")?.unwrap_or(DEFAULT_REQUEST_TIMEOUT_MS),
+            ),
+            shutdown_grace: Duration::from_millis(
+                parse_num::<u64>("SHUTDOWN_GRACE_MS")?.unwrap_or(DEFAULT_SHUTDOWN_GRACE_MS),
+            ),
+            retry_backoff: Duration::from_millis(
+                parse_num::<u64>("AI_RETRY_BACKOFF_MS")?.unwrap_or(DEFAULT_RETRY_BACKOFF_MS),
             ),
             max_body_bytes: parse_num::<usize>("MAX_BODY_BYTES")?.unwrap_or(DEFAULT_MAX_BODY_BYTES),
             rate_limit_per_min: parse_num::<u32>("RATE_LIMIT_PER_MIN")?
                 .unwrap_or(DEFAULT_RATE_PER_MIN),
             ai_rate_per_min: parse_num::<u32>("AI_RATE_LIMIT_PER_MIN")?
                 .unwrap_or(DEFAULT_AI_RATE_PER_MIN),
+            max_concurrency: parse_num::<usize>("MAX_CONCURRENCY")?
+                .unwrap_or(DEFAULT_MAX_CONCURRENCY),
+            max_ai_concurrency: parse_num::<usize>("AI_MAX_CONCURRENCY")?
+                .unwrap_or(DEFAULT_AI_CONCURRENCY),
+            max_user_concurrency: parse_num::<usize>("AI_USER_MAX_CONCURRENCY")?
+                .unwrap_or(DEFAULT_USER_CONCURRENCY),
+            concurrency_wait: Duration::from_millis(
+                parse_num::<u64>("CONCURRENCY_WAIT_MS")?.unwrap_or(DEFAULT_CONCURRENCY_WAIT_MS),
+            ),
+            circuit_threshold: parse_num::<u32>("AI_CIRCUIT_THRESHOLD")?
+                .unwrap_or(DEFAULT_CIRCUIT_THRESHOLD)
+                .max(1),
+            circuit_cooldown: Duration::from_millis(
+                parse_num::<u64>("AI_CIRCUIT_COOLDOWN_MS")?.unwrap_or(DEFAULT_CIRCUIT_COOLDOWN_MS),
+            ),
+            circuit_half_open_limit: parse_num::<u32>("AI_CIRCUIT_HALF_OPEN")?
+                .unwrap_or(DEFAULT_CIRCUIT_HALF_OPEN)
+                .max(1),
             persist_conversations: var("AI_PERSIST_CONVERSATIONS")
                 .map(|v| parse_bool(&v, true))
                 .unwrap_or(true),
             trust_proxy: var("TRUST_PROXY")
                 .map(|v| parse_bool(&v, false))
                 .unwrap_or(false),
-        })
+            metrics_enabled: var("METRICS_ENABLED")
+                .map(|v| parse_bool(&v, false))
+                .unwrap_or(false),
+            metrics_token: var("METRICS_TOKEN"),
+        };
+        settings.validate()?;
+        Ok(settings)
+    }
+
+    /// Ràng buộc giữa các timeout và giới hạn. Trả lỗi nêu TÊN biến, không nêu giá trị.
+    pub fn validate(&self) -> Result<(), ConfigError> {
+        let millis = |d: Duration| d.as_millis() as u64;
+        if millis(self.connect_timeout) < 100 {
+            return Err(ConfigError::Invalid("CONNECT_TIMEOUT_MS"));
+        }
+        if millis(self.ai_timeout) < 1_000 {
+            return Err(ConfigError::Invalid("AI_TUTOR_TIMEOUT"));
+        }
+        if millis(self.supabase_timeout) < 100 {
+            return Err(ConfigError::Invalid("SUPABASE_TIMEOUT_MS"));
+        }
+        if millis(self.request_timeout) < 1_000 {
+            return Err(ConfigError::Invalid("REQUEST_TIMEOUT_MS"));
+        }
+        if self.connect_timeout > self.ai_timeout {
+            return Err(ConfigError::UnsafeCombination(
+                "CONNECT_TIMEOUT_MS phải nhỏ hơn hoặc bằng AI_TUTOR_TIMEOUT",
+            ));
+        }
+        if self.ai_timeout > self.ai_gateway_timeout {
+            return Err(ConfigError::UnsafeCombination(
+                "AI_TUTOR_TIMEOUT phải nhỏ hơn hoặc bằng AI_GATEWAY_TIMEOUT_MS",
+            ));
+        }
+        if self.ai_gateway_timeout > self.request_timeout {
+            return Err(ConfigError::UnsafeCombination(
+                "AI_GATEWAY_TIMEOUT_MS phải nhỏ hơn hoặc bằng REQUEST_TIMEOUT_MS",
+            ));
+        }
+        if self.supabase_timeout > self.request_timeout {
+            return Err(ConfigError::UnsafeCombination(
+                "SUPABASE_TIMEOUT_MS phải nhỏ hơn hoặc bằng REQUEST_TIMEOUT_MS",
+            ));
+        }
+        if millis(self.shutdown_grace) < 1_000 {
+            return Err(ConfigError::Invalid("SHUTDOWN_GRACE_MS"));
+        }
+        if millis(self.retry_backoff) > 10_000 {
+            return Err(ConfigError::Invalid("AI_RETRY_BACKOFF_MS"));
+        }
+        if !(MIN_BODY_BYTES..=MAX_BODY_BYTES_LIMIT).contains(&self.max_body_bytes) {
+            return Err(ConfigError::Invalid("MAX_BODY_BYTES"));
+        }
+        for (value, name) in [
+            (self.max_concurrency, "MAX_CONCURRENCY"),
+            (self.max_ai_concurrency, "AI_MAX_CONCURRENCY"),
+            (self.max_user_concurrency, "AI_USER_MAX_CONCURRENCY"),
+        ] {
+            if value == 0 || value > MAX_CONCURRENCY_LIMIT {
+                return Err(ConfigError::Invalid(match name {
+                    "MAX_CONCURRENCY" => "MAX_CONCURRENCY",
+                    "AI_MAX_CONCURRENCY" => "AI_MAX_CONCURRENCY",
+                    _ => "AI_USER_MAX_CONCURRENCY",
+                }));
+            }
+        }
+        if self.max_ai_concurrency > self.max_concurrency {
+            return Err(ConfigError::UnsafeCombination(
+                "AI_MAX_CONCURRENCY phải nhỏ hơn hoặc bằng MAX_CONCURRENCY",
+            ));
+        }
+        if self.circuit_cooldown < Duration::from_secs(1) {
+            return Err(ConfigError::Invalid("AI_CIRCUIT_COOLDOWN_MS"));
+        }
+        Ok(())
     }
 
     /// Cấu hình tối thiểu cho kiểm thử offline: không đọc env, không khoá thật.
@@ -228,18 +409,32 @@ impl Settings {
             supabase_anon_key: "test-anon-key".to_string(),
             supabase_service_key: Some("test-service-key".to_string()),
             ai_primary_key: Some("test-provider-key".to_string()),
-            ai_fallback_key: None,
+            ai_fallback_key: Some("test-fallback-key".to_string()),
             ai_extra_keys: HashMap::new(),
             ai_base_url: None,
             ai_mock: false,
             ai_max_retries: 0,
             ai_timeout: Duration::from_millis(2_000),
+            ai_gateway_timeout: Duration::from_millis(4_000),
+            connect_timeout: Duration::from_millis(500),
+            supabase_timeout: Duration::from_millis(3_000),
             request_timeout: Duration::from_millis(5_000),
+            shutdown_grace: Duration::from_millis(2_000),
+            retry_backoff: Duration::from_millis(10),
             max_body_bytes: DEFAULT_MAX_BODY_BYTES,
             rate_limit_per_min: 10_000,
             ai_rate_per_min: 10_000,
+            max_concurrency: 256,
+            max_ai_concurrency: 32,
+            max_user_concurrency: 1,
+            concurrency_wait: Duration::from_millis(250),
+            circuit_threshold: 5,
+            circuit_cooldown: Duration::from_secs(30),
+            circuit_half_open_limit: 1,
             persist_conversations: false,
             trust_proxy: false,
+            metrics_enabled: false,
+            metrics_token: None,
         }
     }
 }
@@ -277,5 +472,65 @@ mod tests {
             "khoá AI bị lộ trong Debug"
         );
         assert!(text.contains("đã đặt"));
+    }
+
+    #[test]
+    fn test_settings_are_valid() {
+        assert!(Settings::for_tests().validate().is_ok());
+    }
+
+    #[test]
+    fn gateway_timeout_must_fit_request_deadline() {
+        let mut settings = Settings::for_tests();
+        settings.ai_gateway_timeout = settings.request_timeout + Duration::from_secs(1);
+        // ai_timeout cũng phải <= gateway, giữ nguyên nên lỗi nêu tên gateway.
+        assert!(matches!(
+            settings.validate(),
+            Err(ConfigError::UnsafeCombination(_))
+        ));
+    }
+
+    #[test]
+    fn provider_timeout_larger_than_gateway_is_rejected() {
+        let mut settings = Settings::for_tests();
+        settings.ai_timeout = settings.ai_gateway_timeout + Duration::from_secs(1);
+        assert!(matches!(
+            settings.validate(),
+            Err(ConfigError::UnsafeCombination(_))
+        ));
+    }
+
+    #[test]
+    fn invalid_body_and_concurrency_limits_are_rejected() {
+        let mut settings = Settings::for_tests();
+        settings.max_body_bytes = 10;
+        assert!(matches!(
+            settings.validate(),
+            Err(ConfigError::Invalid("MAX_BODY_BYTES"))
+        ));
+
+        let mut settings = Settings::for_tests();
+        settings.max_ai_concurrency = 0;
+        assert!(matches!(
+            settings.validate(),
+            Err(ConfigError::Invalid("AI_MAX_CONCURRENCY"))
+        ));
+
+        let mut settings = Settings::for_tests();
+        settings.max_ai_concurrency = settings.max_concurrency + 1;
+        assert!(matches!(
+            settings.validate(),
+            Err(ConfigError::UnsafeCombination(_))
+        ));
+    }
+
+    #[test]
+    fn circuit_cooldown_has_a_floor() {
+        let mut settings = Settings::for_tests();
+        settings.circuit_cooldown = Duration::from_millis(10);
+        assert!(matches!(
+            settings.validate(),
+            Err(ConfigError::Invalid("AI_CIRCUIT_COOLDOWN_MS"))
+        ));
     }
 }

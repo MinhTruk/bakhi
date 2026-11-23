@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "data": {
+    "user": {
+      "id": "11111111-2222-3333-4444-555555555555",
+      "email": "hocsinh@example.com"
+    },
+    "student": {
+      "id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+      "display_name": "An",
+      "student_code": "BK-0001",
+      "is_active": true
+    }
+  }
+}

@@ -811,3 +811,23 @@ chọn thêm vào**, không thay thế lớp hiện có:
 Chi tiết kiến trúc, triển khai, migration/rollback và số đo hiệu năng:
 `docs/RUST_ARCHITECTURE_V860.md`, `docs/RUST_DEPLOYMENT_V860.md`,
 `docs/RUST_MIGRATION_V860.md`, `docs/RUST_BENCHMARK_V860.md`.
+
+### 8.1. Độ tin cậy và contract testing (8.6.1)
+
+8.6.1 củng cố backend Rust trước khi triển khai; **không** đổi giao diện, schema Supabase hay
+mặc định `BK_BACKEND.mode = 'edge'`.
+
+- **Vòng đời:** draining khi SIGTERM/SIGINT, `/ready` 503 ngay, chờ request đang chạy tối đa
+  `SHUTDOWN_GRACE_MS`; `/health` không phụ thuộc Supabase/AI.
+- **Phục hồi:** retry chỉ lỗi tạm thời (tôn trọng `Retry-After`), timeout theo lớp với hạn
+  chuỗi provider, circuit breaker CLOSED/OPEN/HALF_OPEN theo provider.
+- **Tài nguyên:** giới hạn đồng thời toàn dịch vụ/AI/người dùng có hạn chờ; body limit;
+  Content-Type JSON; rate limit theo IP và người dùng.
+- **Danh tính:** auth user → `student_devices` → `students` (sửa lỗi truy vấn cột
+  `students.auth_user_id` không tồn tại ở 8.6.0).
+- **Bằng chứng:** 135 test Rust gồm contract test với Edge Function (golden fixtures) và các
+  nhóm resilience/security; CI riêng cho backend, không deploy.
+
+Chi tiết: `docs/RUST_RELIABILITY_V861.md`, `docs/RUST_CONTRACT_TESTING_V861.md`,
+`docs/RUST_TESTING_GUIDE_V861.md`, `docs/RUST_OPERATIONS_V861.md`,
+`docs/RUST_SECURITY_AUDIT_V861.md`.

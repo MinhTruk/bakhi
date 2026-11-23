@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "data": {
+    "totals": {
+      "questions": 15,
+      "correct": 12,
+      "accuracy": 80.0,
+      "subjects": 2,
+      "review_backlog": 2
+    },
+    "subjects": [
+      {
+        "subject": "toan",
+        "questions": 10,
+        "correct": 8,
+        "accuracy": 80.0
+      }
+    ],
+    "weakest_topics": [
+      {
+        "subject": "toan",
+        "topic": "dao-ham",
+        "questions": 10,
+        "accuracy": 80.0
+      }
+    ],
+    "review": {
+      "total": 2,
+      "by_subject": [
+        {
+          "subject": "toan",
+          "wrong": 2
+        }
+      ]
+    },
+    "sessions": {
+      "count": 1,
+      "minutes": 25,
+      "questions": 15,
+      "correct": 12,
+      "accuracy": 80.0,
+      "streak_days": 1,
+      "active_days": 1,
+      "weekly": [
+        {
+          "week": "2026-W47",
+          "questions": 15,
+          "correct": 12,
+          "accuracy": 80.0
+        }
+      ]
+    }
+  }
+}

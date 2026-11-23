@@ -6,11 +6,14 @@
 //
 // Hai chế độ xác thực, tách bạch rõ ràng:
 //   * RestAuth::User  → apikey công khai + JWT của người dùng ⇒ RLS áp dụng.
-//                       Dùng cho dữ liệu của chính người học.
+//                       Dùng cho liên kết thiết bị của chính người học.
 //   * RestAuth::Service → service_role, CHỈ cho cấu hình máy chủ
-//                       (ai_settings, ai_model_routes) và nhật ký sử dụng.
-//                       Không bao giờ dùng để thay quyền đọc dữ liệu người học.
+//                       (ai_settings, ai_model_routes), ánh xạ danh tính
+//                       (students bị thu hồi quyền với authenticated), hội thoại
+//                       AI và nhật ký sử dụng.
 //
+// 8.6.1: sửa lỗi tương thích — `students` KHÔNG có cột `auth_user_id`; quan hệ
+// thật là auth.users → student_devices (auth_user_id, student_id) → students.
 // Service role key chỉ tồn tại ở tiến trình máy chủ; không xuất hiện trong
 // phản hồi, log hay mã nguồn.
 // ===========================================================================
@@ -29,12 +32,68 @@ pub struct SupabaseClient {
     base: String,
     anon_key: String,
     service_key: Option<String>,
+    timeout: Duration,
 }
 
 #[derive(Clone, Copy)]
 pub enum RestAuth<'a> {
     Service,
     User(&'a str),
+}
+
+/// Hồ sơ học sinh ứng với một tài khoản đã xác thực.
+#[derive(Debug, Clone)]
+pub struct StudentRecord {
+    pub id: String,
+    pub display_name: Option<String>,
+    pub student_code: Option<String>,
+    pub is_active: bool,
+}
+
+impl StudentRecord {
+    pub fn to_value(&self) -> Value {
+        json!({
+            "id": self.id,
+            "display_name": self.display_name,
+            "student_code": self.student_code,
+            "is_active": self.is_active
+        })
+    }
+}
+
+/// Một dòng nhật ký sử dụng AI. Dùng struct thay vì 12 tham số.
+pub struct UsageLog<'a> {
+    pub student_id: Option<&'a str>,
+    pub action: &'a str,
+    pub provider: &'a str,
+    pub model: &'a str,
+    pub mode: &'a str,
+    pub tokens_in: u32,
+    pub tokens_out: u32,
+    pub latency_ms: u64,
+    pub ok: bool,
+    pub error_code: &'a str,
+    pub fell_back: bool,
+    pub estimated: bool,
+}
+
+impl Default for UsageLog<'_> {
+    fn default() -> Self {
+        Self {
+            student_id: None,
+            action: "chat",
+            provider: "",
+            model: "",
+            mode: "",
+            tokens_in: 0,
+            tokens_out: 0,
+            latency_ms: 0,
+            ok: true,
+            error_code: "",
+            fell_back: false,
+            estimated: false,
+        }
+    }
 }
 
 impl SupabaseClient {
@@ -44,10 +103,11 @@ impl SupabaseClient {
             base: settings.supabase_url.clone(),
             anon_key: settings.supabase_anon_key.clone(),
             service_key: settings.supabase_service_key.clone(),
+            timeout: settings.supabase_timeout,
         }
     }
 
-    fn has_service_key(&self) -> bool {
+    pub fn has_service_key(&self) -> bool {
         self.service_key
             .as_deref()
             .map(|k| !k.trim().is_empty())
@@ -55,6 +115,10 @@ impl SupabaseClient {
     }
 
     /// Xác thực token người dùng với Supabase Auth.
+    ///
+    /// Chữ ký, issuer và thời hạn của JWT do Supabase Auth kiểm tra — backend
+    /// không tự decode rồi tin nội dung token, và không tin bất kỳ id nào client
+    /// gửi kèm.
     pub async fn user_from_token(&self, token: &str) -> Result<AuthUser, ApiError> {
         let url = format!("{}/auth/v1/user", self.base);
         let response = self
@@ -62,7 +126,7 @@ impl SupabaseClient {
             .get(url)
             .header("apikey", &self.anon_key)
             .header("Authorization", format!("Bearer {token}"))
-            .timeout(Duration::from_secs(8))
+            .timeout(self.timeout.min(Duration::from_secs(8)))
             .send()
             .await;
 
@@ -126,10 +190,7 @@ impl SupabaseClient {
                     Some(key) => Ok(builder
                         .header("apikey", key)
                         .header("Authorization", format!("Bearer {key}"))),
-                    None => Err(ApiError::service_unavailable(
-                        "NOT_CONFIGURED",
-                        "Máy chủ chưa được cấu hình khoá dịch vụ.",
-                    )),
+                    None => Err(ApiError::not_configured()),
                 }
             }
             RestAuth::User(token) => Ok(builder
@@ -150,27 +211,25 @@ impl SupabaseClient {
                 status = response.status().as_u16(),
                 "PostgREST trả lỗi"
             );
-            return Err(ApiError::service_unavailable(
-                "DB_ERROR",
-                "Máy chủ dữ liệu không xử lý được yêu cầu.",
-            ));
+            return Err(ApiError::db_error());
         }
         if response.status() == reqwest::StatusCode::NO_CONTENT {
             return Ok(Value::Null);
         }
         response.json::<Value>().await.map_err(|_| {
-            ApiError::service_unavailable("DB_ERROR", "Không đọc được dữ liệu trả về.")
+            tracing::warn!(target: "bakhi::db", context, "phản hồi không phải JSON");
+            ApiError::db_error()
         })
     }
 
     /// GET một bảng/bảng-có-bộ-lọc PostgREST, vd "ai_settings?id=eq.1&select=*".
     pub async fn select(&self, path: &str, auth: RestAuth<'_>) -> Result<Value, ApiError> {
         let url = format!("{}/rest/v1/{}", self.base, path);
-        let builder = self.http.get(url).timeout(Duration::from_secs(10));
+        let builder = self.http.get(url).timeout(self.timeout);
         let builder = self.rest_headers(auth, builder)?;
         let response = builder.send().await.map_err(|err| {
             tracing::warn!(target: "bakhi::db", error = %err, "không kết nối được PostgREST");
-            ApiError::service_unavailable("DB_ERROR", "Không kết nối được máy chủ dữ liệu.")
+            ApiError::db_error()
         })?;
         self.send_json(response, "select").await
     }
@@ -188,11 +247,11 @@ impl SupabaseClient {
             .post(url)
             .header("Prefer", "return=representation")
             .json(body)
-            .timeout(Duration::from_secs(10));
+            .timeout(self.timeout);
         let builder = self.rest_headers(auth, builder)?;
         let response = builder.send().await.map_err(|err| {
             tracing::warn!(target: "bakhi::db", error = %err, "không gửi được INSERT");
-            ApiError::service_unavailable("DB_ERROR", "Không kết nối được máy chủ dữ liệu.")
+            ApiError::db_error()
         })?;
         let value = self.send_json(response, "insert").await?;
         Ok(value
@@ -214,11 +273,11 @@ impl SupabaseClient {
             .patch(url)
             .header("Prefer", "return=minimal")
             .json(body)
-            .timeout(Duration::from_secs(10));
+            .timeout(self.timeout);
         let builder = self.rest_headers(auth, builder)?;
         let response = builder.send().await.map_err(|err| {
             tracing::warn!(target: "bakhi::db", error = %err, "không gửi được PATCH");
-            ApiError::service_unavailable("DB_ERROR", "Không kết nối được máy chủ dữ liệu.")
+            ApiError::db_error()
         })?;
         if !response.status().is_success() {
             tracing::warn!(
@@ -226,10 +285,7 @@ impl SupabaseClient {
                 status = response.status().as_u16(),
                 "PATCH thất bại"
             );
-            return Err(ApiError::service_unavailable(
-                "DB_ERROR",
-                "Không cập nhật được dữ liệu.",
-            ));
+            return Err(ApiError::db_error());
         }
         Ok(())
     }
@@ -241,7 +297,7 @@ impl SupabaseClient {
             .http
             .get(url)
             .header("apikey", &self.anon_key)
-            .timeout(Duration::from_secs(3))
+            .timeout(Duration::from_secs(3).min(self.timeout))
             .send()
             .await
         {
@@ -250,52 +306,75 @@ impl SupabaseClient {
         }
     }
 
-    /// Dòng hồ sơ học sinh ứng với tài khoản đã xác thực.
-    /// Dùng token người dùng ⇒ RLS quyết định quyền đọc.
-    pub async fn student_of(&self, user: &AuthUser) -> Result<Option<Value>, ApiError> {
+    /// Liên kết auth user → học sinh qua `student_devices` (RLS: chính mình),
+    /// sau đó đọc hồ sơ bằng service role vì `students` bị thu hồi với
+    /// `authenticated`. Không dùng service role để đọc dữ liệu học tập.
+    pub async fn student_record(&self, user: &AuthUser) -> Result<Option<StudentRecord>, ApiError> {
         let path = format!(
-            "students?auth_user_id=eq.{}&select=id,display_name,student_code&limit=1",
+            "student_devices?auth_user_id=eq.{}&select=student_id&limit=1",
             urlencode(&user.id)
         );
         let rows = self
             .select(&path, RestAuth::User(&user.access_token))
             .await?;
-        Ok(rows.as_array().and_then(|list| list.first().cloned()))
+        let student_id = rows
+            .as_array()
+            .and_then(|list| list.first())
+            .and_then(|row| row.get("student_id"))
+            .and_then(|id| id.as_str())
+            .map(|id| id.to_string());
+        let Some(student_id) = student_id else {
+            return Ok(None);
+        };
+
+        let path = format!(
+            "students?id=eq.{}&select=id,display_name,student_code,is_active&limit=1",
+            urlencode(&student_id)
+        );
+        let rows = self.select(&path, RestAuth::Service).await?;
+        let row = rows.as_array().and_then(|list| list.first());
+        Ok(row.map(|row| StudentRecord {
+            id: row
+                .get("id")
+                .and_then(|v| v.as_str())
+                .unwrap_or(&student_id)
+                .to_string(),
+            display_name: row
+                .get("display_name")
+                .and_then(|v| v.as_str())
+                .map(|v| v.to_string()),
+            student_code: row
+                .get("student_code")
+                .and_then(|v| v.as_str())
+                .map(|v| v.to_string()),
+            is_active: row
+                .get("is_active")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(true),
+        }))
     }
 
     /// Nhật ký sử dụng AI — chỉ ghi bằng service role, không đọc lại từ client.
-    /// Nhiều tham số vì mỗi tham số là một cột của `ai_usage_logs`.
-    #[allow(clippy::too_many_arguments)]
-    pub async fn log_ai_usage(
-        &self,
-        student_id: Option<&str>,
-        action: &str,
-        provider: &str,
-        model: &str,
-        mode: &str,
-        tokens_in: u32,
-        tokens_out: u32,
-        latency_ms: u64,
-        ok: bool,
-        error_code: &str,
-    ) {
+    /// Lỗi ghi log không bao giờ làm hỏng câu trả lời đã thành công.
+    pub async fn log_ai_usage(&self, entry: UsageLog<'_>) {
         if !self.has_service_key() {
             return;
         }
         let body = json!({
-            "student_id": student_id,
-            "action": action,
-            "provider": provider,
-            "model": model,
-            "mode": mode,
-            "tokens_in": tokens_in,
-            "tokens_out": tokens_out,
-            "latency_ms": latency_ms.min(u32::MAX as u64),
-            "ok": ok,
-            "error_code": error_code,
+            "student_id": entry.student_id,
+            "action": entry.action,
+            "provider": entry.provider,
+            "model": entry.model,
+            "mode": entry.mode,
+            "tokens_in": entry.tokens_in,
+            "tokens_out": entry.tokens_out,
+            "latency_ms": entry.latency_ms.min(u32::MAX as u64),
+            "ok": entry.ok,
+            "error_code": entry.error_code,
+            "fell_back": entry.fell_back,
+            "tokens_estimated": entry.estimated
         });
         if let Err(err) = self.insert("ai_usage_logs", &body, RestAuth::Service).await {
-            // Nhật ký không được làm hỏng câu trả lời của học sinh.
             tracing::warn!(target: "bakhi::ai", error = %err, "không ghi được ai_usage_logs");
         }
     }

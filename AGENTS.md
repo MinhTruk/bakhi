@@ -532,6 +532,38 @@ Tài liệu: `docs/AI_TUTOR_ARCHITECTURE.md` (kiến trúc), `docs/AI_TUTOR_SECU
 - **Chưa deploy.** Đừng ghi "đã deploy" trong CHANGELOG/tài liệu khi nền tảng chưa có
   hosting và secret. Xem `docs/RUST_MIGRATION_V860.md` mục 8.
 
+### 6.6. Độ tin cậy backend Rust (8.6.1)
+
+- **Vòng đời:** SIGTERM/SIGINT ⇒ `Lifecycle::begin_shutdown()` (⇒ `/ready` 503 ngay) → Axum
+  ngừng nhận kết nối → chờ request đang chạy tối đa `SHUTDOWN_GRACE_MS` rồi kết thúc. Không
+  đổi thứ tự này và không bỏ hạn chờ (Docker có `STOPSIGNAL SIGTERM`).
+- **`/health` là liveness:** không chạm Supabase, không gọi AI. **`/ready` là readiness:**
+  kiểm tra cấu hình bắt buộc + Supabase Auth, ghi lý do vào header nội bộ `x-ready-reason`
+  (`draining` | `config_error` | `dependency_down`). Không gọi provider trong `/ready`.
+- **Retry chỉ với lỗi tạm thời:** 408/429/5xx/timeout/kết nối; tôn trọng `Retry-After` (trần
+  30 giây). 400/401/403/model/cấu hình **không** thử lại và **không** chuyển dự phòng. Tổng
+  thời gian không vượt `AI_GATEWAY_TIMEOUT_MS`. Không thử lại sau khi đã có kết quả.
+- **Circuit breaker theo provider** (`providers/circuit.rs`): CLOSED/OPEN/HALF_OPEN, ngưỡng
+  `AI_CIRCUIT_THRESHOLD`, cooldown `AI_CIRCUIT_COOLDOWN_MS`, thử `AI_CIRCUIT_HALF_OPEN`. Chỉ
+  lỗi tạm thời mới mở circuit. Provider OPEN bị bỏ qua nhưng thứ tự Primary → Fallback không
+  đổi; khi mọi provider OPEN vẫn trả `PROVIDER_DOWN` cho học sinh.
+- **Giới hạn đồng thời:** `MAX_CONCURRENCY`, `AI_MAX_CONCURRENCY`, `AI_USER_MAX_CONCURRENCY`
+  (mặc định 1 như `inFlight` của Edge). Mọi lần chờ có hạn `CONCURRENCY_WAIT_MS`; hết hạn trả
+  429, không bao giờ chờ vô hạn.
+- **Ánh xạ danh tính:** auth user → `student_devices` (đọc bằng JWT người dùng, RLS) →
+  `students` (service role, vì bảng bị thu hồi với `authenticated`). **Không** dùng cột
+  `students.auth_user_id` — cột này không tồn tại. Chưa gắn hồ sơ ⇒ 409 `NOT_BOUND`; hồ sơ
+  ngừng hoạt động ⇒ 403 `INACTIVE`.
+- **Contract test là cổng bắt buộc:** mọi thay đổi response/mã lỗi phải sửa fixture trong
+  `rust-backend/tests/fixtures/` và chạy `cargo test --test api_contract_tests`. Edge Function
+  **không** bị sửa để chiều Rust; sửa ở Rust.
+- **Metrics mặc định tắt:** chỉ bật khi `METRICS_ENABLED=1` và `METRICS_TOKEN` được đặt;
+  không chứa nhãn người dùng. Chưa có dashboard/Prometheus server.
+- **Trước khi push:** `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D
+  warnings`, `cargo test --all-targets`. Tài liệu: `docs/RUST_RELIABILITY_V861.md`,
+  `docs/RUST_CONTRACT_TESTING_V861.md`, `docs/RUST_TESTING_GUIDE_V861.md`,
+  `docs/RUST_OPERATIONS_V861.md`, `docs/RUST_SECURITY_AUDIT_V861.md`.
+
 <!-- BEGIN brain.md -->
 ## Project Brain
 

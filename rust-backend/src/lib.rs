@@ -1,20 +1,28 @@
 // ===========================================================================
-// Bá Khí — Rust backend (v8.6.0)
+// Bá Khí — Rust backend (v8.6.1)
 //
 // Modular monolith: Axum + Tokio + Serde. Mọi phụ thuộc dùng chung (HTTP client,
-// Supabase client, provider registry, bộ giới hạn tần suất) được dựng MỘT LẦN
-// trong AppState và tái sử dụng cho mọi request.
+// Supabase client, provider registry, bộ giới hạn tần suất, circuit breaker,
+// semaphore đồng thời) được dựng MỘT LẦN trong AppState và tái sử dụng.
+//
+// Thứ tự lớp middleware (ngoài → trong):
+//   timeout → CORS → trace → request_id → concurrency → access_log →
+//   content-type → rate limit → handler
+// Nhờ vậy mọi phản hồi lỗi đều có request id, log có thời gian và mã trạng thái,
+// và request bị từ chối vì quá tải không bao giờ chờ vô hạn.
 // ===========================================================================
 
 pub mod config;
 pub mod errors;
+pub mod lifecycle;
 pub mod middleware;
+pub mod observability;
 pub mod providers;
 pub mod routes;
 pub mod services;
 
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use axum::extract::DefaultBodyLimit;
 use axum::http::header::{AUTHORIZATION, CONTENT_TYPE};
@@ -27,7 +35,12 @@ use tower_http::trace::TraceLayer;
 
 use crate::config::Settings;
 use crate::errors::REQUEST_ID_HEADER;
-use crate::middleware::{rate_limit_middleware, request_id_middleware, RateLimiter};
+use crate::lifecycle::Lifecycle;
+use crate::middleware::{
+    concurrency::concurrency_middleware, rate_limit_middleware, request_id_middleware, Concurrency,
+};
+use crate::observability::metrics::Metrics;
+use crate::providers::circuit::CircuitBreaker;
 use crate::providers::ProviderRegistry;
 use crate::services::supabase::SupabaseClient;
 
@@ -36,9 +49,12 @@ pub struct AppState {
     pub settings: Arc<Settings>,
     pub http: reqwest::Client,
     pub supabase: Arc<SupabaseClient>,
-    pub limiter: Arc<RateLimiter>,
+    pub limiter: Arc<middleware::rate_limit::RateLimiter>,
     pub providers: Arc<ProviderRegistry>,
-    pub started: Instant,
+    pub circuits: Arc<CircuitBreaker>,
+    pub concurrency: Arc<Concurrency>,
+    pub metrics: Arc<Metrics>,
+    pub lifecycle: Arc<Lifecycle>,
 }
 
 impl AppState {
@@ -47,13 +63,26 @@ impl AppState {
         let supabase = Arc::new(SupabaseClient::new(http.clone(), &settings));
         let providers = Arc::new(ProviderRegistry::build(&http, &settings));
         Ok(Self {
-            settings: Arc::new(settings),
-            http,
+            limiter: Arc::new(middleware::rate_limit::RateLimiter::new(
+                Duration::from_secs(60),
+            )),
+            circuits: Arc::new(CircuitBreaker::new(
+                settings.circuit_threshold,
+                settings.circuit_cooldown,
+                settings.circuit_half_open_limit,
+            )),
+            concurrency: Arc::new(Concurrency::new(
+                settings.max_concurrency,
+                settings.max_ai_concurrency,
+                settings.max_user_concurrency,
+                settings.concurrency_wait,
+            )),
+            metrics: Arc::new(Metrics::default()),
+            lifecycle: Arc::new(Lifecycle::new()),
             supabase,
-            // Cửa sổ 60 giây cho giới hạn tần suất theo IP.
-            limiter: Arc::new(RateLimiter::new(Duration::from_secs(60))),
             providers,
-            started: Instant::now(),
+            http,
+            settings: Arc::new(settings),
         })
     }
 }
@@ -65,7 +94,7 @@ pub fn build_http_client(settings: &Settings) -> reqwest::Client {
         .pool_max_idle_per_host(32)
         .pool_idle_timeout(Duration::from_secs(90))
         .tcp_nodelay(true)
-        .connect_timeout(Duration::from_secs(5))
+        .connect_timeout(settings.connect_timeout)
         .timeout(settings.request_timeout)
         .build()
         .unwrap_or_else(|_| reqwest::Client::new())
@@ -97,15 +126,20 @@ pub fn build_router(state: AppState) -> Router {
     let api: Router<AppState> = Router::new()
         .route("/health", get(routes::health::health))
         .route("/ready", get(routes::health::ready))
+        .route("/metrics", get(routes::metrics::metrics))
         .route("/me", get(routes::me::me))
         .route("/ai/chat", post(routes::ai::chat))
         .route(
             "/data/learning-stats",
             post(routes::data::learning_stats_route),
         )
+        // Trong cùng: content-type kiểm tra trước, rồi tới hạn mức tần suất.
         .layer(axum::middleware::from_fn_with_state(
             state.clone(),
             rate_limit_middleware,
+        ))
+        .layer(axum::middleware::from_fn(
+            middleware::content_type::require_json,
         ));
 
     let cors = cors_layer(&state.settings);
@@ -114,6 +148,13 @@ pub fn build_router(state: AppState) -> Router {
 
     Router::new()
         .nest("/api/v1", api)
+        // Thêm từ trong ra ngoài: request_id phải có TRƯỚC access_log để log có mã,
+        // và concurrency nằm trong request_id để phản hồi 429 vẫn kèm mã.
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            concurrency_middleware,
+        ))
+        .layer(axum::middleware::from_fn(observability::access_log))
         .layer(axum::middleware::from_fn(request_id_middleware))
         .layer(TraceLayer::new_for_http())
         .layer(cors)

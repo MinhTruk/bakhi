@@ -2,6 +2,69 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.6.1] — 2026-11-24
+
+**Reliability before performance.** Củng cố backend Rust trước khi triển khai: vòng đời
+(shutdown có hạn), phục hồi khi provider/Supabase lỗi, contract testing với Edge Function,
+giới hạn tài nguyên và bộ test đầy đủ hơn. **Không thay đổi giao diện người dùng**, không đổi
+`BK_BACKEND.mode` (vẫn `edge`), không đổi schema Supabase, không deploy.
+
+### Tính năng
+
+- **Graceful shutdown có hạn chờ** — nhận SIGTERM/SIGINT ⇒ bật cờ draining (`/ready` trả 503
+  ngay), ngừng nhận request mới, chờ request đang chạy tối đa `SHUTDOWN_GRACE_MS` (mặc định
+  20 giây) rồi kết thúc. Log ghi số request đang chạy; cấu hình sai làm tiến trình dừng ngay
+  khi khởi động với thông điệp không chứa khoá.
+- **Health/readiness tách đúng nghĩa** — `/health` chỉ phản ánh tiến trình (không chạm
+  Supabase, không gọi AI); `/ready` kiểm tra cấu hình bắt buộc + Supabase Auth với timeout
+  ngắn, phân biệt `config_error` với `dependency_down` qua header nội bộ `x-ready-reason`.
+- **Circuit breaker theo provider** — CLOSED/OPEN/HALF_OPEN, ngưỡng + cooldown + số request
+  thử cấu hình được; provider OPEN bị bỏ qua nhưng provider khác và thứ tự Primary → Fallback
+  không đổi. Trạng thái chỉ theo provider (tối đa 8 mục), không theo người dùng.
+- **Chính sách thử lại có kỷ luật** — chỉ 408/429/5xx/timeout/kết nối; tôn trọng
+  `Retry-After` (trần 30 giây); 400/401/403/lỗi cấu hình/model không thử lại và không chuyển
+  dự phòng; tổng thời gian mọi attempt không vượt hạn gateway (`AI_GATEWAY_TIMEOUT_MS`).
+- **Giới hạn đồng thời ba lớp** — toàn dịch vụ, lượt gọi AI, mỗi người dùng (mặc định 1 như
+  khoá `inFlight` của Edge); mọi lần chờ có hạn, hết hạn trả 429 `BUSY`/`RATE_LIMIT` thay vì
+  treo.
+- **Metrics nội bộ** — `GET /api/v1/metrics` định dạng Prometheus, **mặc định tắt**, chỉ bật
+  khi `METRICS_ENABLED=1` và `METRICS_TOKEN` được đặt; không chứa dữ liệu người dùng.
+- **135 test** (62 unit + 73 integration/contract) chia theo nhóm: health, auth, API contract,
+  AI gateway, fallback, circuit breaker, learning stats, error handling, concurrency; golden
+  fixtures trong `rust-backend/tests/fixtures/`.
+
+### Sửa lỗi
+
+- **Ánh xạ học sinh sai schema** — backend từng truy vấn `students.auth_user_id`, cột không
+  tồn tại (quan hệ thật là auth.users → `student_devices` → `students`). Nay liên kết đọc qua
+  `student_devices` bằng JWT của chính người học, hồ sơ đọc bằng service role (bảng `students`
+  bị thu hồi với `authenticated`). Tài khoản chưa gắn hồ sơ trả 409 `NOT_BOUND`, hồ sơ ngừng
+  hoạt động trả 403 `INACTIVE` như Edge Function.
+- **Mã lỗi nghiệp vụ khớp Edge** — hạn mức ngày dùng `DAILY_LIMIT`/`DAILY_TOKEN_LIMIT`;
+  lỗi dữ liệu trả 500 `DB_ERROR`; thêm 415 `UNSUPPORTED_MEDIA_TYPE` khi body không phải JSON.
+- **Nhật ký sử dụng AI** ghi thêm `fell_back` và `tokens_estimated` như Edge Function; mỗi
+  request chỉ một dòng, lỗi ghi log không làm hỏng câu trả lời.
+- **Tiêu đề hội thoại tự sinh** cắt 64 ký tự kèm dấu ba chấm, khớp Edge Function.
+
+### Cải tiến
+
+- **Timeout theo lớp** — kết nối, provider, gateway, Supabase và request; kiểm tra tính nhất
+  quán ngay khi khởi động (gateway ≤ request, provider ≤ gateway, connect ≤ provider).
+- **Log có cấu trúc** — mỗi request ghi `request_id`, method, route, status, thời gian và nhóm
+  lỗi; không ghi Authorization/apikey/nội dung.
+- **CI** — thêm job contract test tách riêng, kiểm tra lỗ khoá bí mật (gitleaks) và lỗ hổng
+  phụ thuộc (cargo-audit), giữ nguyên bước build Docker nhưng **không deploy**.
+- **Docker** — thêm `STOPSIGNAL SIGTERM` để orchestration dừng đúng tín hiệu graceful.
+- **Tài liệu** — `docs/RUST_RELIABILITY_V861.md`, `docs/RUST_CONTRACT_TESTING_V861.md`,
+  `docs/RUST_TESTING_GUIDE_V861.md`, `docs/RUST_OPERATIONS_V861.md`,
+  `docs/RUST_SECURITY_AUDIT_V861.md`.
+
+### Ghi chú triển khai
+
+- Backend Rust **vẫn chưa deploy** và **vẫn không phải backend mặc định**
+  (`BK_BACKEND.mode = 'edge'`). Toàn bộ thay đổi nằm trong `rust-backend/`, tài liệu và CI;
+  website, Edge Function và schema Supabase không đổi.
+
 ## [8.6.0] — 2026-11-23
 
 **Rust Hybrid Architecture.** Backend Rust độc lập cho các tác vụ phù hợp; website tĩnh,

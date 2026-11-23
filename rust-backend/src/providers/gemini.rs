@@ -11,8 +11,8 @@ use async_trait::async_trait;
 use serde_json::{json, Value};
 
 use super::{
-    classify_http, model_is_valid, usage_from, AiErrorCode, AiProvider, Provider, ProviderError,
-    ProviderRequest, ProviderResult,
+    classify_http, model_is_valid, parse_retry_after, usage_from, AiErrorCode, AiProvider,
+    Provider, ProviderError, ProviderRequest, ProviderResult,
 };
 
 pub struct Gemini {
@@ -112,8 +112,16 @@ impl AiProvider for Gemini {
 
         let status = response.status();
         if !status.is_success() {
+            // Đọc Retry-After TRƯỚC khi tiêu thụ body.
+            let retry_after = parse_retry_after(
+                response
+                    .headers()
+                    .get("retry-after")
+                    .and_then(|value| value.to_str().ok()),
+            );
             let text = response.text().await.unwrap_or_default();
-            return Err(classify_http(status.as_u16(), &text, Provider::Google));
+            return Err(classify_http(status.as_u16(), &text, Provider::Google)
+                .with_retry_after(retry_after));
         }
 
         let raw: Value = response
