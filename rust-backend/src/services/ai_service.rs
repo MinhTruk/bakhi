@@ -220,11 +220,11 @@ impl AiService {
             .supabase
             .select("ai_settings?id=eq.1&select=*&limit=1", RestAuth::Service)
             .await?;
-        let row = rows
-            .as_array()
-            .and_then(|list| list.first())
-            .cloned()
-            .unwrap_or(Value::Null);
+        // Lấy quyền sở hữu dòng đầu tiên thay vì clone cả object JSON.
+        let row = match rows {
+            Value::Array(mut list) if !list.is_empty() => list.swap_remove(0),
+            _ => Value::Null,
+        };
         if row.is_null() {
             // Bảng cấu hình chưa có dòng 1 ⇒ dùng mặc định an toàn.
             return Ok(AiSettings::default());
@@ -252,11 +252,13 @@ impl AiService {
         }
     }
 
-    fn key_for(&self, role_primary: bool, route: &ModelRoute) -> String {
-        if !route.api_key.trim().is_empty() {
-            return route.api_key.trim().to_string();
+    /// Khoá cho một route. Nhận trực tiếp chuỗi khoá/`key_ref` để không phải
+    /// dựng `ModelRoute` tạm (và clone nhiều chuỗi) cho cấu hình mặc định.
+    fn key_for(&self, role_primary: bool, direct_key: &str, key_ref: &str) -> String {
+        if !direct_key.trim().is_empty() {
+            return direct_key.trim().to_string();
         }
-        let key_ref = route.key_ref.trim();
+        let key_ref = key_ref.trim();
         if !key_ref.is_empty() {
             if let Some(value) = self.settings.ai_extra_keys.get(key_ref) {
                 return value.trim().to_string();
@@ -270,7 +272,12 @@ impl AiService {
         key.unwrap_or_default().trim().to_string()
     }
 
-    fn candidates(&self, settings: &AiSettings, routes: &[ModelRoute]) -> Vec<Candidate> {
+    fn candidates(
+        &self,
+        settings: &AiSettings,
+        routes: &[ModelRoute],
+        model_override: Option<&str>,
+    ) -> Vec<Candidate> {
         if !routes.is_empty() {
             return routes
                 .iter()
@@ -278,7 +285,11 @@ impl AiService {
                 .map(|route| Candidate {
                     provider: Provider::parse(&route.provider).unwrap_or(Provider::Groq),
                     model: route.model.trim().to_string(),
-                    api_key: self.key_for(route.position == 0, route),
+                    api_key: self.key_for(
+                        route.position == 0,
+                        &route.api_key,
+                        &route.key_ref,
+                    ),
                     label: if route.label.trim().is_empty() {
                         format!("{} #{}", route.provider, route.position + 1)
                     } else {
@@ -288,39 +299,21 @@ impl AiService {
                 .collect();
         }
 
+        let primary_model = model_override
+            .map(str::trim)
+            .filter(|model| !model.is_empty())
+            .unwrap_or_else(|| settings.model.trim());
         let mut list = vec![Candidate {
             provider: Provider::parse(&settings.provider).unwrap_or(Provider::Groq),
-            model: settings.model.trim().to_string(),
-            api_key: self.key_for(
-                true,
-                &ModelRoute {
-                    position: 0,
-                    label: String::new(),
-                    provider: settings.provider.clone(),
-                    model: settings.model.clone(),
-                    key_ref: String::new(),
-                    api_key: String::new(),
-                    enabled: true,
-                },
-            ),
+            model: primary_model.to_string(),
+            api_key: self.key_for(true, "", ""),
             label: "Primary".to_string(),
         }];
         if !settings.fallback_model.trim().is_empty() {
             list.push(Candidate {
                 provider: Provider::parse(&settings.fallback_provider).unwrap_or(Provider::Google),
                 model: settings.fallback_model.trim().to_string(),
-                api_key: self.key_for(
-                    false,
-                    &ModelRoute {
-                        position: 1,
-                        label: String::new(),
-                        provider: settings.fallback_provider.clone(),
-                        model: settings.fallback_model.clone(),
-                        key_ref: String::new(),
-                        api_key: String::new(),
-                        enabled: true,
-                    },
-                ),
+                api_key: self.key_for(false, "", ""),
                 label: "Fallback".to_string(),
             });
         }
@@ -340,12 +333,13 @@ impl AiService {
         turns: &[ChatTurn],
         mode: TutorMode,
         message: &str,
+        model_override: Option<&str>,
     ) -> Result<GatewayOutcome, ChainFailure> {
         let started = Instant::now();
         let deadline = started + self.settings.ai_gateway_timeout;
         let (max_tokens, target_tokens, deep) =
             output_tokens_for_mode(mode, message, settings.max_output_tokens.max(128));
-        let candidates = self.candidates(settings, routes);
+        let candidates = self.candidates(settings, routes, model_override);
         let per_attempt = Duration::from_millis(settings.timeout_ms.clamp(1_000, 120_000));
 
         // Trần số attempt: mỗi provider thử tối đa `ai_max_retries + 1` lần.
@@ -465,14 +459,16 @@ impl AiService {
                 };
 
                 let attempt_start = Instant::now();
+                // Mượn system + lịch sử của lượt chat: không sao chép toàn bộ
+                // prompt/lịch sử cho mỗi provider, retry hay fallback.
                 let request = ProviderRequest {
                     provider: candidate.provider,
-                    model: candidate.model.clone(),
-                    system: system.to_string(),
-                    messages: turns.to_vec(),
+                    model: &candidate.model,
+                    system,
+                    messages: turns,
                     max_tokens,
                     temperature: 0.4,
-                    api_key: candidate.api_key.clone(),
+                    api_key: &candidate.api_key,
                 };
                 // Không để một attempt vượt quá hạn của cả chuỗi.
                 let budget = per_attempt.min(remaining);
@@ -690,14 +686,14 @@ impl AiService {
         }
 
         let is_retry = request.retry == Some(true);
-        let raw_message = request.message.clone().unwrap_or_default();
+        let raw_message = request.message.as_deref().unwrap_or("");
         if raw_message.chars().count() > MAX_USER_MESSAGE {
             return Err(ApiError::bad_request(
                 "MESSAGE_TOO_LONG",
                 format!("Câu hỏi quá dài (tối đa {MAX_USER_MESSAGE} ký tự)."),
             ));
         }
-        let mut message = clean_message(&raw_message);
+        let mut message = clean_message(raw_message);
         if message.is_empty() && !is_retry {
             return Err(ApiError::bad_request(
                 "EMPTY_MESSAGE",
@@ -836,16 +832,29 @@ impl AiService {
         };
 
         let routes = self.load_routes().await;
-        let mut chain_settings = settings.clone();
-        if settings.routing_enabled {
-            // Định tuyến chỉ đổi model của provider chính khi route rỗng.
-            if routes.is_empty() && !choice.model.is_empty() && choice.reason != "routing-off" {
-                chain_settings.model = choice.model.clone();
-            }
-        }
+        // Định tuyến chỉ đổi model của provider chính khi route rỗng. Truyền
+        // model đã chọn xuống chuỗi provider thay vì clone toàn bộ AiSettings
+        // (system prompt, danh sách chế độ, khoá…) mỗi lượt.
+        let model_override = if settings.routing_enabled
+            && routes.is_empty()
+            && !choice.model.is_empty()
+            && choice.reason != "routing-off"
+        {
+            Some(choice.model.as_str())
+        } else {
+            None
+        };
 
         let outcome = self
-            .run_chain(&chain_settings, &routes, &system, &budgeted, mode, &message)
+            .run_chain(
+                &settings,
+                &routes,
+                &system,
+                &budgeted,
+                mode,
+                &message,
+                model_override,
+            )
             .await;
 
         match outcome {
@@ -1017,7 +1026,7 @@ impl AiService {
         }];
         let routes = self.load_routes().await;
         match self
-            .run_chain(settings, &routes, &system, &turns, mode, &message)
+            .run_chain(settings, &routes, &system, &turns, mode, &message, None)
             .await
         {
             Ok(outcome) => {
@@ -1172,7 +1181,7 @@ impl AiService {
             urlencode(conversation_id)
         );
         let rows = self.supabase.select(&path, RestAuth::Service).await.ok()?;
-        let row = rows.as_array()?.first()?.clone();
+        let row = rows.as_array()?.first()?;
         let id = row.get("id")?.as_str()?.to_string();
         let content = row.get("content")?.as_str()?.to_string();
         let created = row.get("created_at")?.as_str()?;
@@ -1210,6 +1219,15 @@ impl AiService {
         turns
     }
 
+    /// Cắt chuỗi theo số KÝ TỰ (không cắt giữa ký tự UTF-8). Trả về mượn khi
+    /// chuỗi đã trong giới hạn, tránh cấp phát bản sao cho mọi tin nhắn.
+    fn truncate_chars(raw: &str, max_chars: usize) -> &str {
+        match raw.char_indices().nth(max_chars) {
+            Some((index, _)) => &raw[..index],
+            None => raw,
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     async fn insert_message(
         &self,
@@ -1228,7 +1246,7 @@ impl AiService {
             "conversation_id": conversation_id,
             "student_id": student_id,
             "role": role,
-            "content": content.chars().take(24_000).collect::<String>(),
+            "content": Self::truncate_chars(content, 24_000),
             "mode": mode.as_str(),
             "provider": provider,
             "model": model,
@@ -1293,15 +1311,21 @@ struct ConversationRef {
 }
 
 pub fn clean_message(raw: &str) -> String {
-    raw.chars()
-        .filter(|ch| !ch.is_control() || *ch == '\n' || *ch == '\t')
-        .collect::<String>()
-        .trim()
+    let filtered: String = raw
         .chars()
-        .take(MAX_USER_MESSAGE)
-        .collect::<String>()
-        .trim()
-        .to_string()
+        .filter(|ch| !ch.is_control() || *ch == '\n' || *ch == '\t')
+        .collect();
+    let trimmed = filtered.trim();
+    // Hành vi giống bản cũ: cắt theo số ký tự rồi trim lần nữa. Chỉ cấp phát
+    // thêm khi thật sự vượt giới hạn.
+    if trimmed.chars().count() > MAX_USER_MESSAGE {
+        let mut out: String = trimmed.chars().take(MAX_USER_MESSAGE).collect();
+        let end = out.trim_end().len();
+        out.truncate(end);
+        out.trim_start().to_string()
+    } else {
+        trimmed.to_string()
+    }
 }
 
 pub fn auto_title(message: &str, mode: TutorMode) -> String {

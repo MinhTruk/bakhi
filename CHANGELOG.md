@@ -2,6 +2,48 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.7.2] — 2026-11-24
+
+**Serialization & Data Optimization.** Giảm chi phí chuyển dữ liệu giữa JavaScript và
+Rust ở AI Gateway: không còn sao chép system prompt/lịch sử cho mỗi lần thử provider,
+body provider được serialize trực tiếp từ struct mượn dữ liệu thay vì dựng cây
+`serde_json::Value`, và bỏ các clone `Value` không cần thiết khi đọc phản hồi.
+**Không đổi API contract, schema Supabase, auth/RLS, logic Primary/Fallback,
+`BK_BACKEND.mode` (vẫn `edge`), không deploy.**
+
+### Cải tiến
+
+- **Bỏ deep-clone ở mỗi attempt** — `ProviderRequest` nay mượn `system`, lịch sử hội
+  thoại, model và khoá API. Trước đây mỗi provider/retry sao chép toàn bộ system prompt
+  (có thể vài KB) và cả `Vec<ChatTurn>`; chuỗi tối đa 6 provider × 3 lần thử nên bản sao
+  tăng theo số attempt.
+- **Serialize body provider không qua `Value`** — adapter OpenAI-compatible và Gemini
+  dùng struct `Serialize` mượn dữ liệu, bỏ một map `json!` cho mỗi lượt hội thoại.
+- **Đọc phản hồi provider không clone** — bỏ `.cloned()` trên `choices[0]`,
+  `candidates[0]` và `usage`; nội dung nhiều part được ghép trong một buffer thay vì
+  `Vec<&str>` + `join` + `trim` tạo nhiều chuỗi trung gian.
+- **Ước lượng token không tạo chuỗi** — `usage_from_parts` đếm ký tự của system + model
+  thay vì `format!` toàn bộ system prompt chỉ để ước lượng khi provider thiếu usage.
+- **Bớt clone cấu hình và bản ghi** — không dựng `ModelRoute` tạm (5 chuỗi) cho cấu hình
+  mặc định, không clone toàn bộ `AiSettings` khi định tuyến model, đọc dòng
+  `ai_settings`/tin nhắn cuối bằng quyền sở hữu hoặc borrow.
+- **Ghi tin nhắn không cắt chuỗi vô ích** — chỉ cấp phát bản sao khi nội dung vượt
+  24.000 ký tự; `clean_message` giảm từ bốn lần cấp phát xuống hai.
+- **Benchmark micro chạy trong CI** — `rust-backend/examples/pipeline_bench.rs` đo
+  clone system + lịch sử, dựng body bằng `Value` so với struct, và parse chat request
+  ở ba quy mô. Đây là microbenchmark của đúng các thao tác đã đổi, không phải số đo
+  end-to-end.
+
+### Ghi chú
+
+- **Không thêm batch API.** AI chat là một lượt mỗi lần gọi; `/api/v1/data/learning-stats`
+  đã nhận cả lô trong một request. Thêm endpoint batch cho chat sẽ trùng API và phá
+  semantics chống gửi trùng/hạn mức hiện có.
+- **Chưa streaming.** Chuyển sang SSE sẽ đổi contract response và frontend — ngoài
+  phạm vi tối ưu an toàn của bản này.
+- Số liệu benchmark lấy từ log CI của job release, không ghi số ước lượng vào tài liệu.
+- 166 test hiện có vẫn là cổng chặn; không đổi fixture hay contract.
+
 ## [8.7.1] — 2026-11-24
 
 **Runtime Engine.** Tối ưu cách Rust Backend thực thi tác vụ: một Tokio multi-thread

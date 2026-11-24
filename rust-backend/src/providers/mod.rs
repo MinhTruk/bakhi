@@ -114,15 +114,16 @@ pub struct ChatTurn {
     pub content: String,
 }
 
-#[derive(Clone)]
-pub struct ProviderRequest {
+/// Yêu cầu gửi provider. Mượn dữ liệu của lượt chat hiện tại: không sao chép
+/// system prompt và toàn bộ lịch sử hội thoại cho mỗi attempt/retry.
+pub struct ProviderRequest<'a> {
     pub provider: Provider,
-    pub model: String,
-    pub system: String,
-    pub messages: Vec<ChatTurn>,
+    pub model: &'a str,
+    pub system: &'a str,
+    pub messages: &'a [ChatTurn],
     pub max_tokens: u32,
     pub temperature: f32,
-    pub api_key: String,
+    pub api_key: &'a str,
 }
 
 #[derive(Debug, Clone, Default, Serialize)]
@@ -293,7 +294,10 @@ pub fn sanitize_detail(raw: &str) -> String {
 
 #[async_trait]
 pub trait AiProvider: Send + Sync {
-    async fn generate(&self, request: ProviderRequest) -> Result<ProviderResult, ProviderError>;
+    async fn generate(
+        &self,
+        request: ProviderRequest<'_>,
+    ) -> Result<ProviderResult, ProviderError>;
 }
 
 /// Bộ provider dùng chung một HTTP client (tái sử dụng kết nối).
@@ -348,8 +352,12 @@ impl ProviderRegistry {
 }
 
 /// Ước lượng token khi provider không trả usage (~4 ký tự/token).
+fn estimate_tokens_from_chars(chars: usize) -> u32 {
+    ((chars as f32 / 4.0).ceil() as u32).max(1)
+}
+
 pub fn estimate_tokens(text: &str) -> u32 {
-    ((text.chars().count() as f32 / 4.0).ceil() as u32).max(1)
+    estimate_tokens_from_chars(text.chars().count())
 }
 
 /// Kiểm tra tên model theo đúng ràng buộc của database.
@@ -361,17 +369,22 @@ pub fn model_is_valid(model: &str) -> bool {
             .all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | ':' | '/' | '-'))
 }
 
-/// Đọc usage chung, ước lượng khi thiếu.
-pub(crate) fn usage_from(
+/// Đọc usage chung, ước lượng khi thiếu. `fallback_in` nhận từng phần của
+/// prompt (system, model) để đếm ký tự trực tiếp — không tạo bản sao của cả
+/// system prompt chỉ để ước lượng token.
+pub(crate) fn usage_from_parts(
     reported_in: Option<u64>,
     reported_out: Option<u64>,
-    fallback_in: &str,
+    fallback_in: &[&str],
     text: &str,
 ) -> Usage {
     let input = reported_in
         .map(|v| v as u32)
         .filter(|v| *v > 0)
-        .unwrap_or_else(|| estimate_tokens(fallback_in));
+        .unwrap_or_else(|| {
+            let chars: usize = fallback_in.iter().map(|part| part.chars().count()).sum();
+            estimate_tokens_from_chars(chars)
+        });
     let output = reported_out
         .map(|v| v as u32)
         .filter(|v| *v > 0)
@@ -452,7 +465,10 @@ pub struct MockProvider;
 
 #[async_trait]
 impl AiProvider for MockProvider {
-    async fn generate(&self, request: ProviderRequest) -> Result<ProviderResult, ProviderError> {
+    async fn generate(
+        &self,
+        request: ProviderRequest<'_>,
+    ) -> Result<ProviderResult, ProviderError> {
         let last = request
             .messages
             .iter()
@@ -469,7 +485,7 @@ impl AiProvider for MockProvider {
             provider: Provider::Custom,
             model: "mock".to_string(),
             usage: Usage {
-                input: estimate_tokens(&request.system),
+                input: estimate_tokens(request.system),
                 output: estimate_tokens(&last),
                 total: 0,
                 estimated: true,

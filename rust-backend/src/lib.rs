@@ -1,5 +1,5 @@
 // ===========================================================================
-// Bá Khí — Rust backend (v8.7.1)
+// Bá Khí — Rust backend (v8.7.2)
 //
 // Modular monolith: Axum + Tokio + Serde. Mọi phụ thuộc dùng chung (HTTP client,
 // Supabase client, provider registry, bộ giới hạn tần suất, circuit breaker,

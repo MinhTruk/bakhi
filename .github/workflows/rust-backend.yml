@@ -125,6 +125,11 @@ jobs:
       - name: Build release
         run: cargo build --release --locked
 
+      # Microbenchmark serialization/clone của Data Pipeline 8.7.2. Không gọi mạng,
+      # không cần Supabase; số liệu in vào log job để so sánh giữa các lần chạy.
+      - name: Benchmark pipeline (micro)
+        run: cargo run --release --locked --example pipeline_bench
+
       - name: Build image (không push)
         working-directory: .
         run: docker build -t bakhi-backend:ci ./rust-backend

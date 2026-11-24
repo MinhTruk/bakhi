@@ -1,6 +1,6 @@
 [package]
 name = "bakhi-backend"
-version = "8.7.1"
+version = "8.7.2"
 edition = "2021"
 rust-version = "1.85"
 description = "Bá Khí — Rust hybrid backend (API + AI Gateway)"

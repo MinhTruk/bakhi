@@ -15,7 +15,7 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var APP_VERSION = '8.7.1';
+    var APP_VERSION = '8.7.2';
 
     var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
         ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];

@@ -3,7 +3,7 @@
 Backend cho các tác vụ cần máy chủ thật: AI Gateway, xác thực tập trung, giới hạn tần suất và
 đồng thời, xử lý dữ liệu. Website tĩnh (GitHub Pages / Supabase) **không bị thay thế**.
 
-> Trạng thái 8.7.1: mã nguồn + 166 test + Docker + CI + metrics Prometheus + runtime tối ưu,
+> Trạng thái 8.7.2: mã nguồn + 166 test + Docker + CI + metrics Prometheus + runtime tối ưu,
 > **chưa deploy**. Mặc định website vẫn dùng Supabase Edge Function
 > (`BK_BACKEND.mode = 'edge'`).
 
@@ -53,6 +53,18 @@ Nhóm test: `health_tests`, `auth_tests`, `api_contract_tests`, `ai_gateway_test
   hình được, TCP keep-alive, `tcp_nodelay`.
 - **Không blocking trong async path**: render Prometheus chạy trong `spawn_blocking`; đọc
   bảng giá từ tệp chỉ xảy ra một lần lúc khởi động.
+
+## Data Pipeline (8.7.2)
+
+- `ProviderRequest` **mượn** `system`, `messages`, `model`, `api_key`; mỗi provider/retry
+  không còn sao chép system prompt và toàn bộ lịch sử hội thoại.
+- Body gửi provider được serialize từ struct `Serialize` mượn dữ liệu (OpenAI-compatible
+  và Gemini), không dựng cây `serde_json::Value` cho từng lượt.
+- Phản hồi provider được đọc bằng borrow; không clone `choices[0]`/`candidates[0]`/`usage`.
+- Ước lượng token khi thiếu usage đếm ký tự trực tiếp (`usage_from_parts`), không tạo
+  chuỗi `system + model` chỉ để đo.
+- Microbenchmark: `cargo run --release --locked --example pipeline_bench` (cũng chạy trong
+  job release của CI). Đây là microbenchmark, không phải số đo end-to-end.
 
 ## Observability (8.6.2)
 

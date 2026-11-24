@@ -875,3 +875,23 @@ Backend giữ nguyên Axum + Tokio + reqwest, chỉ tối ưu cách thực thi:
 
 Cấu hình: `rust-backend/.env.example`. Không đổi API contract, không đổi mặc định
 `BK_BACKEND.mode = 'edge'`.
+
+### 8.4. Runtime Engine (8.7.2) — Data Pipeline
+
+Tối ưu đường đi dữ liệu JS → HTTP JSON → Rust → HTTP JSON → JS, chỉ trong AI Gateway:
+
+- **Mượn thay vì clone** — `ProviderRequest<'a>` giữ `&str`/`&[ChatTurn]`; mỗi attempt
+  (tối đa 6 provider × 3 lần thử) không còn `system.to_string()` và `turns.to_vec()`.
+- **Serialize một lần từ struct** — body OpenAI-compatible/Gemini dùng struct `Serialize`
+  mượn dữ liệu; bỏ map `Value` cho từng lượt hội thoại.
+- **Đọc response bằng borrow** — không clone `choices[0]`, `candidates[0]`, `usage`;
+  ghép nhiều `part` trong một buffer.
+- **Ước lượng token không cấp phát chuỗi** — `usage_from_parts` đếm ký tự của từng phần
+  prompt thay vì `format!` cả system prompt.
+- **Bớt clone cấu hình** — `key_for` nhận trực tiếp khoá/`key_ref` (không dựng `ModelRoute`
+  tạm), `run_chain` nhận `model_override` thay vì clone toàn bộ `AiSettings`.
+- **Batch/streaming** — không thêm endpoint batch: chat là một lượt mỗi request và
+  `/api/v1/data/learning-stats` đã nhận cả lô; streaming sẽ đổi contract SSE của frontend
+  nên không nằm trong bản tối ưu an toàn này.
+- **Đo lường** — `rust-backend/examples/pipeline_bench.rs` (small/medium/large) chạy trong
+  job release của CI; số liệu nằm trong log, không phải benchmark end-to-end.

@@ -8,10 +8,11 @@
 use std::time::Duration;
 
 use async_trait::async_trait;
-use serde_json::{json, Value};
+use serde::Serialize;
+use serde_json::Value;
 
 use super::{
-    classify_http, model_is_valid, parse_retry_after, usage_from, AiErrorCode, AiProvider,
+    classify_http, model_is_valid, parse_retry_after, usage_from_parts, AiErrorCode, AiProvider,
     Provider, ProviderError, ProviderRequest, ProviderResult,
 };
 
@@ -60,35 +61,97 @@ fn urlencode_segment(raw: &str) -> String {
         .collect()
 }
 
+/// Body `generateContent`. Serialize trực tiếp từ struct mượn dữ liệu — không
+/// dựng cây `Value` với một map cho mỗi lượt hội thoại.
+#[derive(Serialize)]
+struct Part<'a> {
+    text: &'a str,
+}
+
+#[derive(Serialize)]
+struct Content<'a> {
+    role: &'a str,
+    parts: [Part<'a>; 1],
+}
+
+#[derive(Serialize)]
+struct SystemInstruction<'a> {
+    parts: [Part<'a>; 1],
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct GenerationConfig {
+    temperature: f32,
+    max_output_tokens: u32,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct FunctionCallingConfig {
+    mode: &'static str,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ToolConfig {
+    function_calling_config: FunctionCallingConfig,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WireRequest<'a> {
+    system_instruction: SystemInstruction<'a>,
+    contents: Vec<Content<'a>>,
+    generation_config: GenerationConfig,
+    tool_config: ToolConfig,
+}
+
 #[async_trait]
 impl AiProvider for Gemini {
-    async fn generate(&self, request: ProviderRequest) -> Result<ProviderResult, ProviderError> {
-        if !model_is_valid(&request.model) {
+    async fn generate(
+        &self,
+        request: ProviderRequest<'_>,
+    ) -> Result<ProviderResult, ProviderError> {
+        if !model_is_valid(request.model) {
             return Err(ProviderError::new(AiErrorCode::BadConfig, Provider::Google));
         }
         if request.api_key.trim().is_empty() {
             return Err(ProviderError::new(AiErrorCode::NoKey, Provider::Google));
         }
-        let url = self.endpoint(&request.model)?;
+        let url = self.endpoint(request.model)?;
 
-        let mut contents: Vec<Value> = Vec::with_capacity(request.messages.len());
-        contents.extend(request.messages.iter().map(|turn| {
-            json!({
-                "role": if turn.role == "assistant" { "model" } else { "user" },
-                "parts": [{ "text": turn.content }]
+        let contents: Vec<Content<'_>> = request
+            .messages
+            .iter()
+            .map(|turn| Content {
+                role: if turn.role == "assistant" {
+                    "model"
+                } else {
+                    "user"
+                },
+                parts: [Part {
+                    text: &turn.content,
+                }],
             })
-        }));
+            .collect();
 
-        let body = json!({
-            "systemInstruction": { "parts": [{ "text": request.system }] },
-            "contents": contents,
-            "generationConfig": {
-                "temperature": request.temperature,
-                "maxOutputTokens": request.max_tokens
+        let body = WireRequest {
+            system_instruction: SystemInstruction {
+                parts: [Part {
+                    text: request.system,
+                }],
+            },
+            contents,
+            generation_config: GenerationConfig {
+                temperature: request.temperature,
+                max_output_tokens: request.max_tokens,
             },
             // AI Tutor chỉ trả lời văn bản: không cho model tự gọi công cụ.
-            "toolConfig": { "functionCallingConfig": { "mode": "NONE" } }
-        });
+            tool_config: ToolConfig {
+                function_calling_config: FunctionCallingConfig { mode: "NONE" },
+            },
+        };
 
         let response = self
             .http
@@ -126,23 +189,25 @@ impl AiProvider for Gemini {
             .await
             .map_err(|_| ProviderError::new(AiErrorCode::EmptyResponse, Provider::Google))?;
 
-        let candidate = raw
-            .get("candidates")
-            .and_then(|c| c.get(0))
-            .cloned()
-            .unwrap_or(Value::Null);
+        // Mượn trực tiếp từ `raw`: không clone toàn bộ candidate.
+        let candidate = raw.get("candidates").and_then(|c| c.get(0));
         let text = candidate
-            .get("content")
+            .and_then(|c| c.get("content"))
             .and_then(|c| c.get("parts"))
-            .and_then(|p| p.as_array())
+            .and_then(Value::as_array)
             .map(|parts| {
-                parts
-                    .iter()
-                    .filter_map(|part| part.get("text").and_then(|v| v.as_str()))
-                    .collect::<Vec<_>>()
-                    .join("")
-                    .trim()
-                    .to_string()
+                let mut out = String::new();
+                for part in parts {
+                    if let Some(text) = part.get("text").and_then(Value::as_str) {
+                        out.push_str(text);
+                    }
+                }
+                let trimmed_len = out.trim().len();
+                if trimmed_len == out.len() {
+                    out
+                } else {
+                    out.trim().to_string()
+                }
             })
             .unwrap_or_default();
 
@@ -153,22 +218,24 @@ impl AiProvider for Gemini {
             ));
         }
 
-        let meta = raw.get("usageMetadata").cloned().unwrap_or(Value::Null);
-        let usage = usage_from(
-            meta.get("promptTokenCount").and_then(|v| v.as_u64()),
-            meta.get("candidatesTokenCount").and_then(|v| v.as_u64()),
-            &format!("{}{}", request.system, request.model),
+        let meta = raw.get("usageMetadata");
+        let usage = usage_from_parts(
+            meta.and_then(|m| m.get("promptTokenCount"))
+                .and_then(Value::as_u64),
+            meta.and_then(|m| m.get("candidatesTokenCount"))
+                .and_then(Value::as_u64),
+            &[request.system, request.model],
             &text,
         );
 
         Ok(ProviderResult {
             text,
             provider: Provider::Google,
-            model: request.model,
+            model: request.model.to_string(),
             usage,
             finish_reason: candidate
-                .get("finishReason")
-                .and_then(|v| v.as_str())
+                .and_then(|c| c.get("finishReason"))
+                .and_then(Value::as_str)
                 .unwrap_or("STOP")
                 .to_string(),
             mock: false,
