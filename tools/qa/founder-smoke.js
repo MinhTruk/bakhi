@@ -307,12 +307,14 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   const dash = await until(() => D.querySelector('.bkc-dash'));
   ok('mở được Founder Dashboard', !!dash);
   const tabs = Array.from(D.querySelectorAll('.bkc-nav .bkc-tab'));
-  /* 18 = 15 tab dùng chung với Administrator + 3 tab Founder; tab "Tiến trình" (8.3.0)
-     và tab "AI Tutor" (8.5.0) được thêm vào danh sách dùng chung nên Founder cũng có. */
-  ok('Founder có đủ 18 tab',
-    tabs.length === 18 &&
+  /* 19 = 15 tab dùng chung với Administrator + 3 tab Founder + tab "Vận hành" (8.6.2,
+     chỉ Founder); tab "Tiến trình" (8.3.0) và "AI Tutor" (8.5.0) đã nằm trong danh sách
+     dùng chung nên Founder cũng có. */
+  ok('Founder có đủ 19 tab',
+    tabs.length === 19 &&
     tabs.some((t) => /Tiến trình/.test(t.textContent)) &&
-    tabs.some((t) => /AI Tutor/.test(t.textContent)),
+    tabs.some((t) => /AI Tutor/.test(t.textContent)) &&
+    tabs.some((t) => /Vận hành/.test(t.textContent)),
     tabs.length + ': ' + tabs.map((t) => t.textContent.trim()).join(' | '));
 
   await until(() => calls.find((c) => c.action === 'settings.get'));
