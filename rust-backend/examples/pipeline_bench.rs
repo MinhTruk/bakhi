@@ -68,9 +68,7 @@ fn scenario(label: &str, turn_count: usize, chars: usize) {
     let model = "openai/gpt-oss-20b";
     let iters = 2_000;
 
-    println!(
-        "\n[{label}] {turn_count} lượt × {chars} ký tự · system 8.000 ký tự"
-    );
+    println!("\n[{label}] {turn_count} lượt × {chars} ký tự · system 8.000 ký tự");
 
     bench("legacy: clone system + turns / attempt", iters, || {
         let owned_system = system.clone();

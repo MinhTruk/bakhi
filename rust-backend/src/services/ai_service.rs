@@ -285,11 +285,7 @@ impl AiService {
                 .map(|route| Candidate {
                     provider: Provider::parse(&route.provider).unwrap_or(Provider::Groq),
                     model: route.model.trim().to_string(),
-                    api_key: self.key_for(
-                        route.position == 0,
-                        &route.api_key,
-                        &route.key_ref,
-                    ),
+                    api_key: self.key_for(route.position == 0, &route.api_key, &route.key_ref),
                     label: if route.label.trim().is_empty() {
                         format!("{} #{}", route.provider, route.position + 1)
                     } else {

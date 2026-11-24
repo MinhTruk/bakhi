@@ -294,10 +294,8 @@ pub fn sanitize_detail(raw: &str) -> String {
 
 #[async_trait]
 pub trait AiProvider: Send + Sync {
-    async fn generate(
-        &self,
-        request: ProviderRequest<'_>,
-    ) -> Result<ProviderResult, ProviderError>;
+    async fn generate(&self, request: ProviderRequest<'_>)
+        -> Result<ProviderResult, ProviderError>;
 }
 
 /// Bộ provider dùng chung một HTTP client (tái sử dụng kết nối).
