@@ -56,6 +56,9 @@ tính, chi phí AI ước tính từ bảng giá cấu hình, `/metrics` tương
   qua); `ai_usage_logs.fell_back` của lượt lỗi cũng ghi trung thực.
 - **Lỗi trước khi gọi provider không còn làm sai `availability`** — 401, 429 hạn mức, câu
   hỏi rỗng, chế độ tắt, câu hỏi trùng không còn bị đếm là lượt AI thất bại.
+- **Docker builder dùng toolchain mới hơn** — image builder nâng từ `rust:1.83-bookworm` lên
+  `rust:1.92-bookworm` (và `rust-version` lên 1.85) vì `Cargo.lock` có crate khai báo manifest
+  edition 2024 mà Cargo 1.83 không đọc được, làm bước build image trong CI thất bại.
 - **Tab Vận hành chỉ dành cho Founder** — Administrator thường không còn thấy mục này trong
   điều hướng dashboard (trước đó chỉ bị chặn ở máy chủ bằng 403).
 

@@ -2,7 +2,7 @@
 name = "bakhi-backend"
 version = "8.6.2"
 edition = "2021"
-rust-version = "1.75"
+rust-version = "1.85"
 description = "Bá Khí — Rust hybrid backend (API + AI Gateway)"
 license = "UNLICENSED"
 

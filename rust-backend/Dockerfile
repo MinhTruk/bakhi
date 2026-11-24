@@ -5,7 +5,9 @@
 # Không chứa secret: mọi khoá truyền vào bằng biến môi trường lúc chạy.
 # ===========================================================================
 
-FROM rust:1.83-bookworm AS builder
+# Ghim toolchain mới hơn 1.83: Cargo.lock hiện có crate khai báo manifest edition
+# 2024 (rand_core 0.10, rand 0.10), mà Cargo 1.83 không đọc được.
+FROM rust:1.92-bookworm AS builder
 
 WORKDIR /build
 COPY Cargo.toml Cargo.lock ./

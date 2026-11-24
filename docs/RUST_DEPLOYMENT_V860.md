@@ -9,7 +9,7 @@
 
 | Thành phần | Yêu cầu |
 |---|---|
-| Rust | 1.75+ (khuyến nghị stable mới nhất; CI dùng `stable`) |
+| Rust | 1.85+ (Cargo.lock có crate dùng manifest edition 2024; CI dùng `stable`, Docker builder ghim `rust:1.92-bookworm`) |
 | Hệ điều hành | Linux x86_64/arm64 (Docker `debian:bookworm-slim`) |
 | Bộ nhớ | ~30 MiB RSS khi rảnh; 7 MiB đo được trong benchmark |
 | Cổng | Một cổng HTTP (mặc định 8080) sau reverse proxy có TLS |
