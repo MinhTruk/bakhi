@@ -321,6 +321,7 @@ impl AiService {
     ///
     /// Circuit breaker chỉ *bỏ qua* provider đang OPEN; thứ tự Primary → Fallback
     /// không đổi và provider khác vẫn chạy bình thường.
+    #[allow(clippy::too_many_arguments)]
     pub async fn run_chain(
         &self,
         settings: &AiSettings,
