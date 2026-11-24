@@ -1,6 +1,6 @@
 # Brain Index
 
-_Auto-generated. Last updated 2026-11-24T02:48:51.763Z._
+_Auto-generated. Last updated 2026-11-24T12:09:20.295Z._
 
 - [agent-session-protocol](pages/agent-session-protocol.md) — category: ? | status: ? | This is the routine to follow on **every** session in this repo, future included.
 - [brain-toolkit-location](pages/brain-toolkit-location.md) — category: ? | status: ? | The brain.md installer (v0.3.0, `@mindmux/brain-md`) unpacks `LICENSE`, `README.md`, `package.json`, `bin/` and `skills/` into the project r
@@ -16,3 +16,4 @@ _Auto-generated. Last updated 2026-11-24T02:48:51.763Z._
 - [v855-tokens-and-dismissals](pages/v855-tokens-and-dismissals.md) — category: ? | status: ? | # v8.5.5 — Design Tokens, xoá thông báo, sidebar mobile
 - [v856-theme-sync-and-notification-admin](pages/v856-theme-sync-and-notification-admin.md) — category: ? | status: ? | ## Bối cảnh
 - [v862-observability](pages/v862-observability.md) — category: decision | tags: [observability, metrics, prometheus, rust, 8.6.2] | ## Bối cảnh
+- [v871-runtime-engine](pages/v871-runtime-engine.md) — category: decision | tags: [runtime, tokio, concurrency, reqwest, rust, 8.7.1] | ## Bối cảnh

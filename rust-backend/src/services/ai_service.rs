@@ -348,7 +348,9 @@ impl AiService {
         let candidates = self.candidates(settings, routes);
         let per_attempt = Duration::from_millis(settings.timeout_ms.clamp(1_000, 120_000));
 
-        let mut attempts: Vec<Attempt> = Vec::new();
+        // Trần số attempt: mỗi provider thử tối đa `ai_max_retries + 1` lần.
+        let mut attempts: Vec<Attempt> =
+            Vec::with_capacity(candidates.len() * (self.settings.ai_max_retries as usize + 1));
         let mut last_error: Option<ProviderError> = None;
 
         let mut fallback_attempted = false;
@@ -424,6 +426,44 @@ impl AiService {
                     break 'providers;
                 }
 
+                // Giới hạn đồng thời theo TỪNG provider: provider chậm/đang bão
+                // hoà không chiếm hết chỗ của provider khác. Hết thời gian chờ
+                // thì bỏ provider này, không xếp hàng vô hạn.
+                let provider_permit = self
+                    .state
+                    .concurrency
+                    .acquire_provider(candidate.provider.as_str())
+                    .await;
+                let Some(provider_permit) = provider_permit else {
+                    self.state.metrics.record_ai_attempt(
+                        role,
+                        candidate.provider.as_str(),
+                        &candidate.model,
+                        false,
+                        0.0,
+                        Some(AiErrorCode::ProviderDown.as_str()),
+                    );
+                    attempts.push(Attempt {
+                        provider: candidate.provider,
+                        model: candidate.model.clone(),
+                        ok: false,
+                        code: Some(AiErrorCode::ProviderDown),
+                        latency_ms: 0,
+                    });
+                    tracing::warn!(
+                        target: "bakhi::concurrency",
+                        provider = candidate.provider.as_str(),
+                        model = %candidate.model,
+                        role,
+                        "provider đạt giới hạn đồng thời — chuyển provider kế tiếp"
+                    );
+                    last_error = Some(ProviderError::new(
+                        AiErrorCode::ProviderDown,
+                        candidate.provider,
+                    ));
+                    break;
+                };
+
                 let attempt_start = Instant::now();
                 let request = ProviderRequest {
                     provider: candidate.provider,
@@ -437,6 +477,8 @@ impl AiService {
                 // Không để một attempt vượt quá hạn của cả chuỗi.
                 let budget = per_attempt.min(remaining);
                 let outcome = tokio::time::timeout(budget, provider_impl.generate(request)).await;
+                // Chỉ giữ chỗ trong lúc chờ HTTP, không giữ qua backoff/retry.
+                drop(provider_permit);
 
                 match outcome {
                     Err(_) => {

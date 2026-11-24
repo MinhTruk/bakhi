@@ -44,7 +44,13 @@ pub async fn metrics(
     }
 
     let circuits = state.circuits.snapshot();
-    let body = state.metrics.prometheus(&circuits);
+    // Render Prometheus đọc `/proc/self/statm` và dựng chuỗi lớn: chạy trên
+    // blocking pool để không chặn worker thread của runtime.
+    let metrics = state.metrics.clone();
+    let body = match tokio::task::spawn_blocking(move || metrics.prometheus(&circuits)).await {
+        Ok(body) => body,
+        Err(_) => return ApiError::internal().into_response_with(&request_id.0),
+    };
     let mut response = (StatusCode::OK, body).into_response();
     response.headers_mut().insert(
         header::CONTENT_TYPE,

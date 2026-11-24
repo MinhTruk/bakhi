@@ -5,11 +5,13 @@
 //   * toàn dịch vụ (middleware, `MAX_CONCURRENCY`),
 //   * lượt gọi AI (`AI_MAX_CONCURRENCY`),
 //   * mỗi người dùng (`AI_USER_MAX_CONCURRENCY`, mặc định 1 — giống khoá
-//     `inFlight` của Edge Function nên hai tab không gọi AI chồng nhau).
+//     `inFlight` của Edge Function nên hai tab không gọi AI chồng nhau),
+//   * mỗi provider AI (`RUST_MAX_CONCURRENT_PROVIDER_REQUESTS`).
 //
 // Mọi lần chờ đều có hạn (`CONCURRENCY_WAIT_MS`); hết hạn trả 429 `BUSY`,
 // không bao giờ chờ vô hạn. Bộ đếm theo người dùng được dọn khi về 0 và có
-// trần kích thước để không phình bộ nhớ.
+// trần kích thước để không phình bộ nhớ. Semaphore provider chỉ giữ trong lúc
+// gọi HTTP, không giữ qua thời gian backoff.
 // ===========================================================================
 
 use std::collections::HashMap;
@@ -34,6 +36,9 @@ pub struct Concurrency {
     wait: Duration,
     max_per_user: usize,
     users: Arc<Mutex<HashMap<String, usize>>>,
+    /// Mỗi provider một semaphore riêng: provider chậm không chiếm hết chỗ
+    /// của provider khác.
+    providers: HashMap<&'static str, Arc<Semaphore>>,
 }
 
 /// Permit cho một lượt gọi AI: giữ cả semaphore AI và bộ đếm theo người dùng.
@@ -57,14 +62,48 @@ impl Drop for AiPermit {
 }
 
 impl Concurrency {
-    pub fn new(max_global: usize, max_ai: usize, max_per_user: usize, wait: Duration) -> Self {
+    pub fn new(
+        max_global: usize,
+        max_ai: usize,
+        max_per_user: usize,
+        max_provider: usize,
+        wait: Duration,
+    ) -> Self {
+        let providers = crate::providers::Provider::ALL
+            .iter()
+            .map(|provider| {
+                (
+                    provider.as_str(),
+                    Arc::new(Semaphore::new(max_provider.max(1))),
+                )
+            })
+            .collect();
         Self {
             global: Arc::new(Semaphore::new(max_global.max(1))),
             ai: Arc::new(Semaphore::new(max_ai.max(1))),
             wait,
             max_per_user: max_per_user.max(1),
             users: Arc::new(Mutex::new(HashMap::new())),
+            providers,
         }
+    }
+
+    /// Lấy permit gọi MỘT provider. `None` khi provider đã đạt trần đồng thời
+    /// hoặc hết thời gian chờ — caller chuyển sang provider kế tiếp thay vì
+    /// xếp hàng vô hạn.
+    pub async fn acquire_provider(&self, provider: &str) -> Option<OwnedSemaphorePermit> {
+        let semaphore = self.providers.get(provider)?.clone();
+        match tokio::time::timeout(self.wait, semaphore.acquire_owned()).await {
+            Ok(Ok(permit)) => Some(permit),
+            _ => None,
+        }
+    }
+
+    /// Số permit còn trống của một provider (dùng cho kiểm thử/chẩn đoán).
+    pub fn provider_available(&self, provider: &str) -> Option<usize> {
+        self.providers
+            .get(provider)
+            .map(|semaphore| semaphore.available_permits())
     }
 
     /// Lấy permit toàn dịch vụ; `None` khi hết thời gian chờ.
@@ -174,7 +213,7 @@ mod tests {
 
     #[tokio::test]
     async fn per_user_limit_is_one_by_default() {
-        let concurrency = Concurrency::new(8, 4, 1, Duration::from_millis(50));
+        let concurrency = Concurrency::new(8, 4, 1, 2, Duration::from_millis(50));
         let first = concurrency.acquire_ai("user-a").await;
         assert!(first.is_some());
         assert!(concurrency.acquire_ai("user-a").await.is_none());
@@ -186,11 +225,27 @@ mod tests {
 
     #[tokio::test]
     async fn ai_semaphore_returns_none_instead_of_queueing_forever() {
-        let concurrency = Concurrency::new(8, 1, 8, Duration::from_millis(30));
+        let concurrency = Concurrency::new(8, 1, 8, 2, Duration::from_millis(30));
         let held = concurrency.acquire_ai("a").await;
         assert!(held.is_some());
         let started = std::time::Instant::now();
         assert!(concurrency.acquire_ai("b").await.is_none());
         assert!(started.elapsed() < Duration::from_secs(1));
+    }
+
+    #[tokio::test]
+    async fn provider_limit_is_per_provider_and_releases_on_drop() {
+        let concurrency = Concurrency::new(8, 8, 8, 1, Duration::from_millis(30));
+        let groq = concurrency.acquire_provider("groq").await;
+        assert!(groq.is_some());
+        assert_eq!(concurrency.provider_available("groq"), Some(0));
+        // Provider khác vẫn còn chỗ: giới hạn tách biệt nhau.
+        assert_eq!(concurrency.provider_available("google"), Some(1));
+        assert!(concurrency.acquire_provider("google").await.is_some());
+        // Cùng provider thì bị từ chối sau thời gian chờ ngắn.
+        assert!(concurrency.acquire_provider("groq").await.is_none());
+        drop(groq);
+        assert_eq!(concurrency.provider_available("groq"), Some(1));
+        assert!(concurrency.acquire_provider("groq").await.is_some());
     }
 }

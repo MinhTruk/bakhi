@@ -47,6 +47,19 @@ pub enum Protocol {
 }
 
 impl Provider {
+    /// Toàn bộ provider đã biết — dùng để dựng semaphore giới hạn đồng thời
+    /// theo từng provider một lần khi khởi động.
+    pub const ALL: [Provider; 8] = [
+        Provider::Groq,
+        Provider::Google,
+        Provider::OpenAi,
+        Provider::Cerebras,
+        Provider::OpenRouter,
+        Provider::Mistral,
+        Provider::DeepSeek,
+        Provider::Custom,
+    ];
+
     pub fn parse(raw: &str) -> Option<Self> {
         match raw.trim().to_lowercase().as_str() {
             "groq" => Some(Self::Groq),

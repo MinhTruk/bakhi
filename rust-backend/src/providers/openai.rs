@@ -67,7 +67,9 @@ impl AiProvider for OpenAiCompatible {
         }
 
         let url = format!("{}/chat/completions", self.base_url);
-        let mut messages: Vec<Value> = vec![json!({ "role": "system", "content": request.system })];
+        // Cấp phát một lần đúng kích thước: system + toàn bộ lượt hội thoại.
+        let mut messages: Vec<Value> = Vec::with_capacity(request.messages.len() + 1);
+        messages.push(json!({ "role": "system", "content": request.system }));
         for turn in &request.messages {
             messages.push(json!({ "role": turn.role, "content": turn.content }));
         }

@@ -602,6 +602,30 @@ Tài liệu: `docs/AI_TUTOR_ARCHITECTURE.md` (kiến trúc), `docs/AI_TUTOR_SECU
 - Trước khi push: `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D warnings`,
   `cargo test --all-targets`. Tài liệu: `docs/OBSERVABILITY.md`, `docs/prometheus.yml`.
 
+### 6.8. Runtime backend Rust (8.7.1)
+
+- **Một Tokio runtime duy nhất.** `main.rs` dựng `new_multi_thread` tường minh và
+  `block_on(run(...))`. **Không** thêm `#[tokio::main]` ở chỗ khác, không `Runtime::new()`
+  trong handler, không `block_on` lồng nhau. `RUST_WORKER_THREADS` (0/không đặt = theo CPU,
+  trần 256) là cách duy nhất để đổi số worker.
+- **Bốn lớp đồng thời, không hardcode:** toàn dịch vụ, lượt AI, mỗi người dùng, mỗi provider.
+  Semaphore provider nằm trong `Concurrency`; `run_chain()` chỉ giữ permit trong lúc gọi
+  HTTP (drop trước backoff). Hết `CONCURRENCY_WAIT_MS` thì chuyển provider, **không** xếp
+  hàng vô hạn và không coi đó là lỗi circuit.
+- **Tên cấu hình:** `RUST_*` là tên chuẩn (xem `rust-backend/.env.example`); tên cũ
+  (`MAX_CONCURRENCY`, `REQUEST_TIMEOUT_MS`, …) phải tiếp tục đọc được để không phá cấu hình
+  triển khai. Mọi giới hạn mới phải validate khi khởi động và nêu TÊN biến trong lỗi.
+- **HTTP client dùng chung** trong `AppState` (Supabase + mọi provider), pool idle cấu hình
+  được. Không tạo `reqwest::Client` trong handler/vòng lặp.
+- **Không blocking trong async path:** file I/O đồng bộ, CPU-heavy hoặc đọc `/proc` phải đi
+  qua `tokio::task::spawn_blocking` (ví dụ render `/metrics`). `std::thread::sleep` chỉ được
+  xuất hiện trong test.
+- `unsafe` không được dùng cho tối ưu vi mô. Không thêm crate chỉ để tối ưu khi std/Tokio
+  đã đủ.
+- Trước khi push: `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D
+  warnings`, `cargo test --all-targets`, `cargo build --release`. Tài liệu:
+  `docs/ARCHITECTURE.md` mục 8.3, `rust-backend/README.md`, `docs/RUST_DEPLOYMENT_V860.md`.
+
 <!-- BEGIN brain.md -->
 ## Project Brain
 

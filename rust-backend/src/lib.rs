@@ -1,5 +1,5 @@
 // ===========================================================================
-// Bá Khí — Rust backend (v8.6.1)
+// Bá Khí — Rust backend (v8.7.1)
 //
 // Modular monolith: Axum + Tokio + Serde. Mọi phụ thuộc dùng chung (HTTP client,
 // Supabase client, provider registry, bộ giới hạn tần suất, circuit breaker,
@@ -75,6 +75,7 @@ impl AppState {
                 settings.max_concurrency,
                 settings.max_ai_concurrency,
                 settings.max_user_concurrency,
+                settings.max_provider_concurrency,
                 settings.concurrency_wait,
             )),
             metrics: Arc::new(Metrics::new(settings.ai_pricing.clone())),
@@ -87,13 +88,20 @@ impl AppState {
     }
 }
 
-/// HTTP client dùng chung: giữ kết nối (keep-alive), pool hợp lý, nén.
+/// HTTP client dùng chung: giữ kết nối (keep-alive), pool cấu hình được.
+///
+/// Dựng MỘT LẦN trong `AppState`; mọi request Supabase/provider dùng lại client
+/// này nên connection pool và TLS session được tái sử dụng. Không tạo client
+/// trong vòng lặp xử lý request.
 pub fn build_http_client(settings: &Settings) -> reqwest::Client {
     reqwest::Client::builder()
         .user_agent(format!("BakhiBackend/{}", env!("CARGO_PKG_VERSION")))
-        .pool_max_idle_per_host(32)
-        .pool_idle_timeout(Duration::from_secs(90))
+        .pool_max_idle_per_host(settings.pool_max_idle_per_host)
+        .pool_idle_timeout(settings.idle_connection_timeout)
         .tcp_nodelay(true)
+        // Giữ kết nối sống qua khoảng lặng ngắn của client mà không phụ thuộc
+        // mặc định của hệ điều hành.
+        .tcp_keepalive(Duration::from_secs(60))
         .connect_timeout(settings.connect_timeout)
         .timeout(settings.request_timeout)
         .build()

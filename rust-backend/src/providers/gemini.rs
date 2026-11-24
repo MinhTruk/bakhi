@@ -71,16 +71,13 @@ impl AiProvider for Gemini {
         }
         let url = self.endpoint(&request.model)?;
 
-        let contents: Vec<Value> = request
-            .messages
-            .iter()
-            .map(|turn| {
-                json!({
-                    "role": if turn.role == "assistant" { "model" } else { "user" },
-                    "parts": [{ "text": turn.content }]
-                })
+        let mut contents: Vec<Value> = Vec::with_capacity(request.messages.len());
+        contents.extend(request.messages.iter().map(|turn| {
+            json!({
+                "role": if turn.role == "assistant" { "model" } else { "user" },
+                "parts": [{ "text": turn.content }]
             })
-            .collect();
+        }));
 
         let body = json!({
             "systemInstruction": { "parts": [{ "text": request.system }] },

@@ -2,6 +2,51 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.7.1] — 2026-11-24
+
+**Runtime Engine.** Tối ưu cách Rust Backend thực thi tác vụ: một Tokio multi-thread
+runtime cho toàn bộ vòng đời tiến trình, worker thread cấu hình được, giới hạn đồng thời
+theo từng provider AI, tên cấu hình `RUST_*` chuẩn hoá (vẫn đọc tên cũ), và bỏ file I/O
+đồng bộ khỏi async path. **Không đổi API contract, không đổi giao diện/URL học sinh,
+không đổi `BK_BACKEND.mode` (vẫn `edge`), không đổi schema Supabase, không deploy.**
+
+### Tính năng
+
+- **Một Tokio multi-thread runtime, cấu hình được** — `main.rs` dựng runtime tường minh
+  thay vì `#[tokio::main]`; `RUST_WORKER_THREADS` chọn số worker (mặc định để Tokio tự
+  chọn theo CPU), có `thread_keep_alive`, không tạo runtime cho từng request. Số worker
+  thực tế được log lúc khởi động. Giá trị 0/không đặt = tự động; trần 256.
+- **Giới hạn đồng thời theo từng provider AI** — mỗi provider có semaphore riêng
+  (`RUST_MAX_CONCURRENT_PROVIDER_REQUESTS`, mặc định 10). Provider chậm hoặc đang bão hoà
+  không chiếm hết chỗ của provider khác; hết `CONCURRENCY_WAIT_MS` thì bỏ provider đó và
+  chuyển provider kế tiếp thay vì xếp hàng vô hạn. Permit chỉ giữ trong lúc gọi HTTP,
+  không giữ qua backoff/retry.
+- **Chuẩn hoá tên cấu hình** — `RUST_MAX_CONCURRENT_REQUESTS`,
+  `RUST_MAX_CONCURRENT_AI_REQUESTS`, `RUST_MAX_CONCURRENT_PROVIDER_REQUESTS`,
+  `RUST_REQUEST_TIMEOUT_SECS`, `RUST_CONNECT_TIMEOUT_SECS`,
+  `RUST_IDLE_CONNECTION_TIMEOUT_SECS`, `RUST_POOL_MAX_IDLE_PER_HOST`,
+  `RUST_WORKER_THREADS`. Tên cũ (`MAX_CONCURRENCY`, `REQUEST_TIMEOUT_MS`, …) vẫn hoạt
+  động nên cấu hình triển khai hiện có không phải sửa; mọi giá trị được kiểm tra khi
+  khởi động và lỗi nêu tên biến, không nêu giá trị bí mật.
+- **HTTP client/connection pool dùng chung** — `AppState` dựng client MỘT LẦN; pool idle
+  theo host và idle timeout nay cấu hình được (mặc định 32 / 90 giây), giữ TCP keep-alive
+  và `tcp_nodelay`. Supabase và mọi provider AI dùng lại cùng pool.
+- **Giảm cấp phát bộ nhớ** — `Vec` attempt của chuỗi provider và danh sách message gửi
+  provider được cấp phát trước theo kích thước đã biết.
+- **Không còn file I/O đồng bộ trong async path** — render Prometheus (đọc
+  `/proc/self/statm` và dựng chuỗi lớn) chạy trong `tokio::task::spawn_blocking`, không
+  chặn worker thread của runtime.
+- **166 test** (81 unit + 85 integration/contract), thêm test cho giới hạn provider,
+  kiểm tra giá trị giây và trần worker/pool.
+
+### Ghi chú
+
+- Release profile giữ `opt-level = 3`, `lto = "thin"`, `codegen-units = 1`, `strip = true`:
+  cấu hình này đã có từ trước và không thay đổi trong 8.7.1.
+- Chưa có số đo benchmark mới: môi trường phiên làm việc này không có Rust toolchain.
+  `bench/run.mjs` đã sẵn sàng để đo lại khi có môi trường build release; không tạo số liệu
+  minh hoạ.
+
 ## [8.6.2] — 2026-11-24
 
 **Observability.** Backend Rust tự bộc lộ tình trạng hoạt động: histogram latency thật

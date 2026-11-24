@@ -853,3 +853,25 @@ metrics, không gọi mạng ngoài cho từng chỉ số.
 
 Chi tiết metric, label, PromQL và troubleshooting: `docs/OBSERVABILITY.md`;
 cấu hình scrape: `docs/prometheus.yml`.
+
+### 8.3. Runtime Engine (8.7.1)
+
+Backend giữ nguyên Axum + Tokio + reqwest, chỉ tối ưu cách thực thi:
+
+- **Một** Tokio multi-thread runtime dựng tường minh trong `main.rs`; `RUST_WORKER_THREADS`
+  chọn số worker (mặc định theo CPU, trần 256), `thread_keep_alive` 60 giây, không tạo
+  runtime cho từng request và không dùng `block_on` lồng nhau.
+- **Bốn lớp giới hạn đồng thời**: toàn dịch vụ, lượt AI, mỗi người dùng, mỗi provider AI.
+  Provider có semaphore riêng; hết `CONCURRENCY_WAIT_MS` thì bỏ provider đó thay vì xếp
+  hàng vô hạn. Permit provider chỉ giữ trong lúc gọi HTTP, không giữ qua backoff.
+- **HTTP pool dùng chung** (Supabase + mọi provider): idle theo host, idle timeout, TCP
+  keep-alive, `tcp_nodelay`; tham số cấu hình được, mặc định 32 kết nối idle/host, 90 giây.
+- **Blocking I/O ra khỏi async path**: render Prometheus (đọc `/proc/self/statm`, dựng chuỗi
+  lớn) chạy trong `spawn_blocking`; `AI_PRICING_FILE` chỉ đọc lúc khởi động.
+- **Cấp phát trước** cho danh sách attempt và message gửi provider khi biết kích thước.
+- Timeout theo lớp và hủy future của request giữ nguyên như 8.6.1: mọi ghi Supabase hoàn
+  tất trước khi trả phản hồi, nên request bị client hủy không để lại trạng thái dở dang đã
+  xác nhận.
+
+Cấu hình: `rust-backend/.env.example`. Không đổi API contract, không đổi mặc định
+`BK_BACKEND.mode = 'edge'`.

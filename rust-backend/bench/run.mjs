@@ -21,6 +21,10 @@ import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
 const BIN = path.join(ROOT, 'target', 'release', 'bakhi-backend');
+/* Phiên bản lấy từ Cargo.toml để báo cáo không bị lệch sau mỗi lần bump. */
+const BACKEND_VERSION =
+  (readFileSync(path.join(ROOT, 'Cargo.toml'), 'utf8').match(/^version = "([^"]+)"/m) || [])[1] ||
+  'unknown';
 const TOKEN = 'bench-token-abcdefghijklmnop';
 const PORT = 8099;
 
@@ -326,7 +330,7 @@ const results = {
     runtime: process.version,
     platform: process.platform,
     cpuCount: (await import('node:os')).cpus().length,
-    backendVersion: '8.6.0',
+    backendVersion: BACKEND_VERSION,
     mode: 'release build, local, mock Supabase + mock AI provider'
   },
   scenarios: [health, stats, me, chat],

@@ -79,6 +79,14 @@ Xem đầy đủ trong [`rust-backend/.env.example`](../rust-backend/.env.exampl
 | `AI_RATE_LIMIT_PER_MIN` | ➖ | Mặc định 30 (theo người dùng) |
 | `REQUEST_TIMEOUT_MS` | ➖ | Mặc định 45000 |
 | `MAX_BODY_BYTES` | ➖ | Mặc định 262144 |
+| `RUST_WORKER_THREADS` | ➖ | Số worker Tokio (8.7.1). Không đặt/0 = theo số CPU; trần 256 |
+| `RUST_MAX_CONCURRENT_REQUESTS` | ➖ | Thay cho `MAX_CONCURRENCY` (mặc định 512) |
+| `RUST_MAX_CONCURRENT_AI_REQUESTS` | ➖ | Thay cho `AI_MAX_CONCURRENCY` (mặc định 32) |
+| `RUST_MAX_CONCURRENT_PROVIDER_REQUESTS` | ➖ | Đồng thời tới MỘT provider (mặc định 10) |
+| `RUST_REQUEST_TIMEOUT_SECS` | ➖ | Giây, thắng `REQUEST_TIMEOUT_MS` nếu có |
+| `RUST_CONNECT_TIMEOUT_SECS` | ➖ | Giây, thắng `CONNECT_TIMEOUT_MS` nếu có |
+| `RUST_IDLE_CONNECTION_TIMEOUT_SECS` | ➖ | Giây giữ kết nối idle (mặc định 90) |
+| `RUST_POOL_MAX_IDLE_PER_HOST` | ➖ | Kết nối idle mỗi host (mặc định 32, trần 1024) |
 | `TRUST_PROXY` | ➖ | `true` khi chạy sau reverse proxy tin cậy |
 | `HOST`, `PORT`, `RUST_LOG` | ➖ | Mặc định `0.0.0.0`, `8080`, `bakhi_backend=info` |
 

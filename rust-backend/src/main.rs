@@ -1,12 +1,16 @@
 // ===========================================================================
 // Bá Khí — Rust backend · main.rs
 //
-// Trình tự khởi động (8.6.1):
-//   1. Đọc + kiểm tra cấu hình (dừng ngay nếu sai, thông điệp không chứa khoá).
-//   2. Dựng HTTP client dùng chung, Supabase client, provider registry,
+// Trình tự khởi động (8.7.1):
+//   1. Khởi tạo tracing, đọc + kiểm tra cấu hình (dừng ngay nếu sai, thông điệp
+//      không chứa khoá).
+//   2. Dựng MỘT Tokio multi-thread runtime cho toàn bộ vòng đời tiến trình.
+//      `RUST_WORKER_THREADS` (tuỳ chọn) quyết định số worker; không có thì để
+//      Tokio chọn theo số CPU. Không runtime nào được tạo cho từng request.
+//   3. Dựng HTTP client dùng chung, Supabase client, provider registry,
 //      circuit breaker, semaphore và metrics — MỘT LẦN.
-//   3. Mở cổng, sau đó mới log "đã sẵn sàng".
-//   4. Khi nhận SIGTERM/SIGINT: bật cờ draining (⇒ /ready trả 503), ngừng nhận
+//   4. Mở cổng, sau đó mới log "đã sẵn sàng".
+//   5. Khi nhận SIGTERM/SIGINT: bật cờ draining (⇒ /ready trả 503), ngừng nhận
 //      request mới, chờ request đang chạy tối đa SHUTDOWN_GRACE_MS rồi kết thúc.
 //
 // Không in bất kỳ khoá hay token nào ra log.
@@ -19,8 +23,7 @@ use bakhi_backend::{build_router, config::Settings, AppState, VERSION};
 use tokio::net::TcpListener;
 use tracing_subscriber::EnvFilter;
 
-#[tokio::main]
-async fn main() {
+fn main() {
     tracing_subscriber::fmt()
         .with_env_filter(
             EnvFilter::try_from_default_env()
@@ -39,6 +42,28 @@ async fn main() {
         }
     };
 
+    // Một runtime duy nhất, tái sử dụng xuyên suốt vòng đời tiến trình.
+    let mut builder = tokio::runtime::Builder::new_multi_thread();
+    builder
+        .enable_all()
+        .thread_name("bakhi-worker")
+        .thread_keep_alive(Duration::from_secs(60));
+    if let Some(workers) = settings.worker_threads {
+        builder.worker_threads(workers);
+    }
+    let runtime = match builder.build() {
+        Ok(runtime) => runtime,
+        Err(error) => {
+            eprintln!("Không dựng được Tokio runtime: {error}");
+            std::process::exit(1);
+        }
+    };
+    let workers = runtime.metrics().num_workers();
+
+    runtime.block_on(run(settings, workers));
+}
+
+async fn run(settings: Settings, workers: usize) {
     let host = settings.host.clone();
     let port = settings.port;
     let shutdown_grace = settings.shutdown_grace;
@@ -66,6 +91,7 @@ async fn main() {
         target: "bakhi::startup",
         version = VERSION,
         bind = %bind,
+        workers = workers,
         shutdown_grace_ms = shutdown_grace.as_millis() as u64,
         "Bá Khí backend đã sẵn sàng"
     );

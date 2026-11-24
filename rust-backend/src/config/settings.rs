@@ -34,6 +34,9 @@ const DEFAULT_MAX_RETRIES: u8 = 1;
 const DEFAULT_MAX_CONCURRENCY: usize = 512;
 const DEFAULT_AI_CONCURRENCY: usize = 32;
 const DEFAULT_USER_CONCURRENCY: usize = 1;
+const DEFAULT_PROVIDER_CONCURRENCY: usize = 10;
+const DEFAULT_POOL_MAX_IDLE_PER_HOST: usize = 32;
+const DEFAULT_IDLE_CONNECTION_TIMEOUT_MS: u64 = 90_000;
 const DEFAULT_CIRCUIT_THRESHOLD: u32 = 5;
 const DEFAULT_CIRCUIT_COOLDOWN_MS: u64 = 30_000;
 const DEFAULT_CIRCUIT_HALF_OPEN: u32 = 1;
@@ -41,6 +44,9 @@ const DEFAULT_CIRCUIT_HALF_OPEN: u32 = 1;
 const MIN_BODY_BYTES: usize = 1_024;
 const MAX_BODY_BYTES_LIMIT: usize = 16 * 1024 * 1024;
 const MAX_CONCURRENCY_LIMIT: usize = 65_535;
+/// Trần worker thread của Tokio: nhiều hơn nữa chỉ tăng chi phí chuyển ngữ cảnh.
+const MAX_WORKER_THREADS: usize = 256;
+const MAX_POOL_IDLE_PER_HOST: usize = 1_024;
 
 /// Origin mặc định của website (GitHub Pages). Chỉ dùng khi CORS_ORIGINS trống.
 const DEFAULT_CORS_ORIGIN: &str = "https://minhtruk.github.io";
@@ -106,8 +112,18 @@ pub struct Settings {
     pub max_ai_concurrency: usize,
     /// Số lượt gọi AI đồng thời cho mỗi người dùng.
     pub max_user_concurrency: usize,
+    /// Số request đồng thời tới MỘT provider AI (mỗi provider một semaphore).
+    pub max_provider_concurrency: usize,
     /// Thời gian chờ lấy semaphore trước khi trả 429.
     pub concurrency_wait: Duration,
+
+    /// Số worker thread của Tokio runtime. `None` = để Tokio chọn theo số CPU.
+    /// Đọc một lần khi khởi động; không tạo runtime mới cho từng request.
+    pub worker_threads: Option<usize>,
+    /// Số kết nối idle tối đa giữ lại cho mỗi host trong pool reqwest.
+    pub pool_max_idle_per_host: usize,
+    /// Thời gian giữ kết nối idle trước khi đóng.
+    pub idle_connection_timeout: Duration,
 
     /// Số lỗi liên tiếp để mở circuit của một provider.
     pub circuit_threshold: u32,
@@ -172,7 +188,11 @@ impl fmt::Debug for Settings {
             .field("max_concurrency", &self.max_concurrency)
             .field("max_ai_concurrency", &self.max_ai_concurrency)
             .field("max_user_concurrency", &self.max_user_concurrency)
+            .field("max_provider_concurrency", &self.max_provider_concurrency)
             .field("concurrency_wait", &self.concurrency_wait)
+            .field("worker_threads", &self.worker_threads)
+            .field("pool_max_idle_per_host", &self.pool_max_idle_per_host)
+            .field("idle_connection_timeout", &self.idle_connection_timeout)
             .field("circuit_threshold", &self.circuit_threshold)
             .field("circuit_cooldown", &self.circuit_cooldown)
             .field("circuit_half_open_limit", &self.circuit_half_open_limit)
@@ -216,6 +236,40 @@ fn parse_num<T: std::str::FromStr>(name: &'static str) -> Result<Option<T>, Conf
             .parse::<T>()
             .map(Some)
             .map_err(|_| ConfigError::Invalid(name)),
+    }
+}
+
+/// Đọc biến đầu tiên có mặt trong danh sách ưu tiên.
+///
+/// 8.7.1: tên `RUST_*` (chuẩn hoá) được ưu tiên; tên cũ vẫn đọc được để bản
+/// triển khai hiện có không phải đổi cấu hình.
+fn var_any(names: &[&'static str]) -> Option<String> {
+    names.iter().find_map(|name| var(name))
+}
+
+/// Như `parse_num` nhưng nhận nhiều tên, lỗi nêu tên ĐẦU TIÊN (tên chuẩn).
+fn parse_num_any<T: std::str::FromStr>(names: &[&'static str]) -> Result<Option<T>, ConfigError> {
+    match var_any(names) {
+        None => Ok(None),
+        Some(raw) => raw
+            .parse::<T>()
+            .map(Some)
+            .map_err(|_| ConfigError::Invalid(names[0])),
+    }
+}
+
+/// Đọc giá trị giây (số nguyên dương) thành Duration.
+fn parse_secs(raw: &str, name: &'static str) -> Result<Duration, ConfigError> {
+    match raw.trim().parse::<u64>() {
+        Ok(seconds) if (1..=86_400).contains(&seconds) => Ok(Duration::from_secs(seconds)),
+        _ => Err(ConfigError::Invalid(name)),
+    }
+}
+
+fn parse_secs_any(names: &[&'static str]) -> Result<Option<Duration>, ConfigError> {
+    match var_any(names) {
+        None => Ok(None),
+        Some(raw) => parse_secs(&raw, names[0]).map(Some),
     }
 }
 
@@ -286,15 +340,22 @@ impl Settings {
             ai_gateway_timeout: Duration::from_millis(
                 parse_num::<u64>("AI_GATEWAY_TIMEOUT_MS")?.unwrap_or(DEFAULT_GATEWAY_TIMEOUT_MS),
             ),
-            connect_timeout: Duration::from_millis(
-                parse_num::<u64>("CONNECT_TIMEOUT_MS")?.unwrap_or(DEFAULT_CONNECT_TIMEOUT_MS),
-            ),
+            // RUST_*_SECS (nếu có) thắng tên mili-giây cũ.
+            connect_timeout: match parse_secs_any(&["RUST_CONNECT_TIMEOUT_SECS"])? {
+                Some(explicit) => explicit,
+                None => Duration::from_millis(
+                    parse_num::<u64>("CONNECT_TIMEOUT_MS")?.unwrap_or(DEFAULT_CONNECT_TIMEOUT_MS),
+                ),
+            },
             supabase_timeout: Duration::from_millis(
                 parse_num::<u64>("SUPABASE_TIMEOUT_MS")?.unwrap_or(DEFAULT_SUPABASE_TIMEOUT_MS),
             ),
-            request_timeout: Duration::from_millis(
-                parse_num::<u64>("REQUEST_TIMEOUT_MS")?.unwrap_or(DEFAULT_REQUEST_TIMEOUT_MS),
-            ),
+            request_timeout: match parse_secs_any(&["RUST_REQUEST_TIMEOUT_SECS"])? {
+                Some(explicit) => explicit,
+                None => Duration::from_millis(
+                    parse_num::<u64>("REQUEST_TIMEOUT_MS")?.unwrap_or(DEFAULT_REQUEST_TIMEOUT_MS),
+                ),
+            },
             shutdown_grace: Duration::from_millis(
                 parse_num::<u64>("SHUTDOWN_GRACE_MS")?.unwrap_or(DEFAULT_SHUTDOWN_GRACE_MS),
             ),
@@ -306,15 +367,32 @@ impl Settings {
                 .unwrap_or(DEFAULT_RATE_PER_MIN),
             ai_rate_per_min: parse_num::<u32>("AI_RATE_LIMIT_PER_MIN")?
                 .unwrap_or(DEFAULT_AI_RATE_PER_MIN),
-            max_concurrency: parse_num::<usize>("MAX_CONCURRENCY")?
-                .unwrap_or(DEFAULT_MAX_CONCURRENCY),
-            max_ai_concurrency: parse_num::<usize>("AI_MAX_CONCURRENCY")?
-                .unwrap_or(DEFAULT_AI_CONCURRENCY),
+            max_concurrency: parse_num_any::<usize>(&[
+                "RUST_MAX_CONCURRENT_REQUESTS",
+                "MAX_CONCURRENCY",
+            ])?
+            .unwrap_or(DEFAULT_MAX_CONCURRENCY),
+            max_ai_concurrency: parse_num_any::<usize>(&[
+                "RUST_MAX_CONCURRENT_AI_REQUESTS",
+                "AI_MAX_CONCURRENCY",
+            ])?
+            .unwrap_or(DEFAULT_AI_CONCURRENCY),
             max_user_concurrency: parse_num::<usize>("AI_USER_MAX_CONCURRENCY")?
                 .unwrap_or(DEFAULT_USER_CONCURRENCY),
+            max_provider_concurrency: parse_num_any::<usize>(&[
+                "RUST_MAX_CONCURRENT_PROVIDER_REQUESTS",
+                "AI_PROVIDER_MAX_CONCURRENCY",
+            ])?
+            .unwrap_or(DEFAULT_PROVIDER_CONCURRENCY),
             concurrency_wait: Duration::from_millis(
                 parse_num::<u64>("CONCURRENCY_WAIT_MS")?.unwrap_or(DEFAULT_CONCURRENCY_WAIT_MS),
             ),
+            // 0 = tự chọn theo CPU (mặc định của Tokio).
+            worker_threads: parse_num_any::<usize>(&["RUST_WORKER_THREADS"])?.filter(|n| *n > 0),
+            pool_max_idle_per_host: parse_num_any::<usize>(&["RUST_POOL_MAX_IDLE_PER_HOST"])?
+                .unwrap_or(DEFAULT_POOL_MAX_IDLE_PER_HOST),
+            idle_connection_timeout: parse_secs_any(&["RUST_IDLE_CONNECTION_TIMEOUT_SECS"])?
+                .unwrap_or(Duration::from_millis(DEFAULT_IDLE_CONNECTION_TIMEOUT_MS)),
             circuit_threshold: parse_num::<u32>("AI_CIRCUIT_THRESHOLD")?
                 .unwrap_or(DEFAULT_CIRCUIT_THRESHOLD)
                 .max(1),
@@ -388,14 +466,31 @@ impl Settings {
             (self.max_concurrency, "MAX_CONCURRENCY"),
             (self.max_ai_concurrency, "AI_MAX_CONCURRENCY"),
             (self.max_user_concurrency, "AI_USER_MAX_CONCURRENCY"),
+            (
+                self.max_provider_concurrency,
+                "RUST_MAX_CONCURRENT_PROVIDER_REQUESTS",
+            ),
         ] {
             if value == 0 || value > MAX_CONCURRENCY_LIMIT {
                 return Err(ConfigError::Invalid(match name {
                     "MAX_CONCURRENCY" => "MAX_CONCURRENCY",
                     "AI_MAX_CONCURRENCY" => "AI_MAX_CONCURRENCY",
-                    _ => "AI_USER_MAX_CONCURRENCY",
+                    "AI_USER_MAX_CONCURRENCY" => "AI_USER_MAX_CONCURRENCY",
+                    _ => "RUST_MAX_CONCURRENT_PROVIDER_REQUESTS",
                 }));
             }
+        }
+        if let Some(workers) = self.worker_threads {
+            if workers == 0 || workers > MAX_WORKER_THREADS {
+                return Err(ConfigError::Invalid("RUST_WORKER_THREADS"));
+            }
+        }
+        if self.pool_max_idle_per_host == 0 || self.pool_max_idle_per_host > MAX_POOL_IDLE_PER_HOST
+        {
+            return Err(ConfigError::Invalid("RUST_POOL_MAX_IDLE_PER_HOST"));
+        }
+        if self.idle_connection_timeout < Duration::from_secs(1) {
+            return Err(ConfigError::Invalid("RUST_IDLE_CONNECTION_TIMEOUT_SECS"));
         }
         if self.max_ai_concurrency > self.max_concurrency {
             return Err(ConfigError::UnsafeCombination(
@@ -436,7 +531,11 @@ impl Settings {
             max_concurrency: 256,
             max_ai_concurrency: 32,
             max_user_concurrency: 1,
+            max_provider_concurrency: 4,
             concurrency_wait: Duration::from_millis(250),
+            worker_threads: None,
+            pool_max_idle_per_host: DEFAULT_POOL_MAX_IDLE_PER_HOST,
+            idle_connection_timeout: Duration::from_millis(DEFAULT_IDLE_CONNECTION_TIMEOUT_MS),
             circuit_threshold: 5,
             circuit_cooldown: Duration::from_secs(30),
             circuit_half_open_limit: 1,
@@ -531,6 +630,46 @@ mod tests {
         assert!(matches!(
             settings.validate(),
             Err(ConfigError::UnsafeCombination(_))
+        ));
+    }
+
+    #[test]
+    fn seconds_values_are_positive_and_bounded() {
+        assert_eq!(
+            parse_secs("30", "RUST_REQUEST_TIMEOUT_SECS").unwrap(),
+            Duration::from_secs(30)
+        );
+        assert!(parse_secs("0", "RUST_REQUEST_TIMEOUT_SECS").is_err());
+        assert!(parse_secs("-1", "RUST_REQUEST_TIMEOUT_SECS").is_err());
+        assert!(parse_secs("90000", "RUST_REQUEST_TIMEOUT_SECS").is_err());
+        assert!(parse_secs("abc", "RUST_REQUEST_TIMEOUT_SECS").is_err());
+    }
+
+    #[test]
+    fn worker_and_pool_limits_are_validated() {
+        let mut settings = Settings::for_tests();
+        settings.worker_threads = Some(MAX_WORKER_THREADS + 1);
+        assert!(matches!(
+            settings.validate(),
+            Err(ConfigError::Invalid("RUST_WORKER_THREADS"))
+        ));
+        settings.worker_threads = Some(4);
+        assert!(settings.validate().is_ok());
+
+        let mut settings = Settings::for_tests();
+        settings.pool_max_idle_per_host = 0;
+        assert!(matches!(
+            settings.validate(),
+            Err(ConfigError::Invalid("RUST_POOL_MAX_IDLE_PER_HOST"))
+        ));
+
+        let mut settings = Settings::for_tests();
+        settings.max_provider_concurrency = 0;
+        assert!(matches!(
+            settings.validate(),
+            Err(ConfigError::Invalid(
+                "RUST_MAX_CONCURRENT_PROVIDER_REQUESTS"
+            ))
         ));
     }
 
