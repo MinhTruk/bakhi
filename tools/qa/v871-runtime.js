@@ -105,15 +105,25 @@ ok('không unsafe trong src', !/\bunsafe\b/.test(
 ok('cấp phát trước danh sách attempt', /Vec::with_capacity\(candidates\.len\(\)/.test(AI));
 
 console.log('== 6. Phiên bản & tài liệu ==');
-const APP = (read('assets/bakhi/bk-version.js').match(/app:\s*'([^']+)'/) || [])[1];
-ok('bk-version.js là 8.7.1', APP === '8.7.1', APP);
-ok('Cargo.toml là 8.7.1', /^version = "8\.7\.1"$/m.test(CARGO));
-ok('Cargo.lock khớp 8.7.1', /name = "bakhi-backend"\r?\nversion = "8\.7\.1"/.test(LOCK));
-ok('CHANGELOG có [8.7.1]', /^## \[8\.7\.1\]/m.test(CHANGELOG));
+/* So phiên bản ĐỘNG: bk-version.js là nguồn phát hành, Cargo.toml/Cargo.lock của
+   backend phải khớp. Không hardcode số phiên bản ở đây — bump 8.8/9.x không làm
+   QA này đỏ oan, nhưng lệch Cargo ↔ website vẫn bị bắt. */
+const APP = (read('assets/bakhi/bk-version.js').match(/app:\s*'([^']+)'/) || [])[1] || '';
+const CARGO_VERSION = (CARGO.match(/^version = "([^"]+)"$/m) || [])[1] || '';
+const LOCK_VERSION =
+  (LOCK.match(/name = "bakhi-backend"\r?\nversion = "([^"]+)"/) || [])[1] || '';
+const esc = function (value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); };
+ok('bk-version.js khai báo phiên bản hợp lệ', /^\d+\.\d+\.\d+$/.test(APP), APP || '(thiếu)');
+ok('Cargo.toml khớp bk-version.js', CARGO_VERSION === APP,
+  'Cargo=' + (CARGO_VERSION || '(thiếu)') + ' · bk=' + (APP || '(thiếu)'));
+ok('Cargo.lock khớp bk-version.js', LOCK_VERSION === APP,
+  'lock=' + (LOCK_VERSION || '(thiếu)') + ' · bk=' + (APP || '(thiếu)'));
+ok('CHANGELOG có [' + APP + ']', new RegExp('^## \\[' + esc(APP) + '\\]', 'm').test(CHANGELOG));
 ok('CHANGELOG nêu Runtime Engine', /Runtime Engine/.test(CHANGELOG));
 ok('CHANGELOG không bịa số benchmark', /Chưa có số đo benchmark/.test(CHANGELOG));
-ok('README nêu 8.7.1', /8\.7\.1/.test(read('rust-backend/README.md')));
-ok('ARCHITECTURE có mục Runtime Engine', /Runtime Engine \(8\.7\.1\)/.test(read('docs/ARCHITECTURE.md')));
+ok('README nêu ' + APP, new RegExp(esc(APP)).test(read('rust-backend/README.md')));
+ok('ARCHITECTURE có mục Runtime Engine (' + APP + ')',
+  new RegExp('Runtime Engine \\((' + esc(APP) + ')\\)').test(read('docs/ARCHITECTURE.md')));
 ok('tài liệu deploy có RUST_MAX_CONCURRENT_PROVIDER_REQUESTS',
   /RUST_MAX_CONCURRENT_PROVIDER_REQUESTS/.test(read('docs/RUST_DEPLOYMENT_V860.md')));
 ok('brain page v871 tồn tại', exists('brain/pages/v871-runtime-engine.md'));
