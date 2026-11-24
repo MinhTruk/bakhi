@@ -190,6 +190,15 @@ pub struct GatewayOutcome {
     pub deep: bool,
 }
 
+/// Chuỗi provider thất bại hoàn toàn. `fell_back` cho biết lượt này đã chạm
+/// nhánh dự phòng (kể cả khi provider dự phòng bị circuit breaker bỏ qua) — nhờ
+/// vậy metrics và `ai_usage_logs` không đếm thiếu lượt fallback thất bại.
+pub struct ChainFailure {
+    pub error: ProviderError,
+    pub attempts: Vec<Attempt>,
+    pub fell_back: bool,
+}
+
 #[derive(Clone)]
 pub struct AiService {
     pub settings: Arc<Settings>,
@@ -331,7 +340,7 @@ impl AiService {
         turns: &[ChatTurn],
         mode: TutorMode,
         message: &str,
-    ) -> Result<GatewayOutcome, (ProviderError, Vec<Attempt>)> {
+    ) -> Result<GatewayOutcome, ChainFailure> {
         let started = Instant::now();
         let deadline = started + self.settings.ai_gateway_timeout;
         let (max_tokens, target_tokens, deep) =
@@ -342,10 +351,22 @@ impl AiService {
         let mut attempts: Vec<Attempt> = Vec::new();
         let mut last_error: Option<ProviderError> = None;
 
+        let mut fallback_attempted = false;
+        // Đã chạm nhánh dự phòng (kể cả bị circuit breaker bỏ qua). Dùng cho
+        // bộ đếm lượt người dùng, KHÔNG dùng cho `bakhi_ai_fallback_total`.
+        let mut fallback_reached = false;
+
         'providers: for (index, candidate) in candidates.iter().enumerate() {
+            // Vai trò trong chuỗi: 0 = Primary, 1+ = Fallback N.
+            let role = if index == 0 { "primary" } else { "fallback" };
             if Instant::now() >= deadline {
+                // Hết giờ trước khi kịp chạm provider kế tiếp: chưa "chuyển dự phòng".
                 last_error = Some(ProviderError::new(AiErrorCode::Timeout, candidate.provider));
                 break;
+            }
+            if index > 0 {
+                // Đã tới lượt provider dự phòng (kể cả khi bị circuit OPEN bỏ qua).
+                fallback_reached = true;
             }
 
             if !self.state.circuits.allow(candidate.provider) {
@@ -356,9 +377,14 @@ impl AiService {
                     code: Some(AiErrorCode::CircuitOpen),
                     latency_ms: 0,
                 });
+                if index > 0 {
+                    self.state.metrics.record_fallback("skipped");
+                }
                 tracing::warn!(
                     target: "bakhi::circuit",
                     provider = candidate.provider.as_str(),
+                    model = %candidate.model,
+                    role,
                     "bỏ qua provider đang OPEN"
                 );
                 last_error = Some(ProviderError::new(
@@ -383,8 +409,14 @@ impl AiService {
             };
 
             for retry in 0..=self.settings.ai_max_retries {
+                if retry == 0 && index > 0 {
+                    fallback_attempted = true;
+                    self.state.metrics.record_fallback("attempted");
+                }
                 if retry > 0 {
-                    self.state.metrics.record_retry();
+                    self.state
+                        .metrics
+                        .record_retry(candidate.provider.as_str(), &candidate.model);
                 }
                 let remaining = deadline.saturating_duration_since(Instant::now());
                 if remaining < Duration::from_millis(50) {
@@ -411,7 +443,14 @@ impl AiService {
                         let error = ProviderError::new(AiErrorCode::Timeout, candidate.provider);
                         let latency_ms = attempt_start.elapsed().as_millis() as u64;
                         self.state.circuits.record_failure(candidate.provider);
-                        self.state.metrics.record_provider_attempt(latency_ms);
+                        self.state.metrics.record_ai_attempt(
+                            role,
+                            candidate.provider.as_str(),
+                            &candidate.model,
+                            false,
+                            latency_ms as f64 / 1000.0,
+                            Some(AiErrorCode::Timeout.as_str()),
+                        );
                         attempts.push(Attempt {
                             provider: candidate.provider,
                             model: candidate.model.clone(),
@@ -425,7 +464,23 @@ impl AiService {
                     Ok(Ok(result)) => {
                         let latency_ms = attempt_start.elapsed().as_millis() as u64;
                         self.state.circuits.record_success(candidate.provider);
-                        self.state.metrics.record_provider_attempt(latency_ms);
+                        self.state.metrics.record_ai_attempt(
+                            role,
+                            result.provider.as_str(),
+                            &result.model,
+                            true,
+                            latency_ms as f64 / 1000.0,
+                            None,
+                        );
+                        self.state.metrics.record_ai_tokens(
+                            role,
+                            result.provider.as_str(),
+                            &result.model,
+                            &result.usage,
+                        );
+                        if index > 0 {
+                            self.state.metrics.record_fallback("success");
+                        }
                         attempts.push(Attempt {
                             provider: candidate.provider,
                             model: candidate.model.clone(),
@@ -433,6 +488,8 @@ impl AiService {
                             code: None,
                             latency_ms,
                         });
+                        // Một lượt người dùng, dù đã qua bao nhiêu attempt.
+                        self.state.metrics.record_ai_request(index > 0, true);
                         return Ok(GatewayOutcome {
                             result,
                             route_label: candidate.label.clone(),
@@ -446,7 +503,23 @@ impl AiService {
                     }
                     Ok(Err(error)) => {
                         let latency_ms = attempt_start.elapsed().as_millis() as u64;
-                        self.state.metrics.record_provider_attempt(latency_ms);
+                        self.state.metrics.record_ai_attempt(
+                            role,
+                            candidate.provider.as_str(),
+                            &candidate.model,
+                            false,
+                            latency_ms as f64 / 1000.0,
+                            Some(error.code.as_str()),
+                        );
+                        tracing::warn!(
+                            target: "bakhi::ai",
+                            provider = candidate.provider.as_str(),
+                            model = %candidate.model,
+                            role,
+                            retry,
+                            code = error.code.as_str(),
+                            "provider thất bại"
+                        );
                         attempts.push(Attempt {
                             provider: candidate.provider,
                             model: candidate.model.clone(),
@@ -489,6 +562,13 @@ impl AiService {
             }
         }
 
+        if fallback_attempted {
+            self.state.metrics.record_fallback("failure");
+        }
+        // Lượt thất bại vẫn được đếm là một lượt AI của người dùng; nếu chuỗi đã
+        // chạm nhánh dự phòng thì đây là lượt fallback, không phải "chỉ primary".
+        self.state.metrics.record_ai_request(fallback_reached, false);
+
         let error = match last_error {
             // Mọi provider đều OPEN: giữ mã cũ để frontend không phải biết
             // khái niệm circuit breaker.
@@ -498,7 +578,11 @@ impl AiService {
             Some(error) => error,
             None => ProviderError::new(AiErrorCode::BadConfig, Provider::Custom),
         };
-        Err((error, attempts))
+        Err(ChainFailure {
+            error,
+            attempts,
+            fell_back: fallback_reached,
+        })
     }
 
     /// Xử lý action `chat` — tương thích với Edge Function `ai-tutor-api`.
@@ -514,26 +598,10 @@ impl AiService {
             }
         };
 
-        let started = Instant::now();
-        let result = self.chat_inner(user, request).await;
-        match &result {
-            Ok(value) => {
-                let fell_back = value
-                    .get("meta")
-                    .and_then(|meta| meta.get("fellBack"))
-                    .and_then(|value| value.as_bool())
-                    .unwrap_or(false);
-                self.state
-                    .metrics
-                    .record_ai(true, started.elapsed().as_millis() as u64, fell_back);
-            }
-            Err(_) => {
-                self.state
-                    .metrics
-                    .record_ai(false, started.elapsed().as_millis() as u64, false);
-            }
-        }
-        result
+        // `run_chain()` ghi metrics lượt người dùng một lần duy nhất (kể cả khi
+        // thất bại), nên ở đây không đếm lại: lỗi xác thực/hạn mức không phải
+        // một lượt gọi provider và không được làm sai availability.
+        self.chat_inner(user, request).await
     }
 
     async fn chat_inner(&self, user: &AuthUser, request: ChatRequest) -> Result<Value, ApiError> {
@@ -737,7 +805,9 @@ impl AiService {
             .await;
 
         match outcome {
-            Err((error, _attempts)) => {
+            Err(failure) => {
+                let fell_back = failure.fell_back;
+                let error = failure.error;
                 self.supabase
                     .log_ai_usage(UsageLog {
                         student_id: Some(&student_id),
@@ -747,6 +817,7 @@ impl AiService {
                         mode: mode.as_str(),
                         error_code: error.code.as_str(),
                         ok: false,
+                        fell_back,
                         ..UsageLog::default()
                     })
                     .await;
@@ -951,10 +1022,10 @@ impl AiService {
                     }
                 }))
             }
-            Err((error, _)) => Err(ApiError::bad_gateway(
-                error.code.as_str(),
-                error.code.message(),
-                error.code.retryable(),
+            Err(failure) => Err(ApiError::bad_gateway(
+                failure.error.code.as_str(),
+                failure.error.code.message(),
+                failure.error.code.retryable(),
             )),
         }
     }

@@ -1,0 +1,48 @@
+# =============================================================================
+# Bá Khí — cấu hình Prometheus mẫu (8.6.2)
+#
+# TỆP MẪU. Thay `YOUR_BACKEND_HOST:PORT` bằng địa chỉ thật của backend Rust.
+# Chạy Prometheus BÊN NGOÀI hosting của Bá Khí; không cần cài Prometheus trong
+# container backend.
+#
+# Backend phải bật metrics trước:
+#   METRICS_ENABLED=1
+#   METRICS_TOKEN=<token dài, ngẫu nhiên>
+#
+# Nếu backend chỉ cho phép truy cập qua mạng nội bộ, đặt Prometheus cùng mạng
+# đó. Nếu phải scrape qua Internet, dùng HTTPS + `authorization` bên dưới và
+# giới hạn IP ở reverse proxy.
+# =============================================================================
+
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+  external_labels:
+    service: bakhi
+
+scrape_configs:
+  - job_name: "bakhi"
+    scrape_interval: 15s
+    metrics_path: "/metrics"
+    scheme: "https"
+    bearer_token: "REPLACE_WITH_METRICS_TOKEN"
+    static_configs:
+      - targets:
+          - "YOUR_BACKEND_HOST:PORT"
+        labels:
+          instance: "bakhi-backend-1"
+          environment: "production"
+
+    # Nếu chạy nhiều instance, liệt kê từng target — mỗi instance có registry
+    # riêng và phải được scrape riêng. KHÔNG gộp sau load balancer.
+    #
+    # - targets:
+    #     - "backend-2.example.com:443"
+    #   labels:
+    #     instance: "bakhi-backend-2"
+
+    # Phương án thay cho bearer_token khi Prometheus không hỗ trợ trực tiếp:
+    # authorization:
+    #   type: Bearer
+    #   credentials_file: /etc/prometheus/bakhi_metrics_token

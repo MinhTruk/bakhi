@@ -831,3 +831,25 @@ mặc định `BK_BACKEND.mode = 'edge'`.
 Chi tiết: `docs/RUST_RELIABILITY_V861.md`, `docs/RUST_CONTRACT_TESTING_V861.md`,
 `docs/RUST_TESTING_GUIDE_V861.md`, `docs/RUST_OPERATIONS_V861.md`,
 `docs/RUST_SECURITY_AUDIT_V861.md`.
+
+### 8.2. Observability (8.6.2)
+
+Backend Rust tự thu thập metrics thật trong bộ nhớ và xuất Prometheus; không có database
+metrics, không gọi mạng ngoài cho từng chỉ số.
+
+- **HTTP:** `bakhi_http_requests_total{method,route,status}`, histogram
+  `bakhi_http_request_duration_seconds` (15 bucket 5 ms–60 s),
+  `bakhi_http_errors_total{category}` và gauge in-flight. Route được chuẩn hoá; request id
+  chỉ nằm trong log, không phải nhãn.
+- **AI:** attempt theo `role` (primary/fallback), provider, model; latency riêng từng
+  provider; token thật/ước tính tách bằng nhãn `estimated`; chi phí ước tính từ bảng giá
+  `AI_PRICING_JSON`/`AI_PRICING_FILE`, thiếu giá thì đếm `unpriced` thay vì 0 USD.
+- **`GET /metrics`** mặc định tắt; bật bằng `METRICS_ENABLED=1` + `METRICS_TOKEN` (Bearer).
+  Scrape không bị tính vào thống kê nghiệp vụ.
+- **Founder Dashboard → tab Vận hành** (`assets/bakhi/bk-observability.js|css`) đọc
+  `POST /api/v1/observability/summary` bằng phiên Founder (`x-admin-token` → `admin_sessions`
+  scope founder). Không có token metrics trong trình duyệt.
+- Không đổi schema Supabase, không đổi mặc định `BK_BACKEND.mode = 'edge'`.
+
+Chi tiết metric, label, PromQL và troubleshooting: `docs/OBSERVABILITY.md`;
+cấu hình scrape: `docs/prometheus.yml`.

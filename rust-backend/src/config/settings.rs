@@ -15,6 +15,8 @@ use std::env;
 use std::fmt;
 use std::time::Duration;
 
+use crate::observability::pricing::Pricing;
+
 /// Thời gian chờ và giới hạn mặc định — dùng chung cho mọi môi trường.
 const DEFAULT_PORT: u16 = 8080;
 const DEFAULT_CONNECT_TIMEOUT_MS: u64 = 5_000;
@@ -123,6 +125,10 @@ pub struct Settings {
     pub metrics_enabled: bool,
     /// Token bắt buộc khi bật metrics. Rỗng ⇒ endpoint trả 404 dù đã bật.
     pub metrics_token: Option<String>,
+
+    /// Bảng giá AI nạp từ `AI_PRICING_JSON` hoặc `AI_PRICING_FILE`.
+    /// Rỗng ⇒ chi phí là "chưa xác định", không bao giờ là 0 USD.
+    pub ai_pricing: Pricing,
 }
 
 impl fmt::Debug for Settings {
@@ -174,6 +180,8 @@ impl fmt::Debug for Settings {
             .field("trust_proxy", &self.trust_proxy)
             .field("metrics_enabled", &self.metrics_enabled)
             .field("metrics_token", &self.metrics_token.as_deref().map(redact))
+            .field("ai_pricing_version", &self.ai_pricing.version)
+            .field("ai_pricing_models", &self.ai_pricing.model_count())
             .finish()
     }
 }
@@ -326,6 +334,7 @@ impl Settings {
                 .map(|v| parse_bool(&v, false))
                 .unwrap_or(false),
             metrics_token: var("METRICS_TOKEN"),
+            ai_pricing: Pricing::from_env(),
         };
         settings.validate()?;
         Ok(settings)
@@ -435,6 +444,7 @@ impl Settings {
             trust_proxy: false,
             metrics_enabled: false,
             metrics_token: None,
+            ai_pricing: Pricing::default(),
         }
     }
 }

@@ -170,7 +170,7 @@ async fn metrics_requires_the_configured_token() {
     let response = harness.app.clone().oneshot(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     let text = body_text(response).await;
-    assert!(text.contains("bakhi_requests_total"));
+    assert!(text.contains("bakhi_http_requests_total"));
     assert!(text.contains("bakhi_circuit_state"));
     assert!(!text.contains("metrics-secret-token"));
 }

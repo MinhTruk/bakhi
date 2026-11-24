@@ -2,6 +2,81 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.6.2] — 2026-11-24
+
+**Observability.** Backend Rust tự bộc lộ tình trạng hoạt động: histogram latency thật
+(p50/p95/p99), tỷ lệ lỗi theo endpoint, giám sát AI Primary/Fallback, token thực tế/ước
+tính, chi phí AI ước tính từ bảng giá cấu hình, `/metrics` tương thích Prometheus và tab
+**Vận hành** trong Founder Dashboard. **Không đổi giao diện học sinh**, không đổi
+`BK_BACKEND.mode` (vẫn `edge`), không đổi schema Supabase, không deploy.
+
+### Tính năng
+
+- **HTTP metrics thật** — mỗi request ghi một lần sau khi hoàn tất:
+  `bakhi_http_requests_total{method,route,status}` và histogram
+  `bakhi_http_request_duration_seconds{method,route,status}` với 15 bucket từ 5 ms tới 60 s.
+  p50/p95/p99 tính bằng nội suy bucket (thuật toán `histogram_quantile`), không lấy trung
+  bình của các trung bình. Route chuẩn hoá (`/api/v1/students/123` → nhãn cố định), path lạ
+  gộp `/other` để cardinality hữu hạn.
+- **Tỷ lệ lỗi theo endpoint** — `bakhi_http_errors_total{method,route,category}` phân biệt
+  `client_error` (4xx), `server_error` (5xx), `upstream_error` (502/503) và `timeout` (504).
+  Lỗi do người dùng gửi dữ liệu sai KHÔNG bị tính là lỗi máy chủ.
+- **Giám sát AI Primary/Fallback** — `bakhi_ai_requests_total{role,provider,model,status}`,
+  histogram latency riêng từng provider, `bakhi_ai_fallback_total{outcome}`
+  (`attempted`/`success`/`failure`/`skipped`) và bộ đếm lượt người dùng
+  (`bakhi_ai_user_requests_total`, `..._fallback_total`, `..._failed_total`). Một lượt
+  chuyển dự phòng vẫn là MỘT lượt AI của người dùng.
+- **Token và chi phí** — `bakhi_ai_tokens_total{role,provider,model,type,estimated}` tách
+  token thật (`estimated="false"`) khỏi token ước lượng; chi phí
+  `bakhi_ai_estimated_cost_usd_total` tính từ bảng giá nạp bằng `AI_PRICING_JSON` hoặc
+  `AI_PRICING_FILE`. Model thiếu giá ⇒ `bakhi_ai_unpriced_requests_total` tăng và **không**
+  bao giờ bị tính thành 0 USD.
+- **`GET /metrics`** — Prometheus text exposition (`text/plain; version=0.0.4`), có cả ở
+  `/api/v1/metrics` cho tương thích 8.6.1. Mặc định TẮT; chỉ bật khi `METRICS_ENABLED=1`
+  và `METRICS_TOKEN` được đặt, request phải gửi `Authorization: Bearer <token>`. Scrape
+  không bị tính vào thống kê nghiệp vụ và không bị chặn bởi giới hạn đồng thời.
+- **Tab Vận hành (Founder Dashboard)** — tổng quan request/lỗi/latency/p50/p95/p99, bảng
+  API sắp xếp được, bảng provider Primary/Fallback, token + chi phí ước tính, trạng thái
+  hệ thống (uptime, RSS, metrics, circuit). Dữ liệu lấy từ
+  `POST /api/v1/observability/summary` bằng chính phiên Founder (`x-admin-token`);
+  Administrator thường nhận 403, chưa đăng nhập nhận 401. Không có token metrics nào
+  trong trình duyệt.
+- **163 test** (78 unit + 85 integration/contract), thêm test observability: ẩn/bảo vệ
+  `/metrics`, đếm đúng 4xx, loại scrape khỏi thống kê, token thật/ước tính, chi phí có/không
+  có bảng giá, fallback thành công/thất bại (kể cả lượt thất bại đã qua dự phòng), lỗi trước
+  khi gọi provider, xác thực Founder cho endpoint tổng hợp.
+
+### Sửa lỗi
+
+- **Lượt thất bại sau khi chuyển dự phòng được tính là fallback** — trước đây
+  `bakhi_ai_user_fallback_total` chỉ tăng khi provider dự phòng trả lời thành công, nên chuỗi
+  Primary → Fallback cùng sập bị đếm như "chỉ primary" và fallback rate thấp hơn thực tế.
+  Nay `run_chain()` ghi bộ đếm lượt người dùng đúng một lần ở cả nhánh lỗi, với
+  `fell_back = true` khi đã chạm nhánh dự phòng (kể cả provider dự phòng bị circuit OPEN bỏ
+  qua); `ai_usage_logs.fell_back` của lượt lỗi cũng ghi trung thực.
+- **Lỗi trước khi gọi provider không còn làm sai `availability`** — 401, 429 hạn mức, câu
+  hỏi rỗng, chế độ tắt, câu hỏi trùng không còn bị đếm là lượt AI thất bại.
+- **Tab Vận hành chỉ dành cho Founder** — Administrator thường không còn thấy mục này trong
+  điều hướng dashboard (trước đó chỉ bị chặn ở máy chủ bằng 403).
+
+### Cải tiến
+
+- **Access log có tương quan** — `request_id`, method, route chuẩn hoá, status, thời gian,
+  nhóm lỗi và mã lỗi nghiệp vụ (`x-error-code`); mức WARN cho 5xx. Không ghi Authorization,
+  khoá, nội dung hội thoại hay dữ liệu cá nhân.
+- **RSS và uptime** — `bakhi_process_uptime_seconds`, `bakhi_process_resident_memory_bytes`
+  (đọc `/proc/self/statm`, không có thì bỏ metric thay vì bịa số) và `bakhi_build_info`.
+- **Tài liệu vận hành** — `docs/OBSERVABILITY.md` (metric, label, PromQL, bảo mật,
+  troubleshooting), `docs/prometheus.yml`, `rust-backend/pricing.example.json`.
+
+### Ghi chú
+
+- **Chưa deploy.** Hosting hiện tại chưa có backend Rust chạy liên tục; Prometheus phải
+  scrape từ ngoài (xem `docs/OBSERVABILITY.md` mục 13). Metric là dữ liệu runtime trong
+  bộ nhớ — counter reset khi restart là hành vi đúng.
+- **Chưa có streaming** nên chưa có `bakhi_ai_time_to_first_token_seconds`; không tạo
+  metric rỗng chỉ để đủ danh sách.
+
 ## [8.6.1] — 2026-11-24
 
 **Reliability before performance.** Củng cố backend Rust trước khi triển khai: vòng đời

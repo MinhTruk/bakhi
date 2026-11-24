@@ -190,8 +190,8 @@ ok('không tạo hệ lịch sử thứ hai (dùng S.conversations)', /S\.conver
 /* ------------------------------------------------------------------ 5 */
 console.log('\n== 5. Phiên bản ==');
 const VERSION = read('assets/bakhi/bk-version.js');
-ok('phiên bản phát hành là 8.6.1', /app: '8\.6\.1'/.test(VERSION));
-ok('Trợ lý AI báo đúng phiên bản', /version: '8\.6\.1'/.test(AI_JS));
+ok('phiên bản phát hành là 8.6.2', /app: '8\.6\.2'/.test(VERSION));
+ok('Trợ lý AI báo đúng phiên bản', /version: '8\.6\.2'/.test(AI_JS));
 
 console.log('\n' + (failures ? '=== ' + failures + ' CHECK(S) FAILED ===' : '=== ALL CHECKS PASSED ==='));
 process.exit(failures ? 1 : 0);

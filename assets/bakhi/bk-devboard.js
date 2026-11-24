@@ -15,7 +15,7 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var APP_VERSION = '8.6.1';
+    var APP_VERSION = '8.6.2';
 
     var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
         ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];
@@ -37,6 +37,7 @@
         ['changelog', 'Changelog', 'fa-code-branch'],
         ['logs', 'Nhật ký', 'fa-clock-rotate-left'],
         ['monitoring', 'Giám sát', 'fa-heart-pulse'],
+        ['observability', 'Vận hành', 'fa-chart-line'],
         ['permissions', 'Quyền & bảo mật', 'fa-shield-halved'],
         ['settings', 'Cấu hình', 'fa-gear'],
         ['maintenance', 'Bảo trì', 'fa-screwdriver-wrench'],
@@ -56,6 +57,7 @@
         changelog: 'Quản lý lịch sử phiên bản hiển thị trên website',
         logs: 'Nhật ký thao tác quản trị trên máy chủ',
         monitoring: 'Sức khoẻ máy chủ, đồng bộ và lỗi gần đây',
+        observability: 'Metrics runtime: latency, lỗi, AI Primary/Fallback, token và chi phí ước tính',
         permissions: 'Mô hình quyền hiện tại và phiên quản trị',
         settings: 'Kết nối, feature flag, giao diện và phiên làm việc',
         maintenance: 'Bật/tắt bảo trì toàn website và soạn thông báo đóng cửa tạm thời',
@@ -64,7 +66,8 @@
     };
 
     /* Founder Dashboard = đủ 14 mô-đun + tab Founder. Administrator thường
-       không thấy các mô-đun tối mật (bảo trì, dữ liệu); máy chủ cũng chặn. */
+       không thấy các mô-đun tối mật (bảo trì, dữ liệu) và tab Vận hành
+       (metrics runtime chỉ dành cho Founder); máy chủ cũng chặn. */
     function dashboardScope() {
         if (global.BK_DASH_SCOPE === 'founder') return 'founder';
         try {
@@ -94,7 +97,7 @@
     }
     var TABS = ALL_TABS.filter(function (t) {
         if (isFounder()) return true;
-        return t[0] !== 'maintenance' && t[0] !== 'data';
+        return t[0] !== 'maintenance' && t[0] !== 'data' && t[0] !== 'observability';
     });
     if (isFounder()) TABS.push(['founder', 'Founder', 'fa-crown']);
     var tabState = isFounder() ? 'founder' : 'admin';
@@ -869,6 +872,7 @@
             changelog: renderChangelog,
             logs: renderLogs,
             monitoring: renderMonitoring,
+            observability: renderObservability,
             permissions: renderPermissions,
             settings: renderSettings,
             maintenance: renderMaintenance,
@@ -4395,6 +4399,21 @@
         warn.appendChild(h('p', null,
             'Chưa nạp bk-founder-ai.js. Trang quản trị cần thẻ script này để mở tab AI Tutor.'));
         host.appendChild(warn);
+    }
+
+    /* 8.6.2 — Vận hành: metrics thật của backend Rust. Toàn bộ giao diện nằm
+       trong bk-observability.js; dashboard chỉ gắn host. Số liệu lấy trực tiếp
+       từ /api/v1/observability/summary bằng phiên Founder, KHÔNG qua admin-actions. */
+    function renderObservability(pane) {
+        pane.textContent = '';
+        var host = h('div', 'bko-host');
+        pane.appendChild(host);
+        if (global.BKObservability && typeof global.BKObservability.render === 'function') {
+            global.BKObservability.render(host);
+            return;
+        }
+        pane.appendChild(alertBox(
+            'Không tải được mô-đun Vận hành (bk-observability.js). Hãy tải lại trang.', 'error'));
     }
 
     function renderFounder(pane) {

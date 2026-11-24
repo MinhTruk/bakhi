@@ -129,11 +129,14 @@ pub async fn concurrency_middleware(
 
     // Probe sức khoẻ KHÔNG được xếp hàng sau giới hạn đồng thời: nếu bị 429 khi
     // tải cao, orchestrator sẽ tưởng instance chết và restart vòng lặp.
-    let is_probe = matches!(request.uri().path(), "/api/v1/health" | "/api/v1/ready");
+    let is_probe = matches!(
+        request.uri().path(),
+        "/api/v1/health" | "/api/v1/ready" | "/health" | "/ready" | "/metrics" | "/api/v1/metrics"
+    );
     if is_probe {
         state.lifecycle.enter();
         let response = next.run(request).await;
-        state.metrics.leave(response.status().as_u16());
+        state.metrics.leave();
         state.lifecycle.leave();
         return response;
     }
@@ -152,14 +155,14 @@ pub async fn concurrency_middleware(
             )
             .into_response_with(&request_id);
             *response.status_mut() = StatusCode::TOO_MANY_REQUESTS;
-            state.metrics.leave(response.status().as_u16());
+            state.metrics.leave();
             return response;
         }
     };
 
     state.lifecycle.enter();
     let response = next.run(request).await;
-    state.metrics.leave(response.status().as_u16());
+    state.metrics.leave();
     state.lifecycle.leave();
     drop(permit);
     response

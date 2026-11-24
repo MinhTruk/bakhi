@@ -7,6 +7,7 @@ pub mod data;
 pub mod health;
 pub mod me;
 pub mod metrics;
+pub mod observability;
 
 use axum::http::{header, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};

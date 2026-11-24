@@ -6,7 +6,7 @@
 // semaphore đồng thời) được dựng MỘT LẦN trong AppState và tái sử dụng.
 //
 // Thứ tự lớp middleware (ngoài → trong):
-//   timeout → CORS → trace → request_id → concurrency → access_log →
+//   timeout → CORS → trace → request_id → access_log → concurrency →
 //   content-type → rate limit → handler
 // Nhờ vậy mọi phản hồi lỗi đều có request id, log có thời gian và mã trạng thái,
 // và request bị từ chối vì quá tải không bao giờ chờ vô hạn.
@@ -77,7 +77,7 @@ impl AppState {
                 settings.max_user_concurrency,
                 settings.concurrency_wait,
             )),
-            metrics: Arc::new(Metrics::default()),
+            metrics: Arc::new(Metrics::new(settings.ai_pricing.clone())),
             lifecycle: Arc::new(Lifecycle::new()),
             supabase,
             providers,
@@ -127,6 +127,10 @@ pub fn build_router(state: AppState) -> Router {
         .route("/health", get(routes::health::health))
         .route("/ready", get(routes::health::ready))
         .route("/metrics", get(routes::metrics::metrics))
+        .route(
+            "/observability/summary",
+            post(routes::observability::summary),
+        )
         .route("/me", get(routes::me::me))
         .route("/ai/chat", post(routes::ai::chat))
         .route(
@@ -147,14 +151,19 @@ pub fn build_router(state: AppState) -> Router {
     let timeout = state.settings.request_timeout;
 
     Router::new()
+        // Prometheus scrape ở gốc `/metrics`; giữ `/api/v1/metrics` cho tương thích 8.6.1.
+        .route("/metrics", get(routes::metrics::metrics))
         .nest("/api/v1", api)
-        // Thêm từ trong ra ngoài: request_id phải có TRƯỚC access_log để log có mã,
-        // và concurrency nằm trong request_id để phản hồi 429 vẫn kèm mã.
+        // Thêm từ trong ra ngoài: request_id phải có TRƯỚC access_log để log/metrics
+        // có mã, và access_log nằm ngoài concurrency để mọi phản hồi 429 đều được đếm.
         .layer(axum::middleware::from_fn_with_state(
             state.clone(),
             concurrency_middleware,
         ))
-        .layer(axum::middleware::from_fn(observability::access_log))
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            observability::access_log,
+        ))
         .layer(axum::middleware::from_fn(request_id_middleware))
         .layer(TraceLayer::new_for_http())
         .layer(cors)

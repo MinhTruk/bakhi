@@ -3,8 +3,9 @@
 Backend cho các tác vụ cần máy chủ thật: AI Gateway, xác thực tập trung, giới hạn tần suất và
 đồng thời, xử lý dữ liệu. Website tĩnh (GitHub Pages / Supabase) **không bị thay thế**.
 
-> Trạng thái 8.6.1: mã nguồn + 135 test + Docker + CI hoàn thiện, **chưa deploy**. Mặc định
-> website vẫn dùng Supabase Edge Function (`BK_BACKEND.mode = 'edge'`).
+> Trạng thái 8.6.2: mã nguồn + 163 test + Docker + CI + metrics Prometheus hoàn thiện,
+> **chưa deploy**. Mặc định website vẫn dùng Supabase Edge Function
+> (`BK_BACKEND.mode = 'edge'`).
 
 ## Chạy nhanh
 
@@ -28,12 +29,25 @@ cargo test --all-targets
 cargo build --release --locked
 ```
 
-**135 test**: 62 unit + 73 integration/contract. Supabase và AI provider đều là HTTP server giả
+**163 test**: 78 unit + 85 integration/contract. Supabase và AI provider đều là HTTP server giả
 lập trên loopback — không cần khoá thật, không gọi mạng ngoài.
 
 Nhóm test: `health_tests`, `auth_tests`, `api_contract_tests`, `ai_gateway_tests`,
 `fallback_tests`, `circuit_breaker_tests`, `learning_stats_tests`, `error_handling_tests`,
-`concurrency_tests`; golden fixtures ở `tests/fixtures/`.
+`concurrency_tests`, `observability_tests`; golden fixtures ở `tests/fixtures/`.
+
+## Observability (8.6.2)
+
+```bash
+# Bật metrics + token (mặc định tắt)
+METRICS_ENABLED=1 METRICS_TOKEN=<token-dài> cargo run
+curl -s -H "Authorization: Bearer $METRICS_TOKEN" localhost:8080/metrics | head
+```
+
+Metrics: HTTP counter/histogram (p50/p95/p99), error theo endpoint, AI Primary/Fallback,
+token thật/ước tính, chi phí ước tính từ `AI_PRICING_JSON`/`AI_PRICING_FILE` (xem
+`pricing.example.json`). Scrape không ảnh hưởng thống kê nghiệp vụ. Chi tiết metric, PromQL,
+bảo mật và troubleshooting: `docs/OBSERVABILITY.md`, `docs/prometheus.yml`.
 
 ## Benchmark
 
@@ -77,6 +91,8 @@ src/
 - Circuit breaker theo provider (CLOSED/OPEN/HALF_OPEN).
 - Giới hạn đồng thời toàn dịch vụ / AI / người dùng, có hạn chờ.
 - Nhật ký `ai_usage_logs` có `fell_back` + `tokens_estimated`; mỗi request một dòng.
+- Metrics ghi một lượt người dùng cho mỗi lượt chat ở `run_chain()`; lượt thất bại sau khi
+  đã chuyển dự phòng vẫn tính là lượt fallback.
 
 ## Tài liệu
 

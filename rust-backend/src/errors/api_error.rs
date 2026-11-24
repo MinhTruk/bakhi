@@ -153,6 +153,10 @@ impl ApiError {
         if let Ok(value) = HeaderValue::from_str(request_id) {
             response.headers_mut().insert(REQUEST_ID_HEADER, value);
         }
+        // Mã lỗi nghiệp vụ cho log/metrics; không phải thông điệp thô.
+        if let Ok(value) = HeaderValue::from_str(self.code) {
+            response.headers_mut().insert("x-error-code", value);
+        }
         response
             .headers_mut()
             .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));

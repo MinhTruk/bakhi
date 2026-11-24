@@ -1,6 +1,6 @@
 [package]
 name = "bakhi-backend"
-version = "8.6.1"
+version = "8.6.2"
 edition = "2021"
 rust-version = "1.75"
 description = "Bá Khí — Rust hybrid backend (API + AI Gateway)"
@@ -27,6 +27,8 @@ thiserror = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 uuid = { version = "1", features = ["v4"] }
+# 8.6.2: băm token phiên quản trị (SHA-256) để đối chiếu admin_sessions.
+sha2 = "0.10"
 
 [dev-dependencies]
 http-body-util = "0.1"

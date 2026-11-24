@@ -564,6 +564,44 @@ Tài liệu: `docs/AI_TUTOR_ARCHITECTURE.md` (kiến trúc), `docs/AI_TUTOR_SECU
   `docs/RUST_CONTRACT_TESTING_V861.md`, `docs/RUST_TESTING_GUIDE_V861.md`,
   `docs/RUST_OPERATIONS_V861.md`, `docs/RUST_SECURITY_AUDIT_V861.md`.
 
+### 6.7. Observability backend Rust (8.6.2)
+
+- **Metrics là một phần runtime, không phải tính năng của dashboard.** Ghi tại
+  `src/observability/{metrics,pricing,mod}.rs`; Prometheus scrape `/metrics` độc lập với
+  frontend. Không gọi database cho từng metric, không gửi HTTP nội bộ để "ghi nhận".
+- **Một lần ghi cho mỗi request:** `access_log` (ngoài concurrency) đo và ghi counter +
+  histogram; không middleware nào khác đo latency. `/metrics` không được tính vào thống kê
+  nghiệp vụ và không bị chặn bởi giới hạn đồng thời.
+- **Nhãn hữu hạn, không dữ liệu cá nhân:** method/route chuẩn hoá/status, provider/model
+  (≤80 ký tự), role, type, estimated, category, code. **Cấm** user id, email, IP, session,
+  request id, query string, nội dung AI, thông điệp lỗi thô, khoá. Route lạ gộp `/other`;
+  registry có trần `MAX_SERIES`.
+- **p50/p95/p99 tính từ histogram** bằng nội suy bucket (như `histogram_quantile`), không
+  lấy trung bình của trung bình. Đổi bucket phải cập nhật tài liệu và test quantile.
+- **Primary/Fallback theo VỊ TRÍ** trong `ai_model_routes` (`role` = primary cho position 0).
+  Một lượt chuyển dự phòng vẫn là một lượt AI của người dùng; circuit OPEN ghi `skipped`,
+  không tạo latency/token giả. Không thêm nhãn `role` vào response `meta.attempts` (contract).
+- **Đếm lượt người dùng một nơi:** `run_chain()` gọi `record_ai_request()` đúng một lần cho
+  mỗi lượt, ở cả nhánh thành công lẫn nhánh lỗi. Lượt thất bại **sau khi đã chạm nhánh dự
+  phòng** mang `fell_back = true` (cả metrics lẫn `ai_usage_logs.fell_back`). Lỗi trước khi
+  gọi provider (401, 429, câu hỏi rỗng, chế độ tắt, trùng câu hỏi) không phải lượt AI và
+  không được cộng vào `bakhi_ai_user_failed_total`.
+- **Token:** dùng usage metadata provider; thiếu thì ước lượng và đặt `estimated="true"`.
+  Không ghi 0 khi không có dữ liệu.
+- **Giá AI không hardcode:** `AI_PRICING_JSON` hoặc `AI_PRICING_FILE` (USD/1M token). Model
+  thiếu giá ⇒ tăng `bakhi_ai_unpriced_requests_total`, **không** tính 0 USD. Không suy đoán giá.
+- **`/metrics` mặc định tắt:** cần `METRICS_ENABLED=1` + `METRICS_TOKEN`; thiếu một trong hai
+  trả 404. Không đưa `METRICS_TOKEN` xuống frontend, không dùng CORS làm xác thực.
+- **Founder Dashboard tab Vận hành** dùng `POST /api/v1/observability/summary` với header
+  `x-admin-token`;   backend băm SHA-256, tra `admin_sessions` và yêu cầu `scope = 'founder'`.
+  Không dựng cơ chế xác thực thứ hai, không cho Administrator thường xem. Tab này cũng bị
+  **ẩn khỏi điều hướng** của Administrator thường (`bk-devboard.js` lọc `TABS` theo
+  `dashboardScope()`), không chỉ chặn ở máy chủ.
+- **Chưa có streaming** ⇒ không thêm `bakhi_ai_time_to_first_token_seconds` cho đủ danh sách.
+  Không tạo metric giả hay giá trị mặc định để endpoint "trông hoạt động".
+- Trước khi push: `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D warnings`,
+  `cargo test --all-targets`. Tài liệu: `docs/OBSERVABILITY.md`, `docs/prometheus.yml`.
+
 <!-- BEGIN brain.md -->
 ## Project Brain
 

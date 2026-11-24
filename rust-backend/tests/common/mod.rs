@@ -31,6 +31,8 @@ pub const VALID_TOKEN: &str = "valid-token-for-integration-tests";
 pub const AUTH_USER_ID: &str = "11111111-2222-3333-4444-555555555555";
 pub const STUDENT_ID: &str = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
 pub const CONVERSATION_ID: &str = "99999999-8888-7777-6666-555555555555";
+/// Token phiên Founder giả lập (chỉ tồn tại trong kiểm thử).
+pub const FOUNDER_TOKEN: &str = "founder-session-token-1234567890";
 
 #[derive(Clone)]
 pub struct MockState {
@@ -45,6 +47,8 @@ pub struct MockState {
     pub provider_sequence: Arc<Mutex<VecDeque<u16>>>,
     pub last_message_body: Arc<Mutex<Value>>,
     pub db_fail: Arc<Mutex<bool>>,
+    /// Scope trả về cho `admin_sessions`: "founder" | "admin" | "none".
+    pub admin_scope: Arc<Mutex<String>>,
 }
 
 impl Default for MockState {
@@ -68,6 +72,7 @@ impl Default for MockState {
             provider_sequence: Arc::new(Mutex::new(VecDeque::new())),
             last_message_body: Arc::new(Mutex::new(Value::Null)),
             db_fail: Arc::new(Mutex::new(false)),
+            admin_scope: Arc::new(Mutex::new("founder".to_string())),
         }
     }
 }
@@ -116,6 +121,11 @@ impl MockState {
 
     pub fn set_db_fail(&self, fail: bool) {
         *self.db_fail.lock().unwrap() = fail;
+    }
+
+    /// "founder" | "admin" | "none" (không có phiên).
+    pub fn set_admin_scope(&self, scope: &str) {
+        *self.admin_scope.lock().unwrap() = scope.to_string();
     }
 
     pub fn has_call(&self, prefix: &str) -> bool {
@@ -250,6 +260,14 @@ async fn mock_handler(State(state): State<MockState>, request: Request<Body>) ->
             StatusCode::OK,
             Value::Array(state.routes.lock().unwrap().clone()),
         ),
+        (Method::GET, "/rest/v1/admin_sessions") => {
+            let scope = state.admin_scope.lock().unwrap().clone();
+            if scope == "none" {
+                json_response(StatusCode::OK, json!([]))
+            } else {
+                json_response(StatusCode::OK, json!([{ "scope": scope }]))
+            }
+        }
         (Method::GET, "/rest/v1/ai_usage_logs") => json_response(StatusCode::OK, json!([])),
         (Method::GET, "/rest/v1/ai_messages") => json_response(StatusCode::OK, json!([])),
         (Method::GET, "/rest/v1/ai_conversations") => json_response(

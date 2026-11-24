@@ -354,6 +354,36 @@ impl SupabaseClient {
         }))
     }
 
+    /// Scope của một phiên quản trị còn hạn (Founder Dashboard dùng chung phiên
+    /// `admin_sessions`, không có cơ chế xác thực thứ hai).
+    ///
+    /// Token KHÔNG được lưu thô ở đâu cả: client giữ token, máy chủ băm SHA-256
+    /// rồi tra `token_hash`. So sánh diễn ra trong PostgreSQL qua chỉ mục unique
+    /// nên không có so sánh chuỗi tuần tự trong mã.
+    pub async fn admin_session_scope(&self, token: &str) -> Result<Option<String>, ApiError> {
+        if !self.has_service_key() {
+            return Err(ApiError::not_configured());
+        }
+        let token = token.trim();
+        if token.len() < 20 || token.len() > 256 {
+            return Ok(None);
+        }
+        let hash = sha256_hex(token);
+        let now = crate::services::ai_service::iso_now();
+        let path = format!(
+            "admin_sessions?token_hash=eq.{}&expires_at=gt.{}&select=scope&limit=1",
+            urlencode(&hash),
+            urlencode(&now)
+        );
+        let rows = self.select(&path, RestAuth::Service).await?;
+        Ok(rows
+            .as_array()
+            .and_then(|list| list.first())
+            .and_then(|row| row.get("scope"))
+            .and_then(|value| value.as_str())
+            .map(|scope| scope.to_string()))
+    }
+
     /// Nhật ký sử dụng AI — chỉ ghi bằng service role, không đọc lại từ client.
     /// Lỗi ghi log không bao giờ làm hỏng câu trả lời đã thành công.
     pub async fn log_ai_usage(&self, entry: UsageLog<'_>) {
@@ -380,6 +410,17 @@ impl SupabaseClient {
     }
 }
 
+/// SHA-256 hex — cùng định dạng với `sha256Hex()` của Edge Function admin-actions.
+fn sha256_hex(value: &str) -> String {
+    use sha2::{Digest, Sha256};
+    let digest = Sha256::digest(value.as_bytes());
+    let mut out = String::with_capacity(64);
+    for byte in digest {
+        out.push_str(&format!("{byte:02x}"));
+    }
+    out
+}
+
 /// Mã hoá tối thiểu cho tham số PostgREST (UUID, chuỗi đơn giản).
 pub fn urlencode(raw: &str) -> String {
     let mut out = String::with_capacity(raw.len());
@@ -396,7 +437,16 @@ pub fn urlencode(raw: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::urlencode;
+    use super::{sha256_hex, urlencode};
+
+    #[test]
+    fn hashes_session_tokens_like_edge_function() {
+        // Giá trị kiểm thử công khai, không phải token thật.
+        assert_eq!(
+            sha256_hex("abc"),
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        );
+    }
 
     #[test]
     fn encodes_untrusted_values_for_postgrest() {

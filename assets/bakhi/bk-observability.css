@@ -1,0 +1,289 @@
+/* =========================================================================
+   Bá Khí — bk-observability.css (8.6.2 · Observability)
+
+   Giao diện tab "Vận hành" (Founder Dashboard). Chỉ dùng token --bk-* nên
+   tự đúng ở cả giao diện tối mặc định và html.light. Không đặt position cho
+   thành phần toàn trang, không đè lên khung dashboard hiện có.
+   ========================================================================= */
+
+.bko-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: var(--bk-text);
+}
+
+/* ------------------------------- Thanh trên ----------------------------- */
+
+.bko-bar {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+}
+
+.bko-stamp {
+    font-size: .72rem;
+    color: var(--bk-text-3);
+    margin-right: auto;
+}
+
+.bko-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .25rem .6rem;
+    border-radius: 999px;
+    border: 1px solid var(--bk-line);
+    background: var(--bk-surface-2);
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .01em;
+    color: var(--bk-text-2);
+}
+.bko-pill::before {
+    content: "";
+    width: .45rem;
+    height: .45rem;
+    border-radius: 50%;
+    background: var(--bk-text-3);
+}
+.bko-pill.is-ok { color: var(--bk-ok); border-color: color-mix(in srgb, var(--bk-ok) 40%, transparent); }
+.bko-pill.is-ok::before { background: var(--bk-ok); }
+.bko-pill.is-warn { color: var(--bk-warn); border-color: color-mix(in srgb, var(--bk-warn) 40%, transparent); }
+.bko-pill.is-warn::before { background: var(--bk-warn); }
+.bko-pill.is-error { color: var(--bk-danger); border-color: color-mix(in srgb, var(--bk-danger) 40%, transparent); }
+.bko-pill.is-error::before { background: var(--bk-danger); }
+.bko-pill.is-loading::before { background: var(--bk-brand); animation: bko-pulse 1s ease-in-out infinite; }
+
+@keyframes bko-pulse {
+    0%, 100% { opacity: .35; transform: scale(.85); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+.bko-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .42rem .8rem;
+    border-radius: .6rem;
+    border: 1px solid var(--bk-line);
+    background: var(--bk-surface);
+    color: var(--bk-text);
+    font-size: .75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+}
+.bko-btn:hover:not(:disabled) { background: var(--bk-hover); border-color: var(--bk-line-strong, var(--bk-line)); }
+.bko-btn:disabled { opacity: .55; cursor: progress; }
+.bko-btn:focus-visible { outline: 2px solid var(--bk-brand); outline-offset: 2px; }
+
+.bko-note {
+    margin: 0;
+    font-size: .72rem;
+    line-height: 1.5;
+    color: var(--bk-text-3);
+}
+
+/* --------------------------------- Lưới --------------------------------- */
+
+.bko-body { display: flex; flex-direction: column; gap: 1rem; }
+
+.bko-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+    gap: .65rem;
+}
+.bko-grid.is-compact { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+
+.bko-stat {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    padding: .8rem .9rem;
+    border-radius: .8rem;
+    border: 1px solid var(--bk-line-soft, var(--bk-line));
+    background: var(--bk-surface);
+    min-width: 0;
+}
+.bko-stat-label {
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    color: var(--bk-text-3);
+}
+.bko-stat-value {
+    font-size: 1.28rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--bk-text);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+.bko-stat-hint {
+    font-size: .68rem;
+    line-height: 1.4;
+    color: var(--bk-text-3);
+}
+.bko-stat.is-ok .bko-stat-value { color: var(--bk-ok); }
+.bko-stat.is-warn .bko-stat-value { color: var(--bk-warn); }
+.bko-stat.is-bad .bko-stat-value { color: var(--bk-danger); }
+
+/* --------------------------------- Thẻ ---------------------------------- */
+
+.bko-card {
+    border: 1px solid var(--bk-line-soft, var(--bk-line));
+    border-radius: .9rem;
+    background: var(--bk-surface);
+    padding: .95rem 1rem 1rem;
+    min-width: 0;
+}
+.bko-card-head { margin-bottom: .65rem; }
+.bko-card-head h3 {
+    margin: 0;
+    font-size: .92rem;
+    font-weight: 700;
+    color: var(--bk-text);
+}
+.bko-card-head p {
+    margin: .18rem 0 0;
+    font-size: .7rem;
+    line-height: 1.45;
+    color: var(--bk-text-3);
+}
+
+/* --------------------------------- Bảng --------------------------------- */
+
+.bko-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.bko-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .76rem;
+    min-width: 34rem;
+}
+.bko-table th,
+.bko-table td {
+    padding: .5rem .55rem;
+    border-bottom: 1px solid var(--bk-line-soft, var(--bk-line));
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.bko-table th {
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .025em;
+    text-transform: uppercase;
+    color: var(--bk-text-3);
+    background: var(--bk-surface-2);
+    position: sticky;
+    top: 0;
+}
+.bko-table th.is-sortable { cursor: pointer; user-select: none; }
+.bko-table th.is-sortable:hover { color: var(--bk-text); }
+.bko-table th[aria-sort="ascending"]::after { content: " ▲"; font-size: .6rem; }
+.bko-table th[aria-sort="descending"]::after { content: " ▼"; font-size: .6rem; }
+.bko-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.bko-table td.is-bad { color: var(--bk-danger); font-weight: 700; }
+.bko-table td.is-muted { color: var(--bk-text-3); }
+.bko-table tbody tr:hover { background: var(--bk-hover); }
+.bko-table tr:last-child td { border-bottom: 0; }
+
+.bko-route { display: flex; flex-direction: column; gap: .12rem; min-width: 9rem; }
+.bko-route code {
+    font-size: .72rem;
+    color: var(--bk-text-2);
+    white-space: nowrap;
+}
+.bko-route strong { font-size: .78rem; color: var(--bk-text); }
+
+.bko-method {
+    font-size: .6rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    color: var(--bk-brand-soft, var(--bk-brand));
+}
+
+.bko-role {
+    display: inline-block;
+    padding: .12rem .45rem;
+    border-radius: 999px;
+    font-size: .64rem;
+    font-weight: 700;
+    border: 1px solid var(--bk-line);
+    color: var(--bk-text-2);
+}
+.bko-role.is-primary {
+    color: var(--bk-brand-soft, var(--bk-brand));
+    border-color: color-mix(in srgb, var(--bk-brand) 45%, transparent);
+}
+.bko-role.is-fallback {
+    color: var(--bk-warn);
+    border-color: color-mix(in srgb, var(--bk-warn) 45%, transparent);
+}
+
+.bko-subrow td { padding-top: 0; border-bottom: 1px solid var(--bk-line-soft, var(--bk-line)); }
+
+.bko-hint {
+    margin: .6rem 0 0;
+    font-size: .7rem;
+    line-height: 1.5;
+    color: var(--bk-text-3);
+}
+.bko-warn {
+    margin: .65rem 0 0;
+    padding: .55rem .7rem;
+    border-radius: .55rem;
+    border: 1px solid color-mix(in srgb, var(--bk-warn) 40%, transparent);
+    background: color-mix(in srgb, var(--bk-warn) 10%, transparent);
+    font-size: .72rem;
+    line-height: 1.5;
+    color: var(--bk-warn);
+}
+
+/* ------------------------------ Trạng thái ------------------------------ */
+
+.bko-empty {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: 1.1rem .4rem;
+    font-size: .78rem;
+    color: var(--bk-text-3);
+}
+
+.bko-state {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .5rem;
+    padding: 1.1rem 1.2rem;
+    border-radius: .85rem;
+    border: 1px solid var(--bk-line);
+    background: var(--bk-surface);
+}
+.bko-state h3 { margin: 0; font-size: .95rem; color: var(--bk-text); }
+.bko-state p { margin: 0; font-size: .78rem; line-height: 1.55; color: var(--bk-text-2); max-width: 46rem; }
+.bko-state.is-error { border-color: color-mix(in srgb, var(--bk-danger) 45%, transparent); }
+.bko-state.is-error h3 { color: var(--bk-danger); }
+.bko-state.is-idle h3 { color: var(--bk-text-2); }
+
+/* -------------------------------- Mobile -------------------------------- */
+
+@media (max-width: 640px) {
+    .bko-grid { grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); }
+    .bko-stat-value { font-size: 1.1rem; }
+    .bko-bar { gap: .45rem; }
+    .bko-stamp { width: 100%; order: 3; }
+    .bko-table { font-size: .72rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bko-pill.is-loading::before { animation: none; }
+    .bko-btn { transition: none; }
+}
