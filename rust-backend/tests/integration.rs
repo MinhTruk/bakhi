@@ -28,7 +28,11 @@ async fn health_is_public_and_reports_version() {
     let body = body_json(response).await;
     assert_eq!(body["ok"], true);
     assert_eq!(body["data"]["status"], "ok");
-    assert!(body["data"]["version"].as_str().unwrap().starts_with("8.6"));
+    // Đối chiếu phiên bản crate thay vì hardcode: bump phiên bản không làm vỡ test.
+    assert_eq!(
+        body["data"]["version"].as_str().unwrap(),
+        env!("CARGO_PKG_VERSION")
+    );
 }
 
 #[tokio::test]

@@ -3,7 +3,7 @@
   "data": {
     "status": "ok",
     "service": "bakhi-backend",
-    "version": "8.6.1",
+    "version": "8.7.1",
     "uptimeSeconds": 0,
     "activeRequests": 0,
     "draining": false
