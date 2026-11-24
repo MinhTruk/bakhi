@@ -567,7 +567,9 @@ impl AiService {
         }
         // Lượt thất bại vẫn được đếm là một lượt AI của người dùng; nếu chuỗi đã
         // chạm nhánh dự phòng thì đây là lượt fallback, không phải "chỉ primary".
-        self.state.metrics.record_ai_request(fallback_reached, false);
+        self.state
+            .metrics
+            .record_ai_request(fallback_reached, false);
 
         let error = match last_error {
             // Mọi provider đều OPEN: giữ mã cũ để frontend không phải biết

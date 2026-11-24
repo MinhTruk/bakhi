@@ -997,7 +997,14 @@ mod tests {
     fn failed_fallback_request_still_counts_as_fallback() {
         let metrics = Metrics::default();
         metrics.record_ai_attempt("primary", "groq", "m1", false, 1.0, Some("PROVIDER_DOWN"));
-        metrics.record_ai_attempt("fallback", "google", "m2", false, 0.8, Some("PROVIDER_DOWN"));
+        metrics.record_ai_attempt(
+            "fallback",
+            "google",
+            "m2",
+            false,
+            0.8,
+            Some("PROVIDER_DOWN"),
+        );
         metrics.record_fallback("attempted");
         metrics.record_fallback("failure");
         // Một lượt người dùng thất bại nhưng ĐÃ đi qua dự phòng.
