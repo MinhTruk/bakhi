@@ -142,9 +142,119 @@
         }).then(readEnvelope);
     }
 
+    /* ---------------------------------------------------------------------
+       8.7.4 — Streaming SSE (TUỲ CHỌN, mặc định tắt)
+
+       Bật bằng BK_BACKEND.streaming = true khi mode = 'rust'. Server gửi
+       `event: delta` (từng phần), rồi `event: done` với đúng envelope của
+       endpoint thường. Nhờ vậy giao diện chỉ cần vẽ dần nội dung và thay bằng
+       bản đầy đủ khi xong; hội thoại/meta/token vẫn lấy từ `done`.
+
+       Nếu backend chưa có endpoint streaming (404) hoặc trình duyệt không hỗ
+       trợ ReadableStream, tự quay về request thường MỘT LẦN (trước khi có
+       delta nào) — không gửi trùng câu hỏi tới AI.
+       ------------------------------------------------------------------ */
+    function rustStreaming() {
+        var cfg = global.BK_BACKEND;
+        return !!rustConfig() && !!(cfg && cfg.streaming === true) &&
+            typeof global.TextDecoder === 'function';
+    }
+
+    function rustStream(body, signal, onDelta) {
+        var conf = rustConfig();
+        var url = conf.base + '/api/v1/ai/chat/stream';
+        return global.BKCloud.chatClient().then(function (client) {
+            return client.auth.getSession().then(function (res) {
+                var session = res && res.data && res.data.session;
+                var token = session && session.access_token;
+                if (!token) throw new Error('Phiên đăng nhập đã hết hạn. Hãy tải lại trang chủ để nhận diện lại.');
+                return global.fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'text/event-stream',
+                        Authorization: 'Bearer ' + token
+                    },
+                    body: JSON.stringify(body || {}),
+                    signal: signal
+                });
+            });
+        }).then(function (res) {
+            // 404 (tắt streaming) / 401 / 429… vẫn là JSON thường.
+            if (!res.ok) return readEnvelope(res);
+            if (!res.body || typeof res.body.getReader !== 'function') return readEnvelope(res);
+
+            var reader = res.body.getReader();
+            var decoder = new global.TextDecoder();
+            var buffer = '';
+            var final = null;
+            var failure = null;
+
+            function handleFrame(raw) {
+                var lines = raw.split(/\r?\n/);
+                var event = 'message';
+                var data = [];
+                lines.forEach(function (line) {
+                    if (line.indexOf('event:') === 0) event = line.slice(6).trim();
+                    else if (line.indexOf('data:') === 0) data.push(line.slice(5).replace(/^ /, ''));
+                });
+                if (!data.length) return; /* comment keep-alive */
+                var payload;
+                try { payload = JSON.parse(data.join('\n')); } catch (e) { return; }
+                if (event === 'delta') {
+                    if (payload && typeof payload.text === 'string' && onDelta) onDelta(payload.text);
+                    return;
+                }
+                if (event === 'done') {
+                    final = payload && payload.data ? payload.data : payload;
+                    return;
+                }
+                if (event === 'error') {
+                    var err = new Error((payload && payload.error && payload.error.message) || 'Lỗi máy chủ');
+                    err.code = (payload && payload.error && payload.error.code) || 'STREAM_ERROR';
+                    err.data = payload;
+                    failure = err;
+                }
+            }
+
+            function pump() {
+                return reader.read().then(function (chunk) {
+                    if (chunk.done) {
+                        buffer += decoder.decode();
+                        if (buffer.trim()) handleFrame(buffer);
+                        if (failure) throw failure;
+                        if (!final) {
+                            var cut = new Error('Kết nối trả lời bị ngắt trước khi hoàn tất. Bạn thử lại nhé.');
+                            cut.code = 'STREAM_INCOMPLETE';
+                            throw cut;
+                        }
+                        return final;
+                    }
+                    buffer += decoder.decode(chunk.value, { stream: true });
+                    var match;
+                    while ((match = /\r?\n\r?\n/.exec(buffer))) {
+                        var frame = buffer.slice(0, match.index);
+                        buffer = buffer.slice(match.index + match[0].length);
+                        handleFrame(frame);
+                    }
+                    return pump();
+                });
+            }
+
+            return pump();
+        });
+    }
+
+    /* Dùng streaming khi được bật; nếu không, giữ nguyên đường cũ. */
+    function postStream(body, signal, onDelta) {
+        if (!rustStreaming()) return post(body, signal);
+        return rustStream(body, signal, onDelta);
+    }
+
     /* Công cụ kiểm tra nhanh cho Developer Playground / hỗ trợ kỹ thuật. */
     global.BKRust = {
         enabled: function () { return !!rustConfig(); },
+        streaming: function () { return rustStreaming(); },
         baseUrl: function () { var c = rustConfig(); return c ? c.base : ''; }
     };
 
@@ -1308,14 +1418,29 @@
         var signal = S.controller ? S.controller.signal : undefined;
         var ctx = S.context || {};
 
-        post({
+        /* Bong bóng tạm cho phần nội dung đang chảy về (chỉ khi streaming). */
+        var streamingId = 'local-stream-' + Date.now();
+        var streamingMessage = null;
+        function onDelta(delta) {
+            if (!streamingMessage) {
+                streamingMessage = {
+                    id: streamingId, role: 'assistant', content: '',
+                    mode: S.mode, created_at: new Date().toISOString(), streaming: true
+                };
+                S.messages.push(streamingMessage);
+            }
+            streamingMessage.content += delta;
+            renderThread();
+        }
+
+        postStream({
             action: 'chat',
             conversation_id: S.active ? S.active.id : '',
             mode: S.mode,
             message: text,
             retry: isRetry || undefined,
             context: ctx
-        }, signal).then(function (data) {
+        }, signal, onDelta).then(function (data) {
             S.sending = false;
             S.controller = null;
             S.pending = '';
@@ -1323,8 +1448,10 @@
                 S.active = Object.assign({}, S.active || {}, data.conversation);
                 mergeConversation(data.conversation);
             }
-            /* Thay tin nhắn tạm bằng bản máy chủ trả về. */
-            S.messages = S.messages.filter(function (m) { return m.id !== optimistic.id; });
+            /* Thay tin nhắn tạm (và bản đang stream) bằng bản máy chủ trả về. */
+            S.messages = S.messages.filter(function (m) {
+                return m.id !== optimistic.id && m.id !== streamingId;
+            });
             if (data.user_message && !hasMessage(data.user_message.id)) S.messages.push(data.user_message);
             if (data.message) S.messages.push(data.message);
             if (data.meta) {
@@ -1343,6 +1470,7 @@
             S.sending = false;
             S.controller = null;
             paintComposer();
+            S.messages = S.messages.filter(function (m) { return m.id !== streamingId; });
             if (err && err.code === 'ABORTED') {
                 S.error = '';
                 S.pending = '';
@@ -1574,7 +1702,7 @@
        Công khai
        ------------------------------------------------------------------ */
     var API = {
-        version: '8.7.3',
+        version: '8.8.0',
         MODES: MODE_FALLBACK,
 
         /* Gắn giao diện đầy đủ vào một phần tử (trang /ai-tutor/). */
