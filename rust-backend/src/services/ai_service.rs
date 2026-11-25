@@ -255,15 +255,10 @@ impl AiService {
             .flights
             .run(cache_key, move || async move {
                 let rows = supabase.select(path, RestAuth::Service).await;
+                // Giữ NGUYÊN hình dạng trả về: ai_settings là một dòng, còn
+                // ai_model_routes là cả mảng. Việc lấy dòng đầu do nơi gọi làm.
                 let value = match rows {
-                    Ok(Value::Array(mut list)) => {
-                        if list.is_empty() {
-                            Value::Null
-                        } else {
-                            list.swap_remove(0)
-                        }
-                    }
-                    Ok(other) => other,
+                    Ok(value) => value,
                     Err(error) => return Err(error),
                 };
                 if !ttl.is_zero() {
@@ -295,11 +290,16 @@ impl AiService {
         let value = self
             .config_value("ai:settings:v1", "ai_settings?id=eq.1&select=*&limit=1")
             .await?;
-        if value.is_null() {
+        // PostgREST trả mảng; cấu hình là dòng đầu tiên (nếu có).
+        let row = match &*value {
+            Value::Array(list) => list.first().cloned().unwrap_or(Value::Null),
+            value => value.clone(),
+        };
+        if row.is_null() {
             // Bảng cấu hình chưa có dòng 1 ⇒ dùng mặc định an toàn.
             return Ok(AiSettings::default());
         }
-        serde_json::from_value::<AiSettings>((*value).clone()).map_err(|_| {
+        serde_json::from_value::<AiSettings>(row).map_err(|_| {
             ApiError::service_unavailable("BAD_CONFIG", "Cấu hình trợ lý AI không đọc được.")
         })
     }
