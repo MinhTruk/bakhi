@@ -83,6 +83,8 @@ jobs:
           cargo test --test concurrency_tests
           cargo test --test health_tests
           cargo test --test learning_stats_tests
+          cargo test --test streaming_tests
+          cargo test --test parallel_tests
 
   security:
     name: secret & dependency scan

@@ -7,6 +7,8 @@ name: Quality Check
 #   - Cú pháp JavaScript + JSON
 #   - Cấu hình Supabase ↔ Edge Function (supabase-config)
 #   - version-audit (đường dẫn, cache busting, phiên bản đồng nhất)
+#   - QA tĩnh theo phiên bản: 8.5.5/8.5.6 UI, 8.6.2 observability, 8.7.1 runtime,
+#     8.7.3 cache, 8.7.4/8.8.0 AI pipeline + Parallel Engine (v874-pipeline)
 #   - 17 smoke test DOM (jsdom + typescript)
 #     11 cổng hồi quy 8.0.0–8.1.1 + 6 cổng Learning Intelligence 8.2.0
 #     + 5 cổng Gamification 8.3.0–8.3.1 (progress loader, điều hướng, XP, bảo mật)
@@ -114,7 +116,8 @@ jobs:
       - name: QA tĩnh theo phiên bản
         run: |
           set -euo pipefail
-          for t in v855-ui v856-ui v862-observability v871-runtime v873-cache; do
+          for t in v855-ui v856-ui v862-observability v871-runtime v873-cache \
+                   v874-pipeline; do
             echo "::group::$t"
             node "tools/qa/$t.js"
             echo "::endgroup::"
@@ -160,7 +163,7 @@ jobs:
             echo "| Cú pháp JS/JSON | \`node --check\`, \`JSON.parse\` |"
             echo "| Cấu hình Supabase | \`tools/qa/supabase-config.js\` |"
             echo "| Phiên bản / cache busting | \`tools/qa/version-audit.js\` |"
-            echo "| QA tĩnh theo phiên bản | v855-ui, v856-ui, v862-observability, v871-runtime |"
+            echo "| QA tĩnh theo phiên bản | v855-ui, v856-ui, v862-observability, v871-runtime, v873-cache, v874-pipeline |"
             echo "| Đồng bộ phiên bản & chỉ mục | \`bump-version --check\`, \`build-search-index --check\` |"
             echo "| Smoke test | danh sách trong \`tools/qa/\` |"
             echo ""
