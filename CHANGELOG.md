@@ -4,11 +4,61 @@ Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep
 
 ## [8.8.0] — 2026-11-25
 
-**AI Pipeline Performance (8.7.4) + Parallel Execution Engine (8.8.0).** Tối ưu những
-công đoạn backend thực sự kiểm soát được: chuẩn bị request, prompt, streaming, TTFT,
-huỷ, retry/fallback và công việc CPU-bound. **Không đổi API contract hiện có, không
-đổi schema Supabase, không đổi thứ tự Primary → Fallback, `BK_BACKEND.mode` vẫn `edge`,
-không deploy.**
+**Parallel Execution Engine.** Thêm engine chạy tác vụ CPU-bound có giới hạn tài nguyên
+(hàng đợi, worker, timeout, bắt panic), áp dụng cho lô dữ liệu lớn. Phần AI Pipeline
+Performance đã phát hành ở 8.7.4. **Không đổi API contract, không đổi schema Supabase,
+không đổi thứ tự Primary → Fallback, `BK_BACKEND.mode` vẫn `edge`, không deploy.**
+
+### Tính năng
+
+- **Parallel Execution Engine** (`rust-backend/src/parallel/mod.rs`) — hàng đợi có hạn
+  (`RUST_TASK_QUEUE_CAPACITY`, chờ tối đa `RUST_TASK_WAIT_MS` rồi trả lỗi thay vì xếp
+  hàng vô hạn), worker pool CPU (`RUST_CPU_WORKERS`, `0` = tự dò), timeout mỗi tác vụ
+  (`RUST_TASK_TIMEOUT_MS`), `catch_unwind`, gauge vòng đời bằng RAII. Dùng
+  `spawn_blocking` của runtime duy nhất — không tạo thread hay runtime mới.
+- **Áp dụng cho `learning-stats` khi lô ≥ 500 dòng** (`PARALLEL_MIN_ROWS`); lô nhỏ giữ
+  đường inline để không trả chi phí cố định ~28 µs đã đo.
+- **Metrics** trong `/metrics` hiện có: `bakhi_parallel_tasks_total{state}`,
+  `bakhi_parallel_tasks_active`, `bakhi_parallel_tasks_pending`,
+  `bakhi_parallel_queue_wait_seconds`, `bakhi_parallel_task_duration_seconds`; summary
+  Founder thêm khối `parallel`.
+- **Cấu hình mới**: `RUST_CPU_WORKERS`, `RUST_TASK_QUEUE_CAPACITY`, `RUST_TASK_WAIT_MS`,
+  `RUST_TASK_TIMEOUT_MS`; mọi ràng buộc kiểm tra lúc khởi động và thông điệp nêu tên biến.
+
+### Ghi chú thiết kế
+
+- **Timeout không thể ngắt closure CPU đang chạy một cách an toàn**, nên permit worker
+  được giữ tới khi closure xong: trần worker không bị vượt, caller nhận
+  `TaskError::Timeout`. Đây là lựa chọn có chủ đích, không phải rò rỉ.
+- Hàng đợi đầy trả lỗi ngay; caller huỷ không để lại tác vụ mồ côi.
+
+### Kiểm thử
+
+- Mới: `tests/parallel_tests.rs` (lô lớn qua engine, lô nhỏ inline, giới hạn đọc từ cấu
+  hình, summary có khối mới).
+- `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D warnings`,
+  `cargo test --all-targets` — **109 unit + 101 integration/contract**, tất cả đạt.
+- `node tools/qa/v874-pipeline.js` mục 5 giữ bất biến engine (bounded queue, bắt panic,
+  không tự tạo thread, permit giữ tới khi closure xong, ngưỡng lô nhỏ).
+
+### Đo lường (microbenchmark thật, `examples/pipeline_bench.rs`)
+
+- Overhead 1 tác vụ: **28,4 µs** (closure rỗng), **38,3 µs** khi cộng 20.000 số → đây là
+  căn cứ của ngưỡng 500 dòng.
+
+### Chưa xác minh (không tuyên bố)
+
+- Chưa đo tải song song thật trên dữ liệu production; **chưa deploy** (GitHub Pages
+  không chạy tiến trình Rust thường trực).
+
+Chi tiết: `docs/PARALLEL_ENGINE_V880.md`.
+
+## [8.7.4] — 2026-11-25
+
+**AI Pipeline Performance.** Tối ưu những công đoạn backend thực sự kiểm soát được:
+chuẩn bị request, streaming, TTFT, huỷ, retry/fallback. **Không đổi API contract hiện
+có, không đổi schema Supabase, không đổi thứ tự Primary → Fallback,
+`BK_BACKEND.mode` vẫn `edge`, không deploy.**
 
 ### Tính năng
 
@@ -17,26 +67,20 @@ không deploy.**
   thoại, meta, token, `fellBack`), lỗi giữa stream bằng `event: error`. Buffer 64 frame,
   đọc byte nên không vỡ ký tự tiếng Việt khi chunk TCP cắt giữa ký tự. Tắt bằng
   `AI_STREAM_ENABLED=0` (endpoint trả 404).
-- **Frontend streaming tuỳ chọn** (`bk-ai-tutor.js`): `BK_BACKEND.streaming = true` (chỉ
-  khi `mode = 'rust'`) vẽ dần câu trả lời rồi thay bằng bản đầy đủ; mặc định tắt nên
-  hành vi hiện tại không đổi.
+- **Frontend streaming tuỳ chọn** (`assets/bakhi/bk-ai-tutor.js`): `BK_BACKEND.streaming = true`
+  (chỉ khi `mode = 'rust'`) vẽ dần câu trả lời rồi thay bằng bản đầy đủ; mặc định tắt
+  nên hành vi hiện tại không đổi.
 - **TTFT thật** — `bakhi_ai_time_to_first_token_seconds{role,provider,model}` chỉ ghi khi
   stream trả chunk nội dung đầu tiên; response trọn gói không ghi TTFT giả.
 - **Chuẩn bị request song song** — `ai_settings`, `ai_model_routes` và hồ sơ học sinh
   (3 lượt đọc độc lập) chạy bằng `tokio::join!`; histogram
   `bakhi_ai_preparation_seconds` tách thời gian nội bộ khỏi độ trễ provider.
-- **Parallel Execution Engine** (`src/parallel/mod.rs`) — hàng đợi có hạn + worker pool
-  CPU + timeout + bắt panic + vòng đời tác vụ; dùng cho `learning-stats` khi lô ≥ 500
-  dòng, lô nhỏ giữ đường inline để không trả ~28 µs cố định đã đo.
 - **Metrics mới** trong `/metrics` hiện có: `bakhi_ai_stream_events_total`,
-  `bakhi_ai_cancelled_total{stage}`, `bakhi_parallel_tasks_total{state}`,
-  `bakhi_parallel_tasks_active`, `bakhi_parallel_tasks_pending`,
-  `bakhi_parallel_queue_wait_seconds`, `bakhi_parallel_task_duration_seconds`; summary
-  Founder thêm khối `streaming`, `preparation`, `parallel`.
+  `bakhi_ai_cancelled_total{stage}`; summary Founder thêm khối `streaming`,
+  `preparation`.
 - **Cấu hình mới**: `AI_STREAM_ENABLED`, `AI_TTFT_TIMEOUT_MS`,
-  `AI_STREAM_IDLE_TIMEOUT_MS`, `AI_RETRY_BACKOFF_MAX_MS`, `RUST_CPU_WORKERS`,
-  `RUST_TASK_QUEUE_CAPACITY`, `RUST_TASK_WAIT_MS`, `RUST_TASK_TIMEOUT_MS`; mọi ràng buộc
-  kiểm tra lúc khởi động và thông điệp nêu tên biến.
+  `AI_STREAM_IDLE_TIMEOUT_MS`, `AI_RETRY_BACKOFF_MAX_MS`; kiểm tra ràng buộc lúc khởi
+  động (TTFT timeout không được vượt timeout provider).
 
 ### Cải tiến
 
@@ -52,19 +96,18 @@ không deploy.**
 
 ### Kiểm thử
 
+- Mới: `tests/streaming_tests.rs` (thứ tự delta, envelope `done`, lỗi trước delta, fallback
+  chỉ trước delta, không TTFT cho response trọn gói, tắt bằng cấu hình).
 - `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D warnings`,
   `cargo test --all-targets` — **109 unit + 101 integration/contract**, tất cả đạt.
-- Mới: `tests/streaming_tests.rs` (thứ tự delta, envelope `done`, lỗi trước delta, fallback
-  chỉ trước delta, không TTFT cho response trọn gói, tắt bằng cấu hình) và
-  `tests/parallel_tests.rs` (lô lớn qua engine, lô nhỏ inline, giới hạn từ cấu hình,
-  summary có khối mới).
 - Regression: toàn bộ test AI Gateway/contract/auth/cache/circuit/concurrency/observability
   cũ vẫn đạt; `learning-stats`, `me`, `/health`, `/ready`, `/metrics` không đổi contract.
+- `node tools/qa/v874-pipeline.js` mục 3/4 giữ bất biến retry/huỷ/TTFT/UTF-8; mục 7 giữ
+  streaming frontend là tuỳ chọn.
 
 ### Đo lường (microbenchmark thật, `examples/pipeline_bench.rs`)
 
 - Đọc 1 chunk SSE: **185 ns**; backoff + jitter: **4 ns**.
-- Overhead engine: **28,4 µs/tác vụ** (closure rỗng), **38,3 µs** khi cộng 20.000 số.
 - Không hồi quy pipeline 8.7.2/8.7.3 (mượn dữ liệu 1 ns, typed borrow 27,3 µs, cache hit
   200 ns trên cùng máy).
 
@@ -72,12 +115,11 @@ không deploy.**
 
 - **TTFT/latency/throughput với provider thật chưa đo** — môi trường này không có khoá
   AI, không gọi mạng ra Groq/Google; mọi con số trên là microbenchmark nội bộ.
-- **Chưa deploy**: GitHub Pages không chạy tiến trình Rust thường trực. Cần nơi chạy
-  Docker/tiến trình liên tục trước khi metrics/streaming có ý nghĩa vận hành.
-- Frontend streaming chưa được xem bằng trình duyệt thật trong phiên này (chỉ kiểm tra
-  cú pháp + DOM/jsdom hiện có).
+- **Frontend streaming chưa được xem bằng trình duyệt thật** trong phiên này (chỉ kiểm
+  tra cú pháp + QA tĩnh).
+- **Chưa deploy**: GitHub Pages không chạy tiến trình Rust thường trực.
 
-Chi tiết: `docs/AI_PIPELINE_V874.md`, `docs/PARALLEL_ENGINE_V880.md`.
+Chi tiết: `docs/AI_PIPELINE_V874.md`.
 
 ## [8.7.3] — 2026-11-25
 

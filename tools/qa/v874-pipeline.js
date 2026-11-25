@@ -122,7 +122,20 @@ ok('có nút dừng dùng AbortController', /S\.controller = global\.AbortContro
 console.log('\n== 8. Tài liệu và phát hành ==');
 ok('docs/AI_PIPELINE_V874.md', exists('docs/AI_PIPELINE_V874.md'));
 ok('docs/PARALLEL_ENGINE_V880.md', exists('docs/PARALLEL_ENGINE_V880.md'));
-ok('CHANGELOG có 8.8.0', /^## \[8\.8\.0\]/m.test(read('CHANGELOG.md')));
+const CHANGELOG = read('CHANGELOG.md');
+ok(
+  'CHANGELOG tách đúng hai giai đoạn 8.7.4 và 8.8.0',
+  /^## \[8\.8\.0\]/m.test(CHANGELOG) && /^## \[8\.7\.4\]/m.test(CHANGELOG)
+);
+ok(
+  'Quality Check chạy v874-pipeline',
+  /v874-pipeline/.test(read('.github/workflows/quality-check.yml'))
+);
+ok(
+  'CI Rust chạy streaming_tests và parallel_tests',
+  /cargo test --test streaming_tests/.test(read('.github/workflows/rust-backend.yml')) &&
+    /cargo test --test parallel_tests/.test(read('.github/workflows/rust-backend.yml'))
+);
 ok('Cargo.toml là 8.8.0', /^version = \"8\.8\.0\"/m.test(read('rust-backend/Cargo.toml')));
 ok('không có khoá API trong mã frontend', !/gsk_[A-Za-z0-9]{10,}|AIza[0-9A-Za-z_-]{20,}/.test(TUTOR));
 
