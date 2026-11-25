@@ -45,9 +45,11 @@ AI Primary/Fallback, `BK_BACKEND.mode` (vẫn `edge`), không deploy.**
   hạn mức byte, invalidation, dedup 3→1, lỗi + thử lại, fallback không IndexedDB, đổi tài
   khoản, thứ tự nạp script trên toàn bộ HTML, nối dây Rust. Cổng này chạy trong Quality Check.
 - Microbenchmark cục bộ (`node tools/qa/v873-cache.js --bench`, payload 40 dòng): L1 hit
-  ~1.500 ns/op so với xử lý lại payload ~37.600 ns/op — hit rẻ hơn khoảng 25 lần. Đây là
-  microbenchmark CPU, **không** phải độ trễ mạng hay end-to-end; số Rust nằm trong log CI
-  của `pipeline_bench`.
+  ~1.500 ns/op so với xử lý lại payload ~37.600 ns/op — hit rẻ hơn khoảng 25 lần.
+- Microbenchmark Rust trong CI (`pipeline_bench`, cấu hình mẫu ~40 route, gồm mutex + LRU
+  + metrics): `cache.get()` hit **155 ns/op**, miss **124 ns/op**, so với clone cấu hình
+  mỗi lượt như 8.7.2 **10.195 ns/op** — rẻ hơn khoảng 66 lần, chưa kể round trip Supabase
+  được bỏ hẳn. Đây là microbenchmark CPU, **không** phải p50/p95 hay độ trễ mạng end-to-end.
 
 ### Ghi chú
 

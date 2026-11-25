@@ -217,9 +217,18 @@ triển, chỉ so sánh tương đối: một lần hit L1 rẻ hơn khoảng 25
 cùng payload. Nó **không** đo độ trễ Supabase — phần tiết kiệm lớn nhất của cache là bỏ
 hẳn round trip mạng, thứ không thể đo offline.
 
-Rust: `cargo run --release --locked --example pipeline_bench` thêm mục `[cache]` so sánh
-`cache.get()` (gồm mutex + LRU + metrics) với `Value::clone` cấu hình mỗi lượt. Số liệu
-được in trong job release của CI; đây là số đo thật của lần chạy đó, không phải ước lượng.
+Rust (`cargo run --release --locked --example pipeline_bench`, mục `[cache]`, đo trong
+CI run `45590380460`, cấu hình mẫu ~40 route, gồm cả mutex + LRU + metrics):
+
+| Thao tác | ns/op |
+|---|---|
+| `cache.get()` — L1 hit, trả `Arc` (không clone payload) | 155 |
+| `cache.get()` — miss | 124 |
+| 8.7.2: clone toàn bộ cấu hình mỗi lượt chat | 10.195 |
+
+Một lần đọc cấu hình từ cache rẻ hơn khoảng 66 lần so với clone cấu hình mỗi lượt, và
+quan trọng hơn: **bỏ hẳn một round trip Supabase** cho mỗi bảng cấu hình. Đây là
+microbenchmark CPU trên runner CI; không phải p50/p95 end-to-end.
 
 ## 13. Vấn đề chưa giải quyết
 
