@@ -1,5 +1,5 @@
 // ===========================================================================
-// Bá Khí — Rust backend (v8.7.3)
+// Bá Khí — Rust backend (v8.8.0)
 //
 // Modular monolith: Axum + Tokio + Serde. Mọi phụ thuộc dùng chung (HTTP client,
 // Supabase client, provider registry, bộ giới hạn tần suất, circuit breaker,
@@ -18,6 +18,7 @@ pub mod errors;
 pub mod lifecycle;
 pub mod middleware;
 pub mod observability;
+pub mod parallel;
 pub mod providers;
 pub mod routes;
 pub mod services;
@@ -42,6 +43,7 @@ use crate::middleware::{
     concurrency::concurrency_middleware, rate_limit_middleware, request_id_middleware, Concurrency,
 };
 use crate::observability::metrics::Metrics;
+use crate::parallel::ParallelEngine;
 use crate::providers::circuit::CircuitBreaker;
 use crate::providers::ProviderRegistry;
 use crate::services::supabase::SupabaseClient;
@@ -60,6 +62,9 @@ pub struct AppState {
     /// (cấu hình AI) đi qua đây; dữ liệu cá nhân không bao giờ được cache.
     pub cache: Arc<Cache>,
     pub flights: Arc<SingleFlight>,
+    /// 8.8.0 — worker pool + hàng đợi có hạn cho tác vụ CPU-bound. Không dùng
+    /// cho I/O (Supabase/provider đã là async).
+    pub parallel: Arc<ParallelEngine>,
     pub lifecycle: Arc<Lifecycle>,
 }
 
@@ -84,6 +89,14 @@ impl AppState {
             settings.cache_enabled && settings.cache_dedup_enabled,
             cache.counters(),
         ));
+        let metrics = Arc::new(Metrics::new(settings.ai_pricing.clone()));
+        let parallel = Arc::new(ParallelEngine::new(
+            settings.parallel_cpu_workers,
+            settings.parallel_queue_capacity,
+            settings.parallel_task_wait,
+            settings.parallel_task_timeout,
+            metrics.clone(),
+        ));
         Ok(Self {
             limiter: Arc::new(middleware::rate_limit::RateLimiter::new(
                 Duration::from_secs(60),
@@ -100,7 +113,8 @@ impl AppState {
                 settings.max_provider_concurrency,
                 settings.concurrency_wait,
             )),
-            metrics: Arc::new(Metrics::new(settings.ai_pricing.clone())),
+            metrics,
+            parallel,
             lifecycle: Arc::new(Lifecycle::new()),
             cache,
             flights,
@@ -165,6 +179,8 @@ pub fn build_router(state: AppState) -> Router {
         )
         .route("/me", get(routes::me::me))
         .route("/ai/chat", post(routes::ai::chat))
+        // 8.7.4 — streaming SSE. Tắt được bằng AI_STREAM_ENABLED=0.
+        .route("/ai/chat/stream", post(routes::ai::chat_stream))
         .route(
             "/data/learning-stats",
             post(routes::data::learning_stats_route),

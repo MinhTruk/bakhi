@@ -62,6 +62,15 @@ pub struct LearningStatsRequest {
     pub sessions: Vec<SessionRow>,
 }
 
+impl LearningStatsRequest {
+    /// Số dòng cần xử lý — dùng để chọn đường đi (inline hay worker pool).
+    /// Đo thật: một tác vụ qua Parallel Engine tốn ~28 µs cố định (spawn +
+    /// permit + đếm), nên lô nhỏ phải chạy inline để không chậm hơn trước.
+    pub fn row_count(&self) -> usize {
+        self.progress.len() + self.review.len() + self.sessions.len()
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 struct Bucket {
     questions: u32,

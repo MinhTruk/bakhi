@@ -5,15 +5,17 @@
 // request/response, nhưng đầu ra vẫn quy về ProviderResult.
 // ===========================================================================
 
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use async_trait::async_trait;
 use serde::Serialize;
 use serde_json::Value;
+use tokio::sync::mpsc;
 
+use super::sse::{data_of, SseLines};
 use super::{
     classify_http, model_is_valid, parse_retry_after, usage_from_parts, AiErrorCode, AiProvider,
-    Provider, ProviderError, ProviderRequest, ProviderResult,
+    Provider, ProviderError, ProviderRequest, ProviderResult, StreamEvent,
 };
 
 pub struct Gemini {
@@ -42,6 +44,18 @@ impl Gemini {
         }
         Ok(format!(
             "{}/v1beta/models/{}:generateContent",
+            self.base_url,
+            urlencode_segment(model)
+        ))
+    }
+
+    /// 8.7.4 — endpoint streaming SSE (`alt=sse`), cùng body với generateContent.
+    fn stream_endpoint(&self, model: &str) -> Result<String, ProviderError> {
+        if self.base_url.is_empty() {
+            return Err(ProviderError::new(AiErrorCode::BadConfig, Provider::Google));
+        }
+        Ok(format!(
+            "{}/v1beta/models/{}:streamGenerateContent?alt=sse",
             self.base_url,
             urlencode_segment(model)
         ))
@@ -109,6 +123,10 @@ struct WireRequest<'a> {
 
 #[async_trait]
 impl AiProvider for Gemini {
+    fn supports_stream(&self) -> bool {
+        true
+    }
+
     async fn generate(
         &self,
         request: ProviderRequest<'_>,
@@ -239,7 +257,207 @@ impl AiProvider for Gemini {
                 .unwrap_or("STOP")
                 .to_string(),
             mock: false,
+            ttft: None,
         })
+    }
+
+    /// 8.7.4 — streaming SSE của Google Generative Language.
+    async fn generate_stream(
+        &self,
+        request: ProviderRequest<'_>,
+        tx: mpsc::Sender<StreamEvent>,
+    ) -> Result<(), ProviderError> {
+        if !model_is_valid(request.model) {
+            return Err(ProviderError::new(AiErrorCode::BadConfig, Provider::Google));
+        }
+        if request.api_key.trim().is_empty() {
+            return Err(ProviderError::new(AiErrorCode::NoKey, Provider::Google));
+        }
+        let url = self.stream_endpoint(request.model)?;
+
+        let contents: Vec<Content<'_>> = request
+            .messages
+            .iter()
+            .map(|turn| Content {
+                role: if turn.role == "assistant" {
+                    "model"
+                } else {
+                    "user"
+                },
+                parts: [Part {
+                    text: &turn.content,
+                }],
+            })
+            .collect();
+        let body = WireRequest {
+            system_instruction: SystemInstruction {
+                parts: [Part {
+                    text: request.system,
+                }],
+            },
+            contents,
+            generation_config: GenerationConfig {
+                temperature: request.temperature,
+                max_output_tokens: request.max_tokens,
+            },
+            tool_config: ToolConfig {
+                function_calling_config: FunctionCallingConfig { mode: "NONE" },
+            },
+        };
+
+        let request_start = Instant::now();
+        let mut response = self
+            .http
+            .post(&url)
+            .header("x-goog-api-key", request.api_key.trim())
+            .json(&body)
+            .timeout(self.timeout)
+            .send()
+            .await
+            .map_err(|err| {
+                let code = if err.is_timeout() {
+                    AiErrorCode::Timeout
+                } else {
+                    AiErrorCode::ProviderDown
+                };
+                ProviderError::new(code, Provider::Google)
+            })?;
+
+        let status = response.status();
+        if !status.is_success() {
+            let retry_after = parse_retry_after(
+                response
+                    .headers()
+                    .get("retry-after")
+                    .and_then(|value| value.to_str().ok()),
+            );
+            let text = response.text().await.unwrap_or_default();
+            return Err(classify_http(status.as_u16(), &text, Provider::Google)
+                .with_retry_after(retry_after));
+        }
+
+        let mut sse = SseLines::new();
+        let mut text = String::new();
+        let mut finish_reason = "STOP".to_string();
+        let mut ttft: Option<Duration> = None;
+        let mut reported_in: Option<u64> = None;
+        let mut reported_out: Option<u64> = None;
+
+        loop {
+            let wait = if ttft.is_none() {
+                request.ttft_timeout
+            } else {
+                request.idle_timeout
+            };
+            let next = tokio::select! {
+                _ = tx.closed() => {
+                    return Err(ProviderError::new(AiErrorCode::Cancelled, Provider::Google))
+                }
+                result = tokio::time::timeout(wait, response.chunk()) => result,
+            };
+            let bytes = match next {
+                Err(_) => return Err(ProviderError::new(AiErrorCode::Timeout, Provider::Google)),
+                Ok(Err(_)) => {
+                    return Err(ProviderError::new(
+                        AiErrorCode::ProviderDown,
+                        Provider::Google,
+                    ))
+                }
+                Ok(Ok(None)) => break,
+                Ok(Ok(Some(bytes))) => bytes,
+            };
+
+            let mut events = sse.push(&bytes);
+            if let Some(trailing) = sse.flush() {
+                events.push(trailing);
+            }
+            for line in events {
+                let Some(data) = data_of(&line) else { continue };
+                let data = data.trim();
+                if data.is_empty() {
+                    continue;
+                }
+                let Ok(value) = serde_json::from_str::<Value>(data) else {
+                    continue;
+                };
+                if let Some(meta) = value.get("usageMetadata") {
+                    reported_in = meta
+                        .get("promptTokenCount")
+                        .and_then(Value::as_u64)
+                        .or(reported_in);
+                    reported_out = meta
+                        .get("candidatesTokenCount")
+                        .and_then(Value::as_u64)
+                        .or(reported_out);
+                }
+                let Some(candidate) = value.get("candidates").and_then(|c| c.get(0)) else {
+                    continue;
+                };
+                if let Some(reason) = candidate.get("finishReason").and_then(Value::as_str) {
+                    finish_reason = reason.to_string();
+                }
+                let Some(parts) = candidate
+                    .get("content")
+                    .and_then(|c| c.get("parts"))
+                    .and_then(Value::as_array)
+                else {
+                    continue;
+                };
+                for part in parts {
+                    let Some(delta) = part.get("text").and_then(Value::as_str) else {
+                        continue;
+                    };
+                    if delta.is_empty() {
+                        continue;
+                    }
+                    if ttft.is_none() {
+                        ttft = Some(request_start.elapsed());
+                    }
+                    text.push_str(delta);
+                    if tx
+                        .send(StreamEvent::Delta(delta.to_string()))
+                        .await
+                        .is_err()
+                    {
+                        return Err(ProviderError::new(AiErrorCode::Cancelled, Provider::Google));
+                    }
+                }
+            }
+
+            if sse.overflow() {
+                return Err(ProviderError::new(
+                    AiErrorCode::EmptyResponse,
+                    Provider::Google,
+                ));
+            }
+        }
+
+        if text.trim().is_empty() {
+            return Err(ProviderError::new(
+                AiErrorCode::EmptyResponse,
+                Provider::Google,
+            ));
+        }
+
+        let usage = usage_from_parts(
+            reported_in,
+            reported_out,
+            &[request.system, request.model],
+            &text,
+        );
+        let result = ProviderResult {
+            text,
+            provider: Provider::Google,
+            model: request.model.to_string(),
+            usage,
+            finish_reason,
+            mock: false,
+            ttft,
+        };
+        if tx.send(StreamEvent::Done(result)).await.is_err() {
+            return Err(ProviderError::new(AiErrorCode::Cancelled, Provider::Google));
+        }
+        Ok(())
     }
 }
 
@@ -267,6 +485,10 @@ mod tests {
         assert_eq!(
             gemini.endpoint("gemini-3.8-flash").unwrap(),
             "https://example.test/v1beta/models/gemini-3.8-flash:generateContent"
+        );
+        assert_eq!(
+            gemini.stream_endpoint("gemini-3.8-flash").unwrap(),
+            "https://example.test/v1beta/models/gemini-3.8-flash:streamGenerateContent?alt=sse"
         );
     }
 }

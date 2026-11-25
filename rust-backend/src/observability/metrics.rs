@@ -36,6 +36,20 @@ pub const AI_BUCKETS: [f64; 14] = [
     0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 3.0, 5.0, 8.0, 12.0, 20.0, 30.0, 45.0, 60.0,
 ];
 
+/// 8.7.4 — bucket cho thời gian chuẩn bị (trong tiến trình) và TTFT.
+/// Chuẩn bị thường dưới 50 ms; TTFT gồm cả mạng/provider nên rộng hơn.
+pub const PREPARE_BUCKETS: [f64; 12] = [
+    0.0005, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 5.0,
+];
+pub const TTFT_BUCKETS: [f64; 12] = [
+    0.05, 0.1, 0.2, 0.3, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0,
+];
+
+/// 8.8.0 — tác vụ song song: chờ trong hàng đợi thường rất ngắn.
+pub const QUEUE_BUCKETS: [f64; 10] = [
+    0.0001, 0.0005, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.25, 1.0,
+];
+
 const MAX_SERIES: usize = 2_000;
 const MAX_MODEL_LABEL: usize = 80;
 
@@ -155,6 +169,20 @@ struct Inner {
     ai_fallback_requests: u64,
     ai_failed_requests: u64,
     unpriced_requests: u64,
+    /// 8.7.4 — TTFT chỉ ghi khi stream thực sự trả chunk đầu tiên.
+    ai_ttft: BTreeMap<AiSeriesKey, Histogram>,
+    ai_ttft_samples: u64,
+    /// delta | done | error | cancelled
+    ai_stream_events: BTreeMap<&'static str, u64>,
+    /// request | stream
+    ai_cancelled: BTreeMap<&'static str, u64>,
+    ai_prepare: Option<Histogram>,
+    /// 8.8.0 — created | completed | failed | rejected | cancelled | timeout
+    parallel_tasks: BTreeMap<&'static str, u64>,
+    parallel_wait: Option<Histogram>,
+    parallel_run: Option<Histogram>,
+    parallel_active: i64,
+    parallel_pending: i64,
 }
 
 pub struct Metrics {
@@ -349,6 +377,75 @@ impl Metrics {
         *inner.ai_fallback.entry(outcome).or_insert(0) += 1;
     }
 
+    /// 8.7.4 — TTFT thật: thời gian từ lúc gọi provider đến chunk nội dung đầu
+    /// tiên. Chỉ ghi khi có stream; không suy diễn từ response không stream.
+    pub fn record_ai_ttft(&self, role: &str, provider: &str, model: &str, seconds: f64) {
+        let model = Self::model_label(model);
+        let mut inner = self.lock();
+        inner
+            .ai_ttft
+            .entry((role.to_string(), provider.to_string(), model))
+            .or_insert_with(|| Histogram::new(&TTFT_BUCKETS))
+            .observe(seconds);
+        inner.ai_ttft_samples = inner.ai_ttft_samples.saturating_add(1);
+    }
+
+    /// Một sự kiện của stream: delta | done | error | cancelled.
+    pub fn record_ai_stream_event(&self, event: &'static str) {
+        let mut inner = self.lock();
+        *inner.ai_stream_events.entry(event).or_insert(0) += 1;
+    }
+
+    /// Huỷ do người dùng (hoặc client mất kết nối). `stage` = request | stream.
+    pub fn record_ai_cancelled(&self, stage: &'static str) {
+        let mut inner = self.lock();
+        *inner.ai_cancelled.entry(stage).or_insert(0) += 1;
+    }
+
+    /// Thời gian chuẩn bị nội bộ (cấu hình, lịch sử hội thoại, prompt, token)
+    /// trước khi gọi provider. Đo riêng để không lẫn với độ trễ của provider.
+    pub fn record_ai_preparation(&self, seconds: f64) {
+        let mut inner = self.lock();
+        inner
+            .ai_prepare
+            .get_or_insert_with(|| Histogram::new(&PREPARE_BUCKETS))
+            .observe(seconds);
+    }
+
+    /// 8.8.0 — trạng thái vòng đời tác vụ song song.
+    pub fn record_parallel_task(&self, state: &'static str) {
+        let mut inner = self.lock();
+        *inner.parallel_tasks.entry(state).or_insert(0) += 1;
+    }
+
+    pub fn record_parallel_queue_wait(&self, seconds: f64) {
+        let mut inner = self.lock();
+        inner
+            .parallel_wait
+            .get_or_insert_with(|| Histogram::new(&QUEUE_BUCKETS))
+            .observe(seconds);
+    }
+
+    pub fn record_parallel_execution(&self, seconds: f64) {
+        let mut inner = self.lock();
+        inner
+            .parallel_run
+            .get_or_insert_with(|| Histogram::new(&HTTP_BUCKETS))
+            .observe(seconds);
+    }
+
+    /// Gauge: số tác vụ đang chạy (đã có permit CPU).
+    pub fn record_parallel_active(&self, delta: i64) {
+        let mut inner = self.lock();
+        inner.parallel_active = (inner.parallel_active + delta).max(0);
+    }
+
+    /// Gauge: số tác vụ đang chờ trong hàng đợi.
+    pub fn record_parallel_pending(&self, delta: i64) {
+        let mut inner = self.lock();
+        inner.parallel_pending = (inner.parallel_pending + delta).max(0);
+    }
+
     // -----------------------------------------------------------------------
     // Prometheus text exposition
     // -----------------------------------------------------------------------
@@ -531,6 +628,90 @@ impl Metrics {
             "# HELP bakhi_ai_user_requests_total Lượt chat của người dùng (một lượt dù nhiều attempt).\n# TYPE bakhi_ai_user_requests_total counter\nbakhi_ai_user_requests_total {}",
             inner.ai_requests_total
         );
+        let _ = writeln!(
+            out,
+            "# HELP bakhi_ai_time_to_first_token_seconds Thời gian từ lúc gọi provider tới chunk nội dung đầu tiên (chỉ có khi stream).\n# TYPE bakhi_ai_time_to_first_token_seconds histogram"
+        );
+        for ((role, provider, model), histogram) in &inner.ai_ttft {
+            let labels = format!(
+                "role=\"{}\",provider=\"{}\",model=\"{}\"",
+                escape(role),
+                escape(provider),
+                escape(model)
+            );
+            render_histogram(
+                &mut out,
+                "bakhi_ai_time_to_first_token_seconds",
+                &labels,
+                histogram,
+            );
+        }
+        let _ = writeln!(
+            out,
+            "# HELP bakhi_ai_stream_events_total Số sự kiện stream: delta, done, error, cancelled.\n# TYPE bakhi_ai_stream_events_total counter"
+        );
+        for (event, count) in &inner.ai_stream_events {
+            let _ = writeln!(
+                out,
+                "bakhi_ai_stream_events_total{{event=\"{}\"}} {}",
+                event, count
+            );
+        }
+        let _ = writeln!(
+            out,
+            "# HELP bakhi_ai_cancelled_total Lượt AI bị huỷ theo giai đoạn (request = trước stream, stream = giữa stream).\n# TYPE bakhi_ai_cancelled_total counter"
+        );
+        for (stage, count) in &inner.ai_cancelled {
+            let _ = writeln!(
+                out,
+                "bakhi_ai_cancelled_total{{stage=\"{}\"}} {}",
+                stage, count
+            );
+        }
+        if let Some(prepare) = &inner.ai_prepare {
+            let _ = writeln!(
+                out,
+                "# HELP bakhi_ai_preparation_seconds Thời gian chuẩn bị nội bộ (cấu hình, lịch sử, prompt, token) trước khi gọi provider.\n# TYPE bakhi_ai_preparation_seconds histogram"
+            );
+            render_histogram(&mut out, "bakhi_ai_preparation_seconds", "", prepare);
+        }
+
+        let _ = writeln!(
+            out,
+            "# HELP bakhi_parallel_tasks_total Tác vụ song song theo vòng đời.\n# TYPE bakhi_parallel_tasks_total counter"
+        );
+        for (state, count) in &inner.parallel_tasks {
+            let _ = writeln!(
+                out,
+                "bakhi_parallel_tasks_total{{state=\"{}\"}} {}",
+                state, count
+            );
+        }
+        let _ = writeln!(
+            out,
+            "# HELP bakhi_parallel_tasks_active Số tác vụ đang chạy trên worker pool.\n# TYPE bakhi_parallel_tasks_active gauge\nbakhi_parallel_tasks_active {}",
+            inner.parallel_active
+        );
+        let _ = writeln!(
+            out,
+            "# HELP bakhi_parallel_tasks_pending Số tác vụ đang chờ trong hàng đợi có giới hạn.\n# TYPE bakhi_parallel_tasks_pending gauge\nbakhi_parallel_tasks_pending {}",
+            inner.parallel_pending
+        );
+        if let Some(wait) = &inner.parallel_wait {
+            let _ = writeln!(
+                out,
+                "# HELP bakhi_parallel_queue_wait_seconds Thời gian chờ trong hàng đợi song song.\n# TYPE bakhi_parallel_queue_wait_seconds histogram"
+            );
+            render_histogram(&mut out, "bakhi_parallel_queue_wait_seconds", "", wait);
+        }
+        if let Some(run) = &inner.parallel_run {
+            let _ = writeln!(
+                out,
+                "# HELP bakhi_parallel_task_duration_seconds Thời gian thực thi tác vụ song song.\n# TYPE bakhi_parallel_task_duration_seconds histogram"
+            );
+            render_histogram(&mut out, "bakhi_parallel_task_duration_seconds", "", run);
+        }
+
         let _ = writeln!(
             out,
             "# HELP bakhi_ai_user_fallback_total Số lượt chat có dùng provider dự phòng.\n# TYPE bakhi_ai_user_fallback_total counter\nbakhi_ai_user_fallback_total {}",
@@ -736,6 +917,27 @@ impl Metrics {
         let fallback_skipped = inner.ai_fallback.get("skipped").copied().unwrap_or(0);
         let user_requests = inner.ai_requests_total;
 
+        // 8.7.4 — TTFT chỉ từ các luợt stream thực sự có chunk đầu tiên.
+        let mut ttft_overall = Histogram::new(&TTFT_BUCKETS);
+        for histogram in inner.ai_ttft.values() {
+            ttft_overall.merge(histogram);
+        }
+        let stream_events: serde_json::Map<String, Value> = inner
+            .ai_stream_events
+            .iter()
+            .map(|(event, count)| (event.to_string(), json!(count)))
+            .collect();
+        let cancelled: serde_json::Map<String, Value> = inner
+            .ai_cancelled
+            .iter()
+            .map(|(stage, count)| (stage.to_string(), json!(count)))
+            .collect();
+        let parallel_tasks: serde_json::Map<String, Value> = inner
+            .parallel_tasks
+            .iter()
+            .map(|(state, count)| (state.to_string(), json!(count)))
+            .collect();
+
         let circuit_rows: Vec<Value> = circuits
             .iter()
             .map(|(provider, state, failures)| {
@@ -805,6 +1007,33 @@ impl Metrics {
                     "unpricedRequests": inner.unpriced_requests,
                 },
             },
+            "streaming": {
+                "enabled": inner.ai_ttft_samples > 0 || !inner.ai_stream_events.is_empty(),
+                "ttftSamples": inner.ai_ttft_samples,
+
+                "ttftP50Ms": ttft_overall.quantile(0.50).map(ms),
+                "ttftP95Ms": ttft_overall.quantile(0.95).map(ms),
+                "ttftP99Ms": ttft_overall.quantile(0.99).map(ms),
+                "events": stream_events,
+                "cancelled": cancelled,
+            },
+            "preparation": {
+                "samples": inner.ai_prepare.as_ref().map(|h| h.count()).unwrap_or(0),
+                "avgMs": inner.ai_prepare.as_ref().map(|h| ms(h.average())),
+                "p50Ms": inner.ai_prepare.as_ref().and_then(|h| h.quantile(0.50)).map(ms),
+                "p95Ms": inner.ai_prepare.as_ref().and_then(|h| h.quantile(0.95)).map(ms),
+            },
+            "parallel": {
+                "active": inner.parallel_active,
+                "pending": inner.parallel_pending,
+                "tasks": parallel_tasks,
+                "queueWaitSamples": inner.parallel_wait.as_ref().map(|h| h.count()).unwrap_or(0),
+                "queueWaitAvgMs": inner.parallel_wait.as_ref().map(|h| ms(h.average())),
+                "queueWaitP95Ms": inner.parallel_wait.as_ref().and_then(|h| h.quantile(0.95)).map(ms),
+                "executionSamples": inner.parallel_run.as_ref().map(|h| h.count()).unwrap_or(0),
+                "executionAvgMs": inner.parallel_run.as_ref().map(|h| ms(h.average())),
+                "executionP95Ms": inner.parallel_run.as_ref().and_then(|h| h.quantile(0.95)).map(ms),
+            },
             "circuits": circuit_rows,
         })
     }
@@ -816,21 +1045,28 @@ impl Metrics {
 
 fn render_histogram(out: &mut String, name: &str, labels: &str, histogram: &Histogram) {
     // `buckets` và `counts` cùng độ dài; in luỹ kế đúng chuẩn Prometheus.
+    // Histogram không nhãn (ví dụ bộ đếm toàn tiến trình) phải in `{le="…"}`
+    // chứ không `{,le=…}` — chuỗi sau là cú pháp Prometheus không hợp lệ.
+    let bucket = |le: &str| -> String {
+        if labels.is_empty() {
+            format!("{{le=\"{le}\"}}")
+        } else {
+            format!("{{{labels},le=\"{le}\"}}")
+        }
+    };
+    let plain = if labels.is_empty() {
+        String::new()
+    } else {
+        format!("{{{labels}}}")
+    };
     for (index, bound) in histogram.buckets.iter().enumerate() {
         let count = histogram.counts.get(index).copied().unwrap_or(0);
-        let _ = writeln!(
-            out,
-            "{name}_bucket{{{labels},le=\"{}\"}} {count}",
-            format_bound(*bound)
-        );
+        let bounds = format_bound(*bound);
+        let _ = writeln!(out, "{name}_bucket{} {count}", bucket(&bounds));
     }
-    let _ = writeln!(
-        out,
-        "{name}_bucket{{{labels},le=\"+Inf\"}} {}",
-        histogram.count
-    );
-    let _ = writeln!(out, "{name}_sum{{{labels}}} {:.6}", histogram.sum);
-    let _ = writeln!(out, "{name}_count{{{labels}}} {}", histogram.count);
+    let _ = writeln!(out, "{name}_bucket{} {}", bucket("+Inf"), histogram.count);
+    let _ = writeln!(out, "{name}_sum{plain} {:.6}", histogram.sum);
+    let _ = writeln!(out, "{name}_count{plain} {}", histogram.count);
 }
 
 /// Prometheus in bucket dạng `0.005`, `1`, `2.5` — bỏ số 0 thừa.

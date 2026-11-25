@@ -16,6 +16,7 @@
 pub mod circuit;
 pub mod gemini;
 pub mod openai;
+pub mod sse;
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -23,6 +24,7 @@ use std::time::{Duration, Instant};
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use tokio::sync::mpsc;
 
 use crate::config::Settings;
 
@@ -124,6 +126,10 @@ pub struct ProviderRequest<'a> {
     pub max_tokens: u32,
     pub temperature: f32,
     pub api_key: &'a str,
+    /// 8.7.4 — hạn chờ chunk NỘI DUNG đầu tiên (chỉ dùng khi streaming).
+    pub ttft_timeout: Duration,
+    /// 8.7.4 — khoảng lặng tối đa giữa hai chunk khi đã bắt đầu stream.
+    pub idle_timeout: Duration,
 }
 
 #[derive(Debug, Clone, Default, Serialize)]
@@ -143,6 +149,17 @@ pub struct ProviderResult {
     pub finish_reason: String,
     /// true khi chạy provider giả lập (chỉ kiểm thử).
     pub mock: bool,
+    /// 8.7.4 — thời gian từ lúc gửi yêu cầu tới chunk nội dung đầu tiên.
+    /// `None` khi không stream: TTFT của một response trọn gói không có nghĩa.
+    pub ttft: Option<Duration>,
+}
+
+/// Sự kiện của một lượt streaming. `Done` mang kết quả đầy đủ (token, model,
+/// finish reason) để tầng trên lưu hội thoại và ghi metrics như lượt thường.
+#[derive(Debug, Clone)]
+pub enum StreamEvent {
+    Delta(String),
+    Done(ProviderResult),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -159,6 +176,10 @@ pub enum AiErrorCode {
     BadConfig,
     /// Provider đang bị circuit breaker mở — không gửi request.
     CircuitOpen,
+    /// 8.7.4 — người dùng/client đã ngắt kết nối giữa chừng.
+    Cancelled,
+    /// 8.7.4 — provider không hỗ trợ streaming (chỉ dùng nội bộ).
+    StreamingUnsupported,
     Unknown,
 }
 
@@ -176,6 +197,8 @@ impl AiErrorCode {
             Self::EmptyResponse => "EMPTY_RESPONSE",
             Self::BadConfig => "BAD_CONFIG",
             Self::CircuitOpen => "CIRCUIT_OPEN",
+            Self::Cancelled => "CANCELLED",
+            Self::StreamingUnsupported => "STREAMING_UNSUPPORTED",
             Self::Unknown => "UNKNOWN",
         }
     }
@@ -193,6 +216,8 @@ impl AiErrorCode {
             Self::ProviderDown | Self::CircuitOpen => "Dịch vụ AI tạm thời không phản hồi. Bạn vẫn học bình thường được ở các trang bài học.",
             Self::EmptyResponse => "Trợ lý AI không trả về nội dung. Bạn thử diễn đạt lại câu hỏi nhé.",
             Self::BadConfig => "Cấu hình trợ lý AI chưa đúng. Ban quản trị kiểm tra lại nhà cung cấp và mô hình.",
+            Self::Cancelled => "Câu trả lời đã được dừng.",
+            Self::StreamingUnsupported => "Nhà cung cấp AI này chưa hỗ trợ trả lời theo từng phần.",
             Self::Unknown => "Trợ lý AI trả về lỗi không xác định.",
         }
     }
@@ -296,6 +321,32 @@ pub fn sanitize_detail(raw: &str) -> String {
 pub trait AiProvider: Send + Sync {
     async fn generate(&self, request: ProviderRequest<'_>)
         -> Result<ProviderResult, ProviderError>;
+
+    /// 8.7.4 — provider có triển khai `generate_stream()` thật hay không.
+    /// Provider không hỗ trợ vẫn phục vụ được endpoint streaming bằng một
+    /// response trọn gói (không có delta, TTFT không được ghi).
+    fn supports_stream(&self) -> bool {
+        false
+    }
+
+    /// 8.7.4 — streaming tuỳ chọn.
+    ///
+    /// Gửi từng `StreamEvent::Delta` qua `tx` ngay khi nhận được, rồi gửi
+    /// đúng MỘT `StreamEvent::Done` với kết quả đầy đủ. Nếu `tx` đã đóng
+    /// (client mất kết nối) phải dừng đọc và trả `AiErrorCode::Cancelled`.
+    ///
+    /// Mặc định: provider chưa hỗ trợ streaming. Adapter OpenAI-compatible và
+    /// Gemini ghi đè; provider khác vẫn dùng `generate()` như trước.
+    async fn generate_stream(
+        &self,
+        _request: ProviderRequest<'_>,
+        _tx: mpsc::Sender<StreamEvent>,
+    ) -> Result<(), ProviderError> {
+        Err(ProviderError::new(
+            AiErrorCode::StreamingUnsupported,
+            Provider::Custom,
+        ))
+    }
 }
 
 /// Bộ provider dùng chung một HTTP client (tái sử dụng kết nối).
@@ -490,6 +541,7 @@ impl AiProvider for MockProvider {
             },
             finish_reason: "mock".to_string(),
             mock: true,
+            ttft: None,
         })
     }
 }

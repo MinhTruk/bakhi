@@ -1,6 +1,6 @@
 [package]
 name = "bakhi-backend"
-version = "8.7.3"
+version = "8.8.0"
 edition = "2021"
 rust-version = "1.85"
 description = "Bá Khí — Rust hybrid backend (API + AI Gateway)"
@@ -23,6 +23,9 @@ reqwest = { version = "0.12", default-features = false, features = ["json", "rus
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 async-trait = "0.1"
+# 8.7.4: chuyển kênh nội bộ thành SSE stream cho endpoint /ai/chat/stream.
+# Chỉ adapter kênh ↔ Stream; không thêm runtime hay client HTTP thứ hai.
+tokio-stream = "0.1"
 thiserror = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }

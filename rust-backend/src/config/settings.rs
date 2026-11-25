@@ -41,6 +41,18 @@ const DEFAULT_CIRCUIT_THRESHOLD: u32 = 5;
 const DEFAULT_CIRCUIT_COOLDOWN_MS: u64 = 30_000;
 const DEFAULT_CIRCUIT_HALF_OPEN: u32 = 1;
 
+// 8.7.4 — AI Pipeline Performance. Timeout lấy token đầu, streaming idle và
+// backoff luỹ thừa có jitter.
+const DEFAULT_TTFT_TIMEOUT_MS: u64 = 15_000;
+const DEFAULT_STREAM_IDLE_TIMEOUT_MS: u64 = 20_000;
+const DEFAULT_RETRY_BACKOFF_MAX_MS: u64 = 8_000;
+
+// 8.8.0 — Parallel Computing Engine.
+const DEFAULT_TASK_QUEUE_CAPACITY: usize = 256;
+const DEFAULT_TASK_WAIT_MS: u64 = 2_000;
+const DEFAULT_TASK_TIMEOUT_MS: u64 = 30_000;
+const MAX_TASK_QUEUE_CAPACITY: usize = 65_535;
+
 const MIN_BODY_BYTES: usize = 1_024;
 const MAX_BODY_BYTES_LIMIT: usize = 16 * 1024 * 1024;
 const MAX_CONCURRENCY_LIMIT: usize = 65_535;
@@ -110,6 +122,26 @@ pub struct Settings {
     pub shutdown_grace: Duration,
     /// Chờ tối thiểu trước khi thử lại (có thể tăng theo Retry-After).
     pub retry_backoff: Duration,
+    /// Trần của backoff luỹ thừa (8.7.4). Backoff luôn nằm trong
+    /// `[retry_backoff, retry_backoff_max]`, có jitter.
+    pub retry_backoff_max: Duration,
+
+    /// 8.7.4 — bật endpoint streaming `POST /api/v1/ai/chat/stream`.
+    pub ai_stream_enabled: bool,
+    /// Thời gian chờ chunk NỘI DUNG đầu tiên của một stream. Khác với
+    /// `ai_timeout` (toàn bộ một attempt) và `ai_gateway_timeout` (cả chuỗi).
+    pub ai_ttft_timeout: Duration,
+    /// Khoảng lặng tối đa giữa hai chunk khi đã bắt đầu stream.
+    pub ai_stream_idle_timeout: Duration,
+
+    /// 8.8.0 — số worker cho tác vụ CPU-bound (0 = theo số CPU khả dụng).
+    pub parallel_cpu_workers: usize,
+    /// Số tác vụ được phép chờ trong hàng đợi song song.
+    pub parallel_queue_capacity: usize,
+    /// Chờ tối đa để lấy chỗ trong hàng đợi trước khi trả 429.
+    pub parallel_task_wait: Duration,
+    /// Trần thời gian một tác vụ song song được chạy.
+    pub parallel_task_timeout: Duration,
 
     pub max_body_bytes: usize,
     pub rate_limit_per_min: u32,
@@ -209,6 +241,14 @@ impl fmt::Debug for Settings {
             .field("request_timeout", &self.request_timeout)
             .field("shutdown_grace", &self.shutdown_grace)
             .field("retry_backoff", &self.retry_backoff)
+            .field("retry_backoff_max", &self.retry_backoff_max)
+            .field("ai_stream_enabled", &self.ai_stream_enabled)
+            .field("ai_ttft_timeout", &self.ai_ttft_timeout)
+            .field("ai_stream_idle_timeout", &self.ai_stream_idle_timeout)
+            .field("parallel_cpu_workers", &self.parallel_cpu_workers)
+            .field("parallel_queue_capacity", &self.parallel_queue_capacity)
+            .field("parallel_task_wait", &self.parallel_task_wait)
+            .field("parallel_task_timeout", &self.parallel_task_timeout)
             .field("max_body_bytes", &self.max_body_bytes)
             .field("rate_limit_per_min", &self.rate_limit_per_min)
             .field("ai_rate_per_min", &self.ai_rate_per_min)
@@ -396,6 +436,29 @@ impl Settings {
             retry_backoff: Duration::from_millis(
                 parse_num::<u64>("AI_RETRY_BACKOFF_MS")?.unwrap_or(DEFAULT_RETRY_BACKOFF_MS),
             ),
+            retry_backoff_max: Duration::from_millis(
+                parse_num::<u64>("AI_RETRY_BACKOFF_MAX_MS")?
+                    .unwrap_or(DEFAULT_RETRY_BACKOFF_MAX_MS),
+            ),
+            ai_stream_enabled: var("AI_STREAM_ENABLED")
+                .map(|v| parse_bool(&v, true))
+                .unwrap_or(true),
+            ai_ttft_timeout: Duration::from_millis(
+                parse_num::<u64>("AI_TTFT_TIMEOUT_MS")?.unwrap_or(DEFAULT_TTFT_TIMEOUT_MS),
+            ),
+            ai_stream_idle_timeout: Duration::from_millis(
+                parse_num::<u64>("AI_STREAM_IDLE_TIMEOUT_MS")?
+                    .unwrap_or(DEFAULT_STREAM_IDLE_TIMEOUT_MS),
+            ),
+            parallel_cpu_workers: parse_num_any::<usize>(&["RUST_CPU_WORKERS"])?.unwrap_or(0),
+            parallel_queue_capacity: parse_num_any::<usize>(&["RUST_TASK_QUEUE_CAPACITY"])?
+                .unwrap_or(DEFAULT_TASK_QUEUE_CAPACITY),
+            parallel_task_wait: Duration::from_millis(
+                parse_num_any::<u64>(&["RUST_TASK_WAIT_MS"])?.unwrap_or(DEFAULT_TASK_WAIT_MS),
+            ),
+            parallel_task_timeout: Duration::from_millis(
+                parse_num_any::<u64>(&["RUST_TASK_TIMEOUT_MS"])?.unwrap_or(DEFAULT_TASK_TIMEOUT_MS),
+            ),
             max_body_bytes: parse_num::<usize>("MAX_BODY_BYTES")?.unwrap_or(DEFAULT_MAX_BODY_BYTES),
             rate_limit_per_min: parse_num::<u32>("RATE_LIMIT_PER_MIN")?
                 .unwrap_or(DEFAULT_RATE_PER_MIN),
@@ -518,6 +581,43 @@ impl Settings {
         if millis(self.retry_backoff) > 10_000 {
             return Err(ConfigError::Invalid("AI_RETRY_BACKOFF_MS"));
         }
+        if millis(self.retry_backoff_max) < millis(self.retry_backoff)
+            || millis(self.retry_backoff_max) > 60_000
+        {
+            return Err(ConfigError::UnsafeCombination(
+                "AI_RETRY_BACKOFF_MAX_MS phải ≥ AI_RETRY_BACKOFF_MS và ≤ 60000",
+            ));
+        }
+        if millis(self.ai_ttft_timeout) < 500 || self.ai_ttft_timeout > self.ai_timeout {
+            return Err(ConfigError::UnsafeCombination(
+                "AI_TTFT_TIMEOUT_MS phải ≥ 500 và ≤ AI_TUTOR_TIMEOUT",
+            ));
+        }
+        if millis(self.ai_stream_idle_timeout) < 500
+            || self.ai_stream_idle_timeout > self.ai_timeout
+        {
+            return Err(ConfigError::UnsafeCombination(
+                "AI_STREAM_IDLE_TIMEOUT_MS phải ≥ 500 và ≤ AI_TUTOR_TIMEOUT",
+            ));
+        }
+        if self.parallel_cpu_workers > MAX_WORKER_THREADS {
+            return Err(ConfigError::Invalid("RUST_CPU_WORKERS"));
+        }
+        if self.parallel_queue_capacity == 0
+            || self.parallel_queue_capacity > MAX_TASK_QUEUE_CAPACITY
+        {
+            return Err(ConfigError::Invalid("RUST_TASK_QUEUE_CAPACITY"));
+        }
+        if self.parallel_task_wait < Duration::from_millis(1)
+            || self.parallel_task_wait > Duration::from_secs(60)
+        {
+            return Err(ConfigError::Invalid("RUST_TASK_WAIT_MS"));
+        }
+        if self.parallel_task_timeout < Duration::from_millis(1_000)
+            || self.parallel_task_timeout > self.request_timeout
+        {
+            return Err(ConfigError::Invalid("RUST_TASK_TIMEOUT_MS"));
+        }
         if !(MIN_BODY_BYTES..=MAX_BODY_BYTES_LIMIT).contains(&self.max_body_bytes) {
             return Err(ConfigError::Invalid("MAX_BODY_BYTES"));
         }
@@ -604,6 +704,14 @@ impl Settings {
             request_timeout: Duration::from_millis(5_000),
             shutdown_grace: Duration::from_millis(2_000),
             retry_backoff: Duration::from_millis(10),
+            retry_backoff_max: Duration::from_millis(40),
+            ai_stream_enabled: true,
+            ai_ttft_timeout: Duration::from_millis(1_000),
+            ai_stream_idle_timeout: Duration::from_millis(1_000),
+            parallel_cpu_workers: 2,
+            parallel_queue_capacity: 32,
+            parallel_task_wait: Duration::from_millis(250),
+            parallel_task_timeout: Duration::from_millis(4_000),
             max_body_bytes: DEFAULT_MAX_BODY_BYTES,
             rate_limit_per_min: 10_000,
             ai_rate_per_min: 10_000,

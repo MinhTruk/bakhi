@@ -158,6 +158,15 @@ pub fn json_response(status: StatusCode, body: Value) -> Response {
         .unwrap()
 }
 
+/// 8.7.4 — provider giả lập trả SSE, đúng như provider thật khi `stream: true`.
+pub fn sse_response(body: String) -> Response {
+    Response::builder()
+        .status(StatusCode::OK)
+        .header(header::CONTENT_TYPE, "text/event-stream")
+        .body(Body::from(body))
+        .unwrap()
+}
+
 pub fn text_response(
     status: StatusCode,
     body: &'static str,
@@ -315,6 +324,14 @@ async fn mock_handler(State(state): State<MockState>, request: Request<Body>) ->
             .status(StatusCode::NO_CONTENT)
             .body(Body::empty())
             .unwrap(),
+        (Method::POST, path) if path.contains(":streamGenerateContent") => {
+            state.provider_calls.fetch_add(1, Ordering::SeqCst);
+            sse_response(
+                "data: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"Chào \"}]}}]}\n\n\
+                 data: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"bạn!\"}]},\"finishReason\":\"STOP\"}],\"usageMetadata\":{\"promptTokenCount\":40,\"candidatesTokenCount\":6}}\n\n"
+                    .to_string(),
+            )
+        }
         (Method::POST, path) if path.contains(":generateContent") => {
             // Adapter Gemini: hình dạng request/response khác OpenAI.
             state.provider_calls.fetch_add(1, Ordering::SeqCst);
@@ -373,6 +390,36 @@ async fn mock_handler(State(state): State<MockState>, request: Request<Body>) ->
                         json!({ "error": { "message": "temporary" } }),
                     );
                 }
+            }
+
+            // 8.7.4 — cùng chế độ lỗi, nhưng nhánh streaming trả SSE.
+            if parsed
+                .get("stream")
+                .and_then(Value::as_bool)
+                .unwrap_or(false)
+            {
+                let mode = state.provider_mode.lock().unwrap().clone();
+                return match mode.as_str() {
+                    "auth_error" => json_response(
+                        StatusCode::UNAUTHORIZED,
+                        json!({ "error": { "message": "invalid api key" } }),
+                    ),
+                    "server_error" | "primary_down" => json_response(
+                        StatusCode::SERVICE_UNAVAILABLE,
+                        json!({ "error": { "message": "provider down" } }),
+                    ),
+                    "empty_stream" => sse_response(
+                        "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+                            .to_string(),
+                    ),
+                    _ => sse_response(
+                        "data: {\"choices\":[{\"delta\":{\"content\":\"Chào \"},\"finish_reason\":null}]}\n\n\
+                         data: {\"choices\":[{\"delta\":{\"content\":\"bạn!\"},\"finish_reason\":\"stop\"}]}\n\n\
+                         data: {\"usage\":{\"prompt_tokens\":42,\"completion_tokens\":7}}\n\n\
+                         data: [DONE]\n\n"
+                            .to_string(),
+                    ),
+                };
             }
 
             match mode.as_str() {

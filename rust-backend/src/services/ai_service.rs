@@ -12,22 +12,29 @@
 //   * Thử lại chỉ với lỗi tạm thời; không nhân đôi tin nhắn trong hội thoại.
 // ===========================================================================
 
+use std::convert::Infallible;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use axum::response::sse::Event;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use tokio::sync::mpsc;
 
 use crate::config::Settings;
 use crate::errors::ApiError;
 use crate::middleware::AuthUser;
+use crate::observability::metrics::Metrics;
 use crate::providers::{
-    AiErrorCode, ChatTurn, MockProvider, Provider, ProviderError, ProviderRequest, ProviderResult,
+    AiErrorCode, AiProvider, ChatTurn, MockProvider, Provider, ProviderError, ProviderRequest,
+    ProviderResult, StreamEvent,
 };
 use crate::services::prompts::{
     self, build_system_prompt, output_tokens_for_mode, pick_model, sanitize_context, trim_history,
     trim_history_by_budget, SafeContext, TutorMode,
 };
+use crate::services::retry::{backoff_with_jitter, Jitter};
 use crate::services::supabase::{urlencode, RestAuth, SupabaseClient, UsageLog};
 use crate::AppState;
 
@@ -199,6 +206,186 @@ pub struct ChainFailure {
     pub fell_back: bool,
 }
 
+/// Đích của một lượt streaming: SSE frame đi thẳng về trình duyệt.
+///
+/// `delta_sent` là ranh giới an toàn của fallback: đã gửi chữ cho người học
+/// thì KHÔNG chuyển provider nữa (hai câu trả lời nối vào nhau là lỗi nội dung).
+#[derive(Clone)]
+pub struct StreamContext {
+    tx: mpsc::Sender<Result<Event, Infallible>>,
+    delta_sent: Arc<AtomicBool>,
+}
+
+impl StreamContext {
+    pub fn new(tx: mpsc::Sender<Result<Event, Infallible>>) -> Self {
+        Self {
+            tx,
+            delta_sent: Arc::new(AtomicBool::new(false)),
+        }
+    }
+
+    pub fn delta_sent(&self) -> bool {
+        self.delta_sent.load(Ordering::Relaxed)
+    }
+
+    fn mark_delta(&self) {
+        self.delta_sent.store(true, Ordering::Relaxed);
+    }
+
+    /// Gửi một phần nội dung. `false` = trình duyệt đã đóng kết nối.
+    ///
+    /// Gửi thành công thì đánh dấu `delta_sent`: từ đây chuỗi provider không
+    /// được retry/fallback nữa (nối hai câu trả lời là lỗi nội dung).
+    async fn delta(&self, text: &str) -> bool {
+        self.mark_delta();
+        let payload = json!({ "text": text }).to_string();
+        self.tx
+            .send(Ok(Event::default().event("delta").data(payload)))
+            .await
+            .is_ok()
+    }
+
+    /// Gửi sự kiện cuối (`done` hoặc `error`). Bỏ qua nếu client đã rời.
+    pub async fn send(&self, event: &'static str, data: &Value) -> bool {
+        self.tx
+            .send(Ok(Event::default().event(event).data(data.to_string())))
+            .await
+            .is_ok()
+    }
+}
+
+/// Đếm lượt bị huỷ thật: future bị drop trước khi xử lý xong (trình duyệt đóng
+/// tab, người học bấm Dừng, hoặc timeout của tầng ngoài). Chỉ ghi khi chưa
+/// `disarm()`. Không chứa dữ liệu người dùng.
+struct CancelGuard {
+    metrics: Arc<Metrics>,
+    armed: bool,
+}
+
+impl CancelGuard {
+    fn new(metrics: Arc<Metrics>) -> Self {
+        Self {
+            metrics,
+            armed: true,
+        }
+    }
+
+    fn disarm(mut self) {
+        self.armed = false;
+    }
+}
+
+impl Drop for CancelGuard {
+    fn drop(&mut self) {
+        if self.armed {
+            self.metrics.record_ai_cancelled("request");
+        }
+    }
+}
+
+/// Gọi MỘT provider cho một attempt.
+///
+/// * Không stream: `generate()` như trước 8.7.4.
+/// * Stream: chuyển từng delta ra `sink` ngay khi provider trả về. Nếu stream
+///   lỗi TRƯỚC delta đầu tiên, lỗi được trả như attempt thường (retry/fallback
+///   còn an toàn). Sau delta đầu tiên, caller không fallback nữa.
+///
+/// Mọi nhánh đều có hạn tuyệt đối (`budget`), nên không attempt nào treo.
+async fn call_provider(
+    provider_impl: Arc<dyn AiProvider>,
+    request: ProviderRequest<'_>,
+    budget: Duration,
+    provider: Provider,
+    sink: Option<&StreamContext>,
+    metrics: &Metrics,
+) -> Result<ProviderResult, ProviderError> {
+    // Provider chưa hỗ trợ streaming: phục vụ một response trọn gói. Endpoint
+    // streaming vẫn hoạt động, chỉ là không có delta nào (và không có TTFT).
+    if sink.is_none() || !provider_impl.supports_stream() {
+        return match tokio::time::timeout(budget, provider_impl.generate(request)).await {
+            Ok(result) => result,
+            Err(_) => Err(ProviderError::new(AiErrorCode::Timeout, provider)),
+        };
+    }
+    let sink = sink.expect("đã kiểm tra sink ở trên");
+
+    // Kênh nội bộ nhỏ, có giới hạn: provider không thể đẩy vô hạn vào bộ nhớ.
+    let (raw_tx, mut raw_rx) = mpsc::channel::<StreamEvent>(64);
+    let mut future = Box::pin(provider_impl.generate_stream(request, raw_tx));
+    let deadline = tokio::time::Instant::now() + budget;
+    let mut result: Option<ProviderResult> = None;
+    let mut finished: Option<Result<(), ProviderError>> = None;
+    let mut started = false;
+
+    loop {
+        if let Some(done) = finished.take() {
+            // Provider có thể đã đẩy TOÀN BỘ sự kiện vào kênh rồi mới trả về
+            // (một poll duy nhất khi dữ liệu đã nằm trong buffer TCP). Phải xả
+            // hết trước khi kết luận: bỏ qua bước này sẽ báo EMPTY_RESPONSE
+            // dù nội dung đã có.
+            while let Some(event) = raw_rx.recv().await {
+                if !forward_event(event, sink, metrics, &mut result, &mut started).await {
+                    return Err(ProviderError::new(AiErrorCode::Cancelled, provider));
+                }
+            }
+            return match done {
+                Ok(()) => {
+                    result.ok_or_else(|| ProviderError::new(AiErrorCode::EmptyResponse, provider))
+                }
+                Err(error) => Err(error),
+            };
+        }
+
+        tokio::select! {
+            // Kênh trước future: delta đã có sẵn phải tới trình duyệt ngay.
+            event = raw_rx.recv() => {
+                match event {
+                    // Kênh đóng mà future chưa xong: chờ future để lấy lỗi/kết quả.
+                    None => {
+                        finished = Some((&mut future).await);
+                    }
+                    Some(event) => {
+                        if !forward_event(event, sink, metrics, &mut result, &mut started).await {
+                            return Err(ProviderError::new(AiErrorCode::Cancelled, provider));
+                        }
+                    }
+                }
+            }
+            done = &mut future => finished = Some(done),
+            _ = tokio::time::sleep_until(deadline) => {
+                return Err(ProviderError::new(AiErrorCode::Timeout, provider));
+            }
+            // Client đóng kết nối: huỷ ngay, không chờ provider trả thêm.
+            _ = sink.tx.closed() => {
+                return Err(ProviderError::new(AiErrorCode::Cancelled, provider));
+            }
+        }
+    }
+}
+
+/// Chuyển một sự kiện provider tới trình duyệt. `false` = client đã rời.
+async fn forward_event(
+    event: StreamEvent,
+    sink: &StreamContext,
+    metrics: &Metrics,
+    result: &mut Option<ProviderResult>,
+    started: &mut bool,
+) -> bool {
+    match event {
+        StreamEvent::Delta(text) => {
+            if !*started {
+                *started = true;
+                metrics.record_ai_stream_event("started");
+            }
+            sink.delta(&text).await
+        }
+        StreamEvent::Done(value) => {
+            *result = Some(value);
+            true
+        }
+    }
+}
+
 /// Dựng danh sách route từ giá trị JSON đã cache (dùng cho cả lần đọc đầu và
 /// cache hit). Route bị tắt hoặc thiếu model bị loại như trước 8.7.3.
 fn routes_from_value(value: Value) -> Vec<ModelRoute> {
@@ -217,6 +404,8 @@ pub struct AiService {
     pub settings: Arc<Settings>,
     pub supabase: Arc<SupabaseClient>,
     pub state: AppState,
+    /// Nguồn jitter dùng chung: nhiều lượt chat không thử lại cùng một nhịp.
+    jitter: Arc<Jitter>,
 }
 
 impl AiService {
@@ -225,6 +414,7 @@ impl AiService {
             settings: state.settings.clone(),
             supabase: state.supabase.clone(),
             state,
+            jitter: Arc::new(Jitter::new()),
         }
     }
 
@@ -397,6 +587,59 @@ impl AiService {
         message: &str,
         model_override: Option<&str>,
     ) -> Result<GatewayOutcome, ChainFailure> {
+        self.run_chain_inner(
+            settings,
+            routes,
+            system,
+            turns,
+            mode,
+            message,
+            model_override,
+            None,
+        )
+        .await
+    }
+
+    /// 8.7.4 — cùng chuỗi provider nhưng chuyển nội dung về trình duyệt theo
+    /// từng phần. Dùng chung mọi chính sách retry/circuit/deadline của
+    /// `run_chain`; chỉ khác cách nhận kết quả từ provider.
+    #[allow(clippy::too_many_arguments)]
+    pub async fn run_chain_stream(
+        &self,
+        settings: &AiSettings,
+        routes: &[ModelRoute],
+        system: &str,
+        turns: &[ChatTurn],
+        mode: TutorMode,
+        message: &str,
+        model_override: Option<&str>,
+        stream: &StreamContext,
+    ) -> Result<GatewayOutcome, ChainFailure> {
+        self.run_chain_inner(
+            settings,
+            routes,
+            system,
+            turns,
+            mode,
+            message,
+            model_override,
+            Some(stream),
+        )
+        .await
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    async fn run_chain_inner(
+        &self,
+        settings: &AiSettings,
+        routes: &[ModelRoute],
+        system: &str,
+        turns: &[ChatTurn],
+        mode: TutorMode,
+        message: &str,
+        model_override: Option<&str>,
+        stream: Option<&StreamContext>,
+    ) -> Result<GatewayOutcome, ChainFailure> {
         let started = Instant::now();
         let deadline = started + self.settings.ai_gateway_timeout;
         let (max_tokens, target_tokens, deep) =
@@ -531,37 +774,28 @@ impl AiService {
                     max_tokens,
                     temperature: 0.4,
                     api_key: &candidate.api_key,
+                    // 8.7.4 — hạn riêng cho token đầu và cho khoảng lặng.
+                    ttft_timeout: self.settings.ai_ttft_timeout,
+                    idle_timeout: self.settings.ai_stream_idle_timeout,
                 };
                 // Không để một attempt vượt quá hạn của cả chuỗi.
                 let budget = per_attempt.min(remaining);
-                let outcome = tokio::time::timeout(budget, provider_impl.generate(request)).await;
+                let outcome = call_provider(
+                    provider_impl.clone(),
+                    request,
+                    budget,
+                    candidate.provider,
+                    stream,
+                    &self.state.metrics,
+                )
+                .await;
                 // Chỉ giữ chỗ trong lúc chờ HTTP, không giữ qua backoff/retry.
                 drop(provider_permit);
 
+                // `call_provider` đã quy mọi timeout về `AiErrorCode::Timeout`,
+                // nên một nhánh lỗi duy nhất xử lý timeout/kết nối/HTTP.
                 match outcome {
-                    Err(_) => {
-                        let error = ProviderError::new(AiErrorCode::Timeout, candidate.provider);
-                        let latency_ms = attempt_start.elapsed().as_millis() as u64;
-                        self.state.circuits.record_failure(candidate.provider);
-                        self.state.metrics.record_ai_attempt(
-                            role,
-                            candidate.provider.as_str(),
-                            &candidate.model,
-                            false,
-                            latency_ms as f64 / 1000.0,
-                            Some(AiErrorCode::Timeout.as_str()),
-                        );
-                        attempts.push(Attempt {
-                            provider: candidate.provider,
-                            model: candidate.model.clone(),
-                            ok: false,
-                            code: Some(error.code),
-                            latency_ms,
-                        });
-                        last_error = Some(error);
-                        // Timeout là lỗi tạm thời: thử lại nếu còn lượt và còn giờ.
-                    }
-                    Ok(Ok(result)) => {
+                    Ok(result) => {
                         let latency_ms = attempt_start.elapsed().as_millis() as u64;
                         self.state.circuits.record_success(candidate.provider);
                         self.state.metrics.record_ai_attempt(
@@ -578,6 +812,18 @@ impl AiService {
                             &result.model,
                             &result.usage,
                         );
+                        // TTFT chỉ có khi thực sự stream (provider trả chunk đầu).
+                        if let Some(ttft) = result.ttft {
+                            self.state.metrics.record_ai_ttft(
+                                role,
+                                result.provider.as_str(),
+                                &result.model,
+                                ttft.as_secs_f64(),
+                            );
+                        }
+                        if stream.map(|sink| sink.delta_sent()) == Some(true) {
+                            self.state.metrics.record_ai_stream_event("done");
+                        }
                         if index > 0 {
                             self.state.metrics.record_fallback("success");
                         }
@@ -601,7 +847,7 @@ impl AiService {
                             deep,
                         });
                     }
-                    Ok(Err(error)) => {
+                    Err(error) => {
                         let latency_ms = attempt_start.elapsed().as_millis() as u64;
                         self.state.metrics.record_ai_attempt(
                             role,
@@ -628,15 +874,30 @@ impl AiService {
                             latency_ms,
                         });
 
+                        if stream.map(|sink| sink.delta_sent()) == Some(true) {
+                            // Nội dung đã tới trình duyệt: kết thúc chuỗi, chỉ báo lỗi.
+                            self.state.metrics.record_ai_stream_event(
+                                if error.code == AiErrorCode::Cancelled {
+                                    "cancelled"
+                                } else {
+                                    "error"
+                                },
+                            );
+                            last_error = Some(error);
+                            break 'providers;
+                        }
+
                         if !error.retryable() {
                             // AUTH / MODEL_NOT_FOUND / BAD_CONFIG / request sai:
                             // không thử lại và không chuyển dự phòng. QUOTA thì
                             // không thử lại nhưng vẫn thử provider kế tiếp.
+                            // CANCELLED: người học đã dừng — dừng cả chuỗi.
                             let stops_chain = matches!(
                                 error.code,
                                 AiErrorCode::Auth
                                     | AiErrorCode::ModelNotFound
                                     | AiErrorCode::BadConfig
+                                    | AiErrorCode::Cancelled
                                     | AiErrorCode::Unknown
                             );
                             last_error = Some(error);
@@ -647,7 +908,16 @@ impl AiService {
                         }
 
                         self.state.circuits.record_failure(candidate.provider);
-                        let wait = error.retry_after.unwrap_or(self.settings.retry_backoff);
+                        let wait = error.retry_after.unwrap_or_else(|| {
+                            // Backoff luỹ thừa có jitter: tránh mọi người dùng
+                            // thử lại cùng lúc sau khi provider vừa hồi phục.
+                            backoff_with_jitter(
+                                self.settings.retry_backoff,
+                                self.settings.retry_backoff_max,
+                                retry,
+                                self.jitter.next(),
+                            )
+                        });
                         last_error = Some(error);
                         if retry == self.settings.ai_max_retries {
                             break;
@@ -689,25 +959,67 @@ impl AiService {
 
     /// Xử lý action `chat` — tương thích với Edge Function `ai-tutor-api`.
     pub async fn chat(&self, user: &AuthUser, request: ChatRequest) -> Result<Value, ApiError> {
+        self.chat_guarded(user, request, None).await
+    }
+
+    /// 8.7.4 — endpoint streaming: cùng pipeline, cùng chính sách; chỉ khác
+    /// là nội dung được gửi về theo từng phần trong lúc provider sinh ra.
+    pub async fn chat_stream(
+        &self,
+        user: &AuthUser,
+        request: ChatRequest,
+        stream: StreamContext,
+    ) -> Result<Value, ApiError> {
+        self.chat_guarded(user, request, Some(stream)).await
+    }
+
+    async fn chat_guarded(
+        &self,
+        user: &AuthUser,
+        request: ChatRequest,
+        stream: Option<StreamContext>,
+    ) -> Result<Value, ApiError> {
+        // Nếu future bị drop (tab đóng, bấm Dừng, timeout tầng ngoài) thì đó là
+        // một lượt bị huỷ thật — đếm một lần, không đếm khi trả lỗi bình thường.
+        let guard = CancelGuard::new(self.state.metrics.clone());
+
         // Giới hạn đồng thời theo người dùng (mặc định 1): giống khoá `inFlight`
         // của Edge Function, hai tab không gọi AI chồng nhau. Có hạn chờ.
         let _permit = match self.state.concurrency.acquire_ai(&user.id).await {
             Some(permit) => permit,
             None => {
+                guard.disarm();
                 return Err(ApiError::busy(
                     "Trợ lý AI đang trả lời câu trước. Bạn chờ một chút nhé.",
-                ))
+                ));
             }
         };
 
         // `run_chain()` ghi metrics lượt người dùng một lần duy nhất (kể cả khi
         // thất bại), nên ở đây không đếm lại: lỗi xác thực/hạn mức không phải
         // một lượt gọi provider và không được làm sai availability.
-        self.chat_inner(user, request).await
+        let result = self.chat_inner(user, request, stream).await;
+        guard.disarm();
+        result
     }
 
-    async fn chat_inner(&self, user: &AuthUser, request: ChatRequest) -> Result<Value, ApiError> {
-        let settings = self.load_settings().await?;
+    async fn chat_inner(
+        &self,
+        user: &AuthUser,
+        request: ChatRequest,
+        stream: Option<StreamContext>,
+    ) -> Result<Value, ApiError> {
+        // 8.8.0 — ba lượt đọc ĐỘC LẬP chạy song song thay vì tuần tự:
+        // cấu hình AI, route model và hồ sơ học sinh. Chúng không phụ thuộc
+        // nhau nên đây là chỗ giảm thời gian chuẩn bị thật của mỗi lượt chat.
+        let prep_started = Instant::now();
+        let (settings_result, routes, student_result) = tokio::join!(
+            self.load_settings(),
+            self.load_routes(),
+            self.student_record(user)
+        );
+        let settings = settings_result?;
+        let student = student_result?;
         if !settings.enabled {
             return Err(ApiError::service_unavailable(
                 AiErrorCode::AiDisabled.as_str(),
@@ -767,7 +1079,6 @@ impl AiService {
 
         // Hồ sơ học sinh — auth user → student_devices → students. Không tin id
         // do client gửi. Hồ sơ ngừng hoạt động bị chặn như Edge Function.
-        let student = self.student_record(user).await?;
         if let Some(record) = &student {
             if !record.is_active {
                 return Err(ApiError::inactive());
@@ -807,7 +1118,9 @@ impl AiService {
         if !self.settings.persist_conversations {
             // Chế độ không lưu: một lượt hỏi–đáp, không ghi database.
             return self
-                .ephemeral_chat(&settings, mode, message, context, student_id)
+                .ephemeral_chat(
+                    &settings, &routes, mode, message, context, student_id, stream,
+                )
                 .await;
         }
 
@@ -893,7 +1206,6 @@ impl AiService {
             .await?
         };
 
-        let routes = self.load_routes().await;
         // Định tuyến chỉ đổi model của provider chính khi route rỗng. Truyền
         // model đã chọn xuống chuỗi provider thay vì clone toàn bộ AiSettings
         // (system prompt, danh sách chế độ, khoá…) mỗi lượt.
@@ -907,17 +1219,39 @@ impl AiService {
             None
         };
 
-        let outcome = self
-            .run_chain(
-                &settings,
-                &routes,
-                &system,
-                &budgeted,
-                mode,
-                &message,
-                model_override,
-            )
-            .await;
+        // Thời gian chuẩn bị nội bộ (đọc cấu hình, lịch sử, dựng prompt, cắt
+        // token) — tách khỏi độ trễ provider để đọc metrics đúng bản chất.
+        self.state
+            .metrics
+            .record_ai_preparation(prep_started.elapsed().as_secs_f64());
+
+        let outcome = match &stream {
+            Some(context) => {
+                self.run_chain_stream(
+                    &settings,
+                    &routes,
+                    &system,
+                    &budgeted,
+                    mode,
+                    &message,
+                    model_override,
+                    context,
+                )
+                .await
+            }
+            None => {
+                self.run_chain(
+                    &settings,
+                    &routes,
+                    &system,
+                    &budgeted,
+                    mode,
+                    &message,
+                    model_override,
+                )
+                .await
+            }
+        };
 
         match outcome {
             Err(failure) => {
@@ -1061,13 +1395,16 @@ impl AiService {
     }
 
     /// Một lượt hỏi–đáp không ghi database (AI_PERSIST_CONVERSATIONS=false).
+    #[allow(clippy::too_many_arguments)]
     async fn ephemeral_chat(
         &self,
         settings: &AiSettings,
+        routes: &[ModelRoute],
         mode: TutorMode,
         message: String,
         context: SafeContext,
         student_id: Option<&str>,
+        stream: Option<StreamContext>,
     ) -> Result<Value, ApiError> {
         if message.trim().is_empty() {
             return Err(ApiError::bad_request(
@@ -1086,11 +1423,19 @@ impl AiService {
             role: "user".to_string(),
             content: message.clone(),
         }];
-        let routes = self.load_routes().await;
-        match self
-            .run_chain(settings, &routes, &system, &turns, mode, &message, None)
-            .await
-        {
+        let outcome = match &stream {
+            Some(context) => {
+                self.run_chain_stream(
+                    settings, routes, &system, &turns, mode, &message, None, context,
+                )
+                .await
+            }
+            None => {
+                self.run_chain(settings, routes, &system, &turns, mode, &message, None)
+                    .await
+            }
+        };
+        match outcome {
             Ok(outcome) => {
                 self.supabase
                     .log_ai_usage(UsageLog {
@@ -1573,5 +1918,31 @@ mod tests {
     fn estimate_tokens_matches_edge_heuristic() {
         assert_eq!(estimate_tokens("abcd"), 1);
         assert_eq!(estimate_tokens("a".repeat(400).as_str()), 100);
+    }
+}
+
+#[cfg(test)]
+mod stream_tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn stream_context_reports_closed_receiver() {
+        let (tx, rx) = mpsc::channel(4);
+        let context = StreamContext::new(tx);
+        assert!(!context.delta_sent());
+        // Trình duyệt đóng kết nối: mọi lần gửi sau đó phải trả false để tầng
+        // provider dừng đọc thay vì chạy tiếp vô ích.
+        drop(rx);
+        assert!(!context.delta("x").await);
+        assert!(!context.send("done", &json!({})).await);
+    }
+
+    #[tokio::test]
+    async fn stream_context_marks_delta_after_sending_content() {
+        let (tx, mut rx) = mpsc::channel(4);
+        let context = StreamContext::new(tx);
+        assert!(context.delta("xin chào").await);
+        assert!(context.delta_sent());
+        assert!(rx.recv().await.is_some());
     }
 }

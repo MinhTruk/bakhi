@@ -7,7 +7,9 @@
 //   * dựng body provider bằng cây `serde_json::Value` (bản cũ)
 //     so với struct `Serialize` mượn dữ liệu (bản 8.7.2);
 //   * parse một chat request đã serialize;
-//   * (8.7.3) chi phí đọc cache L1 so với clone cấu hình mỗi lượt chat.
+//   * (8.7.3) chi phí đọc cache L1 so với clone cấu hình mỗi lượt chat;
+//   * (8.7.4) chi phí đọc một chunk SSE và tính backoff có jitter;
+//   * (8.8.0) overhead cố định của Parallel Execution Engine.
 //
 // Chạy: cargo run --release --locked --example pipeline_bench
 //
@@ -21,7 +23,11 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use bakhi_backend::cache::{Cache, CacheConfig, CacheCounters};
+use bakhi_backend::observability::metrics::Metrics;
+use bakhi_backend::parallel::ParallelEngine;
+use bakhi_backend::providers::sse::{data_of, SseLines};
 use bakhi_backend::providers::ChatTurn;
+use bakhi_backend::services::retry::{backoff_with_jitter, Jitter};
 use serde::Serialize;
 use serde_json::{json, Value};
 
@@ -200,10 +206,74 @@ fn cache_scenario() {
     );
 }
 
+/// 8.7.4 — chi phí đọc một chunk SSE (dòng `data:` đã hoàn chỉnh) và lấy
+/// payload. Đây là phần backend phải làm cho MỖI mảnh nội dung khi stream.
+fn sse_scenario() {
+    println!("\n[sse] đọc chunk của provider (mỗi chunk ~40 byte)");
+    let chunk = b"data: {\"choices\":[{\"delta\":{\"content\":\"Chao ban\"}}]}\n\n";
+    bench("v8.7.4: SseLines::push (1 dòng/chunk)", 200_000, || {
+        let mut sse = SseLines::new();
+        let lines = sse.push(chunk);
+        assert_eq!(lines.len(), 2);
+        black_box(data_of(&lines[0]));
+    });
+}
+
+/// 8.7.4 — backoff luỹ thừa + jitter chỉ là số học; đo để chứng minh nó không
+/// phải chi phí đáng kể so với thời gian chờ thật của provider.
+fn backoff_scenario() {
+    println!("\n[retry] tính thời gian chờ trước lần thử lại");
+    let jitter = Jitter::new();
+    bench("v8.7.4: backoff luỹ thừa + jitter", 500_000, || {
+        black_box(backoff_with_jitter(
+            Duration::from_millis(500),
+            Duration::from_secs(8),
+            3,
+            jitter.next(),
+        ));
+    });
+}
+
+/// 8.8.0 — chi phí cố định của một tác vụ qua Parallel Engine (hàng đợi +
+/// permit + spawn_blocking + đếm lifecycle). Đây là overhead THÊM vào công
+/// việc thật, nên phải biết nó nhỏ so với tác vụ CPU đáng đưa vào pool.
+fn parallel_scenario() {
+    println!("\n[parallel] tác vụ CPU-bound qua engine (workers = CPU)");
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(2)
+        .enable_all()
+        .build()
+        .expect("runtime");
+    let engine = ParallelEngine::new(
+        0,
+        256,
+        Duration::from_secs(2),
+        Duration::from_secs(30),
+        Arc::new(Metrics::default()),
+    );
+    let workers = engine.workers();
+    println!("  workers tự dò: {workers}");
+    bench("v8.8.0: run_cpu (closure rỗng)", 20_000, || {
+        let value = runtime.block_on(engine.run_cpu(|| black_box(7)));
+        assert_eq!(value.unwrap(), 7);
+    });
+
+    let payload: Arc<Vec<u64>> = Arc::new((0..20_000).collect());
+    bench("v8.8.0: run_cpu (tổng 20.000 số)", 2_000, || {
+        let data = payload.clone();
+        let value = runtime
+            .block_on(engine.run_cpu(move || data.iter().copied().fold(0u64, u64::saturating_add)));
+        black_box(value.unwrap());
+    });
+}
+
 fn main() {
-    println!("Bá Khí 8.7.3 — pipeline + cache microbenchmark");
+    println!("Bá Khí 8.8.0 — pipeline + cache + stream + parallel microbenchmark");
     scenario("small", 2, 200);
     scenario("medium", 12, 400);
     scenario("large", 40, 1_500);
     cache_scenario();
+    sse_scenario();
+    backoff_scenario();
+    parallel_scenario();
 }
