@@ -55,7 +55,7 @@ pub struct AppState {
     pub providers: Arc<ProviderRegistry>,
     pub circuits: Arc<CircuitBreaker>,
     pub concurrency: Arc<Concurrency>,
-        pub metrics: Arc<Metrics>,
+    pub metrics: Arc<Metrics>,
     /// 8.7.3 — L1 cache + gộp request đồng thời. Chỉ dữ liệu dùng chung
     /// (cấu hình AI) đi qua đây; dữ liệu cá nhân không bao giờ được cache.
     pub cache: Arc<Cache>,
@@ -65,7 +65,7 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(settings: Settings) -> Result<Self, reqwest::Error> {
-                let http = build_http_client(&settings);
+        let http = build_http_client(&settings);
         let supabase = Arc::new(SupabaseClient::new(http.clone(), &settings));
         let providers = Arc::new(ProviderRegistry::build(&http, &settings));
         let cache = Arc::new(Cache::new(
@@ -100,7 +100,7 @@ impl AppState {
                 settings.max_provider_concurrency,
                 settings.concurrency_wait,
             )),
-                        metrics: Arc::new(Metrics::new(settings.ai_pricing.clone())),
+            metrics: Arc::new(Metrics::new(settings.ai_pricing.clone())),
             lifecycle: Arc::new(Lifecycle::new()),
             cache,
             flights,

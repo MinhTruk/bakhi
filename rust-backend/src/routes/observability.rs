@@ -52,8 +52,8 @@ pub async fn summary(
                 }
                 // 8.7.3 — số liệu Cache Engine. Chỉ là số đếm/dung lượng, không
                 // có khoá cache hay payload nào đi xuống trình duyệt.
-                let cache = serde_json::to_value(state.cache.stats())
-                    .unwrap_or(serde_json::Value::Null);
+                let cache =
+                    serde_json::to_value(state.cache.stats()).unwrap_or(serde_json::Value::Null);
                 object.insert("cache".to_string(), cache);
             }
             respond(Ok(summary), &request_id)

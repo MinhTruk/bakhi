@@ -27,7 +27,10 @@ fn app_state_dung_chung_mot_cache() {
         &["ai-config"],
     ));
 
-    let hit = clone.cache.get("ai:settings:v1").expect("bản sao thấy cùng cache");
+    let hit = clone
+        .cache
+        .get("ai:settings:v1")
+        .expect("bản sao thấy cùng cache");
     assert_eq!(hit["model"], "openai/gpt-oss-20b");
 
     let stats = state.cache.stats();
@@ -50,7 +53,10 @@ fn metrics_summary_co_khoi_cache_va_khong_lo_du_lieu() {
     assert!(stats.get("hitRate").is_some());
     assert!(stats.get("entryCount").is_some());
     let text = stats.to_string();
-    assert!(!text.contains("secret-model-name"), "metrics không được lộ payload");
+    assert!(
+        !text.contains("secret-model-name"),
+        "metrics không được lộ payload"
+    );
 }
 
 #[test]

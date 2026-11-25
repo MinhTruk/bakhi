@@ -149,7 +149,7 @@ pub struct Settings {
     /// `GET /api/v1/metrics` (định dạng Prometheus) — mặc định tắt.
     pub metrics_enabled: bool,
     /// Token bắt buộc khi bật metrics. Rỗng ⇒ endpoint trả 404 dù đã bật.
-        pub metrics_token: Option<String>,
+    pub metrics_token: Option<String>,
 
     /// Công tắc tổng của Cache Engine. `false` ⇒ rollback ngay: mọi thứ đọc
     /// thẳng nguồn dữ liệu như 8.7.2, không lưu gì trong RAM.
@@ -226,7 +226,7 @@ impl fmt::Debug for Settings {
             .field("persist_conversations", &self.persist_conversations)
             .field("trust_proxy", &self.trust_proxy)
             .field("metrics_enabled", &self.metrics_enabled)
-                        .field("metrics_token", &self.metrics_token.as_deref().map(redact))
+            .field("metrics_token", &self.metrics_token.as_deref().map(redact))
             .field("cache_enabled", &self.cache_enabled)
             .field("cache_l1_enabled", &self.cache_l1_enabled)
             .field("cache_dedup_enabled", &self.cache_dedup_enabled)
@@ -621,7 +621,7 @@ impl Settings {
             persist_conversations: false,
             trust_proxy: false,
             metrics_enabled: false,
-                        metrics_token: None,
+            metrics_token: None,
             cache_enabled: true,
             cache_l1_enabled: true,
             cache_dedup_enabled: true,

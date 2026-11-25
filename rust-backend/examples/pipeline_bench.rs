@@ -175,17 +175,29 @@ fn cache_scenario() {
     );
     assert!(inserted, "cache phải lưu được cấu hình mẫu");
 
-    bench("v8.7.3: cache L1 hit (Arc, không clone payload)", 200_000, || {
-        black_box(cache.get("ai:settings:v1"));
-    });
+    bench(
+        "v8.7.3: cache L1 hit (Arc, không clone payload)",
+        200_000,
+        || {
+            black_box(cache.get("ai:settings:v1"));
+        },
+    );
 
-    bench("v8.7.3: cache miss (khoá không tồn tại)", 200_000, || {
-        black_box(cache.get("ai:routes:absent"));
-    });
+    bench(
+        "v8.7.3: cache miss (khoá không tồn tại)",
+        200_000,
+        || {
+            black_box(cache.get("ai:routes:absent"));
+        },
+    );
 
-    bench("v8.7.2: clone cấu hình mỗi lượt chat", 200_000, || {
-        black_box(config.clone());
-    });
+    bench(
+        "v8.7.2: clone cấu hình mỗi lượt chat",
+        200_000,
+        || {
+            black_box(config.clone());
+        },
+    );
 }
 
 fn main() {

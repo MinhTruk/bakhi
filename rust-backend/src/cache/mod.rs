@@ -326,7 +326,9 @@ impl Cache {
         let tick = inner.tick.saturating_add(1);
         inner.tick = tick;
         inner.bytes = inner.bytes.saturating_add(bytes);
-        inner.entries.insert(key.to_string(), Entry { tick, ..entry });
+        inner
+            .entries
+            .insert(key.to_string(), Entry { tick, ..entry });
         inner.order.insert(tick, key.to_string());
 
         let before = inner.entries.len();
@@ -577,9 +579,9 @@ fn value_bytes(value: &Value) -> usize {
         Value::Null | Value::Bool(_) => 8,
         Value::Number(_) => 16,
         Value::String(text) => text.len().saturating_add(24),
-        Value::Array(items) => items
-            .iter()
-            .fold(24usize, |total, item| total.saturating_add(value_bytes(item))),
+        Value::Array(items) => items.iter().fold(24usize, |total, item| {
+            total.saturating_add(value_bytes(item))
+        }),
         Value::Object(map) => map.iter().fold(24usize, |total, (key, item)| {
             total
                 .saturating_add(key.len())
@@ -612,7 +614,12 @@ mod tests {
     fn stores_and_reports_hit_then_miss() {
         let cache = cache(8, 64 * 1024);
         assert!(cache.get("ai:settings").is_none());
-        assert!(cache.insert("ai:settings", serde_json::json!({ "enabled": true }), None, &[]));
+        assert!(cache.insert(
+            "ai:settings",
+            serde_json::json!({ "enabled": true }),
+            None,
+            &[]
+        ));
         let value = cache.get("ai:settings").unwrap();
         assert_eq!(value["enabled"], true);
         let stats = cache.stats();
@@ -633,7 +640,10 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(40)).await;
         let stale = cache.get_stale("ai:routes").expect("stale còn hạn dùng");
         assert_eq!(stale.len(), 2);
-        assert!(cache.get("ai:routes").is_none(), "get() không trả dữ liệu hết hạn");
+        assert!(
+            cache.get("ai:routes").is_none(),
+            "get() không trả dữ liệu hết hạn"
+        );
         let stats = cache.stats();
         assert_eq!(stats.stale_served, 1);
         assert_eq!(stats.expirations, 1);
@@ -676,7 +686,11 @@ mod tests {
             );
         }
         let stats = cache.stats();
-        assert!(stats.size_bytes <= 900, "vượt hạn mức byte: {}", stats.size_bytes);
+        assert!(
+            stats.size_bytes <= 900,
+            "vượt hạn mức byte: {}",
+            stats.size_bytes
+        );
         assert!(stats.entry_count < 6);
         assert!(stats.evictions > 0);
     }
@@ -718,7 +732,12 @@ mod tests {
     #[test]
     fn zero_ttl_does_not_cache() {
         let cache = cache(8, 64 * 1024);
-        assert!(!cache.insert("ai:settings", serde_json::json!(1), Some(Duration::ZERO), &[]));
+        assert!(!cache.insert(
+            "ai:settings",
+            serde_json::json!(1),
+            Some(Duration::ZERO),
+            &[]
+        ));
         assert_eq!(cache.stats().entry_count, 0);
     }
 
@@ -748,7 +767,12 @@ mod tests {
     #[test]
     fn reports_namespace_scoped_metrics_without_payload_data() {
         let cache = cache(8, 64 * 1024);
-        cache.insert("ai:settings", serde_json::json!({ "model": "x" }), None, &[]);
+        cache.insert(
+            "ai:settings",
+            serde_json::json!({ "model": "x" }),
+            None,
+            &[],
+        );
         cache.get("ai:settings");
         let json = serde_json::to_string(&cache.stats()).unwrap();
         assert!(json.contains("\"hitRate\""));
