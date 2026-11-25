@@ -723,7 +723,7 @@ mod tests {
             },
             Arc::new(CacheCounters::default()),
         );
-        assert!(cache.insert("ai:settings", serde_json::json!(1), None, &[]));
+        assert!(!cache.insert("ai:settings", serde_json::json!(1), None, &[]));
         assert!(cache.get("ai:settings").is_none());
         assert_eq!(cache.stats().entry_count, 0);
         assert!(cache.stats().bypasses > 0);
