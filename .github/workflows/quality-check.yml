@@ -114,7 +114,7 @@ jobs:
       - name: QA tĩnh theo phiên bản
         run: |
           set -euo pipefail
-          for t in v855-ui v856-ui v862-observability v871-runtime; do
+          for t in v855-ui v856-ui v862-observability v871-runtime v873-cache; do
             echo "::group::$t"
             node "tools/qa/$t.js"
             echo "::endgroup::"

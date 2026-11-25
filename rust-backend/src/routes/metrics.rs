@@ -47,7 +47,15 @@ pub async fn metrics(
     // Render Prometheus đọc `/proc/self/statm` và dựng chuỗi lớn: chạy trên
     // blocking pool để không chặn worker thread của runtime.
     let metrics = state.metrics.clone();
-    let body = match tokio::task::spawn_blocking(move || metrics.prometheus(&circuits)).await {
+    // 8.7.3 — metrics của Cache Engine nằm cùng registry, không mở endpoint mới.
+    let cache = state.cache.clone();
+    let body = match tokio::task::spawn_blocking(move || {
+        let mut body = metrics.prometheus(&circuits);
+        body.push_str(&cache.prometheus());
+        body
+    })
+    .await
+    {
         Ok(body) => body,
         Err(_) => return ApiError::internal().into_response_with(&request_id.0),
     };

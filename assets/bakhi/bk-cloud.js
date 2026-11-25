@@ -309,6 +309,30 @@
     }
 
     /* ---------------------------------------------------------------------
+       8.7.3 — Cache dùng chung cho nội dung CÔNG KHAI
+
+       Thông báo, changelog và feature flags giống nhau với mọi người dùng và
+       từng bị tải lại ở mỗi trang. Chúng đi qua BKCache.shared (L1 + L2) và
+       được gộp request khi nhiều thành phần hỏi cùng lúc.
+
+       KHÔNG đưa vào đây: trạng thái đã đọc, thông báo báo cáo, hồ sơ học sinh
+       hay bất kỳ dữ liệu nào phụ thuộc tài khoản.
+       ------------------------------------------------------------------ */
+    function cachedRead(key, ttl, force, loader) {
+        var cache = global.BKCache && global.BKCache.shared;
+        if (!cache || typeof cache.wrap !== 'function') {
+            /* Trang nạp thiếu bk-cache.js: hành vi giữ nguyên như trước 8.7.3. */
+            return Promise.resolve().then(loader);
+        }
+        return cache.wrap(key, function () { return Promise.resolve().then(loader); }, {
+            ttl: ttl,
+            persist: true,
+            tags: ['public-content'],
+            force: !!force
+        });
+    }
+
+    /* ---------------------------------------------------------------------
        Nhận diện học sinh
        ------------------------------------------------------------------ */
     function cachedIdentity() { return lsGet(IDENTITY_KEY); }
@@ -1115,18 +1139,22 @@
         S.annLoading = true;
         S.annError = null;
         if (S.panelOpen) renderPanel();
-        return client().from('announcements')
-            .select('id, title, content, type, priority, published_at, changelog_version')
-            .eq('is_published', true)
-            .order('published_at', { ascending: false })
-            .limit(50)
-            .then(function (res) {
-                if (res.error) throw res.error;
-                S.allAnnouncements = res.data || [];
-                return readAnnouncementState().catch(function () {
-                    return { reads: {}, dismissed: localDismissed() };
+        return cachedRead('announcements:v1', 60000, force, function () {
+            return client().from('announcements')
+                .select('id, title, content, type, priority, published_at, changelog_version')
+                .eq('is_published', true)
+                .order('published_at', { ascending: false })
+                .limit(50)
+                .then(function (res) {
+                    if (res.error) throw res.error;
+                    return res.data || [];
                 });
-            }).then(function (state) {
+        }).then(function (rows) {
+            S.allAnnouncements = rows || [];
+            return readAnnouncementState().catch(function () {
+                return { reads: {}, dismissed: localDismissed() };
+            });
+        }).then(function (state) {
                 state = state || {};
                 S.reads = state.reads || {};
                 S.dismissed = state.dismissed || localDismissed();
@@ -2062,14 +2090,18 @@
         S.clLoading = true;
         S.clError = null;
         if (S.panelOpen) renderPanel();
-        return client().from('changelog')
-            .select('id, version, title, summary, content, category, published_at')
-            .eq('is_published', true)
-            .order('published_at', { ascending: false })
-            .limit(40)
-            .then(function (res) {
-                if (res.error) throw res.error;
-                S.changelog = res.data || [];
+        return cachedRead('changelog:v1', 300000, false, function () {
+            return client().from('changelog')
+                .select('id, version, title, summary, content, category, published_at')
+                .eq('is_published', true)
+                .order('published_at', { ascending: false })
+                .limit(40)
+                .then(function (res) {
+                    if (res.error) throw res.error;
+                    return res.data || [];
+                });
+        }).then(function (rows) {
+                S.changelog = rows || [];
                 S.clLoading = false;
                 renderWhatsNew();
                 renderPanel();
@@ -2091,13 +2123,17 @@
     function loadSiteFlags() {
         if (!S.ready) return Promise.resolve({});
         try {
-            return client().from('app_settings')
-                .select('key, value')
-                .like('key', 'public.%')
-                .then(function (res) {
-                    if (res.error) throw res.error;
+            return cachedRead('site-flags:v1', 60000, false, function () {
+                return client().from('app_settings')
+                    .select('key, value')
+                    .like('key', 'public.%')
+                    .then(function (res) {
+                        if (res.error) throw res.error;
+                        return res.data || [];
+                    });
+            }).then(function (rows) {
                     var flags = {};
-                    (res.data || []).forEach(function (row) { flags[row.key] = row.value; });
+                    (rows || []).forEach(function (row) { flags[row.key] = row.value; });
                     S.flags = flags;
                     S.flagsLoaded = true;
                     renderMaintenance();

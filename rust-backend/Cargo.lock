@@ -82,7 +82,7 @@ dependencies = [
 
 [[package]]
 name = "bakhi-backend"
-version = "8.7.2"
+version = "8.7.3"
 dependencies = [
  "async-trait",
  "axum",

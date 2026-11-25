@@ -48,6 +48,15 @@ const MAX_CONCURRENCY_LIMIT: usize = 65_535;
 const MAX_WORKER_THREADS: usize = 256;
 const MAX_POOL_IDLE_PER_HOST: usize = 1_024;
 
+// 8.7.3 — Intelligent Caching. Mặc định bật L1 + dedup với hạn mức nhỏ, an toàn.
+const DEFAULT_CACHE_MAX_ENTRIES: usize = 512;
+const DEFAULT_CACHE_MAX_BYTES: usize = 8 * 1024 * 1024;
+const DEFAULT_CACHE_JITTER_PERCENT: u8 = 10;
+const MIN_CACHE_ENTRIES: usize = 16;
+const MAX_CACHE_ENTRIES: usize = 100_000;
+const MIN_CACHE_BYTES: usize = 64 * 1024;
+const MAX_CACHE_BYTES: usize = 512 * 1024 * 1024;
+
 /// Origin mặc định của website (GitHub Pages). Chỉ dùng khi CORS_ORIGINS trống.
 const DEFAULT_CORS_ORIGIN: &str = "https://minhtruk.github.io";
 
@@ -140,7 +149,25 @@ pub struct Settings {
     /// `GET /api/v1/metrics` (định dạng Prometheus) — mặc định tắt.
     pub metrics_enabled: bool,
     /// Token bắt buộc khi bật metrics. Rỗng ⇒ endpoint trả 404 dù đã bật.
-    pub metrics_token: Option<String>,
+        pub metrics_token: Option<String>,
+
+    /// Công tắc tổng của Cache Engine. `false` ⇒ rollback ngay: mọi thứ đọc
+    /// thẳng nguồn dữ liệu như 8.7.2, không lưu gì trong RAM.
+    pub cache_enabled: bool,
+    /// Tầng L1 (RAM) — tắt riêng để so sánh/điều tra.
+    pub cache_l1_enabled: bool,
+    /// Gộp request đồng thời (singleflight).
+    pub cache_dedup_enabled: bool,
+    pub cache_max_entries: usize,
+    pub cache_max_memory_bytes: usize,
+    pub cache_default_ttl: Duration,
+    /// TTL riêng cho cấu hình AI (ai_settings, ai_model_routes).
+    /// 0 = không cache cấu hình AI (vẫn giữ dedup).
+    pub cache_config_ttl: Duration,
+    /// Khoảng tối đa được phục vụ dữ liệu cũ khi nguồn dữ liệu lỗi.
+    pub cache_stale_ttl: Duration,
+    /// Jitter TTL theo khoá (phần trăm, 0 = tắt).
+    pub cache_jitter_percent: u8,
 
     /// Bảng giá AI nạp từ `AI_PRICING_JSON` hoặc `AI_PRICING_FILE`.
     /// Rỗng ⇒ chi phí là "chưa xác định", không bao giờ là 0 USD.
@@ -199,7 +226,14 @@ impl fmt::Debug for Settings {
             .field("persist_conversations", &self.persist_conversations)
             .field("trust_proxy", &self.trust_proxy)
             .field("metrics_enabled", &self.metrics_enabled)
-            .field("metrics_token", &self.metrics_token.as_deref().map(redact))
+                        .field("metrics_token", &self.metrics_token.as_deref().map(redact))
+            .field("cache_enabled", &self.cache_enabled)
+            .field("cache_l1_enabled", &self.cache_l1_enabled)
+            .field("cache_dedup_enabled", &self.cache_dedup_enabled)
+            .field("cache_max_entries", &self.cache_max_entries)
+            .field("cache_max_memory_bytes", &self.cache_max_memory_bytes)
+            .field("cache_config_ttl", &self.cache_config_ttl)
+            .field("cache_stale_ttl", &self.cache_stale_ttl)
             .field("ai_pricing_version", &self.ai_pricing.version)
             .field("ai_pricing_models", &self.ai_pricing.model_count())
             .finish()
@@ -412,6 +446,31 @@ impl Settings {
                 .map(|v| parse_bool(&v, false))
                 .unwrap_or(false),
             metrics_token: var("METRICS_TOKEN"),
+            cache_enabled: var("CACHE_ENABLED")
+                .map(|v| parse_bool(&v, true))
+                .unwrap_or(true),
+            cache_l1_enabled: var("CACHE_L1_ENABLED")
+                .map(|v| parse_bool(&v, true))
+                .unwrap_or(true),
+            cache_dedup_enabled: var("CACHE_DEDUP_ENABLED")
+                .map(|v| parse_bool(&v, true))
+                .unwrap_or(true),
+            cache_max_entries: parse_num::<usize>("CACHE_MAX_ENTRIES")?
+                .unwrap_or(DEFAULT_CACHE_MAX_ENTRIES),
+            cache_max_memory_bytes: parse_num::<usize>("CACHE_MAX_MEMORY_BYTES")?
+                .unwrap_or(DEFAULT_CACHE_MAX_BYTES),
+            cache_default_ttl: Duration::from_secs(
+                parse_num::<u64>("CACHE_DEFAULT_TTL")?.unwrap_or(60),
+            ),
+            cache_config_ttl: Duration::from_secs(
+                parse_num::<u64>("CACHE_TTL_AI_CONFIG")?.unwrap_or(30),
+            ),
+            cache_stale_ttl: Duration::from_secs(
+                parse_num::<u64>("CACHE_STALE_WHILE_REVALIDATE")?.unwrap_or(120),
+            ),
+            cache_jitter_percent: parse_num::<u8>("CACHE_TTL_JITTER_PERCENT")?
+                .unwrap_or(DEFAULT_CACHE_JITTER_PERCENT)
+                .min(50),
             ai_pricing: Pricing::from_env(),
         };
         settings.validate()?;
@@ -497,6 +556,26 @@ impl Settings {
                 "AI_MAX_CONCURRENCY phải nhỏ hơn hoặc bằng MAX_CONCURRENCY",
             ));
         }
+        if !(MIN_CACHE_ENTRIES..=MAX_CACHE_ENTRIES).contains(&self.cache_max_entries) {
+            return Err(ConfigError::Invalid("CACHE_MAX_ENTRIES"));
+        }
+        if !(MIN_CACHE_BYTES..=MAX_CACHE_BYTES).contains(&self.cache_max_memory_bytes) {
+            return Err(ConfigError::Invalid("CACHE_MAX_MEMORY_BYTES"));
+        }
+        if self.cache_default_ttl < Duration::from_secs(1)
+            || self.cache_default_ttl > Duration::from_secs(86_400)
+        {
+            return Err(ConfigError::Invalid("CACHE_DEFAULT_TTL"));
+        }
+        if self.cache_config_ttl > Duration::from_secs(3_600) {
+            return Err(ConfigError::Invalid("CACHE_TTL_AI_CONFIG"));
+        }
+        if self.cache_stale_ttl > Duration::from_secs(3_600) {
+            return Err(ConfigError::Invalid("CACHE_STALE_WHILE_REVALIDATE"));
+        }
+        if self.cache_jitter_percent > 50 {
+            return Err(ConfigError::Invalid("CACHE_TTL_JITTER_PERCENT"));
+        }
         if self.circuit_cooldown < Duration::from_secs(1) {
             return Err(ConfigError::Invalid("AI_CIRCUIT_COOLDOWN_MS"));
         }
@@ -542,7 +621,16 @@ impl Settings {
             persist_conversations: false,
             trust_proxy: false,
             metrics_enabled: false,
-            metrics_token: None,
+                        metrics_token: None,
+            cache_enabled: true,
+            cache_l1_enabled: true,
+            cache_dedup_enabled: true,
+            cache_max_entries: DEFAULT_CACHE_MAX_ENTRIES,
+            cache_max_memory_bytes: DEFAULT_CACHE_MAX_BYTES,
+            cache_default_ttl: Duration::from_secs(60),
+            cache_config_ttl: Duration::from_secs(30),
+            cache_stale_ttl: Duration::from_secs(120),
+            cache_jitter_percent: DEFAULT_CACHE_JITTER_PERCENT,
             ai_pricing: Pricing::default(),
         }
     }

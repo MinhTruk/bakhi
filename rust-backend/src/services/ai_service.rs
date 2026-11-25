@@ -15,7 +15,7 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::config::Settings;
@@ -51,7 +51,7 @@ pub struct ChatRequest {
     pub retry: Option<bool>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct AiSettings {
     #[serde(default = "default_true")]
     pub enabled: bool,
@@ -144,7 +144,7 @@ impl Default for AiSettings {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct ModelRoute {
     #[serde(default)]
     pub position: u32,
@@ -199,6 +199,19 @@ pub struct ChainFailure {
     pub fell_back: bool,
 }
 
+/// Dựng danh sách route từ giá trị JSON đã cache (dùng cho cả lần đọc đầu và
+/// cache hit). Route bị tắt hoặc thiếu model bị loại như trước 8.7.3.
+fn routes_from_value(value: Value) -> Vec<ModelRoute> {
+    match value {
+        Value::Array(list) => list
+            .into_iter()
+            .filter_map(|row| serde_json::from_value::<ModelRoute>(row).ok())
+            .filter(|route| route.enabled && !route.model.trim().is_empty())
+            .collect(),
+        _ => Vec::new(),
+    }
+}
+
 #[derive(Clone)]
 pub struct AiService {
     pub settings: Arc<Settings>,
@@ -215,40 +228,92 @@ impl AiService {
         }
     }
 
+    /// 8.7.3 — đọc cấu hình hệ thống qua L1 cache + singleflight.
+    ///
+    /// `ai_settings` và `ai_model_routes` là dữ liệu DÙNG CHUNG cấp hệ thống
+    /// (không phụ thuộc người dùng). Trước 8.7.3 mỗi lượt chat đọc lại cả hai
+    /// bảng từ Supabase; nay chỉ đọc lại sau `CACHE_TTL_AI_CONFIG` giây, và
+    /// nhiều lượt chat đồng thời chỉ tạo MỘT truy vấn.
+    ///
+    /// Không cache khoá API vào log/metrics; chỉ giá trị cấu hình nằm trong RAM
+    /// của tiến trình như trước đây.
+    async fn config_value(
+        &self,
+        key: &'static str,
+        path: &'static str,
+    ) -> Result<Arc<Value>, ApiError> {
+        if let Some(cached) = self.state.cache.get(key) {
+            return Ok(cached);
+        }
+
+        let cache_key = key.to_string();
+        let cache = self.state.cache.clone();
+        let supabase = self.supabase.clone();
+        let ttl = self.settings.cache_config_ttl;
+        let flight = self
+            .state
+            .flights
+            .run(cache_key, move || async move {
+                let rows = supabase.select(path, RestAuth::Service).await;
+                let value = match rows {
+                    Ok(Value::Array(mut list)) => {
+                        if list.is_empty() {
+                            Value::Null
+                        } else {
+                            list.swap_remove(0)
+                        }
+                    }
+                    Ok(other) => other,
+                    Err(error) => return Err(error),
+                };
+                if !ttl.is_zero() {
+                    cache.insert(key, value.clone(), Some(ttl), &["ai-config"]);
+                }
+                Ok(Arc::new(value))
+            })
+            .await;
+
+        match flight {
+            Ok(value) => Ok(value),
+            // Nguồn dữ liệu lỗi: dùng bản cũ trong hạn stale thay vì làm hỏng
+            // lượt chat. Ngoài hạn stale thì trả đúng lỗi gốc.
+            Err(error) => match self.state.cache.get_stale(key) {
+                Some(stale) => {
+                    tracing::warn!(
+                        target: "bakhi::cache",
+                        key,
+                        "nguồn dữ liệu lỗi — dùng cấu hình AI đã cache"
+                    );
+                    Ok(stale)
+                }
+                None => Err(error),
+            },
+        }
+    }
+
     async fn load_settings(&self) -> Result<AiSettings, ApiError> {
-        let rows = self
-            .supabase
-            .select("ai_settings?id=eq.1&select=*&limit=1", RestAuth::Service)
+        let value = self
+            .config_value("ai:settings:v1", "ai_settings?id=eq.1&select=*&limit=1")
             .await?;
-        // Lấy quyền sở hữu dòng đầu tiên thay vì clone cả object JSON.
-        let row = match rows {
-            Value::Array(mut list) if !list.is_empty() => list.swap_remove(0),
-            _ => Value::Null,
-        };
-        if row.is_null() {
+        if value.is_null() {
             // Bảng cấu hình chưa có dòng 1 ⇒ dùng mặc định an toàn.
             return Ok(AiSettings::default());
         }
-        serde_json::from_value(row).map_err(|_| {
+        serde_json::from_value::<AiSettings>((*value).clone()).map_err(|_| {
             ApiError::service_unavailable("BAD_CONFIG", "Cấu hình trợ lý AI không đọc được.")
         })
     }
 
     async fn load_routes(&self) -> Vec<ModelRoute> {
-        let rows = self
-            .supabase
-            .select(
+        match self
+            .config_value(
+                "ai:routes:v1",
                 "ai_model_routes?enabled=eq.true&order=position.asc&select=*&limit=20",
-                RestAuth::Service,
             )
-            .await;
-        match rows {
-            Ok(Value::Array(list)) => list
-                .into_iter()
-                .filter_map(|row| serde_json::from_value::<ModelRoute>(row).ok())
-                .filter(|route| route.enabled && !route.model.trim().is_empty())
-                .collect(),
-            _ => Vec::new(),
+            .await
+        {
+            Ok(value) => routes_from_value((*value).clone()),
+            Err(_) => Vec::new(),
         }
     }
 

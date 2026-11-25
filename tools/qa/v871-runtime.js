@@ -122,8 +122,11 @@ ok('CHANGELOG có [' + APP + ']', new RegExp('^## \\[' + esc(APP) + '\\]', 'm').
 ok('CHANGELOG nêu Runtime Engine', /Runtime Engine/.test(CHANGELOG));
 ok('CHANGELOG không bịa số benchmark', /Chưa có số đo benchmark/.test(CHANGELOG));
 ok('README nêu ' + APP, new RegExp(esc(APP)).test(read('rust-backend/README.md')));
-ok('ARCHITECTURE có mục Runtime Engine (' + APP + ')',
-  new RegExp('Runtime Engine \\((' + esc(APP) + ')\\)').test(read('docs/ARCHITECTURE.md')));
+/* Cổng này phải sống qua các bản phát hành: yêu cầu ARCHITECTURE có MỘT mục
+   mang đúng phiên bản hiện tại, không buộc tên mục phải là "Runtime Engine"
+   (8.7.3 là Intelligent Caching). */
+ok('ARCHITECTURE có mục cho phiên bản ' + APP,
+  new RegExp('^### .*\\(' + esc(APP) + '\\)', 'm').test(read('docs/ARCHITECTURE.md')));
 ok('tài liệu deploy có RUST_MAX_CONCURRENT_PROVIDER_REQUESTS',
   /RUST_MAX_CONCURRENT_PROVIDER_REQUESTS/.test(read('docs/RUST_DEPLOYMENT_V860.md')));
 ok('brain page v871 tồn tại', exists('brain/pages/v871-runtime-engine.md'));

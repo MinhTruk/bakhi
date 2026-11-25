@@ -895,3 +895,23 @@ Tối ưu đường đi dữ liệu JS → HTTP JSON → Rust → HTTP JSON → 
   nên không nằm trong bản tối ưu an toàn này.
 - **Đo lường** — `rust-backend/examples/pipeline_bench.rs` (small/medium/large) chạy trong
   job release của CI; số liệu nằm trong log, không phải benchmark end-to-end.
+
+### 8.5. Intelligent Caching (8.7.3) — Cache Engine
+
+Ba tầng, mỗi tầng chỉ làm việc nó làm tốt nhất:
+
+- **L1 Rust — `cache::Cache`** (`src/cache/mod.rs`): TTL theo entry (có jitter tất định),
+  LRU qua `BTreeMap<tick, key>`, giới hạn entry + byte, invalidation theo key/namespace/tag,
+  `get_stale()` cho phép phục vụ bản cũ trong `CACHE_STALE_WHILE_REVALIDATE` khi nguồn dữ
+  liệu lỗi. Trả `Arc<Value>` (không clone payload); mutex chỉ giữ trong thao tác map.
+- **Singleflight** (`src/cache/singleflight.rs`): `ai_settings`/`ai_model_routes` — dữ liệu
+  dùng chung cấp hệ thống — chỉ được đọc một lần cho nhiều lượt chat đồng thời. Lỗi lan
+  truyền cho mọi request chờ; in-flight xoá ngay sau khi xong.
+- **L1/L2 trình duyệt — `assets/bakhi/bk-cache.js`**: `BKCache.shared` giữ nội dung công
+  khai (thông báo, changelog, feature flags) với TTL + LRU + dedup; IndexedDB là L2 tuỳ
+  chọn có version, timeout và fallback. Dữ liệu cá nhân không đi qua cache.
+- **L3**: `sw.js` + `?v=<phiên bản>` cho tài nguyên tĩnh; API Rust vẫn `no-store`.
+- **Metrics**: `bakhi_cache_*` trong `/metrics` và khối `cache` trong summary Founder.
+- **Rollback**: `CACHE_ENABLED=0` (hoặc tắt riêng L1/dedup) ⇒ hành vi như 8.7.2.
+
+Chi tiết policy TTL, bảo mật và benchmark: `docs/INTELLIGENT_CACHING_V873.md`.

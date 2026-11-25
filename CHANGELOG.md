@@ -2,6 +2,63 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.7.3] — 2026-11-25
+
+**Intelligent Caching.** Thêm Cache Engine đa tầng: L1 trong RAM (Rust + trình duyệt),
+L2 IndexedDB cho nội dung công khai, L3 tiếp tục do service worker + `?v=` đảm nhiệm;
+gộp request đọc đồng thời ở cả hai phía; invalidation theo key/namespace/tag; metrics
+cache trong Observability. **Không đổi API contract, schema Supabase, auth/RLS, logic
+AI Primary/Fallback, `BK_BACKEND.mode` (vẫn `edge`), không deploy.**
+
+### Tính năng
+
+- **L1 Rust — `cache::Cache`** (`rust-backend/src/cache/mod.rs`): TTL theo entry có jitter,
+  LRU bằng `BTreeMap` (O(log n)), giới hạn cả số entry lẫn byte, xoá theo key/namespace/
+  tag, `get_stale()` chỉ dùng khi nguồn dữ liệu lỗi. Trả `Arc<Value>` nên không clone
+  payload; mutex chỉ giữ trong thao tác map, không có `.await`.
+- **Cấu hình AI không còn đọc Supabase mỗi lượt chat** — `ai_settings` và
+  `ai_model_routes` đi qua L1 + singleflight (`CACHE_TTL_AI_CONFIG`, mặc định 30 s).
+- **Singleflight (Rust)** — nhiều lượt chat đồng thời khi cache lạnh chỉ tạo MỘT truy vấn
+  Supabase; lỗi được lan truyền cho mọi request đang chờ và in-flight được xoá ngay để
+  lần sau thử lại được.
+- **L1/L2 trình duyệt — `assets/bakhi/bk-cache.js`** — một cache dùng chung thay cho các
+  biến trạng thái riêng lẻ: TTL, LRU, giới hạn byte, tag, namespace, dedup, metrics.
+  Thông báo, changelog và feature flags (`public.%`) được cache L1 60–300 s và L2
+  IndexedDB có version; lỗi storage/quota luôn fallback về L1 hoặc nguồn.
+- **An toàn tài khoản** — instance `private` không ghi L2 và bị xoá khi `bk:identity`
+  đổi/đăng xuất; instance công khai không bị ảnh hưởng. Không cache token, hồ sơ, trạng
+  thái đã đọc hay phản hồi báo cáo.
+- **Metrics** — `bakhi_cache_hit_total`, `_miss_total`, `_hit_rate`, `_eviction_total`,
+  `_expiration_total`, `_invalidation_total`, `_size_bytes`, `_entry_count`, `_dedup_total`,
+  `_saved_requests`, `_bypass_total` trong `/metrics`; khối `cache` trong summary Founder
+  (kèm p50/p95 thời gian tra L1). `BKCache.stats()` cho phía trình duyệt.
+- **Cấu hình tập trung** — `CACHE_ENABLED`, `CACHE_L1_ENABLED`, `CACHE_DEDUP_ENABLED`,
+  `CACHE_MAX_ENTRIES`, `CACHE_MAX_MEMORY_BYTES`, `CACHE_DEFAULT_TTL`, `CACHE_TTL_AI_CONFIG`,
+  `CACHE_STALE_WHILE_REVALIDATE`, `CACHE_TTL_JITTER_PERCENT`; kiểm tra ràng buộc lúc khởi
+  động. `CACHE_ENABLED=0` là rollback ngay, không cần revert code.
+
+### Kiểm thử và đo lường
+
+- 14 unit test Rust mới (10 cho L1 cache, 4 cho singleflight) và 6 test tích hợp trong
+  `tests/cache_tests.rs`.
+- `tools/qa/v873-cache.js` chạy **thật** `bk-cache.js` trong sandbox: hit/miss, TTL, LRU,
+  hạn mức byte, invalidation, dedup 3→1, lỗi + thử lại, fallback không IndexedDB, đổi tài
+  khoản, thứ tự nạp script trên toàn bộ HTML, nối dây Rust. Cổng này chạy trong Quality Check.
+- Microbenchmark cục bộ (`node tools/qa/v873-cache.js --bench`, payload 40 dòng): L1 hit
+  ~1.500 ns/op so với xử lý lại payload ~37.600 ns/op — hit rẻ hơn khoảng 25 lần. Đây là
+  microbenchmark CPU, **không** phải độ trễ mạng hay end-to-end; số Rust nằm trong log CI
+  của `pipeline_bench`.
+
+### Ghi chú
+
+- **Không thêm dependency.** L1 dùng `HashMap`/`BTreeMap`/`Mutex`/atomic của std;
+  singleflight dùng `tokio::sync::broadcast` đã có. Không dùng DashMap/Moka vì dữ liệu
+  cần cache ở backend chỉ là hai bảng cấu hình.
+- **L3 không đặt ở backend** vì backend không phục vụ tệp tĩnh; API tiếp tục `no-store`.
+  `sw.js` đã cache tài nguyên theo `?v=` và dọn cache cũ khi `REVISION`/phiên bản đổi.
+- **Chưa có invalidation tức thời từ Supabase** cho nội dung công khai — dựa vào TTL
+  60–300 s. Chi tiết và rollback: `docs/INTELLIGENT_CACHING_V873.md`.
+
 ## [8.7.2] — 2026-11-24
 
 **Serialization & Data Optimization.** Giảm chi phí chuyển dữ liệu giữa JavaScript và

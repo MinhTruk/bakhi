@@ -6,7 +6,8 @@
 //     so với mượn dữ liệu (bản 8.7.2);
 //   * dựng body provider bằng cây `serde_json::Value` (bản cũ)
 //     so với struct `Serialize` mượn dữ liệu (bản 8.7.2);
-//   * parse một chat request đã serialize.
+//   * parse một chat request đã serialize;
+//   * (8.7.3) chi phí đọc cache L1 so với clone cấu hình mỗi lượt chat.
 //
 // Chạy: cargo run --release --locked --example pipeline_bench
 //
@@ -16,8 +17,10 @@
 // ===========================================================================
 
 use std::hint::black_box;
-use std::time::Instant;
+use std::sync::Arc;
+use std::time::{Duration, Instant};
 
+use bakhi_backend::cache::{Cache, CacheConfig, CacheCounters};
 use bakhi_backend::providers::ChatTurn;
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -141,9 +144,54 @@ fn scenario(label: &str, turn_count: usize, chars: usize) {
     });
 }
 
+/// 8.7.3 — chi phí đọc cache L1 so với clone cấu hình mỗi lượt chat.
+///
+/// `cache.get()` ở đây bao gồm cả khoá mutex, cập nhật LRU và bộ đếm metrics
+/// (đúng như trong production), nên đây là chi phí thật của một lần hit.
+fn cache_scenario() {
+    println!("\n[cache] cấu hình AI ~40 route (dữ liệu dùng chung)");
+    let config = serde_json::json!({
+        "enabled": true,
+        "provider": "groq",
+        "model": "openai/gpt-oss-20b",
+        "routes": (0..40)
+            .map(|index| serde_json::json!({
+                "position": index,
+                "label": format!("route {index}"),
+                "provider": "groq",
+                "model": "openai/gpt-oss-20b",
+                "key_ref": "AI_TUTOR_KEY_3",
+                "enabled": true
+            }))
+            .collect::<Vec<_>>()
+    });
+
+    let cache = Cache::new(CacheConfig::default(), Arc::new(CacheCounters::default()));
+    let inserted = cache.insert(
+        "ai:settings:v1",
+        config.clone(),
+        Some(Duration::from_secs(30)),
+        &["ai-config"],
+    );
+    assert!(inserted, "cache phải lưu được cấu hình mẫu");
+
+    bench("v8.7.3: cache L1 hit (Arc, không clone payload)", 200_000, || {
+        black_box(cache.get("ai:settings:v1"));
+    });
+
+    bench("v8.7.3: cache miss (khoá không tồn tại)", 200_000, || {
+        black_box(cache.get("ai:routes:absent"));
+    });
+
+    bench("v8.7.2: clone cấu hình mỗi lượt chat", 200_000, || {
+        black_box(config.clone());
+    });
+}
+
 fn main() {
-    println!("Bá Khí 8.7.2 — pipeline microbenchmark");
+    println!("Bá Khí 8.7.3 — pipeline + cache microbenchmark");
     scenario("small", 2, 200);
     scenario("medium", 12, 400);
     scenario("large", 40, 1_500);
+    cache_scenario();
 }

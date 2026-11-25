@@ -66,6 +66,26 @@ Nhóm test: `health_tests`, `auth_tests`, `api_contract_tests`, `ai_gateway_test
 - Microbenchmark: `cargo run --release --locked --example pipeline_bench` (cũng chạy trong
   job release của CI). Đây là microbenchmark, không phải số đo end-to-end.
 
+## Intelligent Caching (8.7.3)
+
+- `ai_settings` và `ai_model_routes` là dữ liệu **dùng chung**: chúng được đọc qua
+  L1 cache + singleflight thay vì truy vấn Supabase ở mỗi lượt chat.
+- L1: TTL theo entry (jitter), LRU, giới hạn entry/byte, xoá theo key/namespace/tag.
+- Khi Supabase lỗi, cấu hình đã cache còn trong hạn `CACHE_STALE_WHILE_REVALIDATE` được
+  dùng tiếp thay vì làm hỏng lượt chat; ngoài hạn đó trả lỗi gốc.
+- Metrics `bakhi_cache_*` xuất cùng `/metrics`; summary Founder có khối `cache`.
+
+```bash
+CACHE_ENABLED=0 cargo run              # rollback: hành vi như 8.7.2
+CACHE_TTL_AI_CONFIG=15 cargo run       # cấu hình AI tươi hơn (giây, 0 = không cache)
+CACHE_MAX_ENTRIES=1024 CACHE_MAX_MEMORY_BYTES=16777216 cargo run
+```
+
+Các biến: `CACHE_ENABLED`, `CACHE_L1_ENABLED`, `CACHE_DEDUP_ENABLED`,
+`CACHE_MAX_ENTRIES` (16–100000), `CACHE_MAX_MEMORY_BYTES` (64 KiB–512 MiB),
+`CACHE_DEFAULT_TTL` (giây), `CACHE_TTL_AI_CONFIG` (giây), `CACHE_STALE_WHILE_REVALIDATE`
+(giây), `CACHE_TTL_JITTER_PERCENT` (0–50). Chi tiết: `docs/INTELLIGENT_CACHING_V873.md`.
+
 ## Observability (8.6.2)
 
 ```bash
@@ -93,6 +113,7 @@ src/
 ├── main.rs              khởi động, tracing, graceful shutdown có hạn chờ
 ├── lib.rs               AppState, router, CORS, giới hạn body/timeout, thứ tự middleware
 ├── lifecycle.rs         cờ draining + đếm request đang chạy
+├── cache/               L1 (TTL/LRU/byte/tag) + singleflight gộp request đọc
 ├── config/settings.rs   cấu hình từ env, kiểm tra ràng buộc khi khởi động
 ├── errors/api_error.rs  error envelope thống nhất + request id
 ├── middleware/          auth, rate_limit, concurrency, content_type, request_id

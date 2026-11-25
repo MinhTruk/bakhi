@@ -1,5 +1,5 @@
 // ===========================================================================
-// Bá Khí — Rust backend (v8.7.2)
+// Bá Khí — Rust backend (v8.7.3)
 //
 // Modular monolith: Axum + Tokio + Serde. Mọi phụ thuộc dùng chung (HTTP client,
 // Supabase client, provider registry, bộ giới hạn tần suất, circuit breaker,
@@ -12,6 +12,7 @@
 // và request bị từ chối vì quá tải không bao giờ chờ vô hạn.
 // ===========================================================================
 
+pub mod cache;
 pub mod config;
 pub mod errors;
 pub mod lifecycle;
@@ -33,6 +34,7 @@ use tower_http::cors::{AllowOrigin, CorsLayer};
 use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
 
+use crate::cache::{Cache, CacheConfig, CacheCounters, SingleFlight};
 use crate::config::Settings;
 use crate::errors::REQUEST_ID_HEADER;
 use crate::lifecycle::Lifecycle;
@@ -53,15 +55,35 @@ pub struct AppState {
     pub providers: Arc<ProviderRegistry>,
     pub circuits: Arc<CircuitBreaker>,
     pub concurrency: Arc<Concurrency>,
-    pub metrics: Arc<Metrics>,
+        pub metrics: Arc<Metrics>,
+    /// 8.7.3 — L1 cache + gộp request đồng thời. Chỉ dữ liệu dùng chung
+    /// (cấu hình AI) đi qua đây; dữ liệu cá nhân không bao giờ được cache.
+    pub cache: Arc<Cache>,
+    pub flights: Arc<SingleFlight>,
     pub lifecycle: Arc<Lifecycle>,
 }
 
 impl AppState {
     pub fn new(settings: Settings) -> Result<Self, reqwest::Error> {
-        let http = build_http_client(&settings);
+                let http = build_http_client(&settings);
         let supabase = Arc::new(SupabaseClient::new(http.clone(), &settings));
         let providers = Arc::new(ProviderRegistry::build(&http, &settings));
+        let cache = Arc::new(Cache::new(
+            CacheConfig {
+                enabled: settings.cache_enabled,
+                l1_enabled: settings.cache_l1_enabled,
+                max_entries: settings.cache_max_entries,
+                max_bytes: settings.cache_max_memory_bytes,
+                default_ttl: settings.cache_default_ttl,
+                stale_ttl: settings.cache_stale_ttl,
+                jitter_percent: settings.cache_jitter_percent,
+            },
+            Arc::new(CacheCounters::default()),
+        ));
+        let flights = Arc::new(SingleFlight::new(
+            settings.cache_enabled && settings.cache_dedup_enabled,
+            cache.counters(),
+        ));
         Ok(Self {
             limiter: Arc::new(middleware::rate_limit::RateLimiter::new(
                 Duration::from_secs(60),
@@ -78,8 +100,10 @@ impl AppState {
                 settings.max_provider_concurrency,
                 settings.concurrency_wait,
             )),
-            metrics: Arc::new(Metrics::new(settings.ai_pricing.clone())),
+                        metrics: Arc::new(Metrics::new(settings.ai_pricing.clone())),
             lifecycle: Arc::new(Lifecycle::new()),
+            cache,
+            flights,
             supabase,
             providers,
             http,
