@@ -156,3 +156,28 @@ src/
 - `docs/RUST_TESTING_GUIDE_V861.md` — cách chạy và thêm test
 - `docs/RUST_OPERATIONS_V861.md` — biến môi trường, runbook
 - `docs/RUST_SECURITY_AUDIT_V861.md` — tự đánh giá bảo mật
+
+## AI Pipeline Performance (8.7.4)
+
+- **Streaming SSE**: `POST /api/v1/ai/chat/stream` → `event: delta` … `event: done`
+  (envelope giống endpoint thường) hoặc `event: error`. Tắt bằng
+  `AI_STREAM_ENABLED=0`. Frontend chỉ dùng khi `BK_BACKEND.streaming = true`.
+- **TTFT thật**: `bakhi_ai_time_to_first_token_seconds` chỉ ghi khi có chunk nội
+  dung đầu tiên; response trọn gói không ghi.
+- **Chuẩn bị song song**: `ai_settings` ‖ `ai_model_routes` ‖ hồ sơ học sinh;
+  thời gian chuẩn bị ở `bakhi_ai_preparation_seconds`.
+- **Retry**: backoff luỹ thừa + jitter (`AI_RETRY_BACKOFF_MS` →
+  `AI_RETRY_BACKOFF_MAX_MS`), tôn trọng `Retry-After`; **không** retry/fallback
+  sau khi đã gửi delta; huỷ của người dùng dừng cả chuỗi.
+- **Huỷ**: client đóng ⇒ provider dừng đọc; đếm `bakhi_ai_cancelled_total{stage}`.
+- Chi tiết: `docs/AI_PIPELINE_V874.md`.
+
+## Parallel Execution Engine (8.8.0)
+
+- `src/parallel/mod.rs`: hàng đợi có hạn + worker CPU có hạn + timeout + bắt
+  panic + vòng đời tác vụ. Chỉ cho **CPU-bound**; I/O vẫn async.
+- Đang dùng cho `learning-stats` khi lô ≥ 500 dòng (lô nhỏ inline vì engine tốn
+  ~28 µs cố định — số đo trong `examples/pipeline_bench.rs`).
+- Cấu hình: `RUST_CPU_WORKERS` (0 = tự dò), `RUST_TASK_QUEUE_CAPACITY`,
+  `RUST_TASK_WAIT_MS`, `RUST_TASK_TIMEOUT_MS`. Metrics `bakhi_parallel_*`.
+- Chi tiết: `docs/PARALLEL_ENGINE_V880.md`.

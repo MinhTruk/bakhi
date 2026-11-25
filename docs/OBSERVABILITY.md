@@ -329,3 +329,30 @@ bakhi_process_uptime_seconds
 | Dashboard "Mất kết nối" | CORS chặn origin, backend tắt | Thêm `https://minhtruk.github.io` vào `CORS_ORIGINS`; kiểm tra `/health` |
 | Số liệu nhảy về 0 | Backend vừa restart | Bình thường; xem lịch sử trên Prometheus |
 | Log có `error_code` nhưng không rõ nguồn | Cần tra theo `request_id` | Tìm `request_id` trong log backend |
+
+## 8.7.4 — AI Pipeline (stream, TTFT, huỷ, chuẩn bị)
+
+Chỉ ghi khi có dữ liệu thật; không tạo giá trị mặc định cho "trông hoạt động".
+
+| Metric | Loại | Nhãn | Ghi khi nào |
+|---|---|---|---|
+| `bakhi_ai_time_to_first_token_seconds` | histogram | `role`, `provider`, `model` | stream trả **chunk nội dung đầu tiên** |
+| `bakhi_ai_preparation_seconds` | histogram | — | trước khi gọi provider (cấu hình, lịch sử, prompt, token) |
+| `bakhi_ai_stream_events_total` | counter | `event` = started/done/error/cancelled | một lần mỗi lượt stream |
+| `bakhi_ai_cancelled_total` | counter | `stage` = request/stream | future bị drop trước khi xong |
+
+TTFT **không phải** thời điểm model sinh token đầu tiên — provider không cung
+cấp mốc đó. Response không stream không bao giờ ghi TTFT.
+
+## 8.8.0 — Parallel Execution Engine
+
+| Metric | Loại | Nhãn | Ghi khi nào |
+|---|---|---|---|
+| `bakhi_parallel_tasks_total` | counter | `state` = created/completed/failed/rejected/timeout/cancelled | mỗi tác vụ qua engine |
+| `bakhi_parallel_tasks_active` | gauge | — | closure đang chạy (RAII, đúng cả khi caller đã timeout) |
+| `bakhi_parallel_tasks_pending` | gauge | — | đang chờ trong hàng đợi |
+| `bakhi_parallel_queue_wait_seconds` | histogram | — | từ lúc vào hàng đợi tới lúc có permit CPU |
+| `bakhi_parallel_task_duration_seconds` | histogram | — | thời gian closure chạy |
+
+Histogram **không nhãn** được in `{le="…"}` (sửa cú pháp Prometheus, không còn
+`{,le="…"}`). Summary Founder thêm khối `streaming`, `preparation`, `parallel`.

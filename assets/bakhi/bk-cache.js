@@ -1,5 +1,5 @@
 /* =========================================================================
-   Bá Khí — bk-cache.js  (8.7.3 · Intelligent Caching)
+   Bá Khí — bk-cache.js  (8.8.0 · Intelligent Caching)
 
    Một cache dùng chung cho toàn website, thay vì mỗi module tự giữ bản sao.
 
@@ -168,7 +168,7 @@
         var state = {
             name: String(options.name || 'default'),
             namespace: String(options.namespace || options.name || 'default') + '|',
-            version: String(options.version || '8.7.3'),
+            version: String(options.version || '8.8.0'),
             privateData: options.private === true,
             persist: options.persist === true && options.private !== true,
             enabled: options.enabled !== false,
@@ -530,6 +530,6 @@
             });
         },
         clearPrivate: clearOnAccountChange,
-        version: '8.7.3'
+        version: '8.8.0'
     };
 })(typeof window !== 'undefined' ? window : this);

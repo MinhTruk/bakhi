@@ -626,6 +626,57 @@ Tài liệu: `docs/AI_TUTOR_ARCHITECTURE.md` (kiến trúc), `docs/AI_TUTOR_SECU
   warnings`, `cargo test --all-targets`, `cargo build --release`. Tài liệu:
   `docs/ARCHITECTURE.md` mục 8.3, `rust-backend/README.md`, `docs/RUST_DEPLOYMENT_V860.md`.
 
+### 6.9. Hiệu năng AI Pipeline (8.7.4)
+
+- **Streaming là endpoint RIÊNG**: `POST /api/v1/ai/chat/stream` (SSE). Endpoint
+  `/ai/chat` giữ nguyên JSON trọn gói — không đổi contract cũ. Cả hai đi qua
+  `chat_guarded` → `chat_inner` → `run_chain_inner`, nên hạn mức, xác thực, lưu
+  hội thoại và fallback là MỘT logic duy nhất.
+- **Bất biến quan trọng:** đã gửi `delta` cho trình duyệt thì **không retry,
+  không fallback** (nối hai câu trả lời là lỗi nội dung và tốn chi phí AI).
+  `StreamContext.delta_sent()` là ranh giới duy nhất; `delta()` tự đánh dấu.
+- **TTFT chỉ khi stream**: `ProviderResult.ttft` do adapter đo từ lúc gửi HTTP
+  tới chunk nội dung đầu tiên. Không suy diễn TTFT cho response trọn gói và
+  không ghi 0 giả.
+- **UTF-8**: chỉ giải mã khi có dòng hoàn chỉnh (`providers/sse.rs`); không cắt
+  chuỗi giữa ký tự. Kênh nội bộ 64 frame là backpressure thật.
+- **Huỷ**: client đóng kết nối ⇒ `sink.tx.closed()` ⇒ dừng future provider;
+  `CancelGuard` đếm `bakhi_ai_cancelled_total{stage}`. Không dùng token toàn cục.
+- **Chuẩn bị song song**: `ai_settings`, `ai_model_routes`, hồ sơ học sinh đọc
+  bằng `tokio::join!` trong `chat_inner`. Đừng đổi lại thành tuần tự.
+- **Backoff**: luỹ thừa + jitter (`services/retry.rs`), trần
+  `AI_RETRY_BACKOFF_MAX_MS`; `Retry-After` vẫn thắng. Không retry lỗi
+  AUTH/MODEL_NOT_FOUND/BAD_CONFIG/CANCELLED.
+- **Frontend**: streaming chỉ khi `BK_BACKEND.mode='rust'` **và**
+  `BK_BACKEND.streaming=true`; mặc định tắt để không đổi hành vi Edge Function.
+- Cấu hình mới: `AI_STREAM_ENABLED`, `AI_TTFT_TIMEOUT_MS`,
+  `AI_STREAM_IDLE_TIMEOUT_MS`, `AI_RETRY_BACKOFF_MAX_MS` (validate lúc khởi động).
+- QA: `cargo test --test streaming_tests`, `tools/qa/ai-tutor-fallback.js`,
+  `tools/qa/ai-tutor-provider-adapter.js`. Tài liệu: `docs/AI_PIPELINE_V874.md`.
+
+### 6.10. Parallel Execution Engine (8.8.0)
+
+- **Một engine duy nhất** ở `src/parallel/mod.rs`, dùng `spawn_blocking` của
+  runtime sẵn có — không tạo thread, không runtime thứ hai.
+- **Chỉ CPU-bound.** Không đưa Supabase/provider/streaming vào engine: đó là I/O
+  và đã async. Chạy I/O trong blocking pool chỉ chiếm worker CPU.
+- **Ba lớp giới hạn**: `RUST_TASK_QUEUE_CAPACITY`, `RUST_CPU_WORKERS` (0 = tự
+  dò), `RUST_TASK_WAIT_MS` + `RUST_TASK_TIMEOUT_MS`. Hàng đợi đầy ⇒ `TaskError::
+  QueueFull` ⇒ route trả 429, không xếp vô hạn.
+- **Timeout không giết được closure CPU**: permit được giữ tới khi closure thật
+  sự xong để trần worker không bị vượt. Đừng "sửa" bằng cách drop permit sớm.
+- **Panic được bắt** (`catch_unwind`) ⇒ `failed`, không giết tiến trình.
+- **Threshold**: `learning-stats` chỉ qua engine khi ≥ 500 dòng
+  (`PARALLEL_MIN_ROWS`). Overhead đo được ~28 µs/tác vụ; đừng hạ threshold mà
+  không đo lại bằng `examples/pipeline_bench.rs`.
+- **Không song song hoá** việc phụ thuộc kết quả (ghi hội thoại sau khi AI trả
+  lời, retry/fallback tuần tự).
+- Metrics: `bakhi_parallel_tasks_total{state}`, `_active`, `_pending`,
+  `_queue_wait_seconds`, `_task_duration_seconds`; summary có khối `parallel`.
+- QA: `node tools/qa/v874-pipeline.js` (bất biến 8.7.4/8.8.0),
+  `cargo test --test streaming_tests --test parallel_tests`.
+- Tài liệu: `docs/PARALLEL_ENGINE_V880.md`.
+
 <!-- BEGIN brain.md -->
 ## Project Brain
 

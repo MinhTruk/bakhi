@@ -2,6 +2,83 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [8.8.0] — 2026-11-25
+
+**AI Pipeline Performance (8.7.4) + Parallel Execution Engine (8.8.0).** Tối ưu những
+công đoạn backend thực sự kiểm soát được: chuẩn bị request, prompt, streaming, TTFT,
+huỷ, retry/fallback và công việc CPU-bound. **Không đổi API contract hiện có, không
+đổi schema Supabase, không đổi thứ tự Primary → Fallback, `BK_BACKEND.mode` vẫn `edge`,
+không deploy.**
+
+### Tính năng
+
+- **Streaming SSE — `POST /api/v1/ai/chat/stream`**: `event: delta` cho từng phần nội
+  dung, kết thúc bằng `event: done` mang **đúng** envelope của endpoint thường (hội
+  thoại, meta, token, `fellBack`), lỗi giữa stream bằng `event: error`. Buffer 64 frame,
+  đọc byte nên không vỡ ký tự tiếng Việt khi chunk TCP cắt giữa ký tự. Tắt bằng
+  `AI_STREAM_ENABLED=0` (endpoint trả 404).
+- **Frontend streaming tuỳ chọn** (`bk-ai-tutor.js`): `BK_BACKEND.streaming = true` (chỉ
+  khi `mode = 'rust'`) vẽ dần câu trả lời rồi thay bằng bản đầy đủ; mặc định tắt nên
+  hành vi hiện tại không đổi.
+- **TTFT thật** — `bakhi_ai_time_to_first_token_seconds{role,provider,model}` chỉ ghi khi
+  stream trả chunk nội dung đầu tiên; response trọn gói không ghi TTFT giả.
+- **Chuẩn bị request song song** — `ai_settings`, `ai_model_routes` và hồ sơ học sinh
+  (3 lượt đọc độc lập) chạy bằng `tokio::join!`; histogram
+  `bakhi_ai_preparation_seconds` tách thời gian nội bộ khỏi độ trễ provider.
+- **Parallel Execution Engine** (`src/parallel/mod.rs`) — hàng đợi có hạn + worker pool
+  CPU + timeout + bắt panic + vòng đời tác vụ; dùng cho `learning-stats` khi lô ≥ 500
+  dòng, lô nhỏ giữ đường inline để không trả ~28 µs cố định đã đo.
+- **Metrics mới** trong `/metrics` hiện có: `bakhi_ai_stream_events_total`,
+  `bakhi_ai_cancelled_total{stage}`, `bakhi_parallel_tasks_total{state}`,
+  `bakhi_parallel_tasks_active`, `bakhi_parallel_tasks_pending`,
+  `bakhi_parallel_queue_wait_seconds`, `bakhi_parallel_task_duration_seconds`; summary
+  Founder thêm khối `streaming`, `preparation`, `parallel`.
+- **Cấu hình mới**: `AI_STREAM_ENABLED`, `AI_TTFT_TIMEOUT_MS`,
+  `AI_STREAM_IDLE_TIMEOUT_MS`, `AI_RETRY_BACKOFF_MAX_MS`, `RUST_CPU_WORKERS`,
+  `RUST_TASK_QUEUE_CAPACITY`, `RUST_TASK_WAIT_MS`, `RUST_TASK_TIMEOUT_MS`; mọi ràng buộc
+  kiểm tra lúc khởi động và thông điệp nêu tên biến.
+
+### Cải tiến
+
+- **Retry có kiểm soát hơn**: backoff luỹ thừa + jitter (nửa khoảng) thay cho backoff cố
+  định; vẫn ưu tiên `Retry-After` (trần 30 s).
+- **Không retry và không fallback sau khi đã gửi delta** — nối hai câu trả lời là lỗi nội
+  dung và tốn thêm chi phí AI.
+- **Huỷ đếm được**: `CancelGuard` ghi lượt bị huỷ thật (`stage=request`) và huỷ giữa
+  stream (`stage=stream`); client đóng kết nối làm provider dừng đọc ngay, không retry.
+- **Header SSE** chống đệm proxy (`x-accel-buffering: no`), `no-store`, kèm `x-request-id`.
+- **Dọn dependency**: thêm duy nhất `tokio-stream` (adapter kênh ↔ `Stream` cho SSE);
+  không thêm runtime, không thêm HTTP client.
+
+### Kiểm thử
+
+- `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D warnings`,
+  `cargo test --all-targets` — **109 unit + 101 integration/contract**, tất cả đạt.
+- Mới: `tests/streaming_tests.rs` (thứ tự delta, envelope `done`, lỗi trước delta, fallback
+  chỉ trước delta, không TTFT cho response trọn gói, tắt bằng cấu hình) và
+  `tests/parallel_tests.rs` (lô lớn qua engine, lô nhỏ inline, giới hạn từ cấu hình,
+  summary có khối mới).
+- Regression: toàn bộ test AI Gateway/contract/auth/cache/circuit/concurrency/observability
+  cũ vẫn đạt; `learning-stats`, `me`, `/health`, `/ready`, `/metrics` không đổi contract.
+
+### Đo lường (microbenchmark thật, `examples/pipeline_bench.rs`)
+
+- Đọc 1 chunk SSE: **185 ns**; backoff + jitter: **4 ns**.
+- Overhead engine: **28,4 µs/tác vụ** (closure rỗng), **38,3 µs** khi cộng 20.000 số.
+- Không hồi quy pipeline 8.7.2/8.7.3 (mượn dữ liệu 1 ns, typed borrow 27,3 µs, cache hit
+  200 ns trên cùng máy).
+
+### Chưa xác minh (không tuyên bố)
+
+- **TTFT/latency/throughput với provider thật chưa đo** — môi trường này không có khoá
+  AI, không gọi mạng ra Groq/Google; mọi con số trên là microbenchmark nội bộ.
+- **Chưa deploy**: GitHub Pages không chạy tiến trình Rust thường trực. Cần nơi chạy
+  Docker/tiến trình liên tục trước khi metrics/streaming có ý nghĩa vận hành.
+- Frontend streaming chưa được xem bằng trình duyệt thật trong phiên này (chỉ kiểm tra
+  cú pháp + DOM/jsdom hiện có).
+
+Chi tiết: `docs/AI_PIPELINE_V874.md`, `docs/PARALLEL_ENGINE_V880.md`.
+
 ## [8.7.3] — 2026-11-25
 
 **Intelligent Caching.** Thêm Cache Engine đa tầng: L1 trong RAM (Rust + trình duyệt),

@@ -915,3 +915,73 @@ Ba tầng, mỗi tầng chỉ làm việc nó làm tốt nhất:
 - **Rollback**: `CACHE_ENABLED=0` (hoặc tắt riêng L1/dedup) ⇒ hành vi như 8.7.2.
 
 Chi tiết policy TTL, bảo mật và benchmark: `docs/INTELLIGENT_CACHING_V873.md`.
+
+### 8.6. AI Pipeline Performance (8.7.4) — Streaming, TTFT, Huỷ
+
+Luồng một lượt chat sau 8.7.4:
+
+```
+Trình duyệt ──POST /api/v1/ai/chat (JSON) ───────────────┐
+            └─POST /api/v1/ai/chat/stream (SSE) ─────────┤
+                                                        ▼
+                          Axum: auth → rate limit → concurrency → handler
+                                                        │
+                       ┌────────────────────────────────┤
+                       │ chuẩn bị (SONG SONG)           │
+                       │  ai_settings ‖ ai_model_routes ‖ hồ sơ học sinh
+                       │  → prompt (mode + ngữ cảnh)    │
+                       │  → cắt lịch sử theo token      │
+                       └────────────────────────────────┤
+                                                        ▼
+                    run_chain_inner(deadline tổng, sink?)
+                                                        │
+                  ┌──── Primary (circuit CLOSED) ───────┤
+                  │   call_provider:                    │
+                  │     • không stream → generate()     │
+                  │     • stream → generate_stream()    │
+                  │        SSE/byte → chunk → delta     │
+                  │     • retry: backoff luỹ thừa+jitter│
+                  │     • đã có delta ⇒ KHÔNG retry/    │
+                  │       KHÔNG fallback                │
+                  └─────────────────────────────────────┤
+                  ┌──── Fallback N (nếu chưa có delta) ─┤
+                                                        ▼
+                     SSE: delta… → done(envelope đầy đủ)
+                     hoặc error(envelope lỗi)
+```
+
+- **Chuẩn bị song song**: ba lượt đọc độc lập bằng `tokio::join!`; thời gian ghi
+  vào `bakhi_ai_preparation_seconds`.
+- **Streaming**: `SseLines` giữ byte tới khi có `\n` (UTF-8 an toàn), kênh nội bộ
+  64 frame, `x-accel-buffering: no`.
+- **TTFT**: `ProviderResult.ttft` do adapter đo từ lúc gửi HTTP tới chunk nội dung
+  đầu; chỉ có khi stream.
+- **Huỷ**: client đóng → kênh SSE đóng → `call_provider` thấy `sink.tx.closed()`
+  → dừng future provider; `CancelGuard` đếm `bakhi_ai_cancelled_total{stage}`.
+- **Timeout 4 lớp**: connect → attempt (`AI_TUTOR_TIMEOUT`) → cả chuỗi
+  (`AI_GATEWAY_TIMEOUT_MS`) → TTFT/idle riêng cho stream
+  (`AI_TTFT_TIMEOUT_MS`, `AI_STREAM_IDLE_TIMEOUT_MS`).
+- Frontend chỉ dùng streaming khi `BK_BACKEND.mode = 'rust'` **và**
+  `BK_BACKEND.streaming = true`; mặc định tắt.
+
+### 8.7. Parallel Execution Engine (8.8.0)
+
+```
+             ┌──────────── tác vụ CPU-bound (lô lớn, render metrics) ────────────┐
+             │                                                                    │
+ request ──► │  Semaphore hàng đợi (RUST_TASK_QUEUE_CAPACITY)                    │
+             │      │ hết RUST_TASK_WAIT_MS ⇒ 429, không xếp vô hạn                │
+             │      ▼                                                             │
+             │  Semaphore worker (RUST_CPU_WORKERS, 0 = số CPU)                   │
+             │      ▼                                                             │
+             │  spawn_blocking (blocking pool của runtime duy nhất)               │
+             │      ▼  catch_unwind + timeout + ActiveGuard                       │
+             │  kết quả / TaskError (QueueFull | Timeout | Panic)                 │
+             └────────────────────────────────────────────────────────────────────┘
+
+ I/O-bound (Supabase, provider AI, SSE) ──► async/await, KHÔNG đi qua engine
+```
+
+- `learning-stats`: lô ≥ 500 dòng qua engine; lô nhỏ inline vì overhead đo được
+  ~28 µs/tác vụ.
+- Metrics: `bakhi_parallel_*` trong `/metrics`; summary có khối `parallel`.

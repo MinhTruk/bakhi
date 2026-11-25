@@ -66,9 +66,31 @@ ok('có hàm quantile', /fn quantile\(/.test(METRICS));
 ok('có bucket +Inf', /le=\\"\+Inf\\"/.test(METRICS));
 ok('có token thật/ước tính tách nhãn', /estimated/.test(METRICS));
 ok('có chi phí ước tính', /estimated_cost_usd_total/.test(METRICS));
-ok('không có TTFT giả', !/time_to_first_token/.test(METRICS));
+/* 8.7.4 — TTFT có thật từ streaming. Điều phải giữ: chỉ ghi khi provider trả
+   chunk nội dung đầu tiên, không suy diễn cho response trọn gói. */
+ok(
+  'có TTFT thật (histogram + ghi từ kết quả provider)',
+  /time_to_first_token/.test(METRICS) && /record_ai_ttft\(/.test(METRICS)
+);
+ok(
+  'không bịa TTFT cho response trọn gói',
+  /ttft: None/.test(read('rust-backend/src/providers/openai.rs')) &&
+    /ttft: None/.test(read('rust-backend/src/providers/gemini.rs'))
+);
+ok(
+  'có metrics song song + streaming trong registry',
+  /bakhi_parallel_tasks_total/.test(METRICS) && /bakhi_ai_stream_events_total/.test(METRICS)
+);
 
 const AI = read('rust-backend/src/services/ai_service.rs');
+ok(
+  'TTFT chỉ lấy từ kết quả provider (Some)',
+  /if let Some\(ttft\) = result\.ttft/.test(AI)
+);
+ok(
+  'không retry/fallback sau khi đã gửi delta',
+  /delta_sent\(\)\) == Some\(true\)/.test(AI)
+);
 ok('AI ghi attempt theo role', /record_ai_attempt\(/.test(AI) && /"primary"/.test(AI));
 ok('AI ghi token + fallback', /record_ai_tokens\(/.test(AI) && /record_fallback\("failure"\)/.test(AI));
 ok(
