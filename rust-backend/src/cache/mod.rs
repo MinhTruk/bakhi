@@ -639,7 +639,7 @@ mod tests {
         );
         tokio::time::sleep(Duration::from_millis(40)).await;
         let stale = cache.get_stale("ai:routes").expect("stale còn hạn dùng");
-        assert_eq!(stale.len(), 2);
+        assert_eq!(stale.as_array().map(Vec::len), Some(2));
         assert!(
             cache.get("ai:routes").is_none(),
             "get() không trả dữ liệu hết hạn"
