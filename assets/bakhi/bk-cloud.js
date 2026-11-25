@@ -332,6 +332,13 @@
         });
     }
 
+    /* Khoá cache gắn với bản phát hành đang chạy: sau khi nâng cấp, changelog
+       được đọc lại ngay thay vì chờ hết TTL (mục What's New phải thấy bản mới). */
+    function cacheVersionSuffix() {
+        var version = global.BAKHI_VERSION && global.BAKHI_VERSION.app;
+        return version ? ':' + version : '';
+    }
+
     /* ---------------------------------------------------------------------
        Nhận diện học sinh
        ------------------------------------------------------------------ */
@@ -2090,7 +2097,7 @@
         S.clLoading = true;
         S.clError = null;
         if (S.panelOpen) renderPanel();
-        return cachedRead('changelog:v1', 300000, false, function () {
+        return cachedRead('changelog:v1' + cacheVersionSuffix(), 300000, false, function () {
             return client().from('changelog')
                 .select('id, version, title, summary, content, category, published_at')
                 .eq('is_published', true)
