@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiet Graphite — thư viện thành phần (dev)</title>
+<meta name="robots" content="noindex">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/bakhi/bk-rebirth.css">
+<style>
+    body { margin: 0; padding: 32px; background: var(--rb-bg); color: var(--rb-text); font-family: system-ui, "Segoe UI", sans-serif; }
+    .g-wrap { max-width: 1100px; margin: 0 auto; display: grid; gap: 32px; }
+    .g-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .g-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .g-note { color: var(--rb-text-3); font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--rb-line); }
+    th { background: var(--rb-surface-2); }
+</style>
+</head>
+<body class="bk-app bk-rebirth">
+<div class="g-wrap">
+
+    <header class="bk-page-head">
+        <p class="bk-eyebrow">Dev only · không phải route công khai</p>
+        <h1>Cây tài liệu — thư viện thành phần Quiet Graphite</h1>
+        <p class="bk-muted">Trạng thái thật của các thành phần dùng token trong <code>bk-rebirth.css</code>. Đổi theme và giảm chuyển động ngay tại đây.</p>
+        <div class="g-row">
+            <button type="button" class="bk-btn bk-btn-sm" id="gTheme">Đổi theme</button>
+            <button type="button" class="bk-btn bk-btn-sm bk-btn-ghost" id="gMotion">Giảm chuyển động</button>
+            <span class="g-note" id="gState"></span>
+        </div>
+    </header>
+
+    <section class="bk-section">
+        <div class="bk-section-head"><h2>01 · Nút</h2></div>
+        <div class="g-row">
+            <button type="button" class="bk-btn bk-btn-primary"><i class="fa-solid fa-check" aria-hidden="true"></i><span>Lưu thay đổi</span></button>
+            <button type="button" class="bk-btn"><span>Hành động phụ</span></button>
+            <button type="button" class="bk-btn bk-btn-ghost"><span>Bỏ qua</span></button>
+            <button type="button" class="bk-btn bk-btn-danger"><span>Xoá</span></button>
+            <button type="button" class="bk-btn bk-btn-sm"><span>Nhỏ</span></button>
+            <button type="button" class="bk-btn" disabled><span>Vô hiệu</span></button>
+        </div>
+    </section>
+
+    <section class="bk-section">
+        <div class="bk-section-head"><h2>02 · Nhãn &amp; trạng thái</h2></div>
+        <div class="g-row">
+            <span class="bk-pill">Trung tính</span>
+            <span class="bk-pill bk-pill-ok"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Đã lưu</span>
+            <span class="bk-pill bk-pill-warn"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Cần chú ý</span>
+            <span class="bk-pill bk-pill-danger"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i> Lỗi</span>
+            <span class="bk-pill bk-pill-accent">Đang chọn</span>
+            <span class="bk-badge">v8.8.0</span>
+        </div>
+    </section>
+
+    <section class="bk-section">
+        <div class="bk-section-head"><h2>03 · Thẻ &amp; số liệu</h2></div>
+        <div class="g-grid">
+            <article class="bk-card bk-card-pad"><h3>Thẻ phẳng</h3><p class="bk-muted">Bề mặt 1 + hairline, không bóng.</p></article>
+            <article class="bk-card bk-card-pad bk-card-soft"><h3>Thẻ chìm</h3><p class="bk-muted">Bề mặt 2 cho khối phụ.</p></article>
+            <article class="bk-card bk-card-pad"><p class="g-note">Chuỗi học</p><div class="bk-stat">12</div><p class="bk-muted">ngày liên tiếp</p><div class="bk-progress"><span style="width:62%"></span></div></article>
+        </div>
+    </section>
+
+    <section class="bk-section">
+        <div class="bk-section-head"><h2>04 · Biểu mẫu</h2></div>
+        <div class="g-grid">
+            <label class="bk-stack"><span>Email liên hệ</span><input class="bk-input" type="email" placeholder="ban@example.com"><span class="g-note">Không dùng cho quảng cáo.</span></label>
+            <label class="bk-stack"><span>Chọn giao diện</span><select class="bk-input"><option>Tối</option><option>Sáng</option></select></label>
+        </div>
+        <div class="g-row" style="margin-top:16px">
+            <div class="bk-seg" role="group" aria-label="Mức chuyển động">
+                <button type="button" class="is-active" aria-pressed="true">Theo hệ thống</button>
+                <button type="button" aria-pressed="false">Giảm</button>
+                <button type="button" aria-pressed="false">Đầy đủ</button>
+            </div>
+        </div>
+        <div class="bk-tabs" role="tablist" style="margin-top:16px">
+            <button type="button" class="bk-tab-btn is-active" role="tab" aria-selected="true">Tổng quan</button>
+            <button type="button" class="bk-tab-btn" role="tab" aria-selected="false">Ghi chú</button>
+            <button type="button" class="bk-tab-btn" role="tab" aria-selected="false">Cài đặt</button>
+        </div>
+    </section>
+
+    <section class="bk-section">
+        <div class="bk-section-head"><h2>05 · Trạng thái rỗng, lỗi, tải</h2></div>
+        <div class="g-grid">
+            <div class="bk-empty"><i class="fa-solid fa-inbox" aria-hidden="true"></i><p>Chưa có nội dung</p><button type="button" class="bk-btn bk-btn-sm">Tạo mới</button></div>
+            <div class="bk-empty"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><p>Không thể tải dữ liệu</p><button type="button" class="bk-btn bk-btn-sm">Thử lại</button></div>
+            <div class="bk-stack"><div class="bk-skeleton" style="height:16px;width:70%"></div><div class="bk-skeleton" style="height:16px"></div><div class="bk-skeleton" style="height:16px;width:40%"></div></div>
+        </div>
+    </section>
+
+    <section class="bk-section">
+        <div class="bk-section-head"><h2>06 · Bảng</h2></div>
+        <div class="bk-scroll-x">
+            <table>
+                <thead><tr><th>Học sinh</th><th>Cấp</th><th>XP</th></tr></thead>
+                <tbody>
+                    <tr><td>Nguyễn Hà My</td><td><span class="bk-pill">Học sinh</span></td><td>4.820</td></tr>
+                    <tr><td>Trần Đức Anh</td><td><span class="bk-pill bk-pill-ok">Đang hoạt động</span></td><td>12.340</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="bk-section">
+        <div class="bk-section-head"><h2>07 · Lớp nổi</h2></div>
+        <div class="g-grid">
+            <div class="bk-toast" role="status"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Đã lưu thay đổi</span></div>
+            <div class="bk-modal" role="dialog" aria-modal="true" aria-labelledby="gDlg">
+                <h3 id="gDlg">Xoá ghi chú?</h3>
+                <p class="bk-muted">Hành động này không thể hoàn tác.</p>
+                <div class="g-row"><button type="button" class="bk-btn">Huỷ</button><button type="button" class="bk-btn bk-btn-danger">Xoá</button></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bk-section">
+        <div class="bk-section-head"><h2>08 · Kiểm tra dấu tiếng Việt</h2></div>
+        <h1 style="font-size:32px">Cây Tài Liệu Ôn Tập</h1>
+        <h2>Ổn định Ầm Ặc Ữ Ỳ</h2>
+        <h3>Kiểm tra cuối kì 1 — Ngữ văn</h3>
+        <p class="bk-reading">Đoạn đọc mẫu: “Ổn định Ầm Ặc Ữ Ỳ” với dấu mũ, dấu móc, dấu ngã và dấu nặng ở mọi vị trí. Chữ phải không bị cắt trên, không chồng dòng ở cả hai theme.</p>
+        <div class="bk-exam-tiles">
+            <div class="bk-exam-tile"><strong>KTTX · Giữa kỳ 1</strong><span>10 môn · kiểm tra thường xuyên</span><span class="bk-tile-count">Mở thư mục</span></div>
+            <div class="bk-exam-tile"><strong>KTGK · Giữa kỳ 1</strong><span>10 môn · kiểm tra định kỳ</span><span class="bk-tile-count">Mở thư mục</span></div>
+        </div>
+    </section>
+
+</div>
+<script>
+    (function () {
+        var root = document.documentElement;
+        var state = document.getElementById('gState');
+        function sync() {
+            state.textContent = (root.classList.contains('light') ? 'light' : 'dark') +
+                ' · motion ' + (root.getAttribute('data-motion') || 'system');
+        }
+        document.getElementById('gTheme').addEventListener('click', function () {
+            root.classList.toggle('light');
+            root.classList.toggle('dark', !root.classList.contains('light'));
+            sync();
+        });
+        document.getElementById('gMotion').addEventListener('click', function () {
+            root.setAttribute('data-motion', root.getAttribute('data-motion') === 'reduced' ? 'auto' : 'reduced');
+            sync();
+        });
+        sync();
+    })();
+</script>
+</body>
+</html>
