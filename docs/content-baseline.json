@@ -45,8 +45,8 @@
       }
     },
     "index.html": {
-      "hash": "0bcfb66240222f29d1f25d64224de7cb55b8b3b01ddea781bff11285e1c82636",
-      "bytes": 187771,
+      "hash": "b4736de53d285b997b9293f441371c59291b109763c3599470dac7619394e633",
+      "bytes": 195618,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1816,6 +1816,13 @@
     },
     {
       "at": "2026-11-23T06:11:08.113Z",
+      "reason": "Trang giao diện không chứa nội dung giáo dục: viết lại có chủ đích hoặc bổ sung vào baseline. Không có tệp môn/bài học nào thay đổi.",
+      "files": [
+        "index.html"
+      ]
+    },
+    {
+      "at": "2026-11-27T04:44:04.512Z",
       "reason": "Trang giao diện không chứa nội dung giáo dục: viết lại có chủ đích hoặc bổ sung vào baseline. Không có tệp môn/bài học nào thay đổi.",
       "files": [
         "index.html"

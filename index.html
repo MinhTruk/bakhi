@@ -319,7 +319,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                         <i class="fa-solid fa-folder-tree text-xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-lg font-bold leading-tight">Cây Tài Liệu Ôn Tập</h1>
+                        <p class="text-lg font-bold leading-tight m-0">Cây Tài Liệu Ôn Tập</p>
                         <p class="text-xs text-slate-500 dark:text-slate-400">https://minhtruk.github.io/bakhi/</p>
                     </div>
                 </div>
@@ -436,39 +436,96 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 </div>
             </section>
 
-            <!-- Banner Intro & Custom Background -->
-            <section class="bg-white/70 dark:bg-gradient-to-r dark:from-indigo-950/60 dark:via-slate-800 dark:to-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 transition-colors duration-300">
-                <div>
-                    <div class="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-2">
-                        <i class="fa-solid fa-cubes"></i>
-                        <span>Cấu Trúc Thư Mục Chuẩn Phân Cấp</span>
-                    </div>
-                    <h2 class="title-shine text-2xl md:text-3xl font-bold mb-2">Thư Mục Tài Liệu & Ôn Tập Hàng Kỳ</h2>
-                    <p class="text-slate-600 dark:text-slate-300 text-sm max-w-2xl leading-relaxed">
-                        Chọn các đợt kiểm tra <b>KTTX (Thường xuyên)</b> hoặc <b>KTGK / KTCK (Định kỳ)</b> để mở thư mục các môn. Bấm vào <b>ảnh đại diện ở góc trên phải</b> để mở hồ sơ, đổi giao diện hoặc vào Cài đặt.
-                    </p>
+            <!-- Hero: giới thiệu ngắn, hành động chính, không trang trí nặng -->
+            <section class="bk-home-hero" data-bk-parallax>
+                <p class="bk-hero-eyebrow">Bá Khí · Không gian học tập</p>
+                <h1>Cây tài liệu ôn tập</h1>
+                <p class="bk-hero-lead">
+                    Chọn đợt kiểm tra <b>KTTX (Thường xuyên)</b> hoặc <b>KTGK / KTCK (Định kỳ)</b> để mở thư mục các môn.
+                    Mọi tài liệu, tiến trình và trợ lý AI nằm trong cùng một hệ thống, đồng bộ qua Supabase.
+                </p>
+                <div class="bk-hero-actions">
+                    <button type="button" class="bk-btn bk-btn-primary" data-bk-action="palette">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <span>Mở Trung tâm học tập</span>
+                    </button>
+                    <a class="bk-btn" href="gamification/">
+                        <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
+                        <span>Xem tiến trình</span>
+                    </a>
+                    <button type="button" class="bk-btn bk-btn-ghost" onclick="openReadmeModal()">
+                        <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                        <span>README.md</span>
+                    </button>
                 </div>
+                <div class="bk-hero-meta">
+                    <span><i class="fa-solid fa-folder-tree" aria-hidden="true"></i> 8 đợt kiểm tra · 10 môn</span>
+                    <span><i class="fa-solid fa-database" aria-hidden="true"></i> Tiến trình đồng bộ Supabase</span>
+                    <span class="bk-mono" data-bk-version>v8.8.0</span>
+                </div>
+            </section>
 
-                <!-- Khu vực Tùy chỉnh Background -->
-                <div class="flex flex-col items-start md:items-end gap-2 bg-slate-200/60 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-300 dark:border-slate-700/60 shrink-0">
-                    <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
-                        <i class="fa-solid fa-image text-indigo-500"></i>
-                        <span>Hình nền tùy chỉnh</span>
-                    </span>
-                    <div class="flex items-center space-x-2">
-                        <label class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium cursor-pointer transition shadow-sm flex items-center space-x-1.5">
-                            <i class="fa-solid fa-upload"></i>
-                            <span>Chọn ảnh</span>
-                            <input type="file" id="bgInput" accept="image/*" class="hidden" onchange="handleCustomBackground(event)">
-                        </label>
-                        <button id="removeBgBtn" onclick="removeCustomBackground()" class="hidden px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-600 dark:text-rose-400 border border-rose-500/30 rounded-lg text-xs font-medium transition cursor-pointer">
-                            Xóa ảnh
-                        </button>
+            <!-- Mở nhanh 8 đợt kiểm tra; thẻ chỉ cuộn + mở thư mục có sẵn -->
+            <section class="bk-section" aria-labelledby="bkExamTilesTitle">
+                <div class="bk-spread bk-section-head">
+                    <div>
+                        <h2 id="bkExamTilesTitle">Mở nhanh đợt kiểm tra</h2>
+                        <p class="bk-muted">Bấm một thẻ để mở đúng thư mục môn học bên dưới.</p>
                     </div>
-                    <div id="opacityControl" class="hidden items-center space-x-2 w-full mt-1">
-                        <span class="text-[10px] text-slate-500 dark:text-slate-400">Độ trong:</span>
-                        <input type="range" id="opacityRange" min="0.5" max="0.98" step="0.05" value="0.88" oninput="changeOverlayOpacity(this.value)" class="w-28 accent-indigo-600 cursor-pointer">
-                    </div>
+                    <a class="bk-btn bk-btn-sm bk-btn-ghost" href="#categoriesTree">
+                        <span>Tới cây tài liệu</span>
+                        <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
+                    </a>
+                </div>
+                <div class="bk-exam-tiles">
+                    <button type="button" class="bk-exam-tile" data-bk-jump="kttx-gk1">
+                        <span class="bk-exam-tile-icon"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span>
+                        <strong>KTTX · Giữa kỳ 1</strong>
+                        <span>10 môn · kiểm tra thường xuyên</span>
+                        <span class="bk-tile-count">Mở thư mục <i class="fa-solid fa-arrow-down" aria-hidden="true"></i></span>
+                    </button>
+                    <button type="button" class="bk-exam-tile" data-bk-jump="kttx-ck1">
+                        <span class="bk-exam-tile-icon"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span>
+                        <strong>KTTX · Cuối kì 1</strong>
+                        <span>10 môn · kiểm tra thường xuyên</span>
+                        <span class="bk-tile-count">Mở thư mục <i class="fa-solid fa-arrow-down" aria-hidden="true"></i></span>
+                    </button>
+                    <button type="button" class="bk-exam-tile" data-bk-jump="kttx-gk2">
+                        <span class="bk-exam-tile-icon"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span>
+                        <strong>KTTX · Giữa kỳ 2</strong>
+                        <span>10 môn · kiểm tra thường xuyên</span>
+                        <span class="bk-tile-count">Mở thư mục <i class="fa-solid fa-arrow-down" aria-hidden="true"></i></span>
+                    </button>
+                    <button type="button" class="bk-exam-tile" data-bk-jump="kttx-ck2">
+                        <span class="bk-exam-tile-icon"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span>
+                        <strong>KTTX · Cuối kì 2</strong>
+                        <span>10 môn · kiểm tra thường xuyên</span>
+                        <span class="bk-tile-count">Mở thư mục <i class="fa-solid fa-arrow-down" aria-hidden="true"></i></span>
+                    </button>
+                    <button type="button" class="bk-exam-tile" data-bk-jump="ktgk-1">
+                        <span class="bk-exam-tile-icon"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i></span>
+                        <strong>KTGK · Giữa kỳ 1</strong>
+                        <span>10 môn · kiểm tra định kỳ</span>
+                        <span class="bk-tile-count">Mở thư mục <i class="fa-solid fa-arrow-down" aria-hidden="true"></i></span>
+                    </button>
+                    <button type="button" class="bk-exam-tile" data-bk-jump="ktck-1">
+                        <span class="bk-exam-tile-icon"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i></span>
+                        <strong>KTCK · Cuối kỳ 1</strong>
+                        <span>10 môn · kiểm tra định kỳ</span>
+                        <span class="bk-tile-count">Mở thư mục <i class="fa-solid fa-arrow-down" aria-hidden="true"></i></span>
+                    </button>
+                    <button type="button" class="bk-exam-tile" data-bk-jump="ktgk-2">
+                        <span class="bk-exam-tile-icon"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i></span>
+                        <strong>KTGK · Giữa kỳ 2</strong>
+                        <span>10 môn · kiểm tra định kỳ</span>
+                        <span class="bk-tile-count">Mở thư mục <i class="fa-solid fa-arrow-down" aria-hidden="true"></i></span>
+                    </button>
+                    <button type="button" class="bk-exam-tile" data-bk-jump="ktck-2">
+                        <span class="bk-exam-tile-icon"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i></span>
+                        <strong>KTCK · Cuối kỳ 2</strong>
+                        <span>10 môn · kiểm tra định kỳ</span>
+                        <span class="bk-tile-count">Mở thư mục <i class="fa-solid fa-arrow-down" aria-hidden="true"></i></span>
+                    </button>
                 </div>
             </section>
 
@@ -622,6 +679,33 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 </div>
 
             </div>
+            <!-- Cập nhật gần đây: bk-cloud.js render vào khung này -->
+            <div id="bkcWhatsNew" class="bkc-whatsnew" aria-live="polite"></div>
+
+            <!-- Tuỳ biến hình nền: giữ nguyên ID/hàm cũ, chỉ gọn lại trong details -->
+            <details class="bk-customize">
+                <summary>
+                    <span><i class="fa-solid fa-image" aria-hidden="true"></i> Hình nền tùy chỉnh</span>
+                    <span class="bk-dim">Chỉ lưu trên thiết bị này</span>
+                </summary>
+                <div class="bk-customize-body">
+                    <p class="bk-muted">Ảnh được nén và lưu cục bộ. Giao diện Quiet Graphite giữ ảnh ở mức mờ để không lấn nội dung.</p>
+                    <div class="bk-row">
+                        <label class="bk-btn bk-btn-sm">
+                            <i class="fa-solid fa-upload" aria-hidden="true"></i>
+                            <span>Chọn ảnh</span>
+                            <input type="file" id="bgInput" accept="image/*" class="hidden" onchange="handleCustomBackground(event)">
+                        </label>
+                        <button id="removeBgBtn" onclick="removeCustomBackground()" class="hidden bk-btn bk-btn-sm bk-btn-danger">
+                            Xóa ảnh
+                        </button>
+                    </div>
+                    <div id="opacityControl" class="hidden bk-row mt-2">
+                        <label for="opacityRange" class="bk-dim">Độ trong</label>
+                        <input type="range" id="opacityRange" min="0.5" max="0.98" step="0.05" value="0.88" oninput="changeOverlayOpacity(this.value)" class="bk-range">
+                    </div>
+                </div>
+            </details>
         </main>
 
         <!-- Bảng điều khiển Developer -->
@@ -1984,10 +2068,13 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
     <script src="assets/bakhi/bk-roles.js?v=8.8.0" defer></script>
 <script src="assets/bakhi/bk-shell.js?v=8.8.0" defer></script>
 <script src="assets/bakhi/bk-report.js" defer></script>
-</body>
-</html>
-    <link rel="stylesheet" href="assets/bakhi/bk-themes.css?v=8.8.0">
+<link rel="stylesheet" href="assets/bakhi/bk-themes.css?v=8.8.0">
 <script src="assets/bakhi/bk-themes.js?v=8.8.0" defer></script>
     <link rel="stylesheet" href="assets/bakhi/bk-ai-tutor.css?v=8.8.0">
 <script src="assets/bakhi/bk-ai-tutor.js?v=8.8.0" defer></script>
-    <link rel="stylesheet" href="assets/bakhi/bk-tokens.css?v=8.8.0">
+    <link rel="stylesheet" href="assets/bakhi/bk-tokens.css?v=8.8.0"><!-- assets/bakhi/bk-rebirth — Quiet Graphite --><link rel="stylesheet" href="assets/bakhi/bk-rebirth.css?v=8.8.0" data-bk-rebirth="css"><script src="assets/bakhi/bk-rebirth.js?v=8.8.0" defer data-bk-rebirth="js"></script>
+
+
+
+</body>
+</html>
