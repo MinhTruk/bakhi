@@ -605,7 +605,8 @@ body.bk-rebirth.is-scrolled .bk-chrome {
     white-space: nowrap;
 }
 @media (max-width: 767px) {
-    .bk-crumbs a, .bk-crumbs .sep { display: none; }
+    /* Mobile: chỉ tiêu đề trang, không lặp lại breadcrumb. */
+    .bk-crumbs { display: none; }
     .bk-chrome-title { display: block; }
 }
 .bk-chrome-btn {
@@ -690,10 +691,17 @@ body.bk-rebirth.is-scrolled .bk-chrome {
 }
 .bk-footer p { margin: 8px 0 0; line-height: 1.6; }
 .bk-footer h2 { font-size: .6875rem; text-transform: uppercase; letter-spacing: .08em; color: var(--rb-text-3); margin: 2px 0 10px; }
+/* Mục 17 đặt cỡ h2 toàn cục; footer phải thắng để tiêu đề cột không phình to. */
+.bk-footer .bk-footer-inner h2 { font-size: .6875rem; line-height: 1.3; font-weight: 600; }
 .bk-footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
 .bk-footer a { color: var(--rb-text-2); text-decoration: none; }
 .bk-footer a:hover { color: var(--rb-text); text-decoration: underline; }
-.bk-footer-meta { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--rb-line); display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: space-between; max-width: var(--rb-content-max); margin-inline: auto; }
+.bk-footer-meta { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--rb-line); display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: space-between; max-width: var(--rb-content-max); margin-inline: auto; padding-right: 150px; }
+/* Nút nổi Hỏi AI / Báo lỗi cố định ở góc phải dưới: chừa chỗ để không che dòng bản quyền. */
+@media (max-width: 767px) {
+    .bk-footer { padding-bottom: 104px; }
+    .bk-footer-meta { padding-right: 0; }
+}
 .bk-footer-meta code { color: var(--rb-text-3); }
 
 /* --- Bottom tab bar (mobile) --- */
@@ -751,6 +759,8 @@ body.bk-rebirth.is-scrolled .bk-chrome {
         font-size: .6rem; font-weight: 800; display: grid; place-items: center;
     }
     .bk-footer { margin-bottom: 8px; }
+    /* Nút nhạc nổi (mặc định góc trái dưới) phải nằm TRÊN thanh tab. */
+    .bkmusic-btn { bottom: calc(var(--rb-tabbar-h) + env(safe-area-inset-bottom, 0px) + 12px); }
     .bk-footer-inner { grid-template-columns: 1fr; gap: 20px; }
     .bk-footer-meta { flex-direction: column; }
 }

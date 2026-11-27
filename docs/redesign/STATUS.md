@@ -32,10 +32,30 @@ Phiên bản ứng dụng không đổi (`8.8.0`, `CHANGELOG.md` không bị s�
 
 ## 3. Đã kiểm chứng trong phiên này
 
+Kiểm tra bằng trình duyệt thật ở 1280×900 và 375×812 trên máy chủ tĩnh cục bộ
+(`python -m http.server 8123 --bind 127.0.0.1`), trang chủ + một trang bài học + trang pháp lý:
+
+- Không lỗi console (chỉ cảnh báo Tailwind CDN có sẵn từ trước).
+- Không tràn ngang: `scrollWidth == clientWidth` ở 1280 và 375.
+- Rail/top bar/bottom tab/footer/skip link có mặt đúng trang; 375 px ẩn rail, hiện tab bar.
+- Ảnh chụp: `screens/home-gate-dark-1280.png`, `screens/lesson-dark-1280.png`,
+  `screens/lesson-dark-375c.png`.
+
+Ba lỗi giao diện phát hiện khi xem và đã sửa trong phiên này:
+
+1. Tiêu đề cột footer phình 27,84px (quy tắc `h2` toàn cục ở mục 17 thắng `.bk-footer h2`)
+   → thêm `.bk-footer .bk-footer-inner h2`.
+2. Mobile lặp breadcrumb + tiêu đề ("Học tập | Học tập") → ẩn `.bk-crumbs` dưới 768px.
+3. Nút nhạc nổi góc trái dưới đè lên tab bar → nâng lên trên thanh tab; dòng bản quyền
+   chừa 150px bên phải cho nút nổi Hỏi AI/Báo lỗi.
+
+
 - `node tools/content-integrity.js verify` → **OK**, 125 tệp nội dung gốc không đổi.
 - `node tools/inject-rebirth.js --check` → **0 tệp cần cập nhật** (idempotent).
 - `node --check assets/bakhi/bk-rebirth.js` → hợp lệ.
 - `node tools/qa/rebirth-contrast.js` → **74 cặp, 0 không đạt**, thấp nhất 4.67:1.
+- `node tools/qa/v855-ui.js`, `node tools/qa/v856-ui.js`, `node tools/qa/version-audit.js` → tất cả PASS
+  (sau khi thêm `bk-tokens.css` + `bk-theme-boot.js` cho các trang mới).
 - `index.html` đã được viết lại có chủ đích nên baseline được làm mới bằng
   `node tools/content-integrity-refresh.js index.html` (công cụ chấp nhận: trang không có
   nội dung giáo dục).

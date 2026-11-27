@@ -30,6 +30,8 @@ function walk(dir, out) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         if (entry.isDirectory()) {
             if (SKIP_DIRS.has(entry.name)) continue;
+            /* docs/redesign là thư viện dev-only, không nhận shell của ứng dụng. */
+            if (path.relative(ROOT, path.join(dir, entry.name)).replace(/\\/g, '/') === 'docs/redesign') continue;
             walk(path.join(dir, entry.name), out);
         } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.html')) {
             out.push(path.join(dir, entry.name));
