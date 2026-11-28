@@ -3,6 +3,9 @@
    Con trỏ tuỳ biến: giữ nguyên nhận diện cũ (vòng 22 px #ffd0d8 + điểm
    #ffb6c1) nhưng chuyển từ ảnh cursor tĩnh sang hai lớp DOM do JS điều khiển.
    Chỉ hiện khi html.bk-cur-on (JS xác nhận thiết bị trỏ chính xác).
+
+   Mọi thay đổi kích thước do JS scale trên transform; CSS chỉ đổi màu,
+   kiểu viền và hiệu ứng quay của trạng thái tải.
    ========================================================================= */
 
 .bk-cur {
@@ -23,8 +26,11 @@
     left: 0;
     top: 0;
     pointer-events: none;
-    will-change: transform;
 }
+
+/* Chỉ hai phần tử con, và chỉ nhận will-change khi thực sự đang hiện. */
+.bk-cur.is-on .bk-cur-ring,
+.bk-cur.is-on .bk-cur-dot { will-change: transform; }
 
 .bk-cur-ring {
     width: 22px;
@@ -33,7 +39,7 @@
     border: 1.3px solid #ffd0d8;
     border-radius: 50%;
     box-shadow: 0 0 0 1.3px rgb(0 0 0 / .35);
-    transition: border-color 140ms linear;
+    transition: border-color 140ms linear, opacity 140ms linear;
 }
 
 .bk-cur-dot {
@@ -42,12 +48,44 @@
     margin: -2px 0 0 -2px;
     border-radius: 50%;
     background: #ffb6c1;
-    transition: background-color 140ms linear;
+    transition: background-color 140ms linear, opacity 140ms linear;
 }
 
+/* --- Trạng thái ------------------------------------------------------- */
+
 .bk-cur.is-hover .bk-cur-ring { border-color: #ffb6c1; }
+
 .bk-cur.is-text .bk-cur-ring { border-color: #ffd0d8; opacity: .55; }
+.bk-cur.is-text .bk-cur-dot { opacity: .85; }
+
+.bk-cur.is-grab .bk-cur-ring { border-style: dashed; }
+.bk-cur.is-grabbing .bk-cur-ring { border-color: #ffb6c1; box-shadow: 0 0 0 2px rgb(0 0 0 / .3); }
+
+.bk-cur.is-resize .bk-cur-ring { border-style: dashed; border-color: #ffd0d8; }
+.bk-cur.is-move .bk-cur-ring { border-color: #ffd0d8; }
+
+.bk-cur.is-disabled .bk-cur-ring { border-style: dotted; opacity: .45; }
+.bk-cur.is-disabled .bk-cur-dot { opacity: .4; }
+
+.bk-cur.is-loading .bk-cur-ring { border-style: dashed; border-color: #ffb6c1; }
+.bk-cur.is-loading .bk-cur-ring::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    border: 1.4px solid transparent;
+    border-top-color: #ffb6c1;
+    animation: bkCurSpin .8s linear infinite;
+}
+.bk-cur.is-loading .bk-cur-dot { opacity: .45; }
+
 .bk-cur.is-down .bk-cur-dot { background: #ffd0d8; }
+
+/* Cuộn: nhạt vòng để không tranh với nội dung đang chạy. */
+.bk-cur.is-scrolling .bk-cur-ring { opacity: .55; }
+.bk-cur.is-scrolling .bk-cur-dot { opacity: .7; }
+
+@keyframes bkCurSpin { to { transform: rotate(360deg); } }
 
 /* Ẩn con trỏ hệ điều hành chỉ khi lớp tuỳ biến đã sẵn sàng. */
 html.bk-cur-on,
@@ -57,8 +95,25 @@ html.bk-cur-on * { cursor: none !important; }
 html.light .bk-cur-ring { border-color: #b3304f; box-shadow: 0 0 0 1.3px rgb(255 255 255 / .55); }
 html.light .bk-cur-dot { background: #b3304f; }
 html.light .bk-cur.is-hover .bk-cur-ring { border-color: #8f1f3d; }
+html.light .bk-cur.is-loading .bk-cur-ring::after { border-top-color: #b3304f; }
+html.light .bk-cur.is-grabbing .bk-cur-ring { box-shadow: 0 0 0 2px rgb(255 255 255 / .7); }
 
+/* Giảm chuyển động (thiết bị hoặc Cài đặt): bám tức thời, tắt quay. */
 @media (prefers-reduced-motion: reduce) {
     .bk-cur-ring,
     .bk-cur-dot { transition: none; }
+    .bk-cur.is-loading .bk-cur-ring::after { animation: none; }
+}
+html.bk-a11y-reduce-motion .bk-cur-ring,
+html.bk-a11y-reduce-motion .bk-cur-dot,
+.bk-cur.is-reduced .bk-cur-ring,
+.bk-cur.is-reduced .bk-cur-dot { transition: none; }
+html.bk-a11y-reduce-motion .bk-cur.is-loading .bk-cur-ring::after,
+.bk-cur.is-reduced.is-loading .bk-cur-ring::after { animation: none; }
+
+/* Thiết bị cảm ứng: JS không dựng, đây là lớp bảo hiểm. */
+@media (hover: none), (pointer: coarse) {
+    .bk-cur { display: none; }
+    html.bk-cur-on,
+    html.bk-cur-on * { cursor: auto !important; }
 }

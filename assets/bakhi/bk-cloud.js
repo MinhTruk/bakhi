@@ -2202,7 +2202,7 @@
 
     function openChangelogFile() {
         if (typeof global.openChangelogMd === 'function') { global.openChangelogMd(); return; }
-        if (global.open) global.open(basePath() + 'CHANGELOG.md', '_blank', 'noopener');
+        if (global.BKReadme) global.BKReadme.open('CHANGELOG.md', 'CHANGELOG.md');
     }
 
     /* Phiên bản mới nhất theo SỐ phiên bản (không theo ngày đăng). */

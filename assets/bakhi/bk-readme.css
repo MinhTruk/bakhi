@@ -1,0 +1,324 @@
+/* =========================================================================
+   Bá Khí — bk-readme.css
+   Hộp xem README/CHANGELOG dùng chung cho mọi trang. Tệp này độc lập với
+   Tailwind để chạy cả trên trang bài học và trang quản trị.
+
+   Khung luôn nằm trong vùng nhìn thấy: chiều cao theo 100dvh (thanh công cụ
+   động trên di động), chừa safe-area cho thiết bị có notch, thân truyện cuộn
+   riêng còn đầu truyện và nút đóng đứng yên.
+   ========================================================================= */
+
+html.bk-readme-open,
+html.bk-readme-open body {
+    overflow: hidden;
+    overscroll-behavior: none;
+}
+
+#bkReadmeModal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147482300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    padding:
+        max(12px, env(safe-area-inset-top))
+        max(12px, env(safe-area-inset-right))
+        max(12px, env(safe-area-inset-bottom))
+        max(12px, env(safe-area-inset-left));
+    background: rgba(2, 6, 23, .78);
+    color: var(--bk-text, #ffe4eb);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .18s var(--bk-ease-out, cubic-bezier(.16,1,.3,1)),
+                visibility .18s linear;
+}
+
+#bkReadmeModal[hidden] { display: none !important; }
+
+#bkReadmeModal.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.bkr-panel {
+    display: flex;
+    flex-direction: column;
+    width: min(56rem, 100%);
+    max-height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--bk-surface, #0a0a12);
+    border: 1px solid var(--bk-line, rgb(196 181 253 / .2));
+    border-radius: 20px;
+    box-shadow: var(--bk-elev-2, 0 24px 60px -24px rgba(2, 6, 23, .92));
+    transform: translateY(10px) scale(.985);
+    transition: transform .22s var(--bk-ease-out, cubic-bezier(.16,1,.3,1));
+}
+
+#bkReadmeModal.is-open .bkr-panel { transform: none; }
+
+.bkr-head {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--bk-line-soft, rgb(196 181 253 / .1));
+    background: var(--bk-surface-2, #101018);
+}
+
+.bkr-title {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--bk-text, #ffe4eb);
+    font-size: 1rem;
+    font-weight: 650;
+    line-height: 1.3;
+}
+
+.bkr-title span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bkr-md {
+    display: grid;
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+    place-items: center;
+    border: 1px solid var(--bk-line, rgb(196 181 253 / .2));
+    border-radius: 8px;
+    color: var(--bk-brand, #ffb6c1);
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+.bkr-close {
+    display: grid;
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    place-items: center;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--bk-text-2, #d9b6c2);
+    font: inherit;
+    cursor: pointer;
+    transition: background .16s linear, color .16s linear;
+}
+
+.bkr-close:hover { background: var(--bk-hover, #1b1b2b); color: var(--bk-text, #ffe4eb); }
+.bkr-close:focus-visible {
+    outline: 2px solid var(--bk-brand, #ffb6c1);
+    outline-offset: 2px;
+}
+.bkr-close svg { width: 20px; height: 20px; }
+
+.bkr-body {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 18px clamp(16px, 4vw, 26px) calc(24px + env(safe-area-inset-bottom));
+    background: var(--bk-surface, #0a0a12);
+    color: var(--bk-text-2, #d9b6c2);
+    font-size: .9375rem;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.bkr-body:focus { outline: none; }
+
+/* ------------------------------------------------------------- Markdown */
+.bkr-body h1,
+.bkr-body h2,
+.bkr-body h3,
+.bkr-body h4 {
+    margin: 1.5em 0 .6em;
+    color: var(--bk-text, #ffe4eb);
+    font-weight: 650;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+.bkr-body h1 {
+    margin-top: 0;
+    padding-bottom: .55rem;
+    border-bottom: 1px solid var(--bk-line-soft, rgb(196 181 253 / .1));
+    font-size: clamp(1.35rem, 3.8vw, 1.7rem);
+}
+.bkr-body h2 {
+    padding-bottom: .4rem;
+    border-bottom: 1px solid var(--bk-line-soft, rgb(196 181 253 / .1));
+    font-size: clamp(1.12rem, 3vw, 1.32rem);
+}
+.bkr-body h3 { font-size: 1.05rem; }
+.bkr-body h4 { font-size: .98rem; color: var(--bk-text-2, #d9b6c2); }
+
+.bkr-body p,
+.bkr-body ul,
+.bkr-body ol,
+.bkr-body blockquote,
+.bkr-body pre,
+.bkr-body table { margin: 0 0 1rem; }
+
+.bkr-body ul,
+.bkr-body ol { padding-left: 1.35rem; }
+.bkr-body li { margin: .3rem 0; }
+.bkr-body li > p { margin-bottom: .35rem; }
+
+.bkr-body a {
+    color: var(--bk-brand, #ffb6c1);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.bkr-body a:hover { color: var(--bk-text, #ffe4eb); }
+
+.bkr-body strong { color: var(--bk-text, #ffe4eb); font-weight: 650; }
+.bkr-body hr {
+    height: 1px;
+    margin: 1.5rem 0;
+    border: 0;
+    background: var(--bk-line-soft, rgb(196 181 253 / .1));
+}
+
+.bkr-body blockquote {
+    padding: .35rem .9rem;
+    border-left: 3px solid var(--bk-accent, #ffb6c1);
+    background: var(--bk-surface-2, #101018);
+    color: var(--bk-text-3, #ad8b99);
+}
+.bkr-body blockquote > :last-child { margin-bottom: 0; }
+
+.bkr-body code {
+    padding: .15em .4em;
+    border: 1px solid var(--bk-line-soft, rgb(196 181 253 / .1));
+    border-radius: 5px;
+    background: var(--bk-surface-3, #171724);
+    color: var(--bk-text, #ffe4eb);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: .86em;
+}
+.bkr-body pre {
+    max-width: 100%;
+    overflow-x: auto;
+    padding: .9rem 1rem;
+    border: 1px solid var(--bk-line-soft, rgb(196 181 253 / .1));
+    border-radius: 10px;
+    background: var(--bk-surface-3, #171724);
+    -webkit-overflow-scrolling: touch;
+}
+.bkr-body pre code {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: .82rem;
+    line-height: 1.6;
+    white-space: pre;
+}
+
+.bkr-body table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: .86rem;
+    -webkit-overflow-scrolling: touch;
+}
+.bkr-body th,
+.bkr-body td {
+    padding: .5rem .65rem;
+    border: 1px solid var(--bk-line-soft, rgb(196 181 253 / .1));
+    text-align: left;
+    vertical-align: top;
+}
+.bkr-body th {
+    background: var(--bk-surface-3, #171724);
+    color: var(--bk-text, #ffe4eb);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.bkr-body img { max-width: 100%; height: auto; border-radius: 8px; }
+.bkr-body input[type="checkbox"] { accent-color: var(--bk-brand, #ffb6c1); }
+
+/* --------------------------------------------------------------- Trạng thái */
+.bkr-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .65rem;
+    padding: 3rem 1rem;
+    color: var(--bk-text-3, #ad8b99);
+    font-size: .88rem;
+    text-align: center;
+}
+.bkr-state.is-error { color: var(--bk-danger, #ff8a8a); }
+
+.bkr-spin {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--bk-line, rgb(196 181 253 / .2));
+    border-top-color: var(--bk-brand, #ffb6c1);
+    border-radius: 50%;
+    animation: bkr-spin .8s linear infinite;
+}
+@keyframes bkr-spin { to { transform: rotate(360deg); } }
+
+.bkr-raw {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: .82rem;
+    line-height: 1.65;
+}
+
+/* ---------------------------------------------------------------- Di động */
+@media (max-width: 600px) {
+    #bkReadmeModal {
+        align-items: stretch;
+        padding:
+            env(safe-area-inset-top)
+            env(safe-area-inset-right)
+            env(safe-area-inset-bottom)
+            env(safe-area-inset-left);
+    }
+    .bkr-panel {
+        width: 100%;
+        max-height: 100%;
+        border: 0;
+        border-radius: 0;
+    }
+    .bkr-head {
+        padding: .7rem .85rem;
+        padding-top: max(.7rem, .7rem);
+    }
+    .bkr-body {
+        padding: 14px 14px calc(22px + env(safe-area-inset-bottom));
+    }
+}
+
+/* ------------------------------------------------- Giảm chuyển động */
+@media (prefers-reduced-motion: reduce) {
+    #bkReadmeModal,
+    .bkr-panel,
+    .bkr-close { transition: none; }
+    .bkr-spin { animation: none; border-top-color: var(--bk-brand, #ffb6c1); }
+}

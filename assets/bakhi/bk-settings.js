@@ -470,6 +470,25 @@
             global.BKShell && global.BKShell.setA11y({ reduceMotion: v });
         }, 'Giảm chuyển động')));
 
+        var cursorSeg = el('div', 'bk-seg');
+        cursorSeg.setAttribute('role', 'group');
+        cursorSeg.setAttribute('aria-label', 'Kiểu con trỏ chuột');
+        var cursorButtons = [];
+        [['custom', 'Bá Khí'], ['native', 'Hệ điều hành']].forEach(function (row) {
+            var b = el('button', null, row[1]);
+            b.type = 'button';
+            b.setAttribute('aria-pressed', a.cursor === row[0] ? 'true' : 'false');
+            b.addEventListener('click', function () {
+                if (global.BKShell) global.BKShell.setA11y({ cursor: row[0] });
+                cursorButtons.forEach(function (btn, i) {
+                    btn.setAttribute('aria-pressed', (i === 0 ? 'custom' : 'native') === row[0] ? 'true' : 'false');
+                });
+            });
+            cursorButtons.push(b);
+            cursorSeg.appendChild(b);
+        });
+        panel.appendChild(settingRow('Con trỏ chuột', 'Giữ con trỏ Bá Khí hoặc trả lại con trỏ mặc định của hệ điều hành. Lựa chọn này độc lập với giảm chuyển động.', cursorSeg));
+
         panel.appendChild(settingRow('Viền focus rõ', 'Hiện viền đậm khi dùng bàn phím.', switchControl(a.strongFocus, function (v) {
             global.BKShell && global.BKShell.setA11y({ strongFocus: v });
         }, 'Viền focus rõ')));

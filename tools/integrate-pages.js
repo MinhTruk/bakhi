@@ -173,6 +173,51 @@ function ensureIntro(file, html) {
   return lines.join('\n');
 }
 
+/* Trải nghiệm dùng chung: con trỏ Bá Khí + hộp README (9.1.0).
+   Nạp trên MỌI trang để avatar ở bất kỳ route nào cũng mở cùng một hộp thoại
+   và con trỏ có đủ trạng thái. Các dòng thẻ chứa assets/bakhi/ nên
+   content-integrity bỏ qua; idempotent và có ?v=. */
+function ensureUx(file, html) {
+  const version = appVersion();
+  const bust = version ? '?v=' + version : '';
+  const rel = path.relative(ROOT, file).split(path.sep).join('/');
+  const depth = rel.split('/').length - 1;
+  const prefix = depth === 0 ? '' : '../'.repeat(depth);
+  const tags = [
+    ['bk-readme.css', 'link', 'bk-readme.css'],
+    ['bk-readme.js', 'script', 'bk-readme.js'],
+    ['bk-motion.js', 'script', 'bk-motion.js'],
+    ['bk-cursor.css', 'link', 'bk-cursor.css'],
+    ['bk-cursor.js', 'script', 'bk-cursor.js']
+  ];
+  let out = html;
+  let changed = false;
+  /* Bản chèn 9.0.x từng nằm sau </html>; gỡ để đưa vào trước </body>. */
+  const tail = /(?:\s*<(?:link|script)[^>]*assets\/bakhi\/bk-(?:readme\.(?:css|js)|motion\.js|cursor\.(?:css|js))[^>]*>(?:<\/script>)?)+\s*$/i;
+  if (tail.test(out)) { out = out.replace(tail, '\n'); changed = true; }
+  let block = '';
+  for (const [, kind, file] of tags) {
+    const mark = `assets/bakhi/${file}`;
+    if (out.includes(mark)) {
+      const safe = file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const next = out.replace(new RegExp('(assets/bakhi/' + safe + ')(\\?v=[^"\']*)?', 'g'), '$1' + bust);
+      if (next !== out) { out = next; changed = true; }
+      continue;
+    }
+    const tag = kind === 'link'
+      ? `    <link rel="stylesheet" href="${prefix}${mark}${bust}">\n`
+      : `    <script src="${prefix}${mark}${bust}" defer></script>\n`;
+    block += tag;
+    changed = true;
+  }
+  if (block) {
+    const at = out.toLowerCase().lastIndexOf('</body>');
+    out = at >= 0 ? out.slice(0, at) + block + out.slice(at) : out + block;
+  }
+  if (changed) fs.writeFileSync(file, out);
+  return out;
+}
+
 /* Chuyển trang void: script đồng bộ trong <head> để overlay kịp dựng khi trang
    mới tải. Idempotent; chèn sau dòng <head> như ensureThemeBoot. */
 function ensureTransitionHead(file, html) {
@@ -276,6 +321,8 @@ function inject(file) {
     fs.writeFileSync(file, withIntro);
     html = withIntro;
   }
+  /* Con trỏ + README dùng chung trên mọi route. */
+  html = ensureUx(file, html);
   if (SKIP.has(rel)) return 'skip';
   if (html.includes('assets/bakhi/bk-core.js')) return 'already';
 

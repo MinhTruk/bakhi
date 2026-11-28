@@ -323,7 +323,7 @@
         }, { threshold: .06, rootMargin: '0px 0px -6% 0px' });
         Array.prototype.forEach.call(els, function (el, i) {
             if (el.id === 'searchResultsSection' || el.closest('#searchResultsSection')) return;
-            if (el.closest('#dev-panel-modal, #readme-modal, #highlight-manager-modal')) return;
+            if (el.closest('#dev-panel-modal, #bkReadmeModal, #highlight-manager-modal')) return;
             el.classList.add('bk-reveal');
             var v = A.reveal.type === 'zoom' ? 'rv-zoom' : A.reveal.type === 'blur' ? 'rv-blur' : A.reveal.type === 'slide' ? 'rv-slide' : '';
             ['rv-zoom', 'rv-blur', 'rv-slide'].forEach(function (c) { if (c !== v) el.classList.remove(c); });

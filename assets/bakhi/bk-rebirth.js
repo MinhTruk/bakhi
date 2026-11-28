@@ -739,7 +739,9 @@
         var rail = D.getElementById('bkRailChatBadge');
         if (rail) {
             rail.hidden = !n;
-            rail.textContent = n > 9 ? '9+' : String(n || '');
+            /* Chỉ chấm, không đếm số; dữ liệu chưa đọc vẫn giữ nguyên. */
+            rail.textContent = '';
+            rail.setAttribute('aria-label', n ? 'Tin nhắn chưa đọc' : '');
         }
     }
     function startUnread() {

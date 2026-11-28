@@ -15,7 +15,7 @@
     if (!D || global.BKDashboardLoaded) return;
     global.BKDashboardLoaded = true;
 
-    var APP_VERSION = '9.0.3';
+    var APP_VERSION = '9.0.4';
 
     var TYPES = [['general', 'Chung'], ['announcement', 'Thông báo'], ['update', 'Cập nhật'],
         ['important', 'Quan trọng'], ['maintenance', 'Bảo trì']];
@@ -4995,16 +4995,16 @@
             sessionCard.body.appendChild(rows);
             pane.appendChild(sessionCard.root);
 
-            var docs = card('Tài liệu & công cụ', null, 'Mở trong tab mới.');
+            var docs = card('Tài liệu & công cụ', null, 'README và CHANGELOG mở tại chỗ; liên kết ngoài mở tab mới.');
             var docActs = h('div', 'bkc-actions');
             docActs.appendChild(btn('Hướng dẫn Supabase', 'bkc-btn-ghost', function () {
                 window.open(basePath() + 'docs/SUPABASE_SETUP.md', '_blank', 'noopener');
             }, 'fa-book'));
             docActs.appendChild(btn('README', 'bkc-btn-ghost', function () {
-                window.open(basePath() + 'README.md', '_blank', 'noopener');
+                if (window.BKReadme) window.BKReadme.open('README.md', 'README.md');
             }, 'fa-file-lines'));
             docActs.appendChild(btn('CHANGELOG', 'bkc-btn-ghost', function () {
-                window.open(basePath() + 'CHANGELOG.md', '_blank', 'noopener');
+                if (window.BKReadme) window.BKReadme.open('CHANGELOG.md', 'CHANGELOG.md');
             }, 'fa-code-branch'));
             docActs.appendChild(btn('Về trang chủ', 'bkc-btn-ghost', function () {
                 window.location.href = basePath() + 'index.html';

@@ -1,12 +1,16 @@
 /* =========================================================================
    Bá Khí — bk-cursor.js
-   Con trỏ tuỳ biến (vòng + điểm) dựng trên nền nhận diện cũ:
+   Con trỏ tuỳ biến (vòng + điểm) dựng trên nhận diện cũ.
+
    · một vòng lặp rAF duy nhất, chỉ ghi transform (translate3d + scale)
+   · trạng thái: normal / hover / text / grab / grabbing / resize / move /
+     disabled / loading / pressed / scrolling / hidden
    · phát hiện vùng bấm bằng uỷ nhiệm pointerover + computed cursor
-   · cuộn: xung lực ngắn theo vận tốc, tắt dần về đúng vị trí con trỏ
-   · trạng thái: normal / hover / text / pressed / hidden
+   · đọc lựa chọn trong Cài đặt (bakhiA11y.v1 → cursor: 'custom' | 'native'):
+     đổi sang 'native' thì gỡ toàn bộ DOM, listener, rAF và trả con trỏ hệ
+     điều hành; đổi lại 'custom' thì dựng lại.
    · chỉ gắn khi (hover: hover) and (pointer: fine); không gắn trên cảm ứng
-   · destroy() gỡ mọi listener, observer, rAF và trả con trỏ hệ điều hành
+   · giảm chuyển động: con trỏ vẫn dùng được nhưng bám tức thời, không đuổi
 
    Công khai: window.BKCursor = { destroy, state, __ready }
    ========================================================================= */
@@ -17,11 +21,8 @@
     if (!D || !D.documentElement) return;
     if (global.BKCursor && global.BKCursor.__ready) return;
 
+    var A11Y_KEY = 'bakhiA11y.v1';
     var M = global.BKMotion || {};
-    var fine = M.fine ? M.fine() : false;
-    if (!fine) return;
-
-    var reduced = M.reduced ? M.reduced() : false;
     var SPR = M.SPRING || { follow: .22, damp: .72, scroll: .6, scrollDecay: .86, scrollMax: 26 };
     var clamp = M.clamp || function (n, lo, hi) { return n < lo ? lo : n > hi ? hi : n; };
     var now = function () { return global.performance && performance.now ? performance.now() : Date.now(); };
@@ -30,14 +31,39 @@
         x: -100, y: -100, rx: -100, ry: -100, rvx: 0, rvy: 0,
         sx: 1, sy: 1, tsx: 1, tsy: 1, ds: 1, dsy: 1, tds: 1, tdsy: 1,
         impulse: 0, lastScroll: 0, down: false, active: false, state: '',
+        scrolling: false, mounted: false, native: false,
         raf: 0, lastMove: 0, root: null, ring: null, dot: null,
-        observer: null, timer: 0, listeners: []
+        observer: null, scrollTimer: 0, listeners: []
     };
 
     function el(tag, cls) {
         var n = D.createElement(tag);
         if (cls) n.className = cls;
         return n;
+    }
+
+    function fine() {
+        if (M.fine) return M.fine();
+        try {
+            return global.matchMedia('(hover: hover) and (pointer: fine)').matches &&
+                !global.matchMedia('(pointer: coarse)').matches;
+        } catch (e) { return false; }
+    }
+
+    function a11y() {
+        try {
+            var raw = JSON.parse(global.localStorage.getItem(A11Y_KEY) || '{}');
+            return raw && typeof raw === 'object' ? raw : {};
+        } catch (e) { return {}; }
+    }
+
+    function pref() {
+        return a11y().cursor === 'native' ? 'native' : 'custom';
+    }
+
+    function reduced() {
+        if (a11y().reduceMotion) return true;
+        return M.reduced ? M.reduced() : false;
     }
 
     function on(target, type, fn, opts) {
@@ -59,51 +85,82 @@
         S.lastScroll = global.pageYOffset || D.documentElement.scrollTop || 0;
     }
 
-    /* Trả về 'text' | 'hover' | ''. Một phép tra cho mỗi lần đổi phần tử. */
+    /* Trạng thái theo phần tử dưới con trỏ. Một phép tra mỗi lần đổi target. */
     function probe(target) {
         if (!target || target.nodeType !== 1 || !target.closest) return '';
+        if (target.closest(':disabled,[aria-disabled="true"]')) return 'disabled';
+        if (target.closest('[aria-busy="true"],.is-loading,.bk-loading,.bk-skeleton')) return 'loading';
         if (target.closest('input[type="range"],input[type="checkbox"],input[type="radio"],input[type="color"]')) return 'hover';
-        if (target.closest('textarea,[contenteditable="true"],input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"])')) return 'text';
+        if (target.closest('textarea,[contenteditable=""],[contenteditable="true"],input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"])')) return 'text';
+
+        var c = '';
+        try { c = global.getComputedStyle(target).cursor || ''; } catch (e) { }
+        if (c === 'grabbing') return 'grabbing';
+        if (c === 'grab') return S.down ? 'grabbing' : 'grab';
+        if (c === 'move' || c === 'all-scroll') return 'move';
+        if (c === 'wait' || c === 'progress') return 'loading';
+        if (c === 'not-allowed') return 'disabled';
+        if (/resize$/.test(c)) return 'resize';
+        if (c === 'text') return 'text';
+        if (c === 'pointer') return 'hover';
         if (target.closest('a,button,summary,label,[role="button"],[role="link"],[role="menuitem"],[role="tab"],[onclick],.bk-card,.bk-tile,.bk-stat,.bk-folder')) return 'hover';
-        try {
-            var c = global.getComputedStyle(target).cursor;
-            if (c === 'pointer') return 'hover';
-            if (c === 'text') return 'text';
-        } catch (e) { }
         return '';
+    }
+
+    function paintClass() {
+        if (!S.root) return;
+        S.root.className = 'bk-cur' +
+            (S.active ? ' is-on' : '') +
+            (S.state ? ' is-' + S.state : '') +
+            (S.down ? ' is-down' : '') +
+            (S.scrolling ? ' is-scrolling' : '') +
+            (reduced() ? ' is-reduced' : '');
     }
 
     function setState(state) {
         if (S.state === state) return;
         S.state = state;
-        S.root.className = 'bk-cur' + (S.active ? ' is-on' : '') + (state ? ' is-' + state : '') + (S.down ? ' is-down' : '');
-        S.tsx = state === 'hover' ? 1.55 : state === 'text' ? .5 : 1;
-        S.tsy = state === 'hover' ? 1.55 : state === 'text' ? 1.3 : 1;
-        S.tds = state === 'hover' ? 1.5 : 1;
-        S.tdsy = state === 'text' ? 3.4 : 1;
+        var scale = {
+            '': [1, 1, 1, 1],
+            hover: [1.55, 1.55, 1.5, 1],
+            text: [.5, 1.3, 1, 3.4],
+            grab: [1.28, 1.28, 1.35, 1.35],
+            grabbing: [1.12, 1.12, 1.55, 1.55],
+            resize: [1.18, 1.18, 1.1, 1.1],
+            disabled: [.9, .9, .75, .75],
+            loading: [1.15, 1.15, 1.15, 1.15],
+            move: [1.2, 1.2, 1.2, 1.2]
+        }[state] || [1, 1, 1, 1];
+        S.tsx = scale[0];
+        S.tsy = scale[1];
+        S.tds = scale[2];
+        S.tdsy = scale[3];
+        paintClass();
     }
 
     function activate() {
-        if (S.active) return;
+        if (S.active || S.native) return;
         S.active = true;
         S.rx = S.x; S.ry = S.y; S.rvx = 0; S.rvy = 0;
-        S.root.classList.add('is-on');
         D.documentElement.classList.add('bk-cur-on');
+        paintClass();
         kick();
     }
 
     function deactivate() {
         S.active = false;
-        S.root.classList.remove('is-on');
+        S.scrolling = false;
         D.documentElement.classList.remove('bk-cur-on');
+        paintClass();
         if (S.raf) { global.cancelAnimationFrame(S.raf); S.raf = 0; }
     }
 
     function frame() {
         S.raf = 0;
         var t = now();
-        var k = reduced ? 1 : SPR.follow;
-        var damp = reduced ? 0 : SPR.damp;
+        var calm = reduced();
+        var k = calm ? 1 : SPR.follow;
+        var damp = calm ? 0 : SPR.damp;
         var targetY = S.y + S.impulse;
 
         var r = M.settle ? M.settle(S.rx, S.x, S.rvx, k, damp) : { value: S.x, velocity: 0 };
@@ -111,14 +168,14 @@
         r = M.settle ? M.settle(S.ry, targetY, S.rvy, k, damp) : { value: targetY, velocity: 0 };
         S.ry = r.value; S.rvy = r.velocity;
 
-        var step = reduced ? 1 : .2;
+        var step = calm ? 1 : .2;
         S.sx += (S.tsx - S.sx) * step;
         S.sy += (S.tsy - S.sy) * step;
         S.ds += (S.tds - S.ds) * step;
         S.dsy += (S.tdsy - S.dsy) * step;
-        if (!reduced) S.impulse *= SPR.scrollDecay;
+        if (!calm) S.impulse *= SPR.scrollDecay;
 
-        var press = S.down ? .85 : 1;
+        var press = S.down ? .88 : 1;
         S.ring.style.transform = 'translate3d(' + S.rx.toFixed(2) + 'px,' + S.ry.toFixed(2) + 'px,0) scale(' +
             (S.sx * press).toFixed(3) + ',' + (S.sy * press).toFixed(3) + ')';
         S.dot.style.transform = 'translate3d(' + S.x.toFixed(2) + 'px,' + (S.y + S.impulse * .28).toFixed(2) + 'px,0) scale(' +
@@ -131,18 +188,32 @@
     }
 
     function kick() {
-        if (!S.active || S.raf) return;
+        if (!S.active || S.native || S.raf) return;
         S.raf = global.requestAnimationFrame(frame);
     }
 
     function recheck() {
         if (!S.active) return;
-        try { setState(probe(D.elementFromPoint(S.x, S.y))); } catch (e) { }
+        var x = Math.max(0, Math.min(S.x, global.innerWidth - 1));
+        var y = Math.max(0, Math.min(S.y, global.innerHeight - 1));
+        try { setState(probe(D.elementFromPoint(x, y))); } catch (e) { }
     }
 
     function debounceRecheck() {
-        if (S.timer) global.clearTimeout(S.timer);
-        S.timer = global.setTimeout(recheck, 120);
+        if (S.scrollTimer) global.clearTimeout(S.scrollTimer);
+        S.scrollTimer = global.setTimeout(recheck, 120);
+    }
+
+    function markScroll() {
+        if (!S.scrolling) {
+            S.scrolling = true;
+            paintClass();
+        }
+        if (S.scrollTimer) global.clearTimeout(S.scrollTimer);
+        S.scrollTimer = global.setTimeout(function () {
+            S.scrolling = false;
+            paintClass();
+        }, 180);
     }
 
     function mount() {
@@ -164,13 +235,21 @@
 
         on(D, 'pointerdown', function () {
             S.down = true;
-            if (S.root) S.root.classList.add('is-down');
+            if (S.state === 'grab') setState('grabbing');
+            paintClass();
             kick();
         }, { passive: true });
 
         on(D, 'pointerup', function () {
             S.down = false;
-            if (S.root) S.root.classList.remove('is-down');
+            if (S.state === 'grabbing') recheck();
+            paintClass();
+            kick();
+        }, { passive: true });
+
+        on(D, 'pointercancel', function () {
+            S.down = false;
+            paintClass();
             kick();
         }, { passive: true });
 
@@ -181,7 +260,8 @@
             var y = global.pageYOffset || D.documentElement.scrollTop || 0;
             var dy = y - S.lastScroll;
             S.lastScroll = y;
-            if (!reduced) S.impulse = clamp(S.impulse + dy * SPR.scroll, -SPR.scrollMax, SPR.scrollMax);
+            if (!reduced()) S.impulse = clamp(S.impulse + dy * SPR.scroll, -SPR.scrollMax, SPR.scrollMax);
+            markScroll();
             kick();
         }, { passive: true });
 
@@ -195,7 +275,7 @@
 
     function destroy() {
         if (S.raf) global.cancelAnimationFrame(S.raf);
-        if (S.timer) global.clearTimeout(S.timer);
+        if (S.scrollTimer) global.clearTimeout(S.scrollTimer);
         if (S.observer) S.observer.disconnect();
         for (var i = 0; i < S.listeners.length; i++) {
             var l = S.listeners[i];
@@ -206,11 +286,38 @@
         D.documentElement.classList.remove('bk-cur-on');
         S.root = S.ring = S.dot = S.observer = null;
         S.raf = 0;
+        S.mounted = false;
+        S.active = false;
+        S.down = false;
+        S.scrolling = false;
+        S.state = '';
+        S.scrollTimer = 0;
+    }
+
+    function applyPref() {
+        if (!fine()) return;
+        var wantNative = pref() === 'native';
+        if (wantNative) {
+            S.native = true;
+            if (S.mounted) destroy();
+            else D.documentElement.classList.remove('bk-cur-on');
+            return;
+        }
+        S.native = false;
+        if (S.mounted || !D.body) return;
+        mount();
+        S.mounted = true;
     }
 
     function start() {
         if (!D.body) { D.addEventListener('DOMContentLoaded', start, { once: true }); return; }
-        mount();
+        applyPref();
+        /* Các listener vòng đời này không nằm trong S.listeners: destroy() khi
+           chuyển sang con trỏ hệ điều hành không được tháo chúng, nếu không
+           chuyển ngược lại sẽ không có gì dựng lại con trỏ. */
+        global.addEventListener('storage', function (e) { if (!e || e.key === A11Y_KEY) applyPref(); }, false);
+        D.addEventListener('bk:a11y', applyPref, false);
+        global.addEventListener('pagehide', deactivate, false);
     }
     start();
 

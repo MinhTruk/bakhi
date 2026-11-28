@@ -75,7 +75,8 @@
             contrast: !!raw.contrast,
             reduceMotion: !!raw.reduceMotion,
             strongFocus: !!raw.strongFocus,
-            underlineLinks: !!raw.underlineLinks
+            underlineLinks: !!raw.underlineLinks,
+            cursor: raw.cursor === 'native' ? 'native' : 'custom'
         };
     }
     function applyA11y() {
@@ -86,6 +87,8 @@
         html.classList.toggle('bk-a11y-reduce-motion', a.reduceMotion);
         html.classList.toggle('bk-a11y-strong-focus', a.strongFocus);
         html.classList.toggle('bk-a11y-links', a.underlineLinks);
+        /* Bá Khí hay con trỏ hệ điều hành — độc lập với giảm chuyển động. */
+        html.classList.toggle('bk-cursor-native', a.cursor === 'native');
         /* Tôn trọng thiết lập hệ điều hành khi người dùng chưa chọn. */
         if (rawReduceMotionUnset()) {
             try {
@@ -94,6 +97,9 @@
                 }
             } catch (e) { }
         }
+        try {
+            D.dispatchEvent(new global.CustomEvent('bk:a11y', { detail: a }));
+        } catch (e) { }
         return a;
     }
     function rawReduceMotionUnset() {
@@ -526,8 +532,9 @@
             role: 'menuitem',
             onClick: function () {
                 closeMenu();
+                /* Cùng một hộp thoại trên mọi route; không bao giờ mở tệp .md thô. */
                 if (typeof global.openReadmeModal === 'function') global.openReadmeModal();
-                else global.open(S.base + 'README.md', '_blank', 'noopener');
+                else if (global.BKReadme) global.BKReadme.open('README.md', 'README.md');
             }
         }));
 

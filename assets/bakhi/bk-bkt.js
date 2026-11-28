@@ -12,7 +12,24 @@
     html.style.background = '#050506';
 
     var NAV = 'bkVtNav';
-    var S = { busy: false, overlay: null, mask: null, glow: null, mark: null, stem: null, svg: null };
+    var S = { busy: false, overlay: null, mask: null, glow: null, mark: null, stem: null, svg: null, timers: [] };
+
+    /* Mọi mốc thời gian của một lượt chuyển đều đi qua later() để clean()
+       huỷ được phần còn lại; tránh timer cũ bật lại lớp overlay ở lượt sau. */
+    function later(fn, ms) {
+        var id = global.setTimeout(function () {
+            var at = S.timers.indexOf(id);
+            if (at >= 0) S.timers.splice(at, 1);
+            fn();
+        }, ms);
+        S.timers.push(id);
+        return id;
+    }
+
+    function clearTimers() {
+        S.timers.forEach(function (id) { global.clearTimeout(id); });
+        S.timers = [];
+    }
 
     function el(tag, cls) {
         var n = D.createElement(tag);
@@ -41,7 +58,9 @@
             'html.bk-vt-boot #bkVT { visibility: visible !important; opacity: 1; }' +
             '#bkVT { position: fixed; inset: 0; z-index: 2147482400; overflow: hidden; pointer-events: none; opacity: 0; visibility: hidden; }' +
             '#bkVT.is-on { visibility: visible; opacity: 1; }' +
+            '#bkVT { contain: layout paint; }' +
             '#bkVT .bkvt-mask { position: absolute; inset: 0; background: #050506; clip-path: circle(0% at 50% 50%); }' +
+            '#bkVT.is-on .bkvt-mask { will-change: clip-path; }' +
             '#bkVT .bkvt-glow { position: absolute; left: 50%; top: 50%; width: min(100vmax, 960px); height: min(100vmax, 960px); border-radius: 50%; background: radial-gradient(circle, rgba(233,150,185,.26), rgba(196,181,253,.08) 42%, transparent 70%); transform: translate(-50%, -50%) scale(.6); opacity: 0; }' +
             '#bkVT .bkvt-mark { position: absolute; left: 0; right: 0; top: 50%; width: calc(64px * 46 / 66); margin-inline: auto; transform: translateY(calc(64px * -0.6667)); opacity: 0; }' +
             '#bkVT .bkvt-mark svg { width: 100%; height: auto; display: block; }' +
@@ -99,6 +118,7 @@
 
     function clean() {
         if (!S.overlay) return;
+        clearTimers();
         S.overlay.classList.remove('is-on');
         S.overlay.style.opacity = '';
         [S.mask, S.glow, S.svg, S.stem, S.mark].forEach(function (n) {
@@ -125,7 +145,7 @@
             { duration: 300, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }
         );
         if (a && a.finished && a.finished.then) a.finished.then(function () { if (done) done(); }, function () { if (done) done(); });
-        else global.setTimeout(function () { if (done) done(); }, 320);
+        else later(function () { if (done) done(); }, 320);
     }
 
     function exit(done) {
@@ -136,7 +156,7 @@
         try { ss(NAV, String(Date.now())); } catch (e) { }
 
         if (reduced()) {
-            global.setTimeout(function () {
+            later(function () {
                 if (done) done();
             }, 40);
             return;
@@ -164,7 +184,7 @@
                 );
             }
             // 3. Morph O → b: kéo nét dọc từ đáy lên.
-            global.setTimeout(function () {
+            later(function () {
                 if (S.stem) {
                     S.stem.animate(
                         [{ strokeDashoffset: 100 }, { strokeDashoffset: 0 }],
@@ -173,7 +193,7 @@
                 }
             }, 280);
             // 4. Giữ b rồi điều hướng (morph kết thúc ~880 ms).
-            global.setTimeout(function () { if (done) done(); }, 900);
+            later(function () { if (done) done(); }, 900);
         });
     }
 
@@ -188,12 +208,12 @@
         if (S.glow) S.glow.style.opacity = '.8';
 
         if (reduced()) {
-            global.setTimeout(clean, 60);
+            later(clean, 60);
             return;
         }
 
         // 5. b → O: thu nét dọc xuống.
-        global.setTimeout(function () {
+        later(function () {
             if (S.stem) {
                 S.stem.animate(
                     [{ strokeDashoffset: 0 }, { strokeDashoffset: 100 }],
@@ -203,7 +223,7 @@
         }, 120);
 
         // 6. Co đen + O tan vào chấm.
-        global.setTimeout(function () {
+        later(function () {
             if (S.mask) {
                 S.mask.animate(
                     [{ clipPath: 'circle(150% at 50% 50%)' }, { clipPath: 'circle(0% at 50% 50%)' }],
@@ -224,14 +244,14 @@
             }
         }, 440);
 
-        global.setTimeout(clean, 920);
+        later(clean, 920);
     }
 
     function go(url) {
         if (S.busy) return;
         try { ss(NAV, String(Date.now())); } catch (e) { }
         exit(function () { global.location.href = url; });
-        global.setTimeout(function () {
+        later(function () {
             if (S.busy) global.location.href = url;
         }, 2000);
     }

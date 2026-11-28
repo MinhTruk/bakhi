@@ -216,14 +216,14 @@
 
         /* 1050–1400: BAKHI từ mờ → nét, không chạy từng chữ. */
         anim(ctx, ctx.word, [
-            { opacity: 0, filter: 'blur(3px)', transform: 'translateY(4px)' },
-            { opacity: 1, filter: 'blur(0px)', transform: 'translateY(0)' }
+            { opacity: 0, transform: 'translateY(4px)' },
+            { opacity: 1, transform: 'translateY(0)' }
         ], { duration: T.wordDur, delay: T.word, easing: 'cubic-bezier(.2,.65,.25,1)', fill: 'both' });
 
         /* 1400–1650: phụ đề Việt từ mờ → nét. */
         anim(ctx, ctx.sub, [
-            { opacity: 0, filter: 'blur(2.5px)', transform: 'translateY(3px)' },
-            { opacity: 1, filter: 'blur(0px)', transform: 'translateY(0)' }
+            { opacity: 0, transform: 'translateY(3px)' },
+            { opacity: 1, transform: 'translateY(0)' }
         ], { duration: T.subDur, delay: T.sub, easing: 'cubic-bezier(.2,.65,.25,1)', fill: 'both' });
 
         ctx.revealTimer = global.setTimeout(function () { reveal(ctx); }, T.reveal);

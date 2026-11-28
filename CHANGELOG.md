@@ -2,6 +2,39 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [9.0.4] — 2026-11-28
+
+**v9.0.4 — Sửa README modal trên mobile, neo lại badge thông báo, chấm chưa đọc
+và hoàn thiện hệ con trỏ tùy biến.** Không đổi API, schema, nội dung giáo dục hay
+bố cục trang.
+
+### Sửa lỗi
+
+- **README modal trên mobile:** modal dùng `100dvh`, `max-height` và safe-area;
+  nội dung cuộn độc lập, nút X luôn trong viewport; khoá cuộn nền và mở khoá khi
+  đóng, khi tab bị ẩn hoặc rời trang.
+- **Badge thông báo lệch góc màn hình:** `.bkc-bell` trở lại `position: relative`
+  để badge `absolute` bám đúng chuông trên desktop, tablet và mobile.
+- **Avatar mở README thô:** mọi trang dùng chung `bk-readme.js|css`; không còn
+  fallback mở thẳng tệp `.md` hay đổi URL hiện tại.
+
+### Tính năng
+
+- **Chấm chưa đọc thay số đếm:** badge rail chat chỉ còn dot, tự ẩn khi đọc;
+  dữ liệu unread và read-state giữ nguyên.
+- **Hệ con trỏ tùy biến:** một state manager duy nhất hỗ trợ mặc định, hover,
+  text, grab/grabbing, nhấn, cuộn, resize, disabled và loading.
+- **Cài đặt con trỏ:** chọn giữ con trỏ Bá Khí hoặc trả con trỏ hệ điều hành;
+  lưu trong `bakhiA11y.v1.cursor`, đồng bộ qua `bk:a11y`.
+
+### Cải tiến
+
+- **Hiệu ứng intro và chuyển trang:** bỏ blur/drop-shadow trên SVG đang morph,
+  chỉ giữ `will-change` khi thật sự animate, thêm `contain`, và dọn toàn bộ timer
+  chuyển trang còn sót để tránh overlay bật lại.
+- **Một implementation README:** `bk-shell`, `bk-cloud` và `bk-devboard` đều mở
+  cùng modal; đã xoá bản inline trùng trong `index.html`.
+
 ## [9.0.3] — 2026-11-28
 
 **v9.0.3 — Dựng lại hiệu ứng chuyển trang thành chuỗi O → b → O.**

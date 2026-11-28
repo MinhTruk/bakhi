@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi" class="dark">
 <head>
-<script src="assets/bakhi/bk-theme-boot.js?v=9.0.3"></script>
+<script src="assets/bakhi/bk-theme-boot.js?v=9.0.4"></script>
 <link rel="manifest" href="assets/bakhi/manifest.webmanifest" data-bk-pwa="1"><meta name="theme-color" content="#0f172a" data-bk-pwa="1">
     <meta charset="UTF-8">
     <!-- Bá Khí: không nháy nội dung trước khi xác định phiên học sinh -->
@@ -67,14 +67,6 @@
         .folder-icon { transition: transform 0.2s ease; }
         .folder-header.active .folder-icon { transform: rotate(90deg); }
         
-        /* Style cho Modal README */
-        .markdown-body h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; border-bottom: 1px solid; padding-bottom: 0.5rem; }
-        .markdown-body h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; }
-        .markdown-body p { margin-bottom: 0.75rem; font-size: 0.9rem; line-height: 1.6; }
-        .markdown-body ul { list-style-type: disc; padding-left: 1.25rem; margin-bottom: 0.75rem; font-size: 0.9rem; }
-        .markdown-body table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem; }
-        .markdown-body th, .markdown-body td { border: 1px solid; padding: 0.5rem 0.75rem; text-align: left; }
-
         /* Animation Toast Notification */
         @keyframes slideIn {
             from { transform: translateY(100%); opacity: 0; }
@@ -162,8 +154,8 @@
         .lite .nebula, .lite .logo-glow, .lite .hl-card, .lite .hl-open, .lite .title-shine, .lite .badge-dot { animation: none !important; }
         .lite .nebula { display: none; }
         .lite main > *, .lite .folder-content.open .fc-inner a, .lite .dv-pane:not(.hidden),
-        .lite #dev-panel-modal:not(.hidden), .lite #readme-modal:not(.hidden),
-        .lite #dev-panel-modal:not(.hidden) > div, .lite #readme-modal:not(.hidden) > div { animation: none !important; }
+        .lite #dev-panel-modal:not(.hidden),
+        .lite #dev-panel-modal:not(.hidden) > div { animation: none !important; }
         .lite .folder-content, .lite .folder-content.open, .lite .subj-ico, .lite .folder-ico { transition: none; }
         .lite .folder-header::after { display: none; }
         .lite a:hover > .subj-ico { transform: none; }
@@ -173,8 +165,8 @@
         .toast-animate { position: relative; overflow: hidden; }
         .toast-animate::after { content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 3px; background: rgba(255,255,255,.55); transform-origin: left; animation: tbar 3s linear forwards; }
         @keyframes tbar { to { transform: scaleX(0); } }
-        #dev-panel-modal:not(.hidden), #readme-modal:not(.hidden) { animation: fadeIn .2s both; }
-        #dev-panel-modal:not(.hidden) > div, #readme-modal:not(.hidden) > div { animation: modalIn .35s cubic-bezier(.2,.9,.25,1.1) both; }
+        #dev-panel-modal:not(.hidden) { animation: fadeIn .2s both; }
+        #dev-panel-modal:not(.hidden) > div { animation: modalIn .35s cubic-bezier(.2,.9,.25,1.1) both; }
         @keyframes fadeIn { from { opacity: 0; } }
         @keyframes modalIn { from { opacity: 0; transform: translateY(24px) scale(.94); } }
         .folder-header { position: relative; overflow: hidden; }
@@ -227,14 +219,14 @@
             user-select: text !important;
         }
     </style>
-<script src="assets/bakhi/bk-bkt.js?v=9.0.3" data-bkt-head="1"></script>
+<script src="assets/bakhi/bk-bkt.js?v=9.0.4" data-bkt-head="1"></script>
 <!-- Bá Khí static favicon — assets/bakhi/favicon.svg -->
 <link rel="icon" type="image/svg+xml" href="assets/bakhi/favicon.svg" sizes="any" data-bk-favicon="1">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/bakhi/favicon-32x32.png" data-bk-favicon="1">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/bakhi/favicon-192x192.png" data-bk-favicon="1">
 <link rel="icon" href="assets/bakhi/favicon.ico" sizes="16x16 32x32 48x48" data-bk-favicon="1">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/bakhi/apple-touch-icon.png" data-bk-favicon="1">
-    <link rel="stylesheet" href="assets/bakhi/bk-intro.css?v=9.0.3">
+    <link rel="stylesheet" href="assets/bakhi/bk-intro.css?v=9.0.4">
 </head>
 <body id="pageBody" class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative transition-colors duration-300">
 
@@ -717,29 +709,6 @@
             </div>
         </div>
 
-        <!-- Modal Xem README -->
-        <div id="readme-modal" class="hidden fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4">
-            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between bg-white/90 dark:bg-slate-800/90 sticky top-0">
-                    <div class="flex items-center space-x-2.5">
-                        <i class="fa-brands fa-markdown text-sky-500 dark:text-sky-400 text-xl"></i>
-                        <h3 id="readme-modal-title" class="font-bold text-lg text-slate-900 dark:text-slate-100">README.md</h3>
-                    </div>
-                    <button onclick="closeReadmeModal()" class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition">
-                        <i class="fa-solid fa-xmark text-lg"></i>
-                    </button>
-                </div>
-                <div class="p-6 overflow-y-auto flex-grow bg-slate-50 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300">
-                    <div id="readme-content" class="markdown-body">
-                        <div class="flex items-center justify-center py-12 text-slate-500 dark:text-slate-400 space-x-2">
-                            <i class="fa-solid fa-spinner fa-spin text-xl"></i>
-                            <span>Đang tải nội dung README.md...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Footer -->
         <footer class="w-full py-5 text-center text-slate-500 text-xs border-t border-slate-200 dark:border-slate-800 transition-colors duration-300">
             https://minhtruk.github.io/bakhi/ • GitHub System Index
@@ -1128,53 +1097,7 @@
             if (ico) { ico.classList.toggle('fa-folder-open', open); ico.classList.toggle('fa-folder', !open); }
         }
 
-        // Trình xem markdown dùng chung cho README.md và CHANGELOG.md.
-        async function openMarkdownModal(file, title) {
-            const modal = document.getElementById('readme-modal');
-            const titleEl = document.getElementById('readme-modal-title');
-            const contentEl = document.getElementById('readme-content');
-            if (titleEl) titleEl.textContent = title;
-            modal.classList.remove('hidden');
-            contentEl.innerHTML = '<div class="flex items-center justify-center py-12 text-slate-500 dark:text-slate-400 space-x-2"><i class="fa-solid fa-spinner fa-spin text-xl"></i><span>Đang tải nội dung ' + title + '...</span></div>';
-
-            try {
-                await loadMarked();
-                const res = await fetch('./' + file);
-                if (!res.ok) throw new Error("Không thể tải file " + file);
-                const mdText = await res.text();
-                contentEl.innerHTML = sanitizeHtml(marked.parse(mdText));
-            } catch (err) {
-                contentEl.innerHTML = `
-                    <div class="p-4 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-300 rounded-xl text-sm">
-                        <i class="fa-solid fa-circle-exclamation mr-1"></i>
-                        Không thể đọc tệp <strong>${title}</strong>.
-                    </div>
-                `;
-            }
-        }
-
-        function openReadmeModal() {
-            return openMarkdownModal('README.md', 'README.md');
-        }
-
-        // bk-cloud.js gọi hàm này để mở CHANGELOG.md từ cửa sổ What's New.
-        window.openChangelogMd = () => openMarkdownModal('CHANGELOG.md', 'CHANGELOG.md');
-
-        function closeReadmeModal() {
-            document.getElementById('readme-modal').classList.add('hidden');
-        }
-
         // ===== Tiện ích v4 =====
-        function sanitizeHtml(h) {
-            const t = document.createElement('template'); t.innerHTML = h;
-            t.content.querySelectorAll('script,style,iframe,object,embed,link,meta,form,base').forEach(n => n.remove());
-            t.content.querySelectorAll('*').forEach(n => {
-                [...n.attributes].forEach(a => { const nm = a.name.toLowerCase(), v = a.value.replace(/[\s\u0000-\u001f]/g, '').toLowerCase();
-                    if (nm.startsWith('on') || nm === 'srcdoc' || (['href', 'src', 'xlink:href', 'action', 'formaction'].includes(nm) && /^(javascript|data|vbscript):/.test(v))) n.removeAttribute(a.name); });
-                if (n.tagName === 'A' && n.target === '_blank') n.rel = 'noopener noreferrer';
-            });
-            return t.innerHTML;
-        }
         function uniqSel(el) {
             const q = id => document.querySelectorAll('#' + CSS.escape(id)).length === 1, p = []; let n = el;
             while (n && n.nodeType === 1 && n !== document.documentElement) {
@@ -1187,16 +1110,6 @@
         }
         // ===== Tiện ích hiệu năng =====
         const escapeHtml = t => t.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-        let _markedP;
-        function loadMarked() {
-            if (window.marked) return Promise.resolve();
-            return _markedP || (_markedP = new Promise((ok, no) => {
-                const el = document.createElement('script');
-                el.src = 'https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js';
-                el.onload = ok; el.onerror = () => { _markedP = null; no(); };
-                document.head.appendChild(el);
-            }));
-        }
 
         // ===== Bầu trời sao + sao băng nổ (canvas, tự giảm tải trên máy yếu) =====
         (function () {
@@ -1296,7 +1209,7 @@
             addEventListener('pointerdown', e => {
                 if (reduce) return;
                 for (const m of shooters) if (Math.hypot(m.x - e.clientX, m.y - e.clientY) < 48) { m.life = m.max; m.boom = true; return; }
-                if (fx.tapSpark && !e.target.closest('a,button,input,label,select,textarea,section,header,footer,#categoriesTree,#dev-panel-modal,#readme-modal')) boom(e.clientX, e.clientY, lite ? 6 : 10);
+                if (fx.tapSpark && !e.target.closest('a,button,input,label,select,textarea,section,header,footer,#categoriesTree,#dev-panel-modal,#bkReadmeModal')) boom(e.clientX, e.clientY, lite ? 6 : 10);
             }, { passive: true });
             window.__fx = {
                 cfg: fx, DEF, spawn, boom, shot,
@@ -1439,7 +1352,7 @@
         }
         document.addEventListener('keydown', e => {
             if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd' && !document.getElementById('devPanelBtnContainer').classList.contains('hidden')) { e.preventDefault(); openDevPanel(); }
-            if (e.key === 'Escape') { closeDevPanel(); closeReadmeModal(); }
+            if (e.key === 'Escape') { closeDevPanel(); }
         });
 
         // ===== Dev: giao diện, ẩn môn, FPS =====
@@ -1708,7 +1621,7 @@
             const rd = () => { const q = i.value.toLowerCase(), m = CMDS().filter(c => c[0].toLowerCase().includes(q)); l.innerHTML = ''; m.forEach((c, n) => { const b = document.createElement('button'); b.className = 'w-full text-left px-4 py-2 hover:bg-indigo-500/15 ' + (n ? '' : 'bg-indigo-500/10'); b.textContent = c[0]; b.onclick = () => run(c[1]); l.appendChild(b); }); l._m = m; };
             i.oninput = rd; rd(); i.focus(); i.onkeydown = e => { if (e.key === 'Escape') p.remove(); if (e.key === 'Enter' && l._m[0]) run(l._m[0][1]); }; p.onclick = e => { if (e.target === p) p.remove(); };
         }
-        [['readme-modal', closeReadmeModal], ['dev-panel-modal', closeDevPanel]].forEach(([id, fn]) => {
+        [['dev-panel-modal', closeDevPanel]].forEach(([id, fn]) => {
             const m = document.getElementById(id); m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
             m.addEventListener('mousedown', e => { if (e.target === m) fn(); });
             new MutationObserver(() => { if (!m.classList.contains('hidden')) { m._f = document.activeElement; const b = m.querySelector('button'); if (b) b.focus(); } else if (m._f && m._f.focus) { m._f.focus(); m._f = null; } }).observe(m, { attributes: true, attributeFilter: ['class'] });
@@ -1896,35 +1809,40 @@
     <script src="bakhi-v4.js"></script>
 
 <!-- Bá Khí Learning Platform (chỉ thêm thẻ script, không sửa nội dung) -->
-<script src="assets/bakhi/bk-core.js?v=9.0.3" defer></script>
-<script src="assets/bakhi/bk-notify.js?v=9.0.3" defer></script>
-<script src="assets/bakhi/bk-learning.js?v=9.0.3" defer></script>
-<script src="assets/bakhi/bk-learn.js?v=9.0.3" defer></script>
-<script src="assets/bakhi/bk-dev.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-core.js?v=9.0.4" defer></script>
+<script src="assets/bakhi/bk-notify.js?v=9.0.4" defer></script>
+<script src="assets/bakhi/bk-learning.js?v=9.0.4" defer></script>
+<script src="assets/bakhi/bk-learn.js?v=9.0.4" defer></script>
+<script src="assets/bakhi/bk-dev.js?v=9.0.4" defer></script>
 
 <!-- Bá Khí × Supabase: một client duy nhất, nhận diện học sinh, thông báo, changelog -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
-<script src="assets/bakhi/bk-supabase.config.js?v=9.0.3" defer></script>
-<script src="assets/bakhi/bk-cache.js?v=9.0.3" defer></script>
-<script src="assets/bakhi/bk-cloud.js?v=9.0.3" data-bk-whatsnew="1" defer></script>
-<script src="assets/bakhi/bk-gamification.js?v=9.0.3" defer></script>
-<script src="assets/bakhi/bk-devboard.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-supabase.config.js?v=9.0.4" defer></script>
+<script src="assets/bakhi/bk-cache.js?v=9.0.4" defer></script>
+<script src="assets/bakhi/bk-cloud.js?v=9.0.4" data-bk-whatsnew="1" defer></script>
+<script src="assets/bakhi/bk-gamification.js?v=9.0.4" defer></script>
+<script src="assets/bakhi/bk-devboard.js?v=9.0.4" defer></script>
 
 <!-- assets/bakhi/shell — avatar tài khoản dùng chung -->
-<script src="assets/bakhi/bk-version.js?v=9.0.3" defer></script>
-<script src="assets/bakhi/bk-profile.js?v=9.0.3" defer></script>
-<script src="assets/bakhi/bk-badges.js?v=9.0.3" defer></script>
-    <script src="assets/bakhi/bk-roles.js?v=9.0.3" defer></script>
-<script src="assets/bakhi/bk-shell.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-version.js?v=9.0.4" defer></script>
+<script src="assets/bakhi/bk-profile.js?v=9.0.4" defer></script>
+<script src="assets/bakhi/bk-badges.js?v=9.0.4" defer></script>
+    <script src="assets/bakhi/bk-roles.js?v=9.0.4" defer></script>
+<script src="assets/bakhi/bk-shell.js?v=9.0.4" defer></script>
 <script src="assets/bakhi/bk-report.js" defer></script>
-<link rel="stylesheet" href="assets/bakhi/bk-themes.css?v=9.0.3">
-<script src="assets/bakhi/bk-themes.js?v=9.0.3" defer></script>
-    <link rel="stylesheet" href="assets/bakhi/bk-ai-tutor.css?v=9.0.3">
-<script src="assets/bakhi/bk-ai-tutor.js?v=9.0.3" defer></script>
-<script src="assets/bakhi/bk-intro.js?v=9.0.3" defer></script>
-    <link rel="stylesheet" href="assets/bakhi/bk-tokens.css?v=9.0.3"><!-- assets/bakhi/bk-rebirth — Quiet Graphite --><link rel="stylesheet" href="assets/bakhi/bk-rebirth.css?v=9.0.3" data-bk-rebirth="css"><script src="assets/bakhi/bk-rebirth.js?v=9.0.3" defer data-bk-rebirth="js"></script>
+<link rel="stylesheet" href="assets/bakhi/bk-themes.css?v=9.0.4">
+<script src="assets/bakhi/bk-themes.js?v=9.0.4" defer></script>
+    <link rel="stylesheet" href="assets/bakhi/bk-ai-tutor.css?v=9.0.4">
+<script src="assets/bakhi/bk-ai-tutor.js?v=9.0.4" defer></script>
+<script src="assets/bakhi/bk-intro.js?v=9.0.4" defer></script>
+    <link rel="stylesheet" href="assets/bakhi/bk-tokens.css?v=9.0.4"><!-- assets/bakhi/bk-rebirth — Quiet Graphite --><link rel="stylesheet" href="assets/bakhi/bk-rebirth.css?v=9.0.4" data-bk-rebirth="css"><script src="assets/bakhi/bk-rebirth.js?v=9.0.4" defer data-bk-rebirth="js"></script>
 
 
 
+    <link rel="stylesheet" href="assets/bakhi/bk-readme.css?v=9.0.4">
+    <script src="assets/bakhi/bk-readme.js?v=9.0.4" defer></script>
+    <script src="assets/bakhi/bk-motion.js?v=9.0.4" defer></script>
+    <link rel="stylesheet" href="assets/bakhi/bk-cursor.css?v=9.0.4">
+    <script src="assets/bakhi/bk-cursor.js?v=9.0.4" defer></script>
 </body>
 </html>

@@ -498,17 +498,18 @@ body.bk-rail-expanded .bk-rail-toggle .bk-ico { transform: rotate(180deg); }
 .bk-rail-link[aria-current="page"] i { color: var(--rb-accent-text); }
 .bk-rail-badge {
     margin-left: auto;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 999px;
-    display: inline-grid;
-    place-items: center;
-    font-size: .65rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
+    flex: 0 0 auto;
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+    line-height: 0;
+    overflow: hidden;
     background: var(--rb-accent);
     color: var(--rb-accent-ink);
+    box-shadow: 0 0 0 2px var(--rb-surface);
 }
 .bk-rail-badge[hidden] { display: none; }
 
@@ -535,12 +536,12 @@ body.bk-rail-expanded .bk-rail-toggle .bk-ico { transform: rotate(180deg); }
 .bk-rail:not(.is-expanded) .bk-rail-link { justify-content: center; padding-inline: 0; }
 .bk-rail:not(.is-expanded) .bk-rail-badge {
     position: absolute;
-    top: 5px;
+    top: 7px;
     right: 11px;
     margin-left: 0;
-    min-width: 15px;
-    height: 15px;
-    font-size: .6rem;
+    width: 7px;
+    height: 7px;
+    min-width: 7px;
 }
 .bk-rail.is-expanded .bk-rail-word { opacity: 1; transform: none; }
 
@@ -696,7 +697,8 @@ body.bk-rebirth.is-scrolled .bk-chrome {
 .bk-chrome .bk-user-btn { padding: 2px; border-color: var(--rb-line-strong); background: var(--rb-surface-2); }
 .bk-chrome .bk-user-btn:hover { border-color: var(--rb-accent-line); }
 .bk-chrome .bkc-bell {
-    position: static !important;
+    /* relative (không phải static) để badge absolute vẫn bám vào chuông. */
+    position: relative !important;
     width: 38px;
     height: 38px;
     border-radius: 10px;
