@@ -57,6 +57,8 @@
         (D.head || D.documentElement).appendChild(link);
     }
     function icon(name) {
+        /* Dùng bộ SVG 1.6 nét của lớp Quiet Graphite khi đã nạp (menu mở sau mount). */
+        if (global.BKRebirth && typeof global.BKRebirth.icon === 'function') return global.BKRebirth.icon(name);
         var i = D.createElement('i');
         i.className = 'fa-solid ' + name;
         i.setAttribute('aria-hidden', 'true');
@@ -164,12 +166,10 @@
             var wrap = dd.parentNode;
             if (wrap && wrap.classList) wrap.classList.add('bk-legacy-hidden');
         }
-        /* Khối quản lý hình nền: chuyển sang trang Cài đặt. */
-        var bgInput = D.getElementById('bgInput');
-        if (bgInput) {
-            var box = bgInput.closest ? bgInput.closest('.flex-col') : null;
-            if (box) box.classList.add('bk-legacy-wallpaper');
-        }
+        /* Khối hình nền cũ không còn trong markup: trang chủ mới giữ điều khiển
+           này trong <details class="bk-customize">. Không dò ngược tổ tiên bằng
+           lớp Tailwind chung nữa — `closest('.flex-col')` từng khớp cả wrapper
+           trang và ẩn toàn bộ nội dung trang chủ. */
         refreshHomeCopy();
     }
 
@@ -657,6 +657,7 @@
         /* Đo lại sau khi hiện để căn đúng chiều cao thật. */
         requestAnimationFrame(function () { placeMenu(); });
         S.menu.classList.add('open');
+        upgradeMenuIcons();
         S.open = true;
         if (S.btn) S.btn.setAttribute('aria-expanded', 'true');
         paintProfileBits();
@@ -700,6 +701,26 @@
     }
 
     function toggleMenu() { if (S.open) closeMenu(); else openMenu(); }
+
+    /* Menu có thể được dựng trước khi lớp Quiet Graphite nạp xong; mỗi lần mở,
+       nâng biểu tượng Font Awesome lên bộ SVG 1.6 nét để không trộn hai bộ icon. */
+    function upgradeMenuIcons() {
+        if (!S.menu || !global.BKRebirth || typeof global.BKRebirth.icon !== 'function') return;
+        var nodes = S.menu.querySelectorAll('.bk-menu-row > i');
+        for (var i = 0; i < nodes.length; i++) {
+            /* className là "fa-solid fa-id-card": thử từng lớp, chỉ thay khi
+               BKRebirth thực sự có hình SVG cho tên đó. */
+            var toks = String(nodes[i].className || '').split(/\s+/);
+            for (var t = 0; t < toks.length; t++) {
+                if (toks[t].indexOf('fa-') !== 0 || toks[t] === 'fa-solid') continue;
+                var svg = global.BKRebirth.icon(toks[t]);
+                if (svg && svg.tagName && svg.tagName.toLowerCase() === 'svg' && nodes[i].parentNode) {
+                    nodes[i].parentNode.replaceChild(svg, nodes[i]);
+                }
+                break;
+            }
+        }
+    }
 
     function onKey(e) {
         if (e.key === 'Escape') { e.preventDefault(); closeMenu(); return; }

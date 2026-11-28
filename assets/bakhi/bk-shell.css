@@ -11,8 +11,7 @@
 .bk-legacy-hidden { display: none !important; }
 /* Tên học sinh không còn hiển thị độc lập ngoài avatar. */
 #bkcIdentityChip, #bkcChangeStudentIcon { display: none !important; }
-/* Tính năng hình nền rời khỏi trang chủ, chuyển vào Cài đặt. */
-.bk-legacy-wallpaper { display: none !important; }
+
 /* Dock nổi của Trung tâm học tập được thay bằng mục Cài đặt trong menu tài khoản.
    Phím tắt Ctrl/⌘+K vẫn mở Trung tâm học tập như cũ. */
 #bkDock { display: none !important; }

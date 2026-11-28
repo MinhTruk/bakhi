@@ -2,6 +2,74 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [9.0.0] — 2026-11-28
+
+**v9.0.0 — Complete Animation System Rebuild, Dark Theme Audit & Release.**
+Phát hành mới: màn mở đầu thương hiệu katana, lớp chuyển trang void với hiệu ứng
+`b| → o` giữa các trang, con trỏ tuỳ biến, nhịp chuyển động dùng chung và giao diện
+"Quiet Graphite" nhất quán trên toàn website. Không đổi API Supabase, schema, hay dữ
+liệu học tập.
+
+### Thêm mới
+
+- **Màn mở đầu (intro)** `assets/bakhi/bk-intro.js|css`: chuỗi O → kiếm → chém →
+  chữ B → "BAKHI" → "nền tảng học tập", một đồng hồ WAAPI duy nhất, chạy một lần
+  mỗi phiên, tôn trọng `prefers-reduced-motion`, có thể bỏ qua bằng chạm/phím.
+- **Chuyển trang void** `assets/bakhi/bk-transition.js|css`: nền void (sao + tinh vân)
+  và lớp phủ exit/enter liền mạch giữa các trang nội bộ; chặn chuyển trùng; xử lý
+  bfcache.
+- **Nhịp chuyển động dùng chung** `assets/bakhi/bk-motion.js`: duration, easing,
+  spring, z-index và kiểm tra reduced-motion — nguồn duy nhất cho cursor/intro/chuyển trang.
+- **Con trỏ tuỳ biến** `assets/bakhi/bk-cursor.js|css`: vòng + điểm, spring theo con trỏ,
+  xung lực khi cuộn, trạng thái hover/text/pressed/hidden; chỉ bật trên thiết bị trỏ
+  chính xác, có `destroy()`.
+- **Giao diện "Quiet Graphite"** `assets/bakhi/bk-rebirth.css|js`: rail, thanh trên,
+  thanh tab, footer, mục lục bài học, token màu/chữ nhất quán; `tools/inject-rebirth.js`
+  chèn vào mọi trang HTML (idempotent).
+- **Trang 404** mới (`404.html`) dùng chung lớp giao diện.
+
+### Thay đổi
+
+- Thay thế hai hệ thống chuyển trang cũ (rbPageIn + bàn tay kéo) bằng lớp void duy nhất;
+  tắt `bk-bkt` qua `window.__bktOff` (Developer Playground vẫn chạy `__bkt.test()`).
+- Loại bỏ nút hamburger trùng lặp ở thanh trên; mọi thao tác vẫn truy cập được qua
+  menu tài khoản.
+- Con trỏ CSS tĩnh (`cursor: url(...)`) thay bằng lớp DOM do JS điều khiển.
+- `tools/integrate-pages.js` chèn `bk-intro` (chỉ trang chủ) và cập nhật cache busting.
+
+### Cải tiến
+
+- Token màu/chữ nhất quán (`--rb-*`, `--bk-*`); cổng tương phản `tools/qa/rebirth-contrast.js`
+  74 cặp / 0 không đạt.
+- Giảm chuyển động tôn trọng `prefers-reduced-motion` và cờ `data-motion="reduced"`.
+- Con trỏ và chuyển trang chỉ chạy trên thiết bị phù hợp; không rò rỉ listener.
+
+### Xoá bỏ
+
+- **Giao diện neon cũ**: không còn định nghĩa giao diện neon trong `bk-themes.js` hay
+  CSS; hệ thống giao diện chỉ còn các giao diện đang hỗ trợ (8 + 4 theo mùa).
+  Người học có giao diện neon đã lưu được chuyển về giao diện mặc định an toàn.
+
+### Hiệu năng
+
+- Chuyển trang và intro dùng WAAPI (`transform`/`opacity`), không thư viện ngoài.
+- Một vòng lặp rAF duy nhất cho con trỏ; nền void vẽ một lần.
+
+### Tiếp cận
+
+- Mọi animation tôn trọng `prefers-reduced-motion`; không chặn điều hướng khi chờ animation.
+- Con trỏ tuỳ biến chỉ bật trên `(hover: hover) and (pointer: fine)`; ô nhập giữ con trỏ
+  hệ điều hành.
+
+### Kiểm thử
+
+- `node tools/content-integrity.js verify` — OK.
+- `node tools/inject-rebirth.js --check` — 0 tệp cần cập nhật.
+- `node --check` cho `bk-rebirth.js`, `bk-intro.js`, `bk-transition.js`, `bk-motion.js`,
+  `bk-cursor.js` — cú pháp OK.
+- `node tools/qa/rebirth-contrast.js` — 74 cặp / 0 không đạt.
+- `node tools/qa/v855-ui.js`, `v856-ui.js`, `version-audit.js` — PASS.
+
 ## [8.8.0] — 2026-11-25
 
 **Parallel Execution Engine.** Thêm engine chạy tác vụ CPU-bound có giới hạn tài nguyên

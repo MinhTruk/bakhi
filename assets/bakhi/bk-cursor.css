@@ -1,0 +1,64 @@
+/* =========================================================================
+   Bá Khí — bk-cursor.css
+   Con trỏ tuỳ biến: giữ nguyên nhận diện cũ (vòng 22 px #ffd0d8 + điểm
+   #ffb6c1) nhưng chuyển từ ảnh cursor tĩnh sang hai lớp DOM do JS điều khiển.
+   Chỉ hiện khi html.bk-cur-on (JS xác nhận thiết bị trỏ chính xác).
+   ========================================================================= */
+
+.bk-cur {
+    position: fixed;
+    inset: 0;
+    z-index: var(--bk-z-cursor, 2147482500);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 140ms linear;
+    contain: layout style;
+}
+
+.bk-cur.is-on { opacity: 1; }
+
+.bk-cur-ring,
+.bk-cur-dot {
+    position: absolute;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+    will-change: transform;
+}
+
+.bk-cur-ring {
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border: 1.3px solid #ffd0d8;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1.3px rgb(0 0 0 / .35);
+    transition: border-color 140ms linear;
+}
+
+.bk-cur-dot {
+    width: 4px;
+    height: 4px;
+    margin: -2px 0 0 -2px;
+    border-radius: 50%;
+    background: #ffb6c1;
+    transition: background-color 140ms linear;
+}
+
+.bk-cur.is-hover .bk-cur-ring { border-color: #ffb6c1; }
+.bk-cur.is-text .bk-cur-ring { border-color: #ffd0d8; opacity: .55; }
+.bk-cur.is-down .bk-cur-dot { background: #ffd0d8; }
+
+/* Ẩn con trỏ hệ điều hành chỉ khi lớp tuỳ biến đã sẵn sàng. */
+html.bk-cur-on,
+html.bk-cur-on * { cursor: none !important; }
+
+/* Giao diện sáng: giữ nguyên họ hồng, đậm hơn để thấy trên nền giấy. */
+html.light .bk-cur-ring { border-color: #b3304f; box-shadow: 0 0 0 1.3px rgb(255 255 255 / .55); }
+html.light .bk-cur-dot { background: #b3304f; }
+html.light .bk-cur.is-hover .bk-cur-ring { border-color: #8f1f3d; }
+
+@media (prefers-reduced-motion: reduce) {
+    .bk-cur-ring,
+    .bk-cur-dot { transition: none; }
+}

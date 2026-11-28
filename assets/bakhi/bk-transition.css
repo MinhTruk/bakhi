@@ -1,0 +1,105 @@
+/* =========================================================================
+   Bá Khí — bk-transition.css
+   Nền void tĩnh (sao + tinh vân, chi phí vẽ một lần) và lớp chuyển trang
+   dùng chung. Chỉ transform/opacity; tôn trọng prefers-reduced-motion.
+   ========================================================================= */
+
+#bkVoid {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--rb-bg, #050507);
+}
+
+#bkVoid .bkv-neb,
+#bkVoid .bkv-stars {
+    position: absolute;
+    inset: -15%;
+    pointer-events: none;
+}
+
+#bkVoid .bkv-neb {
+    background:
+        radial-gradient(60vmax 60vmax at 12% 8%, rgb(76 29 149 / .20), transparent 62%),
+        radial-gradient(52vmax 52vmax at 88% 92%, rgb(190 24 93 / .13), transparent 62%),
+        radial-gradient(40vmax 40vmax at 72% 18%, rgb(30 58 138 / .16), transparent 66%);
+}
+
+/* Bốn lớp hạt lặp lại tạo tinh tú; không phần tử DOM nào cho từng ngôi sao. */
+#bkVoid .bkv-stars {
+    opacity: .6;
+    background-image:
+        radial-gradient(1.2px 1.2px at 20px 30px, rgb(255 225 235 / .55), transparent 60%),
+        radial-gradient(1px 1px at 120px 80px, rgb(255 182 193 / .45), transparent 60%),
+        radial-gradient(1.4px 1.4px at 220px 180px, rgb(196 181 253 / .5), transparent 60%),
+        radial-gradient(1px 1px at 300px 40px, rgb(255 255 255 / .3), transparent 60%);
+    background-size: 340px 340px, 280px 280px, 460px 460px, 380px 380px;
+    animation: bkVoidDrift 240s linear infinite alternate;
+    will-change: transform;
+}
+
+@keyframes bkVoidDrift {
+    from { transform: translate3d(-1.5%, -1%, 0); }
+    to { transform: translate3d(1.5%, 1%, 0); }
+}
+
+/* --- Lớp chuyển trang --- */
+#bkVT {
+    position: fixed;
+    inset: 0;
+    z-index: var(--bk-z-transition, 2147482400);
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+}
+
+#bkVT.is-on { visibility: visible; opacity: 1; }
+
+#bkVT .bkvt-bg {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(70vmax 70vmax at 50% 50%, rgb(255 182 193 / .10), transparent 62%),
+        radial-gradient(80vmax 80vmax at 10% 0%, rgb(76 29 149 / .28), transparent 60%),
+        radial-gradient(70vmax 70vmax at 95% 100%, rgb(190 24 93 / .16), transparent 60%),
+        #050507;
+}
+
+#bkVT .bkvt-glow {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: min(120vmax, 1200px);
+    height: min(120vmax, 1200px);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(255 182 193 / .34), rgb(196 181 253 / .12) 40%, transparent 70%);
+    transform: translate(-50%, -50%) scale(.6);
+    opacity: 0;
+}
+
+#bkVT .bkvt-streak {
+    position: absolute;
+    top: -40%;
+    width: 1px;
+    height: 42%;
+    background: linear-gradient(transparent, rgb(255 225 235 / .9), transparent);
+    opacity: 0;
+    will-change: transform;
+}
+
+/* Trước khi lớp chuyển trang kịp dựng: giữ nền void, không nháy nội dung. */
+html.bk-vt-boot body > * { visibility: hidden !important; }
+html.bk-vt-boot #bkVoid,
+html.bk-vt-boot #bkVT { visibility: visible !important; }
+html.bk-vt-boot #bkVT { opacity: 1; }
+
+/* Lớp "bàn tay kéo" cũ không được vẽ chồng lên chuyển trang void. */
+html.bk-vt-entering #bkt { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+    #bkVoid .bkv-stars { animation: none; }
+}
+html[data-motion="reduced"] #bkVoid .bkv-stars { animation: none; }

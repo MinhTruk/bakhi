@@ -98,7 +98,9 @@ ok('BKShell khởi tạo', !!iw.BKShell && iw.BKShell.__ready === true);
 ok('có nút avatar trong header', !!idoc.getElementById('bkUserBtn'));
 ok('avatar hiển thị tên viết tắt', /\S/.test(idoc.querySelector('#bkUserBtn .bk-avatar-fallback').textContent || ''));
 ok('menu 3 gạch cũ bị ẩn', !!idoc.querySelector('#hamburgerDropdown').closest('.bk-legacy-hidden'));
-ok('khối hình nền cũ bị ẩn', !!idoc.getElementById('bgInput').closest('.bk-legacy-wallpaper'));
+/* Hồi quy: `closest('.flex-col')` từng khớp wrapper trang và ẩn cả trang chủ. */
+ok('không ẩn nhầm khối nội dung khi dọn khối hình nền cũ',
+  !idoc.querySelector('.bk-legacy-wallpaper'));
 ok('câu hướng dẫn cũ không còn nhắc 3 gạch', !/3\s*gạch/i.test(idoc.querySelector('main p').textContent),
   idoc.querySelector('main p').textContent);
 ok('tên trường cũ được chuẩn hoá', /THPT Huỳnh Ngọc Huệ/.test(idoc.querySelector('footer').textContent) &&

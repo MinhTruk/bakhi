@@ -33,6 +33,7 @@
         tabbar: null,
         sheet: null,
         rail: null,
+        tip: null,
         progress: null,
         lastFocus: null,
         scrollRaf: 0,
@@ -51,11 +52,87 @@
         if (text != null) e.textContent = String(text);
         return e;
     }
+    /* Bộ biểu tượng nội tuyến: cùng lưới 24, cùng độ dày nét 1.6, cùng đầu nét tròn.
+       Không phụ thuộc Font Awesome/CDN; tên `fa-*` giữ nguyên để nơi gọi không đổi. */
+    var ICONS = {
+        'fa-house': '<path d="M4 10.4 12 3.9l8 6.5V19a2 2 0 0 1-2 2h-4v-5.6H10V21H6a2 2 0 0 1-2-2z"/>',
+        'fa-chart-simple': '<path d="M4 17.4 8.7 12.7l3.4 3.4L19.3 8"/><path d="M15 8.1h4.3v4.2"/>',
+        'fa-sitemap': '<circle cx="12" cy="4.8" r="1.9"/><circle cx="6" cy="19.2" r="1.9"/><circle cx="18" cy="19.2" r="1.9"/><path d="M12 6.7v4.1M6 17.3v-2.6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2.6"/>',
+        'fa-compass': '<circle cx="12" cy="12" r="8.4"/><path d="M15.1 8.9l-1.8 4.4-4.4 1.8 1.8-4.4z"/>',
+        'fa-wand-magic-sparkles': '<circle cx="12" cy="12" r="8.4"/><path d="M15.1 8.9l-1.8 4.4-4.4 1.8 1.8-4.4z"/>',
+        'fa-comments': '<path d="M20.2 11.4a1.9 1.9 0 0 1-1.9 1.9h-6.6L7 16.4v-3.1H5.7a1.9 1.9 0 0 1-1.9-1.9V5.9A1.9 1.9 0 0 1 5.7 4h12.6a1.9 1.9 0 0 1 1.9 1.9z"/><path d="M8.4 8.5h.01M12 8.5h.01M15.6 8.5h.01"/>',
+        'fa-pen-ruler': '<path d="M4.7 19.3l.8-3.6L15.9 5.3a1.9 1.9 0 0 1 2.7 0l.1.1a1.9 1.9 0 0 1 0 2.7L8.3 18.5z"/><path d="M14.2 7 17 9.8"/>',
+        'fa-id-card': '<circle cx="12" cy="8.4" r="3.4"/><path d="M4.9 20.2a7.1 7.1 0 0 1 14.2 0"/>',
+        'fa-gear': '<path d="M4 7.6h4.3M13.3 7.6H20M4 16.4h7.1M16.1 16.4H20"/><circle cx="10.8" cy="7.6" r="2.1"/><circle cx="13.6" cy="16.4" r="2.1"/>',
+        'fa-crown': '<circle cx="8.6" cy="8.6" r="4"/><path d="M11.4 11.4 20 20M17.1 17.1l2-2M14.7 14.7l1.6 1.6"/>',
+        'fa-key': '<circle cx="8.6" cy="8.6" r="4"/><path d="M11.4 11.4 20 20M17.1 17.1l2-2M14.7 14.7l1.6 1.6"/>',
+        'fa-shield-halved': '<path d="M12 3.6 18.9 6.3v5.2c0 4.3-2.8 7.4-6.9 9-4.1-1.6-6.9-4.7-6.9-9V6.3z"/>',
+        'fa-user-shield': '<path d="M12 3.6 18.9 6.3v5.2c0 4.3-2.8 7.4-6.9 9-4.1-1.6-6.9-4.7-6.9-9V6.3z"/>',
+        'fa-scale-balanced': '<path d="M6.5 3.8h7l4 4v12.4h-11z"/><path d="M13.5 3.8v4h4M9.4 12.3h5.2M9.4 15.9h5.2"/>',
+        'fa-file-contract': '<path d="M6.5 3.8h7l4 4v12.4h-11z"/><path d="M13.5 3.8v4h4M9.4 12.3h5.2M9.4 15.9h5.2"/>',
+        'fa-circle-half-stroke': '<circle cx="12" cy="12" r="8.2"/><path d="M12 3.8a8.2 8.2 0 0 1 0 16.4z" fill="currentColor" stroke="none"/>',
+        'fa-bars': '<path d="M4 7.2h16M4 12h16M4 16.8h16"/>',
+        'fa-chevron-right': '<path d="M9.6 5.8 15.8 12l-6.2 6.2"/>',
+        'fa-magnifying-glass': '<circle cx="10.8" cy="10.8" r="6.2"/><path d="M15.4 15.4 20 20"/>',
+        'fa-ellipsis': '<circle cx="5.6" cy="12" r="1.35" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.35" fill="currentColor" stroke="none"/><circle cx="18.4" cy="12" r="1.35" fill="currentColor" stroke="none"/>',
+        /* Bổ sung cho menu tài khoản (bk-shell) để không còn trộn Font Awesome. */
+        'fa-gamepad': '<rect x="3.2" y="7.6" width="17.6" height="9.4" rx="4.4"/><path d="M8.4 10.6v3.4M6.7 12.3h3.4"/><circle cx="15.4" cy="11.3" r=".95" fill="currentColor" stroke="none"/><circle cx="17.5" cy="13.4" r=".95" fill="currentColor" stroke="none"/>',
+        'fa-robot': '<rect x="4.6" y="8.4" width="14.8" height="10.4" rx="3.4"/><path d="M12 8.4V5.4"/><circle cx="12" cy="4.6" r="1"/><circle cx="9.5" cy="13.2" r=".95" fill="currentColor" stroke="none"/><circle cx="14.5" cy="13.2" r=".95" fill="currentColor" stroke="none"/><path d="M2.4 11.8v3.2M21.6 11.8v3.2"/>',
+        'fa-book-open': '<path d="M12 6.8C10.4 5.3 8 4.7 4.6 4.7v12c3.4 0 5.8.6 7.4 2.1 1.6-1.5 4-2.1 7.4-2.1v-12c-3.4 0-5.8.6-7.4 2.1z"/><path d="M12 6.8v12"/>',
+        'fa-moon': '<path d="M20.2 14.8A8.4 8.4 0 0 1 9.2 3.8a8.6 8.6 0 1 0 11 11z"/>',
+        'fa-sun': '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.4M12 19v2.4M2.6 12h2.4M19 12h2.4M5.4 5.4 7 7M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"/>'
+    };
     function icon(name, cls) {
-        var i = D.createElement('i');
-        i.className = 'fa-solid ' + name + (cls ? ' ' + cls : '');
-        i.setAttribute('aria-hidden', 'true');
-        return i;
+        var path = ICONS[name];
+        var n;
+        if (path) {
+            n = D.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            n.setAttribute('viewBox', '0 0 24 24');
+            n.setAttribute('fill', 'none');
+            n.setAttribute('stroke', 'currentColor');
+            n.setAttribute('stroke-width', '1.6');
+            n.setAttribute('stroke-linecap', 'round');
+            n.setAttribute('stroke-linejoin', 'round');
+            n.setAttribute('aria-hidden', 'true');
+            n.setAttribute('focusable', 'false');
+            n.setAttribute('class', 'bk-ico' + (cls ? ' ' + cls : ''));
+            /* Chuỗi hằng nội bộ ở trên, không phải dữ liệu người dùng. */
+            n.innerHTML = path;
+            return n;
+        }
+        n = D.createElement('i');
+        n.className = 'fa-solid ' + name + (cls ? ' ' + cls : '');
+        n.setAttribute('aria-hidden', 'true');
+        return n;
+    }
+    /* Logo riêng: neo + hai cung "khí" toả lên phải. Không dùng chữ BK;
+       cùng hình học với assets/bakhi/logo.svg và favicon nên nhận ra ở 16px. */
+    var LOGO_PATHS =
+        '<path d="M9 3.75A11.25 11.25 0 0 1 17.09 7.19" stroke-width=".5" stroke-opacity=".28"/>' +
+        '<path d="M9 6.75A8.25 8.25 0 0 1 16.85 12.45" stroke-width="1.65"/>' +
+        '<path d="M9 10.1A4.875 4.875 0 0 1 13.22 12.56" stroke-width="1.5"/>' +
+        '<circle cx="9" cy="15" r="3.26" fill="none" stroke-width=".5" stroke-opacity=".45"/>' +
+        '<circle cx="9" cy="15" r="1.95" fill="currentColor" stroke="none"/>';
+    function logoNode(title) {
+        var n = D.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        n.setAttribute('viewBox', '0 0 24 24');
+        n.setAttribute('fill', 'none');
+        n.setAttribute('stroke', 'currentColor');
+        n.setAttribute('stroke-width', '1.7');
+        n.setAttribute('stroke-linecap', 'round');
+        n.setAttribute('stroke-linejoin', 'round');
+        n.setAttribute('class', 'bk-logo');
+        if (title) { n.setAttribute('role', 'img'); n.setAttribute('aria-label', title); }
+        else { n.setAttribute('aria-hidden', 'true'); n.setAttribute('focusable', 'false'); }
+        /* Chuỗi hằng nội bộ ở trên, không phải dữ liệu người dùng. */
+        n.innerHTML = LOGO_PATHS;
+        return n;
+    }
+    function brandMark(cls) {
+        var m = el('span', cls);
+        m.appendChild(logoNode(null));
+        m.setAttribute('aria-hidden', 'true');
+        return m;
     }
     function lsGet(k) { try { return global.localStorage.getItem(k); } catch (e) { return null; } }
     function lsSet(k, v) { try { global.localStorage.setItem(k, v); return true; } catch (e) { return false; } }
@@ -119,12 +196,12 @@
         home: { label: 'Trang chủ', icon: 'fa-house', href: '', group: 'Học' },
         gamification: { label: 'Tiến trình', icon: 'fa-chart-simple', href: 'gamification/', group: 'Học' },
         skills: { label: 'Kỹ năng', icon: 'fa-sitemap', href: 'skills/', group: 'Học' },
-        'ai-tutor': { label: 'Trợ lý AI', icon: 'fa-wand-magic-sparkles', href: 'ai-tutor/', group: 'Công cụ' },
+        'ai-tutor': { label: 'Trợ lý AI', icon: 'fa-compass', href: 'ai-tutor/', group: 'Công cụ' },
         chat: { label: 'Chat', icon: 'fa-comments', href: 'chat/', group: 'Công cụ' },
         studio: { label: 'Studio', icon: 'fa-pen-ruler', href: 'studio/', group: 'Công cụ' },
         profile: { label: 'Hồ sơ', icon: 'fa-id-card', href: 'profile/', group: 'Tài khoản' },
         settings: { label: 'Cài đặt', icon: 'fa-gear', href: 'settings/', group: 'Tài khoản' },
-        founder: { label: 'Founder', icon: 'fa-crown', href: 'founder/', group: 'Quản trị' },
+        founder: { label: 'Founder', icon: 'fa-key', href: 'founder/', group: 'Quản trị' },
         admin: { label: 'Quản trị', icon: 'fa-shield-halved', href: 'admin/', group: 'Quản trị' },
         legal: { label: 'Pháp lý', icon: 'fa-scale-balanced', href: 'legal/', group: 'Tài khoản' }
     };
@@ -138,6 +215,7 @@
             var lh = D.querySelector('main h1');
             return (lh && lh.textContent.trim()) || 'Pháp lý';
         }
+        if (S.page === '404.html' || S.page === '404') return 'Không tìm thấy trang';
         return (PAGES[S.page] && PAGES[S.page].label) || 'Bá Khí';
     }
     function adminAllowed() {
@@ -166,7 +244,7 @@
         });
         if (adminAllowed()) {
             var admin = [];
-            admin.push({ key: 'founder', label: 'Founder', icon: 'fa-crown', href: 'founder/' });
+            admin.push({ key: 'founder', label: 'Founder', icon: 'fa-key', href: 'founder/' });
             admin.push({ key: 'admin', label: 'Quản trị', icon: 'fa-shield-halved', href: 'admin/' });
             out.push({ name: 'Quản trị', items: admin });
         }
@@ -184,19 +262,9 @@
         var head = el('div', 'bk-rail-head');
         var brand = el('a', 'bk-rail-brand');
         brand.href = S.base;
-        var mark = el('span', 'bk-rail-mark');
-        mark.appendChild(icon('fa-folder-tree'));
-        brand.appendChild(mark);
+        brand.appendChild(brandMark('bk-rail-mark'));
         brand.appendChild(el('span', 'bk-rail-word', 'Bá Khí'));
         head.appendChild(brand);
-
-        var toggle = el('button', 'bk-rail-toggle');
-        toggle.type = 'button';
-        toggle.setAttribute('aria-label', 'Mở rộng điều hướng');
-        toggle.setAttribute('aria-expanded', 'false');
-        toggle.appendChild(icon('fa-chevron-right'));
-        toggle.addEventListener('click', function () { setRailExpanded(!isRailExpanded()); });
-        head.appendChild(toggle);
         aside.appendChild(head);
 
         var nav = el('nav', 'bk-rail-nav');
@@ -220,6 +288,16 @@
         themeBtn.setAttribute('data-tip', 'Đổi giao diện sáng/tối');
         themeBtn.addEventListener('click', toggleTheme);
         foot.appendChild(themeBtn);
+
+        /* Nút thu gọn/mở rộng nằm trong chân rail: ở rail 76px, đặt cạnh logo
+           sẽ chồng lên nhau hoặc bị overflow cắt mất. */
+        var toggle = el('button', 'bk-rail-link bk-rail-toggle');
+        toggle.type = 'button';
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.appendChild(icon('fa-chevron-right'));
+        toggle.appendChild(el('span', 'bk-rail-toggle-word', 'Thu gọn'));
+        toggle.addEventListener('click', function () { setRailExpanded(!isRailExpanded()); });
+        foot.appendChild(toggle);
         aside.appendChild(foot);
 
         return aside;
@@ -251,8 +329,56 @@
         S.rail.classList.toggle('is-expanded', !!on);
         D.body.classList.toggle('bk-rail-expanded', !!on);
         lsSet(NAV_KEY, on ? 'expanded' : 'rail');
+        hideTip();
         var btn = S.rail.querySelector('.bk-rail-toggle');
-        if (btn) btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+        if (!btn) return;
+        var label = on ? 'Thu gọn' : 'Mở rộng';
+        btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+        btn.setAttribute('aria-label', label + ' điều hướng');
+        btn.setAttribute('data-tip', label + ' điều hướng');
+        var word = btn.querySelector('.bk-rail-toggle-word');
+        if (word) word.textContent = label;
+    }
+
+    /* Tooltip của rail thu gọn: một nút duy nhất trong <body>, nên không bị
+       overflow của rail/nav cắt và vẫn đúng khi nav cuộn. */
+    function showTip(target) {
+        var text = target && target.getAttribute('data-tip');
+        if (!text || !S.rail || isRailExpanded()) return;
+        var tip = S.tip || (function () {
+            S.tip = el('div', 'bk-tip');
+            S.tip.setAttribute('aria-hidden', 'true');
+            S.tip.hidden = true;
+            D.body.appendChild(S.tip);
+            return S.tip;
+        })();
+        tip.textContent = text;
+        tip.hidden = false;
+        var r = target.getBoundingClientRect();
+        var edge = S.rail.getBoundingClientRect().right;
+        var left = Math.max(r.right, edge) + 10;
+        if (left + tip.offsetWidth > global.innerWidth - 8) left = Math.max(8, edge - tip.offsetWidth - 10);
+        var top = r.top + r.height / 2 - tip.offsetHeight / 2;
+        top = Math.max(8, Math.min(top, global.innerHeight - tip.offsetHeight - 8));
+        tip.style.left = Math.round(left) + 'px';
+        tip.style.top = Math.round(top) + 'px';
+    }
+    function hideTip() {
+        if (S.tip) S.tip.hidden = true;
+    }
+    function setupRailTips() {
+        if (!S.rail) return;
+        var over = function (e) {
+            var t = e.target && e.target.closest ? e.target.closest('.bk-rail-link') : null;
+            if (t) showTip(t);
+            else hideTip();
+        };
+        S.rail.addEventListener('pointerover', over);
+        S.rail.addEventListener('focusin', over);
+        S.rail.addEventListener('pointerleave', hideTip);
+        S.rail.addEventListener('focusout', hideTip);
+        S.rail.addEventListener('click', hideTip);
+        global.addEventListener('scroll', hideTip, { passive: true, capture: true });
     }
 
     /* ---------------------------------------------------------------------
@@ -263,13 +389,6 @@
         bar.setAttribute('role', 'banner');
 
         var left = el('div', 'bk-chrome-left');
-        var menuBtn = el('button', 'bk-chrome-btn bk-chrome-menu');
-        menuBtn.type = 'button';
-        menuBtn.setAttribute('aria-label', 'Mở menu điều hướng');
-        menuBtn.setAttribute('aria-expanded', 'false');
-        menuBtn.appendChild(icon('fa-bars'));
-        menuBtn.addEventListener('click', openSheet);
-        left.appendChild(menuBtn);
 
         var crumbs = el('nav', 'bk-crumbs');
         crumbs.setAttribute('aria-label', 'Breadcrumb');
@@ -445,8 +564,6 @@
         // Cho trình duyệt một nhịp để transition chạy.
         global.requestAnimationFrame(function () { S.sheet.classList.add('is-open'); });
         D.body.style.overflow = 'hidden';
-        var menuBtn = S.chrome && S.chrome.querySelector('.bk-chrome-menu');
-        if (menuBtn) menuBtn.setAttribute('aria-expanded', 'true');
         var tabMore = S.tabbar && S.tabbar.lastElementChild;
         if (tabMore) tabMore.setAttribute('aria-expanded', 'true');
         var first = S.sheet.querySelector('.bk-sheet-item, button');
@@ -457,8 +574,6 @@
         if (!S.sheet) return;
         S.sheet.classList.remove('is-open');
         D.body.style.overflow = '';
-        var menuBtn = S.chrome && S.chrome.querySelector('.bk-chrome-menu');
-        if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
         var tabMore = S.tabbar && S.tabbar.lastElementChild;
         if (tabMore) tabMore.setAttribute('aria-expanded', 'false');
         D.removeEventListener('keydown', onSheetKey, true);
@@ -486,9 +601,7 @@
 
         var brandCol = el('div');
         var brand = el('div', 'bk-footer-brand');
-        var mark = el('span', 'bk-footer-mark');
-        mark.appendChild(icon('fa-folder-tree'));
-        brand.appendChild(mark);
+        brand.appendChild(brandMark('bk-footer-mark'));
         brand.appendChild(el('span', null, 'Bá Khí'));
         brandCol.appendChild(brand);
         brandCol.appendChild(el('p', null, 'Không gian học tập yên tĩnh: tài liệu ôn tập, tiến trình và trợ lý AI trong một hệ thống.'));
@@ -591,12 +704,12 @@
             S.scrollY = y;
             D.body.classList.toggle('is-scrolled', y > 8);
 
-            if (S.progress) {
-                var doc = D.documentElement;
-                var max = Math.max(1, doc.scrollHeight - global.innerHeight);
-                var p = Math.min(1, Math.max(0, y / max));
-                S.progress.style.transform = 'scaleX(' + p.toFixed(4) + ')';
-            }
+            var doc = D.documentElement;
+            var max = Math.max(1, doc.scrollHeight - global.innerHeight);
+            var p = Math.min(1, Math.max(0, y / max));
+            if (S.progress) S.progress.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+            /* "Xương sống" tiến độ ở mép phải rail (chỉ CSS dùng biến này). */
+            html.style.setProperty('--rb-scroll', p.toFixed(4));
             if (hero && !isReduced()) {
                 var vh = global.innerHeight || 720;
                 if (y < vh * 1.2) {
@@ -660,6 +773,93 @@
         var obs = new MutationObserver(function () { if (tryMount()) obs.disconnect(); });
         obs.observe(root, { childList: true, subtree: true });
         global.setTimeout(function () { tryMount(); }, 2500);
+    }
+
+    /* ---------------------------------------------------------------------
+       Đọc bài học (T2): mục lục trong trang + thanh tiến độ đọc.
+       Chỉ đọc heading có sẵn, chỉ thêm id + liên kết; không sửa nội dung.
+       ------------------------------------------------------------------ */
+    var READER_SKIP = { home: 1, founder: 1, admin: 1, studio: 1, chat: 1, 'ai-tutor': 1, settings: 1, profile: 1, progress: 1, skills: 1, gamification: 1, music: 1, legal: 1 };
+
+    function readerHeadings() {
+        var main = D.querySelector('main');
+        if (!main) return [];
+        var all = main.querySelectorAll('h2, h3');
+        var out = [];
+        for (var i = 0; i < all.length; i++) {
+            var h = all[i];
+            /* Heading trong tab đang ẩn không thuộc mục lục. */
+            if (!h.getClientRects().length) continue;
+            var t = (h.textContent || '').replace(/\s+/g, ' ').trim();
+            if (!t) continue;
+            if (!h.id) h.id = 'bk-sec-' + (out.length + 1);
+            out.push({ el: h, level: h.tagName === 'H3' ? 3 : 2, text: t, id: h.id });
+        }
+        return out;
+    }
+
+    function readerList(heads) {
+        var ol = el('ol');
+        heads.forEach(function (h) {
+            var li = el('li');
+            var a = el('a', h.level === 3 ? 'is-h3' : '', h.text);
+            a.href = '#' + h.id;
+            a.setAttribute('data-bk-toc', h.id);
+            li.appendChild(a);
+            ol.appendChild(li);
+        });
+        return ol;
+    }
+
+    function mountReader() {
+        if (READER_SKIP[S.page]) return;
+        var main = D.querySelector('main');
+        if (!main) return;
+        var heads = readerHeadings();
+        if (heads.length < 3) return;
+
+        D.body.classList.add('bk-reader-page');
+        main.setAttribute('data-bk-progress', '');
+
+        var aside = el('aside', 'bk-reader');
+        aside.id = 'bkReader';
+        aside.setAttribute('aria-label', 'Mục lục bài học');
+        aside.appendChild(el('p', 'bk-reader-title', 'Trên trang'));
+        aside.appendChild(readerList(heads));
+        D.body.appendChild(aside);
+
+        var box = el('details', 'bk-reader-m');
+        box.appendChild(el('summary', null, 'Trên trang'));
+        box.appendChild(readerList(heads));
+        main.parentNode.insertBefore(box, main);
+
+        if ('IntersectionObserver' in global) {
+            var links = aside.querySelectorAll('a[data-bk-toc]');
+            var byId = {};
+            for (var i = 0; i < links.length; i++) byId[links[i].getAttribute('data-bk-toc')] = links[i];
+            var spy = new IntersectionObserver(function (entries) {
+                var seen = null;
+                for (var k = 0; k < entries.length; k++) if (entries[k].isIntersecting) seen = entries[k].target;
+                if (!seen) return;
+                for (var id in byId) byId[id].removeAttribute('aria-current');
+                if (byId[seen.id]) byId[seen.id].setAttribute('aria-current', 'true');
+            }, { rootMargin: '-12% 0px -72% 0px' });
+            heads.forEach(function (h) { spy.observe(h.el); });
+        }
+
+        /* Đổi tab Ma trận / Luyện tập làm đổi tập heading → dựng lại mục lục.
+           shortcut: chỉ dựng lại danh sách, không gắn lại scroll spy. */
+        var timer = 0, count = heads.length;
+        D.addEventListener('click', function () {
+            global.clearTimeout(timer);
+            timer = global.setTimeout(function () {
+                var next = readerHeadings();
+                if (next.length === count) return;
+                count = next.length;
+                aside.querySelector('ol').replaceWith(readerList(next));
+                box.querySelector('ol').replaceWith(readerList(next));
+            }, 180);
+        });
     }
 
     /* ---------------------------------------------------------------------
@@ -770,6 +970,7 @@
             D.body.appendChild(S.rail);
             var saved = lsGet(NAV_KEY);
             setRailExpanded(saved === 'expanded');
+            setupRailTips();
 
             S.chrome = buildChrome();
             D.body.insertBefore(S.chrome, skip.nextSibling);
@@ -794,6 +995,7 @@
         }
 
         D.body.classList.add('bk-page-enter');
+        if (main && !workspace) mountReader();
         setupMotion();
         setupScroll();
         mountMotionSetting();
@@ -807,6 +1009,8 @@
             base: S.base,
             setMotion: setMotion,
             motion: motionPref,
+            icon: icon,
+            logo: logoNode,
             refreshChrome: adoptChromeBits,
             openSheet: openSheet,
             closeSheet: closeSheet

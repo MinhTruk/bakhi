@@ -51,7 +51,12 @@ function ensureReport(file, html) {
  * Bỏ qua trang quản trị (admin/, founder/) và trang không có bk-core.js.
  */
 function ensureThemes(file, html) {
-  if (html.includes('assets/bakhi/bk-themes.js')) return html;
+  const bust = appVersion() ? '?v=' + appVersion() : '';
+  if (html.includes('assets/bakhi/bk-themes.js')) {
+    return html
+      .replace(/(assets\/bakhi\/bk-themes\.css)(\?v=[^"']*)?/g, '$1' + bust)
+      .replace(/(assets\/bakhi\/bk-themes\.js)(\?v=[^"']*)?/g, '$1' + bust);
+  }
   const rel = path.relative(ROOT, file).split(path.sep).join('/');
   if (/^(admin|founder)\//.test(rel)) return html;
   if (!html.includes('assets/bakhi/bk-core.js')) return html;
@@ -63,8 +68,8 @@ function ensureThemes(file, html) {
      Trình duyệt tự đưa phần tử nối sau </html> vào body. */
   const sep = html.endsWith('\n') ? '' : '\n';
   return html + sep +
-    `    <link rel="stylesheet" href="${prefix}assets/bakhi/bk-themes.css?v=8.4.0">\n` +
-    `<script src="${prefix}assets/bakhi/bk-themes.js?v=8.4.0" defer></script>\n`;
+    `    <link rel="stylesheet" href="${prefix}assets/bakhi/bk-themes.css${bust}">\n` +
+    `<script src="${prefix}assets/bakhi/bk-themes.js${bust}" defer></script>\n`;
 }
 
 /**
@@ -127,6 +132,45 @@ function ensureTokens(file, html) {
   const sep = html.endsWith('\n') ? '' : '\n';
   return html + sep +
     `    <link rel="stylesheet" href="${prefix}assets/bakhi/bk-tokens.css${bust}">\n`;
+}
+
+/**
+ * Màn hình mở đầu thương hiệu — CHỈ trang chủ (index.html).
+ * CSS đặt trong <head> để áp trước khung hình đầu tiên (tránh nháy chữ trần),
+ * JS nối ở cuối tệp như các mô-đun khác. Cả hai thẻ nằm trên dòng riêng có
+ * `assets/bakhi/` nên content-integrity bỏ qua: hash nội dung giáo dục giữ nguyên.
+ */
+function ensureIntro(file, html) {
+  const rel = path.relative(ROOT, file).split(path.sep).join('/');
+  if (rel !== 'index.html') return html;
+  const version = appVersion();
+  const bust = version ? '?v=' + version : '';
+  if (html.includes('assets/bakhi/bk-intro.js')) {
+    return html
+      .replace(/(assets\/bakhi\/bk-intro\.css)(\?v=[^"']*)?/g, '$1' + bust)
+      .replace(/(assets\/bakhi\/bk-intro\.js)(\?v=[^"']*)?/g, '$1' + bust);
+  }
+  const link = `    <link rel="stylesheet" href="assets/bakhi/bk-intro.css${bust}">`;
+  const script = `<script src="assets/bakhi/bk-intro.js${bust}" defer></script>`;
+  let out = html;
+  const hpos = out.indexOf('</head>');
+  if (hpos >= 0) {
+    const lineStart = out.lastIndexOf('\n', hpos) + 1;
+    out = out.slice(0, lineStart) + link + '\n' + out.slice(lineStart);
+  } else {
+    out += (out.endsWith('\n') ? '' : '\n') + link + '\n';
+  }
+  /* Script đặt ngay TRƯỚC dòng cuối cùng có `assets/bakhi/`: lớp đã chèn sau
+     (khối bk-rebirth) vẫn nằm cuối tệp, đúng thứ tự mà tools/inject-rebirth.js
+     --check mong đợi. Chưa có dòng nào thì nối vào cuối tệp như các mô-đun khác. */
+  const lines = out.split('\n');
+  let at = -1;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (lines[i].includes('assets/bakhi/')) { at = i; break; }
+  }
+  if (at < 0) return out + (out.endsWith('\n') ? '' : '\n') + script + '\n';
+  lines.splice(at, 0, script);
+  return lines.join('\n');
 }
 
 /* 8.5.6 — khởi tạo giao diện SỚM: chèn script đồng bộ ngay TRƯỚC <head> để
@@ -196,6 +240,12 @@ function inject(file) {
   if (withAi !== html) {
     fs.writeFileSync(file, withAi);
     html = withAi;
+  }
+  /* Màn hình mở đầu: chỉ trang chủ (hàm tự kiểm tra tên tệp). */
+  const withIntro = ensureIntro(file, html);
+  if (withIntro !== html) {
+    fs.writeFileSync(file, withIntro);
+    html = withIntro;
   }
   if (SKIP.has(rel)) return 'skip';
   if (html.includes('assets/bakhi/bk-core.js')) return 'already';

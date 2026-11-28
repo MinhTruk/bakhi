@@ -1,0 +1,176 @@
+/* =========================================================================
+   Bá Khí — bk-intro.css
+   Sân khấu void cho màn mở đầu katana. Mọi chuyển động do bk-intro.js chạy
+   trên một đồng hồ WAAPI duy nhất; tệp này chỉ giữ hình học, màu và trạng
+   thái ban đầu (không keyframe CSS chạy song song).
+
+   Nhận diện: nền void #050507, hồng #ffb6c1, chữ #ffe4eb.
+   ========================================================================= */
+
+.bk-intro {
+    --bki-bg: #050507;
+    --bki-pink: #ffb6c1;
+    --bki-ink: #ffe4eb;
+    --bki-sub: rgb(255 182 193 / .72);
+
+    position: fixed;
+    inset: 0;
+    z-index: var(--bk-z-intro, 2147482000);
+    overflow: hidden;
+    margin: 0;
+    background: var(--bki-bg);
+    color: var(--bki-ink);
+    font-family: Lexend, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* index.html khoá nội dung (html.bk-boot-lock) tới khi xác định phiên học
+   sinh; màn mở đầu phải hiện trong khoảng đó. */
+html.bk-boot-lock body > .bk-intro { visibility: visible !important; }
+
+/* --- Hai nửa lớp void bị tách ở pha cuối --- */
+.bki-half {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(70vmax 70vmax at 50% 44%, rgb(255 182 193 / .07), transparent 64%),
+        radial-gradient(80vmax 80vmax at 8% 0%, rgb(76 29 149 / .22), transparent 62%),
+        var(--bki-bg);
+    will-change: transform;
+}
+
+.bki-top { clip-path: polygon(0 0, 100% 0, 100% 45.5%, 0 50.5%); }
+.bki-bot { clip-path: polygon(0 50.5%, 100% 45.5%, 100% 100%, 0 100%); }
+
+.bki-stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform, opacity;
+}
+
+.bki-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* Dọc: phóng sân khấu để khối nhận diện không bị thu nhỏ trên điện thoại. */
+@media (max-aspect-ratio: 3/4) {
+    .bki-svg { transform: scale(2.05); }
+}
+@media (min-aspect-ratio: 3/4) and (max-aspect-ratio: 1/1) {
+    .bki-svg { transform: scale(1.55); }
+}
+
+/* --- Chữ O, sóng xung kích, nhát chém --- */
+.bki-o {
+    fill: none;
+    stroke: var(--bki-pink);
+    stroke-width: 9;
+    stroke-linecap: round;
+    stroke-dasharray: 100;
+    transform-box: view-box;
+    transform-origin: 600px 380px;
+    filter: drop-shadow(0 0 18px rgb(255 182 193 / .45));
+}
+
+.bki-wave {
+    fill: none;
+    stroke: rgb(255 225 235 / .7);
+    stroke-width: 2;
+    transform-box: view-box;
+    transform-origin: 600px 380px;
+}
+
+.bki-slash {
+    stroke: #fff4f7;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-dasharray: 100;
+    filter: drop-shadow(0 0 8px rgb(255 182 193 / .8));
+}
+
+/* --- Chữ B và từ khóa --- */
+.bki-stem,
+.bki-bowl {
+    fill: none;
+    stroke: var(--bki-pink);
+    stroke-width: 7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 100;
+}
+
+.bki-word {
+    fill: var(--bki-ink);
+    font-family: Lexend, system-ui, sans-serif;
+    font-size: 84px;
+    font-weight: 700;
+    letter-spacing: 8px;
+}
+
+.bki-sub {
+    fill: var(--bki-sub);
+    font-family: Lexend, system-ui, sans-serif;
+    font-size: 19px;
+    font-weight: 500;
+    letter-spacing: 4px;
+}
+
+.bki-word-clip {
+    transform-box: fill-box;
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+}
+
+/* --- Kiếm --- */
+.bki-katana {
+    transform-box: view-box;
+    transform-origin: 0 0;
+    will-change: transform;
+}
+
+.bki-blade-fill { fill: url(#bkiSteel); }
+.bki-blade-edge { fill: none; stroke: #fff8fb; stroke-width: 1.4; }
+.bki-blade-hamon { fill: none; stroke: rgb(255 255 255 / .55); stroke-width: 1.2; }
+.bki-tsuba { fill: #cfd6e4; stroke: var(--bki-pink); stroke-width: .8; }
+.bki-handle { fill: #1b1b24; stroke: var(--bki-pink); stroke-width: .7; }
+.bki-wrap path { fill: none; stroke: rgb(255 182 193 / .55); stroke-width: 1.4; }
+.bki-pommel { fill: var(--bki-pink); }
+
+.bki-trail { opacity: .32; filter: blur(1.2px); }
+
+/* --- Nhát chém toàn màn hình + chớp va chạm --- */
+.bki-cut {
+    position: absolute;
+    left: -10%;
+    top: 48%;
+    width: 120%;
+    height: 2px;
+    opacity: 0;
+    transform: rotate(-3deg) scaleX(.1);
+    transform-origin: 50% 50%;
+    background: linear-gradient(90deg, transparent, #fff4f7 18%, var(--bki-pink) 50%, #fff4f7 82%, transparent);
+    box-shadow: 0 0 22px rgb(255 182 193 / .75);
+    will-change: transform, opacity;
+}
+
+.bki-flash {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 47%, #fff8fb, rgb(255 182 193 / .5) 22%, transparent 62%);
+}
+
+/* Giảm chuyển động: bỏ quầng và nhoè; JS chỉ hiện bố cục cuối rồi mờ dần. */
+@media (prefers-reduced-motion: reduce) {
+    .bki-o,
+    .bki-slash { filter: none; }
+    .bki-trail { filter: none; opacity: .2; }
+}

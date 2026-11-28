@@ -82,3 +82,39 @@ Kết quả hiện tại: **74 cặp · 0 không đạt**. Thấp nhất: `--rb-
 Ghi chú: `--rb-accent` không dùng làm màu chữ trên nền sáng; chữ trên nền accent luôn là
 `--rb-accent-ink`. Thanh notch 3px luôn đi kèm nền `--rb-surface-2`/`--rb-accent-soft` nên
 không phải tín hiệu duy nhất.
+
+---
+
+## Phụ lục v5 (27/11/2026) — thành phần thêm sau khi có prompt v5
+
+Bổ sung vào cùng một tệp token; không tạo hệ thứ hai.
+
+### `--rb-font-reading`
+`'Source Serif 4', 'Noto Serif', 'Times New Roman', Georgia, serif`. Dùng **chỉ** cho nội dung
+đọc dài: câu trả lời Trợ lý AI và (khi có) cột đọc bài. Không tự host → 0 byte. Không dùng cho
+nhãn, nút, số liệu.
+
+### Mục lục trong trang (`.bk-reader`, `.bk-reader-m`)
+- Nguồn dữ liệu: `h2`/`h3` **có sẵn** trong `<main>`; JS chỉ thêm `id` và link `#id`.
+- ≥1500 px: `<aside>` cố định 208 px, cách cột nội dung 980 px ít nhất 24 px.
+- <1500 px: `<details>` trước `<main>`, `summary` cao 44 px (48 px trên `pointer: coarse`).
+- Mục đang đọc: `aria-current="true"` + vạch `2px var(--rb-accent)` bên trái.
+- Chữ: 13 px cấp 2, 13 px cấp 3 (không dưới 12 px); dòng 1,45.
+
+### Trang trạng thái (`.bk-status-page`) — T9
+Mã (`display`, mono, accent) → `h1` → một câu → hành động → link phụ có đường kẻ. Dùng cho 404;
+dùng lại được cho lỗi/bảo trì.
+
+### Cài đặt T4
+Grid `240px / minmax(0, 1fr)` từ 1024 px; nav dính, tab cao 40 px (44 px trên cảm ứng), căn trái,
+vạch accent bên trái cho tab đang chọn; nội dung ≤760 px; hàng cài đặt ngăn bằng đường kẻ
+(`border-top`), không phải thẻ.
+
+### Cổng nhận diện (`.bkc-gate*`)
+Bỏ dải gradient trên đỉnh thẻ; thẻ `surface-1` + hairline + `--rb-shadow-pop`; ô nhập inset 44 px,
+chữ 16 px (không zoom iOS); nút chính dùng accent.
+
+### Quy đổi Tailwind trong bài học
+Không tạo token mới. `brand`/`amber`/`orange` → `--rb-accent*`; `indigo`/`blue` → `--rb-info*`;
+`purple`/`violet` → `--rb-violet`; gradient → một màu phẳng. `emerald`/`rose` **giữ nguyên** vì đã
+là màu trạng thái đúng/sai và khớp `--rb-ok`/`--rb-danger`.

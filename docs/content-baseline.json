@@ -45,8 +45,8 @@
       }
     },
     "index.html": {
-      "hash": "b4736de53d285b997b9293f441371c59291b109763c3599470dac7619394e633",
-      "bytes": 195618,
+      "hash": "1b279539a012c8d71babf47c7a2ccea5bda794839e18390894ad0764a143bca7",
+      "bytes": 186581,
       "stats": {
         "correctAnswer": 0,
         "correctField": 0,
@@ -1751,6 +1751,76 @@
         "mcqBank": 0,
         "tfBank": 0
       }
+    },
+    "404.html": {
+      "hash": "050890661c55108976c8c2759e6313a83f32ea1dd4882c7306a911ecd15afce3",
+      "bytes": 2631,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "legal/index.html": {
+      "hash": "896b30ab33202e3784fc1daa90b05f7ebf9a82604999188d24c50ba7910bb8f7",
+      "bytes": 3310,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "legal/privacy.html": {
+      "hash": "04bc2e68fdf42917759248744959e32155eb0179169bdf904d5a0ff55ff00c27",
+      "bytes": 2725,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "legal/terms.html": {
+      "hash": "073ff454e77602937e38198aa8178b797289fd847768790d30701034563ee683",
+      "bytes": 2715,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
+    },
+    "ai-tutor/index.html": {
+      "hash": "39438e6fd524da933fed44e2c40afba935915120d50d7eaba88a3e9908db3763",
+      "bytes": 5141,
+      "stats": {
+        "correctAnswer": 0,
+        "correctField": 0,
+        "explanation": 0,
+        "questionField": 0,
+        "optionsArray": 0,
+        "essayBank": 0,
+        "mcqBank": 0,
+        "tfBank": 0
+      }
     }
   },
   "notes": [
@@ -1826,6 +1896,24 @@
       "reason": "Trang giao diện không chứa nội dung giáo dục: viết lại có chủ đích hoặc bổ sung vào baseline. Không có tệp môn/bài học nào thay đổi.",
       "files": [
         "index.html"
+      ]
+    },
+    {
+      "at": "2026-11-28T04:20:02.332Z",
+      "reason": "Trang giao diện không chứa nội dung giáo dục: viết lại có chủ đích hoặc bổ sung vào baseline. Không có tệp môn/bài học nào thay đổi.",
+      "files": [
+        "index.html",
+        "404.html (mới)",
+        "legal/index.html (mới)",
+        "legal/privacy.html (mới)",
+        "legal/terms.html (mới)"
+      ]
+    },
+    {
+      "at": "2026-11-28T04:21:23.165Z",
+      "reason": "Trang giao diện không chứa nội dung giáo dục: viết lại có chủ đích hoặc bổ sung vào baseline. Không có tệp môn/bài học nào thay đổi.",
+      "files": [
+        "ai-tutor/index.html (mới)"
       ]
     }
   ]

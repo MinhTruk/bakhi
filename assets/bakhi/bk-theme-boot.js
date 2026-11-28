@@ -83,6 +83,24 @@
     /* Áp dụng ngay — chạy đồng bộ trong <head> nên không ai thấy khung sai màu. */
     apply(read(), false);
 
+    /* Chuyển trang void: giữ nền void cho tới khi bk-transition.js dựng xong
+       lớp enter. Không đặt cờ này khi mở trang trực tiếp (intro là chủ sân). */
+    (function navBoot() {
+        try {
+            var at = Number(global.sessionStorage.getItem('bkVtNav') || 0);
+            var fresh = at > 0 && Date.now() - at < 15000;
+            var type = '';
+            try {
+                var list = global.performance.getEntriesByType('navigation');
+                type = list && list[0] ? list[0].type : '';
+            } catch (e) { }
+            if (fresh || type === 'back_forward') {
+                root.classList.add('bk-vt-boot');
+                global.setTimeout(function () { root.classList.remove('bk-vt-boot'); }, 1600);
+            }
+        } catch (e) { }
+    })();
+
     /* Tab khác đổi giao diện → tab này đổi theo, kể cả trang không nạp
        bk-shell.js (trang bài học, studio, quản trị). */
     global.addEventListener('storage', function (e) {

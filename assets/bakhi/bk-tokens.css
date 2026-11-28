@@ -17,32 +17,32 @@ html.dark {
     color-scheme: dark;
 
     /* ---------------------------- Nền & bề mặt -------------------------- */
-    --bk-bg: #0b0f14;            /* nền chính */
-    --bk-bg-2: #111821;          /* nền phụ / trang */
-    --bk-surface: #161f2b;       /* thẻ, bảng, panel */
-    --bk-surface-2: #111821;     /* panel lồng, header dính */
-    --bk-surface-3: #1b2531;     /* lớp lồng sâu hơn */
-    --bk-hover: #202c3a;         /* hover / active nhẹ */
-    --bk-input: #0e151e;         /* nền ô nhập */
+    --bk-bg: #050507;            /* nền void chính */
+    --bk-bg-2: #0a0a12;          /* nền phụ / trang */
+    --bk-surface: #0a0a12;       /* thẻ, bảng, panel */
+    --bk-surface-2: #101018;     /* panel lồng, header dính */
+    --bk-surface-3: #171724;     /* lớp lồng sâu hơn */
+    --bk-hover: #1b1b2b;         /* hover / active nhẹ */
+    --bk-input: #08080f;         /* nền ô nhập */
 
     /* ------------------------------ Đường kẻ ---------------------------- */
-    --bk-line: #293646;          /* viền đặc */
-    --bk-line-soft: rgba(148, 163, 184, .18);
-    --bk-line-strong: rgba(148, 163, 184, .38);
+    --bk-line: rgb(196 181 253 / .20);  /* viền đặc */
+    --bk-line-soft: rgb(196 181 253 / .10);
+    --bk-line-strong: rgb(196 181 253 / .30);
 
     /* --------------------------------- Chữ ------------------------------ */
-    --bk-text: #e8edf5;          /* chữ chính */
-    --bk-text-2: #9aa8b8;        /* chữ phụ */
-    --bk-text-3: #718096;        /* chữ mờ */
+    --bk-text: #ffe4eb;          /* chữ chính — họ hồng của nhận diện */
+    --bk-text-2: #d9b6c2;        /* chữ phụ */
+    --bk-text-3: #ad8b99;        /* chữ mờ */
 
     /* ------------------------------- Màu nhận diện ---------------------- */
-    --bk-brand: var(--bk-primary, #6366f1);
-    --bk-brand-2: var(--bk-secondary, #a855f7);
-    --bk-brand-soft: #a5b4fc;
-    --bk-highlight: #38bdf8;
-    --bk-ok: #34d399;
-    --bk-warn: #fbbf24;
-    --bk-danger: #fb7185;
+    --bk-brand: var(--bk-primary, #ffb6c1);
+    --bk-brand-2: var(--bk-secondary, #c4b5fd);
+    --bk-brand-soft: #ffd0d8;
+    --bk-highlight: #7dd3fc;
+    --bk-ok: #86efac;
+    --bk-warn: #fcd34d;
+    --bk-danger: #ff8a8a;
 
     /* --------------------------- Đổ bóng / lớp phủ ---------------------- */
     --bk-elev-1: 0 10px 24px -16px rgba(2, 6, 23, .8);
@@ -50,8 +50,8 @@ html.dark {
     --bk-overlay: rgba(2, 6, 23, .62);
     /* 8.5.6 — quầng sáng dùng chung cho animation/nhấn mạnh. Ở giao diện tối
        đây là glow thật; ở giao diện sáng được hạ xuống bóng mờ để không chói. */
-    --bk-glow: 0 0 0 1px rgba(99, 102, 241, .32), 0 0 28px -6px rgba(99, 102, 241, .5);
-    --bk-glow-soft: 0 0 18px -8px rgba(56, 189, 248, .55);
+    --bk-glow: 0 0 0 1px rgba(255, 182, 193, .32), 0 0 28px -6px rgba(255, 182, 193, .45);
+    --bk-glow-soft: 0 0 18px -8px rgba(196, 181, 253, .5);
     --bk-glow-danger: 0 0 22px -8px rgba(251, 113, 133, .55);
     --bk-skeleton: linear-gradient(90deg, rgba(148, 163, 184, .08), rgba(148, 163, 184, .22), rgba(148, 163, 184, .08));
     --bk-press: rgba(148, 163, 184, .16);
@@ -72,21 +72,21 @@ html.dark {
 html.light {
     color-scheme: light;
 
-    --bk-bg: #f4f6fb;
-    --bk-bg-2: #f8fafc;
+    --bk-bg: #fbf7f8;
+    --bk-bg-2: #fdf9fa;
     --bk-surface: #ffffff;
-    --bk-surface-2: #f5f7fc;
-    --bk-surface-3: #eef2f9;
-    --bk-hover: #eef2f8;
+    --bk-surface-2: #fdf9fa;
+    --bk-surface-3: #f6eef0;
+    --bk-hover: #f4e9ec;
     --bk-input: #ffffff;
 
-    --bk-line: #d7dee9;
-    --bk-line-soft: rgba(100, 116, 139, .22);
-    --bk-line-strong: rgba(100, 116, 139, .38);
+    --bk-line: #e6d5da;
+    --bk-line-soft: rgba(90, 40, 55, .18);
+    --bk-line-strong: rgba(90, 40, 55, .32);
 
-    --bk-text: #0f172a;
-    --bk-text-2: #4b5b73;
-    --bk-text-3: #6b7a93;
+    --bk-text: #2a1620;
+    --bk-text-2: #5a4049;
+    --bk-text-3: #7a616a;
 
     --bk-brand-soft: #4f46e5;
     --bk-highlight: #0284c7;
@@ -116,10 +116,10 @@ html.light {
 }
 
 /* ------------------------------- Nền tảng ------------------------------- */
-html { scrollbar-color: var(--bk-line-strong) transparent; }
+html { background-color: var(--bk-bg); scrollbar-color: var(--bk-line-strong) transparent; }
 
 ::selection {
-    background: rgba(56, 189, 248, .26);
+    background: rgba(255, 182, 193, .30);
     color: var(--bk-text);
 }
 

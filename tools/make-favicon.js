@@ -22,8 +22,9 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'assets', 'bakhi');
 const SS = 4; // supersampling mỗi trục
 
-const INDIGO = [99, 102, 241];
-const PURPLE = [168, 85, 247];
+const TILE_FROM = [24, 24, 31];
+const TILE_TO = [12, 12, 16];
+const PINK = [255, 182, 193];
 
 /** Điểm nằm trong hình chữ nhật bo góc (toạ độ 64×64). */
 function insideRoundedRect(x, y, x0, y0, x1, y1, r) {
@@ -43,22 +44,41 @@ function arc(cx, cy, r, fromDeg, toDeg, steps, out) {
   }
 }
 
-/** Đa giác xấp xỉ path chiếc folder trắng trong favicon.svg. */
-function folderPolygon() {
-  const pts = [];
-  arc(18, 22, 4, 180, 270, 12, pts); // góc trên trái
-  pts.push([27, 18]);
-  pts.push([31, 23]); // tai folder
-  pts.push([46, 23]);
-  arc(46, 27, 4, 270, 360, 12, pts); // góc trên phải
-  pts.push([46, 46]);
-  arc(42, 46, 4, 0, 90, 12, pts); // góc dưới phải
-  pts.push([18, 50]);
-  arc(18, 46, 4, 90, 180, 12, pts); // góc dưới trái
-  return pts;
+/** Dấu "khí": điểm neo có quầng, hai cung aura và một vệt echo mảnh (khung 64). */
+const AURA = {
+  cx: 24, cy: 40, dot: 5.2,
+  rings: [[22, 2.2, -90, -18], [13, 2.0, -92, -30]],
+  halo: [8.7, 0.6],
+  echo: [30, 0.5, -90, -44]
+};
+
+function insideAura(x, y, detail, micro) {
+  const dx = x - AURA.cx;
+  const dy = y - AURA.cy;
+  const d = Math.sqrt(dx * dx + dy * dy);
+  const ang = (Math.atan2(dy, dx) * 180) / Math.PI;
+  /* Cỡ 16/32: chỉ còn điểm neo + một cung dày, nếu không sẽ nhoè thành vệt. */
+  if (micro) {
+    if (d <= 7.4) return true;
+    return Math.abs(d - 13.6) <= 4.4 && ang >= -102 && ang <= -30;
+  }
+  /* Cỡ nhỏ-vừa: nét dày lên để đọc được sau khi thu nhỏ. */
+  const k = detail ? 1 : 1.45;
+  if (d <= (detail ? AURA.dot : AURA.dot + 0.6)) return true;
+  const hit = (r, w, a0, a1) => Math.abs(d - r) <= w * k && ang >= a0 && ang <= a1;
+  if (AURA.rings.some(([r, w, a0, a1]) => hit(r, w, a0, a1))) return true;
+  if (!detail) return false;
+  const [hr, hw] = AURA.halo;
+  if (Math.abs(d - hr) <= hw) return true;
+  const [er, ew, ea0, ea1] = AURA.echo;
+  return Math.abs(d - er) <= ew && ang >= ea0 && ang <= ea1;
 }
 
-const FOLDER = folderPolygon();
+/** Nền graphite, sáng dần từ góc trên-trái. */
+function tileColor(x, y) {
+  const t = Math.min(1, Math.max(0, (x + y) / 112));
+  return [0, 1, 2].map((i) => Math.round(TILE_FROM[i] + (TILE_TO[i] - TILE_FROM[i]) * t));
+}
 
 function insidePolygon(x, y, pts) {
   let inside = false;
@@ -100,7 +120,7 @@ function render(size, square) {
           const y = (py + (sy + 0.5) / SS) * scale;
           if (square || insideRoundedRect(x, y, 0, 0, 64, 64, radius)) {
             bgHits += 1;
-            if (insidePolygon(x, y, FOLDER)) fgHits += 1;
+            if (insideAura(x, y, size >= 48, size <= 32)) fgHits += 1;
           }
         }
       }
@@ -108,13 +128,13 @@ function render(size, square) {
       const bgA = bgHits / total;
       const fgA = fgHits / total;
       if (bgA === 0) continue;
-      const [r, g, b] = gradientColor(px * scale, py * scale);
-      // Trộn trắng (folder) lên nền gradient.
-      const mix = (base, white) => Math.round(base + (white - base) * (fgA / bgA));
+      const [r, g, b] = tileColor(px * scale, py * scale);
+      // Trộn hồng (logo) lên nền graphite.
+      const mix = (base, i) => Math.round(base + (PINK[i] - base) * (fgA / bgA));
       const i = (py * size + px) * 4;
-      rgba[i] = mix(r, 255);
-      rgba[i + 1] = mix(g, 255);
-      rgba[i + 2] = mix(b, 255);
+      rgba[i] = mix(r, 0);
+      rgba[i + 1] = mix(g, 1);
+      rgba[i + 2] = mix(b, 2);
       rgba[i + 3] = Math.round(bgA * 255);
     }
   }

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Bá Khí">
+  <defs>
+    <linearGradient id="bkTile" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#16161d"/>
+      <stop offset="0.55" stop-color="#0d0d11"/>
+      <stop offset="1" stop-color="#08080a"/>
+    </linearGradient>
+    <radialGradient id="bkGlow" cx="0.34" cy="0.62" r="0.62">
+      <stop offset="0" stop-color="#ffb6c1" stop-opacity="0.16"/>
+      <stop offset="0.62" stop-color="#ffb6c1" stop-opacity="0.03"/>
+      <stop offset="1" stop-color="#ffb6c1" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bkTile)"/>
+  <rect width="64" height="64" rx="14" fill="url(#bkGlow)"/>
+  <rect x="1.1" y="1.1" width="61.8" height="61.8" rx="12.9" fill="none" stroke="#ffffff" stroke-opacity="0.10"/>
+  <rect x="4.4" y="4.4" width="55.2" height="55.2" rx="10.2" fill="none" stroke="#ffffff" stroke-opacity="0.035"/>
+  <g fill="none" stroke="#ffb6c1">
+    <path d="M24 10a30 30 0 0 1 22.98 10.72" stroke-opacity="0.22" stroke-width="1"/>
+    <path d="M24 18a22 22 0 0 1 20.92 15.2" stroke-width="4.4"/>
+    <path d="M24 27a13 13 0 0 1 11.26 6.5" stroke-width="4"/>
+    <circle cx="24" cy="40" r="8.7" stroke-opacity="0.45" stroke-width="0.6"/>
+  </g>
+  <circle cx="24" cy="40" r="5.2" fill="#ffb6c1"/>
+</svg>

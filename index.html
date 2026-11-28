@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi" class="dark">
 <head>
-<script src="assets/bakhi/bk-theme-boot.js?v=8.8.0"></script>
+<script src="assets/bakhi/bk-theme-boot.js?v=9.0.0"></script>
 <link rel="manifest" href="assets/bakhi/manifest.webmanifest" data-bk-pwa="1"><meta name="theme-color" content="#0f172a" data-bk-pwa="1">
     <meta charset="UTF-8">
     <!-- Bá Khí: không nháy nội dung trước khi xác định phiên học sinh -->
@@ -179,7 +179,6 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         main > * { animation: fadeUp .6s cubic-bezier(.2,.7,.2,1) both; }
         main > *:nth-child(2) { animation-delay: .08s; } main > *:nth-child(3) { animation-delay: .16s; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } }
-        #hamburgerDropdown:not(.hidden) { animation: popIn .2s both; transform-origin: top right; }
         .folder-header { -webkit-tap-highlight-color: transparent; }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -208,7 +207,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         .fc-inner { contain: layout paint; }
         .lite .nebula, .lite .logo-glow, .lite .hl-card, .lite .hl-open, .lite .title-shine, .lite .badge-dot { animation: none !important; }
         .lite .nebula { display: none; }
-        .lite main > *, .lite .folder-content.open .fc-inner a, .lite #hamburgerDropdown:not(.hidden), .lite .dv-pane:not(.hidden),
+        .lite main > *, .lite .folder-content.open .fc-inner a, .lite .dv-pane:not(.hidden),
         .lite #dev-panel-modal:not(.hidden), .lite #readme-modal:not(.hidden),
         .lite #dev-panel-modal:not(.hidden) > div, .lite #readme-modal:not(.hidden) > div { animation: none !important; }
         .lite .folder-content, .lite .folder-content.open, .lite .subj-ico, .lite .folder-ico { transition: none; }
@@ -281,6 +280,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
 <link rel="icon" type="image/png" sizes="192x192" href="assets/bakhi/favicon-192x192.png" data-bk-favicon="1">
 <link rel="icon" href="assets/bakhi/favicon.ico" sizes="16x16 32x32 48x48" data-bk-favicon="1">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/bakhi/apple-touch-icon.png" data-bk-favicon="1">
+    <link rel="stylesheet" href="assets/bakhi/bk-intro.css?v=9.0.0">
 </head>
 <body id="pageBody" class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative transition-colors duration-300">
 
@@ -330,93 +330,6 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                         <i class="fa-solid fa-book-open"></i>
                         <span class="hidden sm:inline">README.md</span>
                     </button>
-
-                    <!-- Menu 3 gạch (Dropdown Menu) -->
-                    <div class="relative">
-                        <button onclick="toggleHamburgerMenu()" class="hdr-btn p-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl text-slate-700 dark:text-slate-200 transition cursor-pointer shadow-sm">
-                            <i class="fa-solid fa-bars text-base"></i>
-                        </button>
-
-                        <!-- Dropdown nội dung 3 gạch -->
-                        <div id="hamburgerDropdown" class="hidden absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-3 z-40 space-y-3">
-                            <!-- Các tùy chọn trong menu -->
-                            <div class="space-y-1.5">
-                                <!-- Dark / Light mode toggle -->
-                                <button onclick="toggleDarkMode(event)" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer">
-                                    <span class="flex items-center space-x-2.5">
-                                        <i id="themeIcon" class="fa-solid fa-moon text-indigo-500"></i>
-                                        <span>Giao diện Sáng/Tối</span>
-                                    </span>
-                                    <span id="themeText" class="text-[10px] text-slate-400">Đang tối</span>
-                                </button>
-
-                                <!-- README.md (dự phòng khi header quá hẹp) -->
-                                <button onclick="openReadmeModal()" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer">
-                                    <i class="fa-solid fa-book-open text-indigo-500"></i>
-                                    <span>README.md</span>
-                                </button>
-
-                                <!-- GitHub Wiki link -->
-                                <a href="https://github.com/MinhTruk/bakhi/wiki" target="_blank" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition">
-                                    <i class="fa-solid fa-book text-amber-500"></i>
-                                    <span>GitHub Wiki Documentation</span>
-                                </a>
-				<!-- Bakhi Studio Link -->
-				<a href="https://minhtruk.github.io/bakhi/studio" target="_blank" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition">
-    					<i class="fa-solid fa-wand-magic-sparkles text-purple-500"></i>
-    					<span>Bakhi Studio</span>
-				</a>
-				<!-- Bá Khí Studio: Word + Paint mini -->
-				<a href="studio/" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition">
-    					<i class="fa-solid fa-pen-ruler text-emerald-500"></i>
-    					<span>Bá Khí Studio — Word &amp; Paint</span>
-				</a>
-
-                                <!-- GitHub Repo link -->
-                                <a href="https://github.com/MinhTruk/bakhi" target="_blank" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition">
-                                    <i class="fa-brands fa-github text-slate-600 dark:text-slate-300"></i>
-                                    <span>GitHub Repository</span>
-                                </a>
-                                <!-- Administrator: mục dashboard chỉ mở sau khi xác nhận Administrator Code -->
-                                <div id="bkDevAuthRow" class="space-y-1.5 pt-1">
-                                    <button id="bkDevRevealBtn" type="button" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer">
-                                        <i class="fa-solid fa-lock text-slate-500 dark:text-slate-400"></i>
-                                        <span>Administrator</span>
-                                    </button>
-                                    <div id="bkDevCodeWrap" class="hidden space-y-1.5">
-                                        <div class="flex items-center space-x-1.5">
-                                            <input type="password" id="bkDevCodeInput" placeholder="Administrator Code…" autocomplete="off" spellcheck="false" class="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-sky-500">
-                                            <button id="bkDevAuthBtn" type="button" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-medium transition cursor-pointer shrink-0">Xác thực</button>
-                                        </div>
-                                        <p id="bkDevAuthMsg" class="text-[10px] text-slate-400 leading-snug"></p>
-                                    </div>
-                                </div>
-                                <div id="bkDevDashSection" class="hidden space-y-1.5">
-                                    <a href="admin/index.html" target="_blank" rel="noopener" id="bkAdminOpenLink" class="w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl flex items-center space-x-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition">
-                                        <i class="fa-solid fa-shield-halved text-sky-500"></i>
-                                        <span>Administrator Dashboard</span>
-                                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400 ml-auto"></i>
-                                    </a>
-                                    <button id="bkDevLogoutBtn" type="button" class="w-full px-3 py-1.5 bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-medium transition flex items-center justify-center space-x-2 cursor-pointer">
-                                        <i class="fa-solid fa-right-from-bracket"></i><span>Thoát Administrator Dashboard</span>
-                                    </button>
-                                </div>
-
-                                <hr class="border-slate-200 dark:border-slate-700 my-1">
-
-                                <!-- Dev Code được xác minh phía máy chủ tại Cài đặt → Nhà phát triển.
-                                     Không còn ô nhập mã/hash trong trang chủ. -->
-                                <div id="devPanelBtnContainer" class="hidden pt-1 space-y-1.5">
-                                    <button onclick="openDevPanel()" class="w-full px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-2 cursor-pointer shadow-sm">
-                                        <i class="fa-solid fa-terminal"></i><span>Bảng điều khiển Developer</span><kbd class="text-[9px] opacity-70 hidden sm:inline">Ctrl+Shift+D</kbd>
-                                    </button>
-                                    <button onclick="devLogout()" class="w-full px-3 py-1.5 bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-medium transition flex items-center justify-center space-x-2 cursor-pointer">
-                                        <i class="fa-solid fa-right-from-bracket"></i><span>Thoát Developer</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </header>
@@ -1014,15 +927,6 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             initHighlightsStorage();
             renderSubjectsTree();
             checkDevSession();
-
-            // Đóng menu 3 gạch khi click ra ngoài
-            document.addEventListener('click', (e) => {
-                const dropdown = document.getElementById('hamburgerDropdown');
-                const btn = dropdown.previousElementSibling;
-                if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
-                    dropdown.classList.add('hidden');
-                }
-            });
         });
 
         // --- HỆ THỐNG THÔNG BÁO HTML (TOAST) ---
@@ -1134,8 +1038,9 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
         }
         function setDevUI(on) {
             guardOn = !on; document.body.classList.toggle('nocopy', guardOn);
-            const box = document.getElementById('devPanelBtnContainer');
-            if (box) box.classList.toggle('hidden', !on);
+            /* Không còn menu 3 gạch: trạng thái Dev là lớp trên <body> để các phím
+               tắt cũ vẫn kiểm tra được mà không phụ thuộc một nút giao diện. */
+            document.body.classList.toggle('dev-on', on);
         }
         function checkDevSession() { setDevUI(devActive()); }
         window.addEventListener('bk:dev', function (e) {
@@ -1145,12 +1050,6 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             try { if (window.BKCloud && BKCloud.devLogout) BKCloud.devLogout(); } catch (e) {}
             setDevUI(false); closeDevPanel();
             showToast('Đã thoát chế độ Developer', 'success');
-        }
-
-        // --- XỬ LÝ MENU 3 GẠCH ---
-        function toggleHamburgerMenu() {
-            const dropdown = document.getElementById('hamburgerDropdown');
-            dropdown.classList.toggle('hidden');
         }
 
         // --- TÍNH NĂNG DARK / LIGHT MODE ---
@@ -1167,13 +1066,9 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
                 document.documentElement.classList.toggle('light', light);
                 document.documentElement.setAttribute('data-bk-theme', light ? 'light' : 'dark');
             }
-            if (light) {
-                themeIcon.className = 'fa-solid fa-sun text-amber-500';
-                themeText.innerText = 'Đang sáng';
-            } else {
-                themeIcon.className = 'fa-solid fa-moon text-indigo-500';
-                themeText.innerText = 'Đang tối';
-            }
+            /* Header cũ đã bỏ; bk-shell.js tự vẽ hàng giao diện trong menu tài khoản. */
+            if (themeIcon) themeIcon.className = 'fa-solid ' + (light ? 'fa-sun text-amber-500' : 'fa-moon text-indigo-500');
+            if (themeText) themeText.innerText = light ? 'Đang sáng' : 'Đang tối';
         }
 
         function toggleDarkMode(e) {
@@ -2047,32 +1942,33 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
     <script src="bakhi-v4.js"></script>
 
 <!-- Bá Khí Learning Platform (chỉ thêm thẻ script, không sửa nội dung) -->
-<script src="assets/bakhi/bk-core.js?v=8.8.0" defer></script>
-<script src="assets/bakhi/bk-notify.js?v=8.8.0" defer></script>
-<script src="assets/bakhi/bk-learning.js?v=8.8.0" defer></script>
-<script src="assets/bakhi/bk-learn.js?v=8.8.0" defer></script>
-<script src="assets/bakhi/bk-dev.js?v=8.8.0" defer></script>
+<script src="assets/bakhi/bk-core.js?v=9.0.0" defer></script>
+<script src="assets/bakhi/bk-notify.js?v=9.0.0" defer></script>
+<script src="assets/bakhi/bk-learning.js?v=9.0.0" defer></script>
+<script src="assets/bakhi/bk-learn.js?v=9.0.0" defer></script>
+<script src="assets/bakhi/bk-dev.js?v=9.0.0" defer></script>
 
 <!-- Bá Khí × Supabase: một client duy nhất, nhận diện học sinh, thông báo, changelog -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
-<script src="assets/bakhi/bk-supabase.config.js?v=8.8.0" defer></script>
-<script src="assets/bakhi/bk-cache.js?v=8.8.0" defer></script>
-<script src="assets/bakhi/bk-cloud.js?v=8.8.0" data-bk-whatsnew="1" defer></script>
-<script src="assets/bakhi/bk-gamification.js?v=8.8.0" defer></script>
-<script src="assets/bakhi/bk-devboard.js?v=8.8.0" defer></script>
+<script src="assets/bakhi/bk-supabase.config.js?v=9.0.0" defer></script>
+<script src="assets/bakhi/bk-cache.js?v=9.0.0" defer></script>
+<script src="assets/bakhi/bk-cloud.js?v=9.0.0" data-bk-whatsnew="1" defer></script>
+<script src="assets/bakhi/bk-gamification.js?v=9.0.0" defer></script>
+<script src="assets/bakhi/bk-devboard.js?v=9.0.0" defer></script>
 
 <!-- assets/bakhi/shell — avatar tài khoản dùng chung -->
-<script src="assets/bakhi/bk-version.js?v=8.8.0" defer></script>
-<script src="assets/bakhi/bk-profile.js?v=8.8.0" defer></script>
-<script src="assets/bakhi/bk-badges.js?v=8.8.0" defer></script>
-    <script src="assets/bakhi/bk-roles.js?v=8.8.0" defer></script>
-<script src="assets/bakhi/bk-shell.js?v=8.8.0" defer></script>
+<script src="assets/bakhi/bk-version.js?v=9.0.0" defer></script>
+<script src="assets/bakhi/bk-profile.js?v=9.0.0" defer></script>
+<script src="assets/bakhi/bk-badges.js?v=9.0.0" defer></script>
+    <script src="assets/bakhi/bk-roles.js?v=9.0.0" defer></script>
+<script src="assets/bakhi/bk-shell.js?v=9.0.0" defer></script>
 <script src="assets/bakhi/bk-report.js" defer></script>
-<link rel="stylesheet" href="assets/bakhi/bk-themes.css?v=8.8.0">
-<script src="assets/bakhi/bk-themes.js?v=8.8.0" defer></script>
-    <link rel="stylesheet" href="assets/bakhi/bk-ai-tutor.css?v=8.8.0">
-<script src="assets/bakhi/bk-ai-tutor.js?v=8.8.0" defer></script>
-    <link rel="stylesheet" href="assets/bakhi/bk-tokens.css?v=8.8.0"><!-- assets/bakhi/bk-rebirth — Quiet Graphite --><link rel="stylesheet" href="assets/bakhi/bk-rebirth.css?v=8.8.0" data-bk-rebirth="css"><script src="assets/bakhi/bk-rebirth.js?v=8.8.0" defer data-bk-rebirth="js"></script>
+<link rel="stylesheet" href="assets/bakhi/bk-themes.css?v=9.0.0">
+<script src="assets/bakhi/bk-themes.js?v=9.0.0" defer></script>
+    <link rel="stylesheet" href="assets/bakhi/bk-ai-tutor.css?v=9.0.0">
+<script src="assets/bakhi/bk-ai-tutor.js?v=9.0.0" defer></script>
+<script src="assets/bakhi/bk-intro.js?v=9.0.0" defer></script>
+    <link rel="stylesheet" href="assets/bakhi/bk-tokens.css?v=9.0.0"><!-- assets/bakhi/bk-rebirth — Quiet Graphite --><link rel="stylesheet" href="assets/bakhi/bk-rebirth.css?v=9.0.0" data-bk-rebirth="css"><script src="assets/bakhi/bk-rebirth.js?v=9.0.0" defer data-bk-rebirth="js"></script>
 
 
 

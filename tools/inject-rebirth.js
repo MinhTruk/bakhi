@@ -21,7 +21,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const VERSION = '8.8.0';
+const VERSION = '9.0.0';
 const MARK = '<!-- assets/bakhi/bk-rebirth — Quiet Graphite -->';
 const SKIP_DIRS = new Set(['.git', 'node_modules', '.next', 'dist', 'build']);
 const CHECK = process.argv.includes('--check');
