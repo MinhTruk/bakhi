@@ -93,7 +93,10 @@ jobs:
           SYNC_TOKEN: ${{ secrets.CHANGELOG_SYNC_TOKEN }}
         run: |
           set -euo pipefail
-          HTTP=$(curl -sS --retry 2 --retry-delay 3 --max-time 60 \
+          # Function xuất bản tuần tự tới 100 phiên bản (mỗi phiên bản 2 RPC).
+          # 60 giây không đủ khi lần đầu đồng bộ cả tệp; chờ tối đa 5 phút.
+          # Không retry để tránh nhiều request dài chạy chồng nhau.
+          HTTP=$(curl -sS --max-time 300 \
             -o changelog-response.json -w '%{http_code}' \
             -X POST "$SYNC_URL" \
             -H 'content-type: application/json' \

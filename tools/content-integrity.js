@@ -54,9 +54,14 @@ function stripInjected(source) {
        bước khác để khôi phục nguyên văn bản gốc trước khi chèn. */
     .replace(/\n<!--\s*assets\/bakhi\/shell[^\n]*-->\n(?:<script src="[^"]*assets\/bakhi\/[^"]*"[^>]*><\/script>\n)*/g, '')
     .replace(/\n<!-- Bá Khí Learning Platform[\s\S]*?-->\s*(?:<script src="[^"]*assets\/bakhi\/[^"]*"[^>]*><\/script>\s*)*/g, '')
+    /* Khi khối chèn kết thúc ngay trước một thẻ assets/bakhi trên CÙNG dòng,
+       regex phía trên nối `</script>` với thẻ đó. Đánh dấu thẻ đóng để bộ lọc
+       dòng bên dưới không xoá nhầm nó, rồi nối lại đúng vị trí trước </body>. */
+    .replace(/(<\/script>)(?=[ \t]*<(?:link|script)[^>]*assets\/bakhi\/)/gi, '$1\u0000\n')
     .split('\n')
     .filter((line) => !/assets\/bakhi\//.test(line))
-    .join('\n');
+    .join('\n')
+    .replace(/\u0000\n?(?=<\/body>)/g, '');
 }
 
 function sha(text) {

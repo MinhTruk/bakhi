@@ -1702,7 +1702,7 @@
        Công khai
        ------------------------------------------------------------------ */
     var API = {
-        version: '9.0.4',
+        version: '9.0.5',
         MODES: MODE_FALLBACK,
 
         /* Gắn giao diện đầy đủ vào một phần tử (trang /ai-tutor/). */

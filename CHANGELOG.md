@@ -2,6 +2,26 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [9.0.5] — 2026-11-28
+
+**v9.0.5 — Ổn định lại hai cổng kiểm tra tự động.** Sửa false positive của
+`content-integrity` và tăng thời gian chờ đồng bộ changelog. Không đổi API,
+schema, nội dung giáo dục hay bố cục trang.
+
+### Sửa lỗi
+
+- **Guard toàn vẹn nội dung:** không còn xoá nhầm thẻ `</script>` khi khối thẻ
+  dùng chung kết thúc ngay trước một thẻ `assets/bakhi/` trên cùng dòng; nhờ đó
+  hai trang `ktgk1/anh/*` qua kiểm tra mà không phải sửa nội dung.
+- **Đồng bộ changelog:** tăng `curl --max-time` từ 60 lên 300 giây và bỏ retry;
+  Edge Function xuất bản tuần tự tới 100 phiên bản nên lần đồng bộ đầu vượt
+  60 giây và bị GitHub Actions cắt dù Supabase vẫn xử lý xong.
+
+### Cải tiến
+
+- **Baseline `index.html`:** làm mới riêng trang giao diện sau khi bỏ modal
+  README inline ở 9.0.4; 129 tệp nội dung giáo dục giữ nguyên baseline.
+
 ## [9.0.4] — 2026-11-28
 
 **v9.0.4 — Sửa README modal trên mobile, neo lại badge thông báo, chấm chưa đọc
