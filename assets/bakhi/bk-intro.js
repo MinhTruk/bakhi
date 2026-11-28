@@ -31,18 +31,22 @@
     var NS = 'http://www.w3.org/2000/svg';
     var SEEN_KEY = 'bakhiIntroSeen.v1';
     var M = global.BKMotion || {};
-    var TOTAL = (M.DUR && M.DUR.intro) || 5000;
+    var TOTAL = (M.DUR && M.DUR.intro) || 2900;
 
-    /* Nhịp (ms) — nguồn duy nhất cho toàn bộ chuỗi. */
+    /* Nhịp (ms) của pha HIỆN THƯƠNG HIỆU — một đồng hồ TOTAL:
+         vòng tròn · nét vẽ · kiếm · chém · morph · b · BAKHI · phụ đề · lắng.
+       Pha RÚT KIẾM + tách màn hình chạy sau đó bằng animation riêng (mili giây
+       thật), để bố cục cuối đứng yên đủ lâu trước khi rời trang. */
     var B = {
-        oIn: 100, oDrawn: 700,
-        katEnter: 760, katPull: 980, anticip: 1120, strike: 1330,
-        oOut: 1760, morph: 2150,
-        stem: 2350, bowls: 2650,
-        word: 2950, sub: 3150, hold: 3600,
-        pullOut: 4250, stageOut: 4520,
-        splitAt: 4450, splitEnd: 4950
+        oIn: 90, oDrawn: 620,
+        katEnter: 680, katPull: 860, anticip: 1000, strike: 1180,
+        oOut: 1500, morph: 1800,
+        stem: 1950, bowls: 2130,
+        word: 2300, sub: 2600
     };
+
+    /* Pha thoát khỏi màn hình (ms thật, chạy sau TOTAL). */
+    var X = { sword: 300, cut: 340, cutDelay: 40, split: 460, splitDelay: 60, stage: 220, stageDelay: 160 };
 
     var root = D.documentElement;
     var query = '';
@@ -176,7 +180,7 @@
             overlay: overlay, stage: stage, halfTop: halfTop, halfBot: halfBot,
             cut: cut, flash: flash, o: o, wave: wave, slash: slash,
             stem: stem, bowls: [bowlUp, bowlLo], word: word, sub: sub, wordRect: wordRect,
-            blade: blade, trail: trail, closed: false, timer: 0,
+            blade: blade, trail: trail, closed: false, exited: false, timer: 0,
             onKey: null, onTap: null, anims: []
         };
     }
@@ -246,10 +250,7 @@
             { offset: at(B.strike + d), opacity: 1, transform: 'translate(240px,232px) rotate(20deg) scale(1)', easing: 'linear' },
             { offset: at(B.strike + 220 + d), opacity: 1, transform: 'translate(240px,232px) rotate(20deg) scale(1)', easing: 'cubic-bezier(.16,1,.3,1)' },
             { offset: at(B.morph + d), opacity: 1, transform: STILL },
-            { offset: at(B.hold + d), opacity: 1, transform: STILL, easing: 'cubic-bezier(.5,0,.9,.4)' },
-            { offset: at(B.pullOut + d), opacity: 1, transform: 'translate(429px,-2600px) rotate(94deg) scale(5.2)' },
-            { offset: at(B.pullOut + 130 + d), opacity: 0, transform: 'translate(429px,-3200px) rotate(94deg) scale(5.2)' },
-            { offset: 1, opacity: 0, transform: 'translate(429px,-3200px) rotate(94deg) scale(5.2)' }
+            { offset: 1, opacity: 1, transform: STILL }
         ].map(function (f) {
             if (opacity == null || f.opacity == null) return f;
             var c = {};
@@ -264,7 +265,7 @@
 
         anim(ctx, ctx.o, [
             { offset: 0, opacity: 0, strokeDashoffset: 100, transform: 'scale(.86)' },
-            { offset: at(B.oIn), opacity: 1, strokeDashoffset: 100, transform: 'scale(.86)', easing: 'cubic-bezier(.33,0,.67,1)' },
+            { offset: at(B.oIn), opacity: 1, strokeDashoffset: 100, transform: 'scale(.88)', easing: 'cubic-bezier(.16,1,.3,1)' },
             { offset: at(B.oDrawn), opacity: 1, strokeDashoffset: 0, transform: 'scale(1)', easing: 'cubic-bezier(.2,.6,.24,1)' },
             { offset: at(B.strike), opacity: 1, strokeDashoffset: 0, transform: 'scale(1)', easing: 'linear' },
             { offset: at(B.strike + 260), opacity: 1, strokeDashoffset: 0, transform: 'scale(1.16)', easing: 'cubic-bezier(.3,0,.7,1)' },
@@ -295,9 +296,7 @@
             { offset: at(B.strike + 50), opacity: 1, transform: 'translate3d(-5px,3px,0)' },
             { offset: at(B.strike + 80), opacity: 1, transform: 'translate3d(3px,-2px,0)' },
             { offset: at(B.strike + 120), opacity: 1, transform: 'translate3d(0,0,0)' },
-            { offset: at(B.stageOut), opacity: 1, transform: 'translate3d(0,0,0)' },
-            { offset: at(B.stageOut + 120), opacity: 0, transform: 'translate3d(0,0,0)' },
-            { offset: 1, opacity: 0, transform: 'translate3d(0,0,0)' }
+            { offset: 1, opacity: 1, transform: 'translate3d(0,0,0)' }
         ]);
 
         anim(ctx, ctx.flash, [
@@ -330,11 +329,11 @@
         ]);
 
         anim(ctx, ctx.word, [
-            { offset: 0, opacity: 0, transform: 'translateY(8px)' },
-            { offset: at(B.morph + 200), opacity: 0, transform: 'translateY(8px)' },
-            { offset: at(B.morph + 260), opacity: 1, transform: 'translateY(8px)' },
-            { offset: at(B.word), opacity: 1, transform: 'translateY(0)' },
-            { offset: 1, opacity: 1, transform: 'translateY(0)' }
+            { offset: 0, opacity: 0, transform: 'translateY(10px)', filter: 'blur(3px)' },
+            { offset: at(B.morph + 200), opacity: 0, transform: 'translateY(10px)', filter: 'blur(3px)' },
+            { offset: at(B.morph + 260), opacity: 1, transform: 'translateY(10px)', filter: 'blur(2px)' },
+            { offset: at(B.word), opacity: 1, transform: 'translateY(0)', filter: 'blur(0px)' },
+            { offset: 1, opacity: 1, transform: 'translateY(0)', filter: 'blur(0px)' }
         ]);
         anim(ctx, ctx.wordRect, [
             { offset: 0, transform: 'scaleX(0)' },
@@ -344,38 +343,69 @@
         ]);
 
         anim(ctx, ctx.sub, [
-            { offset: 0, opacity: 0, transform: 'translateY(8px)' },
-            { offset: at(B.sub - 380), opacity: 0, transform: 'translateY(8px)' },
-            { offset: at(B.sub), opacity: 1, transform: 'translateY(0)', easing: 'cubic-bezier(.2,.6,.24,1)' },
-            { offset: 1, opacity: 1, transform: 'translateY(0)' }
+            { offset: 0, opacity: 0, transform: 'translateY(8px)', filter: 'blur(2px)' },
+            { offset: at(B.sub - 300), opacity: 0, transform: 'translateY(8px)', filter: 'blur(2px)' },
+            { offset: at(B.sub), opacity: 1, transform: 'translateY(0)', filter: 'blur(0px)', easing: 'cubic-bezier(.2,.6,.24,1)' },
+            { offset: 1, opacity: 1, transform: 'translateY(0)', filter: 'blur(0px)' }
         ]);
 
-        anim(ctx, ctx.blade, bladeFrames(0, 1));
+        var gate = anim(ctx, ctx.blade, bladeFrames(0, 1));
         anim(ctx, ctx.trail, bladeFrames(40, .32));
 
-        anim(ctx, ctx.cut, [
-            { offset: 0, opacity: 0, transform: 'rotate(-3deg) scaleX(.1)' },
-            { offset: at(B.splitAt), opacity: 0, transform: 'rotate(-3deg) scaleX(.1)' },
-            { offset: at(B.splitAt + 100), opacity: 1, transform: 'rotate(-3deg) scaleX(1)' },
-            { offset: at(B.splitAt + 380), opacity: 0, transform: 'rotate(-3deg) scaleX(1.05)' },
-            { offset: 1, opacity: 0, transform: 'rotate(-3deg) scaleX(1.05)' }
-        ]);
+        /* Ra khỏi màn hình đúng lúc đồng hồ hiện thương hiệu kết thúc: bám
+           animation clock (không trễ như timer khi tab bị hạn chế), timer là dự phòng. */
+        if (gate && gate.finished && gate.finished.then) {
+            gate.finished.then(function () { playExit(ctx); }, function () { playExit(ctx); });
+        }
+        global.clearTimeout(ctx.timer);
+        ctx.timer = global.setTimeout(function () { playExit(ctx); }, TOTAL + 200);
+    }
 
-        anim(ctx, ctx.halfTop, [
+    /* Rút kiếm khỏi chữ b rồi tách lớp void — chạy sau khi bố cục cuối đã đứng yên. */
+    function playExit(ctx) {
+        if (ctx.closed || ctx.exited) return;
+        ctx.exited = true;
+
+        function run(node, frames, opts) {
+            if (!node || !node.animate) return null;
+            var a = node.animate(frames, opts);
+            ctx.anims.push(a);
+            return a;
+        }
+
+        run(ctx.blade, [
+            { offset: 0, transform: STILL, opacity: 1 },
+            { offset: .78, transform: 'translate(429px,-2600px) rotate(94deg) scale(5.2)', opacity: 1 },
+            { offset: 1, transform: 'translate(429px,-3200px) rotate(94deg) scale(5.2)', opacity: 0 }
+        ], { duration: X.sword, easing: 'cubic-bezier(.55,0,.55,1)', fill: 'both' });
+
+        run(ctx.trail, [
+            { offset: 0, transform: STILL, opacity: .32 },
+            { offset: 1, transform: 'translate(429px,-2600px) rotate(94deg) scale(5.2)', opacity: 0 }
+        ], { duration: X.sword, delay: 30, easing: 'cubic-bezier(.55,0,.55,1)', fill: 'both' });
+
+        run(ctx.stage, [
+            { offset: 0, opacity: 1 },
+            { offset: 1, opacity: 0 }
+        ], { duration: X.stage, delay: X.stageDelay, easing: 'cubic-bezier(.4,0,.7,1)', fill: 'both' });
+
+        run(ctx.cut, [
+            { offset: 0, opacity: 0, transform: 'rotate(-3deg) scaleX(.1)' },
+            { offset: .22, opacity: 1, transform: 'rotate(-3deg) scaleX(1)', easing: 'cubic-bezier(.2,.8,.2,1)' },
+            { offset: 1, opacity: 0, transform: 'rotate(-3deg) scaleX(1.04)' }
+        ], { duration: X.cut, delay: X.cutDelay, easing: 'linear', fill: 'both' });
+
+        run(ctx.halfTop, [
             { offset: 0, transform: 'translate3d(0,0,0)' },
-            { offset: at(B.splitAt), transform: 'translate3d(0,0,0)', easing: 'cubic-bezier(.7,0,.2,1)' },
-            { offset: at(B.splitEnd), transform: 'translate3d(0,-106%,0)' },
             { offset: 1, transform: 'translate3d(0,-106%,0)' }
-        ]);
-        anim(ctx, ctx.halfBot, [
+        ], { duration: X.split, delay: X.splitDelay, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'both' });
+        run(ctx.halfBot, [
             { offset: 0, transform: 'translate3d(0,0,0)' },
-            { offset: at(B.splitAt), transform: 'translate3d(0,0,0)', easing: 'cubic-bezier(.7,0,.2,1)' },
-            { offset: at(B.splitEnd), transform: 'translate3d(0,106%,0)' },
             { offset: 1, transform: 'translate3d(0,106%,0)' }
-        ]);
+        ], { duration: X.split, delay: X.splitDelay, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'both' });
 
         global.clearTimeout(ctx.timer);
-        ctx.timer = global.setTimeout(function () { finish(ctx); }, TOTAL + 60);
+        ctx.timer = global.setTimeout(function () { finish(ctx); }, X.splitDelay + X.split + 40);
     }
 
     function playReduced(ctx) {

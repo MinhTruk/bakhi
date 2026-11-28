@@ -2,6 +2,25 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [9.0.1] — 2026-11-28
+
+**v9.0.1 — Tinh chỉnh nhịp màn mở đầu (intro).**
+Giữ nguyên năm chặng của chuỗi thương hiệu (vòng tròn → nét vẽ → kiếm → chém →
+chữ b → "BAKHI" → "nền tảng học tập"), chỉ đổi nhịp và độ nét. Không đổi API,
+schema, nội dung giáo dục hay bố cục trang.
+
+### Cải tiến
+
+- **Nhịp intro 2,9 giây:** `TOTAL`/`DUR.intro` 5000 → 2900 ms; mọi mốc trong `B`
+  dồn lại theo cùng tỉ lệ nên thứ tự và tương quan chuyển động không đổi.
+- **Pha thoát tách khỏi đồng hồ hiện thương hiệu:** rút kiếm → tách màn hình chạy
+  bằng animation riêng (~0,6 giây) sau khi bố cục cuối đã đứng yên, thay vì bị ép
+  vào 140 ms cuối. Bố cục "bAKHI" + phụ đề giữ yên ~500 ms trước khi rời trang.
+  Pha thoát bám `animation.finished` (không lệch khi tab bị hạn chế), timer chỉ là dự phòng.
+- **BAKHI và phụ đề hiện từ mờ → nét:** `filter: blur()` giảm dần kèm `translateY`
+  nhỏ, dùng chung cho chữ chính và dòng "nền tảng học tập".
+- **Vòng tròn vào êm hơn:** easing `cubic-bezier(.16,1,.3,1)` cho nhịp mở đầu.
+
 ## [9.0.0] — 2026-11-28
 
 **v9.0.0 — Complete Animation System Rebuild, Dark Theme Audit & Release.**

@@ -18,7 +18,7 @@
         page: 520,
         exit: 420,
         enter: 520,
-        intro: 5000
+        intro: 2900
     };
 
     var EASE = {
