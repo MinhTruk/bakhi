@@ -105,28 +105,30 @@ ok('không unsafe trong src', !/\bunsafe\b/.test(
 ok('cấp phát trước danh sách attempt', /Vec::with_capacity\(candidates\.len\(\)/.test(AI));
 
 console.log('== 6. Phiên bản & tài liệu ==');
-/* So phiên bản ĐỘNG: bk-version.js là nguồn phát hành, Cargo.toml/Cargo.lock của
-   backend phải khớp. Không hardcode số phiên bản ở đây — bump 8.8/9.x không làm
-   QA này đỏ oan, nhưng lệch Cargo ↔ website vẫn bị bắt. */
+/* Backend Rust phát hành độc lập với website: 9.0.x chỉ đổi frontend và
+   animation nên Cargo vẫn 8.8.0. Giữ kiểm tra nội bộ backend (Cargo.toml,
+   Cargo.lock, CHANGELOG, README, ARCHITECTURE) thay vì buộc trùng số với
+   bk-version.js — nếu không mọi bản website-only sẽ làm cổng này đỏ oan. */
 const APP = (read('assets/bakhi/bk-version.js').match(/app:\s*'([^']+)'/) || [])[1] || '';
 const CARGO_VERSION = (CARGO.match(/^version = "([^"]+)"$/m) || [])[1] || '';
 const LOCK_VERSION =
   (LOCK.match(/name = "bakhi-backend"\r?\nversion = "([^"]+)"/) || [])[1] || '';
+const BACKEND = CARGO_VERSION || LOCK_VERSION;
 const esc = function (value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); };
 ok('bk-version.js khai báo phiên bản hợp lệ', /^\d+\.\d+\.\d+$/.test(APP), APP || '(thiếu)');
-ok('Cargo.toml khớp bk-version.js', CARGO_VERSION === APP,
-  'Cargo=' + (CARGO_VERSION || '(thiếu)') + ' · bk=' + (APP || '(thiếu)'));
-ok('Cargo.lock khớp bk-version.js', LOCK_VERSION === APP,
-  'lock=' + (LOCK_VERSION || '(thiếu)') + ' · bk=' + (APP || '(thiếu)'));
-ok('CHANGELOG có [' + APP + ']', new RegExp('^## \\[' + esc(APP) + '\\]', 'm').test(CHANGELOG));
+ok('Cargo.toml khai báo phiên bản hợp lệ', /^\d+\.\d+\.\d+$/.test(CARGO_VERSION),
+  CARGO_VERSION || '(thiếu)');
+ok('Cargo.toml khớp Cargo.lock', CARGO_VERSION === LOCK_VERSION,
+  'Cargo=' + (CARGO_VERSION || '(thiếu)') + ' · lock=' + (LOCK_VERSION || '(thiếu)'));
+ok('CHANGELOG có [' + BACKEND + ']', new RegExp('^## \\[' + esc(BACKEND) + '\\]', 'm').test(CHANGELOG));
 ok('CHANGELOG nêu Runtime Engine', /Runtime Engine/.test(CHANGELOG));
 ok('CHANGELOG không bịa số benchmark', /Chưa có số đo benchmark/.test(CHANGELOG));
-ok('README nêu ' + APP, new RegExp(esc(APP)).test(read('rust-backend/README.md')));
+ok('README nêu ' + BACKEND, new RegExp(esc(BACKEND)).test(read('rust-backend/README.md')));
 /* Cổng này phải sống qua các bản phát hành: yêu cầu ARCHITECTURE có MỘT mục
-   mang đúng phiên bản hiện tại, không buộc tên mục phải là "Runtime Engine"
+   mang đúng phiên bản backend, không buộc tên mục phải là "Runtime Engine"
    (8.7.3 là Intelligent Caching). */
-ok('ARCHITECTURE có mục cho phiên bản ' + APP,
-  new RegExp('^### .*\\(' + esc(APP) + '\\)', 'm').test(read('docs/ARCHITECTURE.md')));
+ok('ARCHITECTURE có mục cho phiên bản ' + BACKEND,
+  new RegExp('^### .*\\(' + esc(BACKEND) + '\\)', 'm').test(read('docs/ARCHITECTURE.md')));
 ok('tài liệu deploy có RUST_MAX_CONCURRENT_PROVIDER_REQUESTS',
   /RUST_MAX_CONCURRENT_PROVIDER_REQUESTS/.test(read('docs/RUST_DEPLOYMENT_V860.md')));
 ok('brain page v871 tồn tại', exists('brain/pages/v871-runtime-engine.md'));

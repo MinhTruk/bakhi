@@ -78,12 +78,15 @@ ok('migration không tạo bảng mới',
 
 /* ------------------------------------------------------------------ 2 */
 console.log('\n== 2. Dark Theme & Design Tokens ==');
-ok('có tệp token dùng chung', /--bk-bg:\s*#0b0f14/.test(TOKENS_CSS));
-[['#0b0f14', 'nền chính'], ['#111821', 'nền phụ'], ['#161f2b', 'card/panel'],
- ['#202c3a', 'hover'], ['#293646', 'viền'], ['#e8edf5', 'chữ chính'],
- ['#9aa8b8', 'chữ phụ'], ['#718096', 'chữ mờ']].forEach(([hex, label]) => {
+/* Bảng màu hiện hành là "Quiet Graphite" từ 9.0.0; test 8.5.5 cũ đòi palette
+   xám xanh đã được thay thế. Giữ kiểm tra token dùng chung, cập nhật giá trị. */
+ok('có tệp token dùng chung', /--bk-bg:\s*#050507/.test(TOKENS_CSS));
+[['#050507', 'nền chính'], ['#0a0a12', 'nền phụ/surface'], ['#101018', 'panel lồng'],
+ ['#1b1b2b', 'hover'], ['#ffe4eb', 'chữ chính'],
+ ['#d9b6c2', 'chữ phụ'], ['#ad8b99', 'chữ mờ']].forEach(([hex, label]) => {
   ok('bảng màu có ' + label + ' (' + hex + ')', new RegExp(hex, 'i').test(TOKENS_CSS));
 });
+ok('bảng màu có viền', /--bk-line:\s*rgb\(196 181 253/.test(TOKENS_CSS));
 ok('token cũ --bkl-* ánh xạ sang --bk-*',
   /--bkl-surface: var\(--bk-surface\)/.test(TOKENS_CSS) &&
   /--bkl-text: var\(--bk-text\)/.test(TOKENS_CSS));

@@ -21,6 +21,13 @@ schema, nội dung giáo dục hay bố cục trang.
 
 - **Baseline `index.html`:** làm mới riêng trang giao diện sau khi bỏ modal
   README inline ở 9.0.4; 129 tệp nội dung giáo dục giữ nguyên baseline.
+- **QA tĩnh:** `v855-ui` kiểm tra đúng bảng màu Quiet Graphite hiện hành thay vì
+  palette 8.5.5 đã thay thế; `v871-runtime` kiểm tra phiên bản nội bộ của backend
+  Rust (Cargo.toml ↔ Cargo.lock ↔ tài liệu) thay vì buộc trùng với bản phát hành
+  website vốn chỉ đổi frontend từ 9.0.0.
+- **Smoke Studio:** kiểm tra lối vào `/studio/` qua menu shell hiện hành thay vì
+  đòi link tĩnh trong header (đã bỏ từ 9.0.0).
+- **Chỉ mục bài học:** sinh lại `assets/bakhi/search-index.js` sau khi bump.
 
 ## [9.0.4] — 2026-11-28
 

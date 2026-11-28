@@ -207,8 +207,12 @@ function boot(seed) {
   ok('chuyển hướng giữ query và hash',
     /location\.search/.test(legacyPage) && /location\.hash/.test(legacyPage));
   ok('trang cũ có liên kết dự phòng khi không chạy JS', /<a href="index\.html">/.test(legacyPage));
-  ok('trang chủ trỏ tới /studio/ thay vì word-paint.html',
-    /href="studio\/"/.test(read('index.html')) && !/href="studio\/word-paint\.html"/.test(read('index.html')));
+  /* Từ 9.0.0 trang chủ dùng menu shell thay cho link tĩnh trong header;
+     lối vào Studio nằm ở bk-shell.js và vẫn mở đúng /studio/. */
+  const home = read('index.html');
+  ok('trang chủ có lối vào /studio/ thay vì word-paint.html',
+    (/href="studio\/"/.test(home) || /href:\s*S\.base \+ 'studio\/'/.test(read('assets/bakhi/bk-shell.js'))) &&
+    !/href="studio\/word-paint\.html"/.test(home));
 
   /* ------------------------------------------------------------------ */
   console.log('\n[5] Nội dung, bảo mật và quy ước');
