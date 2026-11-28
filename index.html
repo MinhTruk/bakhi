@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi" class="dark">
 <head>
-<script src="assets/bakhi/bk-theme-boot.js?v=9.0.2"></script>
+<script src="assets/bakhi/bk-theme-boot.js?v=9.0.3"></script>
 <link rel="manifest" href="assets/bakhi/manifest.webmanifest" data-bk-pwa="1"><meta name="theme-color" content="#0f172a" data-bk-pwa="1">
     <meta charset="UTF-8">
     <!-- Bá Khí: không nháy nội dung trước khi xác định phiên học sinh -->
@@ -39,53 +39,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Quản Lý Tài Liệu & Ôn Tập - MinhTruk/bakhi</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236366f1'/><stop offset='1' stop-color='%23a855f7'/></linearGradient></defs><rect width='64' height='64' rx='16' fill='url(%23g)'/><path d='M14 22a4 4 0 0 1 4-4h9l4 5h15a4 4 0 0 1 4 4v19a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4z' fill='%23fff'/></svg>">
-    <script>
-/* BKT-START : hiệu ứng bàn tay kéo khi đổi trang (dùng chung cho mọi trang con) */
-(function(){
-if(window.__bkt)return;
-var D=document,R=D.documentElement,ls=function(k,v){try{return v===undefined?localStorage.getItem(k):localStorage.setItem(k,v)}catch(e){}},
-cfg=Object.assign({on:true,style:'hand',speed:1},(function(){try{return JSON.parse(ls('bktCfg'))||{}}catch(e){return{}}})()),
-reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,last='L',cn=navigator.connection||{},lowEnd=window.__lowEnd=!!(cn.saveData||/2g|3g/.test(cn.effectiveType||'')||(navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=4),
-HAND='<svg viewBox="0 0 130 120" width="120" height="110"><g stroke="#1e1b4b" stroke-width="5" stroke-linejoin="round" fill="#fff"><rect x="4" y="22" width="60" height="16" rx="8"/><rect x="2" y="42" width="66" height="16" rx="8"/><rect x="4" y="62" width="62" height="16" rx="8"/><rect x="8" y="82" width="52" height="15" rx="7.5"/><rect x="40" y="18" width="56" height="84" rx="26"/><rect x="96" y="30" width="30" height="60" rx="8" fill="#6366f1"/></g></svg>',
-WAVE='<svg viewBox="0 0 70 100" preserveAspectRatio="none"><path d="M70 0C30 8 10 12 28 24S60 40 30 52 10 70 32 80 50 94 70 100Z" fill="#4338ca"/></svg>',
-st=D.createElement('style'),o=D.createElement('div');
-st.textContent='#bkt{position:fixed;inset:0;z-index:2147483000;display:none;overflow:hidden;cursor:progress}#bkt.r .w{transform:scaleX(-1)}#bkt .w,#bkt .p{position:absolute;inset:0}#bkt .p{background:linear-gradient(90deg,#4338ca,#7c3aed 55%,#a855f7)}#bkt .p:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 2px,transparent 2px 36px)}#bkt .h{position:absolute;top:50%;left:100%;margin-top:-55px;z-index:2;filter:drop-shadow(0 8px 10px rgba(0,0,0,.35))}#bkt.lo .h{filter:none}#bkt.lo .p:after{display:none}#bkt .t{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:600 1.15rem Lexend,system-ui,sans-serif;text-shadow:0 2px 12px rgba(0,0,0,.35);pointer-events:none}';
-o.id='bkt';o.innerHTML='<div class="w"><div class="p"></div><div class="h">'+HAND+'</div></div><div class="t"></div>';
-function mount(){if(!o.parentNode)R.appendChild(o);if(!st.parentNode)(D.head||R).appendChild(st)}
-function look(){o.querySelector('.h').style.display=cfg.style==='hand'?'':'none'}
-var N=16,ez=function(q){return 1-Math.pow(1-q,3)};
-// Giữa vải đi trước, hai phía (trên/dưới) bị trễ và kéo theo sau; tay nắm ở giữa mép vải
-function frame(p,h,t,out,n){var pts=[],xc=0,i,s,q,x;if(out)pts.push('0% 0%');
- for(i=0;i<=N;i++){s=1-Math.pow(Math.abs(2*i/N-1),1.6);q=Math.min(1,Math.max(0,t*1.55-.55*(1-s)));x=100-100*ez(q);if(i==N/2)xc=x;pts.push(x.toFixed(2)+'% '+(i/N*100).toFixed(2)+'%')}
- pts.push(out?'0% 100%':'100% 100%');if(!out)pts.push('100% 0%');
- p.style.clipPath='polygon('+pts.join(',')+')';
- h.style.left='calc('+xc.toFixed(2)+'% - '+(out?80:45)+'px)';h.style.transform='rotate('+Math.sin(n/70)*7+'deg) translateY('+Math.sin(n/50)*7+'px)'}
-function play(d,ph,label){mount();last=d;var out=ph==='out',s=cfg.style,lo=R.classList.contains('lite')||lowEnd,ms=(s==='hand'?1000:550)*cfg.speed*(lo?.7:1);N=lo?8:16;
- o.className=(d==='R'?'r ':'')+(lo?'lo ':'')+(out?'in':'');o.style.display='block';look();
- var p=o.querySelector('.p'),h=o.querySelector('.h');o.querySelector('.t').textContent=out?'':(label||'');
- if(s==='hand')return new Promise(function(res){var t0=performance.now();(function tick(n){var t=Math.min(1,(n-t0)/ms);frame(p,h,t,out,n);if(t<1)requestAnimationFrame(tick);else{if(out){o.style.display='none';p.style.clipPath=''}res()}})(t0)});
- p.style.clipPath='';
- var F=s==='iris'?[{clipPath:'circle(75% at 50% 50%)'},{clipPath:'circle(0% at 50% 50%)'}]:[{opacity:1},{opacity:0}];
- var K=out?F:[F[1],F[0]];
- var a=p.animate(K,{duration:ms,easing:out?'cubic-bezier(.55,0,.9,.45)':'cubic-bezier(.25,.8,.25,1)',fill:'forwards'});
- return a.finished.then(function(){if(out){o.style.display='none';a.cancel()}},function(){})}
-function go(u,l,d){if(!cfg.on||reduce){location.href=u;return}var done=0,f=function(){if(done++)return;try{sessionStorage.setItem('bktF',JSON.stringify({d:d,t:Date.now()}))}catch(e){}location.href=u};play(d,'in',l).then(f);setTimeout(f,1800*cfg.speed+400)}
-var F0=null;try{F0=JSON.parse(sessionStorage.getItem('bktF'));sessionStorage.removeItem('bktF')}catch(e){}
-var nv=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];
-if(!reduce&&cfg.on&&((F0&&Date.now()-F0.t<15000)||(nv&&nv.type==='back_forward'))){var d0=F0?F0.d:'R';mount();o.className=(d0==='R'?'r ':'')+'in';o.style.display='block';look();
- var fire=function(){setTimeout(function(){play(d0,'out')},150)};D.readyState==='complete'?fire():addEventListener('load',fire);
- setTimeout(function(){o.style.display==='block'&&!o.getAnimations({subtree:true}).length&&play(d0,'out')},5000)}
-addEventListener('pageshow',function(e){if(e.persisted&&o.style.display==='block')play(last,'out')});
-D.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(!a||e.defaultPrevented||e.button||e.ctrlKey||e.metaKey||e.shiftKey||a.target==='_blank'||a.hasAttribute('download')||window.__bktOff||!cfg.on||reduce)return;
- var u;try{u=new URL(a.href,location.href)}catch(x){return}
- if(u.origin!==location.origin||/^(mailto|tel|javascript)/.test(a.getAttribute('href'))||(u.pathname===location.pathname&&u.search===location.search))return;
- e.preventDefault();var home=/\/(index\.html)?$/.test(u.pathname),nm=a.querySelector('.truncate,.font-bold');
- go(u.href,home?'Trang chủ':((nm||a).textContent||'').trim().split('\n')[0],home?'R':'L')},true);
-window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify(cfg))},test:function(d){d=d||'L';play(d,'in','Thử chuyển trang').then(function(){setTimeout(function(){play(d,'out')},500)})}};
-})();
-/* BKT-END */
-    </script>
-    <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -273,14 +227,14 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             user-select: text !important;
         }
     </style>
-<script src="assets/bakhi/bk-bkt.js" data-bkt-head="1"></script>
+<script src="assets/bakhi/bk-bkt.js?v=9.0.3" data-bkt-head="1"></script>
 <!-- Bá Khí static favicon — assets/bakhi/favicon.svg -->
 <link rel="icon" type="image/svg+xml" href="assets/bakhi/favicon.svg" sizes="any" data-bk-favicon="1">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/bakhi/favicon-32x32.png" data-bk-favicon="1">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/bakhi/favicon-192x192.png" data-bk-favicon="1">
 <link rel="icon" href="assets/bakhi/favicon.ico" sizes="16x16 32x32 48x48" data-bk-favicon="1">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/bakhi/apple-touch-icon.png" data-bk-favicon="1">
-    <link rel="stylesheet" href="assets/bakhi/bk-intro.css?v=9.0.2">
+    <link rel="stylesheet" href="assets/bakhi/bk-intro.css?v=9.0.3">
 </head>
 <body id="pageBody" class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative transition-colors duration-300">
 
@@ -1890,7 +1844,7 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
             lines($('bkOut'), [[null, 'Đang kiểm tra…']]);
             try { const r = await fetch('./index.html', { cache: 'no-store' }); add(r.ok, 'Trang chủ index.html (' + r.status + ')'); } catch (e) { add(false, 'Trang chủ: lỗi mạng'); }
             add(!!window.__bkt, 'Script chuyển trang (__bkt) hoạt động trên trang chủ');
-            await pool(subjects, async s => { const u = cat.path + '/' + s.id + '/' + s.indexFile; try { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) return add(false, u + ' → ' + r.status); const t = await r.text(), bk = /__bkt|BKT-START/.test(t), back = /href=["'](\.\.\/)+(index\.html)?["']|href=["']\/bakhi\/?(index\.html)?["']|href=["']https?:\/\/minhtruk\.github\.io\/bakhi\/?["']/i.test(t); add(bk && back ? true : 'w', u + ' · script chuyển trang: ' + (bk ? 'có' : 'THIẾU') + ' · link về trang chủ: ' + (back ? 'có' : 'không nhận ra (kiểm tra thủ công)')); } catch (e) { add(false, u + ': lỗi mạng'); } }, 4);
+            await pool(subjects, async s => { const u = cat.path + '/' + s.id + '/' + s.indexFile; try { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) return add(false, u + ' → ' + r.status); const t = await r.text(), bk = /__bkt|BKT-START|bk-bkt\.js/.test(t), back = /href=["'](\.\.\/)+(index\.html)?["']|href=["']\/bakhi\/?(index\.html)?["']|href=["']https?:\/\/minhtruk\.github\.io\/bakhi\/?["']/i.test(t); add(bk && back ? true : 'w', u + ' · script chuyển trang: ' + (bk ? 'có' : 'THIẾU') + ' · link về trang chủ: ' + (back ? 'có' : 'không nhận ra (kiểm tra thủ công)')); } catch (e) { add(false, u + ': lỗi mạng'); } }, 4);
             lines($('bkOut'), rows);
         }
         function sitemap() {
@@ -1942,33 +1896,33 @@ window.__bkt={cfg:cfg,go:go,play:play,save:function(){ls('bktCfg',JSON.stringify
     <script src="bakhi-v4.js"></script>
 
 <!-- Bá Khí Learning Platform (chỉ thêm thẻ script, không sửa nội dung) -->
-<script src="assets/bakhi/bk-core.js?v=9.0.2" defer></script>
-<script src="assets/bakhi/bk-notify.js?v=9.0.2" defer></script>
-<script src="assets/bakhi/bk-learning.js?v=9.0.2" defer></script>
-<script src="assets/bakhi/bk-learn.js?v=9.0.2" defer></script>
-<script src="assets/bakhi/bk-dev.js?v=9.0.2" defer></script>
+<script src="assets/bakhi/bk-core.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-notify.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-learning.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-learn.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-dev.js?v=9.0.3" defer></script>
 
 <!-- Bá Khí × Supabase: một client duy nhất, nhận diện học sinh, thông báo, changelog -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
-<script src="assets/bakhi/bk-supabase.config.js?v=9.0.2" defer></script>
-<script src="assets/bakhi/bk-cache.js?v=9.0.2" defer></script>
-<script src="assets/bakhi/bk-cloud.js?v=9.0.2" data-bk-whatsnew="1" defer></script>
-<script src="assets/bakhi/bk-gamification.js?v=9.0.2" defer></script>
-<script src="assets/bakhi/bk-devboard.js?v=9.0.2" defer></script>
+<script src="assets/bakhi/bk-supabase.config.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-cache.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-cloud.js?v=9.0.3" data-bk-whatsnew="1" defer></script>
+<script src="assets/bakhi/bk-gamification.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-devboard.js?v=9.0.3" defer></script>
 
 <!-- assets/bakhi/shell — avatar tài khoản dùng chung -->
-<script src="assets/bakhi/bk-version.js?v=9.0.2" defer></script>
-<script src="assets/bakhi/bk-profile.js?v=9.0.2" defer></script>
-<script src="assets/bakhi/bk-badges.js?v=9.0.2" defer></script>
-    <script src="assets/bakhi/bk-roles.js?v=9.0.2" defer></script>
-<script src="assets/bakhi/bk-shell.js?v=9.0.2" defer></script>
+<script src="assets/bakhi/bk-version.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-profile.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-badges.js?v=9.0.3" defer></script>
+    <script src="assets/bakhi/bk-roles.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-shell.js?v=9.0.3" defer></script>
 <script src="assets/bakhi/bk-report.js" defer></script>
-<link rel="stylesheet" href="assets/bakhi/bk-themes.css?v=9.0.2">
-<script src="assets/bakhi/bk-themes.js?v=9.0.2" defer></script>
-    <link rel="stylesheet" href="assets/bakhi/bk-ai-tutor.css?v=9.0.2">
-<script src="assets/bakhi/bk-ai-tutor.js?v=9.0.2" defer></script>
-<script src="assets/bakhi/bk-intro.js?v=9.0.2" defer></script>
-    <link rel="stylesheet" href="assets/bakhi/bk-tokens.css?v=9.0.2"><!-- assets/bakhi/bk-rebirth — Quiet Graphite --><link rel="stylesheet" href="assets/bakhi/bk-rebirth.css?v=9.0.2" data-bk-rebirth="css"><script src="assets/bakhi/bk-rebirth.js?v=9.0.2" defer data-bk-rebirth="js"></script>
+<link rel="stylesheet" href="assets/bakhi/bk-themes.css?v=9.0.3">
+<script src="assets/bakhi/bk-themes.js?v=9.0.3" defer></script>
+    <link rel="stylesheet" href="assets/bakhi/bk-ai-tutor.css?v=9.0.3">
+<script src="assets/bakhi/bk-ai-tutor.js?v=9.0.3" defer></script>
+<script src="assets/bakhi/bk-intro.js?v=9.0.3" defer></script>
+    <link rel="stylesheet" href="assets/bakhi/bk-tokens.css?v=9.0.3"><!-- assets/bakhi/bk-rebirth — Quiet Graphite --><link rel="stylesheet" href="assets/bakhi/bk-rebirth.css?v=9.0.3" data-bk-rebirth="css"><script src="assets/bakhi/bk-rebirth.js?v=9.0.3" defer data-bk-rebirth="js"></script>
 
 
 

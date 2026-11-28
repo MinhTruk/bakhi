@@ -173,6 +173,30 @@ function ensureIntro(file, html) {
   return lines.join('\n');
 }
 
+/* Chuyển trang void: script đồng bộ trong <head> để overlay kịp dựng khi trang
+   mới tải. Idempotent; chèn sau dòng <head> như ensureThemeBoot. */
+function ensureTransitionHead(file, html) {
+  const version = appVersion();
+  const bust = version ? '?v=' + version : '';
+  if (html.includes('data-bkt-head')) {
+    /* Bỏ thẻ trùng không có data-bkt-head (bản chèn cũ), rồi cập nhật ?v=. */
+    return html
+      .replace(/[ \t]*<script [^>]*bk-bkt\.js[^>]*><\/script>\r?\n/g, function (m) {
+        return m.includes('data-bkt-head') ? m : '';
+      })
+      .replace(/(assets\/bakhi\/bk-bkt\.js)(\?v=[^"']*)?/g, '$1' + bust);
+  }
+  const rel = path.relative(ROOT, file).split(path.sep).join('/');
+  const depth = rel.split('/').length - 1;
+  const prefix = depth === 0 ? '' : '../'.repeat(depth);
+  const tag = `<script src="${prefix}assets/bakhi/bk-bkt.js${bust}" data-bkt-head="1"></script>`;
+  const headMatch = /<head(\s[^>]*)?>/i.exec(html);
+  if (!headMatch) return html;
+  const nl = html.indexOf('\n', headMatch.index + headMatch[0].length);
+  if (nl < 0) return html;
+  return html.slice(0, nl + 1) + tag + '\n' + html.slice(nl + 1);
+}
+
 /* 8.5.6 — khởi tạo giao diện SỚM: chèn script đồng bộ ngay TRƯỚC <head> để
    html.light/.dark có mặt trước khi trình duyệt vẽ khung đầu tiên (chống FOUC).
    Thẻ nằm trên dòng riêng và chứa `assets/bakhi/` nên content-integrity bỏ
@@ -214,6 +238,11 @@ function inject(file) {
   if (withBoot !== html) {
     fs.writeFileSync(file, withBoot);
     html = withBoot;
+  }
+  const withVt = ensureTransitionHead(file, html);
+  if (withVt !== html) {
+    fs.writeFileSync(file, withVt);
+    html = withVt;
   }
   const withTokens = ensureTokens(file, html);
   if (withTokens !== html) {
@@ -272,17 +301,6 @@ function inject(file) {
 
   const block = '\n<!-- Bá Khí Learning Platform (chỉ thêm thẻ script, không sửa nội dung) -->\n' +
     scripts.map((src) => `<script src="${src}" defer></script>`).join('\n') + '\n';
-
-  // Chèn bk-bkt.js vào <head> (chặn, không defer) để animation chuyển trang
-  // hiện ngay khi trang mở, tránh chớp nội dung trước.
-  if (!html.includes('data-bkt-head')) {
-    const hpos = html.indexOf('</head>');
-    if (hpos >= 0) {
-      const lineStart = html.lastIndexOf('\n', hpos) + 1;
-      const headTag = `<script src="${prefix}assets/bakhi/bk-bkt.js" data-bkt-head="1"></script>`;
-      html = html.slice(0, lineStart) + headTag + '\n' + html.slice(lineStart);
-    }
-  }
 
   const idx = html.lastIndexOf('</body>');
   if (idx < 0) {

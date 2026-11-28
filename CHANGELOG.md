@@ -2,6 +2,30 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [9.0.3] — 2026-11-28
+
+**v9.0.3 — Dựng lại hiệu ứng chuyển trang thành chuỗi O → b → O.**
+Thay lớp chuyển trang void cũ bằng một timeline duy nhất: phủ đen từ tâm → O →
+morph thành chữ b → giữ b trong lúc trang mới tải → b thu về O → màn đen co
+vào O và tan thành chấm. Không đổi API, schema, nội dung giáo dục hay bố cục trang.
+
+### Thay đổi
+
+- **Một overlay SVG dùng chung** (`assets/bakhi/bk-bkt.js`): mặt nạ `clip-path`
+  tròn phủ/co màn đen, vòng tròn là bát chữ b, nét dọc dài ra bằng
+  `stroke-dashoffset` nên O biến thành b liền mạch, không crossfade hai hình.
+- **Giữ b xuyên trang:** cờ `sessionStorage['bkVtNav']` + lớp `bk-vt-boot` giữ
+  overlay và chữ b qua lần tải trang mới; chữ b được dựng sẵn ngay trong `<head>`
+  của trang đích nên không có khung đen trống, điều hướng chỉ chạy khi b đã đứng yên.
+- **Bỏ hiệu ứng bàn tay cũ ở trang chủ:** khối inline `BKT-START` trong
+  `index.html` được xoá để mọi tuyến, kể cả trang chủ, dùng chung một chuỗi O → b → O;
+  intro trang chủ tự bỏ qua khi vào bằng chuyển trang để không chồng hai chuỗi.
+- **Chuyển trang mượt:** script đồng bộ trong `<head>` của mọi trang, chặn click
+  link nội bộ, bỏ qua link ngoài/`target=_blank`/tải xuống; back/forward cũng
+  chạy lại chuỗi vào.
+- **An toàn:** hết 2 giây không điều hướng được thì tự chuyển; trang mở trực
+  tiếp hoặc lỗi tải tự bỏ lớp phủ; giảm chuyển động thì vào/ra nhanh, không morph.
+
 ## [9.0.2] — 2026-11-28
 
 **v9.0.2 — Dựng lại màn mở đầu theo video tham chiếu.**
