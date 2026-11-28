@@ -2,6 +2,36 @@
 
 Mọi thay đổi đáng chú ý của Bá Khí. Định dạng dựa trên Keep a Changelog.
 
+## [9.0.2] — 2026-11-28
+
+**v9.0.2 — Dựng lại màn mở đầu theo video tham chiếu.**
+Thay chuỗi katana bằng đúng chuỗi nhận diện của video: chấm hồng ở tâm → vòng
+tròn mảnh → chữ b → "BAKHI" → "nền tảng học tập" → giữ yên → lộ trang chủ.
+Không đổi API, schema, nội dung giáo dục hay bố cục trang.
+
+### Thay đổi
+
+- **Một dòng thời gian 2,25 giây** (`assets/bakhi/bk-intro.js`): mốc tuyệt đối
+  0–150 chấm, 150–750 vòng tròn, 750–1050 nét chữ b, 1050–1400 BAKHI,
+  1400–1650 phụ đề, 1650–1950 giữ yên, 1950–2250 lộ trang.
+- **Chữ b dựng bằng SVG thật:** vòng tròn ở pha 02 chính là bát chữ b; pha
+  morph chỉ kéo dài tiếp tuyến trái và vẽ nét dọc từ đáy lên, không crossfade
+  hình với ký tự.
+- **BAKHI và phụ đề hiện từ mờ → nét:** `filter: blur()` giảm dần cùng opacity,
+  chữ trắng và phụ đề hồng mờ giữ nguyên bố cục, không chạy từng chữ.
+- **Lộ trang chủ mềm:** nền tối tan trước, logo đứng thêm ~90 ms rồi tan theo;
+  nếu trang còn khoá khởi động thì giữ logo tối đa 900 ms thay vì lộ splash.
+- **Bỏ hiệu ứng không có trong tham chiếu:** kiếm, nhát chém, chớp, tách hai
+  nửa màn hình và sóng xung kích.
+
+### Cải tiến
+
+- Quầng hồng plum rất nhẹ, chỉ tập trung sau logo; nền `#050506`, hồng
+  `#e996b9`, wordmark trắng ấm.
+- Tỉ lệ co giãn theo `vmin` (b 54–72 px), không có bố cục nào bị cắt, chữ
+  không xuống dòng.
+- Giảm chuyển động: hiện ngay bố cục cuối, không nở, không trượt.
+
 ## [9.0.1] — 2026-11-28
 
 **v9.0.1 — Tinh chỉnh nhịp màn mở đầu (intro).**

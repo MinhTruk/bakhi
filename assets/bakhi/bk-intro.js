@@ -1,22 +1,27 @@
 /* =========================================================================
    Bá Khí — bk-intro.js
-   Màn hình mở đầu kiếm Nhật (katana), một đồng hồ duy nhất:
+   Màn mở đầu dựng lại theo video tham chiếu, một dòng thời gian duy nhất:
 
-     O (vẽ nét) → kiếm lao vào, nhịp lấy đà, chém → chớp + sóng xung kích
-     → kiếm xoay thành nét đứng của chữ B → hai bát chữ B + BAKHI
-     → “nền tảng học tập” → rút kiếm, phóng to thoát khung
-     → nhát chém toàn màn hình tách lớp void, lộ website thật.
+     chấm hồng → vòng tròn mảnh → chữ b (nét dọc mọc lên) → BAKHI
+     → “nền tảng học tập” → giữ yên → mờ lớp phủ, lộ trang chủ.
+
+   Mốc (ms, tính từ lúc chấm xuất hiện):
+     0–150    chấm hồng hiện đúng tâm
+     150–750  chấm nở thành vòng tròn mảnh (tâm vòng = tâm khung nhìn)
+     750–1050 giữ nguyên vòng làm bát chữ b, nét dọc mọc từ đáy lên
+     1050–1400 BAKHI hiện từ mờ → nét
+     1400–1650 “nền tảng học tập” hiện từ mờ → nét
+     1650–1950 giữ nguyên bố cục cuối
+     1950–2250 nền tối tan dần, logo đứng thêm một nhịp rồi tan theo
 
    Nguyên tắc:
-   - MỌI animation dùng chung duration TOTAL và đặt nhịp bằng offset, nên
-     không pha nào lệch. Không thư viện, không keyframe CSS chạy song song.
+   - Không keyframe CSS, không thư viện. Mọi chuyển động là WAAPI trên một
+     mốc thời gian tuyệt đối, chỉ dùng transform/opacity (riêng nét vẽ dùng
+     stroke-dashoffset trong 300 ms).
    - Chỉ một phiên chạy một lần (sessionStorage bakhiIntroSeen.v1).
-     ?intro=1 ép chạy, ?intro=0 bỏ qua. Vào trang qua chuyển trang void thì
-     không chạy (bk-transition đã dựng lớp enter).
-   - Bỏ qua bằng chạm hoặc phím bất kỳ; luôn kết thúc ở trạng thái sạch,
-     có hẹn giờ cứng dự phòng.
-   - prefers-reduced-motion: hiện bố cục cuối rồi mờ dần, không chém, không
-     chớp, không rung.
+     ?intro=1 ép chạy, ?intro=0 bỏ qua.
+   - Bỏ qua bằng chạm hoặc phím bất kỳ; luôn kết thúc ở trạng thái sạch.
+   - prefers-reduced-motion: hiện ngay bố cục cuối, giữ một nhịp rồi mờ.
    - Chỉ đụng DOM của chính nó; không gọi Supabase hay mô-đun nào khác.
 
    Công khai: window.BKIntro = { play, skip, shown }
@@ -30,29 +35,22 @@
 
     var NS = 'http://www.w3.org/2000/svg';
     var SEEN_KEY = 'bakhiIntroSeen.v1';
-    var M = global.BKMotion || {};
-    var TOTAL = (M.DUR && M.DUR.intro) || 2900;
 
-    /* Nhịp (ms) của pha HIỆN THƯƠNG HIỆU — một đồng hồ TOTAL:
-         vòng tròn · nét vẽ · kiếm · chém · morph · b · BAKHI · phụ đề · lắng.
-       Pha RÚT KIẾM + tách màn hình chạy sau đó bằng animation riêng (mili giây
-       thật), để bố cục cuối đứng yên đủ lâu trước khi rời trang. */
-    var B = {
-        oIn: 90, oDrawn: 620,
-        katEnter: 680, katPull: 860, anticip: 1000, strike: 1180,
-        oOut: 1500, morph: 1800,
-        stem: 1950, bowls: 2130,
-        word: 2300, sub: 2600
+    /* Mốc tuyệt đối (ms) — khớp bảng nhịp của video tham chiếu. */
+    var T = {
+        ringIn: 0, ringInDur: 150,
+        ringGrow: 150, ringGrowDur: 600,
+        morph: 750, stemDur: 300,
+        word: 1050, wordDur: 350,
+        sub: 1400, subDur: 250,
+        reveal: 1950, veilOut: 260,
+        logoOut: 2040, logoOutDur: 210,
+        end: 2280
     };
-
-    /* Pha thoát khỏi màn hình (ms thật, chạy sau TOTAL). */
-    var X = { sword: 300, cut: 340, cutDelay: 40, split: 460, splitDelay: 60, stage: 220, stageDelay: 160 };
 
     var root = D.documentElement;
     var query = '';
     try { query = String(global.location.search || ''); } catch (e) { }
-
-    function at(ms) { return Math.min(1, Math.max(0, ms / TOTAL)); }
 
     function forced() {
         if (/(?:[?&])intro=0(?:&|$)/.test(query)) return false;
@@ -78,368 +76,168 @@
         return n;
     }
 
-    /* ------------------------------------------------------------ katana ---
-       Vẽ dọc +X: chuôi (-124..-6) · tsuba (0) · lưỡi (6..440). Gốc toạ độ
-       nằm ở tsuba để xoay/scale quanh đúng chỗ nối chuôi–lưỡi. */
-    function katana(cls) {
-        var g = sv('g', { 'class': cls });
-
-        var blade = sv('g', { 'class': 'bki-blade' });
-        blade.appendChild(sv('path', {
-            'class': 'bki-blade-fill',
-            d: 'M6 -13 L378 -7 L440 0 L378 7 L6 13 Z'
-        }));
-        blade.appendChild(sv('path', {
-            'class': 'bki-blade-edge',
-            d: 'M6 -13 L378 -7 L440 0'
-        }));
-        blade.appendChild(sv('path', {
-            'class': 'bki-blade-hamon',
-            d: 'M44 4 Q72 -3 100 4 T156 4 T212 4 T268 4 T324 4 T372 3'
-        }));
-        g.appendChild(blade);
-
-        g.appendChild(sv('rect', { 'class': 'bki-tsuba', x: -7, y: -19, width: 14, height: 38, rx: 5 }));
-        g.appendChild(sv('rect', { 'class': 'bki-handle', x: -126, y: -9, width: 120, height: 18, rx: 8 }));
-
-        var wrap = sv('g', { 'class': 'bki-wrap' });
-        for (var x = -112; x < -12; x += 16) {
-            wrap.appendChild(sv('path', { d: 'M' + x + ' -8 L' + (x + 10) + ' 8' }));
-        }
-        g.appendChild(wrap);
-        g.appendChild(sv('circle', { 'class': 'bki-pommel', cx: -130, cy: 0, r: 10 }));
-        return g;
-    }
-
+    /* ------------------------------------------------------------- dựng DOM ---
+       Chữ b: bát là một đường tròn tâm (23,44) bán kính 20; nét dọc nằm trên
+       tiếp tuyến trái x=3, chạy từ đáy bát (y=64) lên đỉnh (y=3). Vòng tròn
+       ở pha 02 chính là bát này nên pha morph chỉ cần vẽ thêm nét dọc. */
     function build() {
         var overlay = el('div', 'bk-intro');
         overlay.id = 'bkIntro';
         overlay.setAttribute('aria-hidden', 'true');
-        overlay.setAttribute('role', 'presentation');
 
-        var halfTop = el('div', 'bki-half bki-top');
-        var halfBot = el('div', 'bki-half bki-bot');
-        var cut = el('div', 'bki-cut');
-        var flash = el('div', 'bki-flash');
-
+        var veil = el('div', 'bki-veil');
+        var glow = el('div', 'bki-glow');
         var stage = el('div', 'bki-stage');
+        var logo = el('div', 'bki-logo');
+
         var svg = sv('svg', {
-            viewBox: '0 0 1200 800',
-            preserveAspectRatio: 'xMidYMid meet',
-            'class': 'bki-svg',
-            focusable: 'false'
+            viewBox: '0 0 46 66',
+            'class': 'bki-mark',
+            focusable: 'false',
+            'aria-hidden': 'true'
         });
-
-        var defs = sv('defs');
-        var grad = sv('linearGradient', { id: 'bkiSteel', x1: '0', y1: '0', x2: '0', y2: '1' });
-        grad.appendChild(sv('stop', { offset: '0', 'stop-color': '#f2f6fd' }));
-        grad.appendChild(sv('stop', { offset: '.45', 'stop-color': '#b9c2d4' }));
-        grad.appendChild(sv('stop', { offset: '1', 'stop-color': '#7b8497' }));
-        defs.appendChild(grad);
-        var wordClip = sv('clipPath', { id: 'bkiWordClip' });
-        var wordRect = sv('rect', { x: 508, y: 430, width: 320, height: 130, 'class': 'bki-word-clip' });
-        wordClip.appendChild(wordRect);
-        defs.appendChild(wordClip);
-        svg.appendChild(defs);
-
-        var wave = sv('circle', { cx: 600, cy: 380, r: 112, 'class': 'bki-wave' });
-        var o = sv('ellipse', { cx: 600, cy: 380, rx: 112, ry: 112, pathLength: 100, 'class': 'bki-o' });
-        var slash = sv('line', { x1: 150, y1: 168, x2: 1050, y2: 592, pathLength: 100, 'class': 'bki-slash' });
-
-        var stem = sv('path', { d: 'M429 446 V530', pathLength: 100, 'class': 'bki-stem' });
-        var bowlUp = sv('path', { d: 'M429 446 C470 446 500 452 500 466 C500 480 470 487 429 487', pathLength: 100, 'class': 'bki-bowl' });
-        var bowlLo = sv('path', { d: 'M429 487 C476 487 506 494 506 508 C506 522 476 530 429 530', pathLength: 100, 'class': 'bki-bowl' });
-
-        var word = sv('text', { x: 515, y: 530, 'class': 'bki-word' }, 'AKHI');
-        word.setAttribute('clip-path', 'url(#bkiWordClip)');
-        var sub = sv('text', { x: 600, y: 582, 'text-anchor': 'middle', 'class': 'bki-sub' }, 'nền tảng học tập');
-
-        var trail = katana('bki-katana bki-trail');
-        var blade = katana('bki-katana');
-
-        svg.appendChild(wave);
-        svg.appendChild(o);
-        svg.appendChild(slash);
+        var ring = sv('circle', {
+            cx: 23, cy: 44, r: 20,
+            'class': 'bki-ring',
+            'vector-effect': 'non-scaling-stroke'
+        });
+        var stem = sv('path', {
+            d: 'M3 64V3',
+            pathLength: 100,
+            'class': 'bki-stem'
+        });
+        svg.appendChild(ring);
         svg.appendChild(stem);
-        svg.appendChild(bowlUp);
-        svg.appendChild(bowlLo);
-        svg.appendChild(word);
-        svg.appendChild(sub);
-        svg.appendChild(trail);
-        svg.appendChild(blade);
 
-        stage.appendChild(svg);
-        overlay.appendChild(halfTop);
-        overlay.appendChild(halfBot);
+        var word = el('div', 'bki-word', 'BAKHI');
+        var sub = el('div', 'bki-sub', 'nền tảng học tập');
+
+        logo.appendChild(svg);
+        logo.appendChild(word);
+        logo.appendChild(sub);
+        stage.appendChild(logo);
+
+        overlay.appendChild(veil);
+        overlay.appendChild(glow);
         overlay.appendChild(stage);
-        overlay.appendChild(cut);
-        overlay.appendChild(flash);
         (D.body || root).appendChild(overlay);
 
         return {
-            overlay: overlay, stage: stage, halfTop: halfTop, halfBot: halfBot,
-            cut: cut, flash: flash, o: o, wave: wave, slash: slash,
-            stem: stem, bowls: [bowlUp, bowlLo], word: word, sub: sub, wordRect: wordRect,
-            blade: blade, trail: trail, closed: false, exited: false, timer: 0,
-            onKey: null, onTap: null, anims: []
+            overlay: overlay, veil: veil, glow: glow, stage: stage, logo: logo,
+            mark: svg, ring: ring, stem: stem, word: word, sub: sub,
+            closed: false, revealed: false, removed: false,
+            revealTimer: 0, hardTimer: 0, onKey: null, onTap: null, anims: []
         };
     }
 
     /* ------------------------------------------------------------ vòng đời */
     function remove(ctx) {
+        if (ctx.removed) return;
+        ctx.removed = true;
+        ctx.closed = true;
+        global.clearTimeout(ctx.revealTimer);
+        global.clearTimeout(ctx.hardTimer);
+        if (ctx.onKey) D.removeEventListener('keydown', ctx.onKey, true);
+        if (ctx.onTap) ctx.overlay.removeEventListener('pointerdown', ctx.onTap);
         if (ctx.overlay.parentNode) ctx.overlay.parentNode.removeChild(ctx.overlay);
     }
 
-    function exit(ctx) {
-        if (ctx.closed) return;
-        ctx.closed = true;
-        global.clearTimeout(ctx.timer);
-        if (ctx.onKey) D.removeEventListener('keydown', ctx.onKey, true);
-        if (ctx.onTap) ctx.overlay.removeEventListener('pointerdown', ctx.onTap);
+    /* Lộ trang chủ: nền tối tan trước, logo đứng thêm một nhịp rồi tan theo.
+       Nếu index.html còn khoá khởi động (đang xác định phiên), giữ logo yên
+       tối đa 900 ms thay vì lộ splash trắng. */
+    function reveal(ctx, fast) {
+        if (ctx.closed || ctx.revealed) return;
+        ctx.revealed = true;
+        global.clearTimeout(ctx.revealTimer);
 
-        var fade = ctx.overlay.animate(
-            [{ opacity: 1 }, { opacity: 0 }],
-            { duration: reduced() ? 160 : 260, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' }
-        );
-        if (fade && fade.finished && fade.finished.then) fade.finished.then(function () { remove(ctx); }, function () { remove(ctx); });
-        global.setTimeout(function () { remove(ctx); }, 520);
-    }
+        var veilDur = fast ? 150 : T.veilOut;
+        var logoDelay = fast ? 10 : (T.logoOut - T.reveal);
+        var logoDur = fast ? 150 : T.logoOutDur;
 
-    /* Chờ index.html gỡ khoá khởi động (xác định phiên học sinh) rồi mới mờ. */
-    function finish(ctx) {
-        if (ctx.closed) return;
-        if (root.classList.contains('bk-boot-lock') && global.MutationObserver) {
+        function go() {
+            if (ctx.closed) return;
+            anim(ctx, ctx.veil, [{ opacity: 1 }, { opacity: 0 }],
+                { duration: veilDur, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' });
+            anim(ctx, ctx.glow, [{ opacity: .9 }, { opacity: 0 }],
+                { duration: logoDur, delay: logoDelay, easing: 'linear', fill: 'forwards' });
+            anim(ctx, ctx.logo, [{ opacity: 1 }, { opacity: 0 }],
+                { duration: logoDur, delay: logoDelay, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' });
+            global.setTimeout(function () { remove(ctx); }, Math.max(veilDur, logoDelay + logoDur) + 50);
+        }
+
+        if (!fast && root.classList.contains('bk-boot-lock') && global.MutationObserver) {
             var obs = new global.MutationObserver(function () {
                 if (root.classList.contains('bk-boot-lock')) return;
                 obs.disconnect();
-                exit(ctx);
+                go();
             });
             obs.observe(root, { attributes: true, attributeFilter: ['class'] });
-            global.setTimeout(function () { obs.disconnect(); exit(ctx); }, 1400);
+            global.setTimeout(function () { obs.disconnect(); go(); }, 900);
             return;
         }
-        exit(ctx);
+        go();
     }
 
     function skip(ctx) {
         if (ctx.closed) return;
-        global.clearTimeout(ctx.timer);
         for (var i = 0; i < ctx.anims.length; i++) {
             try { ctx.anims[i].finish(); } catch (e) { }
         }
-        exit(ctx);
+        reveal(ctx, true);
     }
 
     /* --------------------------------------------------------- chuyển động */
-    function anim(ctx, node, frames) {
+    function anim(ctx, node, frames, opts) {
         if (!node || !node.animate) return null;
-        var a = node.animate(frames, { duration: TOTAL, fill: 'both' });
+        var a = node.animate(frames, opts);
         ctx.anims.push(a);
         return a;
-    }
-
-    var STILL = 'translate(429px,446px) rotate(90deg) scale(.1909)';
-
-    function bladeFrames(offsetMs, opacity) {
-        var d = offsetMs;
-        return [
-            { offset: 0, opacity: 0, transform: 'translate(1250px,-160px) rotate(22deg) scale(1.05)' },
-            { offset: at(B.katEnter), opacity: 1, transform: 'translate(1250px,-160px) rotate(22deg) scale(1.05)', easing: 'cubic-bezier(.3,0,.2,1)' },
-            { offset: at(B.katPull + d), opacity: 1, transform: 'translate(210px,190px) rotate(22deg) scale(1)', easing: 'cubic-bezier(.4,0,.2,1)' },
-            { offset: at(B.anticip + d), opacity: 1, transform: 'translate(150px,150px) rotate(18deg) scale(1)', easing: 'cubic-bezier(.5,0,.9,.4)' },
-            { offset: at(B.strike + d), opacity: 1, transform: 'translate(240px,232px) rotate(20deg) scale(1)', easing: 'linear' },
-            { offset: at(B.strike + 220 + d), opacity: 1, transform: 'translate(240px,232px) rotate(20deg) scale(1)', easing: 'cubic-bezier(.16,1,.3,1)' },
-            { offset: at(B.morph + d), opacity: 1, transform: STILL },
-            { offset: 1, opacity: 1, transform: STILL }
-        ].map(function (f) {
-            if (opacity == null || f.opacity == null) return f;
-            var c = {};
-            for (var k in f) c[k] = f[k];
-            c.opacity = f.opacity * opacity;
-            return c;
-        });
     }
 
     function playFull(ctx) {
         if (ctx.closed) return;
 
-        anim(ctx, ctx.o, [
-            { offset: 0, opacity: 0, strokeDashoffset: 100, transform: 'scale(.86)' },
-            { offset: at(B.oIn), opacity: 1, strokeDashoffset: 100, transform: 'scale(.88)', easing: 'cubic-bezier(.16,1,.3,1)' },
-            { offset: at(B.oDrawn), opacity: 1, strokeDashoffset: 0, transform: 'scale(1)', easing: 'cubic-bezier(.2,.6,.24,1)' },
-            { offset: at(B.strike), opacity: 1, strokeDashoffset: 0, transform: 'scale(1)', easing: 'linear' },
-            { offset: at(B.strike + 260), opacity: 1, strokeDashoffset: 0, transform: 'scale(1.16)', easing: 'cubic-bezier(.3,0,.7,1)' },
-            { offset: at(B.oOut), opacity: 0, strokeDashoffset: 0, transform: 'scale(1.34)' },
-            { offset: 1, opacity: 0, strokeDashoffset: 0, transform: 'scale(1.34)' }
-        ]);
+        /* 0–150: chấm hồng ở đúng tâm. Vòng thu về 2% nên chỉ còn một điểm
+           ~3 px, viền không co giãn nhờ vector-effect. */
+        anim(ctx, ctx.ring, [{ opacity: 0 }, { opacity: 1 }],
+            { duration: T.ringInDur, easing: 'linear', fill: 'both' });
+        anim(ctx, ctx.ring, [{ transform: 'scale(.02)' }, { transform: 'scale(1)' }],
+            { duration: T.ringGrowDur, delay: T.ringGrow, easing: 'cubic-bezier(.16,.84,.25,1)', fill: 'both' });
 
-        anim(ctx, ctx.wave, [
-            { offset: 0, opacity: 0, transform: 'scale(.7)' },
-            { offset: at(B.strike), opacity: 0, transform: 'scale(.7)' },
-            { offset: at(B.strike + 30), opacity: .85, transform: 'scale(.8)' },
-            { offset: at(B.oOut + 80), opacity: 0, transform: 'scale(2.5)' },
-            { offset: 1, opacity: 0, transform: 'scale(2.5)' }
-        ]);
+        /* Quầng hồng đậm dần khi vòng nở. */
+        anim(ctx, ctx.glow, [
+            { opacity: .55, transform: 'translate(-50%,-50%) scale(.92)' },
+            { opacity: .9, transform: 'translate(-50%,-50%) scale(1.05)' }
+        ], { duration: 620, delay: 130, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'both' });
 
-        anim(ctx, ctx.slash, [
-            { offset: 0, opacity: 0, strokeDashoffset: 100 },
-            { offset: at(B.anticip), opacity: 0, strokeDashoffset: 100 },
-            { offset: at(B.strike), opacity: 1, strokeDashoffset: 0 },
-            { offset: at(B.strike + 180), opacity: 0, strokeDashoffset: 0 },
-            { offset: 1, opacity: 0, strokeDashoffset: 0 }
-        ]);
+        /* 750–1050: nét dọc mọc từ đáy bát lên đỉnh, hoàn tất chữ b. */
+        anim(ctx, ctx.stem, [{ strokeDashoffset: 100 }, { strokeDashoffset: 0 }],
+            { duration: T.stemDur, delay: T.morph, easing: 'cubic-bezier(.33,.06,.18,1)', fill: 'both' });
 
-        anim(ctx, ctx.stage, [
-            { offset: 0, opacity: 1, transform: 'translate3d(0,0,0)' },
-            { offset: at(B.strike), opacity: 1, transform: 'translate3d(0,0,0)' },
-            { offset: at(B.strike + 20), opacity: 1, transform: 'translate3d(5px,-4px,0)' },
-            { offset: at(B.strike + 50), opacity: 1, transform: 'translate3d(-5px,3px,0)' },
-            { offset: at(B.strike + 80), opacity: 1, transform: 'translate3d(3px,-2px,0)' },
-            { offset: at(B.strike + 120), opacity: 1, transform: 'translate3d(0,0,0)' },
-            { offset: 1, opacity: 1, transform: 'translate3d(0,0,0)' }
-        ]);
-
-        anim(ctx, ctx.flash, [
-            { offset: 0, opacity: 0 },
-            { offset: at(B.strike), opacity: 0 },
-            { offset: at(B.strike + 25), opacity: .2 },
-            { offset: at(B.strike + 150), opacity: 0 },
-            { offset: 1, opacity: 0 }
-        ]);
-
-        anim(ctx, ctx.stem, [
-            { offset: 0, opacity: 0, strokeDashoffset: 100 },
-            { offset: at(B.strike + 300), opacity: 0, strokeDashoffset: 100 },
-            { offset: at(B.morph - 100), opacity: 1, strokeDashoffset: 100, easing: 'cubic-bezier(.3,0,.2,1)' },
-            { offset: at(B.stem), opacity: 1, strokeDashoffset: 0 },
-            { offset: 1, opacity: 1, strokeDashoffset: 0 }
-        ]);
-
-        anim(ctx, ctx.bowls[0], [
-            { offset: 0, opacity: 0, strokeDashoffset: 100 },
-            { offset: at(B.morph + 40), opacity: 0, strokeDashoffset: 100, easing: 'cubic-bezier(.35,0,.25,1)' },
-            { offset: at(B.bowls), opacity: 1, strokeDashoffset: 0 },
-            { offset: 1, opacity: 1, strokeDashoffset: 0 }
-        ]);
-        anim(ctx, ctx.bowls[1], [
-            { offset: 0, opacity: 0, strokeDashoffset: 100 },
-            { offset: at(B.morph + 120), opacity: 0, strokeDashoffset: 100, easing: 'cubic-bezier(.35,0,.25,1)' },
-            { offset: at(B.bowls + 80), opacity: 1, strokeDashoffset: 0 },
-            { offset: 1, opacity: 1, strokeDashoffset: 0 }
-        ]);
-
+        /* 1050–1400: BAKHI từ mờ → nét, không chạy từng chữ. */
         anim(ctx, ctx.word, [
-            { offset: 0, opacity: 0, transform: 'translateY(10px)', filter: 'blur(3px)' },
-            { offset: at(B.morph + 200), opacity: 0, transform: 'translateY(10px)', filter: 'blur(3px)' },
-            { offset: at(B.morph + 260), opacity: 1, transform: 'translateY(10px)', filter: 'blur(2px)' },
-            { offset: at(B.word), opacity: 1, transform: 'translateY(0)', filter: 'blur(0px)' },
-            { offset: 1, opacity: 1, transform: 'translateY(0)', filter: 'blur(0px)' }
-        ]);
-        anim(ctx, ctx.wordRect, [
-            { offset: 0, transform: 'scaleX(0)' },
-            { offset: at(B.morph + 240), transform: 'scaleX(0)', easing: 'cubic-bezier(.2,.6,.24,1)' },
-            { offset: at(B.word), transform: 'scaleX(1)' },
-            { offset: 1, transform: 'scaleX(1)' }
-        ]);
+            { opacity: 0, filter: 'blur(3px)', transform: 'translateY(4px)' },
+            { opacity: 1, filter: 'blur(0px)', transform: 'translateY(0)' }
+        ], { duration: T.wordDur, delay: T.word, easing: 'cubic-bezier(.2,.65,.25,1)', fill: 'both' });
 
+        /* 1400–1650: phụ đề Việt từ mờ → nét. */
         anim(ctx, ctx.sub, [
-            { offset: 0, opacity: 0, transform: 'translateY(8px)', filter: 'blur(2px)' },
-            { offset: at(B.sub - 300), opacity: 0, transform: 'translateY(8px)', filter: 'blur(2px)' },
-            { offset: at(B.sub), opacity: 1, transform: 'translateY(0)', filter: 'blur(0px)', easing: 'cubic-bezier(.2,.6,.24,1)' },
-            { offset: 1, opacity: 1, transform: 'translateY(0)', filter: 'blur(0px)' }
-        ]);
+            { opacity: 0, filter: 'blur(2.5px)', transform: 'translateY(3px)' },
+            { opacity: 1, filter: 'blur(0px)', transform: 'translateY(0)' }
+        ], { duration: T.subDur, delay: T.sub, easing: 'cubic-bezier(.2,.65,.25,1)', fill: 'both' });
 
-        var gate = anim(ctx, ctx.blade, bladeFrames(0, 1));
-        anim(ctx, ctx.trail, bladeFrames(40, .32));
-
-        /* Ra khỏi màn hình đúng lúc đồng hồ hiện thương hiệu kết thúc: bám
-           animation clock (không trễ như timer khi tab bị hạn chế), timer là dự phòng. */
-        if (gate && gate.finished && gate.finished.then) {
-            gate.finished.then(function () { playExit(ctx); }, function () { playExit(ctx); });
-        }
-        global.clearTimeout(ctx.timer);
-        ctx.timer = global.setTimeout(function () { playExit(ctx); }, TOTAL + 200);
+        ctx.revealTimer = global.setTimeout(function () { reveal(ctx); }, T.reveal);
+        ctx.hardTimer = global.setTimeout(function () { remove(ctx); }, 4200);
     }
 
-    /* Rút kiếm khỏi chữ b rồi tách lớp void — chạy sau khi bố cục cuối đã đứng yên. */
-    function playExit(ctx) {
-        if (ctx.closed || ctx.exited) return;
-        ctx.exited = true;
-
-        function run(node, frames, opts) {
-            if (!node || !node.animate) return null;
-            var a = node.animate(frames, opts);
-            ctx.anims.push(a);
-            return a;
-        }
-
-        run(ctx.blade, [
-            { offset: 0, transform: STILL, opacity: 1 },
-            { offset: .78, transform: 'translate(429px,-2600px) rotate(94deg) scale(5.2)', opacity: 1 },
-            { offset: 1, transform: 'translate(429px,-3200px) rotate(94deg) scale(5.2)', opacity: 0 }
-        ], { duration: X.sword, easing: 'cubic-bezier(.55,0,.55,1)', fill: 'both' });
-
-        run(ctx.trail, [
-            { offset: 0, transform: STILL, opacity: .32 },
-            { offset: 1, transform: 'translate(429px,-2600px) rotate(94deg) scale(5.2)', opacity: 0 }
-        ], { duration: X.sword, delay: 30, easing: 'cubic-bezier(.55,0,.55,1)', fill: 'both' });
-
-        run(ctx.stage, [
-            { offset: 0, opacity: 1 },
-            { offset: 1, opacity: 0 }
-        ], { duration: X.stage, delay: X.stageDelay, easing: 'cubic-bezier(.4,0,.7,1)', fill: 'both' });
-
-        run(ctx.cut, [
-            { offset: 0, opacity: 0, transform: 'rotate(-3deg) scaleX(.1)' },
-            { offset: .22, opacity: 1, transform: 'rotate(-3deg) scaleX(1)', easing: 'cubic-bezier(.2,.8,.2,1)' },
-            { offset: 1, opacity: 0, transform: 'rotate(-3deg) scaleX(1.04)' }
-        ], { duration: X.cut, delay: X.cutDelay, easing: 'linear', fill: 'both' });
-
-        run(ctx.halfTop, [
-            { offset: 0, transform: 'translate3d(0,0,0)' },
-            { offset: 1, transform: 'translate3d(0,-106%,0)' }
-        ], { duration: X.split, delay: X.splitDelay, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'both' });
-        run(ctx.halfBot, [
-            { offset: 0, transform: 'translate3d(0,0,0)' },
-            { offset: 1, transform: 'translate3d(0,106%,0)' }
-        ], { duration: X.split, delay: X.splitDelay, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'both' });
-
-        global.clearTimeout(ctx.timer);
-        ctx.timer = global.setTimeout(function () { finish(ctx); }, X.splitDelay + X.split + 40);
-    }
-
+    /* Giảm chuyển động: bố cục cuối hiện ngay, không nở, không trượt. */
     function playReduced(ctx) {
-        ctx.o.style.opacity = '0';
-        ctx.wave.style.opacity = '0';
-        ctx.slash.style.opacity = '0';
-        ctx.flash.style.opacity = '0';
-        ctx.blade.style.opacity = '0';
-        ctx.trail.style.opacity = '0';
-        ctx.stem.style.strokeDashoffset = '0';
-        ctx.stem.style.opacity = '1';
-        for (var i = 0; i < ctx.bowls.length; i++) {
-            ctx.bowls[i].style.strokeDashoffset = '0';
-            ctx.bowls[i].style.opacity = '1';
-        }
-        ctx.word.style.opacity = '1';
-        ctx.word.style.clipPath = 'none';
-        ctx.sub.style.opacity = '1';
-
-        ctx.overlay.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: 'ease-out', fill: 'forwards' });
-        global.clearTimeout(ctx.timer);
-        ctx.timer = global.setTimeout(function () { finish(ctx); }, 1100);
+        ctx.overlay.classList.add('bki-static');
+        ctx.revealTimer = global.setTimeout(function () { reveal(ctx); }, 1200);
+        ctx.hardTimer = global.setTimeout(function () { remove(ctx); }, 2600);
     }
 
     /* ------------------------------------------------------------------ API */
-    function whenReady(fn) {
-        var done = false;
-        function go() { if (done) return; done = true; fn(); }
-        try {
-            if (D.fonts && D.fonts.ready && D.fonts.ready.then) D.fonts.ready.then(go, go);
-        } catch (e) { }
-        global.setTimeout(go, 400);
-    }
-
     function play() {
         var mode = forced();
         if (mode === false) return null;
@@ -460,10 +258,8 @@
         ctx.overlay.addEventListener('pointerdown', ctx.onTap);
 
         if (reduced()) playReduced(ctx);
-        else whenReady(function () { playFull(ctx); });
+        else playFull(ctx);
 
-        global.clearTimeout(ctx.timer);
-        ctx.timer = global.setTimeout(function () { finish(ctx); }, TOTAL + 1200);
         return ctx;
     }
 
